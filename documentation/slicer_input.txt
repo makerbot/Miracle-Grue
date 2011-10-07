@@ -1,0 +1,46 @@
+
+what links here: overview.txt
+
+The slicer module processes 3D geometry and provides slices on demand. 
+
+The following 3D geometry formats are supported:
+- STL ascii
+- STL binary
+- OBJ (Maya)
+
+Instead of using a geometry file directly, the slicer can also load a file that contains  various annotations and a reference to the geometry. This is could include things like:
+- which file is used for which "colour" or "material"
+- volumes of higher density for infills (or infill types)
+- volumes of thicker shell regions
+- volumes where support should be omitted or reinforced
+- manual path overrides
+- …
+
+here's a sample json annotation file. It takes precedence over the model file, and contains:
+ - the model name
+ - a 3D file for each tool_head along with a suggested color.
+
+'{"version":0.1, "model":{"two colour world": {"tool_head_1": {"color": "green", "file": "Land.stl"}, "tool_head_0": {"color": "blue", "file": "Water.stl"}}}}'
+'
+
+
+the slicer module also accepts the configuration file that defines:
+- machine type
+- plastic types
+- layer height or growth type (coarse / fine, heavy / light)
+
+Here's a json file definition that contains the version (of the config file format) and a layer height in mm.
+
+'
+{"layer_height": 0.35, "version": "0.1"}
+'
+
+
+
+
+
+
+
+
+
+
