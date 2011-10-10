@@ -1,0 +1,33 @@
+what links here: overview.txt
+
+The slicer module processes 3D geometry and provides slices on demand. 
+
+The following 2D geometry formats are used as slicer output:
+- ..region.svg path files, in a folder, one per slice layer. 
+- .region file.  A region file with all slices in one file, and one <svg> block per slice layer.
+
+Along with outputting the 2d gemoetry files, the slices can also output settings and metadata. This can include warnings, hints for other processing, or cache/queue data for on-disk storage.  This is could include things like:
+- which file is used for which "colour" or "material"
+- volumes of higher density for infills (or infill types)
+- volumes of thicker shell regions
+- volumes where support should be omitted or reinforced
+- manual path overrides
+- cache files location for this set of slices
+- warnings or error information for other steps in the process
+- Layout Hints metadata for other steps in the engine. 
+
+= .region.svg SVG file Baseline: = 
+
+Material Tag: 
+A material tag for each material used in the file. For a single material build,  one tag is  sufficent.
+Ex: <material name="A" type="ABS" color="black"/> 
+
+Path Tag(s):
+For each region, there is an 'svg path' entity indicating the outline of the region. The 'class' of these regions indicate the type of path they are to receive . The paths 'shell_outline', 'fill_outline' and 'slice_envelope' are the baseline paths.
+
+Examples:
+<path class="fill_outline" material="A" fill="blue" d="M79.506,25.120 L79.506,38.669 L76.129,40.020 L75.234,40.020 L74.680,40.573 L74.680,43.510 L75.234,44.063 L75.645,44.063 L75.645,56.387 ... Z">
+
+
+See Also:
+SVG Path Data: http://www.w3schools.com/svg/svg_path.asp

@@ -35,12 +35,3 @@ Here's a json file definition that contains the version (of the config file form
 {"layer_height": 0.35, "version": "0.1"}
 '
 
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,17 @@
+what links here: overview.txt
+
+The pather module processes a 2d region file into 2d path file. 
+
+The following 2D geometry formats are used as pather input:
+- .region.svg files as an svg based file. Listed in a folder, one per slice layer. 
+- a .region file.  A region file with all slices in one file, and one <svg> block per slice layer.
+
+The following 2D geometry format are used as pather output:
+- path.svg files, as a svg based file.  in a folder, one per slice layer. 
+- .path file.  A rpath file with all slices in one file, and one <svg> block per slice layer.
+
+= SVG file Baseline: = 
+SVG file containing a path for the Tooler to combine into a single Toolpath
+
+Model Tag:
+<path class="model_envelope" fill="#ff0000" fill-opacity="0.5" stroke="#ff0000" stroke-width="0.00mm" d="M80.451,25.120 L80.451,22.539 L77.912,20.000 L61.142,20.000 

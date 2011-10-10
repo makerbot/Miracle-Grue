@@ -1,0 +1,15 @@
+{
+	"frame": { "name":"Thing-o-Matic",
+				 "version":"1.0",
+				"type":"cartesian",
+				"axis":{
+					"x":{ "length":106, "maxfeedrate":4000, "homingfeedrate":500, "stepspermm":47.069852, "endstops":"min", "pully_dia":10.82 },
+					"y":{ "length":120, "maxfeedrate":4000, "homingfeedrate":500,  "stepspermm":47.069852, "endstops":"min", "pully_dia":10.82 },
+					"z":{ "length":106, "maxfeedrate":1000, "homingfeedrate":500, "stepspermm":200, "endstops":"max" }
+				}
+	},
+	"tools":[{ "name":"Plastruder MK7", "type":"extruder", "material":"abs",
+			"motor":{"type":"stepper", "length":100000, "maxfeedrate":1600, "stepspermm":50.235478806907409, "endstops":null},
+			"fan":"true", "nozzlemm":0.04}]
+}
+

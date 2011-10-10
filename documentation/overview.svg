@@ -13,7 +13,7 @@
    height="1052.3622047"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.2 r9819"
+   inkscape:version="0.48.1 r9760"
    sodipodi:docname="overview.svg">
   <defs
      id="defs4" />
@@ -25,15 +25,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="375"
-     inkscape:cy="800"
+     inkscape:cx="280.63615"
+     inkscape:cy="755.86797"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1459"
-     inkscape:window-height="863"
-     inkscape:window-x="69"
-     inkscape:window-y="24"
+     inkscape:window-width="1440"
+     inkscape:window-height="856"
+     inkscape:window-x="140"
+     inkscape:window-y="78"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -43,7 +43,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -52,11 +52,11 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#ffffff;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
+       style="fill:#ff8080;stroke:#000000;stroke-width:0.67103988000000003;stroke-opacity:1"
        id="rect3004"
        width="228"
        height="77.450661"
-       x="46"
+       x="45.335522"
        y="61.362183" />
     <text
        xml:space="preserve"
@@ -70,23 +70,23 @@
          x="130"
          y="97.362183">Slicer</tspan></text>
     <rect
-       style="fill:#ffffff;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
+       style="fill:#ff9955;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
        id="rect3004-2"
        width="228"
        height="77.450661"
-       x="49"
-       y="189.63686" />
+       x="45.335522"
+       y="171.63686" />
     <text
        xml:space="preserve"
        style="font-size:18px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
        x="120"
-       y="230.63686"
+       y="212.63686"
        id="text3774-4"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3776-7"
          x="120"
-         y="230.63686">Regioner</tspan></text>
+         y="212.63686">Regioner</tspan></text>
     <flowRoot
        xml:space="preserve"
        id="flowRoot3802"
@@ -97,53 +97,152 @@
            height="189"
            x="69"
            y="182.36218" /></flowRegion><flowPara
-         id="flowPara3808"></flowPara></flowRoot>    <rect
-       style="fill:#ffffff;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
+         id="flowPara3808" /></flowRoot>    <rect
+       style="fill:#ffe680;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
        id="rect3004-2-9"
        width="228"
        height="77.450661"
-       x="52"
-       y="324.63684" />
+       x="45.335522"
+       y="278.63684" />
     <text
        xml:space="preserve"
        style="font-size:18px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
        x="131"
-       y="359.63684"
+       y="313.63684"
        id="text3774-4-4"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          x="131"
-         y="359.63684"
+         y="313.63684"
          id="tspan3834">Pather</tspan></text>
     <rect
-       style="fill:#ffffff;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
+       style="fill:#99ff55;stroke:#000000;stroke-width:0.67103988;stroke-opacity:1"
        id="rect3004-2-9-0"
        width="228"
        height="77.450661"
-       x="47"
-       y="467.63684" />
+       x="45.335522"
+       y="397.63684" />
     <text
        xml:space="preserve"
        style="font-size:18px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="126"
-       y="506.63684"
+       x="131"
+       y="436.63684"
        id="text3774-4-4-5"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         x="126"
-         y="506.63684"
+         x="131"
+         y="436.63684"
          id="tspan3834-6">Tooler</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:18px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="427"
-       y="86.362183"
+       x="286"
+       y="71.362183"
        id="text3884"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3886"
-         x="427"
+         x="286"
+         y="71.362183"
+         style="font-size:12px">Slicer: Takes 3d SVG or dmg files as input. Converts</tspan><tspan
+         sodipodi:role="line"
+         x="286"
          y="86.362183"
-         style="font-size:12px">Slicer: </tspan></text>
+         style="font-size:12px"
+         id="tspan3701">them to a series of 2d 'shell' files (svg based) of</tspan><tspan
+         sodipodi:role="line"
+         x="286"
+         y="101.36218"
+         style="font-size:12px"
+         id="tspan3703">the basic shell of objects.</tspan><tspan
+         sodipodi:role="line"
+         x="286"
+         y="116.36218"
+         style="font-size:12px"
+         id="tspan3705" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="291"
+       y="185.86218"
+       id="text3707"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="291"
+         y="185.86218"
+         id="tspan3713">Regioner: Takes 2d 'shell' files of basic object regions (aka shells,</tspan><tspan
+         sodipodi:role="line"
+         x="291"
+         y="200.86218"
+         id="tspan3711"> and converts them into 2d 'region' files consisting of the shell</tspan><tspan
+         sodipodi:role="line"
+         x="291"
+         y="215.86218"
+         id="tspan3721">of objects, their fill and fill type, and the material settings for that</tspan><tspan
+         sodipodi:role="line"
+         x="291"
+         y="230.86218"
+         id="tspan3723">shell.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="283.5"
+       y="288.36218"
+       id="text3725"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3727"
+         x="283.5"
+         y="288.36218">Pather: Takes 2d region files, and converts them into a series</tspan><tspan
+         sodipodi:role="line"
+         x="283.5"
+         y="303.36218"
+         id="tspan3729">of 2d 'path' files (aka 'tube' files) The paths will fill each region based</tspan><tspan
+         sodipodi:role="line"
+         x="283.5"
+         y="318.36218"
+         id="tspan3731">on type, rules, metadata, and settings  </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="284"
+       y="407.86218"
+       id="text3733"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3735"
+         x="284"
+         y="407.86218">Tooler: Tooler takes a series of 2d path files, and combines them</tspan><tspan
+         sodipodi:role="line"
+         x="284"
+         y="422.86218"
+         id="tspan3737">into a machine-specific 3d toolpath file. Subclasses of this will be </tspan><tspan
+         sodipodi:role="line"
+         x="284"
+         y="437.86218"
+         id="tspan3739">GcodeTooler, S3gTooler, or ???Tooler.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="547.5"
+       y="465.86218"
+       id="text3741"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3743"
+         x="547.5"
+         y="465.86218">s</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="74"
+       y="34.362183"
+       id="text3745"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3747"
+         x="74"
+         y="34.362183"
+         style="font-size:32px;font-weight:bold;font-family:Courier New;-inkscape-font-specification:Courier New">Miracle Grue: Initial Toolpath </tspan></text>
   </g>
 </svg>
