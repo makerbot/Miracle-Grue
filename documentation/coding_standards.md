@@ -1,6 +1,7 @@
 # Coding Guidelines
 
 We will be using the Qt C++ coding standards for this project. See:
+
 * [http://developer.qt.nokia.com/wiki/Qt_Coding_Style]
 * [http://developer.qt.nokia.com/wiki/Coding_Conventions]
 
