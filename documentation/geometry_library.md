@@ -9,6 +9,7 @@ The geometry library should provide the following primitives:
 * 3D triangle
 
   Represents a mesh element. Ideally, the model should provide a face normal or at least have a winding convention to indicate interior and exterior sides.
+  
 * 2D path
 
   Represents an outer or inner perimeter for a region. The ordering of points on the perimeter should indicate the sense of the perimeter.
@@ -29,21 +30,21 @@ The geometry library should provide the following algorithms:
 
 ## Options
 
-* BGL
+*   BGL
 
-  A very primitive library built for Mandoline. Lacks any sophisticated algorithms.
+    A very primitive library built for Mandoline. Lacks any sophisticated algorithms.
   
-* Fab@Home
+*   Fab@Home
 
-  A much closer match to our current needs. Has inefficient algorithms and uses templates heavily.
+    A much closer match to our current needs. Has inefficient algorithms and uses templates heavily.
   
-* Boost Geometry Library
+*   Boost Geometry Library
 
-  A powerful template-based library that implements most algorithms efficiently. Robustness and stability are still unknown.
+    A powerful template-based library that implements most algorithms efficiently. Robustness and stability are still unknown.
   
-* CGAL
-  
-  A well-tested library that provides all our needs. Most algorithms are licensed under the old trolltech license. Uses arbitrary-precision math and thus is slower than it could be.
+*   CGAL
+   
+    A well-tested library that provides all our needs. Most algorithms are licensed under the old trolltech license. Uses arbitrary-precision math and thus is slower than it could be.
 
 ## Current Decision
 
