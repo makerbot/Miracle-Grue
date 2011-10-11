@@ -1,5 +1,25 @@
 what links here: overview.txt
 
+The slicer output are regions. The region file is json and its format is as follows:
+
+- a version
+- The middle z position of the region (in mm)
+- The region thickness. 
+- a list closed polygons (2d coordinates) that define the part outline(s)
+- a list of closed polygons that define the support outline(s)
+The 'inside' of the polygons is defined as whatever is on the right side of the path.
+
+There is an implicit line between the last point of each outline and the first point (the end points are not duplicated, there are as many segments as there are points).
+
+Here's an example: a region with 1 support poly and 1 part poly
+
+'{"thickness": 0.4, "version":"0.1", "contours": {"support": [[[0, 20], [0, 30], [10, 30], [20, 30]]], "part": [[[0, 0], [10, 0], [10, 10], [10, 0]]]}, "height": 0.2}'
+
+
+
+
+
+
 The slicer module processes 3D geometry and provides slices on demand. 
 
 The following 2D geometry formats are used as slicer output:
