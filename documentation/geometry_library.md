@@ -6,27 +6,27 @@ Selecting a geometry library for the toolpather is tricky; it will form the foun
 
 The geometry library should provide the following primitives:
 
-* 3D triangle
+*   3D triangle
 
-  Represents a mesh element. Ideally, the model should provide a face normal or at least have a winding convention to indicate interior and exterior sides.
+    Represents a mesh element. Ideally, the model should provide a face normal or at least have a winding convention to indicate interior and exterior sides.
   
-* 2D path
+*   2D path
 
-  Represents an outer or inner perimeter for a region. The ordering of points on the perimeter should indicate the sense of the perimeter.
+    Represents an outer or inner perimeter for a region. The ordering of points on the perimeter should indicate the sense of the perimeter.
   
-* 2D region
+*   2D region
 
-  A composite of several paths indicating an enclosed region of a plane.
+    A composite of several paths indicating an enclosed region of a plane.
 
 The geometry library should provide the following algorithms:
 
-* 2D path/region intersection
+*   2D path/region intersection
 
-  A nlg(n) algorithm for resolving self-intersection and intersecting paths with each other.
+    A nlg(n) algorithm for resolving self-intersection and intersecting paths with each other.
   
-* 2D inset
+*   2D inset
 
-  Inset or outset a path with nlg(n) complexity.
+    Inset or outset a path with nlg(n) complexity.
 
 ## Options
 
