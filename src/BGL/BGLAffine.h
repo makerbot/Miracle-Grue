@@ -11,7 +11,6 @@
 #define BGL_MATRIX_H
 
 #include <math.h>
-#include "config.h"
 
 namespace BGL {
 
