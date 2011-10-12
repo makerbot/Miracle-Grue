@@ -1,0 +1,36 @@
+
+The slicer and pather modules perform geometry computations. 
+
+We are looking solid algorithms for our computational geometry needs and a library with a good licence and convenient data structures in C++.
+
+This file is a collection of ideas and links to relevant information.
+
+
+== Polygon Intersection:
+
+Also known as clipping algorithm
+
+Another strategy for polygon intersection is to first go through a polygon triangulation phase first, because intersection between triangles is an easy problem.  
+
+Popular algorithms:
+
+=== WeilerAtherton
+http://en.wikipedia.org/wiki/WeilerAtherton
+
+=== Vatti clipping algorithm
+http://en.wikipedia.org/wiki/Vatti_clipping_algorithm
+
+Polyclipping is a C++ /C# library with Boost license
+Last updated: 10 October 2011
+http://sourceforge.net/projects/polyclipping/
+
+=== Sutherland–Hodgman algorithm
+http://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
+Simpler than WeilerAtherton, one of the polygons must be convex
+
+== Polygon Insetting:
+
+The Straight skeleton algorithm. http://en.wikipedia.org/wiki/Straight_skeleton
+
+This is a well known algorithm for 
+this algorithm is implemented in CGAL.
