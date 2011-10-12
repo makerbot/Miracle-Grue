@@ -1,0 +1,65 @@
+# Makefile for getStats
+CC = @CC@
+CXX = @CXX@
+CFLAGS =  @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+LIBTOOL = libtool
+
+# define where to find programs for various targets
+INSTALL = @INSTALL@
+DEPEND = makedepend
+TAGS = etags
+LINT = splint -DARRAY=
+
+# define where we'll install the binaries
+BINDIR = @prefix@/bin
+
+# create variables for the list of binaries and libraries
+BINS = libBGL.a
+SRCS = BGLCommon.cc BGLIntersection.cc BGLAffine.cc BGLBounds.cc \
+        BGLPoint.cc BGLLine.cc BGLPath.cc BGLSimpleRegion.cc BGLCompoundRegion.cc \
+	BGLPoint3d.cc BGLTriangle3d.cc BGLMesh3d.cc
+OBJS = $(patsubst %.cc,%.o,$(SRCS))
+
+all: libBGL.a
+
+libBGL.a: $(OBJS)
+	$(LIBTOOL) --mode=link g++ -O -o $@ $(OBJS)
+
+.cc.o:
+	$(CXX) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
+
+
+# de.are and define the .PHONY targets
+.PHONY: all distclean clean depend lint
+
+# build emacs tags
+tags: $(SRCS)
+	$(TAGS) $(SRCS) *.h
+
+# check the code for errors/security holes
+# --> Can't get splint to work with typedefs
+#     stay tuned ...
+#lint: $(SRCS)
+#	$(LINT) $(SRCS)
+
+# build the dependency list (see end of this Makefile)
+depend: $(SRCS)
+	$(CXX) -E -MM $(SRCS) *.h > .depend
+
+# rm executibles and object files from the build directory
+clean:
+	$(RM) $(BINS) $(OBJS)
+
+# rm executibles and object files from the build directory
+distclean: clean
+	$(RM) .depend gmon.out core.* core *~ TAGS
+	$(RM) config.h config.status config.log Makefile.bak Makefile
+	$(RM) -rf autom4te.cache
+
+# when 'make depend' is run, it'll re.ace everything
+#  below this line with new object targets
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
