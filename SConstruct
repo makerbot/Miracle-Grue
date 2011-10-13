@@ -9,4 +9,5 @@ env.EnableQt4Modules([
 	'QtNetwork'
 	])
 
-env.Program('qt4Hello', ['hello.cc'])
+env.Program('qt4Hello', 
+		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])

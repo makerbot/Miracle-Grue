@@ -2,9 +2,12 @@
  *
  */
 #include "stdint.h"
+#include <stdio.h>
+
 
 #ifndef MG_DATA_ENVELOPE
 #define MG_DATA_ENVELOPE
+
 typedef enum AtomType {
 	TYPE_INVALID = 0,
 	TYPE_DUMMY_DATA = 1,
@@ -24,11 +27,25 @@ public:
 	void* data; /// prt to the data namespace string of datatype
 	uint32_t dataSize; ///size of data in bytes
 	char* dataNamespaceString; /// namespace string of datatype
+	//TODO: add Reference to owner which will be
+	// responsible for cleaning up this envelope of data. For now, creator of atom
+	// will do the destruction.
+	bool lastFlag;
+
 
 	DataEnvelope(): typeID(TYPE_INVALID), data(0x00),
-				dataSize(0), dataNamespaceString((char*)"") {};
+				dataSize(0), dataNamespaceString((char*)""), lastFlag(false)
+	{
+		printf("%s\n", __FUNCTION__ );
+	};
+
 	DataEnvelope(AtomType iD, void* pData, uint32_t dataSz, char* dataNsString)
-	: typeID(iD), data(pData), dataSize(dataSz), dataNamespaceString(dataNsString) {};
+	: typeID(iD), data(pData), dataSize(dataSz), dataNamespaceString(dataNsString),lastFlag(false) {};
+	void setLast(void)
+	{
+		printf("%s\n", __FUNCTION__ );
+		lastFlag = true;
+	}
 };
 
 #endif /* MG_DATA_ENVELOPE */

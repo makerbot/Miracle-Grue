@@ -14,12 +14,16 @@ The slicer output are contours. The contour file is json and its format is as fo
 - Contours may self-intersect. For clarity: after a entire contour has been processed, 
 - PROVISIONAL: there may be zero width sections of that contour
 
-JSON contour file CAN contain elements:
+## JSON contour file format
 
-JSON contour SHOULD contain elements:
+CAN: JSON contour file CAN contain elements:
+
+SHOULD: JSON contour SHOULD contain elements:
 'thickness':0.4,
+'layer_mapping_functions':{'x':'x','y':'y','z'=1}
 
-JSON contour MUST contain elements:
+
+MUST: JSON contour MUST contain elements:
 'jsonns':'http://standards.makerbot.com/2011/cslice/v_1.0.0.0' #json namespace/standard/info
 'z_position':0.2,
 'materials': [ {'name':'a', 'support':false}, {'name':'b', 'support':true}],

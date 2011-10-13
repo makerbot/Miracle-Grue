@@ -12,13 +12,19 @@
 class SliceOperation :public Operation{
 public:
 
-    SliceOperation(t_callback callback):Operation(callback) {}
+    SliceOperation(callback_t callback):Operation(callback) {}
 
     ~SliceOperation() { printf("%s\n", __FUNCTION__ );}
-    virtual void main(); //{ printf("__FUNCTION__");}
-    virtual void queue(DataEnvelope* pAtom);// = { printf("__FUNCTION__");}
-    virtual void cleanup();//{};
-    virtual char* interrogate();// = {printf("__FUNCTION__");return "__FUNCTION__"}
+    virtual void main();
+    virtual void queue(DataEnvelope &pAtom);
+    virtual void cleanup();
+    virtual std::string interrogate();
+
+    void setYielder(callback_t  callback);
+
+
+    virtual uint32_t acceptsEnvelopeType();
+    virtual uint32_t  yieldsEnvelopeType();
 
 };
 

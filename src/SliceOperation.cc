@@ -4,19 +4,41 @@
 void SliceOperation::main()
 { printf("%s\n", __FUNCTION__ );}
 
-void SliceOperation::queue(DataEnvelope* pAtom)
+void SliceOperation::queue(DataEnvelope &pAtom)
 {
 	printf("%s\n", __FUNCTION__ );
-	if ( this->yeildToCallback != 0x00){
-		printf("has yield to callback\n");
-		this->yeildToCallback(0x00);
+	if( (this->yieldToCallback) == 0x00)
+		printf("NOTE: passing atom Fail!\n");
+	else{
+		printf("NOTE: passing atom blindly!\n");
+		(this->*yieldToCallback)(pAtom);
 	}
-		printf("does not have yield to callback\n");
 	return;
 }
 
-void SliceOperation::cleanup()
-{ printf("__FUNCTION__");}
+void SliceOperation::setYielder(callback_t  callback){
+	this->yieldToCallback = callback;
+	return;
+}
 
-char* SliceOperation::interrogate()
-{printf("__FUNCTION__");return (char*)"__FUNCTION__";}
+
+void SliceOperation::cleanup()
+{	printf("%s\n", __FUNCTION__ );}
+
+
+std::string SliceOperation::interrogate()
+{	printf("%s\n", __FUNCTION__ );return (char*)"INTERROGATE!";}
+
+
+uint32_t SliceOperation::acceptsEnvelopeType()
+{
+	printf("%s\n", __FUNCTION__ );
+	return TYPE_DUMMY_DATA;
+}
+
+
+uint32_t  SliceOperation::yieldsEnvelopeType()
+{
+	printf("%s\n", __FUNCTION__ );
+	return TYPE_DUMMY_DATA;
+}
