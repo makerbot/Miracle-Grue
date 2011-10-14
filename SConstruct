@@ -6,6 +6,8 @@
 
 # On Mac builds, scons complains that Qt4 can't be found. By mergeing the PATH environment variable
 # the moc tool is detected and Qt4 is detected 
+import os
+
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
 
 
