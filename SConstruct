@@ -44,8 +44,8 @@ env.EnableQt4Modules([
 	'QtNetwork'
 	])
 
-#env.Program('qt4Hello', 
-#		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
+env.Program('qt4Hello', 
+		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
 
 # /usr/local/include/cppunit/
 # Program('prog.c', LIBS = 'm',

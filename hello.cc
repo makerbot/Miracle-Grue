@@ -49,7 +49,7 @@ int main() {
 	  DataEnvelope dummyData2 = DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
 	  dummyData2.setLast();
 
-	  if (s2->acceptsEnvelopeType() == dummyData.typeID)
+	  if (s2->collectsEnvelopeType() == dummyData.typeID)
 	  {
 		  printf("%s: Queuing one Envelope of dummy to s2\n", __FUNCTION__);
 		  s2->collect(dummyData);

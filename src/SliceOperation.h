@@ -15,14 +15,14 @@ public:
     SliceOperation():Operation() {}
 
     ~SliceOperation() { printf("%s\n", __FUNCTION__ );}
-    virtual void main();
-    virtual void collect(DataEnvelope& dataE);
-    virtual void cleanup();
-    virtual std::string interrogate();
 
-    virtual uint32_t acceptsEnvelopeType();
-    virtual uint32_t  yieldsEnvelopeType();
 
+    void init(Configuration& config);
+    void cleanup();
+	void collect(const DataEnvelope& envelope);
+    string interrogate();
+    AtomType collectsEnvelopeType();
+    AtomType emitsEnvelopeType();
 };
 
 

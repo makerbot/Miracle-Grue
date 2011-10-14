@@ -1,40 +1,38 @@
 #include "SliceOperation.h"
 
 
-void SliceOperation::main()
-{ printf("%s\n", __FUNCTION__ );}
 
-void SliceOperation::collect(DataEnvelope& dataE)
+void SliceOperation::collect(const DataEnvelope& dataE)
 {
 	printf("%s\n", __FUNCTION__ );
 	if (this->nextOperation == 0x00 )
 		printf("WARNING: no next operation!\n");
 	else{
 		printf("NOTE: passing atom blindly!\n");
-		this->nextOperation->collect(dataE);
-//		(this->*yieldToCallback)(dataE);
+		// always call emit data, even if just with dummy data!
+		emitData(dataE);
 	}
+
 	return;
 }
 
 
-void SliceOperation::cleanup()
-{	printf("%s\n", __FUNCTION__ );}
-
-
-std::string SliceOperation::interrogate()
-{	printf("%s\n", __FUNCTION__ );return (char*)"INTERROGATE!";}
-
-
-uint32_t SliceOperation::acceptsEnvelopeType()
+void SliceOperation::init(Configuration& config)
 {
-	printf("%s\n", __FUNCTION__ );
-	return TYPE_DUMMY_DATA;
+}
+
+void SliceOperation::cleanup()
+{
 }
 
 
-uint32_t  SliceOperation::yieldsEnvelopeType()
+string SliceOperation::interrogate() {}
+
+AtomType SliceOperation::collectsEnvelopeType() {
+	return TYPE_INVALID;
+}
+
+AtomType SliceOperation::emitsEnvelopeType()
 {
-	printf("%s\n", __FUNCTION__ );
-	return TYPE_DUMMY_DATA;
+	return TYPE_INVALID;
 }

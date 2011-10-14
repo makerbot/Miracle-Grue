@@ -32,13 +32,13 @@ public:
     virtual AtomType collectsEnvelopeType() = 0;
     virtual AtomType emitsEnvelopeType() = 0;
 
+	void setNext(Operation* nextOp) { nextOperation = nextOp;};
 
 protected:
 
     Operation* nextOperation;
 
 
-	void setNext(Operation* nextOp) { nextOperation = nextOp;};
 	void emitData(const DataEnvelope& envelope)
 	{
 		if(nextOperation != 0x00) {

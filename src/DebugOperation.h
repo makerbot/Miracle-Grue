@@ -20,12 +20,14 @@ public:
 	void collect(DataEnvelope& envelope);
 
 	// -- from Operation
-	void main();
-    void queue(DataEnvelope &data);
+    void init(Configuration& config);
     void cleanup();
-    std::string interrogate();
-    uint32_t acceptsEnvelopeType();
-    uint32_t  yieldsEnvelopeType();
+	void collect(const DataEnvelope& envelope);
+    string interrogate();
+    AtomType collectsEnvelopeType();
+    AtomType emitsEnvelopeType();
+
+
 };
 
 #endif /* DEBUGOPERATION_H_ */
