@@ -2,7 +2,7 @@
 #ignore project files from eclipse
 /.cproject
 /.project
-
+/.pydevproject
 # ignore object files (recursive)
 *.o
 *.a
