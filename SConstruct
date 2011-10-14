@@ -22,18 +22,18 @@ cppunit_lib_dir = ""
 cppunit_inc_dir = ""
 
 try:
-	print "    CPPUNIT_LIB_DIR environment variable:"
+	print "    MG_CPPUNIT_LIB_DIR environment variable:"
 	cppunit_lib_dir = os.environ['CPPUNIT_LIB_DIR']
 	print "         '%s'" % cppunit_lib_dir
-	print "    CPPUNIT_INC_DIR environment variable:"
+	print "    MG_CPPUNIT_INC_DIR environment variable:"
 	cppunit_inc_dir = os.environ['CPPUNIT_INC_DIR']
 	print "         '%s'" % cppunit_inc_dir
 	print 
 except:
-	print "OUCH! I'm very confused right now"
-	print "   Your mileage may vary"
-	print 
-
+	print "WARNING: OUCH! I'm very confused right now. "
+	print "Expected envronment variables, none found. Continuning anyway"
+	
+	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
 
 
@@ -51,4 +51,5 @@ env.Program('qt4Hello',
 # Program('prog.c', LIBS = 'm',
 #                       LIBPATH = ['/usr/lib', '/usr/local/lib'])
 
-env.Program('unit_operation',['src/unit_operation.cc', 'src/unit_operation_main.cc'], CPPPATH=[''], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib']) 
+env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
+		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 

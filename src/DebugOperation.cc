@@ -7,16 +7,17 @@
 #include "DebugOperation.h"
 
 
-//DebugOperation::DebugOperation: Operation(callback_t cb)
- //{
-//}
-
 void DebugOperation::main()
 {
 	printf("%s",__FUNCTION__);
 }
-void DebugOperation::queue(DataEnvelope &data){
+void DebugOperation::collect(DataEnvelope &data){
 	printf("%s",__FUNCTION__);
+	printf("Beans!\n");
+	if(data.lastFlag == true)
+	{
+		printf(" last operation!\n");
+	}
 	return;
 }
 void DebugOperation::cleanup() {

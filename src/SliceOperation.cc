@@ -4,20 +4,16 @@
 void SliceOperation::main()
 { printf("%s\n", __FUNCTION__ );}
 
-void SliceOperation::queue(DataEnvelope &pAtom)
+void SliceOperation::collect(DataEnvelope& dataE)
 {
 	printf("%s\n", __FUNCTION__ );
-	if( (this->yieldToCallback) == 0x00)
-		printf("NOTE: passing atom Fail!\n");
+	if (this->nextOperation == 0x00 )
+		printf("WARNING: no next operation!\n");
 	else{
 		printf("NOTE: passing atom blindly!\n");
-		(this->*yieldToCallback)(pAtom);
+		this->nextOperation->collect(dataE);
+//		(this->*yieldToCallback)(dataE);
 	}
-	return;
-}
-
-void SliceOperation::setYielder(callback_t  callback){
-	this->yieldToCallback = callback;
 	return;
 }
 
