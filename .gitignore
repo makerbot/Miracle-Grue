@@ -1,0 +1,10 @@
+
+#ignore project files from eclipse
+/.cproject
+/.project
+
+# ignore object files (recursive)
+*.o
+*.a
+*.so
+
