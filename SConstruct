@@ -44,12 +44,15 @@ env.EnableQt4Modules([
 	'QtNetwork'
 	])
 
-env.Program('qt4Hello', 
-		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
+#env.Program('qt4Hello', 
+#		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
 
 # /usr/local/include/cppunit/
 # Program('prog.c', LIBS = 'm',
 #                       LIBPATH = ['/usr/lib', '/usr/local/lib'])
 
-env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
-		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+#env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
+#		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+
+env.Program('unit_operation2',['src/GCoderOperation.cc', 'src/Configuration.cc',
+							'gcoder_test_main.cc']) 

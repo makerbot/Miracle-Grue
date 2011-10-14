@@ -4,53 +4,50 @@
  */
 
 #include "DataEnvelope.h"
-#include <stdio.h>
+#include "Configuration.h"
+#include <iostream>
 #include <vector>
 #include <string>
 
 #ifndef MG_OPERATION_H
 #define MG_OPERATION_H
 
-class OperationAcceptor
-{
-public:
-	virtual void collect(DataEnvelope& envelope) = 0;
-};
+using namespace std;
 
-//class OperationEmitter
-//{
-//	//TODO: make a reference, and create a blank 'ground/termnial' operator
-//	OperationAcceptor* nextOperation;
-//	void setNext(OperationAcceptor* nextOp) { nextOperation = nextOp;};
-//
-//};
-
-//TODO: Convert to object pointer to a specific call in an object
-class Operation /*: public OperationAcceptor*/
+/**
+ * This class is the base class for all operations in the MiracleGrue engine
+ * It is an element in a 'chain of responsibility' model of data processing.
+ */
+class Operation
 {
 
 public:
-
-	bool isCancelled;
-	char* description;
-
-	std::vector<DataEnvelope> envelopes;
-
-	//TODO: make a reference, and create a blank 'ground/termnial' operator
-	Operation* nextOperation;
-	virtual void setNext(Operation* nextOp) { nextOperation = nextOp;};
-	virtual void collect(DataEnvelope& envelope) = 0;
-
-    Operation() : /*OperationAcceptor(),*/ isCancelled(false), description(0x00) {};
-
-
+    Operation() : nextOperation(0x00){};
     virtual ~Operation() {};
-    virtual void main() = 0;
-	//virtual void collect(DataEnvelope& envelope);
+
+    virtual void init(Configuration& config) = 0;
     virtual void cleanup() = 0;
-    virtual std::string interrogate() = 0;
-    virtual uint32_t acceptsEnvelopeType() = 0;
-    virtual uint32_t  yieldsEnvelopeType() = 0;
+	virtual void collect(const DataEnvelope& envelope) = 0;
+    virtual string interrogate() = 0;
+    virtual AtomType collectsEnvelopeType() = 0;
+    virtual AtomType emitsEnvelopeType() = 0;
+
+
+protected:
+
+    Operation* nextOperation;
+
+
+	void setNext(Operation* nextOp) { nextOperation = nextOp;};
+	void emitData(const DataEnvelope& envelope)
+	{
+		if(nextOperation != 0x00) {
+			nextOperation->collect(envelope);
+		}
+		else {
+			cout << "WARNING: no next operation" << endl;
+		}
+	};
 
 };
 

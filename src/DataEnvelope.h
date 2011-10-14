@@ -8,9 +8,13 @@
 #ifndef MG_DATA_ENVELOPE
 #define MG_DATA_ENVELOPE
 
+// Remove this and use typing of the envelope for the management of
+// what type we want to use
 typedef enum AtomType {
 	TYPE_INVALID = 0,
 	TYPE_DUMMY_DATA = 1,
+	TYPE_ASCII_GCODE = 2,
+	TYPE_ASCII_PATHER = 3,
 	//TODO: These should be 32bit id/hash values for dataNamespace strings or something
 } AtomType;
 
@@ -22,7 +26,10 @@ typedef enum AtomType {
  */
 class DataEnvelope {
 
+				// the creator is creating.
+
 public:
+	bool lastFlag; //this envelope is the last envelope of data
 	AtomType typeID; /// id of the contained data
 	void* data; /// prt to the data namespace string of datatype
 	uint32_t dataSize; ///size of data in bytes
@@ -30,7 +37,6 @@ public:
 	//TODO: add Reference to owner which will be
 	// responsible for cleaning up this envelope of data. For now, creator of atom
 	// will do the destruction.
-	bool lastFlag;
 
 
 	DataEnvelope(): typeID(TYPE_INVALID), data(0x00),
