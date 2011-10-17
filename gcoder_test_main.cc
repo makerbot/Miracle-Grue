@@ -42,7 +42,7 @@ int main()
 	tooler.start();
 
 	DataEnvelope d = DataEnvelope();
-	d.typeID =  TYPE_ASCII_PATHER;
+	d.typeID =  TYPE_PATH_ASCII;
 	d.setLast();
 	tooler.collect(d);
 

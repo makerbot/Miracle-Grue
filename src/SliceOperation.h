@@ -19,7 +19,7 @@ public:
 
     void init(Configuration& config);
     void cleanup();
-	void collect(const DataEnvelope& envelope);
+	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
     string interrogate();
     AtomType collectsEnvelopeType();
     AtomType emitsEnvelopeType();

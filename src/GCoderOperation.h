@@ -33,7 +33,7 @@ public:
 
 	void init(Configuration& config);
 	void start();
-	void collect(const DataEnvelope& envelope);
+	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
 	void cleanup();
 
 	std::string interrogate();

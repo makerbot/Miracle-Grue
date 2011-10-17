@@ -25,50 +25,44 @@ void GCoderOperation::start()
 	// init should not mean to start the work
 	// should there be a start for the pipeline?
 
-	ostream& ss = stream();
-
-	init_machine(ss);
-	init_platform(ss);
-	init_extruders(ss);
-
-	goto_home_position(ss);
-	wait_for_warm_up(ss);
-
-	initalized = true;
 	return;
 }
 
 
-void GCoderOperation::collect(const  DataEnvelope& envelope)
+DataEnvelope* GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 {
-	ostream& ss = stream();
-	// --
-	// finishedData = doDataCrap(envelope);
-	//this->nextOperation.collect(finishedData);
-	if(initalized == false || outstream  == 0x00)
+	ostream& ss = (ostream&)*outstream;
+	if (outstream == 0x00)
 	{
-		cout << "cannot collect, not initalized" << endl;
-		return ;
+		cout << "cannot collect, not initialized" << endl;
+		return 0x00;
 	}
-	if(envelope.typeID != TYPE_ASCII_PATHER)
-		cout << "data type failure for envelope X" << endl;
+	if( this->isFirstEnvelope(envelope) )
+	{
+		init_machine(ss);
+		init_platform(ss);
+		init_extruders(ss);
 
-	if(envelope.lastFlag == true)
+		goto_home_position(ss);
+		wait_for_warm_up(ss);
+
+		initalized = true;
+	}
+	else if (isLastEnvelope(envelope) )
 	{
 		finish_gcode(ss);
 		closeFile();
 	}
-	// always call emit data, even if just with dummy data!
-	emitData(envelope);
+	return 0x00;
 
 }
 
 AtomType GCoderOperation::collectsEnvelopeType() {
-	return TYPE_ASCII_PATHER;
+	return TYPE_PATH_ASCII;
 }
 
 AtomType GCoderOperation::emitsEnvelopeType() {
-	return TYPE_ASCII_GCODE;
+	return TYPE_GCODE_ASCII;
 }
 
 

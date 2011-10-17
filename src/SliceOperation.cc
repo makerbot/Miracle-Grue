@@ -1,19 +1,11 @@
 #include "SliceOperation.h"
 
 
-
-void SliceOperation::collect(const DataEnvelope& dataE)
+DataEnvelope* SliceOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	printf("%s\n", __FUNCTION__ );
-	if (this->nextOperation == 0x00 )
-		printf("WARNING: no next operation!\n");
-	else{
-		printf("NOTE: passing atom blindly!\n");
-		// always call emit data, even if just with dummy data!
-		emitData(dataE);
-	}
-
-	return;
+	printf("%s: The processEnvelope! It Does Nothing!!!\n", __FUNCTION__ );
+	return 0x00;
 }
 
 
