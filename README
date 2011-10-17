@@ -1,2 +1,19 @@
-Toolpath Gen 3 tool/design
+# Miracle Grue
+
+## Overview 
+This project is the basis for a new toolpathing engine to suppliment skeinforge in the MakerBot/3D printer community.  The engine is C++ based with a python interface, for quick prototyping.
+
+The engine is run as a series of Operations, which can receive or send DataEnvelopes.  These envelopes contain one Atom of data (ie 1 layer of an object, one toolpath section, or one entire model) and are used to pass data to and from different operations.
+
+# Layout
+
+This project is laid out in the following directory tree (roughly)
+
+ - documentation/ Documentation
+ - visualizers/ Tools for debugging/testing input and output from the engine
+ - src/  Source Code for the project MiracleGrue
+ - inputs/ Test input files for debugging/testing/etc
+
+
+
 

@@ -4,3 +4,35 @@ This is a moduar toolpathing system used for creating toolpaths for 3d printers.
 
 Share, and Enjoy
 
+#Operation
+ An Operation is a single step in the data transformation.  It can take a limited list of DataEnvelope types, and emits a single DataEnvelope type as specified in config. The general workflow of an operation is to create a series of Operations, connect them together, and pass a series of DataEnvelopes through it.
+
+Pseudocode Example:
+	# Create the chain
+	Config c = newConfig("output=gcode")
+	Operation s = SliceOperation()
+	Operation f = FillOperation()
+	Operation o = OutputOperation()
+
+	# create the chain
+	s.setNextOperator(f)
+	f.setNextOperator(o)
+	
+	# prepare for data
+	s.init(c)
+	f.init(c)
+	o.init(c)	
+
+	# start running the chain
+	DataEnvelope e = StlEnvelope("text-ascii","some_file.stl");
+	s.collect(e);	#manually call collect on the slicer.
+			#each time a section of data is done, it will 
+			#call collect on the fill. When each fill is done,
+			#that will call collect on the output operator
+		
+	# since this is single threaded, when we return we know the data is done
+	s.cleanup()
+	f.cleanup()
+	o.cleanup()
+
+

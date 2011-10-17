@@ -33,19 +33,15 @@ except:
 	print "WARNING: "
 	print "Expected environment variables for libraries not found. Continuning anyway"
 	
-	
+# Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
-
-
-
-
-env.EnableQt4Modules([
-	'QtCore',
-	'QtNetwork'
-	])
+env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
 
 env.Program('qt4Hello', 
 		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
+
+env.Program('gcoder_test',['src/GCoderOperation.cc', 'src/Configuration.cc',
+							'gcoder_test_main.cc']) 
 
 # /usr/local/include/cppunit/
 # Program('prog.c', LIBS = 'm',
@@ -54,5 +50,3 @@ env.Program('qt4Hello',
 #env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
 #		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
-env.Program('gcoder_test',['src/GCoderOperation.cc', 'src/Configuration.cc',
-							'gcoder_test_main.cc']) 

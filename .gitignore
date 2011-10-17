@@ -3,8 +3,15 @@
 /.cproject
 /.project
 /.pydevproject
+
 # ignore object files (recursive)
 *.o
 *.a
 *.so
+
+#ignore doyxgen generated docs
+documentation/Doxyfile/*
+documentation/html/*
+documentation/latex/*
+documentation/man/*
 
