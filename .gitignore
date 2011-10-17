@@ -3,14 +3,13 @@
 /.cproject
 /.project
 /.pydevproject
-
-#ignore dirs brought in by raw import of json-cpp
-sr/json-cpp/test/jsonchecker/*
+/.svn
 
 # ignore object files (recursive)
 *.o
 *.a
 *.so
+*.bak
 
 #ignore doyxgen generated docs
 documentation/Doxyfile/*
