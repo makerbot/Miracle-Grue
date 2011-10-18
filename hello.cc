@@ -14,20 +14,12 @@
 #include "src/DebugOperation.h"
 #include "src/DataEnvelope.h"
 #include "src/Operation.h"
+#include "src/Configuration.h"
+using namespace std;
 
 int testCallbackCount = 0;
 
-/*DataEnvelope* testCallback(DataEnvelope* DataEnvelope)
-{
-	printf("%s: round %d\n",__FUNCTION__, testCallbackCount );
-	if(DataEnvelope == 0x00){
-		printf("%s: No DataEnvelope\n",__FUNCTION__ );
-	}
-	else {
-		printf("%s: Has DataEnvelope, Type ID \n",__FUNCTION__, DataEnvelope->typeID );
-	}
-	testCallbackCount++;
-}*/
+
 
 bool testSliceOp = true;
 
@@ -36,38 +28,24 @@ int main() {
   printf("Hello world!\n");
 
   if(testSliceOp)
-
   {
-	  printf("%s: Building DataEnvelope(s)\n", __FUNCTION__);
-	  DataEnvelope de = DataEnvelope();
+	  cout << "building base operation test" << endl;
+	  SliceOperation sO = SliceOperation();
+	  DebugOperation dbgO = DebugOperation();
+	  Configuration cfg;
+
+	  cout << "configuring operations into a chain" << endl;
+	  sO.setNext(&dbgO);
+	  sO.init(cfg);
+	  dbgO.init(cfg);
+
+	  cout << "Building a single 'last' DataEnvelope" << endl;
 	  DataEnvelope deL = DataEnvelope();
+	  deL.setLast();
 
-	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-	  DebugOperation* dbgOp = new DebugOperation();
-	  SliceOperation* s1 = new SliceOperation();
-	  s1->collect(de);
+	  cout << "collecting 'dummy' envelope" << endl;
+	  sO.collect(deL);
 
-//	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-	  SliceOperation *s2 = new SliceOperation();
-	  s2->setNext(dbgOp);
-//	  s2->collect(de);
-//	  deL.setLast();
-//	  s2->collect(deL);
-
-	  printf("%s: Testing a slice queuing data, w. callback\n", __FUNCTION__);
-	  DataEnvelope dummyData= DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-	  DataEnvelope dummyData2 = DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-	  dummyData2.setLast();
-
-	  if (s2->collectsEnvelopeType() == dummyData.typeID)
-	  {
-		  printf("%s: Queuing one Envelope of dummy to s2\n", __FUNCTION__);
-		  s2->collect(dummyData);
-		  s2->collect(dummyData2);
-	  }
-//	  else {
-//		  printf("%s: Envelope Type Mismatch at s3\n", __FUNCTION__);
-//	  }
   }
 
 }
