@@ -46,6 +46,12 @@ struct Extruder
 	double defaultSpeed;
 };
 
+struct Outline
+{
+	bool enabled;
+	float distance;
+};
+
 //
 // This class contains settings for the 3D printer, and user preferences
 //
@@ -62,6 +68,10 @@ class Configuration {
 
          Platform platform;
          std::vector<Extruder> extruders;
+
+         std::string gcodeFilename;
+
+         Outline outline;
 };
 
 #endif /* CONFIGURATION_H_ */
