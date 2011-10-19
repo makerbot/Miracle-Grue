@@ -19,37 +19,26 @@
 
 
 
-/*
-class Configuration
-{
-
-
-public:
-	JSON::Value data;
-
-
-};
-*/
-
 struct Platform
 {
-	double temperature;
+	Platform():temperature(0){}
+	double temperature;				// temperature of the platform during builds
 };
 
 struct Extruder
 {
-	//std::string color;
-	//std::string plastic_type;
-//public:
-	double coordinateSystemOffsetX;
-	double extrusionTemperature; // unit Celsius
+	Extruder(): coordinateSystemOffsetX(0), extrusionTemperature(0), defaultSpeed(0){}
+
+	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
+	double extrusionTemperature; 	 // the extrusion temperature in Celsius
 	double defaultSpeed;
 };
 
 struct Outline
 {
-	bool enabled;
-	float distance;
+	Outline() :enabled(false), distance(3.0){}
+	bool enabled;   // when true, a rectangular ouline of the part will be performed
+	float distance; // the distance in mm  between the model and the rectangular outline
 };
 
 //
@@ -63,15 +52,15 @@ class Configuration {
 
          void writeJsonConfig(std::ostream &out) const;
 
-         std::string machineName;
-         std::string firmware;
+         std::string machineName;	// 3D printer identifier
+         std::string firmware;		// firmware revision
 
          Platform platform;
-         std::vector<Extruder> extruders;
+         std::vector<Extruder> extruders;	// list of extruder tools
 
-         std::string gcodeFilename;
+         std::string gcodeFilename;			// output file name
 
-         Outline outline;
+         Outline outline;					// outline operation configuration
 };
 
 #endif /* CONFIGURATION_H_ */

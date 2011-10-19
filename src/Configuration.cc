@@ -18,8 +18,10 @@
 using namespace std;
 
 Configuration::Configuration()
+	:machineName(""), firmware("")
 {
 	cout << "Configuration ctor! " << endl;
+
 
 }
 
