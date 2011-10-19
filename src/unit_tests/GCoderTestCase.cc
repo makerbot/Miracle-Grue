@@ -9,6 +9,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
 void configureSingleExtruder(Configuration& config)
 {
+	config.gcodeFilename = "v29_single_xtruder_warmup.gcode";
 	config.machineName = "TOM";
 	config.firmware ="v2.9";
 
@@ -18,7 +19,26 @@ void configureSingleExtruder(Configuration& config)
 	config.extruders[0].extrusionTemperature = 200;
 	config.extruders[0].coordinateSystemOffsetX = 0;
 
+	config.platform.temperature = 30;
+
 }
+
+void configureDualExtruder(Configuration& config)
+{
+	config.gcodeFilename = "v29_dual_xtruder_warmup.gcode";
+	config.machineName = "TOM";
+	config.firmware ="v2.9";
+
+	Extruder e;
+	config.extruders.push_back(e);
+	config.extruders[0].defaultSpeed = 6;
+	config.extruders[0].extrusionTemperature = 200;
+	config.extruders[0].coordinateSystemOffsetX = 0;
+
+	config.platform.temperature = 30;
+
+}
+
 
 
 void GCoderTestCase::setUp()
@@ -28,6 +48,7 @@ void GCoderTestCase::setUp()
 
 void GCoderTestCase::example()
 {
+	/*
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
   CPPUNIT_ASSERT( 1 == 0 );
   CPPUNIT_ASSERT( 1 == 1 );
@@ -45,6 +66,7 @@ void GCoderTestCase::example()
   CPPUNIT_ASSERT( 12L == 12L );
   CPPUNIT_ASSERT_EQUAL( 12, 13 );
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 12.0, 11.99, 0.5 );
+*/
 }
 
 
@@ -54,6 +76,8 @@ void GCoderTestCase::singleExtruder()
 	Configuration config;
 
 	configureSingleExtruder(config);
+
+	CPPUNIT_ASSERT(config.extruders.size()==1);
 	GCoderOperation tooler;
 
 	tooler.init(config);
