@@ -5,6 +5,7 @@
 
 #include "../Configuration.h"
 #include "../GCoderOperation.h"
+#include "../PathData.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 

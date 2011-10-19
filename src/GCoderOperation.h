@@ -19,17 +19,17 @@
 
 class GCoderOperation: public Operation
 {
-	ofstream *outstream;
+	std::ofstream *pStream;
     // output data collector
     vector<string> gStrings;
     bool initalized;
     Configuration* pConfig;
 
 public:
-	GCoderOperation(): initalized(false), outstream(0x00)
+	GCoderOperation(): initalized(false), pStream(NULL)
 	{
-		cout << __FUNCTION__ << endl;
-		cout << "(Miracle Grue)" << endl;
+		std::cout << __FUNCTION__ << endl;
+		std::cout << "(Miracle Grue)" << endl;
 	};
 
 	virtual ~GCoderOperation(){}
@@ -44,7 +44,7 @@ public:
 	AtomType  emitsEnvelopeType();
 
 	const Configuration &configuration()const {return *pConfig;}
-	ostream& stream() {return *(this->outstream); }
+	std::ostream& stream();
 
 private:
 

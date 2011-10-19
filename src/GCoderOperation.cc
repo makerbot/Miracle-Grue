@@ -8,7 +8,7 @@
    License, or (at your option) any later version.
 
 */
-
+#include <assert.h>
 #include "GCoderOperation.h"
 
 
@@ -16,7 +16,7 @@ void GCoderOperation::init(Configuration& config)
 {
 	pConfig = &config;
 	cout << "Writing GCODE to file: \"" << config.gcodeFilename << "\""<< endl;
-	outstream = new ofstream(config.gcodeFilename.c_str());
+	pStream = new ofstream(config.gcodeFilename.c_str());
 
 
 }
@@ -27,28 +27,27 @@ void GCoderOperation::start()
 	// init should not mean to start the work
 	// should there be a start for the pipeline?
 
+	ostream& ss = stream();
+	initMachine(ss);
+	initPlatform(ss);
+	initExtruders(ss);
 
-	return;
+	gotoHomePosition(ss);
+	waitForWarmup(ss);
+
 }
 
+ostream& GCoderOperation::stream()
+{
+	assert(pStream);
+	return *(pStream);
+}
 
 DataEnvelope* GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 {
-	ostream& ss = (ostream&)*outstream;
-	if (outstream == 0x00)
-	{
-		cout << "cannot collect, not initialized" << endl;
-		return 0x00;
-	}
+	ostream& ss = stream();
 	if( this->isFirstEnvelope(envelope) )
 	{
-		initMachine(ss);
-		initPlatform(ss);
-		initExtruders(ss);
-
-		gotoHomePosition(ss);
-		waitForWarmup(ss);
-
 		initalized = true;
 	}
 	else if (isLastEnvelope(envelope) )
@@ -80,9 +79,9 @@ void GCoderOperation::cleanup()
 
 void GCoderOperation::closeFile()
 {
-	if(outstream != NULL)
-		outstream->close();
-	outstream = NULL;
+	if(pStream != NULL)
+		pStream->close();
+	pStream = NULL;
 }
 
 

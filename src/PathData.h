@@ -15,7 +15,7 @@
 
 #include <vector>
 
-typedef real double;
+typedef double real;
 
 struct Point2D
 {
@@ -32,7 +32,7 @@ typedef std::vector<Polygon&> Paths;
 //
 class PathData: public DataEnvelope {
 
-	std::vector<Polygon&> paths;
+	std::vector<Polygon> paths; // each extruder has paths
 public:
 
 	PathData()
@@ -41,8 +41,7 @@ public:
 
 	}
 
-
-	~PathData();
+	virtual ~PathData();
 };
 
 #endif // __PATH_DATA_H_

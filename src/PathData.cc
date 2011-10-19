@@ -15,12 +15,14 @@ using namespace std;
 
 PathData::~PathData()
 {
+	/*
 	for (Paths::iterator i=paths.begin(); i != paths.end(); i++)
 	{
 		cout << "deleting polygon" << endl;
 		Polygon& poly = *i;
 		delete *poly;
 	}
+	*/
 }
 
 
