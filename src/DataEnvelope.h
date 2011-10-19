@@ -15,8 +15,6 @@
 #ifndef MG_DATA_ENVELOPE
 #define MG_DATA_ENVELOPE
 
-using namespace std;
-
 // This enum represents known data types
 //TODO: These should be 32bit id/hash values for dataNamespace strings or something
 typedef enum AtomType {
