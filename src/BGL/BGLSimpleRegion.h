@@ -23,7 +23,7 @@ class SimpleRegion {
 public:
     Path outerPath;
     Paths subpaths;
-    float zLevel;
+    Scalar zLevel;
 
     SimpleRegion() : outerPath(), subpaths(), zLevel(0.0f) {}
     SimpleRegion(const Path &x) : outerPath(x), subpaths(), zLevel(0.0f) {}
@@ -35,7 +35,7 @@ public:
     bool intersects(const Path& path) const;
     bool intersects(const SimpleRegion& path) const;
 
-    string svgPathWithOffset(float dx, float dy);
+    string svgPathWithOffset(Scalar dx, Scalar dy);
 
     static SimpleRegions &assembleSimpleRegionsFrom(Paths &paths, SimpleRegions &outRegs);
     static SimpleRegions &assembleSimpleRegionsFrom(const Paths &outerPaths, const Paths &innerPaths, SimpleRegions &outRegs);
@@ -47,7 +47,7 @@ public:
     Lines &containedSegmentsOfLine(Line &line, Lines &lnsref);
     Paths &containedSubpathsOfPath(const Path &path, Paths &pathsref);
 
-    Paths &infillPathsForRegionWithDensity(float density, float extrusionWidth, Paths &outPaths);
+    Paths &infillPathsForRegionWithDensity(Scalar density, Scalar extrusionWidth, Paths &outPaths);
 
 };
 

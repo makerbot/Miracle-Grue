@@ -47,7 +47,7 @@ public:
 	vertex3 -= rhs;
 	return *this;
     }
-    Triangle3d& operator*=(float rhs) {
+    Triangle3d& operator*=(Scalar rhs) {
 	vertex1 *= rhs;
 	vertex2 *= rhs;
 	vertex3 *= rhs;
@@ -59,7 +59,7 @@ public:
 	vertex3 *= rhs;
 	return *this;
     }
-    Triangle3d& operator/=(float rhs) {
+    Triangle3d& operator/=(Scalar rhs) {
 	vertex1 /= rhs;
 	vertex2 /= rhs;
 	vertex3 /= rhs;
@@ -79,13 +79,13 @@ public:
     const Triangle3d operator-(const Point3d &rhs) const {
 	return Triangle3d(*this) -= rhs;
     }
-    const Triangle3d operator*(float rhs) const {
+    const Triangle3d operator*(Scalar rhs) const {
 	return Triangle3d(*this) *= rhs;
     }
     const Triangle3d operator*(const Point3d &rhs) const {
 	return Triangle3d(*this) *= rhs;
     }
-    const Triangle3d operator/(float rhs) const {
+    const Triangle3d operator/(Scalar rhs) const {
 	return Triangle3d(*this) /= rhs;
     }
     const Triangle3d operator/(const Point3d &rhs) const {
@@ -103,26 +103,26 @@ public:
         return !(*this == rhs);
     }
 
-    // Comparators for z height float.
-    bool operator< (float zcoord) const {
+    // Comparators for z height Scalar.
+    bool operator< (Scalar zcoord) const {
         return (vertex1.z < zcoord && vertex2.z < zcoord && vertex3.z < zcoord);
     }
-    bool operator> (float zcoord) const {
+    bool operator> (Scalar zcoord) const {
         return (vertex1.z > zcoord && vertex2.z > zcoord && vertex3.z > zcoord);
     }
-    bool operator<= (float zcoord) const {
+    bool operator<= (Scalar zcoord) const {
         return !(*this > zcoord);
     }
-    bool operator>= (float zcoord) const {
+    bool operator>= (Scalar zcoord) const {
         return !(*this < zcoord);
     }
 
     // Transformations
-    Triangle3d& translate(float dx, float dy, float dz) {
+    Triangle3d& translate(Scalar dx, Scalar dy, Scalar dz) {
 	*this += Point3d(dx,dy,dz);
 	return *this;
     }
-    Triangle3d& scale(float scale) {
+    Triangle3d& scale(Scalar scale) {
 	*this *= scale;
 	return *this;
     }
@@ -130,7 +130,7 @@ public:
 	*this *= vect;
 	return *this;
     }
-    Triangle3d& scaleAroundPoint(const Point3d& center, float scale) {
+    Triangle3d& scaleAroundPoint(const Point3d& center, Scalar scale) {
 	*this -= center;
 	*this *= scale;
 	*this += center;
@@ -142,13 +142,13 @@ public:
 	*this += center;
 	return *this;
     }
-    Triangle3d& rotateX(const Point3d& center, float rad);
-    Triangle3d& rotateY(const Point3d& center, float rad);
-    Triangle3d& rotateZ(const Point3d& center, float rad);
+    Triangle3d& rotateX(const Point3d& center, Scalar rad);
+    Triangle3d& rotateY(const Point3d& center, Scalar rad);
+    Triangle3d& rotateZ(const Point3d& center, Scalar rad);
 
 
     // Misc
-    bool sliceAtZ(float Z, Line& lnref);
+    bool sliceAtZ(Scalar Z, Line& lnref);
 };
 
 

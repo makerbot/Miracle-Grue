@@ -43,9 +43,9 @@ int32_t Mesh3d::size()
 
 Point3d Mesh3d::centerPoint() const
 {
-    float mx = (minX+maxX)/2.0f;
-    float my = (minY+maxY)/2.0f;
-    float mz = (minZ+maxZ)/2.0f;
+    Scalar mx = (minX+maxX)/2.0f;
+    Scalar my = (minY+maxY)/2.0f;
+    Scalar mz = (minZ+maxZ)/2.0f;
     return Point3d(mx, my, mz);
 }
 
@@ -88,7 +88,7 @@ void Mesh3d::recalculateBounds()
 
 
 
-void Mesh3d::translate(float dx, float dy, float dz)
+void Mesh3d::translate(Scalar dx, Scalar dy, Scalar dz)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -106,15 +106,15 @@ void Mesh3d::translate(float dx, float dy, float dz)
 
 void Mesh3d::translateToCenterOfPlatform()
 {
-    float dx = -(maxX + minX) / 2.0;
-    float dy = -(maxY + minY) / 2.0;
-    float dz = -minZ;
+    Scalar dx = -(maxX + minX) / 2.0;
+    Scalar dy = -(maxY + minY) / 2.0;
+    Scalar dz = -minZ;
     translate(dx,dy,dz);
 }
 
 
 
-void Mesh3d::scale(float sx, float sy, float sz)
+void Mesh3d::scale(Scalar sx, Scalar sy, Scalar sz)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -130,14 +130,14 @@ void Mesh3d::scale(float sx, float sy, float sz)
 
 
 
-void Mesh3d::scale(float sf)
+void Mesh3d::scale(Scalar sf)
 {
     scale(sf, sf, sf);
 }
 
 
 
-void Mesh3d::rotateX(float rad)
+void Mesh3d::rotateX(Scalar rad)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -149,7 +149,7 @@ void Mesh3d::rotateX(float rad)
 
 
 
-void Mesh3d::rotateY(float rad)
+void Mesh3d::rotateY(Scalar rad)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -161,7 +161,7 @@ void Mesh3d::rotateY(float rad)
 
 
 
-void Mesh3d::rotateZ(float rad)
+void Mesh3d::rotateZ(Scalar rad)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -202,10 +202,10 @@ static inline void convertFromLittleEndian16(uint8_t* bytes)
 int32_t Mesh3d::loadFromSTLFile(const char *fileName)
 {
     struct vertexes_t {
-        float nx, ny, nz;
-        float x1, y1, z1;
-        float x2, y2, z2;
-        float x3, y3, z3;
+        Scalar nx, ny, nz;
+        Scalar x1, y1, z1;
+        Scalar x2, y2, z2;
+        Scalar x3, y3, z3;
         uint16_t attrBytes;
     };
     union {
@@ -299,7 +299,7 @@ int32_t Mesh3d::loadFromSTLFile(const char *fileName)
 
 
 
-CompoundRegion& Mesh3d::regionForSliceAtZ(float Z, CompoundRegion &outReg)
+CompoundRegion& Mesh3d::regionForSliceAtZ(Scalar Z, CompoundRegion &outReg)
 {
     Lines lines;
     Triangles3d::iterator trit;

@@ -21,7 +21,7 @@ namespace BGL {
 class CompoundRegion {
 public:
     SimpleRegions subregions;
-    float zLevel;
+    Scalar zLevel;
 
     CompoundRegion() : subregions(), zLevel(0.0f) {}
     CompoundRegion(const SimpleRegions &x) : subregions(x), zLevel(0.0f) {}
@@ -30,7 +30,7 @@ public:
 
     int32_t size() const;
     bool contains(const Point &pt) const;
-    string svgPathWithOffset(float dx, float dy);
+    string svgPathWithOffset(Scalar dx, Scalar dy);
 
     CompoundRegion &unionWith(SimpleRegion &reg);
     CompoundRegion &differenceWith(SimpleRegion &reg);
@@ -49,7 +49,7 @@ public:
     Lines &containedSegmentsOfLine(Line &line, Lines &lnsref);
     Paths &containedSubpathsOfPath(Path &path, Paths &pathsref);
 
-    Paths &infillPathsForRegionWithDensity(float density, float extrusionWidth, Paths &outPaths);
+    Paths &infillPathsForRegionWithDensity(Scalar density, Scalar extrusionWidth, Paths &outPaths);
 
 };
 typedef list<CompoundRegion> CompoundRegions;

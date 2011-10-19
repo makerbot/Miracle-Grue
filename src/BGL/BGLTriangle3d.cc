@@ -13,10 +13,10 @@
 namespace BGL {
 
 
-Triangle3d& Triangle3d::rotateX(const Point3d& center, float rad)
+Triangle3d& Triangle3d::rotateX(const Point3d& center, Scalar rad)
 {
-    float cr = cos(rad);
-    float sr = sin(rad);
+    Scalar cr = cos(rad);
+    Scalar sr = sin(rad);
 
     *this -= center;
 
@@ -42,10 +42,10 @@ Triangle3d& Triangle3d::rotateX(const Point3d& center, float rad)
 
 
 
-Triangle3d& Triangle3d::rotateY(const Point3d& center, float rad)
+Triangle3d& Triangle3d::rotateY(const Point3d& center, Scalar rad)
 {
-    float cr = cos(rad);
-    float sr = sin(rad);
+    Scalar cr = cos(rad);
+    Scalar sr = sin(rad);
 
     *this -= center;
 
@@ -71,10 +71,10 @@ Triangle3d& Triangle3d::rotateY(const Point3d& center, float rad)
 
 
 
-Triangle3d& Triangle3d::rotateZ(const Point3d& center, float rad)
+Triangle3d& Triangle3d::rotateZ(const Point3d& center, Scalar rad)
 {
-    float cr = cos(rad);
-    float sr = sin(rad);
+    Scalar cr = cos(rad);
+    Scalar sr = sin(rad);
 
     *this -= center;
 
@@ -100,9 +100,9 @@ Triangle3d& Triangle3d::rotateZ(const Point3d& center, float rad)
 
 
 
-bool Triangle3d::sliceAtZ(float Z, Line& lnref)
+bool Triangle3d::sliceAtZ(Scalar Z, Line& lnref)
 {
-    float u, px, py, v, qx, qy;
+    Scalar u, px, py, v, qx, qy;
     if (vertex1 > Z && vertex2 > Z && vertex3 > Z) {
 	// Triangle is above Z level.
         return false;

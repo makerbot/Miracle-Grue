@@ -14,8 +14,8 @@
 namespace BGL {
 
 
-extern float EPSILON;
-extern float CLOSEENOUGH;
+extern Scalar EPSILON;
+extern Scalar CLOSEENOUGH;
 
 typedef enum {
     USED = 0,

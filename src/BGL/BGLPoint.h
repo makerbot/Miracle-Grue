@@ -25,11 +25,11 @@ namespace BGL {
 class Point {
 public:
     // Member variables
-    float x, y;
+    Scalar x, y;
 
     // Constructors
     Point() : x(0.0), y(0.0) {}
-    Point(float nux, float nuy) : x(nux), y(nuy) {}
+    Point(Scalar nux, Scalar nuy) : x(nux), y(nuy) {}
     Point(const Point &pt) : x(pt.x), y(pt.y) {}
     Point(const Point3d &pt) : x(pt.x), y(pt.y) {}
 
@@ -53,7 +53,7 @@ public:
         this->y -= rhs.y;
 	return *this;
     }
-    Point& operator*=(float rhs) {
+    Point& operator*=(Scalar rhs) {
         this->x *= rhs;
         this->y *= rhs;
 	return *this;
@@ -63,7 +63,7 @@ public:
         this->y *= rhs.y;
 	return *this;
     }
-    Point& operator/=(float rhs) {
+    Point& operator/=(Scalar rhs) {
         this->x /= rhs;
         this->y /= rhs;
 	return *this;
@@ -81,13 +81,13 @@ public:
     const Point operator-(const Point &rhs) const {
 	return Point(*this) -= rhs;
     }
-    const Point operator*(float rhs) const {
+    const Point operator*(Scalar rhs) const {
 	return Point(*this) *= rhs;
     }
     const Point operator*(const Point &rhs) const {
 	return Point(*this) *= rhs;
     }
-    const Point operator/(float rhs) const {
+    const Point operator/(Scalar rhs) const {
 	return Point(*this) /= rhs;
     }
     const Point operator/(const Point &rhs) const {
@@ -127,7 +127,7 @@ public:
     }
 
     // Transformations
-    Point& scale(float scale) {
+    Point& scale(Scalar scale) {
 	*this *= scale;
 	return *this;
     }
@@ -135,7 +135,7 @@ public:
 	*this *= vect;
 	return *this;
     }
-    Point& scaleAroundPoint(const Point& center, float scale) {
+    Point& scaleAroundPoint(const Point& center, Scalar scale) {
 	*this -= center;
 	*this *= scale;
 	*this += center;
@@ -149,11 +149,11 @@ public:
     }
 
     // Calculations
-    float distanceFrom(const Point& pt) const {
+    Scalar distanceFrom(const Point& pt) const {
         Point delta = *this - pt;
 	return hypotf(delta.y,delta.x);
     }
-    float angleToPoint(const Point& pt) const {
+    Scalar angleToPoint(const Point& pt) const {
         Point delta = *this - pt;
 	return atan2f(delta.y,delta.x);
     }

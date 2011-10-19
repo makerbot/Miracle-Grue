@@ -26,23 +26,23 @@ bool Line::isLinearWith(const Point& pt) const
         return true;
     }
 
-    float x1 = startPt.x;
-    float y1 = startPt.y;
-    float x2 = endPt.x;
-    float y2 = endPt.y;
+    Scalar x1 = startPt.x;
+    Scalar y1 = startPt.y;
+    Scalar x2 = endPt.x;
+    Scalar y2 = endPt.y;
     
-    float dx1 = x2 - x1;
-    float dy1 = y2 - y1;
+    Scalar dx1 = x2 - x1;
+    Scalar dy1 = y2 - y1;
     
-    float dx2 = x2 - pt.x;
-    float dy2 = y2 - pt.y;
+    Scalar dx2 = x2 - pt.x;
+    Scalar dy2 = y2 - pt.y;
     
-    float dx3 = x1 - pt.x;
-    float dy3 = y1 - pt.y;
+    Scalar dx3 = x1 - pt.x;
+    Scalar dy3 = y1 - pt.y;
     
-    float d  = dy2 * dx1 - dx2 * dy1;
-    float na = dx2 * dy3 - dy2 * dx3;
-    float nb = dx1 * dy3 - dy1 * dx3;
+    Scalar d  = dy2 * dx1 - dx2 * dy1;
+    Scalar na = dx2 * dy3 - dy2 * dx3;
+    Scalar nb = dx1 * dy3 - dy1 * dx3;
     
     if (d == 0) {
         if (fabsf(na) < EPSILON && fabsf(nb) < EPSILON) {
@@ -57,12 +57,12 @@ bool Line::isLinearWith(const Point& pt) const
 
 bool Line::hasInBounds(const Point &pt) const
 {
-    float px = pt.x;
-    float py = pt.y;
-    float sx = startPt.x;
-    float sy = startPt.y;
-    float ex = endPt.x;
-    float ey = endPt.y;
+    Scalar px = pt.x;
+    Scalar py = pt.y;
+    Scalar sx = startPt.x;
+    Scalar sy = startPt.y;
+    Scalar ex = endPt.x;
+    Scalar ey = endPt.y;
     
     if (px > sx && px > ex) {
         return false;
@@ -93,13 +93,13 @@ bool Line::contains(const Point &pt) const
 
 Point Line::closestSegmentPointTo(const Point &pt) const
 {
-    float x1 = startPt.x;
-    float y1 = startPt.y;
-    float x2 = endPt.x;
-    float y2 = endPt.y;
-    float xd = x2 - x1;
-    float yd = y2 - y1;
-    float u;
+    Scalar x1 = startPt.x;
+    Scalar y1 = startPt.y;
+    Scalar x2 = endPt.x;
+    Scalar y2 = endPt.y;
+    Scalar xd = x2 - x1;
+    Scalar yd = y2 - y1;
+    Scalar u;
 
     if (startPt == endPt) {
         return Point(startPt);
@@ -117,13 +117,13 @@ Point Line::closestSegmentPointTo(const Point &pt) const
 
 Point Line::closestExtendedLinePointTo(const Point &pt) const
 {
-    float x1 = startPt.x;
-    float y1 = startPt.y;
-    float x2 = endPt.x;
-    float y2 = endPt.y;
-    float xd = x2 - x1;
-    float yd = y2 - y1;
-    float u;
+    Scalar x1 = startPt.x;
+    Scalar y1 = startPt.y;
+    Scalar x2 = endPt.x;
+    Scalar y2 = endPt.y;
+    Scalar xd = x2 - x1;
+    Scalar yd = y2 - y1;
+    Scalar u;
     
     if (startPt == endPt) {
         return Point(startPt);
@@ -134,7 +134,7 @@ Point Line::closestExtendedLinePointTo(const Point &pt) const
 
 
 
-float Line::minimumSegmentDistanceFromPoint(const Point &pt) const
+Scalar Line::minimumSegmentDistanceFromPoint(const Point &pt) const
 {
     Point closePt = closestSegmentPointTo(pt);
     return pt.distanceFrom(closePt);
@@ -143,7 +143,7 @@ float Line::minimumSegmentDistanceFromPoint(const Point &pt) const
 
 
 
-float Line::minimumExtendedLineDistanceFromPoint(const Point &pt) const
+Scalar Line::minimumExtendedLineDistanceFromPoint(const Point &pt) const
 {
     Point closePt = closestExtendedLinePointTo(pt);
     return pt.distanceFrom(closePt);
@@ -156,27 +156,27 @@ float Line::minimumExtendedLineDistanceFromPoint(const Point &pt) const
 // If they don't intersect, the Intersection will have a type of NONE.
 Intersection Line::intersectionWithSegment(const Line &ln) const
 {
-    float x1 = startPt.x;
-    float y1 = startPt.y;
-    float x2 = endPt.x;
-    float y2 = endPt.y;
-    float x3 = ln.startPt.x;
-    float y3 = ln.startPt.y;
-    float x4 = ln.endPt.x;
-    float y4 = ln.endPt.y;
+    Scalar x1 = startPt.x;
+    Scalar y1 = startPt.y;
+    Scalar x2 = endPt.x;
+    Scalar y2 = endPt.y;
+    Scalar x3 = ln.startPt.x;
+    Scalar y3 = ln.startPt.y;
+    Scalar x4 = ln.endPt.x;
+    Scalar y4 = ln.endPt.y;
 
-    float dx1 = x2 - x1;
-    float dy1 = y2 - y1;
+    Scalar dx1 = x2 - x1;
+    Scalar dy1 = y2 - y1;
     
-    float dx2 = x4 - x3;
-    float dy2 = y4 - y3;
+    Scalar dx2 = x4 - x3;
+    Scalar dy2 = y4 - y3;
     
-    float dx3 = x1 - x3;
-    float dy3 = y1 - y3;
+    Scalar dx3 = x1 - x3;
+    Scalar dy3 = y1 - y3;
     
-    float d  = dy2 * dx1 - dx2 * dy1;
-    float na = dx2 * dy3 - dy2 * dx3;
-    float nb = dx1 * dy3 - dy1 * dx3;
+    Scalar d  = dy2 * dx1 - dx2 * dy1;
+    Scalar na = dx2 * dy3 - dy2 * dx3;
+    Scalar nb = dx1 * dy3 - dy1 * dx3;
     
     if (d == 0) {
 	if (startPt == endPt) {
@@ -211,8 +211,8 @@ Intersection Line::intersectionWithSegment(const Line &ln) const
 	return Intersection();
     }
     
-    float ua = na / d;
-    float ub = nb / d;
+    Scalar ua = na / d;
+    Scalar ub = nb / d;
     
     if (ua < 0.0 || ua > 1.0) {
         // Intersection wouldn't be inside first segment
@@ -224,8 +224,8 @@ Intersection Line::intersectionWithSegment(const Line &ln) const
 	return Intersection();
     }
     
-    float xi = x1 + ua * dx1;
-    float yi = y1 + ua * dy1;
+    Scalar xi = x1 + ua * dx1;
+    Scalar yi = y1 + ua * dy1;
     
     return Intersection(Point(xi,yi),0);
 }
@@ -237,23 +237,23 @@ Intersection Line::intersectionWithSegment(const Line &ln) const
 // If they are coincident, the Intersection will have a type of COINCIDENT.
 Intersection Line::intersectionWithExtendedLine(const Line &ln) const
 {
-    float x1 = startPt.x;
-    float y1 = startPt.y;
-    float x2 = endPt.x;
-    float y2 = endPt.y;
+    Scalar x1 = startPt.x;
+    Scalar y1 = startPt.y;
+    Scalar x2 = endPt.x;
+    Scalar y2 = endPt.y;
     
-    float dx1 = x2 - x1;
-    float dy1 = y2 - y1;
+    Scalar dx1 = x2 - x1;
+    Scalar dy1 = y2 - y1;
     
-    float dx2 = ln.endPt.x - ln.startPt.x;
-    float dy2 = ln.endPt.y - ln.startPt.y;
+    Scalar dx2 = ln.endPt.x - ln.startPt.x;
+    Scalar dy2 = ln.endPt.y - ln.startPt.y;
     
-    float dx3 = x1 - ln.startPt.x;
-    float dy3 = y1 - ln.startPt.y;
+    Scalar dx3 = x1 - ln.startPt.x;
+    Scalar dy3 = y1 - ln.startPt.y;
     
-    float d  = dy2 * dx1 - dx2 * dy1;
-    float na = dx2 * dy3 - dy2 * dx3;
-    float nb = dx1 * dy3 - dy1 * dx3;
+    Scalar d  = dy2 * dx1 - dx2 * dy1;
+    Scalar na = dx2 * dy3 - dy2 * dx3;
+    Scalar nb = dx1 * dy3 - dy1 * dx3;
     
     if (d == 0) {
         if (na == 0.0 && nb == 0.0) {
@@ -265,10 +265,10 @@ Intersection Line::intersectionWithExtendedLine(const Line &ln) const
 	}
     }
     
-    float ua = na / d;
-    //float ub = nb / d;
-    float xi = x1 + ua * dx1;
-    float yi = y1 + ua * dy1;
+    Scalar ua = na / d;
+    //Scalar ub = nb / d;
+    Scalar xi = x1 + ua * dx1;
+    Scalar yi = y1 + ua * dy1;
     return Intersection(Point(xi,yi),0);
 }
 

@@ -76,7 +76,7 @@ bool SimpleRegion::intersects(const SimpleRegion &reg) const
 
 
 
-string SimpleRegion::svgPathWithOffset(float dx, float dy)
+string SimpleRegion::svgPathWithOffset(Scalar dx, Scalar dy)
 {
     string out;
     out.append(outerPath.svgPathWithOffset(dx, dy));
@@ -355,7 +355,7 @@ Paths &SimpleRegion::containedSubpathsOfPath(const Path &path, Paths &outPaths)
 
 
 
-Paths &SimpleRegion::infillPathsForRegionWithDensity(float density, float extrusionWidth, Paths &outPaths)
+Paths &SimpleRegion::infillPathsForRegionWithDensity(Scalar density, Scalar extrusionWidth, Paths &outPaths)
 {
     Bounds bounds = outerPath.bounds();
     if (bounds.minX == Bounds::NONE) {
@@ -369,24 +369,24 @@ Paths &SimpleRegion::infillPathsForRegionWithDensity(float density, float extrus
     // D = Wsqrt2/S
     // DS = Wsqrt2
     // S = Wsqrt2/D
-    float spacing = extrusionWidth*sqrtf(2.0f)/density;
+    Scalar spacing = extrusionWidth*sqrtf(2.0f)/density;
     if (density >= 0.99f) {
         spacing = extrusionWidth;
     }
-    float zag = spacing;
+    Scalar zag = spacing;
     
     bool alternate = (((int)floor(bounds.minX/spacing-1)) & 0x1) == 0;
-    for (float fillx = floor(bounds.minX/spacing-1)*spacing; fillx < bounds.maxX+spacing; fillx += spacing) {
+    for (Scalar fillx = floor(bounds.minX/spacing-1)*spacing; fillx < bounds.maxX+spacing; fillx += spacing) {
         alternate = !alternate;
 	Path path;
-        float zig = 0.0f;
+        Scalar zig = 0.0f;
         if (density < 0.99f) {
             zig = 0.5f*zag;
             if (alternate) {
                 zig = -zig;
             }
         }
-        for (float filly = floor(0.5*bounds.minY/zag-1)*2.0f*zag; filly < bounds.maxY+zag; filly += zag) {
+        for (Scalar filly = floor(0.5*bounds.minY/zag-1)*2.0f*zag; filly < bounds.maxY+zag; filly += zag) {
             path.segments.push_back(Line(Point(fillx+zig,filly),Point(fillx-zig,filly+zag)));
             zig = -zig;
         }

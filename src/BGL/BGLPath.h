@@ -68,9 +68,9 @@ public:
     bool hasEndPoint(const Point& pt) const {
         return (pt == startPoint() || pt == endPoint());
     }
-    float length() const;
-    float area() const;
-    float windingArea() const;
+    Scalar length() const;
+    Scalar area() const;
+    Scalar windingArea() const;
     bool isClockwise() const;
     Bounds bounds() const;
 
@@ -79,7 +79,7 @@ public:
     bool attach(const Line& ln);
     bool attach(const Path& path);
 
-    string svgPathWithOffset(float dx, float dy) const;
+    string svgPathWithOffset(Scalar dx, Scalar dy) const;
 
     bool intersects(const Line &ln) const;
     bool intersects(const Path &path) const;
@@ -99,7 +99,7 @@ public:
     Lines::reverse_iterator rend() { return segments.rend(); }
 
     // Strips out segments that are shorter than the given length.
-    void stripSegmentsShorterThan(float minlen);
+    void stripSegmentsShorterThan(Scalar minlen);
     void splitSegmentsAtIntersectionsWithPath(const Path &path);
 
     void untag();

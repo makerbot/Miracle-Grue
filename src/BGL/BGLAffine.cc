@@ -11,24 +11,24 @@
 
 namespace BGL {
 
-    Affine Affine::translationAffine(float dx, float dy)
+    Affine Affine::translationAffine(Scalar dx, Scalar dy)
     {
         return Affine(1.0, 0.0, 0.0, 1.0, dx, dy);
     }
 
 
 
-    Affine Affine::scalingAffine(float sx, float sy)
+    Affine Affine::scalingAffine(Scalar sx, Scalar sy)
     {
         return Affine(sx, 0.0, 0.0, sy, 0.0, 0.0);
     }
 
 
 
-    Affine Affine::rotationAffine(float radang)
+    Affine Affine::rotationAffine(Scalar radang)
     {
-	float cosv = cosf(radang);
-	float sinv = sinf(radang);
+	Scalar cosv = cosf(radang);
+	Scalar sinv = sinf(radang);
 	return Affine(cosv, -sinv, sinv, cosv, 0.0, 0.0);
     }
 
@@ -36,10 +36,10 @@ namespace BGL {
 
     Affine& Affine::transform(const Affine& aff)
     {
-	float olda = a;
-	float oldb = b;
-	float oldc = c;
-	float oldd = d;
+	Scalar olda = a;
+	Scalar oldb = b;
+	Scalar oldc = c;
+	Scalar oldd = d;
 	a  = aff.a  * olda  +  aff.b  * oldc;
 	b  = aff.a  * oldb  +  aff.b  * oldd;
 	c  = aff.c  * olda  +  aff.d  * oldc;
@@ -51,21 +51,21 @@ namespace BGL {
 
 
 
-    Affine& Affine::translate(float dx, float dy)
+    Affine& Affine::translate(Scalar dx, Scalar dy)
     {
         return transform(translationAffine(dx,dy));
     }
 
 
 
-    Affine& Affine::scale(float sx, float sy)
+    Affine& Affine::scale(Scalar sx, Scalar sy)
     {
         return transform(scalingAffine(sx,sy));
     }
 
 
 
-    Affine& Affine::scaleAroundPoint(float sx, float sy, float x, float y)
+    Affine& Affine::scaleAroundPoint(Scalar sx, Scalar sy, Scalar x, Scalar y)
     {
         translate(-x,-y);
         transform(scalingAffine(sx,sy));
@@ -75,14 +75,14 @@ namespace BGL {
 
 
 
-    Affine& Affine::rotate(float radang)
+    Affine& Affine::rotate(Scalar radang)
     {
         return transform(rotationAffine(radang));
     }
 
 
 
-    Affine& Affine::rotateAroundPoint(float radang, float x, float y)
+    Affine& Affine::rotateAroundPoint(Scalar radang, Scalar x, Scalar y)
     {
         translate(-x,-y);
         transform(rotationAffine(radang));
@@ -92,10 +92,10 @@ namespace BGL {
 
 
 
-    void Affine::transformPoint(float& x, float &y) const
+    void Affine::transformPoint(Scalar& x, Scalar &y) const
     {
-	float nx = a * x + b * y + tx;
-	float ny = c * x + d * y + ty;
+	Scalar nx = a * x + b * y + tx;
+	Scalar ny = c * x + d * y + ty;
 	x = nx;
 	y = ny;
     }

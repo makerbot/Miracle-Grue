@@ -44,7 +44,7 @@ CompoundRegion &CompoundRegion::assembleCompoundRegionFrom(Paths &paths, Compoun
 
 
 
-string CompoundRegion::svgPathWithOffset(float dx, float dy)
+string CompoundRegion::svgPathWithOffset(Scalar dx, Scalar dy)
 {
     string out;
     SimpleRegions::iterator rit;
@@ -185,7 +185,7 @@ Paths &CompoundRegion::containedSubpathsOfPath(Path &path, Paths &outPaths)
 
 
 
-Paths &CompoundRegion::infillPathsForRegionWithDensity(float density, float extrusionWidth, Paths &outPaths)
+Paths &CompoundRegion::infillPathsForRegionWithDensity(Scalar density, Scalar extrusionWidth, Paths &outPaths)
 {
     SimpleRegions::iterator rit;
     for (rit = subregions.begin(); rit != subregions.end(); rit++) {

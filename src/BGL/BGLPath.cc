@@ -34,9 +34,9 @@ bool Path::operator==(const Path &rhs) const
 
 
 
-float Path::length() const
+Scalar Path::length() const
 {
-    float totlen = 0.0f;
+    Scalar totlen = 0.0f;
     Lines::const_iterator itera = segments.begin();
     for(; itera != segments.end(); itera++) {
 	totlen += itera->length();
@@ -46,9 +46,9 @@ float Path::length() const
 
 
 
-float Path::windingArea() const
+Scalar Path::windingArea() const
 {
-    float totarea = 0.0f;
+    Scalar totarea = 0.0f;
     Lines::const_iterator itera = segments.begin();
     for(; itera != segments.end(); itera++) {
 	totarea += itera->startPt.x * itera->endPt.y;
@@ -66,7 +66,7 @@ bool Path::isClockwise() const
 
 
 
-float Path::area() const
+Scalar Path::area() const
 {
     return fabs(windingArea());
 }
@@ -151,7 +151,7 @@ bool Path::attach(const Path& path)
 
 
 
-string Path::svgPathWithOffset(float dx, float dy) const
+string Path::svgPathWithOffset(Scalar dx, Scalar dy) const
 {
     char buf[80];
     string out;
@@ -159,7 +159,7 @@ string Path::svgPathWithOffset(float dx, float dy) const
 	return out;
     }
     Line prev;
-    float mult = 90.0f / 25.4f;
+    Scalar mult = 90.0f / 25.4f;
     Lines::const_iterator itera = segments.begin();
     bool isfirst = true;
     for (; itera != segments.end(); itera++) {
@@ -285,7 +285,7 @@ bool Path::contains(const Point &pt) const
 
 
 // Strips out segments that are shorter than the given length.
-void Path::stripSegmentsShorterThan(float minlen)
+void Path::stripSegmentsShorterThan(Scalar minlen)
 {
     Lines::iterator itera = segments.begin();
     while (itera != segments.end()) {
@@ -360,12 +360,12 @@ Paths &Path::repairUnclosedPaths(const Paths &paths, Paths &outPaths)
 	for (;;) {
 	    // Find closest remaining incomplete path
 	    Paths::iterator closestIter;
-	    float closestDist = 9.0e9;
-	    float closingDist = path.startPoint().distanceFrom(path.endPoint());
+	    Scalar closestDist = 9.0e9;
+	    Scalar closingDist = path.startPoint().distanceFrom(path.endPoint());
 	    for (itera = unhandled.begin(); itera != unhandled.end(); itera++) {
 		Path &path2 = *itera;
-		float dist1 = path.endPoint().distanceFrom(path2.startPoint());
-		float dist2 = path.endPoint().distanceFrom(path2.endPoint());
+		Scalar dist1 = path.endPoint().distanceFrom(path2.startPoint());
+		Scalar dist2 = path.endPoint().distanceFrom(path2.endPoint());
 		if (dist1 < closestDist) {
 		    closestDist = dist1;
 		    closestIter = itera;

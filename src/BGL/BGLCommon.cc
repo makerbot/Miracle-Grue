@@ -12,8 +12,8 @@
 namespace BGL {
 
 
-float EPSILON = 1e-6;
-float CLOSEENOUGH = 1e-3;
+Scalar EPSILON = 1e-6;
+Scalar CLOSEENOUGH = 1e-3;
 
 
 }

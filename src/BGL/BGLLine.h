@@ -56,7 +56,7 @@ public:
         this->endPt -= rhs;
 	return *this;
     }
-    Line& operator*=(float rhs) {
+    Line& operator*=(Scalar rhs) {
         this->startPt *= rhs;
         this->endPt *= rhs;
 	return *this;
@@ -66,7 +66,7 @@ public:
         this->endPt *= rhs;
 	return *this;
     }
-    Line& operator/=(float rhs) {
+    Line& operator/=(Scalar rhs) {
         this->startPt /= rhs;
         this->endPt /= rhs;
 	return *this;
@@ -84,13 +84,13 @@ public:
     const Line operator-(const Point &rhs) const {
 	return Line(*this) -= rhs;
     }
-    const Line operator*(float rhs) const {
+    const Line operator*(Scalar rhs) const {
 	return Line(*this) *= rhs;
     }
     const Line operator*(const Point &rhs) const {
 	return Line(*this) *= rhs;
     }
-    const Line operator/(float rhs) const {
+    const Line operator/(Scalar rhs) const {
 	return Line(*this) /= rhs;
     }
     const Line operator/(const Point &rhs) const {
@@ -111,7 +111,7 @@ public:
     }
 
     // Transformations
-    Line& scale(float scale) {
+    Line& scale(Scalar scale) {
 	*this *= scale;
 	return *this;
     }
@@ -119,7 +119,7 @@ public:
 	*this *= vect;
 	return *this;
     }
-    Line& scaleAroundPoint(const Point& center, float scale) {
+    Line& scaleAroundPoint(const Point& center, Scalar scale) {
 	*this -= center;
 	*this *= scale;
 	*this += center;
@@ -133,14 +133,14 @@ public:
     }
 
     // Calculations
-    float length() const {
+    Scalar length() const {
         return startPt.distanceFrom(endPt);
     }
-    float angle() const {
+    Scalar angle() const {
         return startPt.angleToPoint(endPt);
     }
-    float angleDelta(const Line& ln) const {
-        float delta = angle() - ln.angle();
+    Scalar angleDelta(const Line& ln) const {
+        Scalar delta = angle() - ln.angle();
 	if (delta < -M_PI) {
 	    delta += M_PI * 2.0f;
 	} else if (delta > M_PI) {
@@ -161,8 +161,8 @@ public:
     bool contains(const Point &pt) const;
     Point closestSegmentPointTo(const Point &pt) const;
     Point closestExtendedLinePointTo(const Point &pt) const;
-    float minimumSegmentDistanceFromPoint(const Point &pt) const;
-    float minimumExtendedLineDistanceFromPoint(const Point &pt) const;
+    Scalar minimumSegmentDistanceFromPoint(const Point &pt) const;
+    Scalar minimumExtendedLineDistanceFromPoint(const Point &pt) const;
     Intersection intersectionWithSegment(const Line &ln) const;
     Intersection intersectionWithExtendedLine(const Line &ln) const;
 

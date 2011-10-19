@@ -21,11 +21,11 @@ namespace BGL {
 class Point3d {
 public:
     // Member variables
-    float x, y, z;
+    Scalar x, y, z;
 
     // Constructors
     Point3d() : x(0.0), y(0.0), z(0.0) {}
-    Point3d(float nux, float nuy, float nuz) : x(nux), y(nuy), z(nuz) {}
+    Point3d(Scalar nux, Scalar nuy, Scalar nuz) : x(nux), y(nuy), z(nuz) {}
     Point3d(const Point3d &pt) : x(pt.x), y(pt.y), z(pt.z) {}
 
     // Assignment operator
@@ -51,7 +51,7 @@ public:
         this->z -= rhs.z;
 	return *this;
     }
-    Point3d& operator*=(float rhs) {
+    Point3d& operator*=(Scalar rhs) {
         this->x *= rhs;
         this->y *= rhs;
         this->z *= rhs;
@@ -63,7 +63,7 @@ public:
         this->z *= rhs.z;
 	return *this;
     }
-    Point3d& operator/=(float rhs) {
+    Point3d& operator/=(Scalar rhs) {
         this->x /= rhs;
         this->y /= rhs;
         this->z /= rhs;
@@ -83,13 +83,13 @@ public:
     const Point3d operator-(const Point3d &rhs) const {
 	return Point3d(*this) -= rhs;
     }
-    const Point3d operator*(float rhs) const {
+    const Point3d operator*(Scalar rhs) const {
 	return Point3d(*this) *= rhs;
     }
     const Point3d operator*(const Point3d &rhs) const {
 	return Point3d(*this) *= rhs;
     }
-    const Point3d operator/(float rhs) const {
+    const Point3d operator/(Scalar rhs) const {
 	return Point3d(*this) /= rhs;
     }
     const Point3d operator/(const Point3d &rhs) const {
@@ -104,26 +104,26 @@ public:
         return !(*this == rhs);
     }
 
-    // Comparators for z height float.
-    bool operator== (float zcoord) const {
+    // Comparators for z height Scalar.
+    bool operator== (Scalar zcoord) const {
         return (fabsf(z-zcoord) < CLOSEENOUGH);
     }
-    bool operator< (float zcoord) const {
+    bool operator< (Scalar zcoord) const {
         return (z < zcoord);
     }
-    bool operator> (float zcoord) const {
+    bool operator> (Scalar zcoord) const {
         return (z > zcoord);
     }
-    bool operator<= (float zcoord) const {
+    bool operator<= (Scalar zcoord) const {
         return !(*this > zcoord);
     }
-    bool operator>= (float zcoord) const {
+    bool operator>= (Scalar zcoord) const {
         return !(*this < zcoord);
     }
 
 
     // Transformations
-    Point3d& scale(float scale) {
+    Point3d& scale(Scalar scale) {
 	*this *= scale;
 	return *this;
     }
@@ -131,7 +131,7 @@ public:
 	*this *= vect;
 	return *this;
     }
-    Point3d& scaleAroundPoint3d(const Point3d& center, float scale) {
+    Point3d& scaleAroundPoint3d(const Point3d& center, Scalar scale) {
 	*this -= center;
 	*this *= scale;
 	*this += center;
@@ -145,7 +145,7 @@ public:
     }
 
     // Calculations
-    float distanceFrom(const Point3d& pt) const {
+    Scalar distanceFrom(const Point3d& pt) const {
         Point3d vect(*this);
 	vect -= pt;
 	vect *= vect;
