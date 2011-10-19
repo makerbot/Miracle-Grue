@@ -17,8 +17,6 @@
 
 
 
-using namespace std;
-
 class GCoderOperation: public Operation
 {
 	ofstream *outstream;
@@ -33,6 +31,7 @@ public:
 		cout << __FUNCTION__ << endl;
 		cout << "(Miracle Grue)" << endl;
 	};
+
 	virtual ~GCoderOperation(){}
 
 	void init(Configuration& config);

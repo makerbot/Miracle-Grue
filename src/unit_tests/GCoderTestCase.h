@@ -1,5 +1,5 @@
-#ifndef CPP_UNIT_EXAMPLETESTCASE_H
-#define CPP_UNIT_EXAMPLETESTCASE_H
+#ifndef GCODER_TEST_CASE_H_
+#define GCODER_TEST_CASE_H_
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -31,3 +31,4 @@ protected:
 
 
 #endif
+

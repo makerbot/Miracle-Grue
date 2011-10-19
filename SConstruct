@@ -37,11 +37,9 @@ except:
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
 env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
 
-env.Program('qt4Hello', 
-		['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
+#env.Program('qt4Hello', ['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
 
-env.Program('gcoder_test',['src/GCoderOperation.cc', 'src/Configuration.cc',
-							'gcoder_test_main.cc']) 
+# env.Program('gcoder_test',['src/GCoderOperation.cc', 'src/Configuration.cc', 'gcoder_test_main.cc']) 
 
 # /usr/local/include/cppunit/
 # Program('prog.c', LIBS = 'm',
@@ -50,3 +48,14 @@ env.Program('gcoder_test',['src/GCoderOperation.cc', 'src/Configuration.cc',
 #env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
 #		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
+env.Program( 'gcoderUnitTest',['src/GCoderOperation.cc', 'src/Configuration.cc',
+							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/GCoderTestCase.cc'],
+		  LIBS = 'cppunit', 
+		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
+		  CPP_PATH= ['..']) 
+
+env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
+							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/PatherTestCase.cc'],
+		  LIBS = 'cppunit', 
+		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
+		  CPP_PATH= ['..']) 

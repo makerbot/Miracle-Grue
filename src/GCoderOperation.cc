@@ -8,7 +8,7 @@
    License, or (at your option) any later version.
 
 */
-#include "DataEnvelope.h"
+
 #include "GCoderOperation.h"
 
 
@@ -56,7 +56,7 @@ DataEnvelope* GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 		finishGcode(ss);
 		closeFile();
 	}
-	return 0x00;
+	return NULL;
 
 }
 
