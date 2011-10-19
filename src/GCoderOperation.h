@@ -48,14 +48,18 @@ public:
 	ostream& stream() {return *(this->outstream); }
 
 private:
-    void init_machine(std::ostream &ss) const;
-    void init_platform(std::ostream &ss) const;
-    void init_extruders(std::ostream &ss) const;
-    void wait_for_warm_up(std::ostream &ss) const;
-    void goto_home_position(std::ostream &ss) const;
-    void finish_gcode(std::ostream &ss) const;
 
-	void write(const char *gstring, ostream &ss) const;
+    // write important config information in gcode file
+    void writeGCodeConfig(std::ostream &out) const;
+
+	void initMachine(std::ostream &ss) const;
+    void initPlatform(std::ostream &ss) const;
+    void initExtruders(std::ostream &ss) const;
+    void waitForWarmup(std::ostream &ss) const;
+    void gotoHomePosition(std::ostream &ss) const;
+    void finishGcode(std::ostream &ss) const;
+
+	//void write(const char *gstring, ostream &ss) const;
 	void closeFile();
 
 };

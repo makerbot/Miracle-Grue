@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <cppunit/config/SourcePrefix.h>
 #include "GCoderTestCase.h"
 
@@ -6,10 +8,12 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
+#define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"
+#define DUAL_EXTRUDER_FILE_NAME "v29_dual_xtruder_warmup.gcode"
 
 void configureSingleExtruder(Configuration& config)
 {
-	config.gcodeFilename = "v29_single_xtruder_warmup.gcode";
+	config.gcodeFilename = SINGLE_EXTRUDER_FILE_NAME;
 	config.machineName = "TOM";
 	config.firmware ="v2.9";
 
@@ -69,10 +73,12 @@ void GCoderTestCase::example()
 */
 }
 
-
+//
+// This test creates a gcode file for single extruder machine
+// The file contains code to home the tool and heat the extruder/platform
+//
 void GCoderTestCase::singleExtruder()
 {
-	CPPUNIT_ASSERT (2 == 2);
 	Configuration config;
 
 	configureSingleExtruder(config);
@@ -88,12 +94,29 @@ void GCoderTestCase::singleExtruder()
 	d.setLast();
 	tooler.collect(d);
 
+	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
+
 }
 
 void GCoderTestCase::dualExtruders()
 {
-  double result = 6;
-  CPPUNIT_ASSERT( result == 6.0 );
+	Configuration config;
+
+	configureDualExtruder(config);
+
+	CPPUNIT_ASSERT(config.extruders.size()==1);
+	GCoderOperation tooler;
+
+	tooler.init(config);
+	tooler.start();
+
+	DataEnvelope d = DataEnvelope();
+	d.typeID =  TYPE_PATH_ASCII;
+	d.setLast();
+	tooler.collect(d);
+
+	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
+
 }
 
 

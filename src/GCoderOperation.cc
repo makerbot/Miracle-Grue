@@ -14,13 +14,11 @@
 
 void GCoderOperation::init(Configuration& config)
 {
-
-
 	pConfig = &config;
-	std::string outFilename("out.gcode");
-	outstream = new ofstream(outFilename.c_str());
+	cout << "Writing GCODE to file: \"" << config.gcodeFilename << "\""<< endl;
+	outstream = new ofstream(config.gcodeFilename.c_str());
 
-	cout << "Writing GCODE to file: " << outFilename << endl;
+
 }
 
 void GCoderOperation::start()
@@ -28,6 +26,7 @@ void GCoderOperation::start()
 	// this code doesn't belong here
 	// init should not mean to start the work
 	// should there be a start for the pipeline?
+
 
 	return;
 }
@@ -43,18 +42,18 @@ DataEnvelope* GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 	}
 	if( this->isFirstEnvelope(envelope) )
 	{
-		init_machine(ss);
-		init_platform(ss);
-		init_extruders(ss);
+		initMachine(ss);
+		initPlatform(ss);
+		initExtruders(ss);
 
-		goto_home_position(ss);
-		wait_for_warm_up(ss);
+		gotoHomePosition(ss);
+		waitForWarmup(ss);
 
 		initalized = true;
 	}
 	else if (isLastEnvelope(envelope) )
 	{
-		finish_gcode(ss);
+		finishGcode(ss);
 		closeFile();
 	}
 	return 0x00;
@@ -87,7 +86,7 @@ void GCoderOperation::closeFile()
 }
 
 
-void GCoderOperation::init_machine(std::ostream &ss) const
+void GCoderOperation::initMachine(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
@@ -102,14 +101,14 @@ void GCoderOperation::init_machine(std::ostream &ss) const
 	{
 		Extruder e = *i;
 		int coordinateSystemNb = toolHeadId +1;
-		ss << "G10 P" << coordinateSystemNb << " X%3f" <<  e.coordinateSystemOffsetX << " Y0 Z-0.3" << endl;
+		ss << "G10 P" << coordinateSystemNb << " X" <<  e.coordinateSystemOffsetX << " Y0 Z-0.3" << endl;
 		toolHeadId ++;
 	}
 	ss << endl;
 
 }
 
-void GCoderOperation::init_platform(std::ostream &ss) const
+void GCoderOperation::initPlatform(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
@@ -119,7 +118,7 @@ void GCoderOperation::init_platform(std::ostream &ss) const
 
 }
 
-void GCoderOperation::init_extruders(std::ostream &ss) const
+void GCoderOperation::initExtruders(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
@@ -140,7 +139,7 @@ void GCoderOperation::init_extruders(std::ostream &ss) const
 }
 
 
-void GCoderOperation::goto_home_position(std::ostream &ss) const
+void GCoderOperation::gotoHomePosition(std::ostream &ss) const
 {
 	ss << endl;
 	ss << "(go to home position)" << endl;
@@ -155,7 +154,7 @@ void GCoderOperation::goto_home_position(std::ostream &ss) const
 }
 
 
-void GCoderOperation::wait_for_warm_up(std::ostream &ss) const
+void GCoderOperation::waitForWarmup(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
@@ -168,7 +167,7 @@ void GCoderOperation::wait_for_warm_up(std::ostream &ss) const
 
 }
 
-void GCoderOperation::finish_gcode(std::ostream &ss) const
+void GCoderOperation::finishGcode(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
@@ -183,101 +182,3 @@ void GCoderOperation::finish_gcode(std::ostream &ss) const
 
 
 
-
-/*
-#include "DataEnvelope.h"
-#include "GCoderOperation.h"
-
-
-void GCoderOperation::init(Configuration& config)
-{
-	std::string outFilename("out.gcode");
-	outstream = new ofstream(outFilename.c_str());
-	ostream& ss = *(this->outstream);
-	init_machine(ss);
-	init_platform(ss);
-	init_extruders(ss);
-	initalized = true;
-	return;
-}
-
-
-void GCoderOperation::collect(const  DataEnvelope& envelope)
-{
-	// --
-	// finishedData = doDataCrap(envelope);
-	//this->nextOperation.collect(finishedData);
-	if(initalized == false || outstream  == 0x00)
-	{
-		cout << "cannot collect, not initalized" << endl;
-		return ;
-	}
-	if(envelope.typeID != TYPE_ASCII_PATHER)
-		cout << "data type failure for envelope X" << endl;
-
-	if(envelope.lastFlag == true)
-		closeFile(this->outstream);
-
-	// always call emit data, even if just with dummy data!
-	emitData(envelope);
-
-}
-
-AtomType GCoderOperation::collectsEnvelopeType() {
-	return TYPE_INVALID;
-}
-AtomType GCoderOperation::emitsEnvelopeType() {
-	return TYPE_ASCII_GCODE;
-}
-
-
-std::string GCoderOperation::interrogate() {
-	return std::string("GCodeOperator");
-}
-
-void GCoderOperation::cleanup()
-{
-	closeFile(this->outstream);
-}
-
-void GCoderOperation::closeFile(ofstream *fs) const
-{
-	fs->close();
-}
-
-
-void GCoderOperation::write(const char*gstring, ostream &ss ) const
-{
-	//gStrings.push_back(gstring);
-	string tmpStr(gstring);
-	ss << tmpStr;
-}
-
-
-void GCoderOperation::init_machine(std::ostream &ss) const
-{
-	ss <<  "(Initialization of the machine)\n";
-	ss <<  "(http://wiki.makerbot.com/gcode)";
-	ss <<  "\n";
-	ss <<  "G21 (set units to mm)\n";
-	ss <<  "G90 (absolute positioning mode)\n";
-
-	ss << endl;
-
-}
-
-void GCoderOperation::init_platform(std::ostream &ss) const
-{
-	double t = 7; //this->config.platform.temperature;
-	ss << "M109 S" << t << " T1 (heat the build-platform to "  << t << " Celsius)" << endl;
-	ss << endl;
-
-}
-
-void GCoderOperation::init_extruders(std::ostream &ss) const
-{
-	int toolHeadId = 0;
-
-
-}
-*/
