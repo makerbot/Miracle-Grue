@@ -61,3 +61,21 @@ void Configuration::writeJsonConfig(ostream &ss) const
 	ss << endl <<  "] // extruders" << endl;
 	ss << "}" << endl << endl;
 }
+
+void Configuration::writeGcodeConfig(std::ostream &ss, const std::string indent) const
+{
+	ss << "(" << indent << "machine name: " << machineName << ")"<< endl;
+	ss << "(" << indent << "firmware revision:" << firmware << ")" << endl;
+	std::string plurial = extruders.size()? "":"s";
+	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;
+ 	if (outline.enabled)
+ 	{
+ 		ss << "(" << indent << outline.distance << "mm outline" << ")" << endl;
+ 	}
+ 	else
+ 	{
+ 		ss << "(" << indent << "no outline" <<  ")"<< endl;
+ 	}
+
+ 	ss << endl;
+}

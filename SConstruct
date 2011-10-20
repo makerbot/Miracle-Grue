@@ -49,13 +49,13 @@ env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
 #		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
 env.Program( 'gcoderUnitTest',['src/GCoderOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/GCoderTestCase.cc'],
+							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/GCoderTestCase.cc', 'src/PathData.cc'],
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
 		  CPP_PATH= ['..']) 
 
 env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/PatherTestCase.cc'],
+							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/PatherTestCase.cc', 'src/PathData.cc'],
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
 		  CPP_PATH= ['..']) 

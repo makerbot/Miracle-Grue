@@ -13,10 +13,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
 #define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "v29_dual_xtruder_warmup.gcode"
+#define SINGLE_EXTRUDER_WITH_PATH "v29_single_xtruder_with_path.gcode"
 
 void configureSingleExtruder(Configuration& config)
 {
-	config.gcodeFilename = SINGLE_EXTRUDER_FILE_NAME;
 	config.machineName = "TOM";
 	config.firmware ="v2.9";
 
@@ -32,7 +32,6 @@ void configureSingleExtruder(Configuration& config)
 
 void configureDualExtruder(Configuration& config)
 {
-	config.gcodeFilename = "v29_dual_xtruder_warmup.gcode";
 	config.machineName = "TOM";
 	config.firmware ="v2.9";
 
@@ -45,6 +44,7 @@ void configureDualExtruder(Configuration& config)
 	config.platform.temperature = 30;
 
 }
+
 
 
 
@@ -76,6 +76,36 @@ void GCoderTestCase::example()
 */
 }
 
+void empty_tool_chain(Configuration &config)
+{
+	CPPUNIT_ASSERT(config.extruders.size()==1);
+	GCoderOperation &tooler = *new GCoderOperation();
+
+	tooler.init(config);
+
+	tooler.start();
+	tooler.finish();
+
+
+	delete &tooler;
+}
+
+void path_tool_chain(Configuration &config, const DataEnvelope &d)
+{
+	CPPUNIT_ASSERT(config.extruders.size()==1);
+	GCoderOperation &tooler = *new GCoderOperation();
+
+	tooler.init(config);
+	tooler.start();
+
+	tooler.collect(d);
+
+	tooler.finish();
+
+
+	delete &tooler;
+}
+
 //
 // This test creates a gcode file for single extruder machine
 // The file contains code to home the tool and heat the extruder/platform
@@ -83,43 +113,66 @@ void GCoderTestCase::example()
 void GCoderTestCase::singleExtruder()
 {
 	Configuration config;
+	config.gcodeFilename = SINGLE_EXTRUDER_FILE_NAME;
 
 	configureSingleExtruder(config);
 
-	CPPUNIT_ASSERT(config.extruders.size()==1);
-	GCoderOperation tooler;
+	empty_tool_chain(config);
 
-	tooler.init(config);
-	tooler.start();
-
-	DataEnvelope d = DataEnvelope();
-	d.typeID =  TYPE_PATH_ASCII;
-	d.setLast();
-	tooler.collect(d);
-
+	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
-
 }
 
 void GCoderTestCase::dualExtruders()
 {
 	Configuration config;
+	config.gcodeFilename = DUAL_EXTRUDER_FILE_NAME;
 
 	configureDualExtruder(config);
-
-	CPPUNIT_ASSERT(config.extruders.size()==1);
-	GCoderOperation tooler;
-
-	tooler.init(config);
-	tooler.start();
-
-	DataEnvelope d = DataEnvelope();
-	d.typeID =  TYPE_PATH_ASCII;
-	d.setLast();
-	tooler.collect(d);
+	empty_tool_chain(config);
 
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
 
 }
 
+//
+// 	This tests generates gcode for a simple rectangular path.
+//
+void GCoderTestCase::simplePath()
+{
+	Configuration config;
+	config.gcodeFilename = SINGLE_EXTRUDER_WITH_PATH;
+
+	configureSingleExtruder(config);
+	PathData &d = *new PathData();
+	d.setLast();
+
+
+	d.extrusionPaths.push_back(Paths());
+
+	d.extrusionPaths[0].push_back(Polygon());
+	Polygon &poly = d.extrusionPaths[0][0];
+
+	double lower_x = 10;
+	double lower_y = 10;
+	double dx = 50;
+	double dy = 30;
+
+	Point2D p0(lower_x, lower_y);
+	Point2D p1(p0.x, p0.y + dy);
+	Point2D p2(p1.x + dx, p1.y);
+	Point2D p3(p2.x, p2.y - dy);
+	poly.push_back(p0);
+	poly.push_back(p1);
+	poly.push_back(p2);
+	poly.push_back(p3);
+
+	path_tool_chain(config, d);
+
+	cout << "totot" << endl;
+	delete &d;
+	// CPPUNIT_ASSERT(0==4);
+	// verify that gcode file has been generated
+	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
+}
 

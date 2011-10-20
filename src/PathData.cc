@@ -8,21 +8,21 @@
    License, or (at your option) any later version.
 
 */
-
+#include <iostream>
 #include "PathData.h"
 
 using namespace std;
 
+PathData::PathData()
+		:DataEnvelope(TYPE_PATH_BINARY, NULL, 0, NULL, false)
+{
+
+}
+
 PathData::~PathData()
 {
-	/*
-	for (Paths::iterator i=paths.begin(); i != paths.end(); i++)
-	{
-		cout << "deleting polygon" << endl;
-		Polygon& poly = *i;
-		delete *poly;
-	}
-	*/
+	cout << "~PathData() "  << this<< endl;
+
 }
 
 

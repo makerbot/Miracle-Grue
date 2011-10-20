@@ -66,9 +66,14 @@ public:
 		printf("%s\n", __FUNCTION__ );
 	};
 
+
 	///Baseline data constructor
 	DataEnvelope(AtomType iD, void* pData, uint32_t dataSz, char* dataNsString, bool isLast = false)
 	: typeID(iD), data(pData), dataSize(dataSz), dataNamespaceString(dataNsString),lastFlag(isLast) {};
+
+
+	virtual ~DataEnvelope(){}
+
 	void setLast(void)
 	{
 		printf("%s\n", __FUNCTION__ );

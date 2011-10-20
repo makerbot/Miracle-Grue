@@ -12,6 +12,8 @@
 #define GCODEROPERATION_H_
 
 #include "Operation.h"
+#include "PathData.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -22,7 +24,7 @@ class GCoderOperation: public Operation
 	std::ofstream *pStream;
     // output data collector
     std::vector<std::string> gStrings;
-    bool initalized;
+
     Configuration* pConfig;
 
 public:
@@ -32,6 +34,8 @@ public:
 
 	void init(Configuration& config);
 	void start();
+	void finish();
+
 	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
 	void cleanup();
 
@@ -45,14 +49,15 @@ public:
 private:
 
     // write important config information in gcode file
-    void writeGCodeConfig(std::ostream &out) const;
+    void writeGCodeConfig();
+	void writeMachineInitialization() ;
+    void writePlatformInitialization() ;
+    void writeExtrudersInitialization() ;
+    void writeWarmupSequence();
+    void writeHomingSequence();
+    void writeGcodeEndOfFile();
 
-	void initMachine(std::ostream &ss) const;
-    void initPlatform(std::ostream &ss) const;
-    void initExtruders(std::ostream &ss) const;
-    void waitForWarmup(std::ostream &ss) const;
-    void gotoHomePosition(std::ostream &ss) const;
-    void finishGcode(std::ostream &ss) const;
+    void writePaths(const PathData& pathData);
 
 	//void write(const char *gstring, ostream &ss) const;
 	void closeFile();

@@ -15,16 +15,21 @@
 
 #include <vector>
 
+#include "DataEnvelope.h"
+
 typedef double real;
 
 struct Point2D
 {
+	Point2D(real x, real y)
+		:x(x), y(y)
+	{}
 	real x;
 	real y;
 };
 
 typedef std::vector<Point2D> Polygon;
-typedef std::vector<Polygon&> Paths;
+typedef std::vector<Polygon> Paths;
 
 //
 // The Path data is a dictionary of polygons
@@ -32,16 +37,12 @@ typedef std::vector<Polygon&> Paths;
 //
 class PathData: public DataEnvelope {
 
-	std::vector<Polygon> paths; // each extruder has paths
 public:
-
-	PathData()
-		:DataEnvelope(TYPE_PATH_BINARY, NULL, 0, NULL, false)
-	{
-
-	}
-
+	PathData();
 	virtual ~PathData();
+
+	std::vector<Paths> extrusionPaths; // each extruder has paths
+
 };
 
 #endif // __PATH_DATA_H_

@@ -51,6 +51,7 @@ class Configuration {
          ~Configuration();
 
          void writeJsonConfig(std::ostream &out) const;
+         void writeGcodeConfig(std::ostream &out, const std::string indent) const;
 
          std::string machineName;	// 3D printer identifier
          std::string firmware;		// firmware revision
