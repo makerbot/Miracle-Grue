@@ -22,8 +22,8 @@ public:
 	PatherOperation()
 		:pConfig(NULL)
 	{
-		cout << __FUNCTION__ << endl;
-		cout << "(Miracle Grue)" << endl;
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "(Miracle Grue)" << std::endl;
 	};
 	virtual ~PatherOperation(){cleanup();}
 

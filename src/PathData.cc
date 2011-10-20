@@ -27,6 +27,4 @@ PathData::~PathData()
 
 
 
-};
 
-#endif // __PATH_DATA_H_

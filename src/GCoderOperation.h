@@ -21,16 +21,12 @@ class GCoderOperation: public Operation
 {
 	std::ofstream *pStream;
     // output data collector
-    vector<string> gStrings;
+    std::vector<std::string> gStrings;
     bool initalized;
     Configuration* pConfig;
 
 public:
-	GCoderOperation(): initalized(false), pStream(NULL)
-	{
-		std::cout << __FUNCTION__ << endl;
-		std::cout << "(Miracle Grue)" << endl;
-	};
+	GCoderOperation();
 
 	virtual ~GCoderOperation(){}
 

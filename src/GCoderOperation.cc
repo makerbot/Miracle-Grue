@@ -11,6 +11,13 @@
 #include <assert.h>
 #include "GCoderOperation.h"
 
+using namespace std;
+
+GCoderOperation::GCoderOperation(): initalized(false), pStream(NULL)
+{
+	std::cout << __FUNCTION__ << std::endl;
+	std::cout << "(Miracle Grue)" << std::endl;
+};
 
 void GCoderOperation::init(Configuration& config)
 {

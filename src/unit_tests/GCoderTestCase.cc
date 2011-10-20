@@ -7,6 +7,8 @@
 #include "../GCoderOperation.h"
 #include "../PathData.h"
 
+using namespace std;
+
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
 #define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"

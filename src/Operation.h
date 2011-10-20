@@ -18,7 +18,6 @@
 #ifndef MG_OPERATION_H
 #define MG_OPERATION_H
 
-using namespace std;
 
 /**
  * On Operation is a basic unit of data processing used by the processing chain,
@@ -59,9 +58,9 @@ public:
     	DataEnvelope* newDataEnvelope = this->processEnvelope(envelope);
     	envelopesProcessed++;
     	if(nextOperation == 0x00)
-    		cout << "no next operation registered" << endl;
+    		std::cout << "no next operation registered" << std::endl;
     	else if (newDataEnvelope == 0x00)
-    		cout << "no new dataEnvelope generated" << endl;
+    		std::cout << "no new dataEnvelope generated" << std::endl;
     	else
     		nextOperation->collect((DataEnvelope&)*newDataEnvelope);
     }
@@ -75,7 +74,7 @@ public:
 
     // This is a function returns data about how this module is used
     // TODO: this should/can return more detailed and useful data
-    virtual string interrogate() = 0;
+    virtual std::string interrogate() = 0;
 
     // Returns the type of envelope this module can collect without error
     virtual AtomType collectsEnvelopeType() = 0;
@@ -88,9 +87,9 @@ public:
     	if(nextOperation == 0x00)
     		nextOperation = nextOp;
     	else if (nextOp == 0x00)
-    		cout << "unregistering an operation" << endl;
+    		std::cout << "unregistering an operation" << std::endl;
     	else
-    		cout << "resetting registered operation" << endl;
+    		std::cout << "resetting registered operation" << std::endl;
 		nextOperation = nextOp;};
 
 	// Simple test function if an envelope of data is the first
