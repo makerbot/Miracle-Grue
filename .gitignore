@@ -10,6 +10,16 @@
 *.a
 *.so
 *.bak
+*.pyc
+
+#ignore build system files
+/.sconsign.dblite
+
+#ignore generated gcode files
+/*.gcode
+
+#ignore unit tests
+/*UnitTest
 
 #ignore doyxgen generated docs
 documentation/Doxyfile/*
