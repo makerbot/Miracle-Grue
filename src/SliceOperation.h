@@ -11,6 +11,7 @@
 #include "Operation.h"
 #include "MeshData.h"		// input data type
 #include "RegionData.h"		// output data
+#include "SlicingContext.h"
 
 #include <stdio.h>
 
@@ -20,14 +21,14 @@
 class SliceOperation :public Operation{
 public:
 
+	//TODO DELETE ME just for the record for now. 
+    map<float,CarvedSlice> slices; 
+
     SliceOperation();
     ~SliceOperation();
 
 	void processEnvelope(const DataEnvelope& envelope);
     //string interrogate();
-
-    std::vector<AtomType> collectsEnvelopeType() = 0;
-    std::vector<AtomType> emitsEnvelopeType() = 0;
 };
 
 
