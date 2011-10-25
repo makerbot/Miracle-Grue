@@ -42,6 +42,9 @@ protected:
     std::vector<Operation*> inputs;  // pointers to input operations
     std::vector<DataEnvelope*> dataEnvelopes;
 
+    std::vector<AtomType> emitTypes;
+    std::vector<AtomType> acceptTypes;
+
 
 public:
     /// General base constructor for an Operation
@@ -51,7 +54,7 @@ public:
 
     }
 
-    /// General base constructor for an Operation
+    /// General base destructor for an Operation
     virtual ~Operation()
     {
 
@@ -115,13 +118,17 @@ public:
     // This is a function returns data about how this module is used
     // TODO: this should/can return more detailed and useful data
     virtual std::string interrogate() = 0;
+*/
+    /// Returns the type of envelope this module can collect without error
+    std::vector<AtomType>& collectsEnvelopeType() {
+			return *acceptTypes;
+	}
 
-    // Returns the type of envelope this module can collect without error
-    virtual AtomType collectsEnvelopeType() = 0;
-
-    // Returns the type of envelope this module can collect without error
-    virtual AtomType emitsEnvelopeType() = 0;
-
+    /// Returns the type of envelope this module can collect without error
+    virtual std::vector<AtomType>& emitsEnvelopeType(){
+			return *emitTypes;
+	}    
+/*
     // this function is used to set the next operation in the chain
 	void setNext(Operation* nextOp) {
     	if(nextOperation == 0x00)

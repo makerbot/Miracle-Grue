@@ -45,6 +45,8 @@ typedef enum AtomType {
 
 	TYPE_PATH_BINARY = 8,
 	TYPE_PATH_ASCII= 3,
+	
+	TYPE_MESH_3D = 9, 
 
 	TYPE_GCODE_ASCII = 2,
 } AtomType;
