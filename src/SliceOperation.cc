@@ -38,7 +38,7 @@ void SliceOperation::processEnvelope(const DataEnvelope& envelope)
 	assert(&data != NULL);
 	
 	//for now, mesh is one entire 3d mesh
-	for(  while (z < topZ) {
+	while (z < topZ) {
 		CarvedSlice cs = mesh.regionForSliceAtZ(zLayer, slice->perimeter); 
 		slices.append(*cs);
 		DataEnvelope e = new SliceEnvelope(cs);		
