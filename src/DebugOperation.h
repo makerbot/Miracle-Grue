@@ -26,7 +26,7 @@ public:
 	// -- from Operation
     void init(Configuration& config);
     void cleanup();
-	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
+	void processEnvelope(const DataEnvelope& envelope);
     string interrogate();
     AtomType collectsEnvelopeType();
     AtomType emitsEnvelopeType();

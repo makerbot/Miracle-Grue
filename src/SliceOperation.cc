@@ -8,33 +8,33 @@
    License, or (at your option) any later version.
 
 */
+
+#include <assert.h>
 #include "SliceOperation.h"
 
 
-DataEnvelope* SliceOperation::processEnvelope(const DataEnvelope& envelope)
+
+using namespace std;
+
+SliceOperation::SliceOperation()
+{
+	cout << "SliceOperation() @"  << this<< endl;
+}
+
+SliceOperation::~SliceOperation()
+{
+	cout << "~SliceOperation() @"  << this<< endl;
+}
+
+
+void SliceOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	printf("%s\n", __FUNCTION__ );
-	printf("%s: The processEnvelope! It Does Nothing!!!\n", __FUNCTION__ );
-	return 0x00;
+	const MeshData &data = *(dynamic_cast<const MeshData* > (&envelope) );
+	assert(&data != NULL);
 }
 
 
-void SliceOperation::init(Configuration& config)
-{
-}
-
-void SliceOperation::cleanup()
-{
-}
 
 
-string SliceOperation::interrogate() {}
 
-AtomType SliceOperation::collectsEnvelopeType() {
-	return TYPE_INVALID;
-}
-
-AtomType SliceOperation::emitsEnvelopeType()
-{
-	return TYPE_INVALID;
-}

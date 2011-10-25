@@ -14,12 +14,9 @@ private:
 public :
 	SkeinforgeFromFile(): Operation();
 
-	void init(Configuration& config)
-	{
-		//
-	}
 
-	DataEnvelope* processEnvelope(const DataEnvelope& envelope)
+
+	void processEnvelope(const DataEnvelope& envelope)
 	{
 		if( this->isFirstEnvelope(envelope)) {
 			//run skeinforge at the commandline
@@ -28,7 +25,6 @@ public :
 			//return DataEnvelope(newEnvelope)
 		}
 
-		return 0x00;
 	}
 
 	void cleanup()

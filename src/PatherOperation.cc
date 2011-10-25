@@ -26,9 +26,10 @@ void PatherOperation::start()
 
 }
 
-DataEnvelope* PatherOperation::processEnvelope(const DataEnvelope& envelope)
+void PatherOperation::processEnvelope(const DataEnvelope& envelope)
 {
-	return NULL;
+	const RegionData &data = *(dynamic_cast<const RegionData* > (&envelope) );
+	assert(&data != NULL);
 }
 
 void PatherOperation::cleanup()

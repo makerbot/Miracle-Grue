@@ -11,56 +11,52 @@
 #ifndef GCODEROPERATION_H_
 #define GCODEROPERATION_H_
 
-#include "Operation.h"
-#include "PathData.h"
 
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <assert.h>
 
+#include "Operation.h"
+
+#include "PathData.h"    // input data
+#include "GCodeData.h"	 // output data
 
 
 class GCoderOperation: public Operation
 {
-	std::ofstream *pStream;
-    // output data collector
-    std::vector<std::string> gStrings;
-
-    Configuration* pConfig;
 
 public:
 	GCoderOperation();
 
 	virtual ~GCoderOperation(){}
 
-	void init(Configuration& config);
 	void start();
 	void finish();
 
-	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
+	void processEnvelope(const DataEnvelope& envelope);
 	void cleanup();
 
 	std::string interrogate();
 	AtomType collectsEnvelopeType();
 	AtomType  emitsEnvelopeType();
 
-	const Configuration &configuration()const {return *pConfig;}
-	std::ostream& stream();
 
 private:
 
+	void emit(const char* msg);
+
     // write important config information in gcode file
-    void writeGCodeConfig();
-	void writeMachineInitialization() ;
-    void writePlatformInitialization() ;
-    void writeExtrudersInitialization() ;
-    void writeWarmupSequence();
-    void writeHomingSequence();
-    void writeGcodeEndOfFile();
+    void writeGCodeConfig(std::ostream &ss) const;
+	void writeMachineInitialization(std::ostream &ss) const;
+    void writePlatformInitialization(std::ostream &ss) const;
+    void writeExtrudersInitialization(std::ostream &ss) const;
 
-    void writePaths(const PathData& pathData);
+    void writeHomingSequence(std::ostream &ss) const;
+    void writeWarmupSequence(std::ostream &ss) const;
 
-	//void write(const char *gstring, ostream &ss) const;
-	void closeFile();
+    void writePaths(std::ostream &ss, const PathData& pathData) const;
+    void writeGcodeEndOfFile(std::ostream &ss) const;
 
 };
 

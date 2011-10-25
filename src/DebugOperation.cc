@@ -13,7 +13,7 @@
 void DebugOperation::init(Configuration& config) {}
 
 
-DataEnvelope* DebugOperation::processEnvelope(const DataEnvelope& envelope)
+void DebugOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	printf("%s",__FUNCTION__);
 	printf("Beans!\n");
@@ -21,7 +21,7 @@ DataEnvelope* DebugOperation::processEnvelope(const DataEnvelope& envelope)
 	{
 		printf(" last operation!\n");
 	}
-	return 0x00;
+
 }
 
 void DebugOperation::cleanup() {

@@ -13,15 +13,15 @@
 
 using namespace std;
 
-PathData::PathData()
-		:DataEnvelope(TYPE_PATH_BINARY, NULL, 0, NULL, false)
+PathData::PathData(double z, double thick)
+		:positionZ(z), layerThickness(thick)
 {
-
+	cout << "PathData() @"  << this<< endl;
 }
 
 PathData::~PathData()
 {
-	cout << "~PathData() "  << this<< endl;
+	cout << "~PathData() @"  << this<< endl;
 
 }
 

@@ -14,7 +14,6 @@
 using namespace std;
 
 MeshData::MeshData()
-		:DataEnvelope(TYPE_PATH_BINARY, NULL, 0, NULL, false)
 
 {
 	cout << "MeshData() @"  << this<< endl;

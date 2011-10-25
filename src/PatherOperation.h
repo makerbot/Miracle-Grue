@@ -11,6 +11,8 @@
 #ifndef PATHEROPERATION_H_
 #define PATHEROPERATION_H_
 
+#include "RegionData.h"  // input data type
+#include "PathData.h"	 // output data type
 #include "Operation.h"
 
 
@@ -24,18 +26,19 @@ public:
 	{
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "(Miracle Grue)" << std::endl;
+		std::cout << "PatherOperation() @"  << this<< std::endl;
 	};
-	virtual ~PatherOperation(){cleanup();}
+
+	virtual ~PatherOperation()
+	{
+		std::cout << "~PatherOperation() @"  << this<< std::endl;
+	}
 
 	void init(Configuration& config);
 	void start();
-	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
+	void processEnvelope(const DataEnvelope& envelope);
 	void cleanup();
-/*
-	std::string interrogate();
-	AtomType collectsEnvelopeType();
-	AtomType  emitsEnvelopeType();
-*/
+
 	const Configuration &configuration()const {return *pConfig;}
 
 

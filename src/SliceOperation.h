@@ -9,7 +9,9 @@
 
 */
 #include "Operation.h"
-#include "DataEnvelope.h"
+#include "MeshData.h"		// input data type
+#include "RegionData.h"		// output data
+
 #include <stdio.h>
 
 #ifndef MG_SKEIN_OPERATION_H
@@ -18,17 +20,13 @@
 class SliceOperation :public Operation{
 public:
 
-    SliceOperation():Operation() {}
+    SliceOperation();
+    ~SliceOperation();
 
-    ~SliceOperation() { printf("%s\n", __FUNCTION__ );}
-
-
-    void init(Configuration& config);
-    void cleanup();
-	DataEnvelope* processEnvelope(const DataEnvelope& envelope);
-    string interrogate();
-    AtomType collectsEnvelopeType();
-    AtomType emitsEnvelopeType();
+	void processEnvelope(const DataEnvelope& envelope);
+    //string interrogate();
+    //AtomType collectsEnvelopeType();
+    //AtomType emitsEnvelopeType();
 };
 
 

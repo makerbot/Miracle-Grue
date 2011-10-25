@@ -1,6 +1,4 @@
-what links here: overview.txt
-
-The slicer output are contours. The contour file is json and its format is as follows:
+The slicer output are regions. The region file is json and its format is as follows:
 
 - A version
 - The middle z position of the region (in mm)
@@ -11,7 +9,6 @@ The slicer output are contours. The contour file is json and its format is as fo
 - The 'inside' of the polygons is defined as whatever is on the right side of the path. For clarity: 'subtracted' polygons will 'wind' counter-clockwise,
   'additive' sections will wind clockwise.
 - Polygons are not self intersecting. 
-- Contours may self-intersect. For clarity: after a entire contour has been processed, 
 - PROVISIONAL: there may be zero width sections of that contour
 
 ## JSON contour file format
@@ -49,13 +46,15 @@ The slicer module processes 3D geometry and provides slices on demand.
 
 The following 2D geometry formats are used as slicer output:
 - .cslice file. A json file containing all contours for a slice, as defined above. One json slice per file. 
-- .cslices file.  A json file with many regions as defined above, aka a 'region stack' Also may include metadata about a whole object. regions metadata is TBD
+- .cslices file.  A json file with many regions as defined above, aka a 'region stack' Also may include metadata about a whole object. 
 
-Along with outputting the 2d gemoetry files, the slices can also output settings and metadata. 
+regions metadata is TBD
+
+Along with outputting the 2d geometry files, the slices can also output settings and metadata. 
 This can include warnings, hints for other processing, or cache/queue data for on-disk storage.  This is could include things like:
 - cache files location for this set of slices
 - warnings or error information for other steps in the process
 
 SVG Viewing:
- Included in this project is a .svg -> .region  and .region -> .svg converter for easier debugging and testing. See gureVisualizer.py
+ Included in this project is a .svg -> .region  and .region -> .svg converter for easier debugging and testing. See grueVisualizer.py
  SVG Path Data: http://www.w3schools.com/svg/svg_path.asp

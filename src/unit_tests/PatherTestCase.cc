@@ -24,7 +24,6 @@ void configurePathTest(Configuration& config)
 	config.extruders[0].coordinateSystemOffsetX = 0;
 
 	config.platform.temperature = 30;
-
 }
 
 
@@ -38,6 +37,10 @@ void PatherTestCase::setUp()
 
 void PatherTestCase::example()
 {
+
+	PatherOperation operation;
+	RegionData inputData(0.2, 0.4);
+	PathData outputData(0.2, 0.4);
 
 //  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
 //  CPPUNIT_ASSERT( 1 == 0 );

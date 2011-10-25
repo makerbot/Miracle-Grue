@@ -8,12 +8,28 @@
    License, or (at your option) any later version.
 
 */
-#include "stdint.h"
-#include <stdio.h>
-
 
 #ifndef MG_DATA_ENVELOPE
 #define MG_DATA_ENVELOPE
+
+#include "stdint.h"
+#include <stdio.h>
+#include <vector>
+
+
+typedef double real;
+
+struct Point2D
+{
+	Point2D(real x, real y)
+		:x(x), y(y)
+	{}
+	real x;
+	real y;
+};
+
+typedef std::vector<Point2D> Polygon;
+typedef std::vector<Polygon> Paths;
 
 // This enum represents known data types
 //TODO: These should be 32bit id/hash values for dataNamespace strings or something
@@ -45,34 +61,43 @@ typedef enum AtomType {
 class DataEnvelope {
 
 protected:
+/*
 	void* data; ///data
 	uint32_t dataSize; ///size of data in bytes
 	char* dataNamespaceString; /// namespace string of datatype
 	//TODO: add Reference to owner which will be responsible for cleaning up
 	// this envelope of data. For now, creator of atom will do the destruction.
-
 	//TODO: build a 'id to namespace string' converter
 
-
 public:
+
 	AtomType typeID; /// id of the contained data
-	bool lastFlag; ///this flags the current envelope as the last in this stream
-
-	///Generic empty data constructor
-
-	DataEnvelope(): typeID(TYPE_INVALID), data(0x00),
-				dataSize(0), dataNamespaceString((char*)""), lastFlag(false)
-	{
-		printf("%s\n", __FUNCTION__ );
-	};
-
+	bool type() {return typeID; };
 
 	///Baseline data constructor
 	DataEnvelope(AtomType iD, void* pData, uint32_t dataSz, char* dataNsString, bool isLast = false)
 	: typeID(iD), data(pData), dataSize(dataSz), dataNamespaceString(dataNsString),lastFlag(isLast) {};
 
 
+	DataEnvelope(): typeID(TYPE_INVALID), data(0x00),
+				dataSize(0), dataNamespaceString((char*)""), lastFlag(false)
+	{
+		// printf("%s\n", __FUNCTION__ );
+	};
+*/
+	bool lastFlag; ///this flags the current envelope as the last in this stream
+
+	///Generic empty data constructor
+
+public:
+	DataEnvelope(){}
+
 	virtual ~DataEnvelope(){}
+
+	bool isLastEnvelope() const
+	{
+		return lastFlag;
+	}
 
 	void setLast(void)
 	{
@@ -80,7 +105,7 @@ public:
 		lastFlag = true;
 	}
 
-	bool type() {return typeID; };
+
 
 };
 

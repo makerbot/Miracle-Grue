@@ -14,7 +14,7 @@ Instead of using a geometry file directly, the slicer can also load a file that 
 - volumes of thicker shell regions
 - volumes where support should be omitted or reinforced
 - manual path overrides
-- …
+
 
 here's a sample json annotation file. It takes precedence over the model file, and contains:
  - the model name
