@@ -19,19 +19,40 @@ int testCallbackCount = 0;
 bool testSliceOp = true;
 
 int main() {
+	cout << "Hello World!" << endl;
+	
+	ModelFileReaderOperation readOp = new ModelFileReaderOperation():
+	SlicerOperation sliceOp = new SlicerOperation();
+	
+	readOp.start(); //read the file, and start sending envelopes of data to slicer
+	
+	}
+	
+int main_old() {
   // -- Run hello
   printf("Hello world!\n");
 
   if(testSliceOp)
   {
-	  printf("%s: Building DataEnvelope(s)\n", __FUNCTION__);
-	  DataEnvelope de = DataEnvelope();
-	  DataEnvelope deL = DataEnvelope();
+	printf("%s: Building DataEnvelope(s)\n", __FUNCTION__);
+	DataEnvelope de = DataEnvelope();
+	DataEnvelope deL = DataEnvelope();
 
-	  PathLoadOperation plo = new PathLoadOperation();
-	  GCoderOperation gco  = new GCodeOperation();
+	PathLoadOperation plOp = new PathLoadOperation();
+	GCoderOperation gcOp  = new GCodeOperation();
 
-	  Configuration c = new Configuration();
+	// create output vector for configurattion
+	std::vector<Operation*> plOuts;
+	plOuts.append(gcOp);
+	std::vector<Operation*> gcOuts;
+
+	Configuration c = new Configuration();
+	gcOp = init(c,  /* &inputs,*/ &plOuts);
+	gcOp = init(c,  /* &inputs,*/ &gcOuts);
+ 	
+	//This will start the operation chain running
+ 	PlOp.satrt("test.stl"); 
+	
 
 //	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
 //	  DebugOperation* dbgOp = new DebugOperation();

@@ -45,16 +45,29 @@ void ModelFileReaderOperation::start()
 {
 	const Configuration &config = configuration();
 	pStream = new std::ifstream("filename.stl");
-	std::cout << "Writing to file: \"" << config.gcodeFilename << "\""<< std::endl;
+	//std::cout << "Writing to file: \"" << config.gcodeFilename << "\""<< std::endl;
+	std::cout << "Reading From file \"" << "filename.stl" << "\""<< std::endl;
+	readFromStl(srcfile);
 }
 
-void ModelFileReaderOperation::finish()
+
+void ModelFileReaderOperation::start(std::string &srcFile)
 {
-	assert(pStream);
-	pStream->close();
-	pStream = NULL;
+	const Configuration &config = configuration();
+	//pStream = new std::ifstream(srcFile);
+	std::cout << "Reading From file \"" << srcFile << "\""<< std::endl;
+	DataEnvelope data = readFromStl(srcfile);
+	data->lastFlag = true;
+	 //pass data down the process train
+	this->emit(data);
 }
 
 
+DataEnvelope& ModelFileReaderOperation::readFromStl(std::string srcFile)
+{
 
-
+	Mesh3d mesh = new Mesh3d();
+	mesh.loadFromSTLFile(const char *fileName)
+	DataEnvelope data = MeshEnvelope(mesh);
+	return &data;
+}

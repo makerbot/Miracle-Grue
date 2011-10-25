@@ -25,8 +25,9 @@ public:
 
 	void processEnvelope(const DataEnvelope& envelope);
     //string interrogate();
-    //AtomType collectsEnvelopeType();
-    //AtomType emitsEnvelopeType();
+
+    std::vector<AtomType> collectsEnvelopeType() = 0;
+    std::vector<AtomType> emitsEnvelopeType() = 0;
 };
 
 

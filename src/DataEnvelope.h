@@ -62,6 +62,10 @@ typedef enum AtomType {
  */
 class DataEnvelope {
 
+	//TODO:  Create and use some reference system as per  IUnknown for
+	// management of envelopes
+	//http://msdn.microsoft.com/en-us/library/ms810016.aspx
+
 protected:
 /*
 	void* data; ///data

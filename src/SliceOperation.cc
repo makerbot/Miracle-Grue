@@ -19,6 +19,9 @@ using namespace std;
 SliceOperation::SliceOperation()
 {
 	cout << "SliceOperation() @"  << this<< endl;
+
+    this->acceptTypes.append(TYPE_MESH_3D);
+    this->emitTypes.append(TYPE_SHELL_BINARY);
 }
 
 SliceOperation::~SliceOperation()
@@ -29,10 +32,12 @@ SliceOperation::~SliceOperation()
 
 void SliceOperation::processEnvelope(const DataEnvelope& envelope)
 {
+
 	printf("%s\n", __FUNCTION__ );
 	const MeshData &data = *(dynamic_cast<const MeshData* > (&envelope) );
 	assert(&data != NULL);
 }
+
 
 
 

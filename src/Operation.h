@@ -37,9 +37,10 @@ class Operation
     Configuration* pConfig;
 protected:
 
-    // uint32_t  envelopesProcessed; // count of envelopes processed since reset
+    uint32_t  envelopesIn; // count of envelopes processed since reset
+    uint32_t  envelopesOut; // count of envelopes processed since reset
     std::vector<Operation*> outputs; // pointers to consumers
-    std::vector<Operation*> inputs;  // pointers to input operations
+    //std::vector<Operation*> inputs;  // pointers to input operations
     std::vector<DataEnvelope*> dataEnvelopes;
 
     std::vector<AtomType> emitTypes;
@@ -49,7 +50,7 @@ protected:
 public:
     /// General base constructor for an Operation
     Operation()
-     :pConfig(NULL)
+     :pConfig(NULL), envelopesIn(0), envelopesOut(0)
     {
 
     }
@@ -68,12 +69,16 @@ public:
     }
 
     /// Init Function: Called to set the configuration
-    virtual void init(Configuration& config, const std::vector<Operation*> &inputs, const std::vector<Operation*> &outputs)
+    virtual void init(Configuration& config, 
+    /*const std::vector<Operation*> &inputs,*/
+    const std::vector<Operation*> &outputs)
     {
     	// copy the contents of the input output vectors
     	this->outputs = outputs;
-    	this->inputs = inputs;
+    	//this->inputs = inputs;
     	this->pConfig = &config;
+    	envelopesIn = 0;
+    	envelopesOut= 0;
     }
 
     // Collect function accepts incoming data.  It usually
@@ -81,29 +86,22 @@ public:
     // operation, but it can be expanded or overridden.
     virtual void collect(const DataEnvelope& envelope)
     {
+	    envelopesIn++;
     	processEnvelope(envelope);
-    	/*
-    	DataEnvelope* newDataEnvelope = this->processEnvelope(envelope);
-
-    	envelopesProcessed++;
-    	if(nextOperation == 0x00)
-    		std::cout << "no next operation registered" << std::endl;
-    	else if (newDataEnvelope == 0x00)
-    		std::cout << "no new dataEnvelope generated" << std::endl;
-    	else
-    		nextOperation->collect((DataEnvelope&)*newDataEnvelope);
-    	*/
     }
 
-    virtual void emit(DataEnvelope* envelope)
-    {
+	/// Sends data down to the next Module(s) in the chain.
+	/// NOTE: Implementations of 'processEnvelope' should call this
+	/// to send data along, rather than tryign to manage their ops directly.
+    virtual void emit(DataEnvelope* envelope) {
     	dataEnvelopes.push_back(envelope);
+	    envelopesOut++; //in case dataEnvelopes get smashed or popped
+
     	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
     	{
     		Operation& op = *(*i);
     		op.collect(*envelope);
     	}
-
     }
 
 
@@ -129,17 +127,6 @@ public:
 			return *emitTypes;
 	}    
 /*
-    // this function is used to set the next operation in the chain
-	void setNext(Operation* nextOp) {
-    	if(nextOperation == 0x00)
-    		nextOperation = nextOp;
-    	else if (nextOp == 0x00)
-    		std::cout << "unregistering an operation" << std::endl;
-    	else
-    		std::cout << "resetting registered operation" << std::endl;
-		nextOperation = nextOp;};
-
-
 	// Simple test function if an envelope of data is the first
 	bool isFirstEnvelope(const DataEnvelope& envelope)
 	{ return envelopesProcessed == 0 ? true: false;}
@@ -147,15 +134,6 @@ public:
 	// Simple test function if an envelope of data is the last
 	bool isLastEnvelope(const DataEnvelope& envelope)
 	{ return envelope.isLastEnvelope();}
-
-
-/*
-	// adds a listener
-    void setOutput(Operation& operation)
-    {
-    	outputs.push_back(&operation);
-    }
-*/
 
 
 protected:
