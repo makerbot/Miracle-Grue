@@ -38,48 +38,43 @@ int main_old() {
 	DataEnvelope de = DataEnvelope();
 	DataEnvelope deL = DataEnvelope();
 
+	//create our operations.
+	// Loader -> Slicer -> Regioner -> Pather -> GCoder
 	PathLoadOperation plOp = new PathLoadOperation();
-	GCoderOperation gcOp  = new GCodeOperation();
-
-	// create output vector for configurattion
+	SliceOperation slOp  = new SliceOperation();
+	RegionerOperation regOp = new RegionerOperation();	
+	PatherOperation pathOp = new PatherOperation();
+	GCodeOperation gcodeOp = new GCodeOperation();
+	
+	//pather output list
 	std::vector<Operation*> plOuts;
-	plOuts.append(gcOp);
-	std::vector<Operation*> gcOuts;
+	plOuts.append(slOp);
 
+	//slicer output list
+	std::vector<Operation*> slOuts;
+	slOuts.append(reOp);
+
+	//regioner output list
+	std::vector<Operation*> regOuts;
+	regOuts.append(pathOp);
+
+	//pather output list
+	std::vector<Operation*> pathOuts;
+	pathOuts.append(gcodeOp);
+
+
+	/// creating our path of processing.
 	Configuration c = new Configuration();
-	gcOp = init(c,  /* &inputs,*/ &plOuts);
-	gcOp = init(c,  /* &inputs,*/ &gcOuts);
+	plOp.init(c,  /* &inputs,*/ &plOuts);
+	slOp.init(c,  /* &inputs,*/ &slOuts);
+	regOp.init(c,  /* &inputs,*/ &regOuts);
+	pathOp.init(c,  /* &inputs,*/ &pathOuts);
+	gcodeOp.init(c,  /* &inputs,*/ &gcodeOuts);
  	
 	//This will start the operation chain running
  	PlOp.satrt("test.stl"); 
+ 	
 	
-
-//	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-//	  DebugOperation* dbgOp = new DebugOperation();
-//	  SliceOperation* s1 = new SliceOperation();
-//	  s1->collect(de);
-//
-////	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-//	  SliceOperation *s2 = new SliceOperation();
-//	  s2->setNext(dbgOp);
-////	  s2->collect(de);
-////	  deL.setLast();
-////	  s2->collect(deL);
-//
-//	  printf("%s: Testing a slice queuing data, w. callback\n", __FUNCTION__);
-//	  DataEnvelope dummyData= DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-//	  DataEnvelope dummyData2 = DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-//	  dummyData2.setLast();
-//
-//	  if (s2->collectsEnvelopeType() == dummyData.typeID)
-//	  {
-//		  printf("%s: Queuing one Envelope of dummy to s2\n", __FUNCTION__);
-//		  s2->collect(dummyData);
-//		  s2->collect(dummyData2);
-//	  }
-////	  else {
-////		  printf("%s: Envelope Type Mismatch at s3\n", __FUNCTION__);
-////	  }
   }
 
 }
