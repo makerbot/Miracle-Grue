@@ -8,17 +8,33 @@
    License, or (at your option) any later version.
 
 */
-#include <assert.h>
 
-#include "PatherOperation.h"
-
-
+#ifndef SLICE_DATA_H_
+#define SLICE_DATA_H_
 
 
+#include <vector>
 
-void PatherOperation::processEnvelope(const DataEnvelope& envelope)
-{
-	const RegionData &data = *(dynamic_cast<const RegionData* > (&envelope) );
-	assert(&data != NULL);
-}
+#include "DataEnvelope.h"
 
+
+
+//
+// The Path data is a dictionary of polygons
+// there are multiple polygons for each extruders
+//
+class SliceData: public DataEnvelope {
+
+public:
+	SliceData (double z, double thick);
+	virtual ~SliceData();
+
+
+	double positionZ;
+	double layerThickness;
+};
+
+
+
+
+#endif // SLICE_DATA_H_

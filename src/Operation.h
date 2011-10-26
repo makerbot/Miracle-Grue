@@ -121,12 +121,12 @@ public:
 */
     /// Returns the type of envelope this module can collect without error
     std::vector<AtomType>& collectsEnvelopeType() {
-			return *acceptTypes;
+			return acceptTypes;
 	}
 
     /// Returns the type of envelope this module can collect without error
     virtual std::vector<AtomType>& emitsEnvelopeType(){
-			return *emitTypes;
+			return emitTypes;
 	}    
 /*
     // this function is used to set the next operation in the chain

@@ -8,17 +8,23 @@
    License, or (at your option) any later version.
 
 */
-#include <assert.h>
+#include <iostream>
+#include "SliceData.h"
 
-#include "PatherOperation.h"
+using namespace std;
 
-
-
-
-
-void PatherOperation::processEnvelope(const DataEnvelope& envelope)
+SliceData::SliceData(double z, double thick)
+		:positionZ(z), layerThickness(thick)
 {
-	const RegionData &data = *(dynamic_cast<const RegionData* > (&envelope) );
-	assert(&data != NULL);
+	cout << "SliceData() @"  << this<< endl;
 }
+
+SliceData::~SliceData()
+{
+	cout << "~SliceData() @"  << this<< endl;
+
+}
+
+
+
 

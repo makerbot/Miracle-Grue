@@ -97,18 +97,6 @@ void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 	}
 }
 
-AtomType GCoderOperation::collectsEnvelopeType() {
-	return TYPE_PATH_ASCII;
-}
-
-AtomType GCoderOperation::emitsEnvelopeType() {
-	return TYPE_GCODE_ASCII;
-}
-
-
-std::string GCoderOperation::interrogate() {
-	return std::string("GCodeOperator");
-}
 
 void GCoderOperation::cleanup()
 {

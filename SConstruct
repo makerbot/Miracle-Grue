@@ -73,6 +73,16 @@ env.Program( 'slicerUnitTest',['src/SliceOperation.cc', 'src/Configuration.cc',
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
+
+env.Program( 'regionerUnitTest',['src/RegionerOperation.cc', 'src/Configuration.cc',
+							'src/unit_tests/UnitTestMain.cc', 
+							'src/unit_tests/RegionerTestCase.cc', 
+							'src/RegionerOperation.cc',
+							'src/SliceData.cc',
+							'src/RegionData.cc'],
+		  LIBS = 'cppunit', 
+		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+
 env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
 							'src/unit_tests/UnitTestMain.cc', 
 							'src/unit_tests/PatherTestCase.cc', 

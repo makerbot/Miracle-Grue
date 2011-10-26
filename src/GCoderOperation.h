@@ -37,9 +37,7 @@ public:
 	void processEnvelope(const DataEnvelope& envelope);
 	void cleanup();
 
-	std::string interrogate();
-	AtomType collectsEnvelopeType();
-	AtomType  emitsEnvelopeType();
+
 
 
 private:

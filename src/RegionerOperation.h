@@ -8,17 +8,24 @@
    License, or (at your option) any later version.
 
 */
-#include <assert.h>
+#ifndef RegionerOperation_H_
+#define RegionerOperation_H_
 
-#include "PatherOperation.h"
+#include "SliceData.h"  // input data type
+#include "RegionData.h"	 // output data type
+#include "Operation.h"
 
 
-
-
-
-void PatherOperation::processEnvelope(const DataEnvelope& envelope)
+class RegionerOperation: public Operation
 {
-	const RegionData &data = *(dynamic_cast<const RegionData* > (&envelope) );
-	assert(&data != NULL);
-}
+
+public:
+	RegionerOperation();
+
+	virtual ~RegionerOperation();
+	void processEnvelope(const DataEnvelope& envelope);
+};
+
+
+#endif /* RegionerOperation_H_ */
 

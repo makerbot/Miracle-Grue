@@ -18,11 +18,9 @@
 
 class PatherOperation: public Operation
 {
-    Configuration* pConfig;
 
 public:
 	PatherOperation()
-		:pConfig(NULL)
 	{
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "(Miracle Grue)" << std::endl;
@@ -34,12 +32,8 @@ public:
 		std::cout << "~PatherOperation() @"  << this<< std::endl;
 	}
 
-	void init(Configuration& config);
-	void start();
-	void processEnvelope(const DataEnvelope& envelope);
-	void cleanup();
 
-	const Configuration &configuration()const {return *pConfig;}
+	void processEnvelope(const DataEnvelope& envelope);
 
 
 
