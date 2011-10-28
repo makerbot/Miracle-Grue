@@ -43,14 +43,17 @@ std::istream& ModelFileReaderOperation::stream() const
 
 void ModelFileReaderOperation::start()
 {
+    
 	const Configuration &config = configuration();
 	pStream = new std::ifstream("filename.stl");
-	std::cout << "Writing to file: \"" << config.gcodeFilename << "\""<< std::endl;
+	std::cout << "ModelFileReaderOperation reading file: \"" << config.gcodeFilename << "\""<< std::endl;
+    
+    finish();
 }
 
 void ModelFileReaderOperation::finish()
 {
-	assert(pStream);
+	// assert(pStream);
 	pStream->close();
 	pStream = NULL;
 }

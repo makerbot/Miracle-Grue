@@ -105,6 +105,24 @@ public:
     	}
 
     }
+    
+    virtual void start()
+    {
+    	for( std::vector<Operation*>::iterator i = inputs.begin(); i != inputs.end(); i++)
+    	{
+    		Operation& op = *(*i);
+    		op.start();
+    	}
+    }
+    
+    virtual void finish()
+    {
+    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
+    	{
+    		Operation& op = *(*i);
+    		op.finish();
+    	}
+    }
 
 
     // This is the core processing function, most users only need to override

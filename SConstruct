@@ -91,3 +91,22 @@ env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
 		  CPP_PATH= ['..']) 
+
+
+env.Program( 'chainIntegrationUnitTest',[	'src/RegionerOperation.cc', 
+						'src/Configuration.cc',
+						'src/unit_tests/UnitTestMain.cc', 
+						'src/unit_tests/ChainIntegrationTestCase.cc', 
+						'src/RegionerOperation.cc',
+						'src/SliceData.cc',
+						'src/RegionData.cc',
+						'src/PathData.cc',
+						'src/MeshData.cc',
+						'src/FileWriterOperation.cc',
+						'src/SliceOperation.cc',
+						'src/GCoderOperation.cc',
+						'src/PatherOperation.cc', 
+						'src/ModelFileReaderOperation.cc'],
+		  LIBS = 'cppunit', 
+		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+
