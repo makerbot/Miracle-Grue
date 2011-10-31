@@ -48,7 +48,26 @@ env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
 #env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
 #		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
-env.Program( 'gcoderUnitTest',['src/GCoderOperation.cc', 'src/Configuration.cc',
+
+env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
+    'src/BGL/BGLBounds.cc',
+    'src/BGL/BGLCommon.cc',
+    'src/BGL/BGLCompoundRegion.cc',
+    'src/BGL/BGLIntersection.cc',
+    'src/BGL/BGLLine.cc',
+    'src/BGL/BGLMesh3d.cc',
+    'src/BGL/BGLPath.cc',
+    'src/BGL/BGLPoint.cc',
+    'src/BGL/BGLPoint3d.cc',
+    'src/BGL/BGLSimpleRegion.cc',
+    'src/BGL/BGLTriangle3d.cc'])
+
+env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
+                       'src/json-cpp/src/lib_json/json_value.cpp',
+                       'src/json-cpp/src/lib_json/json_writer.cpp' ],
+            CPPPATH=['src/json-cpp/include'])
+
+env.Program( './bin/tests/gcoderUnitTest',['src/GCoderOperation.cc', 'src/Configuration.cc',
 							'src/unit_tests/UnitTestMain.cc', 
 							'src/unit_tests/GCoderTestCase.cc', 
 							'src/PathData.cc',
@@ -59,12 +78,12 @@ env.Program( 'gcoderUnitTest',['src/GCoderOperation.cc', 'src/Configuration.cc',
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
 		  CPP_PATH= ['..']) 
 
-env.Program( 'modelReaderUnitTest',['src/ModelFileReaderOperation.cc', 'src/Configuration.cc',
+env.Program( './bin/tests/modelReaderUnitTest',['src/ModelFileReaderOperation.cc', 'src/Configuration.cc',
 							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/ModelReaderTestCase.cc', 'src/MeshData.cc'],
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
-env.Program( 'slicerUnitTest',['src/SliceOperation.cc', 'src/Configuration.cc',
+env.Program( './bin/tests/slicerUnitTest',['src/SliceOperation.cc', 'src/Configuration.cc',
 							'src/unit_tests/UnitTestMain.cc', 
 							'src/unit_tests/SlicerTestCase.cc', 
 							'src/SliceOperation.cc',
@@ -74,7 +93,7 @@ env.Program( 'slicerUnitTest',['src/SliceOperation.cc', 'src/Configuration.cc',
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
 
-env.Program( 'regionerUnitTest',['src/RegionerOperation.cc', 'src/Configuration.cc',
+env.Program( './bin/tests/regionerUnitTest',['src/RegionerOperation.cc', 'src/Configuration.cc',
 							'src/unit_tests/UnitTestMain.cc', 
 							'src/unit_tests/RegionerTestCase.cc', 
 							'src/RegionerOperation.cc',
@@ -83,7 +102,7 @@ env.Program( 'regionerUnitTest',['src/RegionerOperation.cc', 'src/Configuration.
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
-env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
+env.Program( './bin/tests/patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
 							'src/unit_tests/UnitTestMain.cc', 
 							'src/unit_tests/PatherTestCase.cc', 
 							'src/PathData.cc',
@@ -93,7 +112,7 @@ env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
 		  CPPPATH= ['..']) 
 
 
-env.Program( 'chainIntegrationUnitTest',[	'src/RegionerOperation.cc', 
+env.Program( './bin/tests/chainIntegrationUnitTest',[	'src/RegionerOperation.cc', 
 						'src/Configuration.cc',
 						'src/unit_tests/UnitTestMain.cc', 
 						'src/unit_tests/ChainIntegrationTestCase.cc', 
@@ -107,23 +126,6 @@ env.Program( 'chainIntegrationUnitTest',[	'src/RegionerOperation.cc',
 						'src/GCoderOperation.cc',
 						'src/PatherOperation.cc', 
 						'src/ModelFileReaderOperation.cc'],
-		  LIBS = 'cppunit', 
-		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+		  LIBS = ['cppunit', 'lib_json.a', 'libbgl.a'], 
+		  LIBPATH = ['./bin/lib', '/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
-env.Library('bgl', ['src/BGL/BGLAffine.cc',
-    'src/BGL/BGLBounds.cc',
-    'src/BGL/BGLCommon.cc',
-    'src/BGL/BGLCompoundRegion.cc',
-    'src/BGL/BGLIntersection.cc',
-    'src/BGL/BGLLine.cc',
-    'src/BGL/BGLMesh3d.cc',
-    'src/BGL/BGLPath.cc',
-    'src/BGL/BGLPoint.cc',
-    'src/BGL/BGLPoint3d.cc',
-    'src/BGL/BGLSimpleRegion.cc',
-    'src/BGL/BGLTriangle3d.cc'])
-
-env.Library('_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
-                       'src/json-cpp/src/lib_json/json_value.cpp',
-                       'src/json-cpp/src/lib_json/json_writer.cpp' ],
-            CPPPATH=['src/json-cpp/include'])
