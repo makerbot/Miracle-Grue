@@ -11,7 +11,7 @@
 #include "BGLPoint.h"
 #include "BGLCompoundRegion.h"
 
-
+using namespace std;
 
 namespace BGL {
 

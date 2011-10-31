@@ -17,7 +17,7 @@
 #include "BGLAffine.h"
 #include "BGLPoint3d.h"
 
-using namespace std;
+
 
 namespace BGL {
 
@@ -159,10 +159,10 @@ public:
     }
 
     // Friend functions
-    friend ostream& operator <<(ostream &os,const Point &pt);
+    friend std::ostream& operator <<(std::ostream &os,const Point &pt);
 };
 
-typedef list<Point> Points;
+typedef std::list<Point> Points;
 
 
 

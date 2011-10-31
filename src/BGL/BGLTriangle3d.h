@@ -152,7 +152,7 @@ public:
 };
 
 
-typedef list<Triangle3d> Triangles3d;
+typedef std::list<Triangle3d> Triangles3d;
 
 }
 

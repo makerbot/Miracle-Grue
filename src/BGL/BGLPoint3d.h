@@ -13,7 +13,7 @@
 #include <iostream>
 #include "config.h"
 #include "BGLCommon.h"
-using namespace std;
+
 
 
 namespace BGL {
@@ -153,7 +153,7 @@ public:
     }
 
     // Friend functions
-    friend ostream& operator <<(ostream &os,const Point3d &pt);
+    friend std::ostream& operator <<(std::ostream &os,const Point3d &pt);
 };
 
 

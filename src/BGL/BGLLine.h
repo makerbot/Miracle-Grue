@@ -19,7 +19,7 @@
 #include "BGLIntersection.h"
 #include "BGLPoint.h"
 
-using namespace std;
+
 
 namespace BGL {
 
@@ -167,10 +167,10 @@ public:
     Intersection intersectionWithExtendedLine(const Line &ln) const;
 
     // Friend functions
-    friend ostream& operator <<(ostream &os,const Line &pt);
+    friend std::ostream& operator <<(std::ostream &os,const Line &pt);
 };
 
-typedef list<Line> Lines;
+typedef std::list<Line> Lines;
 
 
 

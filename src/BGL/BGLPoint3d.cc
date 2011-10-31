@@ -1,5 +1,7 @@
 #include "BGLPoint.h"
 
+using namespace std;
+
 namespace BGL {
 
     ostream& operator <<(ostream &os,const Point3d &pt)

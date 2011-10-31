@@ -17,7 +17,7 @@
 namespace BGL {
 
 class SimpleRegion;
-typedef list<SimpleRegion> SimpleRegions;
+typedef std::list<SimpleRegion> SimpleRegions;
 
 class SimpleRegion {
 public:
@@ -35,7 +35,7 @@ public:
     bool intersects(const Path& path) const;
     bool intersects(const SimpleRegion& path) const;
 
-    string svgPathWithOffset(Scalar dx, Scalar dy);
+    std::string svgPathWithOffset(Scalar dx, Scalar dy);
 
     static SimpleRegions &assembleSimpleRegionsFrom(Paths &paths, SimpleRegions &outRegs);
     static SimpleRegions &assembleSimpleRegionsFrom(const Paths &outerPaths, const Paths &innerPaths, SimpleRegions &outRegs);

@@ -18,12 +18,12 @@
 #include "BGLPoint.h"
 #include "BGLLine.h"
 
-using namespace std;
+
 
 namespace BGL {
 
 class Path;
-typedef list<Path> Paths;
+typedef std::list<Path> Paths;
 
 class Path {
 public:
@@ -79,7 +79,7 @@ public:
     bool attach(const Line& ln);
     bool attach(const Path& path);
 
-    string svgPathWithOffset(Scalar dx, Scalar dy) const;
+    std::string svgPathWithOffset(Scalar dx, Scalar dy) const;
 
     bool intersects(const Line &ln) const;
     bool intersects(const Path &path) const;
@@ -120,7 +120,7 @@ public:
     Paths &containedSubpathsOfPath(Path &path, Paths outPaths) const;
 
     // Friend functions
-    friend ostream& operator <<(ostream &os,const Path &pt);
+    friend std::ostream& operator <<(std::ostream &os,const Path &pt);
 
 };
 

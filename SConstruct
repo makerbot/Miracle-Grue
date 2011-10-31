@@ -110,3 +110,17 @@ env.Program( 'chainIntegrationUnitTest',[	'src/RegionerOperation.cc',
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
+env.Library('bgl', ['src/BGL/BGLAffine.cc',
+    'src/BGL/BGLBounds.cc',
+    'src/BGL/BGLCommon.cc',
+    'src/BGL/BGLCompoundRegion.cc',
+    'src/BGL/BGLIntersection.cc',
+    'src/BGL/BGLLine.cc',
+    'src/BGL/BGLMesh3d.cc',
+    'src/BGL/BGLPath.cc',
+    'src/BGL/BGLPoint.cc',
+    'src/BGL/BGLPoint3d.cc',
+    'src/BGL/BGLSimpleRegion.cc',
+    'src/BGL/BGLTriangle3d.cc'])
+
+

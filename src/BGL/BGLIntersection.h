@@ -42,7 +42,7 @@ public:
     Line line() const;
 };
 
-typedef list<Intersection> Intersections;
+typedef std::list<Intersection> Intersections;
 
 
 }

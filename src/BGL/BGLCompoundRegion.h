@@ -30,7 +30,7 @@ public:
 
     int32_t size() const;
     bool contains(const Point &pt) const;
-    string svgPathWithOffset(Scalar dx, Scalar dy);
+    std::string svgPathWithOffset(Scalar dx, Scalar dy);
 
     CompoundRegion &unionWith(SimpleRegion &reg);
     CompoundRegion &differenceWith(SimpleRegion &reg);
@@ -52,7 +52,7 @@ public:
     Paths &infillPathsForRegionWithDensity(Scalar density, Scalar extrusionWidth, Paths &outPaths);
 
 };
-typedef list<CompoundRegion> CompoundRegions;
+typedef std::list<CompoundRegion> CompoundRegions;
 
 
 }
