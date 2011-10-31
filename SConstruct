@@ -90,7 +90,7 @@ env.Program( 'patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
 							'src/RegionData.cc'],
 		  LIBS = 'cppunit', 
 		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
-		  CPP_PATH= ['..']) 
+		  CPPPATH= ['..']) 
 
 
 env.Program( 'chainIntegrationUnitTest',[	'src/RegionerOperation.cc', 
@@ -123,4 +123,7 @@ env.Library('bgl', ['src/BGL/BGLAffine.cc',
     'src/BGL/BGLSimpleRegion.cc',
     'src/BGL/BGLTriangle3d.cc'])
 
-
+env.Library('_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
+                       'src/json-cpp/src/lib_json/json_value.cpp',
+                       'src/json-cpp/src/lib_json/json_writer.cpp' ],
+            CPPPATH=['src/json-cpp/include'])
