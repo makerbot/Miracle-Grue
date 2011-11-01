@@ -22,7 +22,6 @@ PathData::PathData(double z, double thick)
 PathData::~PathData()
 {
 	cout << "~PathData() @"  << this<< endl;
-
 }
 
 

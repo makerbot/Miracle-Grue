@@ -25,7 +25,7 @@ void configurePathTest(Configuration& config)
 
 	Extruder e;
 	config.extruders.push_back(e);
-	config.extruders[0].defaultSpeed = 6;
+	config.extruders[0].defaultExtrusionSpeed = 6;
 	config.extruders[0].extrusionTemperature = 200;
 	config.extruders[0].coordinateSystemOffsetX = 0;
 

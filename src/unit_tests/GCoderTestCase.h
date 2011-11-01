@@ -15,6 +15,7 @@ class GCoderTestCase : public CPPUNIT_NS::TestFixture
   CPPUNIT_TEST( singleExtruder );
   CPPUNIT_TEST( dualExtruders );
   CPPUNIT_TEST( simplePath );
+  CPPUNIT_TEST( spikeBed );
   CPPUNIT_TEST( example );
   CPPUNIT_TEST_SUITE_END();
 
@@ -26,6 +27,7 @@ protected:
   void singleExtruder();
   void dualExtruders();
   void simplePath();
+  void spikeBed();
 
   void example();
 

@@ -49,14 +49,16 @@ private:
 	void writeMachineInitialization(std::ostream &ss) const;
     void writePlatformInitialization(std::ostream &ss) const;
     void writeExtrudersInitialization(std::ostream &ss) const;
-
     void writeHomingSequence(std::ostream &ss) const;
     void writeWarmupSequence(std::ostream &ss) const;
+    void writeAnchor(std::ostream &ss) const;
 
     void writePaths(std::ostream &ss, const PathData& pathData) const;
-    void writeGcodeEndOfFile(std::ostream &ss) const;
 
-    void writeAnchor(std::ostream &ss) const;
+    void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
+    void writeWipeExtruder(std::ostream& ss, int extruderId) const;
+
+    void writeGcodeEndOfFile(std::ostream &ss) const;
 };
 
 #endif /* GCODEROPERATION_H_ */

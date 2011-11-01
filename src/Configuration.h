@@ -38,11 +38,37 @@ struct Platform
 
 struct Extruder
 {
-	Extruder(): coordinateSystemOffsetX(0), extrusionTemperature(0), defaultSpeed(0){}
+	Extruder()
+		:coordinateSystemOffsetX(0),
+		extrusionTemperature(220),
+		defaultExtrusionSpeed(3),
+		slowFeedRate(1080),
+		slowExtrusionSpeed(1.0),
+		fastFeedRate(3000),
+		fastExtrusionSpeed(2.682),
+		nozzleZ(0.28)
+	{}
+
+	// this determines the gap between the nozzle tip
+	// and the layer at position z (measured at the middle of the layer)
+	double nozzleZ;
 
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
 	double extrusionTemperature; 	 // the extrusion temperature in Celsius
-	double defaultSpeed;
+	double defaultExtrusionSpeed;
+
+	// first layer settings, for extra stickyness
+	double slowFeedRate;
+	double slowExtrusionSpeed;
+
+	double reversalExtrusionSpeed;
+
+	// different strokes, for different folks
+	double fastFeedRate;
+	double fastExtrusionSpeed;
+
+
+
 };
 
 struct Outline
@@ -80,7 +106,8 @@ class Configuration {
 
          Outline outline;					// outline operation configuration
 
-         double fastFeed;
+         // double fastFeed;
+         double scalingFactor;
 };
 
 #endif /* CONFIGURATION_H_ */

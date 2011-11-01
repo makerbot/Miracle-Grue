@@ -17,6 +17,18 @@ using namespace std;
 
 
 
+// local function that adds an s to a noun if count is more than 1
+std::string plural(const char*noun, int count, const char* ending = "s")
+{
+	string s(noun);
+	if (count>1)
+	{
+		return s+ending;
+	}
+	return s;
+}
+
+// writes a linear gcode movement
 void moveTo(std::ostream &ss,  double x, double y, double z, double feed, const char*comment = NULL)
 {
 	std::string msg;
@@ -29,7 +41,8 @@ void moveTo(std::ostream &ss,  double x, double y, double z, double feed, const 
 	ss << "G1 X" << x << " Y" << y << " Z" << z << " F" << feed << msg  << endl;
 }
 
-void reversal(std::ostream &ss, double feedrate)
+// writes an extruder reversal gcode snippet
+void reverseExtrude(std::ostream &ss, double feedrate)
 {
 	ss << "M108 R" << feedrate << endl;
 	ss << "M102 (reverse)" << endl;
@@ -70,18 +83,28 @@ void GCoderOperation::finish()
 	Operation::finish();
 }
 
-
 void GCoderOperation::writePaths(ostream& ss, const PathData& pathData) const
 {
-	double nozzleZ = 0.28; // distance above mid layer position of extruzion
-	double pathFeedrate = 1080.0;
+	const Configuration &config =  configuration();
+	 // distance above mid layer position of extruzion
+
 	cout << endl << "GCoderOperation::writePaths()" << endl;
-	ss << "(PATHS for: " << pathData.paths.size() << " Extruder" << ")"<< endl;
-	double z = pathData.positionZ + nozzleZ;
+	int extruderCount = pathData.paths.size();
+	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
+
 	int extruderId = 0;
 	for(std::vector<Paths>::const_iterator extruderIt = pathData.paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
 	{
-		ss << "( extruder " << extruderId << ")" << endl;
+		if (pathData.paths.size() > 0)
+		{
+			writeSwitchExtruder(ss, extruderId);
+		}
+		// to each extruder its speed
+		double z = pathData.positionZ + config.extruders[extruderId].nozzleZ;
+		double reversal = config.extruders[extruderId].reversalExtrusionSpeed;
+		double pathFeedrate = config.scalingFactor * config.extruders[extruderId].fastFeedRate;
+		double extrusionSpeed = config.scalingFactor * config.extruders[extruderId].fastExtrusionSpeed;
+
 		const Paths &paths = *extruderIt;
 		for (Paths::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
 		{
@@ -94,27 +117,37 @@ void GCoderOperation::writePaths(ostream& ss, const PathData& pathData) const
 				moveTo(ss, p.x, p.y, z, pathFeedrate);
 			}
 		}
+		reverseExtrude(ss, reversal);
 		ss << endl;
+		if (pathData.paths.size() > 0)
+		{
+			writeWipeExtruder(ss, extruderId);
+		}
 		extruderId ++;
 	}
 }
 
-void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
+void GCoderOperation::writeSwitchExtruder(ostream& ss, int extruderId) const
 {
 
-	// check that we are getting the right kind of data
-	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
-	assert(&pathData != NULL);
+	ss << "( extruder " << extruderId << " )" << endl;
+	ss << "( GSWITCH T" << extruderId << " )" << endl;
+	ss << endl;
+}
 
+void GCoderOperation::writeWipeExtruder(ostream& ss, int extruderId) const
+{
+	ss << "( GWIPE my extruder #" << extruderId << " )"<< endl;
+	ss << endl;
+}
+
+
+void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
+{
 	stringstream ss;
+	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
 	writePaths(ss, pathData);
 	emit(ss.str().c_str());
-
-	// if this was the last envelope, then close the file
-	if (isLastEnvelope(envelope) )
-	{
-		cout << "LAST PATH" << endl;
-	}
 }
 
 
@@ -136,8 +169,6 @@ void GCoderOperation::writeGCodeConfig(std::ostream &ss) const
 	ss << "(What's gcode? http://wiki.makerbot.com/gcode)" <<  endl;
 	ss << "(For your 3D printer)" << endl;
 	config.writeGcodeConfig(ss, "* ");
-
-
 	ss << endl;
 }
 
@@ -175,8 +206,8 @@ void GCoderOperation::writeExtrudersInitialization(std::ostream &ss) const
 		double t = 999;
 		Extruder e = *i;
 		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
-		ss << "M108 R" << e.defaultSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << e.defaultSpeed << " RPM)" << endl;
-		ss << "M104 S" << e.extrusionTemperature  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << e.extrusionTemperature << " degrees Celsius)" << endl;
+		ss << "M108 R" << e.defaultExtrusionSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << e.defaultExtrusionSpeed << " RPM)" << endl;
+		ss << "M104 S" << e.defaultExtrusionSpeed  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << e.extrusionTemperature << " degrees Celsius)" << endl;
 		ss << endl;
 		toolHeadId ++;
 	}
@@ -219,7 +250,15 @@ void GCoderOperation::writeWarmupSequence(std::ostream &ss) const
 
 	ss << endl;
 
-	moveTo(ss, config.platform.waitingPositionX, config.platform.waitingPositionY, config.platform.waitingPositionZ, config.fastFeed, "go to waiting position" );
+	for (int i=0; i< config.extruders.size(); i++)
+	{
+		moveTo(ss, 	config.platform.waitingPositionX,
+					config.platform.waitingPositionY,
+					config.platform.waitingPositionZ,
+					config.extruders[i].fastFeedRate,
+					"go to waiting position" );
+	}
+
 	for (int i=0; i< config.extruders.size(); i++)
 	{
 		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;

@@ -30,7 +30,7 @@ void configureTOM(Configuration& config, bool automaticBuildPlatform, double pla
 	config.platform.waitingPositionY = -57.0;
 	config.platform.waitingPositionZ = 10.0;
 
-	config.fastFeed = 3300;
+
 }
 
 // fills a configuration object with the data
@@ -39,7 +39,7 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 {
 	Extruder e;
 
-	e.defaultSpeed = speed;
+	e.defaultExtrusionSpeed = speed;
 	e.extrusionTemperature = temperature;
 	e.coordinateSystemOffsetX = offsetX;
 
@@ -238,3 +238,9 @@ void GCoderTestCase::simplePath()
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 }
 
+
+void GCoderTestCase::spikeBed()
+{
+
+
+}

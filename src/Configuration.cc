@@ -41,9 +41,13 @@ std::string jsonFromExtruder(const Extruder &e)
 	ss << "{";
 	ss << "'extrusionTemperature':" 	<< e.extrusionTemperature << ", ";
 	ss << "'coordinateSystemOffsetX':" 	<< e.coordinateSystemOffsetX << ",";
-	ss << "'extrusionTemperature':" 	<< e.extrusionTemperature  << ",";
-	ss << "'defaultSpeed':" << e.defaultSpeed <<"} ";
-
+	ss << "'defaultSpeed':" << e.defaultExtrusionSpeed <<"} ";
+	ss << "'slowFeedRate':" 	<< e.slowFeedRate  << ",";
+	ss << "'slowExtrusionSpeed':" 	<< e.slowExtrusionSpeed  << ",";
+	ss << "'reversalExtrusionSpeed':" 	<< e.reversalExtrusionSpeed  << ",";
+	ss << "'fastFeedRate':" 	<< e.fastFeedRate  << ",";
+	ss << "'fastExtrusionSpeed':" 	<< e.fastExtrusionSpeed  << ",";
+//	ss << "'':" 	<< e.  << ",";
 	return ss.str();
 }
 

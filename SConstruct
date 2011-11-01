@@ -76,7 +76,8 @@ slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc',
 file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
 
 env.Program( 	'./bin/tests/gcoderUnitTest', 
-				mix(['src/unit_tests/UnitTestMain.cc'], unit_test, pather, gcoder, file_w), 
+				mix(['src/unit_tests/GCoderTestCase.cc'], 
+				unit_test, pather, gcoder, file_w), 
 				LIBS = 'cppunit', 
 				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
 				CPPPATH= ['..'])
