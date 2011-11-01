@@ -7,13 +7,33 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
 
-*/
+**/
 #include <assert.h>
 #include <sstream>
 
 #include "GCoderOperation.h"
 
 using namespace std;
+
+
+
+void moveTo(std::ostream &ss,  double x, double y, double z, double feed, const char*comment = NULL)
+{
+	std::string msg;
+	if(comment)
+	{
+		msg = " (";
+		msg += comment;
+		msg += ")";
+	}
+	ss << "G1 X" << x << " Y" << y << " Z" << z << " F" << feed << msg  << endl;
+}
+
+void reversal(std::ostream &ss, double feedrate)
+{
+	ss << "M108 R" << feedrate << endl;
+	ss << "M102 (reverse)" << endl;
+}
 
 GCoderOperation::GCoderOperation()
 {
@@ -24,6 +44,7 @@ GCoderOperation::GCoderOperation()
 
 void GCoderOperation::start()
 {
+	cout << "GCoderOperation::start() !!" << endl;
 	stringstream ss;
 
 	writeGCodeConfig(ss);
@@ -33,6 +54,7 @@ void GCoderOperation::start()
 
 	writeHomingSequence(ss);
 	writeWarmupSequence(ss);
+	writeAnchor(ss);
 
 	const char *msg = ss.str().c_str();
 	emit(msg);
@@ -45,12 +67,17 @@ void GCoderOperation::finish()
 
 	const char *msg = ss.str().c_str();
 	emit(msg);
+	Operation::finish();
 }
+
 
 void GCoderOperation::writePaths(ostream& ss, const PathData& pathData) const
 {
-	ss << "(PATHS for: " << pathData.paths.size() << " Extruder[s])"<< endl;
-
+	double nozzleZ = 0.28; // distance above mid layer position of extruzion
+	double pathFeedrate = 1080.0;
+	cout << endl << "GCoderOperation::writePaths()" << endl;
+	ss << "(PATHS for: " << pathData.paths.size() << " Extruder" << ")"<< endl;
+	double z = pathData.positionZ + nozzleZ;
 	int extruderId = 0;
 	for(std::vector<Paths>::const_iterator extruderIt = pathData.paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
 	{
@@ -64,25 +91,18 @@ void GCoderOperation::writePaths(ostream& ss, const PathData& pathData) const
 			{
 				const Point2D &p = *i;
 				ss << "(      POINT [" << p.x << ", " << p.y << "] )" << endl;
+				moveTo(ss, p.x, p.y, z, pathFeedrate);
 			}
 		}
 		ss << endl;
 		extruderId ++;
 	}
-
-
 }
 
 void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 {
 
-/*
-	if( this->isFirstEnvelope(envelope) )
-	{
-		cout << "FIRST PATH" << endl;
-	}
-*/
-	// check that we are gettign the right kind of data
+	// check that we are getting the right kind of data
 	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
 	assert(&pathData != NULL);
 
@@ -112,9 +132,10 @@ void GCoderOperation::writeGCodeConfig(std::ostream &ss) const
 
 	ss << endl;
 	ss << "(Makerbot Industries 2011)" << endl;
-	ss << "(This file contains digital fabrication directives in GCODE format [http://wiki.makerbot.com/gcode] )" <<  endl;
+	ss << "(This file contains digital fabrication directives in gcode format)"<< endl;
+	ss << "(What's gcode? http://wiki.makerbot.com/gcode)" <<  endl;
 	ss << "(For your 3D printer)" << endl;
-	config.writeGcodeConfig(ss, "    ");
+	config.writeGcodeConfig(ss, "* ");
 
 
 	ss << endl;
@@ -124,9 +145,6 @@ void GCoderOperation::writeMachineInitialization(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
-	ss <<  "(Initialization of the CNC machine)" << endl;
-	ss <<  "(http://wiki.makerbot.com/gcode)" << endl;
-	ss <<  endl;
 	ss <<  "G21 (set units to mm)" << endl;
 	ss <<  "G90 (absolute positioning mode)" << endl;
 
@@ -182,7 +200,7 @@ void GCoderOperation::writeHomingSequence(std::ostream &ss) const
 
 	ss << endl;
 	ss << "(go to home position)" << endl;
-	ss << "G162 Z F500 (home Z axis maximum)" << endl;
+	ss << "G162 Z F800 (home Z axis maximum)" << endl;
 	ss << "G92 Z5 (set Z to 5)" << endl;
 	ss << "G1 Z0.0 (move Z down 0)" << endl;
 	ss << "G162 Z F100 (home Z axis maximum)" << endl;
@@ -193,17 +211,7 @@ void GCoderOperation::writeHomingSequence(std::ostream &ss) const
 	ss << endl;
 }
 
-void moveTo(std::ostream &ss,  double x, double y, double z, double feed, const char*comment = NULL)
-{
-	std::string msg;
-	if(comment)
-	{
-		msg = " (";
-		msg += comment;
-		msg += ")";
-	}
-	ss << "G1 X" << x << " Y" << y << " Z" << z << " F" << feed << msg  << endl;
-}
+
 
 void GCoderOperation::writeWarmupSequence(std::ostream &ss) const
 {
@@ -235,16 +243,30 @@ void GCoderOperation::writeGcodeEndOfFile(std::ostream &ss) const
 	ss << "(That's all folks!)" << endl;
 }
 
+
+void GCoderOperation::writeAnchor(std::ostream &ss) const
+{
+	const Configuration &config = configuration();
+	ss << "(Create Anchor)" << endl;
+	// moveTo(ss, config.platform.waitingPositionX, config.platform.waitingPositionY, config.platform.waitingPositionZ, config.fastFeed, "nozzle down" );
+	ss << "G1 Z0.6 F300    (Position Height)" << endl;
+	ss << "M108 R4.0   (Set Extruder Speed)" << endl;
+	ss << "M101        (Start Extruder)" << endl;
+	ss << "G4 P1500" << endl;
+	ss << endl;
+
+}
+
 void GCoderOperation::emit(const char* msg)
 {
-//	cout << endl;
-//	cout << "********************************** GCODE DATA ***************************" << endl;
-//	cout << msg;
-//	cout << "*************************************** END *****************************" << endl;
-//	cout << endl;
-
+	/*
+	cout << endl;
+	cout << "********************************** GCODE DATA ***************************" << endl;
+	cout << msg;
+	cout << "*************************************** END *****************************" << endl;
+	cout << endl;
+	*/
 	Operation::emit(new GCodeData(msg));
-
 }
 
 

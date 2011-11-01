@@ -10,6 +10,15 @@ import os
 import commands
 
 
+def mix(*args):
+	l = []
+	for arg_list in args:
+		l += arg_list
+	
+	no_duplicates =  list(set(l)) # remove duplicates
+	#print "***", no_duplicates
+	scons_list = [env.Object(x) for x in no_duplicates]
+	return scons_list
 
 print ""
 print "======================================================="
@@ -35,18 +44,9 @@ except:
 	
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
+print "os.environ['PATH']=", os.environ['PATH']
+
 env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
-
-#env.Program('qt4Hello', ['hello.cc',  'src/Operation.h', 'src/SliceOperation.cc', 'src/DebugOperation.cc'])
-
-# env.Program('gcoder_test',['src/GCoderOperation.cc', 'src/Configuration.cc', 'gcoder_test_main.cc']) 
-
-# /usr/local/include/cppunit/
-# Program('prog.c', LIBS = 'm',
-#                       LIBPATH = ['/usr/lib', '/usr/local/lib'])
-
-#env.Program('unit_operation',['src/ExampleTestCase.cc', 'src/unit_operation_main.cc'],
-#		 CPPPATH=[cppunit_inc_dir], LIBS = 'cppunit', LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
 
 
 env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
@@ -67,65 +67,41 @@ env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
                        'src/json-cpp/src/lib_json/json_writer.cpp' ],
             CPPPATH=['src/json-cpp/include'])
 
-env.Program( './bin/tests/gcoderUnitTest',['src/GCoderOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 
-							'src/unit_tests/GCoderTestCase.cc', 
-							'src/PathData.cc',
-							'src/FileWriterOperation.cc',
-							'src/PatherOperation.cc',
-							'src/RegionData.cc'],
-		  LIBS = 'cppunit', 
-		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
-		  CPP_PATH= ['..']) 
+unit_test = ['src/unit_tests/UnitTestMain.cc',]
+file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeData.cc',]
+gcoder    = ['src/Configuration.cc', 'src/GCoderOperation.cc', 'src/PathData.cc', 'src/GCodeData.cc',]
+pather    = ['src/Configuration.cc', 'src/PatherOperation.cc', 'src/PathData.cc', 'src/RegionData.cc',]
+regioner  = ['src/Configuration.cc', 'src/RegionerOperation.cc','src/RegionData.cc','src/SliceData.cc',]
+slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc', 'src/RegionData.cc',]
+file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
 
-env.Program( './bin/tests/modelReaderUnitTest',['src/ModelFileReaderOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 'src/unit_tests/ModelReaderTestCase.cc', 'src/MeshData.cc'],
-		  LIBS = 'cppunit', 
-		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+env.Program( 	'./bin/tests/gcoderUnitTest', 
+				mix(['src/unit_tests/UnitTestMain.cc'], unit_test, pather, gcoder, file_w), 
+				LIBS = 'cppunit', 
+				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				CPPPATH= ['..'])
 
-env.Program( './bin/tests/slicerUnitTest',['src/SliceOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 
-							'src/unit_tests/SlicerTestCase.cc', 
-							'src/SliceOperation.cc',
-							'src/RegionData.cc',
-							'src/MeshData.cc'],
-		  LIBS = 'cppunit', 
-		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+env.Program( 	'./bin/tests/slicerUnitTest', 
+				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
+				LIBS = 'cppunit', 
+				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				CPPPATH= ['..'])
 
+env.Program(  	'./bin/tests/regionerUnitTest',   
+				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
+				LIBS = 'cppunit', 
+				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				CPPPATH= ['..'])
 
-env.Program( './bin/tests/regionerUnitTest',['src/RegionerOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 
-							'src/unit_tests/RegionerTestCase.cc', 
-							'src/RegionerOperation.cc',
-							'src/SliceData.cc',
-							'src/RegionData.cc'],
-		  LIBS = 'cppunit', 
-		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+env.Program(  	'./bin/tests/modelReaderUnitTest',   
+				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
+				LIBS = 'cppunit', 
+				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				CPPPATH= ['..'])
 
-env.Program( './bin/tests/patherUnitTest',['src/PatherOperation.cc', 'src/Configuration.cc',
-							'src/unit_tests/UnitTestMain.cc', 
-							'src/unit_tests/PatherTestCase.cc', 
-							'src/PathData.cc',
-							'src/RegionData.cc'],
-		  LIBS = 'cppunit', 
-		  LIBPATH = ['/usr/lib', '/usr/local/lib',cppunit_lib_dir],
-		  CPPPATH= ['..']) 
-
-
-env.Program( './bin/tests/chainIntegrationUnitTest',[	'src/RegionerOperation.cc', 
-						'src/Configuration.cc',
-						'src/unit_tests/UnitTestMain.cc', 
-						'src/unit_tests/ChainIntegrationTestCase.cc', 
-						'src/RegionerOperation.cc',
-						'src/SliceData.cc',
-						'src/RegionData.cc',
-						'src/PathData.cc',
-						'src/MeshData.cc',
-						'src/FileWriterOperation.cc',
-						'src/SliceOperation.cc',
-						'src/GCoderOperation.cc',
-						'src/PatherOperation.cc', 
-						'src/ModelFileReaderOperation.cc'],
-		  LIBS = ['cppunit', 'lib_json.a', 'libbgl.a'], 
-		  LIBPATH = ['./bin/lib', '/usr/lib', '/usr/local/lib',cppunit_lib_dir]) 
+env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
+				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
+			 	LIBS = ['cppunit', 'lib_json.a', 'libbgl.a'], 
+		  		LIBPATH = ['./bin/lib', '/usr/lib', '/usr/local/lib', cppunit_lib_dir],
+				CPPPATH= ['..'])
 

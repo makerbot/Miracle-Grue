@@ -28,7 +28,7 @@ FileWriterOperation::~FileWriterOperation()
 
 std::ostream& FileWriterOperation::stream() const
 {
-    cout<< "get stream = stream@" << pStream << endl;
+//    cout<< "get stream = stream@" << pStream << endl;
 	assert(pStream);
 	return *(pStream);
 }
@@ -41,17 +41,14 @@ void FileWriterOperation::start()
 	pStream = new std::ofstream(config.gcodeFilename.c_str());
     
 	std::cout << "Writing to file: \"" << config.gcodeFilename << "\""<< std::endl;
-    std::cout << "stream @" << pStream << endl;
+//    std::cout << "stream @" << pStream << endl;
     Operation::start();
 }
 
 void FileWriterOperation::finish()
 {
     Operation::finish();
-
     cout << "FileWriterOperation::finish()" <<endl;
-    
-    
 	assert(this->pStream != NULL);
 	pStream->close();
 	pStream = NULL;
@@ -65,11 +62,13 @@ void FileWriterOperation::processEnvelope(const DataEnvelope& envelope)
 
 	const GCodeData &data = *(dynamic_cast<const GCodeData* > (&envelope) );
 	assert(&data != NULL);
+	cout << endl;
+	cout << "----------------" << endl;
     cout << "FileWriterOperation::processEnvelope" << endl;
     cout << "stream @" << pStream << endl;
-    // cout << ">> " << data.gString << endl;
+ 	cout << ">> " << data.gString << endl;
 	stream() << data.gString;
-
+	cout << "----------------" << endl << endl;
 }
 
 

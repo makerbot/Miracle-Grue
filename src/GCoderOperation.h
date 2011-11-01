@@ -56,6 +56,7 @@ private:
     void writePaths(std::ostream &ss, const PathData& pathData) const;
     void writeGcodeEndOfFile(std::ostream &ss) const;
 
+    void writeAnchor(std::ostream &ss) const;
 };
 
 #endif /* GCODEROPERATION_H_ */

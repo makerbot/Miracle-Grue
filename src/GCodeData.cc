@@ -8,20 +8,23 @@
    License, or (at your option) any later version.
 
 */
+#include <iostream>
+#include "GCodeData.h"
 
-#ifndef GCODE_DATA_H
-#define GCODE_DATA_H
+using namespace std;
 
-#include <string>
-#include "DataEnvelope.h"
+GCodeData::GCodeData(const char* str)
+	:gString(str)
+{
+	cout << "GCodeData() @"  << this << endl;
+}
 
-class GCodeData: public DataEnvelope {
+GCodeData::~GCodeData()
+{
+	cout << "~GCodeData() @"  << this << endl;
 
-public:
-	GCodeData(const char* str);
-	std::string gString;
-	~GCodeData();
-};
+}
 
 
-#endif // GCODE_DATA_H
+
+

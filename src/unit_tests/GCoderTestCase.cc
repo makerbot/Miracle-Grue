@@ -104,15 +104,12 @@ void simple_tool_chain(Configuration &config)
 
 	vector<Operation*> writer;
 	writer.push_back(&fileWriter);
-
+	cout << __FUNCTION__ << " tooler.init"<< endl;
 	tooler.init(config, empty, writer);
 	fileWriter.init(config, tool, empty);
 
 	fileWriter.start();
-	tooler.start();
-
 	tooler.finish();
-	fileWriter.finish();
 
 	delete &tooler;
 	delete &fileWriter;
@@ -136,12 +133,9 @@ void path_tool_chain(Configuration &config, const DataEnvelope &d)
 	fileWriter.init(config, tool, empty);
 
 	fileWriter.start();
-	tooler.start();
-
+	// send the path
 	tooler.collect(d);
-
 	tooler.finish();
-	fileWriter.finish();
 
 	delete &tooler;
 	delete &fileWriter;
@@ -156,8 +150,8 @@ void initSimplePath(PathData &d)
 	d.paths[0].push_back(Polygon());
 	Polygon &poly = d.paths[0][0];
 
-	double lower_x = 10;
-	double lower_y = 10;
+	double lower_x = -10;
+	double lower_y = -10;
 	double dx = 50;
 	double dy = 30;
 

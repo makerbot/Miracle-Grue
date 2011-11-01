@@ -35,7 +35,6 @@ void configurePathTest(Configuration& config)
 typedef std::vector<Operation*> inout;
 void ChainIntegrationTestCase::testChain()
 {
-
     Configuration &config = *(new Configuration());
     config.gcodeFilename = "chainIntegration.gcode";
     
