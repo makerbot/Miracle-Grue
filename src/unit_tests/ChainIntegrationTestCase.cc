@@ -3,13 +3,13 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ChainIntegrationTestCase.h"
 
-#include "../Configuration.h"
-#include "../ModelFileReaderOperation.h"
-#include "../SliceOperation.h"
-#include "../RegionerOperation.h"
-#include "../PatherOperation.h"
-#include "../GcoderOperation.h"
-#include "../FileWriterOperation.h"
+#include "Configuration.h"
+#include "ModelFileReaderOperation.h"
+#include "SliceOperation.h"
+#include "RegionerOperation.h"
+#include "PatherOperation.h"
+#include "GCoderOperation.h"
+#include "FileWriterOperation.h"
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ChainIntegrationTestCase );
