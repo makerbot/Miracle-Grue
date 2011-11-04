@@ -27,29 +27,42 @@
 //
 class Configuration {
 
+	protected:
+		Json::Value root;      	/// root Json Dictionary to contain all settings
+
     public:
-         Configuration();
+		/// standard constructor
+		Configuration();
+		/// standard constructor for loading configuration from a json file
          Configuration(std::string& srcFilename);
+ 		/// standard  destructor
          ~Configuration();
 
-     	/// Dictionary to contain all settings
-     	Json::Value root;
-
-         std::string jsonFromExtruder(Json::Value& extruder) const;
-         std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
     public:
 
-         const Json::Value& operator[] (const std::string key) const
-			 { return (const Json::Value&)this->root[key]; 	}
+     	/// Const index function (For when you want to only read a value from the dict)
+     	const Json::Value& operator[] (const std::string key) const
+     	{
 
-         /// syntatic sugar for python like dict access
-         Json::Value& operator[] (const char* key) { return this->root[key]; }
-         Json::Value& operator[] (const std::string key) { return this->root[key]; 	}
-         bool contains(const std::string &key ) const { return this->root.isMember(key); }
-         bool isMember( const std::string &key ) const { return this->root.isMember(key); }
+     		return (const Json::Value&)this->root[key];
+     	}
 
-         void writeJsonConfig(std::ostream &out) const;
-         void writeGcodeConfig(std::ostream &out, const std::string indent) const;
+     	/// index function, to read/write values as config["foo"]
+     	Json::Value& operator[] (const std::string key) { return this->root[key]; 	}
+     	/// test function for python style key existance checking
+     	bool contains(const std::string &key ) const { return this->root.isMember(key); }
+
+     	/// test function for C/C++ style key existance checking
+     	bool isMember( const std::string &key ) const { return this->root.isMember(key); }
+
+     	void writeJsonConfig(std::ostream &out) const;
+     	void writeGcodeConfig(std::ostream &out, const std::string indent) const;
+
+ 		/// helper functions to easily print/view the config values as json
+      	std::string jsonFromExtruder(Json::Value& extruder) const;
+      	std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
+
+
 };
 
 #endif /* CONFIGURATION_H_ */
