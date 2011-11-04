@@ -19,24 +19,27 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ChainIntegrationTestCase );
 
 void configurePathTest(Configuration& config)
 {
-	config.gcodeFilename = SINGLE_EXTRUDER_FILE_NAME;
-	config.machineName = "TOM";
-	config.firmware ="v2.9";
+	config["machineName"] = "TOM";
+	config["firmware"] ="v2.9";
 
-	Extruder e;
-	config.extruders.push_back(e);
-	config.extruders[0].defaultExtrusionSpeed = 6;
-	config.extruders[0].extrusionTemperature = 200;
-	config.extruders[0].coordinateSystemOffsetX = 0;
+	Json::Value extruder;
 
-	config.platform.temperature = 30;
+	extruder["defaultExtrusionSpeed"] = 6;
+	extruder["extrusionTemperature"] = 200;
+	extruder["coordinateSystemOffsetX"] = 0;
+	config["extruders"].append(extruder);
+	config["platform"]["temperature"]= 30;
+
+	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_FILE_NAME;
+	config["FileWriterOperation"]["format"]= ".gcode";
+
 }
 
 typedef std::vector<Operation*> inout;
 void ChainIntegrationTestCase::testChain()
 {
     Configuration &config = *(new Configuration());
-    config.gcodeFilename = "chainIntegration.gcode";
+    config["gcodeFilename"]= "chainIntegration.gcode";
     
 	Operation *reader = new ModelFileReaderOperation();
 	MeshData mesh;
