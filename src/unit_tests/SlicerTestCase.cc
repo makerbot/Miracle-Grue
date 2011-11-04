@@ -21,8 +21,8 @@ void SlicerTestCase::example()
 {
 
 	SliceOperation slicer;
-	MeshData inputData;
-	RegionData outputData(0.2, 0.4);
+	MeshData* inputData = new MeshData();
+	RegionData* outputData = new RegionData(0.2, 0.4);
 
 //  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
 //  CPPUNIT_ASSERT( 1 == 0 );
@@ -37,6 +37,8 @@ void SlicerTestCase::example()
 
   delete l1;
   delete l2;
+  inputData->release(); //allow them to self-delete
+  outputData->release(); //allow them to self-delete
 
   CPPUNIT_ASSERT( 12L == 12L );
 //  CPPUNIT_ASSERT_EQUAL( 12, 13 );

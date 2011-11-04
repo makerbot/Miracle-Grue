@@ -27,8 +27,8 @@ void RegionerTestCase::example()
 {
 
 	RegionerOperation operation;
-	SliceData inputData(0.2, 0.4);
-	RegionData outputData(0.2, 0.4);
+	SliceData *inputData = new SliceData(0.2, 0.4);
+	RegionData *outputData = new RegionData(0.2, 0.4);
 
 //  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
 //  CPPUNIT_ASSERT( 1 == 0 );
@@ -43,6 +43,8 @@ void RegionerTestCase::example()
 
   delete l1;
   delete l2;
+  inputData->release();
+  outputData->release();
 
   CPPUNIT_ASSERT( 12L == 12L );
 //  CPPUNIT_ASSERT_EQUAL( 12, 13 );

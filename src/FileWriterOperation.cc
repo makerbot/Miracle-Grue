@@ -75,6 +75,7 @@ void FileWriterOperation::processEnvelope(const DataEnvelope& envelope)
 		assert(&data != NULL);
 		cout << ">> " << data.gString << endl;
 		stream() << data.gString;
+		envelope.release(); //this Module does not call 'emit' so we must release in our envelope process
 	}
 	else {
 		cout << "processing DataEnvelope as raw" << pStream << endl;

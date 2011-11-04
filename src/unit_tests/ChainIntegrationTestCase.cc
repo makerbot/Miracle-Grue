@@ -42,19 +42,19 @@ void ChainIntegrationTestCase::testChain()
     config["gcodeFilename"]= "chainIntegration.gcode";
     
 	Operation *reader = new ModelFileReaderOperation();
-	MeshData mesh;
+	MeshData* mesh = new MeshData();
     
 	Operation *slicer = new SliceOperation();
-	SliceData slice(0.2, 0.4);
+	SliceData *slice = new SliceData(0.2, 0.4);
     
 	Operation *regioner = new RegionerOperation();
-	RegionData region(0.2, 0.4);
+	RegionData *region = new RegionData(0.2, 0.4);
     
 	Operation *pather = new PatherOperation();
-	PathData path(0.2, 0.4);
+	PathData *path = new PathData(0.2, 0.4);
     
 	Operation *gcoder = new GCoderOperation();
-	GCodeData gcode("(This is gcode)");
+	GCodeData *gcode = new GCodeData("(This is gcode)");
     
 	Operation *writer = new FileWriterOperation();
     

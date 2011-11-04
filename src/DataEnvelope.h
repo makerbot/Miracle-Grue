@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <vector>
 #include <iostream>
-
+#include <map>
 
 typedef double real;
 
@@ -31,6 +31,11 @@ struct Point2D
 
 typedef std::vector<Point2D> Polygon;
 typedef std::vector<Polygon> Paths;
+
+// for now, use cout, until we add Boost support
+#define BOOST_LOG_TRIVIAL(trace) std::cout
+/// boost log values (future use) are trace/debug/info/warning/error/fatal
+
 
 // This enum represents known data types
 //TODO: These should be 32bit id/hash values for dataNamespace strings or something
@@ -63,9 +68,9 @@ typedef enum AtomType {
  */
 class DataEnvelope {
 
-protected:
+private:
 	int useCount; ///in the future, this will use boost weak_ptr and strong_ptr or something
-	int streamId; ///ID for the current stream. zero if no stream is defined
+	std::map<void*, int> useMap;
 	/*
 	void* data; ///data
 	uint32_t dataSize; ///size of data in bytes
@@ -90,7 +95,9 @@ public:
 		// printf("%s\n", __FUNCTION__ );
 	};
 */
+protected:
 	bool lastFlag; ///this flags the current envelope as the last in this stream
+	int streamId; ///ID for the current stream. zero if no stream is defined
 
 	///Generic empty data constructor
 
@@ -99,27 +106,53 @@ public:
 
 	virtual ~DataEnvelope(){
 		if (useCount > 0 )
-			std::cout <<  __FUNCTION__ << " useCount is nonzero on deletion. Fail?" << std::endl;
+			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " " << this << " useCount is nonzero on deletion. Fail?" << std::endl;
+		else
+			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " " << this << " useCount is zero on deletion! FTW" << std::endl;
+
 	}
 
 	bool isLastEnvelope() const { return lastFlag; }
 
 	void setLast(void) {
-		std::cout <<  __FUNCTION__ << std::endl;
+		BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
 		lastFlag = true;
 	}
 
 	/// increments use countage of this envelope
-	void incrementUse() { useCount++; }
+	void addRef(void* user = NULL) const
+	{
+		int* cnt = (int*)&useCount;
+		std::map<void*, int>* map = const_cast<std::map<void*, int>* >(&useMap);
+		(*map)[user]++;
+		(*cnt)++;
+	}
 
 	/// decrements use countage of this envelope
-	void decrementUse() {
+	void release(void* user = NULL) const {
+		BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "ENTER " << useCount << std::endl;
 
-		if(useCount > 0) useCount--;
-		else {
-			std::cout <<  __FUNCTION__ << std::endl;
-			std::cout <<  "Use Count Blown.  Trying to decrement %d" << std::endl;
+		int* cnt = (int*)&useCount;
+		(*cnt)--;
+		BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " new useCount " << useCount << std::endl;
+
+		if(useCount > 0){
+			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " useCount expected zero! got: " << useCount << std::endl;
+			std::map<void*, int>* map = const_cast<std::map<void*, int>* >(&useMap);
+			(*map)[user]--;
 		}
+		else if (useCount == 0){
+			if( useMap.size() > 0 )
+				BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Could not unpair released. Minor bug!" << std::endl;
+
+			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Envelope auto-free" << std::endl;
+			delete this;
+		}
+		else if(useCount < 0){
+			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
+			BOOST_LOG_TRIVIAL(trace) <<  "Use Count Blown.  Trying to decrement %d" << std::endl;
+		}
+		BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "EXIT" << std::endl;
 	}
 
 

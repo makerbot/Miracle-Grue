@@ -22,7 +22,7 @@ void ModelReaderTestCase::example()
 {
 
 	cout << endl;
-	MeshData data;
+	MeshData* data = new MeshData();
 	ModelFileReaderOperation operation;
 
 //  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
@@ -38,6 +38,7 @@ void ModelReaderTestCase::example()
 
 	delete l1;
 	delete l2;
+	data->release();
 
 	CPPUNIT_ASSERT( 12L == 12L );
 //  CPPUNIT_ASSERT_EQUAL( 12, 13 );

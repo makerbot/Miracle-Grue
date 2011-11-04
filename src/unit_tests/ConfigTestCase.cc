@@ -20,7 +20,8 @@ using namespace std;
 #define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"
 
 // for now, use cout, until we add Boost support
-#define BOOST_LOG_TRIVIAL(trace) cout
+// included from DataEnvelope #define BOOST_LOG_TRIVIAL(trace) cout
+
 /// boost log values (future use) are trace/debug/info/warning/error/fatal
 
 void configureTOM(Configuration& config, bool automaticBuildPlatform, double platformTemp )
@@ -92,7 +93,7 @@ void ConfigTestCase::configWrite()
 
 void configurePathTest(Configuration& config)
 {
-	config["gcodeFilename"]= SINGLE_EXTRUDER_FILE_NAME;
+	config["FileWriterOperation"]["filename"]= SINGLE_EXTRUDER_FILE_NAME;
 	config["machineName"] = "TOM";
 	config["firmware"] ="v2.9";
 

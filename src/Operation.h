@@ -82,7 +82,7 @@ public:
     // TRICKY: in this base implementation, it processes the packet inline, but it will not always do so
     virtual bool accept(DataEnvelope& envelope)
     {
-    	envelope.incrementUse();
+    	envelope.addRef(); //matching 'release' for this object is in function 'emit'
     	// validate(envelope);
     	// bool canThread = requestThreadFromPool(this);
 
@@ -92,6 +92,7 @@ public:
     	//  processEnvelope(envelope);
 
     	processEnvelope(envelope);
+    	return true;
     }
 
 	//sends data to the next operation for it'suse
@@ -103,7 +104,7 @@ public:
     		Operation& op = *(*i);
     		bool accepted = op.accept(*envelope);
     		if(accepted)
-    			envelope->decrementUse();
+    			envelope->release(); //matching 'addRef' for this object is in fuction 'accept'
     		 else
     			 std::cout << __FUNCTION__ << "packet not accepted by next operation. Won't decrement use for safety" << std::endl;
 
