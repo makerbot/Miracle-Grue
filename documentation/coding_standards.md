@@ -2,8 +2,14 @@
 
 We will be using the Qt C++ coding standards for this project. See:
 
-* [http://developer.qt.nokia.com/wiki/Qt_Coding_Style]
-* [http://developer.qt.nokia.com/wiki/Coding_Conventions]
+* [http://wiki.qt-project.org/Coding_Style]
+* [http://wiki.qt-project.org/Coding_Conventions]
+
+# Documentation
+
+Every class should at the very least contain minimal in-line documentation describing its purpose and giving a sketch of its operation. When possible example code should be given. You're always better off erring on the side of too much documentation in your comments.
+
+We are using the Doxygen standards for code documentation. You should prefer the javadoc-style documentation blocks. [http://www.stack.nl/~dimitri/doxygen/docblocks.html Read the Doxygen documentation for details].
 
 # File Naming Standard
 
