@@ -136,7 +136,7 @@ void simple_tool_chain(Configuration &config)
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-void path_tool_chain(Configuration &config, const DataEnvelope &d)
+void path_tool_chain(Configuration &config, DataEnvelope &d)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 
@@ -156,7 +156,7 @@ void path_tool_chain(Configuration &config, const DataEnvelope &d)
 
 	fileWriter.start();
 	// send the path
-	tooler.collect(d);
+	tooler.accept(d);
 	tooler.finish();
 
 	delete &tooler;

@@ -76,32 +76,37 @@ public:
     	this->pConfig = &config;
     }
 
-    // Collect function accepts incoming data.  It usually
-    // simply checks validity, and manages pushing data to the next
-    // operation, but it can be expanded or overridden.
-    virtual void collect(const DataEnvelope& envelope)
+    // Accepts incoming data, to collect in this Operation until the operation is ready to
+    // process the data, and send it's own data.  It generally checks validity, increments the use count.
+    // and simply returns.
+    // TRICKY: in this base implementation, it processes the packet inline, but it will not always do so
+    virtual bool accept(DataEnvelope& envelope)
     {
-    	processEnvelope(envelope);
-    	/*
-    	DataEnvelope* newDataEnvelope = this->processEnvelope(envelope);
+    	envelope.incrementUse();
+    	// validate(envelope);
+    	// bool canThread = requestThreadFromPool(this);
 
-    	envelopesProcessed++;
-    	if(nextOperation == 0x00)
-    		std::cout << "no next operation registered" << std::endl;
-    	else if (newDataEnvelope == 0x00)
-    		std::cout << "no new dataEnvelope generated" << std::endl;
-    	else
-    		nextOperation->collect((DataEnvelope&)*newDataEnvelope);
-    	*/
+    	//if(canThread) //process that envelope later
+    	//	return;
+    	//else // process envelope now
+    	//  processEnvelope(envelope);
+
+    	processEnvelope(envelope);
     }
 
+	//sends data to the next operation for it'suse
     virtual void emit(DataEnvelope* envelope)
     {
     	dataEnvelopes.push_back(envelope);
     	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
     	{
     		Operation& op = *(*i);
-    		op.collect(*envelope);
+    		bool accepted = op.accept(*envelope);
+    		if(accepted)
+    			envelope->decrementUse();
+    		 else
+    			 std::cout << __FUNCTION__ << "packet not accepted by next operation. Won't decrement use for safety" << std::endl;
+
     	}
 
     }

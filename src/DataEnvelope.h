@@ -63,7 +63,9 @@ typedef enum AtomType {
 class DataEnvelope {
 
 protected:
-/*
+	int useCount; //in the future, this will use boost weak_ptr and strong_ptr or something
+
+	/*
 	void* data; ///data
 	uint32_t dataSize; ///size of data in bytes
 	char* dataNamespaceString; /// namespace string of datatype
@@ -92,21 +94,29 @@ public:
 	///Generic empty data constructor
 
 public:
-	DataEnvelope(){}
+	DataEnvelope():useCount(1){}
 
 	virtual ~DataEnvelope(){}
 
-	bool isLastEnvelope() const
-	{
-		return lastFlag;
-	}
+	bool isLastEnvelope() const { return lastFlag; }
 
-	void setLast(void)
-	{
+	void setLast(void) {
 		printf("%s\n", __FUNCTION__ );
 		lastFlag = true;
 	}
 
+	/// increments use countage of this envelope
+	void incrementUse() { useCount++; }
+
+	/// decrements use countage of this envelope
+	void decrementUse() {
+
+		if(useCount > 0) useCount--;
+		else {
+			printf("%s\n", __FUNCTION__ );
+			printf("Use Count Blown.Trying to decrement %d\n", useCount);
+		}
+	}
 
 
 };
