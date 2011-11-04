@@ -9,14 +9,14 @@
 
 */
 
+#ifndef MG_OPERATION_H
+#define MG_OPERATION_H
+
 #include "DataEnvelope.h"
 #include "Configuration.h"
 #include <iostream>
 #include <vector>
 #include <string>
-
-#ifndef MG_OPERATION_H
-#define MG_OPERATION_H
 
 
 /**
