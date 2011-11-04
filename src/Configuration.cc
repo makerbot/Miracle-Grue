@@ -69,6 +69,8 @@ std::string Configuration::asJson(Json::StyledWriter writer ) const
 {
 	return writer.write(root);
 }
+
+
 void Configuration::writeJsonConfig(ostream &ss) const
 {
 	Json::StyledWriter writer;

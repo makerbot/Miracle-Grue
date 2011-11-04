@@ -61,16 +61,26 @@ void FileWriterOperation::finish()
 void FileWriterOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	GCodeData *d = NULL;
+	const Configuration &config = configuration();
 
-	const GCodeData &data = *(dynamic_cast<const GCodeData* > (&envelope) );
-	assert(&data != NULL);
 	cout << endl;
 	cout << "----------------" << endl;
-    cout << "FileWriterOperation::processEnvelope" << endl;
-    cout << "stream @" << pStream << endl;
- 	cout << ">> " << data.gString << endl;
-	stream() << data.gString;
+	cout << "FileWriterOperation::processEnvelope" << endl;
+	cout << "stream @" << pStream << endl;
+
+	if (config["FileWriterOperation"]["format"].asString() == ".gcode")
+	{
+		cout << "processing DataEnvelope as gcode" << pStream << endl;
+		const GCodeData &data = *(dynamic_cast<const GCodeData* > (&envelope) );
+		assert(&data != NULL);
+		cout << ">> " << data.gString << endl;
+		stream() << data.gString;
+	}
+	else {
+		cout << "processing DataEnvelope as raw" << pStream << endl;
+	}
 	cout << "----------------" << endl << endl;
+
 }
 
 

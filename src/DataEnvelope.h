@@ -15,6 +15,7 @@
 #include "stdint.h"
 #include <stdio.h>
 #include <vector>
+#include <iostream>
 
 
 typedef double real;
@@ -63,8 +64,8 @@ typedef enum AtomType {
 class DataEnvelope {
 
 protected:
-	int useCount; //in the future, this will use boost weak_ptr and strong_ptr or something
-
+	int useCount; ///in the future, this will use boost weak_ptr and strong_ptr or something
+	int streamId; ///ID for the current stream. zero if no stream is defined
 	/*
 	void* data; ///data
 	uint32_t dataSize; ///size of data in bytes
@@ -94,14 +95,17 @@ public:
 	///Generic empty data constructor
 
 public:
-	DataEnvelope():useCount(1){}
+	DataEnvelope():useCount(1), streamId(0){}
 
-	virtual ~DataEnvelope(){}
+	virtual ~DataEnvelope(){
+		if (useCount > 0 )
+			std::cout <<  __FUNCTION__ << " useCount is nonzero on deletion. Fail?" << std::endl;
+	}
 
 	bool isLastEnvelope() const { return lastFlag; }
 
 	void setLast(void) {
-		printf("%s\n", __FUNCTION__ );
+		std::cout <<  __FUNCTION__ << std::endl;
 		lastFlag = true;
 	}
 
@@ -113,8 +117,8 @@ public:
 
 		if(useCount > 0) useCount--;
 		else {
-			printf("%s\n", __FUNCTION__ );
-			printf("Use Count Blown.Trying to decrement %d\n", useCount);
+			std::cout <<  __FUNCTION__ << std::endl;
+			std::cout <<  "Use Count Blown.  Trying to decrement %d" << std::endl;
 		}
 	}
 
