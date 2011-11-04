@@ -27,3 +27,5 @@ documentation/html/*
 documentation/latex/*
 documentation/man/*
 
+#ignore bin directory
+bin/*
