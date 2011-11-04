@@ -12,74 +12,15 @@
 #ifndef CONFIGURATION_H_
 #define CONFIGURATION_H_
 
+#define GRUE_VERSION  "v0.0.1.0"
+#define GRUE_PROGRAM_NAME  "Miracle-Grue"
 
 // #include <stdio.h>
 #include <vector>
 #include <string>
 
-
-
-struct Platform
-{
-	Platform():temperature(0),
-				automated(false),
-				waitingPositionX(0),
-				waitingPositionY(0),
-				waitingPositionZ(0)
-	{}
-	double temperature;				// temperature of the platform during builds
-	bool automated;
-
-	// the wiper(s) are affixed to the platform
-    double waitingPositionX;
-    double waitingPositionY;
-    double waitingPositionZ;
-};
-
-struct Extruder
-{
-	Extruder()
-		:coordinateSystemOffsetX(0),
-		extrusionTemperature(220),
-		defaultExtrusionSpeed(3),
-		slowFeedRate(1080),
-		slowExtrusionSpeed(1.0),
-		fastFeedRate(3000),
-		fastExtrusionSpeed(2.682),
-		nozzleZ(0.28)
-	{}
-
-	// this determines the gap between the nozzle tip
-	// and the layer at position z (measured at the middle of the layer)
-	double nozzleZ;
-
-	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
-	double extrusionTemperature; 	 // the extrusion temperature in Celsius
-	double defaultExtrusionSpeed;
-
-	// first layer settings, for extra stickyness
-	double slowFeedRate;
-	double slowExtrusionSpeed;
-
-	double reversalExtrusionSpeed;
-
-	// different strokes, for different folks
-	double fastFeedRate;
-	double fastExtrusionSpeed;
-
-
-
-};
-
-struct Outline
-{
-	Outline() :enabled(false), distance(3.0){}
-	bool enabled;   // when true, a rectangular ouline of the part will be performed
-	float distance; // the distance in mm  between the model and the rectangular outline
-};
-
-
-
+#include "json-cpp/include/json/value.h"
+#include "json-cpp/include/json/writer.h"
 
 //
 // This class contains settings for the 3D printer, and user preferences
@@ -88,26 +29,27 @@ class Configuration {
 
     public:
          Configuration();
+         Configuration(std::string& srcFilename);
          ~Configuration();
+
+     	/// Dictionary to contain all settings
+     	Json::Value root;
+
+         std::string jsonFromExtruder(Json::Value& extruder) const;
+         std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
+    public:
+
+         const Json::Value& operator[] (const std::string key) const
+			 { return (const Json::Value&)this->root[key]; 	}
+
+         /// syntatic sugar for python like dict access
+         Json::Value& operator[] (const char* key) { return this->root[key]; }
+         Json::Value& operator[] (const std::string key) { return this->root[key]; 	}
+         bool contains(const std::string &key ) const { return this->root.isMember(key); }
+         bool isMember( const std::string &key ) const { return this->root.isMember(key); }
 
          void writeJsonConfig(std::ostream &out) const;
          void writeGcodeConfig(std::ostream &out, const std::string indent) const;
-
-         std::string programName;
-         std::string versionStr;
-         std::string machineName;	// 3D printer identifier
-         std::string firmware;		// firmware revision
-
-
-         Platform platform;
-         std::vector<Extruder> extruders;	// list of extruder tools
-
-         std::string gcodeFilename;			// output file name
-
-         Outline outline;					// outline operation configuration
-
-         // double fastFeed;
-         double scalingFactor;
 };
 
 #endif /* CONFIGURATION_H_ */

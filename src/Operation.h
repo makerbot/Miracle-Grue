@@ -146,39 +146,17 @@ public:
     virtual std::vector<AtomType>& emitsEnvelopeType(){
 			return emitTypes;
 	}    
-/*
-    // this function is used to set the next operation in the chain
-	void setNext(Operation* nextOp) {
-    	if(nextOperation == 0x00)
-    		nextOperation = nextOp;
-    	else if (nextOp == 0x00)
-    		std::cout << "unregistering an operation" << std::endl;
-    	else
-    		std::cout << "resetting registered operation" << std::endl;
-		nextOperation = nextOp;};
 
-
-	// Simple test function if an envelope of data is the first
-	bool isFirstEnvelope(const DataEnvelope& envelope)
-	{ return envelopesProcessed == 0 ? true: false;}
-*/
-	// Simple test function if an envelope of data is the last
+    /// Simple test function if an envelope of data is the last
 	bool isLastEnvelope(const DataEnvelope& envelope)
 	{ return envelope.isLastEnvelope();}
 
 
-/*
-	// adds a listener
-    void setOutput(Operation& operation)
-    {
-    	outputs.push_back(&operation);
-    }
-*/
 
 
 protected:
 	// configuration object accessor
-	const Configuration &configuration() const
+	Configuration &configuration() const
 	{
 		return *pConfig;
 	}

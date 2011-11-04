@@ -8,7 +8,6 @@
  * example errors and failures
  *
  */
-
 class GCoderTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( GCoderTestCase );

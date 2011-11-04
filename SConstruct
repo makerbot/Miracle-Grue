@@ -2,7 +2,7 @@
 # Top-level SConstruct file for Miracle Grue.
 #
 
-# env = Environment(tools=['default','qt4'])
+# env = Environment(tools=['default','qt4']
 
 # On Mac builds, scons complains that Qt4 can't be found. By mergeing the PATH environment variable
 # the moc tool is detected and Qt4 is detected 
@@ -40,7 +40,7 @@ try:
 	print 
 except:
 	print "WARNING: "
-	print "Expected environment variables for libraries not found. Continuning anyway"
+	print "Expected environment variables for libraries not found. Continuing anyway"
 	
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
@@ -62,12 +62,14 @@ env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
     'src/BGL/BGLSimpleRegion.cc',
     'src/BGL/BGLTriangle3d.cc'])
 
+
 env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
                        'src/json-cpp/src/lib_json/json_value.cpp',
                        'src/json-cpp/src/lib_json/json_writer.cpp' ],
             CPPPATH=['src/json-cpp/include'])
 
 unit_test = ['src/unit_tests/UnitTestMain.cc',]
+config 	  = ['src/Configuration.cc']
 file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeData.cc',]
 gcoder    = ['src/Configuration.cc', 'src/GCoderOperation.cc', 'src/PathData.cc', 'src/GCodeData.cc',]
 pather    = ['src/Configuration.cc', 'src/PatherOperation.cc', 'src/PathData.cc', 'src/RegionData.cc',]
@@ -75,34 +77,46 @@ regioner  = ['src/Configuration.cc', 'src/RegionerOperation.cc','src/RegionData.
 slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc', 'src/RegionData.cc',]
 file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
 
+default_includes = ['..','src/json-cpp/include']
+default_libs = [ '_json']
+default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
+
+debug_libs = ['cppunit',]
+debug_libs_path = [cppunit_lib_dir, ]
+
+env.Program(	'./bin/tests/ConfigUnitTest',
+				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH = default_includes)
+
 env.Program( 	'./bin/tests/gcoderUnitTest', 
 				mix(['src/unit_tests/GCoderTestCase.cc'], 
 				unit_test, pather, gcoder, file_w), 
-				LIBS = 'cppunit', 
-				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
-				CPPPATH= ['..'])
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= default_includes)
 
 env.Program( 	'./bin/tests/slicerUnitTest', 
 				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
-				LIBS = 'cppunit', 
-				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 
 env.Program(  	'./bin/tests/regionerUnitTest',   
 				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
-				LIBS = 'cppunit', 
-				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 
 env.Program(  	'./bin/tests/modelReaderUnitTest',   
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
-				LIBS = 'cppunit', 
-				LIBPATH = ['/usr/lib', '/usr/local/lib', cppunit_lib_dir], 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 
 env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
 				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
-			 	LIBS = ['cppunit', 'lib_json.a', 'libbgl.a'], 
-		  		LIBPATH = ['./bin/lib', '/usr/lib', '/usr/local/lib', cppunit_lib_dir],
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
-

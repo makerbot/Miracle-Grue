@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include <cppunit/config/SourcePrefix.h>
-#include "configTestCase.h"
+#include "ConfigTestCase.h"
 
 #include "../Configuration.h"
 #include "../ModelFileReaderOperation.h"
@@ -21,11 +21,7 @@ using namespace std;
 
 // for now, use cout, until we add Boost support
 #define BOOST_LOG_TRIVIAL(trace) cout
-//#define BOOST_LOG_TRIVIAL(debug) cout
-//#define BOOST_LOG_TRIVIAL(info) cout
-//#define BOOST_LOG_TRIVIAL(warning) cout
-//#define BOOST_LOG_TRIVIAL(error) cout
-//#define BOOST_LOG_TRIVIAL(fatal) cout
+/// boost log values (future use) are trace/debug/info/warning/error/fatal
 
 void configureTOM(Configuration& config, bool automaticBuildPlatform, double platformTemp )
 {
@@ -69,8 +65,6 @@ void configureSingleExtruder(Configuration &config)
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-
-
 // Write test values to a string, check that they match as
 // expected
 void ConfigTestCase::configWrite()
@@ -78,7 +72,6 @@ void ConfigTestCase::configWrite()
 
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 	Configuration config;
-	config["gcodeFilename"] = SINGLE_EXTRUDER_FILE_NAME;
 
 
 	configureSingleExtruder(config);
@@ -92,11 +85,8 @@ void ConfigTestCase::configWrite()
 	config["extruders"][0]["coordinateSystemOffsetX"] = 0;
 
 
-	Json::StyledWriter writer;
-	string s = writer.write(config.root); //TODO: get rid of this
+	string s = config.asJson();
 	BOOST_LOG_TRIVIAL(trace) << "json" << s.c_str() << endl;
-
-	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 

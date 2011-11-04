@@ -28,7 +28,6 @@ FileWriterOperation::~FileWriterOperation()
 
 std::ostream& FileWriterOperation::stream() const
 {
-//    cout<< "get stream = stream@" << pStream << endl;
 	assert(pStream);
 	return *(pStream);
 }
@@ -38,10 +37,13 @@ void FileWriterOperation::start()
 {
     cout << "FileWriter::start()" << endl;
 	const Configuration &config = configuration();
-	pStream = new std::ofstream(config.gcodeFilename.c_str());
-    
-	std::cout << "Writing to file: \"" << config.gcodeFilename << "\""<< std::endl;
-//    std::cout << "stream @" << pStream << endl;
+
+	if(config.contains("FileWriteOperation"))
+	{
+		std::string filename = config["FileWriteOperation"]["filename"].asString();
+		pStream = new std::ofstream(filename.c_str());
+		std::cout << "Writing to file: \"" << filename << "\""<< std::endl;
+	}
     Operation::start();
 }
 

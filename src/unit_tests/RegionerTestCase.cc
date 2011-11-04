@@ -13,7 +13,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION( RegionerTestCase );
 
 void configurePathTest(Configuration& config)
 {
-	config.gcodeFilename = SINGLE_EXTRUDER_FILE_NAME;
+	config["FileWriterOperation"]["filename"]= SINGLE_EXTRUDER_FILE_NAME;
+	config["FileWriterOperation"]["format"]= ".gcode";
 }
 
 

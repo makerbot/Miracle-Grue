@@ -86,45 +86,45 @@ void GCoderOperation::finish()
 void GCoderOperation::writePaths(ostream& ss, const PathData& pathData) const
 {
 	const Configuration &config =  configuration();
-	 // distance above mid layer position of extruzion
+	 // distance above mid layer position of extrusion
 
 	cout << endl << "GCoderOperation::writePaths()" << endl;
 	int extruderCount = pathData.paths.size();
 	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
 
 	int extruderId = 0;
-	for(std::vector<Paths>::const_iterator extruderIt = pathData.paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
-	{
-		if (pathData.paths.size() > 0)
-		{
-			writeSwitchExtruder(ss, extruderId);
-		}
-		// to each extruder its speed
-		double z = pathData.positionZ + config.extruders[extruderId].nozzleZ;
-		double reversal = config.extruders[extruderId].reversalExtrusionSpeed;
-		double pathFeedrate = config.scalingFactor * config.extruders[extruderId].fastFeedRate;
-		double extrusionSpeed = config.scalingFactor * config.extruders[extruderId].fastExtrusionSpeed;
-
-		const Paths &paths = *extruderIt;
-		for (Paths::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
-		{
-			const Polygon &polygon = *pathIt;
-			ss << "(  POLYGON " << polygon.size() << " Points)" << endl;
-			for(Polygon::const_iterator i= polygon.begin(); i!= polygon.end(); i++ )
-			{
-				const Point2D &p = *i;
-				ss << "(      POINT [" << p.x << ", " << p.y << "] )" << endl;
-				moveTo(ss, p.x, p.y, z, pathFeedrate);
-			}
-		}
-		reverseExtrude(ss, reversal);
-		ss << endl;
-		if (pathData.paths.size() > 0)
-		{
-			writeWipeExtruder(ss, extruderId);
-		}
-		extruderId ++;
-	}
+//	for(std::vector<Paths>::const_iterator extruderIt = pathData.paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
+//	{
+//		if (pathData.paths.size() > 0)
+//		{
+//			writeSwitchExtruder(ss, extruderId);
+//		}
+//		// to each extruder its speed
+//		double z = pathData.positionZ + config.extruders[extruderId].nozzleZ();
+//		double reversal = config.extruders[extruderId].reversalExtrusionSpeed();
+//		double pathFeedrate = config.scalingFactor * config.extruders[extruderId].fastFeedRate();
+//		double extrusionSpeed = config.scalingFactor * config.extruders[extruderId].fastExtrusionSpeed();
+//
+//		const Paths &paths = *extruderIt;
+//		for (Paths::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
+//		{
+//			const Polygon &polygon = *pathIt;
+//			ss << "(  POLYGON " << polygon.size() << " Points)" << endl;
+//			for(Polygon::const_iterator i= polygon.begin(); i!= polygon.end(); i++ )
+//			{
+//				const Point2D &p = *i;
+//				ss << "(      POINT [" << p.x << ", " << p.y << "] )" << endl;
+//				moveTo(ss, p.x, p.y, z, pathFeedrate);
+//			}
+//		}
+//		reverseExtrude(ss, reversal);
+//		ss << endl;
+//		if (pathData.paths.size() > 0)
+//		{
+//			writeWipeExtruder(ss, extruderId);
+//		}
+//		extruderId ++;
+//	}
 }
 
 void GCoderOperation::writeSwitchExtruder(ostream& ss, int extruderId) const
@@ -180,46 +180,47 @@ void GCoderOperation::writeMachineInitialization(std::ostream &ss) const
 	ss <<  "G90 (absolute positioning mode)" << endl;
 
 	int toolHeadId = 0;
-	if (config.extruders.size() > 1)
-	{
-		for (std::vector<Extruder>::const_iterator i= config.extruders.begin(); i!=config.extruders.end(); i++)
-		{
-			Extruder e = *i;
-			int coordinateSystemNb = toolHeadId +1;
-			ss << "G10 P" << coordinateSystemNb << " X" <<  e.coordinateSystemOffsetX << " Y0 Z-0.3" << endl;
-			toolHeadId ++;
-		}
-	}
-	ss << endl;
 
+//	if (config.extruders.size() > 1)
+//	{
+//		for (std::vector<Extruder>::const_iterator i= config.extruders.begin(); i!=config.extruders.end(); i++)
+//		{
+//			Extruder e = *i;
+//			int coordinateSystemNb = toolHeadId +1;
+//			ss << "G10 P" << coordinateSystemNb << " X" <<  e.coordinateSystemOffsetX() << " Y0 Z-0.3" << endl;
+//			toolHeadId ++;
+//		}
+//	}
+	ss << endl;
 }
 
 void GCoderOperation::writeExtrudersInitialization(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 	string plural = "";
-	if(config.extruders.size()>1) plural = "s";
-	ss << "(setup extruder" << plural <<")" <<endl;
+//	if(config.extruders.size()>1) plural = "s";
+//	ss << "(setup extruder" << plural <<")" <<endl;
 	int toolHeadId = 0;
-	for (std::vector<Extruder>::const_iterator i= config.extruders.begin(); i!=config.extruders.end(); i++)
-	{
-		double t = 999;
-		Extruder e = *i;
-		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
-		ss << "M108 R" << e.defaultExtrusionSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << e.defaultExtrusionSpeed << " RPM)" << endl;
-		ss << "M104 S" << e.defaultExtrusionSpeed  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << e.extrusionTemperature << " degrees Celsius)" << endl;
-		ss << endl;
-		toolHeadId ++;
-	}
+
+//	for (std::vector<Extruder>::const_iterator i= config.extruders.begin(); i!=config.extruders.end(); i++)
+//	{
+//		double t = 999;
+//		Extruder e = *i;
+//		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
+//		ss << "M108 R" << e.defaultExtrusionSpeed() << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << e.defaultExtrusionSpeed() << " RPM)" << endl;
+//		ss << "M104 S" << e.defaultExtrusionSpeed()  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << e.extrusionTemperature() << " degrees Celsius)" << endl;
+//		ss << endl;
+//		toolHeadId ++;
+//	}
 	ss << endl;
 }
 
 
 void GCoderOperation::writePlatformInitialization(std::ostream &ss) const
 {
-	const Configuration &config = configuration();
+	Configuration config = configuration();
 
-	double t = config.platform.temperature;
+	const double t = config["platform"]["temperature"].asDouble();
 	ss << "M109 S" << t << " T0 (heat the build-platform to "  << t << " Celsius)" << endl;
 	ss << endl;
 
@@ -237,8 +238,8 @@ void GCoderOperation::writeHomingSequence(std::ostream &ss) const
 	ss << "G162 Z F100 (home Z axis maximum)" << endl;
 	ss << "G161 X Y F2500 (home XY axes minimum)" << endl;
 	ss << "M132 X Y Z A B (Recall stored home offsets for XYZAB axis)" << endl;
-	if (config.extruders.size() > 1)
-		ss << "G54 (first work coordinate system)" << endl;
+//	if (config.extruders.size() > 1)
+//		ss << "G54 (first work coordinate system)" << endl;
 	ss << endl;
 }
 
@@ -250,33 +251,33 @@ void GCoderOperation::writeWarmupSequence(std::ostream &ss) const
 
 	ss << endl;
 
-	for (int i=0; i< config.extruders.size(); i++)
+/*	for (int i=0; i< config.extruders.size(); i++)
 	{
-		moveTo(ss, 	config.platform.waitingPositionX,
-					config.platform.waitingPositionY,
-					config.platform.waitingPositionZ,
-					config.extruders[i].fastFeedRate,
+		moveTo(ss, 	config.platform.waitingPositionX(),
+					config.platform.waitingPositionY(),
+					config.platform.waitingPositionZ(),
+					config.extruders[i].fastFeedRate(),
 					"go to waiting position" );
-	}
-
-	for (int i=0; i< config.extruders.size(); i++)
-	{
-		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
-	}
-	ss << "(heated build platform temperature is tied to tool 0 for now)" << endl;
-	ss << endl;
-	ss << endl;
+	}*/
+//
+//	for (int i=0; i< config.extruders.size(); i++)
+//	{
+//		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
+//	}
+//	ss << "(heated build platform temperature is tied to tool 0 for now)" << endl;
+//	ss << endl;
+//	ss << endl;
 }
 
 void GCoderOperation::writeGcodeEndOfFile(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
 
-	for (int i=0; i< config.extruders.size(); i++)
-	{
-		ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
-		ss << "M109 S0 T" << i << " (set heated-build-platform temperature to 0)" << endl;
-	}
+//	for (int i=0; i< config.extruders.size(); i++)
+//	{
+//		ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
+//		ss << "M109 S0 T" << i << " (set heated-build-platform temperature to 0)" << endl;
+//	}
 
 	ss << "G162 Z F500 (home Z axis maximum)" << endl;
 	ss << "(That's all folks!)" << endl;

@@ -46,8 +46,11 @@ void ModelFileReaderOperation::start()
     
 	const Configuration &config = configuration();
 	pStream = new std::ifstream("filename.stl");
-	std::cout << "ModelFileReaderOperation reading file: \"" << config.gcodeFilename << "\""<< std::endl;
-    
+	if( config.contains("ModelFileReaderOperation") )
+	{
+		string file = config["ModelFileReaderOperation"]["filename"].asString();
+		std::cout << "ModelFileReaderOperation reading file: \"" << file << "\""<< std::endl;
+	}
     finish();
 }
 
