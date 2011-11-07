@@ -12,11 +12,11 @@ class GCoderTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( GCoderTestCase );
   CPPUNIT_TEST( singleExtruder );
-//  CPPUNIT_TEST( dualExtruders );
-//  CPPUNIT_TEST( simplePath );
-//  CPPUNIT_TEST( spikeBed );
-//  CPPUNIT_TEST( example );
-//  CPPUNIT_TEST( floatFormat );
+  CPPUNIT_TEST( dualExtruders );
+  CPPUNIT_TEST( simplePath );
+  CPPUNIT_TEST( spikeBed );
+  CPPUNIT_TEST( example );
+  CPPUNIT_TEST( floatFormat );
   CPPUNIT_TEST_SUITE_END();
 
 

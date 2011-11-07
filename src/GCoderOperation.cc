@@ -70,16 +70,19 @@ void GCoderOperation::start()
 	writeAnchor(ss);
 
 	const char *msg = ss.str().c_str();
+	cout << "EMIT" << endl;
 	emit(msg);
+	cout << "EMIT 2" << endl;
 }
 
 void GCoderOperation::finish()
 {
+	cout << "GCoderOperation::finish()"<< endl;
 	stringstream ss;
 	writeGcodeEndOfFile(ss);
-
 	const char *msg = ss.str().c_str();
 	emit(msg);
+
 	Operation::finish();
 }
 

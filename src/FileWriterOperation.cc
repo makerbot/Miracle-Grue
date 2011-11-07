@@ -38,11 +38,16 @@ void FileWriterOperation::start()
     cout << "FileWriter::start()" << endl;
 	const Configuration &config = configuration();
 
-	if(config.contains("FileWriteOperation"))
+	if(config.contains("FileWriterOperation"))
 	{
-		std::string filename = config["FileWriteOperation"]["filename"].asString();
+		std::string filename = config["FileWriterOperation"]["filename"].asString();
 		pStream = new std::ofstream(filename.c_str());
 		std::cout << "Writing to file: \"" << filename << "\""<< std::endl;
+	}
+	else
+	{
+		cout << "configuration does not contain FileWriterOperation section" << endl;
+		assert(0);
 	}
     Operation::start();
 }
@@ -73,7 +78,8 @@ void FileWriterOperation::processEnvelope(const DataEnvelope& envelope)
 		cout << "processing DataEnvelope as gcode" << pStream << endl;
 		const GCodeData &data = *(dynamic_cast<const GCodeData* > (&envelope) );
 		assert(&data != NULL);
-		cout << ">> " << data.gString << endl;
+		// cout << ">> " << data.gString << endl;
+		cout << "Getting stream" << endl;
 		stream() << data.gString;
 		envelope.release(); //this Module does not call 'emit' so we must release in our envelope process
 	}

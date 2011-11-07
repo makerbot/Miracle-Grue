@@ -82,15 +82,17 @@ void configureDualExtruder(Configuration& config)
 
 void GCoderTestCase::setUp()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	BOOST_LOG_TRIVIAL(trace)<< " Starting:" <<__FUNCTION__ << endl;
+	BOOST_LOG_TRIVIAL(trace)<< " Exiting:" <<__FUNCTION__ << endl;
 
 }
 
 void GCoderTestCase::example()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	/*
+
+/*
+
   CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
   CPPUNIT_ASSERT( 1 == 0 );
   CPPUNIT_ASSERT( 1 == 1 );
@@ -129,7 +131,9 @@ void simple_tool_chain(Configuration &config)
 	tooler.init(config, empty, writer);
 	fileWriter.init(config, tool, empty);
 
+	cout << "simple_tool_chain START filewriter" << endl;
 	fileWriter.start();
+	cout << "simple_tool_chain FINISH tooler" << endl;
 	tooler.finish();
 
 	delete &tooler;
