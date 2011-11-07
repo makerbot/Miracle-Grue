@@ -1,3 +1,4 @@
+
 #include <fstream>
 
 #include <cppunit/config/SourcePrefix.h>
@@ -280,4 +281,38 @@ void GCoderTestCase::spikeBed()
 
 
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+}
+
+void gcodeStreamFormat(ostream &ss)
+{
+    try
+    {
+    	ss.imbue(std::locale("en_US.UTF-8"));
+    }
+    catch(...)
+    {
+    	ss.imbue(std::locale("C"));
+    }
+    ss.setf(ios_base::floatfield, ios::floatfield);            // floatfield not set
+	ss.precision(4);
+    
+}
+
+
+void GCoderTestCase::floatFormat()
+{
+	stringstream ss;
+	gcodeStreamFormat(ss);
+    
+	ss << endl;
+	ss << "loc: " << ss.getloc().name() << endl;
+	CPPUNIT_ASSERT_EQUAL(ss.getloc().name(), std::string("C") );
+    //locale myloc(  locale(),    // C++ default locale
+    //       new WithComma);// Own numeric facet
+	ss << endl;
+	// ss << "LOCALE name: " << myloc.name() << endl;
+	ss << "num: " << 3.1415927 << endl;
+	cout << ss.str() << endl;
+	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+    
 }
