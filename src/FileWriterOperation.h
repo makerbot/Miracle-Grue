@@ -31,7 +31,7 @@ public:
 	FileWriterOperation();
 	~FileWriterOperation();
 
-	Json::Value queryInterface() const;
+	static Json::Value* queryInterface() ;
 
 
 	void processEnvelope(const DataEnvelope& envelope);

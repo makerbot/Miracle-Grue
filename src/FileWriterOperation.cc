@@ -18,10 +18,18 @@
 using namespace std;
 
 
-Json::Value FileWriterOperation::queryInterface() const
+static Json::Value* FileWriterOperationIface;
+
+Json::Value* FileWriterOperation::queryInterface()
 {
-	const Json::Value iface;
-	return iface;
+	if (FileWriterOperationIface == 0x00)
+	{
+		FileWriterOperationIface = new Json::Value;
+		(*FileWriterOperationIface)["filename"]= "asString";
+		(*FileWriterOperationIface)["format"] = "asString";
+		cout << (*FileWriterOperationIface)["format"] << endl;
+	}
+		return FileWriterOperationIface;
 
 }
 

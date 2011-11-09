@@ -12,6 +12,7 @@
 #include "../FileWriterOperation.h"
 
 #include "../json-cpp/include/json/writer.h"
+#include "../json-cpp/include/json/value.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( QueryInterfaceTestCase );
 
@@ -72,10 +73,11 @@ void QueryInterfaceTestCase::simpleInterrogationTest()
 {
 
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	FileWriterOperation fwo;
-	fwo.queryInterface();
-	FileWriterOperation.queryInterface();
-	BOOST_LOG_TRIVIAL(trace)<< "FileWriterOp" << (const void*)&fwo << endl;
+	Json::Value* val = FileWriterOperation::queryInterface();
+
+
+	//BOOST_LOG_TRIVIAL(trace)<< "FileWriterOp" << (const void*)&fwo << endl;
+	BOOST_LOG_TRIVIAL(trace)<< "val " << (*val)["filename"]<< endl;
 
 	//FileWriterOperation.queryInterface();
 	//const Json::Value& val =

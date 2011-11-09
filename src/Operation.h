@@ -151,7 +151,7 @@ public:
      * The terms MUST/SHOULD/MAY are used as per RFC 2119 specification
      */
     //virtual Json::Value queryInterface() const = 0;
-	virtual Json::Value queryInterface() const = 0;
+//	virtual Json::Value queryInterface() const = 0;
 
 
     /// Returns the type of envelope this module can collect without error
