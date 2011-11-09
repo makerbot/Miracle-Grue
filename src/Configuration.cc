@@ -36,7 +36,8 @@ Configuration::Configuration()
 	Json::Value shell;
 	shell["enable"] = false;
 	shell["distance"] = 3.0;
-	this->root["shell"] = shell;
+
+	root["shell"] = shell;
 	cout << "Configuration ctor! " << endl;
 
 	Json::Value gcodeOutput;

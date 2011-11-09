@@ -13,12 +13,25 @@
 
 #include "FileWriterOperation.h"
 
+#include "json-cpp/include/json/value.h"
+
 using namespace std;
+
+
+Json::Value FileWriterOperation::queryInterface() const
+{
+	const Json::Value iface;
+	return iface;
+
+}
+
 
 FileWriterOperation::FileWriterOperation()
 	:pStream(NULL)
 {
-
+	queryInterface();
+	//requiredConfigRoot["filename"]= "asString";
+	//requiredConfigRoot["format"] = "asString";
 }
 
 FileWriterOperation::~FileWriterOperation()

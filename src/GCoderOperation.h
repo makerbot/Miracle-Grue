@@ -38,8 +38,6 @@ public:
 	void cleanup();
 
 
-
-
 private:
 
 	void emit(const char* msg);

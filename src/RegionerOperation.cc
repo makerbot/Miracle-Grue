@@ -19,6 +19,9 @@ RegionerOperation::RegionerOperation()
 	std::cout << __FUNCTION__ << std::endl;
 	std::cout << "(Miracle Grue)" << std::endl;
 	std::cout << "RegionerOperation() @"  << this<< std::endl;
+
+	//No values to add to requiredConfigRoot;
+
 };
 
 RegionerOperation::~RegionerOperation()

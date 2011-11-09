@@ -19,7 +19,9 @@ ModelFileReaderOperation::ModelFileReaderOperation()
 	:pStream(NULL)
 {
 	cout << "ModelFileReaderOperation() @"  << this<< endl;
+	requiredConfigRoot["filename"] = "asString";
 }
+
 
 ModelFileReaderOperation::~ModelFileReaderOperation()
 {

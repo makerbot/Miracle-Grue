@@ -48,10 +48,13 @@ void reverseExtrude(std::ostream &ss, double feedrate)
 	ss << "M102 (reverse)" << endl;
 }
 
+
 GCoderOperation::GCoderOperation()
 {
 	std::cout << __FUNCTION__ << std::endl;
 	std::cout << "(Miracle Grue)" << std::endl;
+
+	//No values to add to requiredConfigRoot;
 };
 
 

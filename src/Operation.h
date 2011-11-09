@@ -18,6 +18,8 @@
 #include <vector>
 #include <string>
 
+#include "json-cpp/include/json/value.h"
+
 
 /**
  * On Operation is a basic unit of data processing used by the processing chain,
@@ -45,6 +47,7 @@ protected:
     std::vector<AtomType> emitTypes;
     std::vector<AtomType> acceptTypes;
 
+    //Json::Value interfaceDict;
 
 public:
     /// General base constructor for an Operation
@@ -138,11 +141,19 @@ public:
     // This function should tear down settings or objects built by collect
     virtual void cleanup() {};
 
-/*
-    // This is a function returns data about how this module is used
-    // TODO: this should/can return more detailed and useful data
-    virtual std::string interrogate() = 0;
-*/
+
+    /**
+     * This is a static function that returns a Json Dict containing sections MUST, SHOULD, MAY,
+     * each section is itself a Json dict containing values required(MUST), allowed(SHOULD), suggested (MAY)
+     * in order for this Operation to use correctly. These dicts should be used in constructing the
+     * parameters for a Operation Chain.
+     *
+     * The terms MUST/SHOULD/MAY are used as per RFC 2119 specification
+     */
+    //virtual Json::Value queryInterface() const = 0;
+	virtual Json::Value queryInterface() const = 0;
+
+
     /// Returns the type of envelope this module can collect without error
     std::vector<AtomType>& collectsEnvelopeType() {
 			return acceptTypes;
