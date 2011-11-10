@@ -1,0 +1,27 @@
+The fetch-and-operation functions return the original stored value. This approach is required for fetch-and-inclusive-or and fetch-and-and because there is no means to compute to the original stored value. In contrast to the core functions, the modifying assignment operators return the new value. We do this for consistency with normal assignment operators. Unlike normal assignment operators, though, the atomic assignments return values rather than references. The reason is that another thread might intervene between an assignment and a subsequent read. Rather than introduce this classic parallel programming bug, we return a value.
+
+The functions and operations are defined to work with volatile objects, so that variables that should be volatile can also be atomic. The volatile qualifier, however, is not required for atomicity.
+
+The normal signed integral addition operations have undefined behavior in the event of an overflow. For atomic variables, this undefined behavior introduces significant burden. Rather than leave overflow undefined, we recognize the defacto behavior of modern systems and define atomic fetch-and-add (-sub) to use two's-complement arithmetic. We are aware of no implementation of C++ for which this definition is a problem.
+Implementability
+
+We believe that there is ample evidence for implementatability.
+
+The Intel/gcc __sync intrinsics provide evidence for compiler implementability of the proposed interface.
+
+    (We do not advocate standardizing these intrisics as is. They provide far less control over memory ordering than we advocated above. For example, they provide no way to atomically increment a counter without imposing unnecessary ordering constraints. The lack of appropriate ordering control appears to already have resulted in implementation shortcuts, e.g. gcc does not implement __sync_synchronize() as a full memory barrier on X86, in spite of the documentation. We believe a number of issues were not fully understood when that design was developed, and it could could greatly benefit from another iteration at this stage.) 
+
+Other packages, particularly Boehm's atomic_ops package provide evidence of efficient implementability over a range of architectures.
+
+This proposal includes atomic integers smaller than a machine word, even though many architectures do not have such operations. For machines that implement a word-based compare-and-swap operation, the effect of operations can be achieved by loading the containing word, modifying the sub-word in place, and performing a compare-and-swap on the containing word. In the event that no compare-and-swap is available, the implementation may need to either implement smaller types with larger types or use locking algorithms.
+
+The remaining issue is the burden on implementors to produce a minimally conforming implementation. The minimum hardware support required is the atomic test-and-set and clear operations that form the basis of the atomic flag type. This proposal includes an example implementation based on that minimal hardware support, and thus shows the vendor work required.
+Current Weakness
+
+The POD definition of atomic types implies compiler-defined copy-assignment operators that are not atomic and should not be used.
+
+Defining a private copy-assignment operator or defining a correct copy-assignment operator, under the 1998 language, loses the C compatibility guarantee because the type would no longer be a POD. This consequence is stronger than necessary because adding an assignment operator implies no change in representation. N2102 addresses this issue. Along those same lines, but unaddressed by N2102, is that defining an assignment operator loses the aggregate initialization syntax, which is necessary for C static initialization. N2100 may address this issue in its final form.
+
+Likewise, the specializations of the generic template are derived classes, and as such are no longer PODs and no longer statically initializable. Static initialization is extremely important for concurrent programming as dynamic initialization tends to introduce race conditions. Again, N2102 addresses this issue.
+
+While the interface does not define the name of fields, such a name could be determined by reading the header file. Adding a private label would disable PODness. Again, N2102 addresses this issue.
