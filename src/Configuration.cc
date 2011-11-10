@@ -60,11 +60,12 @@ Configuration::Configuration(std::string& srcFilename)
 		cout << "parsed ok";
 	}
 }
+
+
 Configuration::~Configuration()
 {
 	cout << __FUNCTION__ << endl;
 	this->root.clear();
-
 }
 
 std::string Configuration::asJson(Json::StyledWriter writer ) const

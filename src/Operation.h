@@ -47,12 +47,15 @@ protected:
     std::vector<AtomType> emitTypes;
     std::vector<AtomType> acceptTypes;
 
-    Json::Value configRequirements;
+    bool initalized;
+    bool streamRunning;
+
+    //Json::Value configRequirements;
 
 public:
     /// General base constructor for an Operation
     Operation()
-     :pConfig(NULL)
+     :pConfig(NULL), initalized(false), streamRunning(false)
     {
 
     }

@@ -76,6 +76,7 @@ pather    = ['src/Configuration.cc', 'src/PatherOperation.cc', 'src/PathData.cc'
 regioner  = ['src/Configuration.cc', 'src/RegionerOperation.cc','src/RegionData.cc','src/SliceData.cc',]
 slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc', 'src/RegionData.cc',]
 file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
+example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include']
 default_libs = [ '_json']
@@ -83,6 +84,14 @@ default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
 debug_libs_path = [cppunit_lib_dir, ]
+
+env.Program(	'./bin/tests/exampleOpUnitTest',
+				mix(['src/unit_tests/ExampleOpTestCase.cc'],
+					file_w, config, unit_test, example_op),
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH = default_includes)
+
 
 env.Program(	'./bin/tests/fileWriterUnitTest',
 				mix(['src/unit_tests/FileWriterTestCase.cc'],

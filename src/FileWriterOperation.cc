@@ -18,8 +18,10 @@
 using namespace std;
 using namespace Json;
 
+
 /// Must be named <OperationName>ConfigRequirements
 static Value* FileWriterOperationConfigRequirements;
+
 
 Value* FileWriterOperation::getStaticConfigRequirements()
 {
@@ -41,20 +43,21 @@ Value* FileWriterOperation::getStaticConfigRequirements()
 FileWriterOperation::FileWriterOperation()
 	:pStream(NULL)
 {
-	configRequirements = getStaticConfigRequirements();
-
 }
+
 
 FileWriterOperation::~FileWriterOperation()
 {
 
 }
 
+
 std::ostream& FileWriterOperation::stream() const
 {
 	assert(pStream);
 	return *(pStream);
 }
+
 
 bool FileWriterOperation::isValidConfig(Configuration& config) const
 {
@@ -71,6 +74,7 @@ bool FileWriterOperation::isValidConfig(Configuration& config) const
 	return true;
 
 }
+
 
 void FileWriterOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
 {
@@ -108,26 +112,6 @@ void FileWriterOperation::init(Configuration& config,const std::vector<Operation
 		assert(0);
 	}
 }
-
-/*
-void FileWriterOperation::start()
-{
-    cout << "FileWriter::start()" << endl;
-	const Configuration &config = configuration();
-
-	if(config.contains("FileWriterOperation"))
-	{
-		std::string filename = config["FileWriterOperation"]["filename"].asString();
-		pStream = new std::ofstream(filename.c_str());
-		std::cout << "Writing to file: \"" << filename << "\""<< std::endl;
-	}
-	else
-	{
-		cout << "configuration does not contain FileWriterOperation section" << endl;
-		assert(0);
-	}
-    Operation::start();
-}*/
 
 
 void FileWriterOperation::deinit()
