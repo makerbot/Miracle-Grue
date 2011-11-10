@@ -36,8 +36,8 @@
  */
 class Operation
 {
-    Configuration* pConfig;
 protected:
+    Configuration* pConfig;
 
     // uint32_t  envelopesProcessed; // count of envelopes processed since reset
     std::vector<Operation*> outputs; // pointers to consumers
@@ -47,7 +47,7 @@ protected:
     std::vector<AtomType> emitTypes;
     std::vector<AtomType> acceptTypes;
 
-    //Json::Value interfaceDict;
+    Json::Value configRequirements;
 
 public:
     /// General base constructor for an Operation
@@ -70,14 +70,26 @@ public:
     	return dataEnvelopes;
     }
 
+	bool acceptsType( AtomType type )
+	{
+		//std::cout << "Accept Type Test!" << std::endl;
+		std::vector<AtomType>::iterator it;
+		for ( it = acceptTypes.begin() ; it < acceptTypes.end(); it++ )  {
+			AtomType i = * it;
+			if ( i == type){
+					//std::cout << "takes types" << std::endl;
+					return true;
+			}
+		}
+		std::cout << "this type of DataEnvelope not accepted" << std::endl;
+		return false;
+	};
+
     /// Init Function: Called to set the configuration
-    virtual void init(Configuration& config, const std::vector<Operation*> &inputs, const std::vector<Operation*> &outputs)
-    {
-    	// copy the contents of the input output vectors
-    	this->outputs = outputs;
-    	this->inputs = inputs;
-    	this->pConfig = &config;
-    }
+    virtual void init(Configuration& config,const std::vector<Operation*> &outputs) = 0;
+
+    // This function should tear down settings or objects built by collect
+    virtual void deinit() {};
 
     // Accepts incoming data, to collect in this Operation until the operation is ready to
     // process the data, and send it's own data.  It generally checks validity, increments the use count.
@@ -85,17 +97,22 @@ public:
     // TRICKY: in this base implementation, it processes the packet inline, but it will not always do so
     virtual bool accept(DataEnvelope& envelope)
     {
+    	//check incoming envelope data type
+    	if( false ==  acceptsType( envelope.getAtomType() ) ) {
+    		std::cout << " Accept Type Failure !" << std::endl;
+			return false;
+    	}
+
     	envelope.addRef(); //matching 'release' for this object is in function 'emit'
-    	// validate(envelope);
-    	// bool canThread = requestThreadFromPool(this);
-
-    	//if(canThread) //process that envelope later
-    	//	return;
-    	//else // process envelope now
-    	//  processEnvelope(envelope);
-
     	processEnvelope(envelope);
     	return true;
+    	// FUTUREL
+    	// validate(envelope);
+    	// bool canThread = requestThreadFromPool(this);
+    	//if(canThread) //process that envelope later
+    	//	this.envQueue.push_back(envelope);
+    	//else // process envelope now
+    	//  processEnvelope(envelope);
     }
 
 	//sends data to the next operation for it'suse
@@ -115,31 +132,28 @@ public:
 
     }
     
-    virtual void start()
-    {
-    	for( std::vector<Operation*>::iterator i = inputs.begin(); i != inputs.end(); i++)
-    	{
-    		Operation& op = *(*i);
-    		op.start();
-    	}
-    }
+//    virtual void start()
+//    {
+//    	for( std::vector<Operation*>::iterator i = inputs.begin(); i != inputs.end(); i++)
+//    	{
+//    		Operation& op = *(*i);
+//    		op.start();
+//    	}
+//    }
     
-    virtual void finish()
-    {
-    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
-    	{
-    		Operation& op = *(*i);
-    		op.finish();
-    	}
-    }
+//    virtual void finish()
+//    {
+//    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
+//    	{
+//    		Operation& op = *(*i);
+//    		op.finish();
+//    	}
+//    }
 
 
     // This is the core processing function, most users only need to override
     // this function to create their own models
     virtual void processEnvelope(const DataEnvelope& envelope) = 0;
-
-    // This function should tear down settings or objects built by collect
-    virtual void cleanup() {};
 
 
     /**

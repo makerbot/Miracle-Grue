@@ -70,8 +70,8 @@ env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
 
 unit_test = ['src/unit_tests/UnitTestMain.cc',]
 config 	  = ['src/Configuration.cc']
-file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeData.cc',]
-gcoder    = ['src/Configuration.cc', 'src/GCoderOperation.cc', 'src/PathData.cc', 'src/GCodeData.cc',]
+file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeEnvelope.cc',]
+gcoder    = ['src/Configuration.cc', 'src/GCoderOperation.cc', 'src/PathData.cc', 'src/GCodeEnvelope.cc',]
 pather    = ['src/Configuration.cc', 'src/PatherOperation.cc', 'src/PathData.cc', 'src/RegionData.cc',]
 regioner  = ['src/Configuration.cc', 'src/RegionerOperation.cc','src/RegionData.cc','src/SliceData.cc',]
 slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc', 'src/RegionData.cc',]
@@ -84,18 +84,26 @@ default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 debug_libs = ['cppunit',]
 debug_libs_path = [cppunit_lib_dir, ]
 
-env.Program(	'./bin/tests/queryInterfaceUnitTest',
-				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],file_w, config, unit_test),
+env.Program(	'./bin/tests/fileWriterUnitTest',
+				mix(['src/unit_tests/FileWriterTestCase.cc'],
+					file_w, config, unit_test),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
+
+#env.Program(	'./bin/tests/queryInterfaceUnitTest',
+#				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
+#					file_w, config, unit_test),
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH = default_includes)
 				
-#env.Program(	'./bin/tests/ConfigUnitTest',
+#env.Program(	'./bin/tests/configUnitTest',
 #				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
 #				LIBS = default_libs + debug_libs,
 #				LIBPATH = default_libs_path + debug_libs_path, 
 #				CPPPATH = default_includes)
-#
+
 #env.Program( 	'./bin/tests/gcoderUnitTest', 
 #				mix(['src/unit_tests/GCoderTestCase.cc'], 
 #				unit_test, pather, gcoder, file_w), 

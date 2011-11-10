@@ -9,7 +9,7 @@
 #include "../FileWriterOperation.h"
 
 #include "../PathData.h"
-#include "../GCodeData.h"
+#include "../GCodeEnvelope.h"
 
 using namespace std;
 

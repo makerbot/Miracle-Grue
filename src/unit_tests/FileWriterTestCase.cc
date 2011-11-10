@@ -144,9 +144,9 @@ void FileWriterTestCase::streamFileTo_FileWriter()
 	///must be flagged as 'stream start' and the last envelope flagged as 'stream end'
 	///(If there is only one envelope, those flags can both be set in that envelope
 	///BOOST_LOG_TRIVIAL(trace)<< "Ending: " <<__FUNCTION__ << endl;
-s	vector<string>::iterator it;
+	vector<string>::iterator it;
 	for ( it=gcodeLines.begin() ; it < gcodeLines.end(); it++ ) {
-		cout << *it << endl;
+		//cout << *it << endl;
 		DataEnvelope* testEnv = new DataEnvelope(/*AtomType*/TYPE_C_ASCII);
 		testEnv->setFinal();
 		testEnv->setInitial();
@@ -154,12 +154,20 @@ s	vector<string>::iterator it;
 		const char* data = s.c_str();
 		testEnv->setRawData((void*)data, strnlen(data,2048),false); //allow it to be destroyed as the function exits
 		fwo.accept(*testEnv);
+
+		// In this case, we are manually managing DataEnvelope existance
+		testEnv->release(this);
+		delete testEnv;
   }
 
 	///7) (Optional) de-init the object. If this is not done, it happens
 	///automatically when the object is destroyed (or, in the future, when
 	///'init' is called a 2nd time
 	fwo.deinit();
+
+	///TRICKY: configRequirements is a global static. To make memtests not leak, we force
+	//delete this. Inmost cases, this is not needed
+	delete configRequirements;
 }
 
 

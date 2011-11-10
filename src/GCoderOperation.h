@@ -20,7 +20,7 @@
 #include "Operation.h"
 
 #include "PathData.h"    // input data
-#include "GCodeData.h"	 // output data
+#include "GCodeEnvelope.h"	 // output data
 
 
 class GCoderOperation: public Operation

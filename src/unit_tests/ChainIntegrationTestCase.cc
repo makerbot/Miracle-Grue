@@ -54,7 +54,7 @@ void ChainIntegrationTestCase::testChain()
 	PathData *path = new PathData(0.2, 0.4);
     
 	Operation *gcoder = new GCoderOperation();
-	GCodeData *gcode = new GCodeData("(This is gcode)");
+	GCodeEnvelope *gcode = new GCodeEnvelope("(This is gcode)");
     
 	Operation *writer = new FileWriterOperation();
     

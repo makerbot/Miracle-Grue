@@ -39,6 +39,8 @@ typedef std::vector<Polygon> Paths;
 
 // This enum represents known data types
 //TODO: These should be 32bit id/hash values for dataNamespace strings or something
+//TODO: This typedef in a file is a HORRIABLE way to manage this,
+// but for Alpha I'm leaving it
 typedef enum AtomType {
 	TYPE_INVALID = 0,
 	TYPE_DUMMY_DATA = 1,
@@ -51,10 +53,16 @@ typedef enum AtomType {
 
 	TYPE_PATH_BINARY = 8,
 	TYPE_PATH_ASCII= 3,
-	
-	TYPE_MESH_3D = 9, 
+
+	TYPE_MESH_3D = 9,
 
 	TYPE_GCODE_ASCII = 2,
+
+	TYPE_C_ASCII = 10,
+
+	TYPE_ASCII_GCODE = 12,
+
+	TYPE_INT32 = 11,
 } AtomType;
 
 
@@ -71,8 +79,15 @@ class DataEnvelope {
 private:
 	int useCount; ///in the future, this will use boost weak_ptr and strong_ptr or something
 	std::map<void*, int> useMap;
+
+	void* pFallbackData; ///raw data. Used as a fallbck
+	size_t fallbackDataSz; /// size of fallback data
+	bool  ownFallbackData; /// if true, do 'delete fallbackData' when we are done,
+						   ///NOTE this does not work for arrays!
+
+	AtomType typeID; /// id of the contained data
+
 	/*
-	void* data; ///data
 	uint32_t dataSize; ///size of data in bytes
 	char* dataNamespaceString; /// namespace string of datatype
 	//TODO: add Reference to owner which will be responsible for cleaning up
@@ -81,7 +96,6 @@ private:
 
 public:
 
-	AtomType typeID; /// id of the contained data
 	bool type() {return typeID; };
 
 	///Baseline data constructor
@@ -96,13 +110,28 @@ public:
 	};
 */
 protected:
-	bool lastFlag; ///this flags the current envelope as the last in this stream
+	bool isInitialEnvelope; ///this flags the first envelope in this stream
+	bool isFinalEnvelope; ///this flags the current envelope as the last in this stream
 	int streamId; ///ID for the current stream. zero if no stream is defined
 
 	///Generic empty data constructor
 
 public:
-	DataEnvelope():useCount(1), streamId(0){}
+
+	DataEnvelope(AtomType inTypeID =TYPE_INVALID ):
+		useCount(1), streamId(0),typeID(inTypeID){}
+
+	void setRawData(void* pRawData, size_t dataSize, bool weOwnIt=false) {
+		pFallbackData = pRawData;
+		fallbackDataSz = dataSize;
+		ownFallbackData = weOwnIt;
+
+	}
+
+	AtomType getAtomType() const {return typeID; }
+
+	void* getRawPtr()  const { return pFallbackData; }
+	size_t getRawSize()  const { return fallbackDataSz; }
 
 	virtual ~DataEnvelope(){
 		if (useCount > 0 )
@@ -112,11 +141,17 @@ public:
 
 	}
 
-	bool isLastEnvelope() const { return lastFlag; }
+	bool isLastEnvelope() const { return isFinalEnvelope; }
 
-	void setLast(void) {
-		BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
-		lastFlag = true;
+	void setFinal(void) {
+		//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
+		isFinalEnvelope = true;
+	}
+
+
+	void setInitial(void) {
+		//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
+		isInitialEnvelope = true;
 	}
 
 	/// increments use countage of this envelope
@@ -130,29 +165,29 @@ public:
 
 	/// decrements use countage of this envelope
 	void release(void* user = NULL) const {
-		BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "ENTER " << useCount << std::endl;
+		//BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " ENTER " << useCount << std::endl;
 
 		int* cnt = (int*)&useCount;
 		(*cnt)--;
-		BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " new useCount " << useCount << std::endl;
 
 		if(useCount > 0){
-			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " useCount expected zero! got: " << useCount << std::endl;
+			//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << " useCount expected zero! got: " << useCount << std::endl;
 			std::map<void*, int>* map = const_cast<std::map<void*, int>* >(&useMap);
 			(*map)[user]--;
 		}
 		else if (useCount == 0){
-			if( useMap.size() > 0 )
-				BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Could not unpair released. Minor bug!" << std::endl;
-
-			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Envelope auto-free" << std::endl;
-			delete this;
+			if( useMap.size() > 0 ) {
+				//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Could not unpair released. Minor bug!" << std::endl;
+				int i = 0;//to avoid errors in empty func
+			}
+			//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Envelope auto-free" << std::endl;
+			//delete this;//TODO, in the future, if we are self-deleting, delete here.
 		}
 		else if(useCount < 0){
-			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
-			BOOST_LOG_TRIVIAL(trace) <<  "Use Count Blown.  Trying to decrement %d" << std::endl;
+			//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;
+			//BOOST_LOG_TRIVIAL(trace) <<  "Use Count Blown.  Trying to decrement %d" << std::endl;
 		}
-		BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "EXIT" << std::endl;
+		//BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << "EXIT" << std::endl;
 	}
 
 

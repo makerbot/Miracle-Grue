@@ -62,7 +62,8 @@ Configuration::Configuration(std::string& srcFilename)
 }
 Configuration::~Configuration()
 {
-	cout << "Configuration dtor! " << endl;
+	cout << __FUNCTION__ << endl;
+	this->root.clear();
 
 }
 

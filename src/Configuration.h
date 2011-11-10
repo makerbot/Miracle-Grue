@@ -27,7 +27,7 @@
 //
 class Configuration {
 
-	protected:
+	public:
 		Json::Value root;      	/// root Json Dictionary to contain all settings
 
     public:
@@ -40,15 +40,19 @@ class Configuration {
 
     public:
 
-     	/// Const index function (For when you want to only read a value from the dict)
-     	const Json::Value& operator[] (const std::string key) const
-     	{
-
-     		return (const Json::Value&)this->root[key];
-     	}
+//     	/// Const index function (For when you want to only read a value from the dict)
+//     	Json::Value& operator[] (const std::string key) const
+//     	{
+//			std::cout << "this->root[key]: " << this->root[key] << std::endl;
+//     		return (Json::Value&)this->root[key];
+//     	}
 
      	/// index function, to read/write values as config["foo"]
-     	Json::Value& operator[] (const std::string key) { return this->root[key]; 	}
+     	Json::Value& operator[] (const std::string key)
+		{
+     		return this->root[key];
+		}
+
      	/// test function for python style key existance checking
      	bool contains(const std::string &key ) const { return this->root.isMember(key); }
 

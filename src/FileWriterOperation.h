@@ -20,26 +20,29 @@
 #include <string>
 #include <assert.h>
 
-#include "GCodeData.h"
+#include "GCodeEnvelope.h"
 
 
 class FileWriterOperation : public Operation
 {
 	std::ofstream *pStream;
+protected:
+	bool isValidConfig(Configuration& config) const ;
 
 public:
 	FileWriterOperation();
 	~FileWriterOperation();
 
-	static Json::Value* queryInterface() ;
+	static Json::Value* getStaticConfigRequirements();
 
 
 	void processEnvelope(const DataEnvelope& envelope);
 
-	void start();
+//	void start();
+	void init(Configuration& config,const std::vector<Operation*> &outputs);
 
 	// closes the file
-	void finish();
+	void deinit();
 
 	// file handle accessor
 	std::ostream& stream() const;

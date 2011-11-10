@@ -312,7 +312,7 @@ void GCoderOperation::emit(const char* msg)
 	cout << "*************************************** END *****************************" << endl;
 	cout << endl;
 	*/
-	Operation::emit(new GCodeData(msg));
+	Operation::emit(new GCodeEnvelope(msg));
 }
 
 

@@ -11,7 +11,7 @@ class QueryInterfaceTestCase: public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( QueryInterfaceTestCase);
   CPPUNIT_TEST( simpleInterrogationTest );
-//  CPPUNIT_TEST( dualExtruders );
+  CPPUNIT_TEST( testConfgurationVsInformation );
   CPPUNIT_TEST_SUITE_END();
 //
 //
@@ -20,6 +20,7 @@ class QueryInterfaceTestCase: public CPPUNIT_NS::TestFixture
 //
 protected:
   void simpleInterrogationTest();
+  void testConfgurationVsInformation();
 //  void dualExtruders();
 
 };
