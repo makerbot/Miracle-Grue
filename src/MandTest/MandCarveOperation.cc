@@ -11,19 +11,23 @@
 #include <assert.h>
 #include <sstream>
 
-#include "ExampleOperation.h"
+#include "MandCarveOperation.h"
 
-#include "json-cpp/include/json/value.h"
+#include "../json-cpp/include/json/value.h"
+
+#include "../BGL/BGLMesh3d.h"
 
 using namespace std;
 using namespace Json;
+
+
 
 /// This staic global pointer points to a unique instance of a
 /// Value object, which contains the minimum configuration values
 /// required to build a working operation of this type.
 /// Must be named <OperationName>ConfigRequirements so it does not collide with
 /// other global static values.
-static Value* ExampleOperationConfigRequirements;
+static Value* MandCarveOperationConfigRequirements;
 
 
 /**
@@ -34,23 +38,22 @@ static Value* ExampleOperationConfigRequirements;
  *
  * @return global static Value pointer to configuration dictionary.
  */
-Value* ExampleOperation::getStaticConfigRequirements()
+Value* MandCarveOperation::getStaticConfigRequirements()
 {
 	// if we don't have one of these global static's, we have never initalized,
 	// so initalize now.
-	if (ExampleOperationConfigRequirements == 0x00)
+	if (MandCarveOperationConfigRequirements == 0x00)
 	{
-		// - Start custom to ExampleOperation code
+		// - Start custom to MandCarveOperation code
 		// for this Example operation, we need a prefix and a language specified
 		// to initalize
 		Value* cfg = new Value;
-		( *cfg )["prefix"]= "asString";
-		( *cfg )["lang"] = "asString";
-		// - End custom to ExampleOperation code
-		ExampleOperationConfigRequirements = cfg;
+
+		// - End custom to MandCarveOperation code
+		MandCarveOperationConfigRequirements = cfg;
 		// This object is expected to live until the program dies. No deconstruction !
 	}
-	return ExampleOperationConfigRequirements;
+	return MandCarveOperationConfigRequirements;
 }
 
 
@@ -61,14 +64,13 @@ Value* ExampleOperation::getStaticConfigRequirements()
  * SHOULD be initalized in the constructor.
  */
 
-ExampleOperation::ExampleOperation():
+MandCarveOperation::MandCarveOperation():
 		pStream(NULL)
 {
-	// - Start custom to ExampleOperation code
-	// Because this logging stream is always this file (and is not configuration dependant,
-	//we build it in the constructor, and destroy it  in the destructor.
-	pStream = new std::ofstream("logging.txt");
-	// - End custom to ExampleOperation code
+	// - Start custom to MandCarveOperation code
+	this->acceptTypes.push_back(/*AtomType*/TYPE_BGL_MESH);
+	this->emitTypes.push_back(/*AtomType*/TYPE_BGL_CARVE);
+	// - End custom to MandCarveOperation code
 
 }
 
@@ -77,12 +79,12 @@ ExampleOperation::ExampleOperation():
  * Standard Destructor.  This should close streams (if any are open) and
  * deinitalize the Operation (if it is still initalized). See details in implementation.
  */
-ExampleOperation::~ExampleOperation()
+MandCarveOperation::~MandCarveOperation()
 {
 	// IFF we are currently initalized, we need to check for an open stream, as well as deinit
 	if(initalized) {
 
-		// - Following line custom to ExampleOperation code
+		// - Following line custom to MandCarveOperation code
 		cout << " Operation initailzed at destruction time. Automatically running deinit" <<endl;
 
 		//NOTE:  deinit will check that the data stream is closed, and if needed it will
@@ -90,13 +92,13 @@ ExampleOperation::~ExampleOperation()
 		this->deinit();
 	}
 
-	// - Start custom to ExampleOperation code
+	// - Start custom to MandCarveOperation code
 	// Finally, since we created pStream in the constructor, we delete it here.
 	assert(pStream != NULL);
 	pStream->close();
 	delete pStream;
 	pStream = NULL;
-	// - End custom to ExampleOperation code
+	// - End custom to MandCarveOperation code
 
 
 }
@@ -109,17 +111,17 @@ ExampleOperation::~ExampleOperation()
  * @param config
  * @return
  */
-bool ExampleOperation::isValidConfig(Configuration& config) const
+bool MandCarveOperation::isValidConfig(Configuration& config) const
 {
 
 	cout << __FUNCTION__ << endl;
 
-	if(config["ExampleOperation"].type() !=  /*ValueType.*/objectValue)
+	if(config["MandCarveOperation"].type() !=  /*ValueType.*/objectValue)
 	{
-		// - Start custom to ExampleOperation code
+		// - Start custom to MandCarveOperation code
 		// code here should check for specific config values that we require,
 		// and make sure they are each valid
-		// - End custom to ExampleOperation code
+		// - End custom to MandCarveOperation code
 		return true;
 	}
 	cout << "ERROR: configuration is not valid, In BETA accepting config anyway" << endl;
@@ -133,7 +135,7 @@ bool ExampleOperation::isValidConfig(Configuration& config) const
  * @param config a configuration for setting up this operation
  * @param outputs a list of other Operations to send out outgoing packets to
  */
-void ExampleOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
+void MandCarveOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
 {
 	//For Alpha version of MG engine, pConfig must be null,
 	//i.e. We can't re-configure an object once it's been configured
@@ -141,11 +143,11 @@ void ExampleOperation::init(Configuration& config,const std::vector<Operation*> 
 	assert(this->initalized == false);
 
 	if(isValidConfig(config)){
+		cout << __FUNCTION__ << "count of ops" << outputs.size() << endl;
 		this->outputs.insert(this->outputs.end(), outputs.begin(), outputs.end());
 		this->initalized = true;
-		// - Start custom to ExampleOperation code
-
-		// - End custom to ExampleOperation code
+		// - Start custom to MandCarveOperation code
+		// - End custom to MandCarveOperation code
 	}
 	else {
 		cout << "configuration does not contain valid data" << endl;
@@ -159,7 +161,7 @@ void ExampleOperation::init(Configuration& config,const std::vector<Operation*> 
  * if a stream is running, and if it is, it forces a final data envelope to be queued before
  * continuing with deiitalization. This will force a data flush in edge or fail cases.
  */
-void ExampleOperation::deinit()
+void MandCarveOperation::deinit()
 {
 	assert(this->initalized == true);
 	assert(this->pConfig != NULL);
@@ -168,7 +170,7 @@ void ExampleOperation::deinit()
 	// force a final DataEnvelpe to our operation to flush the end of the stream.
 	if(streamRunning)
 	{
-		// - Following line custom to ExampleOperation code
+		// - Following line custom to MandCarveOperation code
 		cout << "Stream Running at deinit time. Automatically sending final envelope " <<endl;
 
 		DataEnvelope d;
@@ -178,9 +180,9 @@ void ExampleOperation::deinit()
 		d.release(); //release the constuctor default ref count of 1
 	}
 
-	// - Start custom to ExampleOperation code
+	// - Start custom to MandCarveOperation code
 
-	// - End custom to ExampleOperation code
+	// - End custom to MandCarveOperation code
 
 	this->initalized = false;
 	pConfig = NULL;
@@ -190,8 +192,10 @@ void ExampleOperation::deinit()
  * This is the heart of envelope processing.
  * @param envelope
  */
-void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
+void MandCarveOperation::processEnvelope(const DataEnvelope& envelope)
 {
+	cout << __FUNCTION__ << " enter " << endl;
+
 	/// we should be configured before ever doing this
 	assert(this->initalized == true);
 
@@ -200,27 +204,50 @@ void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
 		this->streamRunning = true;
 	}
 
-	// - Start custom to ExampleOperation code
+	cout << __FUNCTION__ << endl;
 
-	// - End custom to ExampleOperation code
+	if(envelope.getAtomType() == TYPE_BGL_MESH)
+	{
+		StlEnvelope *stlEnv = (StlEnvelope*) (dynamic_cast<const StlEnvelope* > (&envelope) );
+
+		const BGL::Mesh3d& mesh = stlEnv->getMesh();
+
+	    float topZ = mesh.maxZ;
+	    float layerThickness = 0.4; // move to a global config
+	    float z = layerThickness/2.0f;
+
+	    while (z < topZ) {
+/*		// - Start custom to MandCarveOperation code
+	    // Carve model to find layer outlines
+	    	CarveEnvelope mEnvelope = CarveEnvelopeFromMesh( z );
+			this->emit( dynamic_cast<DataEnvelope*>(mEnvelope) );*/
+	    	cout << "blarg, at z layer: " << z << endl;
+			z += layerThickness;
+	    }
+	}
+	else{
+		cout << "Envelope is not of type " + envelope.getAtomType() <<". We cannot accept it"<<
+		cout << " into function " << __FUNCTION__ << endl;
+	}
+	// - End custom to MandCarveOperation code
 
 	envelope.release();
 	return;
 }
 
 
-/************** Start of Functions custom to ExampleOperation ***********************/
+/************** Start of Functions custom to MandCarveOperation ***********************/
 
 /**
  * acessor for a ostream !
  * @return a stream reference, if we have one
  */
-ostream& ExampleOperation::stream() const
+ostream& MandCarveOperation::stream() const
 {
 	assert(pStream);
 	return *(pStream);
 }
 
-/************** End of Functions custom to ExampleOperation ***********************/
+/************** End of Functions custom to MandCarveOperation ***********************/
 
 

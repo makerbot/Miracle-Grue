@@ -9,25 +9,22 @@
 
 */
 
-#include "Operation.h"
+#ifndef GCODE_DATA_H
+#define GCODE_DATA_H
 
-#ifndef DEBUGOPERATION_H_
-#define DEBUGOPERATION_H_
+#include <string>
+#include "../DataEnvelope.h"
 
-class DebugOperation : public Operation
-{
+
+class CarveEnvelope: public DataEnvelope {
+
+private:
 
 public:
-	DebugOperation() {};
 
-	// -- from Operation Acceptor
-	void collect(DataEnvelope& envelope);
-
-	// -- from Operation
-    void init(Configuration& config);
-    void cleanup();
-	void processEnvelope(const DataEnvelope& envelope);
-
+	CarveEnvelope();
+	~CarveEnvelope();
 };
 
-#endif /* DEBUGOPERATION_H_ */
+
+#endif // GCODE_DATA_H

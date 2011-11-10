@@ -9,7 +9,7 @@
  */
 class ExampleOpTestCase: public CPPUNIT_NS::TestFixture
 {
-	CPPUNIT_TEST_SUITE( ExampleOpTestCase);
+	CPPUNIT_TEST_SUITE( ExampleOpTestCase );
 	CPPUNIT_TEST( create_ExampleOp );
 	CPPUNIT_TEST( createNoDenit_ExampleOp );
 	CPPUNIT_TEST( createNoStreamEnd_ExampleOp );

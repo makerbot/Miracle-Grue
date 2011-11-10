@@ -78,12 +78,23 @@ slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc',
 file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
 example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
-default_includes = ['..','src/json-cpp/include']
+default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL']
 default_libs = [ '_json']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
 debug_libs_path = [cppunit_lib_dir, ]
+
+mand_ops = ['src/Configuration.cc', 
+	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
+	'src/MandTest/MandCarveOperation.cc','src/MandTest/CarveEnvelope.cc']
+
+env.Program(	'./farMandolineTest',
+				mix(['FarScratchpad.cc'],
+					mand_ops ),
+				LIBS = default_libs + ['bgl'],
+				LIBPATH = default_libs_path, 
+				CPPPATH = default_includes )
 
 env.Program(	'./bin/tests/exampleOpUnitTest',
 				mix(['src/unit_tests/ExampleOpTestCase.cc'],

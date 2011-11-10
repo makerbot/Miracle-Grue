@@ -8,26 +8,28 @@
    License, or (at your option) any later version.
 
 */
+#include <iostream>
+#include "StlEnvelope.h"
+#include "../BGL/BGLMesh3d.h"
 
-#include "Operation.h"
+using namespace std;
 
-#ifndef DEBUGOPERATION_H_
-#define DEBUGOPERATION_H_
-
-class DebugOperation : public Operation
+StlEnvelope::StlEnvelope(BGL::Mesh3d &mesh):
+		ourMesh(mesh), DataEnvelope(/*AtomType*/TYPE_BGL_MESH  )
 {
+	cout << "StlEnvelope() @"  << this << endl;
+}
 
-public:
-	DebugOperation() {};
+StlEnvelope::~StlEnvelope()
+{
+	cout << "~StlEnvelope() @"  << this << endl;
+}
 
-	// -- from Operation Acceptor
-	void collect(DataEnvelope& envelope);
+const BGL::Mesh3d& StlEnvelope::getMesh() const
+{
+	return this->ourMesh;
+}
 
-	// -- from Operation
-    void init(Configuration& config);
-    void cleanup();
-	void processEnvelope(const DataEnvelope& envelope);
 
-};
 
-#endif /* DEBUGOPERATION_H_ */
+

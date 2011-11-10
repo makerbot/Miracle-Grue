@@ -154,10 +154,8 @@ void FileWriterOperation::processEnvelope(const DataEnvelope& envelope)
 			goto return_clean;
 		}
 		assert(&data != NULL);
-
 //		cout << "Getting stream" << endl;
 		stream() << data->gString;
-
 	}
 	/// if we are outputting to an unit32_t text file, make it so
 	else if ((*pConfig)["FileWriterOperation"]["format"].asString() == ".uint32_t")
@@ -187,7 +185,6 @@ void FileWriterOperation::processEnvelope(const DataEnvelope& envelope)
 			cout << "no known conversion from AtomType " << envelope.getAtomType() <<
 					" to output format .txt" << endl;
 		}
-
 	}
 	/// otherwise, err out
 	else {

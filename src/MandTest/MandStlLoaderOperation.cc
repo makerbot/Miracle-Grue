@@ -8,12 +8,19 @@
    License, or (at your option) any later version.
 
 */
-#include <assert.h>
 #include <sstream>
+#include <fstream>
+#include <iterator>
 
-#include "ExampleOperation.h"
+#include <assert.h>
+#include <string.h>
 
-#include "json-cpp/include/json/value.h"
+
+#include "MandStlLoaderOperation.h"
+
+#include "../json-cpp/include/json/value.h"
+
+#include "../BGL/BGLMesh3d.h"
 
 using namespace std;
 using namespace Json;
@@ -23,7 +30,7 @@ using namespace Json;
 /// required to build a working operation of this type.
 /// Must be named <OperationName>ConfigRequirements so it does not collide with
 /// other global static values.
-static Value* ExampleOperationConfigRequirements;
+static Value* MandStlLoaderOperationConfigRequirements;
 
 
 /**
@@ -34,23 +41,21 @@ static Value* ExampleOperationConfigRequirements;
  *
  * @return global static Value pointer to configuration dictionary.
  */
-Value* ExampleOperation::getStaticConfigRequirements()
+Value* MandStlLoaderOperation::getStaticConfigRequirements()
 {
 	// if we don't have one of these global static's, we have never initalized,
 	// so initalize now.
-	if (ExampleOperationConfigRequirements == 0x00)
+	if (MandStlLoaderOperationConfigRequirements == 0x00)
 	{
-		// - Start custom to ExampleOperation code
+		// - Start custom to MandStlLoaderOperation code
 		// for this Example operation, we need a prefix and a language specified
 		// to initalize
 		Value* cfg = new Value;
-		( *cfg )["prefix"]= "asString";
-		( *cfg )["lang"] = "asString";
-		// - End custom to ExampleOperation code
-		ExampleOperationConfigRequirements = cfg;
+		// - End custom to MandStlLoaderOperation code
+		MandStlLoaderOperationConfigRequirements = cfg;
 		// This object is expected to live until the program dies. No deconstruction !
 	}
-	return ExampleOperationConfigRequirements;
+	return MandStlLoaderOperationConfigRequirements;
 }
 
 
@@ -60,16 +65,12 @@ Value* ExampleOperation::getStaticConfigRequirements()
  * Anything things that do not need configuration
  * SHOULD be initalized in the constructor.
  */
+MandStlLoaderOperation::MandStlLoaderOperation() {
 
-ExampleOperation::ExampleOperation():
-		pStream(NULL)
-{
-	// - Start custom to ExampleOperation code
-	// Because this logging stream is always this file (and is not configuration dependant,
-	//we build it in the constructor, and destroy it  in the destructor.
-	pStream = new std::ofstream("logging.txt");
-	// - End custom to ExampleOperation code
-
+	// - Start custom to MandStlLoaderOperation code
+	this->acceptTypes.push_back(/*AtomType*/TYPE_C_ASCII);
+	this->emitTypes.push_back(/*AtomType*/TYPE_BGL_MESH );
+	// - End custom to MandStlLoaderOperation code
 }
 
 
@@ -77,27 +78,18 @@ ExampleOperation::ExampleOperation():
  * Standard Destructor.  This should close streams (if any are open) and
  * deinitalize the Operation (if it is still initalized). See details in implementation.
  */
-ExampleOperation::~ExampleOperation()
+MandStlLoaderOperation::~MandStlLoaderOperation()
 {
 	// IFF we are currently initalized, we need to check for an open stream, as well as deinit
 	if(initalized) {
 
-		// - Following line custom to ExampleOperation code
+		// - Following line custom to MandStlLoaderOperation code
 		cout << " Operation initailzed at destruction time. Automatically running deinit" <<endl;
 
 		//NOTE:  deinit will check that the data stream is closed, and if needed it will
 		// gaurentee a last DataEnvelope is sent (so we can deinitalize with confidence)
 		this->deinit();
 	}
-
-	// - Start custom to ExampleOperation code
-	// Finally, since we created pStream in the constructor, we delete it here.
-	assert(pStream != NULL);
-	pStream->close();
-	delete pStream;
-	pStream = NULL;
-	// - End custom to ExampleOperation code
-
 
 }
 
@@ -109,17 +101,17 @@ ExampleOperation::~ExampleOperation()
  * @param config
  * @return
  */
-bool ExampleOperation::isValidConfig(Configuration& config) const
+bool MandStlLoaderOperation::isValidConfig(Configuration& config) const
 {
 
 	cout << __FUNCTION__ << endl;
 
-	if(config["ExampleOperation"].type() !=  /*ValueType.*/objectValue)
+	if(config["MandStlLoaderOperation"].type() !=  /*ValueType.*/objectValue)
 	{
-		// - Start custom to ExampleOperation code
+		// - Start custom to MandStlLoaderOperation code
 		// code here should check for specific config values that we require,
 		// and make sure they are each valid
-		// - End custom to ExampleOperation code
+		// - End custom to MandStlLoaderOperation code
 		return true;
 	}
 	cout << "ERROR: configuration is not valid, In BETA accepting config anyway" << endl;
@@ -133,7 +125,7 @@ bool ExampleOperation::isValidConfig(Configuration& config) const
  * @param config a configuration for setting up this operation
  * @param outputs a list of other Operations to send out outgoing packets to
  */
-void ExampleOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
+void MandStlLoaderOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
 {
 	//For Alpha version of MG engine, pConfig must be null,
 	//i.e. We can't re-configure an object once it's been configured
@@ -141,11 +133,12 @@ void ExampleOperation::init(Configuration& config,const std::vector<Operation*> 
 	assert(this->initalized == false);
 
 	if(isValidConfig(config)){
+		cout << __FUNCTION__ << "count of ops" << outputs.size() << endl;
 		this->outputs.insert(this->outputs.end(), outputs.begin(), outputs.end());
 		this->initalized = true;
-		// - Start custom to ExampleOperation code
+		// - Start custom to MandStlLoaderOperation code
 
-		// - End custom to ExampleOperation code
+		// - End custom to MandStlLoaderOperation code
 	}
 	else {
 		cout << "configuration does not contain valid data" << endl;
@@ -159,7 +152,7 @@ void ExampleOperation::init(Configuration& config,const std::vector<Operation*> 
  * if a stream is running, and if it is, it forces a final data envelope to be queued before
  * continuing with deiitalization. This will force a data flush in edge or fail cases.
  */
-void ExampleOperation::deinit()
+void MandStlLoaderOperation::deinit()
 {
 	assert(this->initalized == true);
 	assert(this->pConfig != NULL);
@@ -168,7 +161,7 @@ void ExampleOperation::deinit()
 	// force a final DataEnvelpe to our operation to flush the end of the stream.
 	if(streamRunning)
 	{
-		// - Following line custom to ExampleOperation code
+		// - Following line custom to MandStlLoaderOperation code
 		cout << "Stream Running at deinit time. Automatically sending final envelope " <<endl;
 
 		DataEnvelope d;
@@ -178,9 +171,9 @@ void ExampleOperation::deinit()
 		d.release(); //release the constuctor default ref count of 1
 	}
 
-	// - Start custom to ExampleOperation code
+	// - Start custom to MandStlLoaderOperation code
 
-	// - End custom to ExampleOperation code
+	// - End custom to MandStlLoaderOperation code
 
 	this->initalized = false;
 	pConfig = NULL;
@@ -190,7 +183,7 @@ void ExampleOperation::deinit()
  * This is the heart of envelope processing.
  * @param envelope
  */
-void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
+void MandStlLoaderOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	/// we should be configured before ever doing this
 	assert(this->initalized == true);
@@ -199,28 +192,30 @@ void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
 	if( this->streamRunning == false) {
 		this->streamRunning = true;
 	}
+	// - Start custom to MandStlLoaderOperation code
+	if(envelope.getAtomType() == TYPE_C_ASCII)
+	{
+		char* rawPtr = (char*)envelope.getRawPtr();
+		size_t dataSz = envelope.getRawSize() < 512? envelope.getRawSize() : 512;
+		char  fName[512] = "";
+		strncpy(fName, rawPtr, dataSz );
+		cout << " Envelope to start stlLoading requests file: " << fName << endl;
 
-	// - Start custom to ExampleOperation code
+	    BGL::Mesh3d* newMesh = new BGL::Mesh3d();
+	    newMesh->loadFromSTLFile(fName);
+		StlEnvelope* newStlData = new StlEnvelope(*newMesh);
 
-	// - End custom to ExampleOperation code
+		cout << " Emitting newStlData : @" << newStlData << endl;
+		this->emit( dynamic_cast<DataEnvelope*>(newStlData) );
+	}
+	else{
+		cout << "Envelope is not of type " + envelope.getAtomType() <<". We cannot accept it"<<
+		cout << " into function " << __FUNCTION__ << endl;
+	}
+	// - End custom to MandStlLoaderOperation code
 
 	envelope.release();
 	return;
 }
-
-
-/************** Start of Functions custom to ExampleOperation ***********************/
-
-/**
- * acessor for a ostream !
- * @return a stream reference, if we have one
- */
-ostream& ExampleOperation::stream() const
-{
-	assert(pStream);
-	return *(pStream);
-}
-
-/************** End of Functions custom to ExampleOperation ***********************/
 
 

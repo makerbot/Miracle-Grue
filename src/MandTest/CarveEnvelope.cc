@@ -8,26 +8,22 @@
    License, or (at your option) any later version.
 
 */
+#include <iostream>
+#include "CarveEnvelope.h"
 
-#include "Operation.h"
+using namespace std;
 
-#ifndef DEBUGOPERATION_H_
-#define DEBUGOPERATION_H_
-
-class DebugOperation : public Operation
+CarveEnvelope::CarveEnvelope():DataEnvelope(/*AtomType*/TYPE_BGL_CARVE )
 {
+	cout << "CarveEnvelope() @"  << this << endl;
+}
 
-public:
-	DebugOperation() {};
+CarveEnvelope::~CarveEnvelope()
+{
+	cout << "~CarveEnvelope() @"  << this << endl;
+}
 
-	// -- from Operation Acceptor
-	void collect(DataEnvelope& envelope);
 
-	// -- from Operation
-    void init(Configuration& config);
-    void cleanup();
-	void processEnvelope(const DataEnvelope& envelope);
 
-};
 
-#endif /* DEBUGOPERATION_H_ */
+

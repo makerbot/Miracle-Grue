@@ -10,13 +10,21 @@
 */
 #include <stdio.h>
 
+#include <string.h>
+
 #include "src/SliceOperation.h"
 #include "src/DebugOperation.h"
 #include "src/DataEnvelope.h"
 #include "src/Operation.h"
 
+#include "src/MandTest/MandStlLoaderOperation.h"
+#include "src/MandTest/MandCarveOperation.h"
+
 int testCallbackCount = 0;
 bool testSliceOp = true;
+
+using namespace std;
+using namespace Json;
 
 int main() {
   // -- Run hello
@@ -25,40 +33,48 @@ int main() {
   if(testSliceOp)
   {
 	  printf("%s: Building DataEnvelope(s)\n", __FUNCTION__);
-	  DataEnvelope de = DataEnvelope();
-	  DataEnvelope deL = DataEnvelope();
 
-	  PathLoadOperation plo = new PathLoadOperation();
-	  GCoderOperation gco  = new GCodeOperation();
+	  MandStlLoaderOperation* loaderOp = new MandStlLoaderOperation();
+	  Json::Value loaderRequires = MandStlLoaderOperation::getStaticConfigRequirements();
 
-	  Configuration c = new Configuration();
+	  MandCarveOperation* carveOp = new MandCarveOperation();
+	  Json::Value carveRequires = MandCarveOperation::getStaticConfigRequirements();
 
-//	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-//	  DebugOperation* dbgOp = new DebugOperation();
-//	  SliceOperation* s1 = new SliceOperation();
-//	  s1->collect(de);
+//	  MandInsetOperation* insetOp = new MandInsetOperation();
+//	  Json::Value insetRequires = MandInsetOperation::getStaticConfigRequirements();
 //
-////	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-//	  SliceOperation *s2 = new SliceOperation();
-//	  s2->setNext(dbgOp);
-////	  s2->collect(de);
-////	  deL.setLast();
-////	  s2->collect(deL);
+//	  MandInfillOperation* infillOp = new MandInfillOperation();
+//	  Json::Value infillRequires = MandInfillOperation::getStaticConfigRequirements();
 //
-//	  printf("%s: Testing a slice queuing data, w. callback\n", __FUNCTION__);
-//	  DataEnvelope dummyData= DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-//	  DataEnvelope dummyData2 = DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-//	  dummyData2.setLast();
+//	  MandWriteSvgOp* svgWriteOp= new MandWriteSvgOperation();
+//	  Json::Value svgWriteRequires = MandInfillOperation::getStaticConfigRequirements();
 //
-//	  if (s2->collectsEnvelopeType() == dummyData.typeID)
-//	  {
-//		  printf("%s: Queuing one Envelope of dummy to s2\n", __FUNCTION__);
-//		  s2->collect(dummyData);
-//		  s2->collect(dummyData2);
-//	  }
-////	  else {
-////		  printf("%s: Envelope Type Mismatch at s3\n", __FUNCTION__);
-////	  }
+	  Configuration* cfg = new Configuration();
+//
+	  std::vector<Operation*> loadOut, carveOut, insetOut, infillOut, svgWriteOut;
+	  loadOut.push_back(carveOp);
+//	  carveOut.push_back(insetOp);
+//	  insetOut.push_back(infillOp);
+//	  infillOut.push_back(svgWriteOp);
+//
+	  loaderOp->init(*cfg, loadOut);
+	  carveOp->init(*cfg, carveOut);
+//	  insetOp.init(cfg, insetOut);
+//	  infilOp.init(cfg, infillOut);
+//	  svgWriteOp.init(cfg, svgWriteOut);
+//
+//
+	  DataEnvelope* kickstartEnv = new DataEnvelope(/*AtomType*/TYPE_C_ASCII);
+	  string sourceFile = ("input.stl");
+	  const char* srcFilename = sourceFile .c_str();
+	  kickstartEnv->setRawData((void*)srcFilename, strnlen(srcFilename,64) ,false); //allow it to be destroyed as the function exits
+	  kickstartEnv->setInitial();
+
+	  //start the chain running
+	  loaderOp->accept(*kickstartEnv);
+//
+//
+
   }
 
 }

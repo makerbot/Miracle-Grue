@@ -158,7 +158,7 @@ void FileWriterTestCase::streamFileTo_FileWriter()
 		// In this case, we are manually managing DataEnvelope existance
 		testEnv->release(this);
 		delete testEnv;
-  }
+	}
 
 	///7) (Optional) de-init the object. If this is not done, it happens
 	///automatically when the object is destroyed (or, in the future, when

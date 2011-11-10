@@ -80,7 +80,7 @@ public:
 		for ( it = acceptTypes.begin() ; it < acceptTypes.end(); it++ )  {
 			AtomType i = * it;
 			if ( i == type){
-					//std::cout << "takes types" << std::endl;
+					std::cout << "takes types" << std::endl;
 					return true;
 			}
 		}
@@ -121,13 +121,17 @@ public:
 	//sends data to the next operation for it'suse
     virtual void emit(DataEnvelope* envelope)
     {
+		std::cout << __FUNCTION__  << std::endl;
     	dataEnvelopes.push_back(envelope);
     	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
     	{
     		Operation& op = *(*i);
+    		std::cout << "emitting to @" << *i << std::endl;
     		bool accepted = op.accept(*envelope);
-    		if(accepted)
-    			envelope->release(); //matching 'addRef' for this object is in fuction 'accept'
+    		if(accepted){
+        		std::cout << "op accepted to @" << envelope << std::endl;
+        		envelope->release(); //matching 'addRef' for this object is in fuction 'accept'
+    		}
     		 else
     			 std::cout << __FUNCTION__ << "packet not accepted by next operation. Won't decrement use for safety" << std::endl;
 

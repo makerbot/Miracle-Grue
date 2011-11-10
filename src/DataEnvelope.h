@@ -60,9 +60,13 @@ typedef enum AtomType {
 
 	TYPE_C_ASCII = 10,
 
-	TYPE_ASCII_GCODE = 12,
 
 	TYPE_INT32 = 11,
+	TYPE_ASCII_GCODE = 12,
+	TYPE_STRING_VECTOR=13,
+	TYPE_BGL_MESH = 14,
+	TYPE_BGL_CARVE = 15,
+
 } AtomType;
 
 
@@ -84,9 +88,6 @@ private:
 	size_t fallbackDataSz; /// size of fallback data
 	bool  ownFallbackData; /// if true, do 'delete fallbackData' when we are done,
 						   ///NOTE this does not work for arrays!
-
-	AtomType typeID; /// id of the contained data
-
 	/*
 	uint32_t dataSize; ///size of data in bytes
 	char* dataNamespaceString; /// namespace string of datatype
@@ -109,7 +110,9 @@ public:
 		// printf("%s\n", __FUNCTION__ );
 	};
 */
+
 protected:
+	AtomType typeID; /// id of the contained data
 	bool isInitialEnvelope; ///this flags the first envelope in this stream
 	bool isFinalEnvelope; ///this flags the current envelope as the last in this stream
 	int streamId; ///ID for the current stream. zero if no stream is defined

@@ -9,25 +9,27 @@
 
 */
 
-#include "Operation.h"
+#ifndef GCODE_DATA_H
+#define GCODE_DATA_H
 
-#ifndef DEBUGOPERATION_H_
-#define DEBUGOPERATION_H_
+#include <string>
+#include "../DataEnvelope.h"
+namespace BGL {
+	class Mesh3d; //#include "../BGL/Mesh3d.h"
+}
 
-class DebugOperation : public Operation
-{
+class StlEnvelope: public DataEnvelope {
+
+private:
+	BGL::Mesh3d &ourMesh;
 
 public:
-	DebugOperation() {};
 
-	// -- from Operation Acceptor
-	void collect(DataEnvelope& envelope);
+	StlEnvelope(BGL::Mesh3d &mesh);
+	~StlEnvelope();
 
-	// -- from Operation
-    void init(Configuration& config);
-    void cleanup();
-	void processEnvelope(const DataEnvelope& envelope);
-
+	const BGL::Mesh3d& getMesh() const;
 };
 
-#endif /* DEBUGOPERATION_H_ */
+
+#endif // GCODE_DATA_H
