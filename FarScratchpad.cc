@@ -19,6 +19,10 @@
 
 #include "src/MandTest/MandStlLoaderOperation.h"
 #include "src/MandTest/MandCarveOperation.h"
+#include "src/MandTest/MandInsetOperation.h"
+#include "src/MandTest/MandInfillOperation.h"
+#include "src/MandTest/MandWriteSvgOperation.h"
+
 
 int testCallbackCount = 0;
 bool testSliceOp = true;
@@ -27,7 +31,7 @@ using namespace std;
 using namespace Json;
 
 int main() {
-  // -- Run hello
+  /// -- Run hello
   printf("Hello world!\n");
 
   if(testSliceOp)
@@ -40,30 +44,34 @@ int main() {
 	  MandCarveOperation* carveOp = new MandCarveOperation();
 	  Json::Value carveRequires = MandCarveOperation::getStaticConfigRequirements();
 
-//	  MandInsetOperation* insetOp = new MandInsetOperation();
-//	  Json::Value insetRequires = MandInsetOperation::getStaticConfigRequirements();
-//
-//	  MandInfillOperation* infillOp = new MandInfillOperation();
-//	  Json::Value infillRequires = MandInfillOperation::getStaticConfigRequirements();
-//
-//	  MandWriteSvgOp* svgWriteOp= new MandWriteSvgOperation();
-//	  Json::Value svgWriteRequires = MandInfillOperation::getStaticConfigRequirements();
-//
+	  MandInsetOperation* insetOp = new MandInsetOperation();
+	  Json::Value insetRequires = MandInsetOperation::getStaticConfigRequirements();
+
+	  MandInfillOperation* infillOp = new MandInfillOperation();
+	  Json::Value infillRequires = MandInfillOperation::getStaticConfigRequirements();
+
+	  MandWriteSvgOperation* svgWriteOp= new MandWriteSvgOperation();
+	  Json::Value svgWriteRequires = MandInfillOperation::getStaticConfigRequirements();
+
 	  Configuration* cfg = new Configuration();
-//
+
+	  (*cfg)["MandWriteSvgOperation"]["format"] = ".svg";
+	  (*cfg)["MandWriteSvgOperation"]["filename"] = "mandStreamTest";
+
 	  std::vector<Operation*> loadOut, carveOut, insetOut, infillOut, svgWriteOut;
 	  loadOut.push_back(carveOp);
-//	  carveOut.push_back(insetOp);
-//	  insetOut.push_back(infillOp);
-//	  infillOut.push_back(svgWriteOp);
-//
+	  carveOut.push_back(insetOp);
+	  insetOut.push_back(infillOp);
+	  infillOut.push_back(svgWriteOp);
+
 	  loaderOp->init(*cfg, loadOut);
 	  carveOp->init(*cfg, carveOut);
-//	  insetOp.init(cfg, insetOut);
-//	  infilOp.init(cfg, infillOut);
-//	  svgWriteOp.init(cfg, svgWriteOut);
-//
-//
+	  insetOp->init(*cfg, insetOut);
+	  infillOp->init(*cfg, infillOut);
+	  svgWriteOp->init(*cfg, svgWriteOut);
+
+	  loaderOp->start();
+
 	  DataEnvelope* kickstartEnv = new DataEnvelope(/*AtomType*/TYPE_C_ASCII);
 	  string sourceFile = ("input.stl");
 	  const char* srcFilename = sourceFile .c_str();
@@ -72,6 +80,11 @@ int main() {
 
 	  //start the chain running
 	  loaderOp->accept(*kickstartEnv);
+
+	  loaderOp->finish();
+
+	  loaderOp->deinit();
+
 //
 //
 

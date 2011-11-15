@@ -60,13 +60,17 @@ env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
     'src/BGL/BGLPoint.cc',
     'src/BGL/BGLPoint3d.cc',
     'src/BGL/BGLSimpleRegion.cc',
-    'src/BGL/BGLTriangle3d.cc'])
+    'src/BGL/BGLTriangle3d.cc',
+    'src/BGL/BGLSVG.cc'])
+
 
 
 env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
                        'src/json-cpp/src/lib_json/json_value.cpp',
                        'src/json-cpp/src/lib_json/json_writer.cpp' ],
             CPPPATH=['src/json-cpp/include'])
+
+env.Library('./bin/lib/miracleGrue',['src/Operation.cc'], CPPATH=['src/'])
 
 unit_test = ['src/unit_tests/UnitTestMain.cc',]
 config 	  = ['src/Configuration.cc']
@@ -79,7 +83,7 @@ file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/Mes
 example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL']
-default_libs = [ '_json']
+default_libs = [ '_json','miracleGrue']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
@@ -87,7 +91,10 @@ debug_libs_path = [cppunit_lib_dir, ]
 
 mand_ops = ['src/Configuration.cc', 
 	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
-	'src/MandTest/MandCarveOperation.cc','src/MandTest/CarveEnvelope.cc']
+	'src/MandTest/MandCarveOperation.cc','src/MandTest/RegionEnvelope.cc',
+	'src/MandTest/MandInsetOperation.cc', 'src/MandTest/ShellEnvelope.cc',
+	'src/MandTest/MandInfillOperation.cc',
+	'src/MandTest/MandWriteSvgOperation.cc']
 
 env.Program(	'./farMandolineTest',
 				mix(['FarScratchpad.cc'],

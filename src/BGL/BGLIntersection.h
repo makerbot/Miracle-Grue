@@ -11,7 +11,6 @@
 
 #include <list>
 #include "config.h"
-#include <stdint.h>
 #include "BGLCommon.h"
 #include "BGLPoint.h"
 
@@ -32,17 +31,20 @@ class Intersection {
 public:
     IntersectionType type;
     Point p1, p2;
-    int32_t segment;
+    int segment;
 
     Intersection() : type(NONE), p1(), p2(), segment(0) {}
-    Intersection(int32_t segnum) : type(LINE), p1(), p2(), segment(segnum) {}
-    Intersection(const Point& pt1, int32_t segnum) : type(POINT), p1(pt1), p2(), segment(segnum) {}
-    Intersection(const Point& pt1, const Point& pt2, int32_t segnum) : type(SEGMENT), p1(pt1), p2(pt2), segment(segnum) {}
+    Intersection(int segnum) : type(LINE), p1(), p2(), segment(segnum) {}
+    Intersection(const Point& pt1, int segnum) : type(POINT), p1(pt1), p2(), segment(segnum) {}
+    Intersection(const Point& pt1, const Point& pt2, int segnum) : type(SEGMENT), p1(pt1), p2(pt2), segment(segnum) {}
 
     Line line() const;
+
+    void quantize(float quanta);
+    void quantize();
 };
 
-typedef std::list<Intersection> Intersections;
+typedef list<Intersection> Intersections;
 
 
 }

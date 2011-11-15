@@ -14,8 +14,8 @@
 namespace BGL {
 
 
-extern Scalar EPSILON;
-extern Scalar CLOSEENOUGH;
+extern float EPSILON;
+extern float CLOSEENOUGH;
 
 typedef enum {
     USED = 0,
@@ -25,6 +25,12 @@ typedef enum {
     UNSHARED = 8
 } Relation;
 
+
+typedef enum {
+    VALID = 0,
+    INVALID = 1,
+    CONSECUTIVELY_INVALID = 2
+} Validity;
 
 }
 #endif

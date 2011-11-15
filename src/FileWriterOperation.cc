@@ -76,17 +76,27 @@ bool FileWriterOperation::isValidConfig(Configuration& config) const
 }
 
 
+void FileWriterOperation::start()
+{
+	Operation::startCommon();
+
+}
+
+void FileWriterOperation::finish()
+{
+	Operation::finishCommon();
+}
+
+
 void FileWriterOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
 {
 	//For Alpha version, pConfig must be null,
 	//ie we can't re-configure an object once it's been configured
 	assert(this->pConfig == NULL);
 
-	if(isValidConfig(config)){
-		//std::cout <<  "setting config " << endl;
-		//std::cout <<  "Fop->fname " << config["FileWriterOperation"]["filename"].asString() <<endl;
-		//std::cout <<  "Fop->fmt " <<  config["FileWriterOperation"]["format"].asString() <<endl;
-		this->pConfig = &config;
+	bool configOk = Operation::initCommon(config, outputs);
+	if( configOk ){
+
 		string filename = config["FileWriterOperation"]["filename"].asString();
 		pStream = new std::ofstream(filename.c_str());
 		//std::cout << "Writing to file: \"" << filename << "\""<< std::endl;

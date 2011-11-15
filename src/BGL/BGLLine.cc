@@ -14,66 +14,30 @@ namespace BGL {
 
 bool Line::isLinearWith(const Point& pt) const
 {
-    if (startPt == endPt) {
-         // Line segment is 0 length.
-        if (pt == startPt) {
-            return true; // Point is coincident.
-        }
-        return false;
-    }
-    if (pt == startPt || pt == endPt) {
-        // Point is one of this line's endpoints.
-        return true;
-    }
-
-    Scalar x1 = startPt.x;
-    Scalar y1 = startPt.y;
-    Scalar x2 = endPt.x;
-    Scalar y2 = endPt.y;
-    
-    Scalar dx1 = x2 - x1;
-    Scalar dy1 = y2 - y1;
-    
-    Scalar dx2 = x2 - pt.x;
-    Scalar dy2 = y2 - pt.y;
-    
-    Scalar dx3 = x1 - pt.x;
-    Scalar dy3 = y1 - pt.y;
-    
-    Scalar d  = dy2 * dx1 - dx2 * dy1;
-    Scalar na = dx2 * dy3 - dy2 * dx3;
-    Scalar nb = dx1 * dy3 - dy1 * dx3;
-    
-    if (d == 0) {
-        if (fabsf(na) < EPSILON && fabsf(nb) < EPSILON) {
-            return true;  // Lines are coincident.
-        }
-        return false; // Lines are parallel but not coincident.
-    }
-    return false;
+    return (minimumExtendedLineDistanceFromPoint(pt) < CLOSEENOUGH);
 }
 
 
 
 bool Line::hasInBounds(const Point &pt) const
 {
-    Scalar px = pt.x;
-    Scalar py = pt.y;
-    Scalar sx = startPt.x;
-    Scalar sy = startPt.y;
-    Scalar ex = endPt.x;
-    Scalar ey = endPt.y;
+    double px = pt.x;
+    double py = pt.y;
+    double sx = startPt.x;
+    double sy = startPt.y;
+    double ex = endPt.x;
+    double ey = endPt.y;
     
-    if (px > sx && px > ex) {
+    if (px > sx+EPSILON && px > ex+EPSILON) {
         return false;
     }
-    if (px < sx && px < ex) {
+    if (px < sx-EPSILON && px < ex-EPSILON) {
         return false;
     }
-    if (py > sy && py > ey) {
+    if (py > sy+EPSILON && py > ey+EPSILON) {
         return false;
     }
-    if (py < sy && py < ey) {
+    if (py < sy-EPSILON && py < ey-EPSILON) {
         return false;
     }
     return true;
@@ -83,8 +47,8 @@ bool Line::hasInBounds(const Point &pt) const
 
 bool Line::contains(const Point &pt) const
 {
-    if (this->hasInBounds(pt) && this->isLinearWith(pt)) {
-        return true;
+    if (hasInBounds(pt)) {
+	return (minimumSegmentDistanceFromPoint(pt) < CLOSEENOUGH);
     }
     return false;
 }
@@ -93,13 +57,13 @@ bool Line::contains(const Point &pt) const
 
 Point Line::closestSegmentPointTo(const Point &pt) const
 {
-    Scalar x1 = startPt.x;
-    Scalar y1 = startPt.y;
-    Scalar x2 = endPt.x;
-    Scalar y2 = endPt.y;
-    Scalar xd = x2 - x1;
-    Scalar yd = y2 - y1;
-    Scalar u;
+    double x1 = startPt.x;
+    double y1 = startPt.y;
+    double x2 = endPt.x;
+    double y2 = endPt.y;
+    double xd = x2 - x1;
+    double yd = y2 - y1;
+    double u;
 
     if (startPt == endPt) {
         return Point(startPt);
@@ -117,13 +81,13 @@ Point Line::closestSegmentPointTo(const Point &pt) const
 
 Point Line::closestExtendedLinePointTo(const Point &pt) const
 {
-    Scalar x1 = startPt.x;
-    Scalar y1 = startPt.y;
-    Scalar x2 = endPt.x;
-    Scalar y2 = endPt.y;
-    Scalar xd = x2 - x1;
-    Scalar yd = y2 - y1;
-    Scalar u;
+    double x1 = startPt.x;
+    double y1 = startPt.y;
+    double x2 = endPt.x;
+    double y2 = endPt.y;
+    double xd = x2 - x1;
+    double yd = y2 - y1;
+    double u;
     
     if (startPt == endPt) {
         return Point(startPt);
@@ -134,7 +98,7 @@ Point Line::closestExtendedLinePointTo(const Point &pt) const
 
 
 
-Scalar Line::minimumSegmentDistanceFromPoint(const Point &pt) const
+double Line::minimumSegmentDistanceFromPoint(const Point &pt) const
 {
     Point closePt = closestSegmentPointTo(pt);
     return pt.distanceFrom(closePt);
@@ -143,7 +107,7 @@ Scalar Line::minimumSegmentDistanceFromPoint(const Point &pt) const
 
 
 
-Scalar Line::minimumExtendedLineDistanceFromPoint(const Point &pt) const
+double Line::minimumExtendedLineDistanceFromPoint(const Point &pt) const
 {
     Point closePt = closestExtendedLinePointTo(pt);
     return pt.distanceFrom(closePt);
@@ -156,77 +120,140 @@ Scalar Line::minimumExtendedLineDistanceFromPoint(const Point &pt) const
 // If they don't intersect, the Intersection will have a type of NONE.
 Intersection Line::intersectionWithSegment(const Line &ln) const
 {
-    Scalar x1 = startPt.x;
-    Scalar y1 = startPt.y;
-    Scalar x2 = endPt.x;
-    Scalar y2 = endPt.y;
-    Scalar x3 = ln.startPt.x;
-    Scalar y3 = ln.startPt.y;
-    Scalar x4 = ln.endPt.x;
-    Scalar y4 = ln.endPt.y;
+    bool dodebug = false;
+    /*
+    if (startPt.distanceFrom(Point(20.500,27.188)) <= 0.001) {
+	if (ln.startPt.distanceFrom(Point(1.419,15.262)) <= 0.001) {
+	    dodebug = true;
+	}
+    }
+    */
 
-    Scalar dx1 = x2 - x1;
-    Scalar dy1 = y2 - y1;
+    if (startPt == endPt) {
+	// Line is actually a zero length directionless line. (AKA a point.)
+	if (dodebug) {
+	    cerr << "    exit A" << endl;
+	}
+	return Intersection();
+    } else if (ln.startPt == ln.endPt) {
+	// ln is actually a zero length directionless line. (AKA a point.)
+	if (dodebug) {
+	    cerr << "    exit B" << endl;
+	}
+	return Intersection();
+    }
+
+    double x1 = startPt.x;
+    double y1 = startPt.y;
+    double x2 = endPt.x;
+    double y2 = endPt.y;
+    double x3 = ln.startPt.x;
+    double y3 = ln.startPt.y;
+    double x4 = ln.endPt.x;
+    double y4 = ln.endPt.y;
+
+    double dx1 = x2 - x1;
+    double dy1 = y2 - y1;
     
-    Scalar dx2 = x4 - x3;
-    Scalar dy2 = y4 - y3;
+    double dx2 = x4 - x3;
+    double dy2 = y4 - y3;
     
-    Scalar dx3 = x1 - x3;
-    Scalar dy3 = y1 - y3;
+    double dx3 = x1 - x3;
+    double dy3 = y1 - y3;
     
-    Scalar d  = dy2 * dx1 - dx2 * dy1;
-    Scalar na = dx2 * dy3 - dy2 * dx3;
-    Scalar nb = dx1 * dy3 - dy1 * dx3;
+    double d  = dy2 * dx1 - dx2 * dy1;
+    double na = dx2 * dy3 - dy2 * dx3;
+    double nb = dx1 * dy3 - dy1 * dx3;
     
-    if (d == 0) {
-	if (startPt == endPt) {
-            // Line is actually a zero length directionless line. (AKA a point.)
-            return Intersection();
-	} else if (ln.startPt == ln.endPt) {
-            // ln is actually a zero length directionless line. (AKA a point.)
-            return Intersection();
-        } else if (fabsf(na) < EPSILON && fabsf(nb) < EPSILON) {
-            // Lines are coincident.  Check for overlap.
-	    Point p0(startPt);
-	    Point p1(endPt);
-	    Point p2(ln.startPt);
-	    Point p3(ln.endPt);
-	    Point tmp;
-            if (startPt > endPt) {
-	        tmp = p0; p0 = p1; p1 = tmp;
-            }
-            if (ln.startPt > ln.endPt) {
-	        tmp = p2; p2 = p3; p3 = tmp;
-            }
-	    if (p0 > p2) {
-	        tmp = p0; p0 = p2; p2 = tmp;
-		tmp = p1; p1 = p3; p3 = tmp;
-            }
-            if (p1 == p2) {
-                return Intersection(p1,0);
-	    } else if (p1 > p2) {
-                return Intersection(p2,p1,0);
+    cerr.precision(18);
+    cerr.setf(ios::fixed);
+
+    if (dodebug) {
+	cerr << "testing isect of " << *this << " and " << ln << endl;
+	cerr << "d = " << d << " for " << *this << " and " << ln << endl;
+    }
+    if (fabs(d) <= EPSILON) {
+	if (dodebug) {
+	    cerr << "PARALLEL" << endl;
+	}
+	if (
+	    minimumExtendedLineDistanceFromPoint(ln.startPt) < CLOSEENOUGH &&
+	    minimumExtendedLineDistanceFromPoint(ln.endPt) < CLOSEENOUGH
+	) {
+            // Lines are coincident (or very close to).  Check for overlap.
+	    Points isects;
+	    if (ln.contains(startPt)) {
+		isects.push_back(startPt);
+	    }
+	    if (ln.contains(endPt)) {
+		isects.push_back(endPt);
+	    }
+	    if (contains(ln.startPt)) {
+		if (!hasEndPoint(ln.startPt)) {
+		    isects.push_back(ln.startPt);
+		}
+	    }
+	    if (contains(ln.endPt)) {
+		if (!hasEndPoint(ln.endPt)) {
+		    isects.push_back(ln.endPt);
+		}
+	    }
+	    int icnt = isects.size();
+	    if (icnt == 0) {
+		if (dodebug) {
+		    cerr << "    exit C" << endl;
+		}
+		return Intersection();
+	    } else if (icnt == 1) {
+		if (dodebug) {
+		    cerr << "    exit D" << endl;
+		}
+                return Intersection(isects.front(),0);
+	    } else  {
+		if (dodebug) {
+		    cerr << "    exit E" << endl;
+		}
+		if (isects.front() == isects.back()) {
+		    return Intersection(isects.front(),0);
+		}
+                return Intersection(isects.front(),isects.back(),0);
             }
         }
+	if (dodebug) {
+	    cerr << "    exit F" << endl;
+	}
 	return Intersection();
     }
     
-    Scalar ua = na / d;
-    Scalar ub = nb / d;
+    double ua = na / d;
+    double ub = nb / d;
     
-    if (ua < 0.0 || ua > 1.0) {
+    double xi = x1 + ua * dx1;
+    double yi = y1 + ua * dy1;
+    
+    if (dodebug) {
+	cerr << "    ua=" << ua << ", ub=" << ub << endl;
+	cerr << "    isect at " << xi << ", " << yi << endl;
+    }
+    if (ua < -EPSILON || ua > 1.0+EPSILON) {
         // Intersection wouldn't be inside first segment
 	return Intersection();
     }
     
-    if (ub < 0.0 || ub > 1.0) {
+    if (ub < -EPSILON || ub > 1.0+EPSILON) {
         // Intersection wouldn't be inside second segment
 	return Intersection();
     }
     
-    Scalar xi = x1 + ua * dx1;
-    Scalar yi = y1 + ua * dy1;
-    
+    if (ua < 0.0) {
+	return Intersection(Point(x1,y1),0);
+    } else if (ua > 1.0) {
+	return Intersection(Point(x2,y2),0);
+    } else if (ub < 0.0) {
+	return Intersection(Point(x3,y3),0);
+    } else if (ub > 1.0) {
+	return Intersection(Point(x4,y4),0);
+    }
     return Intersection(Point(xi,yi),0);
 }
 
@@ -237,26 +264,29 @@ Intersection Line::intersectionWithSegment(const Line &ln) const
 // If they are coincident, the Intersection will have a type of COINCIDENT.
 Intersection Line::intersectionWithExtendedLine(const Line &ln) const
 {
-    Scalar x1 = startPt.x;
-    Scalar y1 = startPt.y;
-    Scalar x2 = endPt.x;
-    Scalar y2 = endPt.y;
+    double x1 = startPt.x;
+    double y1 = startPt.y;
+    double x2 = endPt.x;
+    double y2 = endPt.y;
     
-    Scalar dx1 = x2 - x1;
-    Scalar dy1 = y2 - y1;
+    double dx1 = x2 - x1;
+    double dy1 = y2 - y1;
     
-    Scalar dx2 = ln.endPt.x - ln.startPt.x;
-    Scalar dy2 = ln.endPt.y - ln.startPt.y;
+    double dx2 = ln.endPt.x - ln.startPt.x;
+    double dy2 = ln.endPt.y - ln.startPt.y;
     
-    Scalar dx3 = x1 - ln.startPt.x;
-    Scalar dy3 = y1 - ln.startPt.y;
+    double dx3 = x1 - ln.startPt.x;
+    double dy3 = y1 - ln.startPt.y;
     
-    Scalar d  = dy2 * dx1 - dx2 * dy1;
-    Scalar na = dx2 * dy3 - dy2 * dx3;
-    Scalar nb = dx1 * dy3 - dy1 * dx3;
+    double d  = dy2 * dx1 - dx2 * dy1;
+    double na = dx2 * dy3 - dy2 * dx3;
+    //double nb = dx1 * dy3 - dy1 * dx3;
     
-    if (d == 0) {
-        if (na == 0.0 && nb == 0.0) {
+    if (fabs(d) <= EPSILON) {
+        if (
+	    minimumExtendedLineDistanceFromPoint(ln.startPt) < CLOSEENOUGH &&
+	    minimumExtendedLineDistanceFromPoint(ln.endPt) < CLOSEENOUGH
+	) {
 	    // Lines are coincident.
 	    return Intersection(0);
         } else {
@@ -265,11 +295,24 @@ Intersection Line::intersectionWithExtendedLine(const Line &ln) const
 	}
     }
     
-    Scalar ua = na / d;
-    //Scalar ub = nb / d;
-    Scalar xi = x1 + ua * dx1;
-    Scalar yi = y1 + ua * dy1;
+    double ua = na / d;
+    //double ub = nb / d;
+    double xi = x1 + ua * dx1;
+    double yi = y1 + ua * dy1;
     return Intersection(Point(xi,yi),0);
+}
+
+
+
+Line& Line::leftOffset(double offsetby)
+{
+    double ang = angle();
+    double pang = ang + M_PI_2;  /* 90 degs ccw */
+    Point offPt;
+    offPt.polarOffset(pang, offsetby);
+    startPt += offPt;
+    endPt += offPt;
+    return *this;
 }
 
 

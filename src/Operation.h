@@ -39,6 +39,7 @@ class Operation
 protected:
     Configuration* pConfig;
 
+
     // uint32_t  envelopesProcessed; // count of envelopes processed since reset
     std::vector<Operation*> outputs; // pointers to consumers
     std::vector<Operation*> inputs;  // pointers to input operations
@@ -54,150 +55,86 @@ protected:
 
 public:
     /// General base constructor for an Operation
-    Operation()
-     :pConfig(NULL), initalized(false), streamRunning(false)
-    {
-
-    }
+    Operation();
 
     /// General base destructor for an Operation
-    virtual ~Operation()
-    {
+    virtual ~Operation();
 
-    }
-
-    // this is an accessor so that operation can
-    // access their input's previous data
-    const std::vector<DataEnvelope*>& get_data()
-    {
-    	return dataEnvelopes;
-    }
-
-	bool acceptsType( AtomType type )
-	{
-		//std::cout << "Accept Type Test!" << std::endl;
-		std::vector<AtomType>::iterator it;
-		for ( it = acceptTypes.begin() ; it < acceptTypes.end(); it++ )  {
-			AtomType i = * it;
-			if ( i == type){
-					std::cout << "takes types" << std::endl;
-					return true;
-			}
-		}
-		std::cout << "this type of DataEnvelope not accepted" << std::endl;
-		return false;
-	};
+	bool acceptsType( AtomType type );
 
     /// Init Function: Called to set the configuration
     virtual void init(Configuration& config,const std::vector<Operation*> &outputs) = 0;
 
-    // This function should tear down settings or objects built by collect
-    virtual void deinit() {};
-
-    // Accepts incoming data, to collect in this Operation until the operation is ready to
-    // process the data, and send it's own data.  It generally checks validity, increments the use count.
-    // and simply returns.
+    /// Accepts incoming data, to collect in this Operation until the operation is ready to
+    /// process the data, and send it's own data.  It generally checks validity, increments the use count.
+    /// and simply returns.
     // TRICKY: in this base implementation, it processes the packet inline, but it will not always do so
-    virtual bool accept(DataEnvelope& envelope)
-    {
-    	//check incoming envelope data type
-    	if( false ==  acceptsType( envelope.getAtomType() ) ) {
-    		std::cout << " Accept Type Failure !" << std::endl;
-			return false;
-    	}
+    virtual bool accept(DataEnvelope& envelope);
 
-    	envelope.addRef(); //matching 'release' for this object is in function 'emit'
-    	processEnvelope(envelope);
-    	return true;
-    	// FUTUREL
-    	// validate(envelope);
-    	// bool canThread = requestThreadFromPool(this);
-    	//if(canThread) //process that envelope later
-    	//	this.envQueue.push_back(envelope);
-    	//else // process envelope now
-    	//  processEnvelope(envelope);
-    }
+	//sends data to the next operation for it's use
+    virtual void emit(DataEnvelope* envelope);
 
-	//sends data to the next operation for it'suse
-    virtual void emit(DataEnvelope* envelope)
-    {
-		std::cout << __FUNCTION__  << std::endl;
-    	dataEnvelopes.push_back(envelope);
-    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
-    	{
-    		Operation& op = *(*i);
-    		std::cout << "emitting to @" << *i << std::endl;
-    		bool accepted = op.accept(*envelope);
-    		if(accepted){
-        		std::cout << "op accepted to @" << envelope << std::endl;
-        		envelope->release(); //matching 'addRef' for this object is in fuction 'accept'
-    		}
-    		 else
-    			 std::cout << __FUNCTION__ << "packet not accepted by next operation. Won't decrement use for safety" << std::endl;
+    virtual void start() = 0;
 
-    	}
-
-    }
-    
-//    virtual void start()
-//    {
-//    	for( std::vector<Operation*>::iterator i = inputs.begin(); i != inputs.end(); i++)
-//    	{
-//    		Operation& op = *(*i);
-//    		op.start();
-//    	}
-//    }
-    
-//    virtual void finish()
-//    {
-//    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
-//    	{
-//    		Operation& op = *(*i);
-//    		op.finish();
-//    	}
-//    }
+    virtual void finish() = 0;
 
 
-    // This is the core processing function, most users only need to override
-    // this function to create their own models
-    virtual void processEnvelope(const DataEnvelope& envelope) = 0;
+    /// This function should tear down settings or objects built by collect
+    virtual void deinit() = 0;
+
 
 
     /**
-     * This is a static function that returns a Json Dict containing sections MUST, SHOULD, MAY,
-     * each section is itself a Json dict containing values required(MUST), allowed(SHOULD), suggested (MAY)
-     * in order for this Operation to use correctly. These dicts should be used in constructing the
-     * parameters for a Operation Chain.
-     *
-     * The terms MUST/SHOULD/MAY are used as per RFC 2119 specification
+     * Base class check to setup outputs list, and set configuration values
+     * @param config
+     * @param outputs
+     * @return
      */
-    //virtual Json::Value queryInterface() const = 0;
-//	virtual Json::Value queryInterface() const = 0;
+	bool initCommon(Configuration& config,const std::vector<Operation*> &outputs);
+
+    void startCommon();
+
+    void finishCommon();
+
+	void deinitCommon();
+
+	virtual bool isValidConfig(Configuration &cfg) const = 0;
+
+    /**
+     * This is the core processing function, most users only need to override
+     * this function to create their own models
+     * @param envelope
+     */
+	virtual void processEnvelope(const DataEnvelope& envelope) = 0;
 
 
-    /// Returns the type of envelope this module can collect without error
-    std::vector<AtomType>& collectsEnvelopeType() {
-			return acceptTypes;
-	}
+    /**
+     * Returns the type of envelope this module can collect without error
+     * @return
+     */
+    std::vector<AtomType>& collectsEnvelopeType() ;
 
-    /// Returns the type of envelope this module can collect without error
-    virtual std::vector<AtomType>& emitsEnvelopeType(){
-			return emitTypes;
-	}    
+    ///
+    /**
+     * Returns the type of envelope this module can collect without error
+     * @return
+     */
+    virtual std::vector<AtomType>& emitsEnvelopeType();
 
-    /// Simple test function if an envelope of data is the last
-	bool isLastEnvelope(const DataEnvelope& envelope)
-	{ return envelope.isLastEnvelope();}
-
+    /**
+     * Simple test function if an envelope of data is the last
+     *
+     */	bool isLastEnvelope(const DataEnvelope& envelope);
 
 
 
 protected:
-	// configuration object accessor
-	Configuration &configuration() const
-	{
-		return *pConfig;
-	}
+
+     /**
+      * configuration object accessor
+      * @return
+      */
+	Configuration &configuration() const ;
 };
 
 #endif

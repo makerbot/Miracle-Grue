@@ -19,8 +19,6 @@
 #include <string>
 #include <assert.h>
 
-#include "StlEnvelope.h"
-
 /**
  * Example Operation is a class that simply writes a summary of any passed envelope to cout
  * It is an example of an Operation that is used for Template and Example uses,
@@ -83,16 +81,16 @@ public:
 	 */
 	void deinit();
 
+
+	void finish();
+
+	void start();
+
+
 /************** End of Functions each <NAME_OF>Operation must contain***********************/
 
 
 /************** Start of Functions custom to this <NAME_OF>Operation ***********************/
-private:
-	//// An example custom per-Operation function,  a file handle accessor
-	std::ostream& stream() const;
-
-	//// An example custom per-Operation member,  a file handle accessor
-	std::ofstream *pStream;
 
 /************** End of Functions custom to this <NAME_OF>Operation ***********************/
 

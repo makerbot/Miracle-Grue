@@ -12,13 +12,15 @@
 #include "BGLPath.h"
 #include "BGLCompoundRegion.h"
 #include "BGLTriangle3d.h"
-#include <stdio.h>
-#include <strings.h>
+
+#include "stdio.h"
+#include "strings.h"
 
 namespace BGL {
 
 
 #include <sys/param.h>
+#include <inttypes.h>
 
 #ifdef __BYTE_ORDER
 # if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -34,7 +36,7 @@ namespace BGL {
 
 
 
-int32_t Mesh3d::size()
+int Mesh3d::size()
 {
     return triangles.size();
 }
@@ -43,9 +45,9 @@ int32_t Mesh3d::size()
 
 Point3d Mesh3d::centerPoint() const
 {
-    Scalar mx = (minX+maxX)/2.0f;
-    Scalar my = (minY+maxY)/2.0f;
-    Scalar mz = (minZ+maxZ)/2.0f;
+    double mx = (minX+maxX)/2.0f;
+    double my = (minY+maxY)/2.0f;
+    double mz = (minZ+maxZ)/2.0f;
     return Point3d(mx, my, mz);
 }
 
@@ -88,7 +90,7 @@ void Mesh3d::recalculateBounds()
 
 
 
-void Mesh3d::translate(Scalar dx, Scalar dy, Scalar dz)
+void Mesh3d::translate(double dx, double dy, double dz)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -106,15 +108,15 @@ void Mesh3d::translate(Scalar dx, Scalar dy, Scalar dz)
 
 void Mesh3d::translateToCenterOfPlatform()
 {
-    Scalar dx = -(maxX + minX) / 2.0;
-    Scalar dy = -(maxY + minY) / 2.0;
-    Scalar dz = -minZ;
+    double dx = -(maxX + minX) / 2.0;
+    double dy = -(maxY + minY) / 2.0;
+    double dz = -minZ;
     translate(dx,dy,dz);
 }
 
 
 
-void Mesh3d::scale(Scalar sx, Scalar sy, Scalar sz)
+void Mesh3d::scale(double sx, double sy, double sz)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -130,14 +132,14 @@ void Mesh3d::scale(Scalar sx, Scalar sy, Scalar sz)
 
 
 
-void Mesh3d::scale(Scalar sf)
+void Mesh3d::scale(double sf)
 {
     scale(sf, sf, sf);
 }
 
 
 
-void Mesh3d::rotateX(Scalar rad)
+void Mesh3d::rotateX(double rad)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -149,7 +151,7 @@ void Mesh3d::rotateX(Scalar rad)
 
 
 
-void Mesh3d::rotateY(Scalar rad)
+void Mesh3d::rotateY(double rad)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -161,7 +163,7 @@ void Mesh3d::rotateY(Scalar rad)
 
 
 
-void Mesh3d::rotateZ(Scalar rad)
+void Mesh3d::rotateZ(double rad)
 {
     Triangles3d::iterator it = triangles.begin();
     for ( ; it != triangles.end(); it++) {
@@ -199,13 +201,13 @@ static inline void convertFromLittleEndian16(uint8_t* bytes)
 #endif
 
 
-int32_t Mesh3d::loadFromSTLFile(const char *fileName)
+int Mesh3d::loadFromSTLFile(const char *fileName)
 {
     struct vertexes_t {
-        Scalar nx, ny, nz;
-        Scalar x1, y1, z1;
-        Scalar x2, y2, z2;
-        Scalar x3, y3, z3;
+        float nx, ny, nz;
+        float x1, y1, z1;
+        float x2, y2, z2;
+        float x3, y3, z3;
         uint16_t attrBytes;
     };
     union {
@@ -219,7 +221,7 @@ int32_t Mesh3d::loadFromSTLFile(const char *fileName)
         uint8_t bytes[4];
     } intdata;
 
-    uint32_t facecount = 0;
+    int facecount = 0;
     
     uint8_t buf[512];
     FILE *f = fopen(fileName, "rb");
@@ -299,10 +301,10 @@ int32_t Mesh3d::loadFromSTLFile(const char *fileName)
 
 
 
-CompoundRegion& Mesh3d::regionForSliceAtZ(Scalar Z, CompoundRegion &outReg)
+CompoundRegion& Mesh3d::regionForSliceAtZ(double Z, CompoundRegion &outReg) const
 {
     Lines lines;
-    Triangles3d::iterator trit;
+    Triangles3d::const_iterator trit;
     for (trit = triangles.begin(); trit != triangles.end(); trit++) {
 	Line ln;
 	if (trit->sliceAtZ(Z, ln)) {

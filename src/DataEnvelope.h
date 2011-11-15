@@ -65,7 +65,9 @@ typedef enum AtomType {
 	TYPE_ASCII_GCODE = 12,
 	TYPE_STRING_VECTOR=13,
 	TYPE_BGL_MESH = 14,
-	TYPE_BGL_CARVE = 15,
+	TYPE_BGL_REGION = 15,
+	TYPE_BGL_SHELL = 16,
+	TYPE_BGL_FILLED = 17,
 
 } AtomType;
 
@@ -112,7 +114,6 @@ public:
 */
 
 protected:
-	AtomType typeID; /// id of the contained data
 	bool isInitialEnvelope; ///this flags the first envelope in this stream
 	bool isFinalEnvelope; ///this flags the current envelope as the last in this stream
 	int streamId; ///ID for the current stream. zero if no stream is defined
@@ -120,6 +121,9 @@ protected:
 	///Generic empty data constructor
 
 public:
+	//HACK TEST: TODO: fix access to this
+	AtomType typeID; /// id of the contained data
+
 
 	DataEnvelope(AtomType inTypeID =TYPE_INVALID ):
 		useCount(1), streamId(0),typeID(inTypeID){}

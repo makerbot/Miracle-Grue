@@ -21,27 +21,27 @@ class CompoundRegion;
 class Mesh3d {
 public:
     Triangles3d triangles;
-    Scalar minX, maxX;
-    Scalar minY, maxY;
-    Scalar minZ, maxZ;
+    double minX, maxX;
+    double minY, maxY;
+    double minZ, maxZ;
 
     Mesh3d() : triangles(), minX(9e9), maxX(-9e9), minY(9e9), maxY(-9e9), minZ(9e9), maxZ(-9e9) {}
     Mesh3d(const Mesh3d& x) : triangles(x.triangles), minX(x.minX), maxX(x.maxX), minY(x.minY), maxY(x.maxY), minZ(x.minZ), maxZ(x.maxZ) {}
 
-    int32_t size();
+    int size();
     Point3d centerPoint() const;
     void recalculateBounds();
 
     void translateToCenterOfPlatform();
-    void translate(Scalar dx, Scalar dy, Scalar dz);
-    void scale(Scalar sf);
-    void scale(Scalar sx, Scalar sy, Scalar sz);
-    void rotateX(Scalar rad);
-    void rotateY(Scalar rad);
-    void rotateZ(Scalar rad);
+    void translate(double dx, double dy, double dz);
+    void scale(double sf);
+    void scale(double sx, double sy, double sz);
+    void rotateX(double rad);
+    void rotateY(double rad);
+    void rotateZ(double rad);
 
-    int32_t loadFromSTLFile(const char *fileName);
-    CompoundRegion& regionForSliceAtZ(Scalar Z, CompoundRegion &outReg);
+    int loadFromSTLFile(const char *fileName);
+    CompoundRegion& regionForSliceAtZ(double Z, CompoundRegion &outReg) const;
 };
 
 }

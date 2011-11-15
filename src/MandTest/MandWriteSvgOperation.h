@@ -8,11 +8,10 @@
    License, or (at your option) any later version.
 
 */
-#ifndef FILEWRITEROPERATION_H_
-#define FILEWRITEROPERATION_H_
+#ifndef MAND_WRITE_SVG_OPERATION_H_
+#define MAND_WRITE_SVG_OPERATION_H_
 
-#include "Operation.h"
-#include "PathData.h"
+#include "../Operation.h"
 
 #include <iostream>
 #include <fstream>
@@ -20,18 +19,15 @@
 #include <string>
 #include <assert.h>
 
-#include "GCodeEnvelope.h"
-
-
-class FileWriterOperation : public Operation
+class MandWriteSvgOperation : public Operation
 {
 	std::ofstream *pStream;
 protected:
 	bool isValidConfig(Configuration& config) const ;
 
 public:
-	FileWriterOperation();
-	~FileWriterOperation();
+	MandWriteSvgOperation();
+	~MandWriteSvgOperation();
 
 	static Json::Value* getStaticConfigRequirements();
 
@@ -56,5 +52,5 @@ public:
 
 
 
-#endif /* FILEWRITEROPERATION_H_ */
+#endif /* MAND_WRITE_SVG_OPERATION_H_ */
 

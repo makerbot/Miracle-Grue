@@ -11,19 +11,23 @@
 #include <assert.h>
 #include <sstream>
 
-#include "ExampleOperation.h"
+#include "MandInsetOperation.h"
+#include "RegionEnvelope.h"
+#include "ShellEnvelope.h"
 
-#include "json-cpp/include/json/value.h"
+#include "../json-cpp/include/json/value.h"
+
+#include "../BGL/BGLCompoundRegion.h"
 
 using namespace std;
 using namespace Json;
-
+using namespace BGL;
 /// This staic global pointer points to a unique instance of a
 /// Value object, which contains the minimum configuration values
 /// required to build a working operation of this type.
 /// Must be named <OperationName>ConfigRequirements so it does not collide with
 /// other global static values.
-static Value* ExampleOperationConfigRequirements;
+static Value* MandInsetOperationConfigRequirements;
 
 
 /**
@@ -34,23 +38,20 @@ static Value* ExampleOperationConfigRequirements;
  *
  * @return global static Value pointer to configuration dictionary.
  */
-Value* ExampleOperation::getStaticConfigRequirements()
+Value* MandInsetOperation::getStaticConfigRequirements()
 {
 	// if we don't have one of these global static's, we have never initalized,
 	// so initalize now.
-	if (ExampleOperationConfigRequirements == 0x00)
+	if (MandInsetOperationConfigRequirements == 0x00)
 	{
-		// - Start custom to ExampleOperation code
-		// for this Example operation, we need a prefix and a language specified
-		// to initalize
-		Value* cfg = new Value;
-		( *cfg )["prefix"]= "asString";
-		( *cfg )["lang"] = "asString";
-		// - End custom to ExampleOperation code
-		ExampleOperationConfigRequirements = cfg;
+		// - Start custom to MandInsetOperation code
+		Value* cfg = new Value();
+		(*cfg)["extrusionWidth"]  = "asDouble";
+	    (*cfg)["perimeterShells"] = "asInt";
+	    MandInsetOperationConfigRequirements = cfg;
 		// This object is expected to live until the program dies. No deconstruction !
 	}
-	return ExampleOperationConfigRequirements;
+	return MandInsetOperationConfigRequirements;
 }
 
 
@@ -61,18 +62,13 @@ Value* ExampleOperation::getStaticConfigRequirements()
  * SHOULD be initalized in the constructor.
  */
 
-ExampleOperation::ExampleOperation():
-		pStream(NULL)
+MandInsetOperation::MandInsetOperation():Operation()
 {
-	// - Start custom to ExampleOperation code
-	// Because this logging stream is always this file (and is not configuration dependant,
-	//we build it in the constructor, and destroy it  in the destructor.
-	pStream = new std::ofstream("logging.txt");
+	// - Start custom to MandInsetOperation code
+	this->acceptTypes.push_back(/*AtomType*/TYPE_BGL_SHELL);
+	this->emitTypes.push_back(/*AtomType*/TYPE_BGL_REGION);// Left in as a note, but this example emits no data type
 
-	this->acceptTypes.push_back(/*AtomType*/TYPE_BGL_MESH);
-	//this->emitTypes.push_back(); Left in as a note, but this example emits no data type
-
-	// - End custom to ExampleOperation code
+	// - End custom to MandInsetOperation code
 
 }
 
@@ -81,12 +77,12 @@ ExampleOperation::ExampleOperation():
  * Standard Destructor.  This should close streams (if any are open) and
  * deinitalize the Operation (if it is still initalized). See details in implementation.
  */
-ExampleOperation::~ExampleOperation()
+MandInsetOperation::~MandInsetOperation()
 {
 	// IFF we are currently initalized, we need to check for an open stream, as well as deinit
 	if(initalized) {
 
-		// - Following line custom to ExampleOperation code
+		// - Following line custom to MandInsetOperation code
 		cout << " Operation initailzed at destruction time. Automatically running deinit" <<endl;
 
 //		//NOTE:  deinit will check that the data stream is closed, and if needed it will
@@ -94,13 +90,9 @@ ExampleOperation::~ExampleOperation()
 //		this->deinit();
 	}
 
-	// - Start custom to ExampleOperation code
-	// Finally, since we created pStream in the constructor, we delete it here.
-	assert(pStream != NULL);
-	pStream->close();
-	delete pStream;
-	pStream = NULL;
-	// - End custom to ExampleOperation code
+	// - Start custom to MandInsetOperation code
+
+	// - End custom to MandInsetOperation code
 
 
 }
@@ -113,19 +105,16 @@ ExampleOperation::~ExampleOperation()
  * @param config
  * @return
  */
-bool ExampleOperation::isValidConfig(Configuration& config) const
+bool MandInsetOperation::isValidConfig(Configuration& config) const
 {
 
 	cout << __FUNCTION__ << endl;
 
-	if(config["ExampleOperation"].type() !=  /*ValueType.*/objectValue)
+	if(config["MandInsetOperation"].type() !=  /*ValueType.*/objectValue)
 	{
-		// - Start custom to ExampleOperation code
-		/// TODO:
-		/// req = getStaticConfigRequirements():
-		/// if (req >= config)
-			///return true
-		// - End custom to ExampleOperation code
+		// - Start custom to MandInsetOperation code
+
+		// - End custom to MandInsetOperation code
 		return true;
 	}
 	cout << "ERROR: configuration is not valid, In BETA accepting config anyway" << endl;
@@ -140,13 +129,13 @@ bool ExampleOperation::isValidConfig(Configuration& config) const
  * @param config a configuration for setting up this operation
  * @param outputs a list of other Operations to send out outgoing packets to
  */
-void ExampleOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
+
+void MandInsetOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
 {
 	bool baseSuccess = Operation::initCommon(config, outputs);
 	if(baseSuccess){
-	// - Start custom to ExampleOperation code
-
-	// - End custom to ExampleOperation code
+		// - Start custom to MandInsetOperation code
+		// - End custom to MandInsetOperation code
 	}
 
 }
@@ -157,7 +146,7 @@ void ExampleOperation::init(Configuration& config,const std::vector<Operation*> 
  * if a stream is running, and if it is, it forces a final data envelope to be queued before
  * continuing with deiitalization. This will force a data flush in edge or fail cases.
  */
-void ExampleOperation::deinit()
+void MandInsetOperation::deinit()
 {
 	assert(this->initalized == true);
 	assert(this->pConfig != NULL);
@@ -166,22 +155,14 @@ void ExampleOperation::deinit()
 	// force a final DataEnvelpe to our operation to flush the end of the stream.
 	if(streamRunning)
 	{
-		// - Following line custom to ExampleOperation code
+		// - Following line custom to MandInsetOperation code
 		cout << "Stream Running at deinit time. Automatically sending final envelope " <<endl;
-
-/*
-		DataEnvelope d;
-		d.setFinal();
-		this->accept(d);
-		this->streamRunning = false;
-		d.release(); //release the constuctor default ref count of 1
-*/
 
 	}
 
-	// - Start custom to ExampleOperation code
+	// - Start custom to MandInsetOperation code
 
-	// - End custom to ExampleOperation code
+	// - End custom to MandInsetOperation code
 
 	this->initalized = false;
 	pConfig = NULL;
@@ -191,28 +172,64 @@ void ExampleOperation::deinit()
  * This is the heart of envelope processing.
  * @param envelope
  */
-void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
+void MandInsetOperation::processEnvelope(const DataEnvelope& envelope)
 {
+//	cout << __FUNCTION__ << endl;
+//	cout <<  "INSET THIS!!!!" << endl;
 	/// we should be configured before ever doing this
 	assert(this->initalized == true);
+
+	Configuration& config = *pConfig;
+
 
 	/// If this stream is not running, our first packet starts it running
 	if( this->streamRunning == false) {
 		this->streamRunning = true;
 	}
 
-	// - Start custom to ExampleOperation code
+	//check for a null value case
+	if( ! config.contains("MandInsetOperation") ) {
+		cout << "failure of failures" << endl;
+		throw "no config options we want"; //TODO: make this more sane
+		return;
+	}
+	//cout <<  "c" << endl;
 
-	// - End custom to ExampleOperation code
+    double extWidth = config["MandInsetOperation"]["extrusionWidth"].asDouble();
+    int shells = config["MandInsetOperation"]["perimeterShells"].asInt();
+
+    const ShellEnvelope& env = (dynamic_cast<const ShellEnvelope&>(envelope));
+
+    CompoundRegion* newPerimeter = new CompoundRegion(env.perimeter);
+    CompoundRegion* infillMask = new CompoundRegion();
+    CompoundRegions* shellsVector = new CompoundRegions();
+
+    //newPerimeter->inset(shells*extWidth, *infillMask);
+    newPerimeter->inset( (shells*extWidth), *infillMask);
+
+    for (int i = 0; i < shells; i++) {
+        CompoundRegion* compReg = new CompoundRegion();
+        //newPerimeter->inset((i+0.5)*extWidth, *compReg);
+        shellsVector->push_back(*compReg);
+    }
+    RegionEnvelope* newEnvelope = new RegionEnvelope(
+    		*newPerimeter, *infillMask, *shellsVector, env.zLayer,
+    		env.svgWidth, env.svgHeight, env.svgXOff, env.svgYOff, extWidth);
+
+
+    emit(dynamic_cast<DataEnvelope*>(newEnvelope) );
+    // - Start custom to MandInsetOperation code
+
+    // - End custom to MandInsetOperation code
 
 	return;
 }
 
-void ExampleOperation::start(){
+void MandInsetOperation::start(){
 
-	// - Start custom to ExampleOperation code
+	// - Start custom to MandInsetOperation code
 
-	// - End custom to ExampleOperation code
+	// - End custom to MandInsetOperation code
 
 
 	// the first thing that needs to happen in start is the propigation of the
@@ -221,11 +238,11 @@ void ExampleOperation::start(){
 
 }
 
-void ExampleOperation::finish(){
+void MandInsetOperation::finish(){
 
-	// - Start custom to ExampleOperation code
+	// - Start custom to MandInsetOperation code
 
-	// - End custom to ExampleOperation code
+	// - End custom to MandInsetOperation code
 
 
 	// the last things to do in finish is propigate the finish
@@ -233,20 +250,4 @@ void ExampleOperation::finish(){
 	Operation::finishCommon();
 
 }
-
-
-/************** Start of Functions custom to ExampleOperation ***********************/
-
-/**
- * acessor for a ostream !
- * @return a stream reference, if we have one
- */
-ostream& ExampleOperation::stream() const
-{
-	assert(pStream);
-	return *(pStream);
-}
-
-/************** End of Functions custom to ExampleOperation ***********************/
-
 

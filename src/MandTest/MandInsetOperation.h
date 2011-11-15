@@ -8,8 +8,8 @@
    License, or (at your option) any later version.
 
 */
-#ifndef MandStlLoaderOperation_H_
-#define MandStlLoaderOperation_H_
+#ifndef MAND_INSET_OPERATION_H_
+#define MAND_INSET_OPERATION_H_
 
 #include "../Operation.h"
 //#include "PathData.h"
@@ -20,40 +20,31 @@
 #include <string>
 #include <assert.h>
 
-#include "StlEnvelope.h"
+/// Return Type???
+/// Do we need one? TODO:
 
 /**
  * Example Operation is a class that simply writes a summary of any passed envelope to cout
  * It is an example of an Operation that is used for Template and Example uses,
  * for developers of other Operations.
  */
-class MandStlLoaderOperation : public Operation
+class MandInsetOperation : public Operation
 {
 
 /************** Start of Functions each <NAME_OF>Operation must contain***********************/
-protected:
-	/**
-	 * This is a required function, that returns true of the passed config
-	 * can be used to initalize an instance object with some set of valid settings
-	 * @param config configuration to check
-	 * @return true if the configuration can build a working Operation,  false otherwise
-	 */
-	bool isValidConfig(Configuration& config) const ;
-
-
 public:
 	/**
 	 * Standard Constructor.  Note that an object can be built and exist, but
 	 * not yet be configured or initalized. See details in implementation.
 	 */
-	MandStlLoaderOperation();
+	MandInsetOperation();
 
 
 	/**
 	 * Standard Destructor.  This should close streams (if any are open) and
 	 * deinitalize the Operation (if it is still initalized). See details in implementation.
 	 */
-	~MandStlLoaderOperation();
+	~MandInsetOperation();
 
 
 	/**
@@ -84,17 +75,44 @@ public:
 	 */
 	void deinit();
 
-	void finish();
-
+	/**
+	 * This function must be called to start the processing chain
+	 */
 	void start();
+
+	/**
+	 * This function must be called to wrap up the processing chain
+	 */
+	void finish();
 
 /************** End of Functions each <NAME_OF>Operation must contain***********************/
 
+
+/************** Start of Functions custom to this <NAME_OF>Operation ***********************/
+private:
+	//// An example custom per-Operation function,  a file handle accessor
+	std::ostream& stream() const;
+
+	//// An example custom per-Operation member,  a file handle accessor
+	std::ofstream *pStream;
+
+protected:
+	/**
+	 * This is a standard function, that returns true of the passed config
+	 * can be used to initalize an instance object with some set of valid settings
+	 * @param config configuration to check
+	 * @return true if the configuration can build a working Operation,  false otherwise
+	 */
+	bool isValidConfig(Configuration& config) const ;
+
+
+
+/************** End of Functions custom to this <NAME_OF>Operation ***********************/
 
 };
 
 
 
 
-#endif /* MandStlLoaderOperation_H_ */
+#endif /* MAND_INSET_OPERATION_H_*/
 

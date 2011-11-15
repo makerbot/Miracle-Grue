@@ -22,6 +22,10 @@
 
 #include "GCodeEnvelope.h"
 
+
+/// Return Type???
+/// Do we need one? TODO:
+
 /**
  * Example Operation is a class that simply writes a summary of any passed envelope to cout
  * It is an example of an Operation that is used for Template and Example uses,
@@ -31,16 +35,6 @@ class ExampleOperation : public Operation
 {
 
 /************** Start of Functions each <NAME_OF>Operation must contain***********************/
-protected:
-	/**
-	 * This is a required function, that returns true of the passed config
-	 * can be used to initalize an instance object with some set of valid settings
-	 * @param config configuration to check
-	 * @return true if the configuration can build a working Operation,  false otherwise
-	 */
-	bool isValidConfig(Configuration& config) const ;
-
-
 public:
 	/**
 	 * Standard Constructor.  Note that an object can be built and exist, but
@@ -84,6 +78,16 @@ public:
 	 */
 	void deinit();
 
+	/**
+	 * This function must be called to start the processing chain
+	 */
+	void start();
+
+	/**
+	 * This function must be called to wrap up the processing chain
+	 */
+	void finish();
+
 /************** End of Functions each <NAME_OF>Operation must contain***********************/
 
 
@@ -94,6 +98,17 @@ private:
 
 	//// An example custom per-Operation member,  a file handle accessor
 	std::ofstream *pStream;
+
+protected:
+	/**
+	 * This is a standard function, that returns true of the passed config
+	 * can be used to initalize an instance object with some set of valid settings
+	 * @param config configuration to check
+	 * @return true if the configuration can build a working Operation,  false otherwise
+	 */
+	bool isValidConfig(Configuration& config) const ;
+
+
 
 /************** End of Functions custom to this <NAME_OF>Operation ***********************/
 

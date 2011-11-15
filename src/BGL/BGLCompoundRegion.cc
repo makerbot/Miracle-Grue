@@ -7,16 +7,81 @@
 //
 
 #include <sstream>
+#include <fstream>
 #include "BGLCommon.h"
 #include "BGLPoint.h"
 #include "BGLCompoundRegion.h"
 
 using namespace std;
 
+
 namespace BGL {
 
 
-int32_t CompoundRegion::size() const
+// Compound assignment operators
+CompoundRegion& CompoundRegion::operator+=(const Point &rhs) {
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	*it += rhs;
+    }
+    return *this;
+}
+
+
+
+CompoundRegion& CompoundRegion::operator-=(const Point &rhs) {
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	*it -= rhs;
+    }
+    return *this;
+}
+
+
+
+CompoundRegion& CompoundRegion::operator*=(double rhs) {
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	*it *= rhs;
+    }
+    return *this;
+}
+
+
+
+CompoundRegion& CompoundRegion::operator*=(const Point &rhs) {
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	*it *= rhs;
+    }
+    return *this;
+}
+
+
+
+CompoundRegion& CompoundRegion::operator/=(double rhs) {
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	*it /= rhs;
+    }
+    return *this;
+}
+
+
+
+CompoundRegion& CompoundRegion::operator/=(const Point &rhs) {
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	*it /= rhs;
+    }
+    return *this;
+}
+
+
+
+
+
+int CompoundRegion::size() const
 {
     return subregions.size();
 }
@@ -36,6 +101,16 @@ bool CompoundRegion::contains(const Point &pt) const
 
 
 
+void CompoundRegion::simplify(double minErr)
+{
+    SimpleRegions::iterator it;
+    for (it = subregions.begin(); it != subregions.end(); it++) {
+	it->simplify(minErr);
+    }
+}
+
+
+
 CompoundRegion &CompoundRegion::assembleCompoundRegionFrom(Paths &paths, CompoundRegion &outReg)
 {
     SimpleRegion::assembleSimpleRegionsFrom(paths, outReg.subregions);
@@ -44,7 +119,7 @@ CompoundRegion &CompoundRegion::assembleCompoundRegionFrom(Paths &paths, Compoun
 
 
 
-string CompoundRegion::svgPathWithOffset(Scalar dx, Scalar dy)
+string CompoundRegion::svgPathWithOffset(double dx, double dy)
 {
     string out;
     SimpleRegions::iterator rit;
@@ -56,12 +131,33 @@ string CompoundRegion::svgPathWithOffset(Scalar dx, Scalar dy)
 
 
 
+ostream &CompoundRegion::svgPathDataWithOffset(ostream& os, double dx, double dy) const
+{
+    SimpleRegions::const_iterator rit;
+    for (rit = subregions.begin(); rit != subregions.end(); rit++) {
+        rit->svgPathDataWithOffset(os, dx, dy);
+    }
+    return os;
+}
+
+
+
+ostream &CompoundRegion::svgPathWithOffset(ostream& os, double dx, double dy) const
+{
+    os << "<path fill=\"none\" d=\"";
+    svgPathDataWithOffset(os, dx, dy);
+    os << "\" />" << endl;
+    return os;
+}
+
+
+
 CompoundRegion &CompoundRegion::unionWith(SimpleRegion &reg)
 {
     SimpleRegion currReg(reg);
     SimpleRegions::iterator rit;
     for (rit = subregions.begin(); rit != subregions.end(); ) {
-        if (reg.intersects(*rit)) {
+        if (currReg.intersects(*rit)) {
 	    SimpleRegions tempRegs;
 	    SimpleRegion::unionOf(currReg, *rit, tempRegs);
 	    currReg = tempRegs.front();
@@ -108,7 +204,7 @@ CompoundRegion &CompoundRegion::intersectionWith(SimpleRegion &reg)
 CompoundRegion &CompoundRegion::unionWith(CompoundRegion &reg)
 {
     SimpleRegions::iterator rit;
-    for (rit = reg.subregions.begin(); rit != reg.subregions.end(); ) {
+    for (rit = reg.subregions.begin(); rit != reg.subregions.end(); rit++) {
         unionWith(*rit);
     }
     return *this;
@@ -119,7 +215,7 @@ CompoundRegion &CompoundRegion::unionWith(CompoundRegion &reg)
 CompoundRegion &CompoundRegion::differenceWith(CompoundRegion &reg)
 {
     SimpleRegions::iterator rit;
-    for (rit = reg.subregions.begin(); rit != reg.subregions.end(); ) {
+    for (rit = reg.subregions.begin(); rit != reg.subregions.end(); rit++) {
         differenceWith(*rit);
     }
     return *this;
@@ -161,6 +257,29 @@ CompoundRegion &CompoundRegion::intersectionOf(CompoundRegion &r1, CompoundRegio
 }
 
 
+CompoundRegion &CompoundRegion::insetBy(double insetBy, CompoundRegion &outReg)
+{
+    SimpleRegions::iterator it1;
+    for (it1 = subregions.begin(); it1 != subregions.end(); it1++) {
+    	CompoundRegion insetReg;
+    	it1->inset(insetBy, insetReg.subregions);
+    	outReg.unionWith(insetReg);
+    }
+    return outReg;
+}
+
+
+CompoundRegion &CompoundRegion::inset(double insetBy, CompoundRegion &outReg)
+{
+    SimpleRegions::iterator it1;
+    for (it1 = subregions.begin(); it1 != subregions.end(); it1++) {
+    	CompoundRegion insetReg;
+    	it1->inset(insetBy, insetReg.subregions);
+    	outReg.unionWith(insetReg);
+    }
+    return outReg;
+}
+
 
 
 Lines &CompoundRegion::containedSegmentsOfLine(Line &line, Lines &outSegs)
@@ -185,7 +304,7 @@ Paths &CompoundRegion::containedSubpathsOfPath(Path &path, Paths &outPaths)
 
 
 
-Paths &CompoundRegion::infillPathsForRegionWithDensity(Scalar density, Scalar extrusionWidth, Paths &outPaths)
+Paths &CompoundRegion::infillPathsForRegionWithDensity(double density, double extrusionWidth, Paths &outPaths)
 {
     SimpleRegions::iterator rit;
     for (rit = subregions.begin(); rit != subregions.end(); rit++) {
@@ -193,6 +312,7 @@ Paths &CompoundRegion::infillPathsForRegionWithDensity(Scalar density, Scalar ex
     }
     return outPaths;
 }
+
 
 
 }

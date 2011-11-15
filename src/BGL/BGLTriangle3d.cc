@@ -100,7 +100,7 @@ Triangle3d& Triangle3d::rotateZ(const Point3d& center, Scalar rad)
 
 
 
-bool Triangle3d::sliceAtZ(Scalar Z, Line& lnref)
+bool Triangle3d::sliceAtZ(Scalar Z, Line& lnref) const
 {
     Scalar u, px, py, v, qx, qy;
     if (vertex1 > Z && vertex2 > Z && vertex3 > Z) {

@@ -19,7 +19,7 @@
 #include "BGLIntersection.h"
 #include "BGLPoint.h"
 
-
+using namespace std;
 
 namespace BGL {
 
@@ -29,78 +29,106 @@ public:
     // Member variables
     Point startPt;
     Point endPt;
-    int16_t flags;
+    int flags;
+    double temperature;
+    double extrusionWidth;
 
     // Constructors
-    Line() : startPt(), endPt() {}
-    Line(const Point& p1, const Point& p2) : startPt(p1), endPt(p2) {}
-    Line(const Line& ln) : startPt(ln.startPt), endPt(ln.endPt) {}
+    Line() :
+        startPt(),
+        endPt(),
+        flags(0),
+        temperature(0),
+        extrusionWidth(0)
+    {
+    }
+
+    Line(const Point& p1, const Point& p2) :
+        startPt(p1),
+        endPt(p2),
+        flags(0),
+        temperature(0),
+        extrusionWidth(0)
+    {
+    }
+
+    Line(const Line& ln) :
+        startPt(ln.startPt),
+        endPt(ln.endPt),
+        flags(ln.flags),
+        temperature(ln.temperature),
+        extrusionWidth(ln.extrusionWidth)
+    {
+    }
 
     // Assignment operator
     Line& operator=(const Line &rhs) {
-	if (this != &rhs) {
-	    startPt = rhs.startPt;
-	    endPt = rhs.endPt;
-	}
-	return *this;
+        if (this != &rhs) {
+            startPt = rhs.startPt;
+            endPt = rhs.endPt;
+            flags = rhs.flags;
+            temperature = rhs.temperature;
+            extrusionWidth = rhs.extrusionWidth;
+        }
+        return *this;
     }
 
     // Compound assignment operators
     Line& operator+=(const Point &rhs) {
         this->startPt += rhs;
         this->endPt += rhs;
-	return *this;
+        return *this;
     }
     Line& operator-=(const Point &rhs) {
         this->startPt -= rhs;
         this->endPt -= rhs;
-	return *this;
+        return *this;
     }
-    Line& operator*=(Scalar rhs) {
+    Line& operator*=(double rhs) {
         this->startPt *= rhs;
         this->endPt *= rhs;
-	return *this;
+        return *this;
     }
     Line& operator*=(const Point &rhs) {
         this->startPt *= rhs;
         this->endPt *= rhs;
-	return *this;
+        return *this;
     }
-    Line& operator/=(Scalar rhs) {
+    Line& operator/=(double rhs) {
         this->startPt /= rhs;
         this->endPt /= rhs;
-	return *this;
+        return *this;
     }
     Line& operator/=(const Point &rhs) {
         this->startPt /= rhs;
         this->endPt /= rhs;
-	return *this;
+        return *this;
     }
 
     // Binary arithmetic operators
     const Line operator+(const Point &rhs) const {
-	return Line(*this) += rhs;
+        return Line(*this) += rhs;
     }
     const Line operator-(const Point &rhs) const {
-	return Line(*this) -= rhs;
+        return Line(*this) -= rhs;
     }
-    const Line operator*(Scalar rhs) const {
-	return Line(*this) *= rhs;
+    const Line operator*(double rhs) const {
+        return Line(*this) *= rhs;
     }
     const Line operator*(const Point &rhs) const {
-	return Line(*this) *= rhs;
+        return Line(*this) *= rhs;
     }
-    const Line operator/(Scalar rhs) const {
-	return Line(*this) /= rhs;
+    const Line operator/(double rhs) const {
+        return Line(*this) /= rhs;
     }
     const Line operator/(const Point &rhs) const {
-	return Line(*this) /= rhs;
+        return Line(*this) /= rhs;
     }
 
     // Comparison operators
     bool operator==(const Line &rhs) const {
         return ((startPt == rhs.startPt && endPt == rhs.endPt) ||
-                (startPt == rhs.endPt && endPt == rhs.startPt));
+            (startPt == rhs.endPt && endPt == rhs.startPt));
     }
     bool operator!=(const Line &rhs) const {
         return !(*this == rhs);
@@ -111,66 +139,78 @@ public:
     }
 
     // Transformations
-    Line& scale(Scalar scale) {
-	*this *= scale;
-	return *this;
+    Line& scale(double scale) {
+        *this *= scale;
+        return *this;
     }
     Line& scale(const Point& vect) {
-	*this *= vect;
-	return *this;
+        *this *= vect;
+        return *this;
     }
-    Line& scaleAroundPoint(const Point& center, Scalar scale) {
-	*this -= center;
-	*this *= scale;
-	*this += center;
-	return *this;
+    Line& scaleAroundPoint(const Point& center, double scale) {
+        *this -= center;
+        *this *= scale;
+        *this += center;
+        return *this;
     }
     Line& scaleAroundPoint(const Point& center, const Point& vect) {
-	*this -= center;
-	*this *= vect;
-	*this += center;
-	return *this;
+        *this -= center;
+        *this *= vect;
+        *this += center;
+        return *this;
+    }
+
+    void quantize(float quanta) {
+        startPt.quantize(quanta);
+        endPt.quantize(quanta);
+    }
+
+    void quantize() {
+        startPt.quantize();
+        endPt.quantize();
     }
 
     // Calculations
-    Scalar length() const {
+    double length() const {
         return startPt.distanceFrom(endPt);
     }
-    Scalar angle() const {
+    double angle() const {
         return startPt.angleToPoint(endPt);
     }
-    Scalar angleDelta(const Line& ln) const {
-        Scalar delta = angle() - ln.angle();
-	if (delta < -M_PI) {
-	    delta += M_PI * 2.0f;
-	} else if (delta > M_PI) {
-	    delta -= M_PI * 2.0f;
-	}
-	return delta;
+    double angleDelta(const Line& ln) const {
+        double delta = ln.angle() - angle();
+        if (delta < -M_PI) {
+            delta += M_PI * 2.0f;
+        } else if (delta > M_PI) {
+            delta -= M_PI * 2.0f;
+        }
+        return delta;
     }
 
     // Misc
     Line& reverse() {
         Point tmpPt = startPt;
-	startPt = endPt;
-	endPt = tmpPt;
-	return *this;
+        startPt = endPt;
+        endPt = tmpPt;
+        return *this;
     }
     bool isLinearWith(const Point& pt) const;
     bool hasInBounds(const Point &pt) const;
     bool contains(const Point &pt) const;
     Point closestSegmentPointTo(const Point &pt) const;
     Point closestExtendedLinePointTo(const Point &pt) const;
-    Scalar minimumSegmentDistanceFromPoint(const Point &pt) const;
-    Scalar minimumExtendedLineDistanceFromPoint(const Point &pt) const;
+    double minimumSegmentDistanceFromPoint(const Point &pt) const;
+    double minimumExtendedLineDistanceFromPoint(const Point &pt) const;
     Intersection intersectionWithSegment(const Line &ln) const;
     Intersection intersectionWithExtendedLine(const Line &ln) const;
 
+    Line& leftOffset(double offsetby);
+
     // Friend functions
-    friend std::ostream& operator <<(std::ostream &os,const Line &pt);
+    friend ostream& operator <<(ostream &os,const Line &pt);
 };
 
-typedef std::list<Line> Lines;
+typedef list<Line> Lines;
 
 
 

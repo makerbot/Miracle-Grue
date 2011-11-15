@@ -12,14 +12,17 @@
 #include <sstream>
 
 #include "MandCarveOperation.h"
+#include "ShellEnvelope.h"
+#include "StlEnvelope.h"
 
 #include "../json-cpp/include/json/value.h"
 
 #include "../BGL/BGLMesh3d.h"
+#include "../BGL/BGLCompoundRegion.h"
 
 using namespace std;
 using namespace Json;
-
+using namespace BGL;
 
 
 /// This staic global pointer points to a unique instance of a
@@ -64,12 +67,11 @@ Value* MandCarveOperation::getStaticConfigRequirements()
  * SHOULD be initalized in the constructor.
  */
 
-MandCarveOperation::MandCarveOperation():
-		pStream(NULL)
+MandCarveOperation::MandCarveOperation():Operation()
 {
 	// - Start custom to MandCarveOperation code
 	this->acceptTypes.push_back(/*AtomType*/TYPE_BGL_MESH);
-	this->emitTypes.push_back(/*AtomType*/TYPE_BGL_CARVE);
+	this->emitTypes.push_back(/*AtomType*/TYPE_BGL_SHELL);
 	// - End custom to MandCarveOperation code
 
 }
@@ -93,11 +95,7 @@ MandCarveOperation::~MandCarveOperation()
 	}
 
 	// - Start custom to MandCarveOperation code
-	// Finally, since we created pStream in the constructor, we delete it here.
-	assert(pStream != NULL);
-	pStream->close();
-	delete pStream;
-	pStream = NULL;
+
 	// - End custom to MandCarveOperation code
 
 
@@ -127,6 +125,20 @@ bool MandCarveOperation::isValidConfig(Configuration& config) const
 	cout << "ERROR: configuration is not valid, In BETA accepting config anyway" << endl;
 	return true;
 }
+
+
+
+void MandCarveOperation::finish(){
+	Operation::finishCommon();
+}
+
+void MandCarveOperation::start()
+{
+	Operation::startCommon();
+
+}
+
+
 
 /**
  * This function initalizes and configures this Operation to take data. Once this returns,
@@ -188,13 +200,30 @@ void MandCarveOperation::deinit()
 	pConfig = NULL;
 }
 
+
+ShellEnvelope* ShellEnvelopeFromMesh(BGL::Mesh3d& mesh , float  zLayer ){
+	CompoundRegion outReg;
+	mesh.regionForSliceAtZ(zLayer, outReg);
+    double svgWidth  = 40 + mesh.maxX - mesh.minX;
+    double svgHeight = 40 + mesh.maxY - mesh.minY;
+    double svgXOff   = 20 - mesh.minX;
+    double svgYOff   = 20 - mesh.minY;
+
+	ShellEnvelope* env = new ShellEnvelope(outReg, zLayer,
+			svgWidth, svgHeight, svgXOff, svgYOff);
+
+	//cout << __FUNCTION__ << " exit " << endl;
+	return env;
+}
+
+
 /**
  * This is the heart of envelope processing.
  * @param envelope
  */
 void MandCarveOperation::processEnvelope(const DataEnvelope& envelope)
 {
-	cout << __FUNCTION__ << " enter " << endl;
+//	cout << __FUNCTION__ << " enter " << endl;
 
 	/// we should be configured before ever doing this
 	assert(this->initalized == true);
@@ -204,24 +233,24 @@ void MandCarveOperation::processEnvelope(const DataEnvelope& envelope)
 		this->streamRunning = true;
 	}
 
-	cout << __FUNCTION__ << endl;
+//	cout << __FUNCTION__ << endl;
 
 	if(envelope.getAtomType() == TYPE_BGL_MESH)
 	{
-		StlEnvelope *stlEnv = (StlEnvelope*) (dynamic_cast<const StlEnvelope* > (&envelope) );
+		const StlEnvelope *stlEnv = (dynamic_cast<const StlEnvelope* > (&envelope) );
 
-		const BGL::Mesh3d& mesh = stlEnv->getMesh();
+		BGL::Mesh3d mesh = stlEnv->getMesh();
 
 	    float topZ = mesh.maxZ;
 	    float layerThickness = 0.4; // move to a global config
 	    float z = layerThickness/2.0f;
 
 	    while (z < topZ) {
-/*		// - Start custom to MandCarveOperation code
+		// - Start custom to MandCarveOperation code
 	    // Carve model to find layer outlines
-	    	CarveEnvelope mEnvelope = CarveEnvelopeFromMesh( z );
-			this->emit( dynamic_cast<DataEnvelope*>(mEnvelope) );*/
-	    	cout << "blarg, at z layer: " << z << endl;
+	    	ShellEnvelope* mEnvelope = ShellEnvelopeFromMesh(mesh, z );
+			this->emit( dynamic_cast<const DataEnvelope*>(mEnvelope) );
+	    	//cout << "blarg, at z layer: " << z << endl;
 			z += layerThickness;
 	    }
 	}
@@ -235,18 +264,13 @@ void MandCarveOperation::processEnvelope(const DataEnvelope& envelope)
 	return;
 }
 
+//void MandCarveOperation::finish()
+//{
+//	Operation::finishCommon();
+//}
 
 /************** Start of Functions custom to MandCarveOperation ***********************/
 
-/**
- * acessor for a ostream !
- * @return a stream reference, if we have one
- */
-ostream& MandCarveOperation::stream() const
-{
-	assert(pStream);
-	return *(pStream);
-}
 
 /************** End of Functions custom to MandCarveOperation ***********************/
 

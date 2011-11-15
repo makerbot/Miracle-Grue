@@ -150,10 +150,17 @@ void GCoderOperation::writeWipeExtruder(ostream& ss, int extruderId) const
 
 void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 {
-	stringstream ss;
-	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
-	writePaths(ss, pathData);
-	emit(ss.str().c_str());
+	if(streamRunning)
+	{
+		stringstream ss;
+		const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
+		writePaths(ss, pathData);
+		emit(ss.str().c_str());
+	}
+	else{
+			emit(startEnvelope());
+			streamRunning = true;
+		}
 }
 
 
@@ -300,7 +307,6 @@ void GCoderOperation::writeAnchor(std::ostream &ss) const
 	ss << "M101        (Start Extruder)" << endl;
 	ss << "G4 P1500" << endl;
 	ss << endl;
-
 }
 
 void GCoderOperation::emit(const char* msg)

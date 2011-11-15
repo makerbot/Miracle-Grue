@@ -127,15 +127,10 @@ bool MandStlLoaderOperation::isValidConfig(Configuration& config) const
  */
 void MandStlLoaderOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
 {
-	//For Alpha version of MG engine, pConfig must be null,
-	//i.e. We can't re-configure an object once it's been configured
-	assert(this->pConfig == NULL);
-	assert(this->initalized == false);
 
-	if(isValidConfig(config)){
-		cout << __FUNCTION__ << "count of ops" << outputs.size() << endl;
-		this->outputs.insert(this->outputs.end(), outputs.begin(), outputs.end());
-		this->initalized = true;
+	bool initCommonOk = Operation::initCommon(config,outputs);
+
+	if(initCommonOk){
 		// - Start custom to MandStlLoaderOperation code
 
 		// - End custom to MandStlLoaderOperation code
@@ -144,6 +139,12 @@ void MandStlLoaderOperation::init(Configuration& config,const std::vector<Operat
 		cout << "configuration does not contain valid data" << endl;
 		assert(0);
 	}
+}
+
+
+void MandStlLoaderOperation::start()
+{
+	Operation::startCommon();
 }
 
 
@@ -187,11 +188,8 @@ void MandStlLoaderOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	/// we should be configured before ever doing this
 	assert(this->initalized == true);
+	assert(this->streamRunning == true);
 
-	/// If this stream is not running, our first packet starts it running
-	if( this->streamRunning == false) {
-		this->streamRunning = true;
-	}
 	// - Start custom to MandStlLoaderOperation code
 	if(envelope.getAtomType() == TYPE_C_ASCII)
 	{
@@ -216,6 +214,12 @@ void MandStlLoaderOperation::processEnvelope(const DataEnvelope& envelope)
 
 	envelope.release();
 	return;
+}
+
+
+void MandStlLoaderOperation::finish()
+{
+	Operation::finishCommon();
 }
 
 

@@ -148,7 +148,7 @@ public:
 
 
     // Misc
-    bool sliceAtZ(Scalar Z, Line& lnref);
+    bool sliceAtZ(Scalar Z, Line& lnref) const;
 };
 
 

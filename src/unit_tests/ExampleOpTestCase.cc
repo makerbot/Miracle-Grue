@@ -50,8 +50,14 @@ void ExampleOpTestCase::create_ExampleOp()
 	cfg.root["ExampleOperation"]["prefix"] = Value("tester");
 	cfg.root["ExampleOperation"]["lang"] = Value("eng");
 
+	/// (if cfg < configRequirements)
+		///cout << "an error" << endl;
+
 	///5) initalize the Object with your configuration, and your output list
 	exampleOp.init(cfg, zeroOutputOperations);
+
+
+	exampleOp.start();
 
 	///6) Send inital one or more data envelopes to the object. The zeroth envelope
 	///must be flagged as 'stream start' and the last envelope flagged as 'stream end'
@@ -64,6 +70,13 @@ void ExampleOpTestCase::create_ExampleOp()
 	testEnv.setInitial();
 	testEnv.setRawData(data, 1,true);
 	exampleOp.accept(testEnv);
+
+	testEnv.release(); // we are releasing our envelope.
+
+
+	exampleOp.finish();
+
+
 
 	///7) (Optional) de-init the object. If this is not done, it happens
 	///automatically when the object is destroyed (or, in the future, when

@@ -9,22 +9,27 @@
 
 */
 
-#ifndef GCODE_DATA_H
-#define GCODE_DATA_H
+#ifndef SHELL_ENVELOPE_H
+#define SHELL_ENVELOPE_H
 
 #include <string>
 #include "../DataEnvelope.h"
 
+#include "../BGL/BGLCompoundRegion.h"
 
-class CarveEnvelope: public DataEnvelope {
 
-private:
+class ShellEnvelope: public DataEnvelope {
 
 public:
+	BGL::CompoundRegion perimeter;
+	double zLayer;
+	double svgWidth, svgHeight, svgXOff, svgYOff;
+public:
 
-	CarveEnvelope();
-	~CarveEnvelope();
+	ShellEnvelope(BGL::CompoundRegion inPerimeter, double inZLayer,
+			double inSvgWidth, double inSvgHeight, double inSvgXOff, double inSvgYOff);
+	~ShellEnvelope();
 };
 
 
-#endif // GCODE_DATA_H
+#endif // SHELL_ENVELOPE_H
