@@ -8,41 +8,77 @@
    License, or (at your option) any later version.
 
 */
-#ifndef GCODEROPERATION_H_
-#define GCODEROPERATION_H_
-
+#ifndef GCODE_OPERATION_H_
+#define GCODE_OPERATION_H_
 
 #include <iostream>
 #include <fstream>
+
 #include <string>
 #include <assert.h>
 
 #include "Operation.h"
+#include "PathData.h"
 
-#include "PathData.h"    // input data
-#include "GCodeEnvelope.h"	 // output data
+#include "GCodeEnvelope.h"
 
-
-class GCoderOperation: public Operation
+/**
+ * GCoderOperation creates gcode from a stream of path envelopes.
+ *
+ */
+class GCoderOperation : public Operation
 {
 
+/************** Start of Functions each <NAME_OF>Operation must contain***********************/
 public:
+
+	///Standard Constructor
 	GCoderOperation();
 
-	virtual ~GCoderOperation(){}
 
+	///Standard Destructor
+	~GCoderOperation();
+
+
+	/**
+	 * This function returns a global static pointer to a list of Configuration Requirements
+	 * See details in implementation
+	 * @return global static Json::Value pointer
+	 */
+	static Json::Value* getStaticConfigRequirements();
+
+	/**
+	 * This is the heart of data processing.  This is the core of the envelope accepting system.
+	 * See details in implementation
+	 * @param envelope reference to a DataEnvelope, or related subclass
+	 */
+	void processEnvelope(const DataEnvelope& envelope);
+
+	/**
+	 * This initalizes an operation with specific settings for processing this stream.
+	 * See details in implementation
+	 * @param config configuration for this stream
+	 * @param outputs A vector of operations that receive output envelopes of data from this object
+	 */
+	void init(Configuration& config,const std::vector<Operation*> &outputs);
+
+	///This un-initalizes an operation.
+	void deinit();
+
+	///This function must be called to start the processing chain
 	void start();
+
+	///This function must be called to wrap up the processing chain
 	void finish();
 
-	void processEnvelope(const DataEnvelope& envelope);
-	void cleanup();
+/************** End of Functions each <NAME_OF>Operation must contain***********************/
 
 
+/************** Start of Functions custom to this <NAME_OF>Operation ***********************/
 private:
+	bool isValidConfig(Configuration& config) const;
 
-	void emit(const char* msg);
-
-    // write important config information in gcode file
+	// write important config information in gcode file
     void writeGCodeConfig(std::ostream &ss) const;
 	void writeMachineInitialization(std::ostream &ss) const;
     void writePlatformInitialization(std::ostream &ss) const;
@@ -57,7 +93,16 @@ private:
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
 
     void writeGcodeEndOfFile(std::ostream &ss) const;
+
+	void wrapAndEmit(const char* msg);
+
+
+/************** End of Functions custom to this <NAME_OF>Operation ***********************/
+
 };
 
-#endif /* GCODEROPERATION_H_ */
+
+
+
+#endif /* GCODE_OPERATION_H_ */
 

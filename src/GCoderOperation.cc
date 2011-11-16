@@ -7,15 +7,18 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
 
-**/
+*/
 #include <assert.h>
 #include <sstream>
 
 #include "GCoderOperation.h"
 
+#include "json-cpp/include/json/value.h"
+
 using namespace std;
+using namespace Json;
 
-
+/************** Start of Functions custom to this <NAME_OF>Operation ***********************/
 
 // local function that adds an s to a noun if count is more than 1
 std::string plural(const char*noun, int count, const char* ending = "s")
@@ -49,17 +52,215 @@ void reverseExtrude(std::ostream &ss, double feedrate)
 }
 
 
+
+/************** End of Functions custom to this <NAME_OF>Operation ***********************/
+
+
+/// This staic global pointer points to a unique instance of a
+/// Value object, which contains the minimum configuration values
+/// required to build a working operation of this type.
+/// Must be named <OperationName>ConfigRequirements so it does not collide with
+/// other global static values.
+static Value* GCoderOperationConfigRequirements;
+
+
+/**
+ * This is an accessor function to retreve a singleton of <OperationName>ConfigRequirements
+ * if that dictionary does not exit, this function will generate it.
+ * The returned dictionary specifies the minimum configuration settings needed to make a valid
+ * initaliation of an Operation of this type
+ *
+ * @return global static Value pointer to configuration dictionary.
+ */
+Value* GCoderOperation::getStaticConfigRequirements()
+{
+	// if we don't have one of these global static's, we have never initalized,
+	// so initalize now.
+	if (GCoderOperationConfigRequirements == 0x00)
+	{
+		// - Start custom to GCoderOperation code
+		// for this Example operation, we need a prefix and a language specified
+		// to initalize
+		Value* cfg = new Value;
+//		( *cfg )["prefix"]= "asString";
+//		( *cfg )["lang"] = "asString";
+		// - End custom to GCoderOperation code
+		GCoderOperationConfigRequirements = cfg;
+
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "TODO: Create config Requirements" << std::endl;
+
+		// This object is expected to live until the program dies. No deconstruction !
+	}
+	return GCoderOperationConfigRequirements;
+}
+
+
+/**
+ * Standard Constructor.  Note that an object can be built and exist, but
+ * not yet be configured or initalized. See details in implementation.
+ * Anything things that do not need configuration
+ * SHOULD be initalized in the constructor.
+ */
+
 GCoderOperation::GCoderOperation()
 {
-	std::cout << __FUNCTION__ << std::endl;
-	std::cout << "(Miracle Grue)" << std::endl;
+	// - Start custom to GCoderOperation code
+	// Because this logging stream is always this file (and is not configuration dependant,
+	//we build it in the constructor, and destroy it  in the destructor.
 
-	//No values to add to requiredConfigRoot;
-};
+	this->acceptTypes.push_back(/*AtomType*/TYPE_BGL_MESH);
+	//this->emitTypes.push_back(); Left in as a note, but this example emits no data type
+
+	// - End custom to GCoderOperation code
+
+}
 
 
-void GCoderOperation::start()
+/**
+ * Standard Destructor.  This should close streams (if any are open) and
+ * deinitalize the Operation (if it is still initalized). See details in implementation.
+ */
+GCoderOperation::~GCoderOperation()
 {
+	// IFF we are currently initalized, we need to check for an open stream, as well as deinit
+	if(initalized) {
+
+		// - Following line custom to GCoderOperation code
+		cout << " Operation initailzed at destruction time. Automatically running deinit" <<endl;
+
+//		//NOTE:  deinit will check that the data stream is closed, and if needed it will
+//		// gaurentee a last DataEnvelope is sent (so we can deinitalize with confidence)
+//		this->deinit();
+	}
+
+	// - Start custom to GCoderOperation code
+
+	// - End custom to GCoderOperation code
+
+
+}
+
+
+
+/**
+ * This function takes a configuration object, and verifies that it can be used to
+ * configure the object.
+ * @param config
+ * @return
+ */
+bool GCoderOperation::isValidConfig(Configuration& config) const
+{
+
+	cout << __FUNCTION__ << endl;
+
+	if(config["GCoderOperation"].type() !=  /*ValueType.*/objectValue)
+	{
+		// - Start custom to GCoderOperation code
+		/// TODO:
+		/// req = getStaticConfigRequirements():
+		/// if (req >= config)
+			///return true
+		// - End custom to GCoderOperation code
+		return true;
+	}
+	cout << "ERROR: configuration is not valid, In BETA accepting config anyway" << endl;
+	return true;
+}
+
+
+/**
+ * This function initalizes and configures this Operation to take data. Once this returns,
+ * the operation may be sent data envelopes (via 'accept') at any time.  All streams, memory structures,
+ * and related infrastructure for a specific processing setup must be created here.
+ * @param config a configuration for setting up this operation
+ * @param outputs a list of other Operations to send out outgoing packets to
+ */
+void GCoderOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
+{
+	bool baseSuccess = Operation::initCommon(config, outputs);
+	if(baseSuccess){
+	// - Start custom to GCoderOperation code
+
+	// - End custom to GCoderOperation code
+	}
+
+}
+
+
+/**
+ * This function tears down everything setup in initalization. It will also check to see
+ * if a stream is running, and if it is, it forces a final data envelope to be queued before
+ * continuing with deiitalization. This will force a data flush in edge or fail cases.
+ */
+void GCoderOperation::deinit()
+{
+	assert(this->initalized == true);
+	assert(this->pConfig != NULL);
+
+	// IFF we have an ongoing stream, as we are being deinitalized, something went wrong.
+	// force a final DataEnvelpe to our operation to flush the end of the stream.
+	if(streamRunning)
+	{
+		// - Following line custom to GCoderOperation code
+		cout << "Stream Running at deinit time. Automatically sending final envelope " <<endl;
+
+/*
+		DataEnvelope d;
+		d.setFinal();
+		this->accept(d);
+		this->streamRunning = false;
+		d.release(); //release the constuctor default ref count of 1
+*/
+
+	}
+
+	// - Start custom to GCoderOperation code
+
+	// - End custom to GCoderOperation code
+
+	this->initalized = false;
+	pConfig = NULL;
+}
+
+/**
+ * This is the heart of envelope processing.
+ * @param envelope
+ */
+void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
+{
+	/// we should be configured before ever doing this
+	assert(this->initalized == true);
+
+	/// If this stream is not running, our first packet starts it running
+	if( this->streamRunning == false) {
+		this->streamRunning = true;
+	}
+
+	// - Start custom to GCoderOperation code
+
+	cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
+
+	stringstream ss;
+	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
+	writePaths(ss, pathData);
+	wrapAndEmit(ss.str().c_str());
+
+	cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
+
+	// - End custom to GCoderOperation code
+
+	return;
+}
+
+void GCoderOperation::start(){
+
+	// the first thing that needs to happen in start is the propigation of the
+	// start to all other modueles.
+	Operation::startCommon();
+
+
+	// - Start custom to GCoderOperation code
 	cout << "GCoderOperation::start() !!" << endl;
 	stringstream ss;
 
@@ -73,22 +274,31 @@ void GCoderOperation::start()
 	writeAnchor(ss);
 
 	const char *msg = ss.str().c_str();
-	cout << "EMIT" << endl;
-	emit(msg);
-	cout << "EMIT 2" << endl;
+	wrapAndEmit(msg);
+	// - End custom to GCoderOperation code
+
 }
 
-void GCoderOperation::finish()
-{
+void GCoderOperation::finish(){
+
+	// - Start custom to GCoderOperation code
 	cout << "GCoderOperation::finish()"<< endl;
 	stringstream ss;
 	writeGcodeEndOfFile(ss);
 	const char *msg = ss.str().c_str();
-	emit(msg);
+	wrapAndEmit(msg);
 
-	Operation::finish();
+	// - End custom to GCoderOperation code
+
+
+	// the last things to do in finish is propigate the finish
+	// to all other modules.
+	Operation::finishCommon();
+
 }
 
+
+/************** Start of Functions custom to GCoderOperation ***********************/
 void GCoderOperation::writePaths(ostream& ss, const PathData& pathData) const
 {
 	const Configuration &config =  configuration();
@@ -147,31 +357,6 @@ void GCoderOperation::writeWipeExtruder(ostream& ss, int extruderId) const
 	ss << endl;
 }
 
-
-void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
-{
-	if(streamRunning)
-	{
-		stringstream ss;
-		const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
-		writePaths(ss, pathData);
-		emit(ss.str().c_str());
-	}
-	else{
-			emit(startEnvelope());
-			streamRunning = true;
-		}
-}
-
-
-void GCoderOperation::cleanup()
-{
-
-	//closeFile();
-}
-
-
-
 void GCoderOperation::writeGCodeConfig(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
@@ -206,6 +391,7 @@ void GCoderOperation::writeMachineInitialization(std::ostream &ss) const
 //	}
 	ss << endl;
 }
+
 
 void GCoderOperation::writeExtrudersInitialization(std::ostream &ss) const
 {
@@ -256,8 +442,6 @@ void GCoderOperation::writeHomingSequence(std::ostream &ss) const
 	ss << endl;
 }
 
-
-
 void GCoderOperation::writeWarmupSequence(std::ostream &ss) const
 {
 	const Configuration &config = configuration();
@@ -279,7 +463,8 @@ void GCoderOperation::writeWarmupSequence(std::ostream &ss) const
 //	}
 //	ss << "(heated build platform temperature is tied to tool 0 for now)" << endl;
 //	ss << endl;
-//	ss << endl;
+//	ss << endl;ls
+
 }
 
 void GCoderOperation::writeGcodeEndOfFile(std::ostream &ss) const
@@ -309,16 +494,22 @@ void GCoderOperation::writeAnchor(std::ostream &ss) const
 	ss << endl;
 }
 
-void GCoderOperation::emit(const char* msg)
+
+/// Wraps a string into a msg file and automatically emits it.
+void GCoderOperation::wrapAndEmit(const char* msg)
 {
-	/*
 	cout << endl;
 	cout << "********************************** GCODE DATA ***************************" << endl;
 	cout << msg;
 	cout << "*************************************** END *****************************" << endl;
 	cout << endl;
-	*/
+
 	Operation::emit(new GCodeEnvelope(msg));
 }
+
+
+
+
+/************** End of Functions custom to GCoderOperation ***********************/
 
 
