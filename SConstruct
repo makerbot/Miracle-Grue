@@ -83,7 +83,7 @@ file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/Mes
 example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL']
-default_libs = [ '_json','miracleGrue']
+default_libs = [ '_json','miracleGrue', 'bgl']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
@@ -137,27 +137,27 @@ env.Program( 	'./bin/tests/gcoderUnitTest',
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= default_includes)
-#
-#env.Program( 	'./bin/tests/slicerUnitTest', 
-#				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
-#env.Program(  	'./bin/tests/regionerUnitTest',   
-#				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
-#env.Program(  	'./bin/tests/modelReaderUnitTest',   
-#				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
+
+env.Program( 	'./bin/tests/slicerUnitTest', 
+				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+env.Program(  	'./bin/tests/regionerUnitTest',   
+				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+env.Program(  	'./bin/tests/modelReaderUnitTest',   
+				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
 #env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
 #				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
-#				LIBS = default_libs + debug_libs,
+#    			LIBS = default_libs + debug_libs,
 #				LIBPATH = default_libs_path + debug_libs_path, 
 #				CPPPATH= ['..'])

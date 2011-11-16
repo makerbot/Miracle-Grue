@@ -19,7 +19,7 @@ ModelFileReaderOperation::ModelFileReaderOperation()
 	:pStream(NULL)
 {
 	cout << "ModelFileReaderOperation() @"  << this<< endl;
-	requiredConfigRoot["filename"] = "asString";
+	//requiredConfigRoot["filename"] = "asString";
 }
 
 
@@ -32,7 +32,7 @@ void ModelFileReaderOperation::processEnvelope(const DataEnvelope& envelope)
 {
 	// this method must exist because it is declared pure virutalin Operation
 	// however the ModelFileReader does not receive any data so...
-	assert(0); // this method should not be called
+//	assert(0); // this method should not be called
 
 }
 
@@ -47,20 +47,20 @@ void ModelFileReaderOperation::start()
 {
     
 	const Configuration &config = configuration();
-	pStream = new std::ifstream("filename.stl");
-	if( config.contains("ModelFileReaderOperation") )
-	{
-		string file = config["ModelFileReaderOperation"]["filename"].asString();
-		std::cout << "ModelFileReaderOperation reading file: \"" << file << "\""<< std::endl;
-	}
-    finish();
+//	pStream = new std::ifstream("filename.stl");
+//	if( config.contains("ModelFileReaderOperation") )
+//	{
+//		string file = config["ModelFileReaderOperation"]["filename"].asString();
+//		std::cout << "ModelFileReaderOperation reading file: \"" << file << "\""<< std::endl;
+//	}
+//    finish();
 }
 
 void ModelFileReaderOperation::finish()
 {
 	// assert(pStream);
-	pStream->close();
-	pStream = NULL;
+//	pStream->close();
+//	pStream = NULL;
 }
 
 
