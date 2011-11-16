@@ -147,7 +147,7 @@ void MandWriteSvgOperation::deinit()
 void svgPathWithSizeAndOffset(
 		ostream &os,
 		RegionEnvelope& envelope,
-		float width, float height, float dx, float dy, float strokeWidth)
+		float width, float height, float dx, float dy, float mmStrokeWidth)
 {
     BGL::SVG svg(width, height);
     svg.header(os);
@@ -157,19 +157,20 @@ void svgPathWithSizeAndOffset(
     CompoundRegions::iterator rit;
     for (rit = envelope.shells.begin(); rit != envelope.shells.end(); rit++) {
 	os << "<path class=\"inset_shell\" fill=\"none\" stroke=\"black\"";
-	os << " stroke-width=\"" << (strokeWidth/3.937) << "mm\"";
+	os << " stroke-width=\"" << (mmStrokeWidth/3.937) << "mm\"";
 	os << " d=\"" << rit->svgPathWithOffset(dx,dy) << "\" />" << endl;
     }
 
     BGL::Paths::const_iterator pit;
     for (pit = envelope.infill.begin(); pit != envelope.infill.end(); pit++) {
-	os << "<path class=\"infill_path\" fill=\"none\" stroke=\"black\"";
-	os << " stroke-width=\"" << (strokeWidth/3.937) << "mm\"";
-	os << " d=\"" << pit->svgPathWithOffset(dx,dy) << "\" />" << endl;
+    	os << "<path class=\"infill_path\" fill=\"none\" stroke=\"blue\"";
+    	os << " stroke-width=\"" << (mmStrokeWidth/3.937) << "mm\"";
+    	os << " d=\"" << pit->svgPathWithOffset(dx,dy) << "\" />" << endl;
     }
 
-    os << "<path class=\"model_outline\" fill=\"none\" stroke=\"#ff0000\"";
-    os << " stroke-width=\"" << 0.05 << "mm\"";
+    os << "<path class=\"model_outline\" fill=\"none\" stroke=\"red\"";
+    os << " stroke-width=\"" << (mmStrokeWidth/3.937) << "mm\"";
+
     os << " d=\"" << envelope.perimeter.svgPathWithOffset(dx,dy) << "\" />" << endl;
 
     svg.footer(os);

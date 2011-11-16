@@ -57,6 +57,11 @@ int main() {
 
 	  (*cfg)["MandWriteSvgOperation"]["format"] = ".svg";
 	  (*cfg)["MandWriteSvgOperation"]["filename"] = "mandStreamTest";
+	  (*cfg)["MandInfillOperation"]["infillDensity"] = 30.0;
+	  (*cfg)["MandInfillOperation"]["extrusionWidth"] = 0.6;
+	  (*cfg)["MandInsetOperation"]["extrusionWidth"] = 0.6;
+	  (*cfg)["MandInsetOperation"]["perimeterShells"] = 3;
+
 
 	  std::vector<Operation*> loadOut, carveOut, insetOut, infillOut, svgWriteOut;
 	  loadOut.push_back(carveOp);

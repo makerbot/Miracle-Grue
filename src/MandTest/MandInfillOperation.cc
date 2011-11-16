@@ -45,10 +45,10 @@ Value* MandInfillOperation::getStaticConfigRequirements()
 	if (MandInfillOperationConfigRequirements == 0x00)
 	{
 		// - Start custom to MandInfillOperation code
-//		Value* cfg = new Value();
-//		(*cfg)["extrusionWidth"]  = "asDouble";
-//	    (*cfg)["perimeterShells"] = "asInt";
-//	    MandInfillOperationConfigRequirements = cfg;
+		Value* cfg = new Value();
+		(*cfg)["infillDensity"]  = "asDouble";
+	    (*cfg)["extrusionWidth"] = "asDouble";
+	    MandInfillOperationConfigRequirements = cfg;
 		// This object is expected to live until the program dies. No deconstruction !
 	}
 	return MandInfillOperationConfigRequirements;
@@ -195,6 +195,7 @@ void MandInfillOperation::processEnvelope(const DataEnvelope& envelope)
 	}
 	double infillDensity = config["MandInfillOperation"]["infillDensity"].asDouble();
     double extrusionWidth = config["MandInfillOperation"]["extrusionWidth"].asDouble();
+
 
     //simply update our existing envelope
     RegionEnvelope& env = (RegionEnvelope&)(dynamic_cast<const RegionEnvelope&>(envelope));
