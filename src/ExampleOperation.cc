@@ -208,17 +208,15 @@ void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
 	return;
 }
 
-void ExampleOperation::start(){
-
-	// - Start custom to ExampleOperation code
-
-	// - End custom to ExampleOperation code
-
+void ExampleOperation::start() {
 
 	// the first thing that needs to happen in start is the propigation of the
 	// start to all other modueles.
 	Operation::startCommon();
 
+	// - Start custom to ExampleOperation code
+
+	// - End custom to ExampleOperation code
 }
 
 void ExampleOperation::finish(){

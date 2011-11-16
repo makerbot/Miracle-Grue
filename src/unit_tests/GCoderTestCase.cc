@@ -15,12 +15,12 @@ using namespace std;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
-#define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"
-#define DUAL_EXTRUDER_FILE_NAME "v29_dual_xtruder_warmup.gcode"
-#define SINGLE_EXTRUDER_WITH_PATH "v29_single_xtruder_with_path.gcode"
+#define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/v29_single_xtruder_warmup.gcode"
+#define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/v29_dual_xtruder_warmup.gcode"
+#define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/v29_single_xtruder_with_path.gcode"
 
 // for now, use cout, until we add Boost support
-#define BOOST_LOG_TRIVIAL(trace) cout
+//#define BOOST_LOG_TRIVIAL(trace) cout
 //#define BOOST_LOG_TRIVIAL(debug) cout
 //#define BOOST_LOG_TRIVIAL(info) cout
 //#define BOOST_LOG_TRIVIAL(warning) cout
@@ -87,94 +87,76 @@ void GCoderTestCase::setUp()
 
 }
 
-void GCoderTestCase::example()
+
+void run_tool_chain(Configuration &config, DataEnvelope* envelope = NULL)
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 
-/*
+	BOOST_LOG_TRIVIAL(trace)<< "get Config static requirements:" <<__FUNCTION__ << endl;
+	/// 1) (Optional)  call getStaticConfigRequirements, to make sure you can build a
+	/// good configuration.
+	Json::Value* gCoderRequires= GCoderOperation::getStaticConfigRequirements();
+	Json::Value* fileWriterRequires= FileWriterOperation::getStaticConfigRequirements();
+	assert( (void*)gCoderRequires != NULL);
+	assert( (void*)fileWriterRequires != NULL);
 
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
-  CPPUNIT_ASSERT( 1 == 0 );
-  CPPUNIT_ASSERT( 1 == 1 );
-
-  long* l1 = new long(12);
-  long* l2 = new long(12);
-
-  CPPUNIT_ASSERT_EQUAL( 12, 12 );
-  CPPUNIT_ASSERT_EQUAL( 12L, 12L );
-  CPPUNIT_ASSERT_EQUAL( *l1, *l2 );
-
-  delete l1;
-  delete l2;
-
-  CPPUNIT_ASSERT( 12L == 12L );
-  CPPUNIT_ASSERT_EQUAL( 12, 13 );
-  CPPUNIT_ASSERT_DOUBLES_EQUAL( 12.0, 11.99, 0.5 );
-*/
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
-}
-
-void simple_tool_chain(Configuration &config)
-{
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	/// 2)  Build an instance of the object. This builds member functions, allocates much space etc
+	BOOST_LOG_TRIVIAL(trace)<< "Build Operation Instances:" <<__FUNCTION__ << endl;
 	GCoderOperation &tooler = *new GCoderOperation();
 	FileWriterOperation &fileWriter = *new FileWriterOperation();
 
+	///3) Create Output Vector(s) from each operation (not always required)
+	BOOST_LOG_TRIVIAL(trace)<< "Build Output Vectors:" <<__FUNCTION__ << endl;
 	vector<Operation*> empty;
+	vector<Operation*> toolerOutputs;
+	toolerOutputs.push_back(&fileWriter);
 
-	vector<Operation*> tool;
-	tool.push_back(&tooler);
+	///4) Build a Configure object. use the staticConfigRequirements to help you unless you know
+	/// exactly what to build
+	BOOST_LOG_TRIVIAL(trace)<< "Build Output Vectors:" <<__FUNCTION__ << endl;
+	Configuration cfg;
+	//	cfg.root["FileWriterOperation"]["prefix"] = Value("tester");
+	//	cfg.root["FileWriterOperation"]["lang"] = Value("eng");
 
-	vector<Operation*> writer;
-	writer.push_back(&fileWriter);
-	BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << " tooler.init"<< endl;
-	tooler.init(config, empty, writer);
-	fileWriter.init(config, tool, empty);
 
-	cout << "simple_tool_chain START filewriter" << endl;
-	fileWriter.start();
-	cout << "simple_tool_chain FINISH tooler" << endl;
+	///5) initalize the Object with your configuration, and your output list
+	BOOST_LOG_TRIVIAL(trace)<< "Initalizing Operations:" <<__FUNCTION__ << endl;
+	tooler.init(config,  toolerOutputs);
+	fileWriter.init(config, empty);
+
+	/// 6) Send a start signal to the first operation in the Operation Graph
+	tooler.start();
+
+	///7) Send inital one or more data envelopes to the object.
+	if(envelope != NULL)
+	{
+		BOOST_LOG_TRIVIAL(trace)<< "Accept Envelope @" << envelope <<" "<<__FUNCTION__ << endl;
+		tooler.accept(*envelope);
+	}
+	else {
+		BOOST_LOG_TRIVIAL(trace)<< "No Envelope accepted this test:" <<__FUNCTION__ << endl;
+	}
+
+	/// 8) Send a finish signal to the first operation in the Operation Graph
+	/// that call to finish will propagate down the graph automatically
 	tooler.finish();
+
+	//9) De-init (for safty)
+	tooler.deinit();
+	fileWriter.deinit();
 
 	delete &tooler;
 	delete &fileWriter;
+
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-void path_tool_chain(Configuration &config, DataEnvelope &d)
-{
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 
-	GCoderOperation &tooler = *new GCoderOperation();
-	FileWriterOperation &fileWriter = *new FileWriterOperation();
-
-	vector<Operation*> empty;
-
-	vector<Operation*> tool;
-	tool.push_back(&tooler);
-
-	vector<Operation*> writer;
-	writer.push_back(&fileWriter);
-
-	tooler.init(config, empty, writer);
-	fileWriter.init(config, tool, empty);
-
-	fileWriter.start();
-	// send the path
-	tooler.accept(d);
-	tooler.finish();
-
-	delete &tooler;
-	delete &fileWriter;
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
-}
 
 // a function that adds 4 points to a polygon within the list paths for
 // a new extruder.
 void initSimplePath(PathData &d)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	d.setLast();
 	d.paths.push_back(Paths());
 	d.paths[0].push_back(Polygon());
 	Polygon &poly = d.paths[0][0];
@@ -215,7 +197,7 @@ void GCoderTestCase::singleExtruder()
 //	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 
 	BOOST_LOG_TRIVIAL(trace) << " YYY" << endl;
-	simple_tool_chain(config);
+	run_tool_chain(config);
 	BOOST_LOG_TRIVIAL(trace) << " ZZZ" << endl;
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
@@ -238,7 +220,7 @@ void GCoderTestCase::dualExtruders()
 	configureDualExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)2,config.extruders.size());
 	// create a simple Gcode operation (no paths), initialize it and run it
-	simple_tool_chain(config);
+	run_tool_chain(config);
 
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
 
@@ -267,7 +249,7 @@ void GCoderTestCase::simplePath()
 	initSimplePath(d);
 
 	// instaniate a gcoder and send it the path as an envelope.
-	path_tool_chain(config, d);
+	run_tool_chain(config, &d);
 
 
 	// cleanup the data

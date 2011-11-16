@@ -131,12 +131,12 @@ env.Program(	'./bin/tests/fileWriterUnitTest',
 #				LIBPATH = default_libs_path + debug_libs_path, 
 #				CPPPATH = default_includes)
 
-#env.Program( 	'./bin/tests/gcoderUnitTest', 
-#				mix(['src/unit_tests/GCoderTestCase.cc'], 
-#				unit_test, pather, gcoder, file_w), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= default_includes)
+env.Program( 	'./bin/tests/gcoderUnitTest', 
+				mix(['src/unit_tests/GCoderTestCase.cc'], 
+				unit_test, pather, gcoder, file_w), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= default_includes)
 #
 #env.Program( 	'./bin/tests/slicerUnitTest', 
 #				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 

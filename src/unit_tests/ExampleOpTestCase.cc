@@ -40,7 +40,7 @@ void ExampleOpTestCase::create_ExampleOp()
 	/// 2)  Build an instance of the object. This builds member functions, allocates much space etc
 	ExampleOperation exampleOp;
 
-	///3) Create Output Operation(s) to hook up to (not always required)
+	///3) Create Output Vector(s) from each operation (not always required)
 	/// no output operation for this object!
 	std::vector<Operation*> zeroOutputOperations;
 
@@ -57,9 +57,11 @@ void ExampleOpTestCase::create_ExampleOp()
 	exampleOp.init(cfg, zeroOutputOperations);
 
 
+	/// 6) Send a start signal to the first operation in the Operation Graph,
+	/// that call to start will propigate down the graph automatically
 	exampleOp.start();
 
-	///6) Send inital one or more data envelopes to the object. The zeroth envelope
+	///7) Send inital one or more data envelopes to the object. The zeroth envelope
 	///must be flagged as 'stream start' and the last envelope flagged as 'stream end'
 	///(If there is only one envelope, those flags can both be set in that envelope
 	///BOOST_LOG_TRIVIAL(trace)<< "Ending: " <<__FUNCTION__ << endl;
@@ -73,12 +75,13 @@ void ExampleOpTestCase::create_ExampleOp()
 
 	testEnv.release(); // we are releasing our envelope.
 
-
+	/// 8) Send a finish signal to the first operation in the Operation Graph
+	/// that call to finish will propagate down the graph automatically
 	exampleOp.finish();
 
 
 
-	///7) (Optional) de-init the object. If this is not done, it happens
+	///9) (Optional) de-init the object. If this is not done, it happens
 	///automatically when the object is destroyed (or, in the future, when
 	///'init' is called a 2nd time
 	exampleOp.deinit();
