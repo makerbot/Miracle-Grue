@@ -514,7 +514,7 @@ void ModelReaderTestCase::testSlicyWater()
 		cout << "clock: " << t1 << endl;
 		cout << "Slice: " << sliceIndex  << " ("<< sliceables.size()  << " triangles)" << endl;
 
-		Slicy sy(0.0000001);
+		Slicy sy(0.000000001);
 		cout  << " Triangles in this slice" << endl;
 		for (TriangleIndices::const_iterator j = sliceables.begin(); j != sliceables.end(); j++ )
 		{

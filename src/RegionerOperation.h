@@ -24,6 +24,12 @@ public:
 
 	virtual ~RegionerOperation();
 	void processEnvelope(const DataEnvelope& envelope);
+	virtual void init(Configuration&, const std::vector<Operation*>&outputs);
+	virtual void start(){}
+	virtual void finish(){}
+	virtual void deinit(){}
+	virtual bool isValidConfig(Configuration&) const{return true;}
+
 };
 
 
