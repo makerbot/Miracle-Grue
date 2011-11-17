@@ -156,8 +156,8 @@ env.Program(  	'./bin/tests/modelReaderUnitTest',
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 
-#env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
-#				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
-#    			LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
+env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
+				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])

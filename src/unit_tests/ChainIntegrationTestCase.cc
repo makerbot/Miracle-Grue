@@ -63,40 +63,41 @@ void ChainIntegrationTestCase::testChain()
     
 	inout readerOut;
 	readerOut.push_back(slicer);
-	reader->init(config, empty, readerOut);
+	reader->init(config,  readerOut);
     
 	inout sliceIn;
 	inout sliceOut;
 	sliceOut.push_back(regioner);
 	sliceIn.push_back(reader);
-	slicer->init(config, sliceIn, sliceOut);
+	slicer->init(config,  sliceOut);
     
 	inout regionIn;
 	inout regionOut;
 	regionIn.push_back(slicer);
 	regionOut.push_back(pather);
-	regioner->init(config, regionIn, regionOut);
+	regioner->init(config,  regionOut);
     
 	inout patherIn;
 	inout patherOut;
 	patherIn.push_back(regioner);
 	patherOut.push_back(gcoder);
-	pather->init(config, patherIn, patherOut);
+	pather->init(config, patherOut);
     
 	inout gcoderIn;
 	inout gcoderOut;
 	gcoderIn.push_back(pather);
 	gcoderOut.push_back(writer);
-	gcoder->init(config, gcoderIn, gcoderOut);
+	gcoder->init(config,  gcoderOut);
     
 	inout writerIn;
 	writerIn.push_back(gcoder);
-	writer->init(config, writerIn, empty);
+	writer->init(config,  empty);
     
 
-	startEnvelope = DataEnvelope();
+	DataEnvelope *startEnvelope = new DataEnvelope();
 	startEnvelope->setInitial();
-	readerOut->accept(StartEnvelope);
+	reader->accept( (*startEnvelope) );
+	startEnvelope->release();
 
 	// flaky begin
 	//writer->start();
