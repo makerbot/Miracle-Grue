@@ -93,11 +93,14 @@ void ChainIntegrationTestCase::testChain()
 	writerIn.push_back(gcoder);
 	writer->init(config,  empty);
     
+	reader->start();
 
 	DataEnvelope *startEnvelope = new DataEnvelope();
 	startEnvelope->setInitial();
 	reader->accept( (*startEnvelope) );
 	startEnvelope->release();
+
+	reader->finish();
 
 	// flaky begin
 	//writer->start();

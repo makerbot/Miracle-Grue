@@ -8,6 +8,7 @@
 # the moc tool is detected and Qt4 is detected 
 import os
 import commands
+import datetime
 
 
 def mix(*args):
@@ -22,31 +23,18 @@ def mix(*args):
 
 print ""
 print "======================================================="
-print "So you think you can build Miracle-Grue on your machine?"
-print ""
-print "* Qt detector: '%s'" % commands.getoutput("moc -v")
-print "* Looking for cppunit"
+print "Miracle-Grue build script"
+print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
 
-cppunit_lib_dir = ""
-cppunit_inc_dir = ""
 
-try:
-	print "    MG_CPPUNIT_LIB_DIR environment variable:"
-	cppunit_lib_dir = os.environ['CPPUNIT_LIB_DIR']
-	print "         '%s'" % cppunit_lib_dir
-	print "    MG_CPPUNIT_INC_DIR environment variable:"
-	cppunit_inc_dir = os.environ['CPPUNIT_INC_DIR']
-	print "         '%s'" % cppunit_inc_dir
-	print 
-except:
-	print "WARNING: "
-	print "Expected environment variables for libraries not found. Continuing anyway"
-	
+
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
-print "os.environ['PATH']=", os.environ['PATH']
+# print "os.environ['PATH']=", os.environ['PATH']
 
-env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
+qtModules = ['QtCore', 'QtNetwork' ]
+print "QT modules", qtModules
+env.EnableQt4Modules(qtModules)
 
 
 env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
@@ -87,7 +75,7 @@ default_libs = [ '_json','miracleGrue', 'bgl']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
-debug_libs_path = [cppunit_lib_dir, ]
+debug_libs_path = ["", ]
 
 mand_ops = ['src/Configuration.cc', 
 	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
@@ -122,14 +110,14 @@ env.Program(	'./bin/tests/fileWriterUnitTest',
 #				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
 #					file_w, config, unit_test),
 #				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
+#				LIBPATH = default_libs_path, 
 #				CPPPATH = default_includes)
 				
-#env.Program(	'./bin/tests/configUnitTest',
-#				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH = default_includes)
+env.Program(	'./bin/tests/configUnitTest',
+				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path , 
+				CPPPATH = default_includes)
 
 env.Program( 	'./bin/tests/gcoderUnitTest', 
 				mix(['src/unit_tests/GCoderTestCase.cc'], 
