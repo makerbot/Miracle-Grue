@@ -60,7 +60,6 @@ class Configuration {
      	bool isMember( const std::string &key ) const { return this->root.isMember(key); }
 
      	void writeJsonConfig(std::ostream &out) const;
-     	void writeGcodeConfig(std::ostream &out, const std::string indent) const;
 
  		/// helper functions to easily print/view the config values as json
       	std::string jsonFromExtruder(Json::Value& extruder) const;

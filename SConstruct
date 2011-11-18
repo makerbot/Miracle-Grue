@@ -32,6 +32,10 @@ print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separa
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
 # print "os.environ['PATH']=", os.environ['PATH']
 
+debug = ARGUMENTS.get('debug', 0)
+if int(debug):
+    env.Append(CCFLAGS = '-g')
+       
 qtModules = ['QtCore', 'QtNetwork' ]
 print "QT modules", qtModules
 env.EnableQt4Modules(qtModules)

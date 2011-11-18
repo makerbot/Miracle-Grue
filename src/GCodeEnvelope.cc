@@ -14,9 +14,10 @@
 using namespace std;
 
 GCodeEnvelope::GCodeEnvelope(const char* str)
-	:gString(str)
+	:DataEnvelope(TYPE_ASCII_GCODE), gString(str)
 {
 	cout << "GCodeEnvelope() @"  << this << endl;
+	cout << gString << endl << endl << endl;
 }
 
 GCodeEnvelope::~GCodeEnvelope()

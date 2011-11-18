@@ -147,7 +147,10 @@ void Operation::finishCommon()
 	}
 }
 
-void Operation::deinitCommon() { }
+void Operation::deinitCommon()
+{
+
+}
 
 
 

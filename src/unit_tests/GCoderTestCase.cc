@@ -1,4 +1,3 @@
-
 #include <fstream>
 
 #include <cppunit/config/SourcePrefix.h>
@@ -27,20 +26,17 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 //#define BOOST_LOG_TRIVIAL(error) cout
 //#define BOOST_LOG_TRIVIAL(fatal) cout
 
-void configureTOM(Configuration& config, bool automaticBuildPlatform, double platformTemp )
+void configurePlatform(Configuration& config, bool automaticBuildPlatform, double platformTemp )
 {
 	BOOST_LOG_TRIVIAL(trace)  << "Starting:" <<__FUNCTION__ << endl;
 
-	config["machineName"] = "TOM";
-	config["firmware"] = "v2.9";
-
+	config["scalingFactor"] = 1.0;
 	config["platform"]["temperature"] = platformTemp;
 	config["platform"]["automated"] = automaticBuildPlatform;
 	config["platform"]["waitingPositionX"] = 52.0;
 	config["platform"]["waitingPositionY"] = -57.0;
 	config["platform"]["waitingPositionZ"] = 10.0;
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
-
 
 }
 
@@ -54,7 +50,11 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 	extruder["defaultExtrusionSpeed"] = speed;
 	extruder["extrusionTemperature"] = temperature;
 	extruder["coordinateSystemOffsetX"] = offsetX;
-
+	extruder["slowFeedRate"] = 1000;
+	extruder["slowExtrusionSpeed"] = 1.0;
+	extruder["fastFeedRate"] = 3000;
+	extruder["fastExtrusionSpeed"] = 2.682;
+	extruder["nozzleZ"] = 0.2;
 	config["extruders"].append(extruder);
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
@@ -62,7 +62,7 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 void configureSingleExtruder(Configuration &config)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	configureTOM(config, true, 110);
+	configurePlatform(config, true, 110);
 	configureExtruder(config, 220, 6, 0);
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
@@ -71,7 +71,7 @@ void configureSingleExtruder(Configuration &config)
 void configureDualExtruder(Configuration& config)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	configureTOM(config, true, 110)	;
+	configurePlatform(config, true, 110)	;
 	configureExtruder(config, 220, 6, 0);
 	configureExtruder(config, 220, 6, 0);
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
@@ -84,7 +84,6 @@ void GCoderTestCase::setUp()
 {
 	BOOST_LOG_TRIVIAL(trace)<< " Starting:" <<__FUNCTION__ << endl;
 	BOOST_LOG_TRIVIAL(trace)<< " Exiting:" <<__FUNCTION__ << endl;
-
 }
 
 
@@ -133,7 +132,7 @@ void run_tool_chain(Configuration &config, DataEnvelope* envelope = NULL)
 		tooler.accept(*envelope);
 	}
 	else {
-		BOOST_LOG_TRIVIAL(trace)<< "No Envelope accepted this test:" <<__FUNCTION__ << endl;
+		// BOOST_LOG_TRIVIAL(trace)<< "No Envelope accepted this test:" <<__FUNCTION__ << endl;
 	}
 
 	/// 8) Send a finish signal to the first operation in the Operation Graph
@@ -180,13 +179,11 @@ void initSimplePath(PathData &d)
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-
-
 //
 // This test creates a gcode file for single extruder machine
 // The file contains code to home the tool and heat the extruder/platform
 //
-void GCoderTestCase::singleExtruder()
+void GCoderTestCase::testSingleExtruder()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 	Configuration config;
@@ -196,9 +193,12 @@ void GCoderTestCase::singleExtruder()
 	configureSingleExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 
-	BOOST_LOG_TRIVIAL(trace) << " YYY" << endl;
+
+	Json::StyledWriter w;
+	string confstr = w.write(config.root);
+	cout << confstr << endl;
+
 	run_tool_chain(config);
-	BOOST_LOG_TRIVIAL(trace) << " ZZZ" << endl;
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
@@ -207,7 +207,7 @@ void GCoderTestCase::singleExtruder()
 //
 // This test creates a gcode file for a dual extruder machine
 //
-void GCoderTestCase::dualExtruders()
+void GCoderTestCase::testDualExtruders()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 	// cerate an empty configuration object
@@ -231,7 +231,7 @@ void GCoderTestCase::dualExtruders()
 //
 // 	This tests generates gcode for a simple rectangular path.
 //
-void GCoderTestCase::simplePath()
+void GCoderTestCase::testSimplePath()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 	// create empty configuration and set the file name
@@ -241,7 +241,7 @@ void GCoderTestCase::simplePath()
 
 	// load 1 extruder
 	configureSingleExtruder(config);
-//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
+	//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 
 	// create a path message as if received by a pather operation
 	PathData &d = *new PathData(0.2, 0.4);
@@ -261,10 +261,33 @@ void GCoderTestCase::simplePath()
 }
 
 
-void GCoderTestCase::spikeBed()
+void GCoderTestCase::testConfig()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 
+	Configuration conf;
+
+	std::string p = conf.root["programName"].asString();
+	cout << endl << endl << endl << "PROGRAM NAME: " << p << endl;
+	CPPUNIT_ASSERT(p == "Miracle-Grue");
+
+	configureSingleExtruder(conf);
+	Json::StyledWriter w;
+	string confstr = w.write(conf.root);
+	cout << confstr << endl;
+
+
+	CPPUNIT_ASSERT(conf.root["extruders"].isArray());
+	CPPUNIT_ASSERT(conf.root["extruders"].isValidIndex(0));
+
+	cout << "ExtruderCount " << conf.root["extruders"].size() << endl;
+
+	GCoderConfig single;
+	single.loadData(conf);
+
+	cout << endl << endl << endl << "READ!" << endl;
+
+	CPPUNIT_ASSERT(single.extruders.size() ==1);
 
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
@@ -285,15 +308,17 @@ void gcodeStreamFormat(ostream &ss)
 }
 
 
-void GCoderTestCase::floatFormat()
+void GCoderTestCase::testFloatFormat()
 {
 	stringstream ss;
 	gcodeStreamFormat(ss);
     
 	ss << endl;
 	ss << "loc: " << ss.getloc().name() << endl;
-	CPPUNIT_ASSERT_EQUAL(ss.getloc().name(), std::string("C") );
-    //locale myloc(  locale(),    // C++ default locale
+
+	CPPUNIT_ASSERT_EQUAL(ss.getloc().name(), string("en_US.UTF-8")); // std::string("C") );
+
+	//locale myloc(  locale(),    // C++ default locale
     //       new WithComma);// Own numeric facet
 	ss << endl;
 	// ss << "LOCALE name: " << myloc.name() << endl;
