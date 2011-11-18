@@ -33,6 +33,13 @@ env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
 # print "os.environ['PATH']=", os.environ['PATH']
 
 debug = ARGUMENTS.get('debug', 0)
+
+if debug != None:
+    try:
+        debug = os.environ['MG_DEBUG']
+    except:
+        debug = 0
+        
 if int(debug):
     env.Append(CCFLAGS = '-g')
        

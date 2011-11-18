@@ -16,6 +16,7 @@
 
 #include <string>
 #include <assert.h>
+#include <sstream>
 
 #include "Operation.h"
 #include "PathData.h"
@@ -178,7 +179,7 @@ private:
 
     void writeGcodeEndOfFile(std::ostream &ss) const;
 
-	void wrapAndEmit(const char* msg);
+	void wrapAndEmit(const std::stringstream &ss);
 
 
 /************** End of Functions custom to this <NAME_OF>Operation ***********************/

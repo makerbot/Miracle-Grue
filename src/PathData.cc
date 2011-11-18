@@ -14,7 +14,7 @@
 using namespace std;
 
 PathData::PathData(double z, double thick)
-		:positionZ(z), layerThickness(thick)
+		:DataEnvelope(TYPE_PATH_BINARY), positionZ(z), layerThickness(thick)
 {
 	cout << "PathData() @"  << this<< endl;
 }

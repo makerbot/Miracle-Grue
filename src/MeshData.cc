@@ -14,6 +14,7 @@
 using namespace std;
 
 MeshData::MeshData()
+	:DataEnvelope(TYPE_MESH_3D)
 
 {
 	cout << "MeshData() @"  << this<< endl;

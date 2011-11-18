@@ -95,7 +95,7 @@ void ChainIntegrationTestCase::testChain()
     
 	reader->start();
 
-	DataEnvelope *startEnvelope = new DataEnvelope();
+	DataEnvelope *startEnvelope = new DataEnvelope(TYPE_EMPTY_ENVELOPE);
 	startEnvelope->setInitial();
 	reader->accept( (*startEnvelope) );
 	startEnvelope->release();

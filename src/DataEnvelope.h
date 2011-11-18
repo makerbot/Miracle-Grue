@@ -47,17 +47,12 @@ typedef enum AtomType {
 
 	TYPE_STL_ASCII = 4,
 	TYPE_STL_BINARY = 5,
-
 	TYPE_SHELL_BINARY = 6,
 	TYPE_REGION_BINARY = 7,
-
 	TYPE_PATH_BINARY = 8,
 	TYPE_PATH_ASCII= 3,
-
 	TYPE_MESH_3D = 9,
-
 	TYPE_GCODE_ASCII = 2,
-
 	TYPE_C_ASCII = 10,
 
 
@@ -68,6 +63,7 @@ typedef enum AtomType {
 	TYPE_BGL_REGION = 15,
 	TYPE_BGL_SHELL = 16,
 	TYPE_BGL_FILLED = 17,
+	TYPE_EMPTY_ENVELOPE = 18,
 
 } AtomType;
 
@@ -125,7 +121,7 @@ public:
 	AtomType typeID; /// id of the contained data
 
 
-	DataEnvelope(AtomType inTypeID =TYPE_INVALID ):
+	DataEnvelope(AtomType inTypeID  ):
 		useCount(1), streamId(0),typeID(inTypeID){}
 
 	void setRawData(void* pRawData, size_t dataSize, bool weOwnIt=false) {

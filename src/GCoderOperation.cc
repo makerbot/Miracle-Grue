@@ -9,7 +9,7 @@
 
 */
 #include <assert.h>
-#include <sstream>
+
 
 #include "GCoderOperation.h"
 
@@ -169,7 +169,7 @@ GCoderOperation::GCoderOperation()
 	// Because this logging stream is always this file (and is not configuration dependant,
 	//we build it in the constructor, and destroy it  in the destructor.
 
-	this->acceptTypes.push_back(/*AtomType*/TYPE_BGL_MESH);
+	this->acceptTypes.push_back(TYPE_PATH_BINARY);
 	//this->emitTypes.push_back(); Left in as a note, but this example emits no data type
 
 	// - End custom to GCoderOperation code
@@ -213,18 +213,6 @@ bool GCoderOperation::isValidConfig(Configuration& config) const
 {
 
 	cout << __FUNCTION__ << endl;
-
-	if(config["GCoderOperation"].type() !=  /*ValueType.*/objectValue)
-	{
-		// - Start custom to GCoderOperation code
-		/// TODO:
-		/// req = getStaticConfigRequirements():
-		/// if (req >= config)
-			///return true
-		// - End custom to GCoderOperation code
-		return true;
-	}
-	cout << "ERROR: configuration is not valid, In BETA accepting config anyway" << endl;
 	return true;
 }
 
@@ -305,7 +293,7 @@ void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 	stringstream ss;
 	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
 	writePaths(ss, pathData);
-	wrapAndEmit(ss.str().c_str());
+	wrapAndEmit(ss);
 
 	cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
 
@@ -336,22 +324,21 @@ void GCoderOperation::start(){
 	stringstream ss;
 
 	writeGCodeConfig(ss);
-	cout << "writeGCodeConfig"<< endl << ss.str() << endl;
+	cout << "writeGCodeConfig"<< endl; // << ss.str() << endl;
 	writeMachineInitialization(ss);
-	cout << "writeMachineInitialization" << endl << ss.str() << endl;
+	cout << "writeMachineInitialization" << endl; // << ss.str() << endl;
 	writeExtrudersInitialization(ss);
-	cout << "writeExtrudersInitialization" << endl << ss.str() << endl;
+	cout << "writeExtrudersInitialization" << endl; // << ss.str() << endl;
 	writePlatformInitialization(ss);
-	cout << "writePlatformInitialization" << endl << ss.str() << endl;
+	cout << "writePlatformInitialization" << endl; // << ss.str() << endl;
 	writeHomingSequence(ss);
-	cout << "writeHomingSequence" << endl << ss.str() << endl;
+	cout << "writeHomingSequence" << endl;// << ss.str() << endl;
 	writeWarmupSequence(ss);
-	cout << "writeWarmupSequence" << endl << ss.str() << endl;
+	cout << "writeWarmupSequence" << endl;// << ss.str() << endl;
 	writeAnchor(ss);
-	cout << "writeAnchor" << endl << ss.str() << endl;
-	const char *msg = ss.str().c_str();
-	cout << endl << endl << "START ENV:" << endl << msg << endl;
-	wrapAndEmit(msg);
+	cout << "writeAnchor" << endl;// << ss.str() << endl;
+	cout << endl << endl << "START ENV:" << endl << ss.str() << endl;
+	wrapAndEmit(ss);
 	// - End custom to GCoderOperation code
 
 }
@@ -362,8 +349,8 @@ void GCoderOperation::finish(){
 	cout << "GCoderOperation::finish()"<< endl;
 	stringstream ss;
 	writeGcodeEndOfFile(ss);
-	const char *msg = ss.str().c_str();
-	wrapAndEmit(msg);
+
+	wrapAndEmit(ss);
 
 	// - End custom to GCoderOperation code
 
@@ -532,7 +519,7 @@ void GCoderOperation::writeWarmupSequence(std::ostream &ss) const
 	{
 		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
 	}
-	ss << "(heated build platform temperature is tied to tool 0 for now)" << endl;
+	ss << "(note: the heated build platform temperature is tied to tool 0 for now)" << endl;
 	ss << endl;
 	ss << endl;
 }
@@ -550,7 +537,6 @@ void GCoderOperation::writeGcodeEndOfFile(std::ostream &ss) const
 	ss << "(That's all folks!)" << endl;
 }
 
-
 void GCoderOperation::writeAnchor(std::ostream &ss) const
 {
 	ss << "(Create Anchor)" << endl;
@@ -563,7 +549,7 @@ void GCoderOperation::writeAnchor(std::ostream &ss) const
 
 }
 
-void GCoderOperation::wrapAndEmit(const char* msg)
+void GCoderOperation::wrapAndEmit(const stringstream &ss)
 {
 	/*
 	cout << endl;
@@ -572,7 +558,7 @@ void GCoderOperation::wrapAndEmit(const char* msg)
 	cout << "*************************************** END *****************************" << endl;
 	cout << endl;
 	*/
-	GCodeEnvelope* data = new GCodeEnvelope(msg);
+	GCodeEnvelope* data = new GCodeEnvelope(ss.str().c_str());
 	emit(data);
 	data->release();
 }
