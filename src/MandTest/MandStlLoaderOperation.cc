@@ -165,7 +165,7 @@ void MandStlLoaderOperation::deinit()
 		// - Following line custom to MandStlLoaderOperation code
 		cout << "Stream Running at deinit time. Automatically sending final envelope " <<endl;
 
-		DataEnvelope d;
+		DataEnvelope d(TYPE_INVALID);
 		d.setFinal();
 		this->accept(d);
 		this->streamRunning = false;

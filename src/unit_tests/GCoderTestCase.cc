@@ -244,16 +244,16 @@ void GCoderTestCase::testSimplePath()
 	//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 
 	// create a path message as if received by a pather operation
-	PathData path = *new PathData(0.2, 0.4);
+	PathData *path = new PathData(0.2, 0.4);
 	// add a simple rectangular path for the single extruder
-	initSimplePath(d);
+	initSimplePath(*path);
 
 	// instaniate a gcoder and send it the path as an envelope.
 	run_tool_chain(config, path);
 
 	path->release();
 	// cleanup the data
-	delete &d;
+
 
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );

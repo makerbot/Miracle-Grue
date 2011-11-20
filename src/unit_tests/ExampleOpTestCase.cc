@@ -67,7 +67,7 @@ void ExampleOpTestCase::create_ExampleOp()
 	///BOOST_LOG_TRIVIAL(trace)<< "Ending: " <<__FUNCTION__ << endl;
 	uint32_t* data = new uint32_t;
 	data[0] = (uint32_t)32;
-	DataEnvelope testEnv;
+	DataEnvelope testEnv(TYPE_INVALID);
 	testEnv.setFinal();
 	testEnv.setInitial();
 	testEnv.setRawData(data, 1,true);
@@ -123,7 +123,7 @@ void ExampleOpTestCase::createNoDenit_ExampleOp()
 	///BOOST_LOG_TRIVIAL(trace)<< "Ending: " <<__FUNCTION__ << endl;
 	uint32_t* data = new uint32_t;
 	data[0] = (uint32_t)32;
-	DataEnvelope testEnv;
+	DataEnvelope testEnv(TYPE_INVALID);
 	testEnv.setFinal();
 	testEnv.setInitial();
 	testEnv.setRawData(data, 1,true);
@@ -170,7 +170,7 @@ void ExampleOpTestCase::createNoStreamEnd_ExampleOp()
 	///BOOST_LOG_TRIVIAL(trace)<< "Ending: " <<__FUNCTION__ << endl;
 	uint32_t* data = new uint32_t;
 	data[0] = (uint32_t)32;
-	DataEnvelope testEnv;
+	DataEnvelope testEnv(TYPE_INVALID);
 	//testEnv.setFinal();
 	testEnv.setInitial();
 	testEnv.setRawData(data, 1,true);
