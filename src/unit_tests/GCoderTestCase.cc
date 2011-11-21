@@ -14,9 +14,9 @@ using namespace std;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
-#define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/v29_single_xtruder_warmup.gcode"
-#define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/v29_dual_xtruder_warmup.gcode"
-#define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/v29_single_xtruder_with_path.gcode"
+#define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/single_xtruder_warmup.gcode"
+#define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
+#define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
 
 // for now, use cout, until we add Boost support
 //#define BOOST_LOG_TRIVIAL(trace) cout

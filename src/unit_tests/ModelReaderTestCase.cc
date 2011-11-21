@@ -3,7 +3,7 @@
 #include <fstream>
 #include <algorithm> // find
 #include <iterator>  // distance
-
+#include <iomanip>
 
 
 #define  CPPUNIT_ENABLE_NAKED_ASSERT 1
@@ -51,6 +51,19 @@ void minMaxZ(const Triangle3d &t, Scalar &min,  Scalar &max )
 	if (t.vertex3.z > max)
 		max = t.vertex3.z;
 }
+
+class MeshyMess
+{
+
+public:
+	std::string error;
+	MeshyMess(const char *msg)
+	 :error(msg)
+	{
+
+	}
+
+};
 
 class Meshy
 {
@@ -118,12 +131,76 @@ public:
 		return allTriangles;
 	}
 
+
 private:
+
+
+	void writeTriangle(std::ostream &out, const Triangle3d& t) const
+	{
+		//  normalize( (v1-v0) cross (v2 - v0) )
+
+		// normalize
+		// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
+
+		double n0=0;
+		double n1=0;
+		double n2=0;
+
+		out << " facet normal " << n0 << " " << n1 << " " << n2 << endl;
+		out << "  outer loop"<< endl;
+		out << "    vertex " << t.vertex1.x << " " << t.vertex1.y << " " << t.vertex1.z << endl;
+		out << "    vertex " << t.vertex2.x << " " << t.vertex2.y << " " << t.vertex2.z << endl;
+		out << "    vertex " << t.vertex3.x << " " << t.vertex3.y << " " << t.vertex3.z << endl;
+		out << "  end loop" << endl;
+		out << " end facet" << endl;
+	}
+public:
+	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const
+	{
+
+		//solid Default
+		//  facet normal 1.435159e-01 2.351864e-02 9.893685e-01
+		//    outer loop
+		//      vertex -7.388980e-02 -2.377973e+01 6.062650e+01
+		//      vertex -1.193778e-01 -2.400027e+01 6.063834e+01
+		//      vertex -4.402440e-06 -2.490700e+01 6.064258e+01
+		//    endloop
+		//  endfacet
+		//endsolid Default
+
+		ofstream out(fileName);
+		if(!out) {
+			stringstream ss;
+			ss << "Can't open \"" << fileName << "\"";
+			MeshyMess problem(ss.str().c_str());
+			throw (problem);
+		}
+		stringstream ss;
+		ss << setfill ('0') << setw(10);
+		ss <<  "slice_" << layerIndex;
+		string solidName = ss.str();
+		// bingo!
+		out << "solid Slice_" << layerIndex << endl;
+		Scalar n0, n1, n2;
+		out << scientific;
+		const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
+		for(std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i!= trianglesForSlice.end(); i++)
+		{
+			index_t index = *i;
+			const Triangle3d &t = allTriangles[index];
+			writeTriangle(out, t);
+		}
+
+		out << "end solid " << solidName;
+		out.close();
+	}
 
 	Scalar sliceHeight;
 	std::vector<Triangle3d>  allTriangles;
 	TrianglesInSlices sliceTable;
 };
+
+
 
 size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
 {
@@ -143,16 +220,12 @@ size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
 class Face
 {
 public:
-	index_t edge0;
-	index_t edge1;
-	index_t edge2;
+	index_t edgeIndices[3];
 };
 
 class Edge
 {
-	index_t vertex0;	// the index of the vertices that make out the edge
-	index_t vertex1;
-
+	index_t vertexIndices[2];	// the index of the vertices that make out the edge
 	index_t face0;
 	int face1;
 
@@ -162,8 +235,12 @@ public:
 
 
 	Edge(index_t v0, index_t v1, index_t face)
-		:vertex0(v0), vertex1(v1), face0(face), face1(-1)
+		//:vertexIndices({v0,v1},
+		:face0(face), face1(-1)
 	{
+			vertexIndices[0] = v0;
+			vertexIndices[1] = v1;
+
 	}
 
 	void lookUpIncidentFaces(int& f1, int &f2) const
@@ -184,10 +261,11 @@ public:
 
 	bool operator==(const Edge &other) const
 	{
+		assert(&other != this);
 	    // Compare the values, and return a bool result.
-		if(other.vertex0 == this->vertex0 && other.vertex1 == this->vertex1)
+		if(other.vertexIndices[0] == this->vertexIndices[0] && other.vertexIndices[1] == this->vertexIndices[1])
 			return true;
-		if(other.vertex1 == this->vertex0 && other.vertex0 == this->vertex1)
+		if(other.vertexIndices[1] == this->vertexIndices[0] && other.vertexIndices[0] == this->vertexIndices[1])
 			return true;
 		return false;
 	}
@@ -225,7 +303,7 @@ public:
 
 std::ostream& operator<<(ostream& os, const Edge& e)
 {
-	os << " " << e.vertex0 << "\t" << e.vertex1 << "\t" << e.face0 << "\t" << e.face1;
+	os << " " << e.vertexIndices[0] << "\t" << e.vertexIndices[1] << "\t" << e.face0 << "\t" << e.face1;
 	return os;
 }
 
@@ -256,16 +334,16 @@ public:
 	{
 		index_t faceId = faces.size();
 
-		cout << "Slicy::addTriangle " << endl;
-		cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << endl;
-		cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << endl;
+//		cout << "Slicy::addTriangle " << endl;
+//		cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << endl;
+//		cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << endl;
 		Face face;
-		face.edge0 = findOrCreateEdge(t.vertex1, t.vertex2, faceId);
-		cout << "   a) " << face.edge0 << "(" << edges[face.edge0] << ")" << endl;
-		face.edge1 = findOrCreateEdge(t.vertex2, t.vertex3, faceId);
-		cout << "   b) " << face.edge1 << "(" << edges[face.edge1] << ")" << endl;
-		face.edge2 = findOrCreateEdge(t.vertex3, t.vertex1, faceId);
-		cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << endl;
+		face.edgeIndices[0] = findOrCreateEdge(t.vertex1, t.vertex2, faceId);
+//		cout << "   a) " << face.edge0 << "(" << edges[face.edge0] << ")" << endl;
+		face.edgeIndices[1] = findOrCreateEdge(t.vertex2, t.vertex3, faceId);
+//		cout << "   b) " << face.edge1 << "(" << edges[face.edge1] << ")" << endl;
+		face.edgeIndices[2] = findOrCreateEdge(t.vertex3, t.vertex1, faceId);
+//		cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << endl;
 
 		/*
 		cout << "EDGE 0: index " << face.edge0 << " : " << edges[face.edge0] << endl;
@@ -283,9 +361,9 @@ public:
 	{
 		const Face& face = faces[faceId];
 
-		const Edge &e0 = edges[face.edge0];
-		const Edge &e1 = edges[face.edge1];
-		const Edge &e2 = edges[face.edge2];
+		const Edge &e0 = edges[face.edgeIndices[0] ];
+		const Edge &e1 = edges[face.edgeIndices[1] ];
+		const Edge &e2 = edges[face.edgeIndices[2] ];
 
 		face0 = e0.lookUpNeighbor(faceId);
 		face1 = e1.lookUpNeighbor(faceId);
@@ -381,6 +459,32 @@ std::ostream& operator << (ostream &os, const Slicy &s)
 	return os;
 }
 
+class Cuts
+{
+	index_t triangle;
+	Point3d vertices[2]; // the second one is redundent
+};
+
+class Loopy
+{
+	std::list<index_t> triangleIndices;
+	std::list<Cuts> segments;
+};
+
+class LoopPole
+{
+	std::list<index_t> EdgeIndices;
+	// std::list<Point> points;
+};
+
+
+// Generating the vertices for an arbitrarily oriented cylinder is a common problem that is fairly straightforward to solve.
+// Generating the orthonormal basis vectors used to find the endcap vertices.
+// Let W = normalize(P2-P1). As you've noted you need a unit-length vector 'U' that is perpendicular to W. It will also be convenient to have a unit-length vector V perpendicular to both W and U. U, V, and W form the orthonormal basis for the cylinder.
+// To find a vector perpendicular to W, simply cross W with the world x, y, or z axis. The only caveat is that two vectors which are nearly aligned will produce a cross product with a very small magnitude, which you may not be able to normalize. To avoid this problem, simply cross W with the world axis corresponding to the component of W whose absolute value is least. Then, normalize the result to get U. Finally, V = Cross(W, U).
+// You now have two coordinate systems, each with basis vectors U, V, W, and with origins P1 and P2 respectively. You can then use simple trig to find the vertices of the endcaps.
+
+
 //
 // Adds 2 triangles with a common edge
 // to a Slicy
@@ -448,7 +552,27 @@ void ModelReaderTestCase::testMeshySimple()
 
 	mesh.addTriangle(t);
 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.getSliceTable().size());
+}
 
+void ModelReaderTestCase::testLayerSplit()
+{
+	Meshy mesh(0.35);
+	unsigned int t0, t1;
+	t0 = clock();
+	//LoadMeshyFromStl(mesh, "inputs/Water.stl");
+	LoadMeshyFromStl(mesh, "inputs/soap_highres.stl");
+	t1=clock()-t0;
+	mesh.dump(cout);
+
+	cout << " **** testLayerSplit " << endl;
+	for(int i=0; i != mesh.sliceTable.size(); i++)
+	{
+		stringstream ss;
+		ss << "test_cases/modelReaderTestCase/output/water_" << i << ".stl";
+		mesh.writeStlFileForLayer(i, ss.str().c_str());
+		cout << ss.str().c_str() << endl;
+
+	}
 }
 
 void ModelReaderTestCase::testLargeMeshy()
@@ -520,10 +644,10 @@ void ModelReaderTestCase::testSlicyWater()
 		{
 			index_t index = (*j);
 			const Triangle3d& triangle = allTriangles[index];
-			cout << "adding triangle # " << index << endl;
+//			cout << "adding triangle # " << index << endl;
 			sy.addTriangle(triangle);
 		}
-		cout << sy << endl;
+//		cout << sy << endl;
 		sliceIndex ++;
 	}
 	t1=clock()-t0;
