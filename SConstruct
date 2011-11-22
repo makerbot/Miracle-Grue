@@ -31,10 +31,15 @@ def runUnitTest(env,target,source):
 	@source  unit test program to run """
 	import subprocess
 	app = str(source[0].abspath)
-	if not subprocess.call(app):
+	retCode = subprocess.call(app)
+	if not retCode == 0:
+		print "passed!"
 		open(str(target[0]),'w').write("PASSED\n")
-	
-
+	else:
+		print("runUnitTest failed testing " + str(source[0]) )
+		#Message('runing unit test' + source[0].abspath)
+		Exit(1)
+		
 def mix(*args):
 	""" mash items/lists together into a single list, no duplicates"""
 	l = []
