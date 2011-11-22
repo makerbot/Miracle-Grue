@@ -22,6 +22,13 @@ run_unit_tests = False
 if ( GetOption('unit_test') != None):
 	print "running unit test"
 	run_unit_tests = True;
+	
+AddOption('--valgrind')
+run_valgrind = False
+if ( GetOption('valgrind') != None):
+	print "run valgrind"
+	run_valgrind = True;
+
 
 
 def runUnitTest(env,target,source):
@@ -123,7 +130,8 @@ mand_ops = ['src/Configuration.cc',
 	'src/MandTest/MandCarveOperation.cc','src/MandTest/RegionEnvelope.cc',
 	'src/MandTest/MandInsetOperation.cc', 'src/MandTest/ShellEnvelope.cc',
 	'src/MandTest/MandInfillOperation.cc',
-	'src/MandTest/MandWriteSvgOperation.cc']
+	'src/MandTest/MandWriteSvgOperation.cc',
+	'src/MandTest/MandPatherOperation.cc','src/PathData.cc']
 
 env.Program(	'./farMandolineTest',
 				mix(['FarScratchpad.cc'],
