@@ -159,6 +159,8 @@ env.Program(	'./bin/tests/configUnitTest',
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path , 
 				CPPPATH = default_includes)
+if run_unit_tests == True:
+	Command('configUnitTest.passed','./bin/tests/configUnitTest',runUnitTest)
 
 env.Program( 	'./bin/tests/gcoderUnitTest', 
 				mix(['src/unit_tests/GCoderTestCase.cc'], 
@@ -166,27 +168,37 @@ env.Program( 	'./bin/tests/gcoderUnitTest',
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= default_includes)
+if run_unit_tests == True:
+	Command('gcoderUnitTest.passed','./bin/tests/gcoderUnitTest',runUnitTest)
 
 env.Program( 	'./bin/tests/slicerUnitTest', 
 				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
+if run_unit_tests == True:
+	Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
 
 env.Program(  	'./bin/tests/regionerUnitTest',   
 				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
+if run_unit_tests == True:
+	Command('regionerUnitTest.passed','./bin/tests/regionerUnitTest',runUnitTest)
 
 env.Program(  	'./bin/tests/modelReaderUnitTest',   
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
+if run_unit_tests == True:
+	Command('modelReaderUnitTest.passed','./bin/tests/modelReaderUnitTest',runUnitTest)
 
 env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
 				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
     			LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
+if run_unit_tests == True:
+	Command('chainIntegrationUnitTest.passed','./bin/tests/chainIntegrationUnitTest',runUnitTest)
