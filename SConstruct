@@ -10,7 +10,32 @@ import os
 import commands
 
 
+unitTestOutputDir = './test_cases'
+
+# Add command line option '--unit_test to build command
+#NOTE: A better way to do this is at: http://spacepants.org/blog/scons-unit-test
+# but scons 2.0.1 fails on a bug for circ. inclusing when doing this.
+# kaaaaahhhhn! 
+AddOption('--unit_test')
+run_unit_tests = False
+if ( GetOption('unit_test') != None):
+	print "running unit test"
+	run_unit_tests = True;
+
+
+def runUnitTest(env,target,source):
+	""" runs a unit test in a separate process. Not build-aware,
+	but it does set a flag-file to signify the test ran to success
+	@target dummy target file, writes 'passed' if tests return no error code
+	@source  unit test program to run """
+	import subprocess
+	app = str(source[0].abspath)
+	if not subprocess.call(app):
+		open(str(target[0]),'w').write("PASSED\n")
+	
+
 def mix(*args):
+	""" mash items/lists together into a single list, no duplicates"""
 	l = []
 	for arg_list in args:
 		l += arg_list
@@ -103,12 +128,15 @@ env.Program(	'./farMandolineTest',
 				LIBPATH = default_libs_path, 
 				CPPPATH = default_includes )
 
-env.Program(	'./bin/tests/exampleOpUnitTest',
+env.Program('./bin/tests/exampleOpUnitTest',
 				mix(['src/unit_tests/ExampleOpTestCase.cc'],
 					file_w, config, unit_test, example_op),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
+
+if run_unit_tests == True:
+	Command('exampleOpUnitTest.passed','./bin/tests/exampleOpUnitTest',runUnitTest)
 
 
 env.Program(	'./bin/tests/fileWriterUnitTest',
@@ -117,6 +145,8 @@ env.Program(	'./bin/tests/fileWriterUnitTest',
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
+if run_unit_tests == True:
+	Command('fileWriterUnitTest.passed','./bin/tests/fileWriterUnitTest',runUnitTest)
 
 #env.Program(	'./bin/tests/queryInterfaceUnitTest',
 #				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
