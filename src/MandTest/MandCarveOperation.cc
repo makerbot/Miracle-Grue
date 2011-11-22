@@ -251,6 +251,7 @@ void MandCarveOperation::processEnvelope(const DataEnvelope& envelope)
 	    	ShellEnvelope* mEnvelope = ShellEnvelopeFromMesh(mesh, z );
 			this->emit( dynamic_cast<const DataEnvelope*>(mEnvelope) );
 	    	//cout << "blarg, at z layer: " << z << endl;
+			mEnvelope->release(this);
 			z += layerThickness;
 	    }
 	}

@@ -85,13 +85,18 @@ int main() {
 
 	  //start the chain running
 	  loaderOp->accept(*kickstartEnv);
+	  kickstartEnv->release();
 
 	  loaderOp->finish();
-
 	  loaderOp->deinit();
 
-//
-//
+	  delete loaderOp;
+	  delete carveOp;
+	  delete insetOp;
+	  delete infillOp;
+	  delete svgWriteOp;
+
+	  delete cfg;
 
   }
 

@@ -216,8 +216,8 @@ void MandInsetOperation::processEnvelope(const DataEnvelope& envelope)
     		*newPerimeter, *infillMask, *shellsVector, env.zLayer,
     		env.svgWidth, env.svgHeight, env.svgXOff, env.svgYOff, extWidth);
 
-
     emit(dynamic_cast<DataEnvelope*>(newEnvelope) );
+    newEnvelope->release(this);
     // - Start custom to MandInsetOperation code
 
     // - End custom to MandInsetOperation code

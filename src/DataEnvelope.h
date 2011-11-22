@@ -64,13 +64,21 @@ typedef enum AtomType {
 	TYPE_BGL_SHELL = 16,
 	TYPE_BGL_FILLED = 17,
 	TYPE_EMPTY_ENVELOPE = 18,
+	TYPE_BGL_PATHED = 19,
 
 } AtomType;
 
 
 /**
- *  This class is a data Enveloper, to contain processing data,
- *  and metadata for the data available.
+ *  This class is a Data Enveloper base class. It is designed to carry atoms of data
+ *  between operations in a processing chain. An 'atom' of data consists minimum coherent
+ *  chunk of data that is useful for an operation input. Depending on the operation this
+ *  may be a mesh, set of paths, or other data type.
+ *
+ *  This class can self-manage deletion when it is no longer used.
+ *
+ *  Subclasses of a DataEnvelope class are named XXXData as a convention
+ *  Z.b. classes GCodeData, PathData, StlData
  *
  *  Rules of the Envelope:
  *  1) Each envelope must be at a minimum an entire data slice and no less.IE, one
@@ -82,9 +90,9 @@ private:
 	int useCount; ///in the future, this will use boost weak_ptr and strong_ptr or something
 	std::map<void*, int> useMap;
 
-	void* pFallbackData; ///raw data. Used as a fallbck
-	size_t fallbackDataSz; /// size of fallback data
-	bool  ownFallbackData; /// if true, do 'delete fallbackData' when we are done,
+	void*	pFallbackData; ///raw data. Used as a fallbck
+	size_t	fallbackDataSz; /// size of fallback data
+	bool 	ownFallbackData; /// if true, do 'delete fallbackData' when we are done,
 						   ///NOTE this does not work for arrays!
 	/*
 	uint32_t dataSize; ///size of data in bytes
@@ -183,8 +191,8 @@ public:
 				//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Could not unpair released. Minor bug!" << std::endl;
 				int i = 0;//to avoid errors in empty func
 			}
-			//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Envelope auto-free" << std::endl;
-			//delete this;//TODO, in the future, if we are self-deleting, delete here.
+			BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << "Envelope auto-free" << std::endl;
+			delete this;//TODO, in the future, if we are self-deleting, delete here.
 		}
 		else if(useCount < 0){
 			//BOOST_LOG_TRIVIAL(trace) <<  __FUNCTION__ << std::endl;

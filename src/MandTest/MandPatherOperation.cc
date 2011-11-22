@@ -247,7 +247,13 @@ void MandPatherOperation::finish(){
 /************** Start of Functions custom to MandPatherOperation ***********************/
 
 PathData* MandPatherOperation::createPathFromFilledRegion(RegionEnvelope* envelope){
-	PathData* pd = new PathData(0,0);
+
+	PathData* pd = new PathData(envelope->zLayer,envelope->layerThickness);
+	//pd->paths =
+	// combine 	BGL::CompoundRegions shells;
+	// BGL::Paths infill;
+	// to make pd->paths
+
 	return pd;
 
 }

@@ -205,6 +205,7 @@ void MandStlLoaderOperation::processEnvelope(const DataEnvelope& envelope)
 
 		cout << " Emitting newStlData : @" << newStlData << endl;
 		this->emit( dynamic_cast<DataEnvelope*>(newStlData) );
+		newStlData->release(this);
 	}
 	else{
 		cout << "Envelope is not of type " + envelope.getAtomType() <<". We cannot accept it"<<

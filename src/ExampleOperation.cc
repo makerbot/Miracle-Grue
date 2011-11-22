@@ -203,6 +203,13 @@ void ExampleOperation::processEnvelope(const DataEnvelope& envelope)
 
 	// - Start custom to ExampleOperation code
 
+	//NOTE: you probably want to do
+	// if ( envelope->getAtomType() = ExpectedType) {
+	// MyEnvelopeType * mEnvelope = createMyTypeFromPreviousType(envelope); //do conversion
+	// this->emit( dynamic_cast<const DataEnvelope*>(mEnvelope) ); // pass conversion down the tree
+	//  mEnvelope->release(this); //release the initialreference
+    //} else { cerr << "unexpected type" < endl; }
+
 	// - End custom to ExampleOperation code
 
 	return;
