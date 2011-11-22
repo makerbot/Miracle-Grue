@@ -30,8 +30,6 @@ Value* FileWriterOperation::getStaticConfigRequirements()
 		// NOTE: things like file types accepted are defined elsewhere.
 		// this is only required config values to run this, not all metadata
 		Value* cfg = new Value;
-		( *cfg )["filename"]= "asString";
-		( *cfg )["format"] = "asString";
 		FileWriterOperationConfigRequirements = cfg;
 		// This object is expected to live until the program dies.
 		// No deconstruction !
@@ -43,6 +41,7 @@ Value* FileWriterOperation::getStaticConfigRequirements()
 FileWriterOperation::FileWriterOperation()
 	:pStream(NULL)
 {
+	this->acceptTypes.push_back(TYPE_ASCII_GCODE);
 }
 
 
@@ -99,7 +98,7 @@ void FileWriterOperation::init(Configuration& config,const std::vector<Operation
 
 		string filename = config["FileWriterOperation"]["filename"].asString();
 		pStream = new std::ofstream(filename.c_str());
-		//std::cout << "Writing to file: \"" << filename << "\""<< std::endl;
+		std::cout << "FileWriterOperation::Writing to file: \"" << filename << "\""<< std::endl;
 
 		//set our accepts type(s)
 		//TODO: convert to walking a list of objects

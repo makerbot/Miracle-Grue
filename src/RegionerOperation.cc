@@ -38,3 +38,14 @@ void RegionerOperation::processEnvelope(const DataEnvelope& envelope)
 	emit(output);
 }
 
+void RegionerOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
+{
+	bool baseSuccess = Operation::initCommon(config, outputs);
+	if(baseSuccess){
+	// - Start custom to ExampleOperation code
+
+	// - End custom to ExampleOperation code
+	}
+
+}
+

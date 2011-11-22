@@ -34,12 +34,11 @@ public:
 
 	void processEnvelope(const DataEnvelope& envelope);
 
-	void start();
-
-	// closes the file
-	void finish();
-
-
+	virtual void init(Configuration&, const std::vector<Operation*>&outputs);
+	virtual void start();
+	virtual void finish();
+	virtual void deinit(){}
+	virtual bool isValidConfig(Configuration&) const{return true;}
 	// file handle accessor
 	std::istream& stream() const;
 

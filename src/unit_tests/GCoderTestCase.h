@@ -11,12 +11,11 @@
 class GCoderTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( GCoderTestCase );
-  CPPUNIT_TEST( singleExtruder );
-  CPPUNIT_TEST( dualExtruders );
-  CPPUNIT_TEST( simplePath );
-  CPPUNIT_TEST( spikeBed );
-//  CPPUNIT_TEST( example );
-  CPPUNIT_TEST( floatFormat );
+  CPPUNIT_TEST( testConfig );
+  CPPUNIT_TEST( testFloatFormat );
+  CPPUNIT_TEST( testSingleExtruder );
+  CPPUNIT_TEST( testDualExtruders );
+  CPPUNIT_TEST( testSimplePath );
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -24,13 +23,11 @@ public:
   void setUp();
 
 protected:
-  void singleExtruder();
-  void dualExtruders();
-  void simplePath();
-  void spikeBed();
-
-//  void example();
-  void floatFormat();
+  void testSingleExtruder();
+  void testDualExtruders();
+  void testSimplePath();
+  void testConfig();
+  void testFloatFormat();
 
 };
 

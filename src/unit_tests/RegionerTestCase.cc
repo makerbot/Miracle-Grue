@@ -17,7 +17,6 @@ void configurePathTest(Configuration& config)
 	config["FileWriterOperation"]["format"]= ".gcode";
 }
 
-
 void RegionerTestCase::setUp()
 {
 

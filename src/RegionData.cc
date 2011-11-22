@@ -14,7 +14,8 @@
 using namespace std;
 
 RegionData::RegionData(double z, double thick)
-		 :positionZ(z),
+		 :DataEnvelope(TYPE_REGION_BINARY),
+		 positionZ(z),
 		 layerThickness(thick)
 {
 	cout << "RegionData() @"  << this<< endl;

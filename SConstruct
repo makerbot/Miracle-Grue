@@ -8,6 +8,7 @@
 # the moc tool is detected and Qt4 is detected 
 import os
 import commands
+import datetime
 
 
 unitTestOutputDir = './test_cases'
@@ -47,31 +48,29 @@ def mix(*args):
 
 print ""
 print "======================================================="
-print "So you think you can build Miracle-Grue on your machine?"
-print ""
-print "* Qt detector: '%s'" % commands.getoutput("moc -v")
-print "* Looking for cppunit"
+print "Miracle-Grue build script"
+print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
 
-cppunit_lib_dir = ""
-cppunit_inc_dir = ""
 
-try:
-	print "    MG_CPPUNIT_LIB_DIR environment variable:"
-	cppunit_lib_dir = os.environ['CPPUNIT_LIB_DIR']
-	print "         '%s'" % cppunit_lib_dir
-	print "    MG_CPPUNIT_INC_DIR environment variable:"
-	cppunit_inc_dir = os.environ['CPPUNIT_INC_DIR']
-	print "         '%s'" % cppunit_inc_dir
-	print 
-except:
-	print "WARNING: "
-	print "Expected environment variables for libraries not found. Continuing anyway"
-	
+
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
-print "os.environ['PATH']=", os.environ['PATH']
+# print "os.environ['PATH']=", os.environ['PATH']
 
-env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
+debug = ARGUMENTS.get('debug', 0)
+
+if debug != None:
+    try:
+        debug = os.environ['MG_DEBUG']
+    except:
+        debug = 0
+        
+if int(debug):
+    env.Append(CCFLAGS = '-g')
+       
+qtModules = ['QtCore', 'QtNetwork' ]
+print "QT modules", qtModules
+env.EnableQt4Modules(qtModules)
 
 
 env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
@@ -108,11 +107,11 @@ file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/Mes
 example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL']
-default_libs = [ '_json','miracleGrue']
+default_libs = [ '_json','miracleGrue', 'bgl']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
-debug_libs_path = [cppunit_lib_dir, ]
+debug_libs_path = ["", ]
 
 mand_ops = ['src/Configuration.cc', 
 	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
@@ -152,14 +151,14 @@ if run_unit_tests == True:
 #				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
 #					file_w, config, unit_test),
 #				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
+#				LIBPATH = default_libs_path, 
 #				CPPPATH = default_includes)
 				
-#env.Program(	'./bin/tests/configUnitTest',
-#				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH = default_includes)
+env.Program(	'./bin/tests/configUnitTest',
+				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path , 
+				CPPPATH = default_includes)
 
 env.Program( 	'./bin/tests/gcoderUnitTest', 
 				mix(['src/unit_tests/GCoderTestCase.cc'], 
@@ -167,27 +166,27 @@ env.Program( 	'./bin/tests/gcoderUnitTest',
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= default_includes)
-#
-#env.Program( 	'./bin/tests/slicerUnitTest', 
-#				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
-#env.Program(  	'./bin/tests/regionerUnitTest',   
-#				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
-#env.Program(  	'./bin/tests/modelReaderUnitTest',   
-#				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
-#env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
-#				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
+
+env.Program( 	'./bin/tests/slicerUnitTest', 
+				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+env.Program(  	'./bin/tests/regionerUnitTest',   
+				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+env.Program(  	'./bin/tests/modelReaderUnitTest',   
+				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
+				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])

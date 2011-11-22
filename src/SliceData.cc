@@ -14,7 +14,7 @@
 using namespace std;
 
 SliceData::SliceData(double z, double thick)
-		:positionZ(z), layerThickness(thick)
+		:DataEnvelope(TYPE_STL_BINARY), positionZ(z), layerThickness(thick)
 {
 	cout << "SliceData() @"  << this<< endl;
 }

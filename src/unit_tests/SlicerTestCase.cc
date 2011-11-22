@@ -10,8 +10,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SlicerTestCase );
 
 
 
-
-
 void SlicerTestCase::setUp()
 {
 

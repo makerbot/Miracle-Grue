@@ -26,6 +26,7 @@
 class FileWriterOperation : public Operation
 {
 	std::ofstream *pStream;
+	std::string filename;
 protected:
 	bool isValidConfig(Configuration& config) const ;
 

@@ -16,11 +16,95 @@
 
 #include <string>
 #include <assert.h>
+#include <sstream>
 
 #include "Operation.h"
 #include "PathData.h"
 
 #include "GCodeEnvelope.h"
+
+
+struct Platform
+{
+	Platform():temperature(0),
+				automated(false),
+				waitingPositionX(0),
+				waitingPositionY(0),
+				waitingPositionZ(0)
+	{}
+	double temperature;				// temperature of the platform during builds
+	bool automated;
+
+	// the wiper(s) are affixed to the platform
+    double waitingPositionX;
+    double waitingPositionY;
+    double waitingPositionZ;
+};
+
+struct Extruder
+{
+	Extruder()
+		:coordinateSystemOffsetX(0),
+		extrusionTemperature(220),
+		defaultExtrusionSpeed(3),
+		slowFeedRate(1080),
+		slowExtrusionSpeed(1.0),
+		fastFeedRate(3000),
+		fastExtrusionSpeed(2.682),
+		nozzleZ(0.28)
+	{}
+
+	// this determines the gap between the nozzle tip
+	// and the layer at position z (measured at the middle of the layer)
+	double nozzleZ;
+
+	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
+	double extrusionTemperature; 	 // the extrusion temperature in Celsius
+	double defaultExtrusionSpeed;
+
+	// first layer settings, for extra stickyness
+	double slowFeedRate;
+	double slowExtrusionSpeed;
+
+	double reversalExtrusionSpeed;
+
+	// different strokes, for different folks
+	double fastFeedRate;
+	double fastExtrusionSpeed;
+};
+
+// configuration
+struct Outline
+{
+	Outline() :enabled(false), distance(3.0){}
+	bool enabled;   // when true, a rectangular ouline of the part will be performed
+	float distance; // the distance in mm  between the model and the rectangular outline
+};
+
+
+
+//
+// This class contains settings for the 3D printer, and user preferences
+//
+struct GCoderConfig
+{
+    std::string programName;
+    std::string versionStr;
+    std::string machineName;	// 3D printer identifier
+    std::string firmware;		// firmware revision
+    // double fastFeed;
+    double scalingFactor;
+    std::string gcodeFilename;			// output file name
+
+    Platform platform;
+    Outline outline;					// outline operation configuration
+    std::vector<Extruder> extruders;	// list of extruder tools
+
+
+	void loadData(const Configuration& config);
+	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
+         // ~GCoderConfig()
+};
 
 /**
  * GCoderOperation creates gcode from a stream of path envelopes.
@@ -28,6 +112,7 @@
  */
 class GCoderOperation : public Operation
 {
+	GCoderConfig config;
 
 /************** Start of Functions each <NAME_OF>Operation must contain***********************/
 public:
@@ -94,7 +179,7 @@ private:
 
     void writeGcodeEndOfFile(std::ostream &ss) const;
 
-	void wrapAndEmit(const char* msg);
+	void wrapAndEmit(const std::stringstream &ss);
 
 
 /************** End of Functions custom to this <NAME_OF>Operation ***********************/

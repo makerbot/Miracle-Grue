@@ -13,16 +13,27 @@
 class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( ModelReaderTestCase );
-  CPPUNIT_TEST( example );
+
+//  CPPUNIT_TEST( testMeshySimple );
+  CPPUNIT_TEST( testLayerSplit );
+  //CPPUNIT_TEST( testSlicySimple );
+  //CPPUNIT_TEST( testSlicyWater );
+  //CPPUNIT_TEST( testMeshyLoad );
+  //CPPUNIT_TEST( testLargeMeshy );
+
   CPPUNIT_TEST_SUITE_END();
 
 
 public:
-  void setUp();
+  //void setUp();
 
 protected:
-  void example();
-
+  void testLayerSplit();
+  void testMeshySimple();
+  void testSlicySimple();
+  void testMeshyLoad();
+  void testLargeMeshy();
+  void testSlicyWater();
 };
 
 

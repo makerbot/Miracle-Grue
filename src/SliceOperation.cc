@@ -26,6 +26,16 @@ SliceOperation::~SliceOperation()
 	cout << "~SliceOperation() @"  << this<< endl;
 }
 
+void SliceOperation::init(Configuration& config,const std::vector<Operation*> &outputs)
+{
+	bool baseSuccess = Operation::initCommon(config, outputs);
+	if(baseSuccess){
+	// - Start custom to ExampleOperation code
+
+	// - End custom to ExampleOperation code
+	}
+
+}
 
 void SliceOperation::processEnvelope(const DataEnvelope& envelope)
 {
