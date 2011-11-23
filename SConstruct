@@ -133,12 +133,12 @@ mand_ops = ['src/Configuration.cc',
 	'src/MandTest/MandWriteSvgOperation.cc',
 	'src/MandTest/MandPatherOperation.cc','src/PathData.cc']
 
-env.Program(	'./farMandolineTest',
-				mix(['FarScratchpad.cc'],
-					mand_ops ),
-				LIBS = default_libs + ['bgl'],
-				LIBPATH = default_libs_path, 
-				CPPPATH = default_includes )
+#env.Program(	'./farMandolineTest',
+#				mix(['FarScratchpad.cc'],
+#					mand_ops ),
+#				LIBS = default_libs + ['bgl'],
+#				LIBPATH = default_libs_path, 
+#				CPPPATH = default_includes )
 
 env.Program('./bin/tests/exampleOpUnitTest',
 				mix(['src/unit_tests/ExampleOpTestCase.cc'],
