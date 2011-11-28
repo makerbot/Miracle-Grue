@@ -8,7 +8,7 @@
 # the moc tool is detected and Qt4 is detected 
 import os
 import commands
-
+import datetime
 
 def mix(*args):
 	l = []
@@ -20,31 +20,29 @@ def mix(*args):
 	scons_list = [env.Object(x) for x in no_duplicates]
 	return scons_list
 
+
 print ""
 print "======================================================="
-print "So you think you can build Miracle-Grue on your machine?"
-print ""
-print "* Qt detector: '%s'" % commands.getoutput("moc -v")
-print "* Looking for cppunit"
+print "Miracle-Grue build script"
+print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
 
-cppunit_lib_dir = ""
-cppunit_inc_dir = ""
 
-try:
-	print "    MG_CPPUNIT_LIB_DIR environment variable:"
-	cppunit_lib_dir = os.environ['CPPUNIT_LIB_DIR']
-	print "         '%s'" % cppunit_lib_dir
-	print "    MG_CPPUNIT_INC_DIR environment variable:"
-	cppunit_inc_dir = os.environ['CPPUNIT_INC_DIR']
-	print "         '%s'" % cppunit_inc_dir
-	print 
-except:
-	print "WARNING: "
-	print "Expected environment variables for libraries not found. Continuing anyway"
-	
+
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
-print "os.environ['PATH']=", os.environ['PATH']
+# print "os.environ['PATH']=", os.environ['PATH']
+
+debug = ARGUMENTS.get('debug', 0)
+
+if debug != None:
+    try:
+        debug = os.environ['MG_DEBUG']
+    except:
+        debug = 0
+        
+if int(debug):
+    env.Append(CCFLAGS = '-g')
+
 
 env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
 
@@ -82,7 +80,7 @@ default_libs = [ '_json']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
-debug_libs_path = [cppunit_lib_dir, ]
+debug_libs_path = ["", ]
 
 env.Program(	'./bin/tests/ConfigUnitTest',
 				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
