@@ -1,5 +1,7 @@
 #include <fstream>
 
+#include <cstdlib>
+
 #include <cppunit/config/SourcePrefix.h>
 #include "GCoderTestCase.h"
 
@@ -17,6 +19,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
 #define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
+#define SINGLE_EXTRUDER_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_grid_path.gcode"
 
 // for now, use cout, until we add Boost support
 //#define BOOST_LOG_TRIVIAL(trace) cout
@@ -46,7 +49,7 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 {
 	Json::Value extruder;
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-
+	extruder["reversalXY"] = 0.5;
 	extruder["defaultExtrusionSpeed"] = speed;
 	extruder["extrusionTemperature"] = temperature;
 	extruder["coordinateSystemOffsetX"] = offsetX;
@@ -54,7 +57,8 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 	extruder["slowExtrusionSpeed"] = 1.0;
 	extruder["fastFeedRate"] = 3000;
 	extruder["fastExtrusionSpeed"] = 2.682;
-	extruder["nozzleZ"] = 0.2;
+	extruder["nozzleZ"] = 0.1;
+	extruder["reversalExtrusionSpeed"] = 35.0;
 	config["extruders"].append(extruder);
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
@@ -87,7 +91,7 @@ void GCoderTestCase::setUp()
 }
 
 
-void run_tool_chain(Configuration &config, DataEnvelope* envelope = NULL)
+void run_tool_chain(Configuration &config, vector<DataEnvelope*> &envelopes)
 {
 
 	BOOST_LOG_TRIVIAL(trace)<< "get Config static requirements:" <<__FUNCTION__ << endl;
@@ -126,13 +130,11 @@ void run_tool_chain(Configuration &config, DataEnvelope* envelope = NULL)
 	tooler.start();
 
 	///7) Send inital one or more data envelopes to the object.
-	if(envelope != NULL)
+	for(std::vector<DataEnvelope*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
 	{
+		DataEnvelope *envelope = *it;
 		BOOST_LOG_TRIVIAL(trace)<< "Accept Envelope @" << envelope <<" "<<__FUNCTION__ << endl;
 		tooler.accept(*envelope);
-	}
-	else {
-		// BOOST_LOG_TRIVIAL(trace)<< "No Envelope accepted this test:" <<__FUNCTION__ << endl;
 	}
 
 	/// 8) Send a finish signal to the first operation in the Operation Graph
@@ -150,22 +152,8 @@ void run_tool_chain(Configuration &config, DataEnvelope* envelope = NULL)
 }
 
 
-
-// a function that adds 4 points to a polygon within the list paths for
-// a new extruder.
-void initSimplePath(PathData &d)
+void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double dy)
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	d.paths.push_back(Paths());
-	d.paths[0].push_back(Polygon());
-	Polygon &poly = d.paths[0][0];
-
-	double lower_x = -10;
-	double lower_y = -10;
-	double dx = 50;
-	double dy = 30;
-
-
 	Point2D p0(lower_x, lower_y);
 	Point2D p1(p0.x, p0.y + dy);
 	Point2D p2(p1.x + dx, p1.y);
@@ -175,7 +163,34 @@ void initSimplePath(PathData &d)
 	poly.push_back(p1);
 	poly.push_back(p2);
 	poly.push_back(p3);
+	poly.push_back(p0);
+}
 
+// a function that adds 4 points to a polygon within the list paths for
+// a new extruder.
+void initSimplePath(PathData &d)
+{
+	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	d.paths.push_back(Paths());
+
+	srand( time(NULL) );
+
+	for (int i=0; i< 4; i++)
+	{
+		d.paths[0].push_back(Polygon());
+		size_t index= d.paths[0].size()-1;
+		Polygon &poly = d.paths[0][index];
+
+		double lower_x = -40 + 20 * i;
+		double lower_y = -30;
+		double dx = 10;
+		double dy = 40;
+
+		// randomize
+		lower_x += 10.0 * ((double) rand()) / RAND_MAX;
+		lower_y += 10.0 * ((double) rand()) / RAND_MAX;
+		rectangle(poly, lower_x, lower_y, dx, dy);
+	}
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
@@ -197,8 +212,8 @@ void GCoderTestCase::testSingleExtruder()
 	Json::StyledWriter w;
 	string confstr = w.write(config.root);
 	cout << confstr << endl;
-
-	run_tool_chain(config);
+	vector<DataEnvelope*> datas;
+	run_tool_chain(config,datas );
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
@@ -220,7 +235,8 @@ void GCoderTestCase::testDualExtruders()
 	configureDualExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)2,config.extruders.size());
 	// create a simple Gcode operation (no paths), initialize it and run it
-	run_tool_chain(config);
+	vector<DataEnvelope*> datas;
+	run_tool_chain(config, datas);
 
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
 
@@ -242,24 +258,84 @@ void GCoderTestCase::testSimplePath()
 	// load 1 extruder
 	configureSingleExtruder(config);
 	//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
-
 	// create a path message as if received by a pather operation
-	PathData *path = new PathData(0.2, 0.4);
+
+	PathData *path = new PathData(0.2, 0.3);
 	// add a simple rectangular path for the single extruder
 	initSimplePath(*path);
-
+	std::vector<DataEnvelope*> datas;
+	datas.push_back( (DataEnvelope*) path);
 	// instaniate a gcoder and send it the path as an envelope.
-	run_tool_chain(config, path);
+	run_tool_chain(config, datas);
 
-	path->release();
 	// cleanup the data
-
+	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	{
+		DataEnvelope* data = *it;
+		data->release();
+	}
 
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
+void initGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
+{
+	d.paths.push_back(Paths());
+
+	for (int i=0; i< lineCount; i++)
+	{
+		d.paths[0].push_back(Polygon());
+		size_t index= d.paths[0].size()-1;
+		Polygon &poly = d.paths[0][index];
+		double y = lowerY + i * dy;
+		Point2D p0 (lowerX, y);
+		Point2D p1 (p0.x + dx, y );
+
+		poly.push_back(p0);
+		poly.push_back(p1);
+	}
+}
+
+void GCoderTestCase::testGridPath()
+{
+	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+
+	Configuration config;
+	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_GRID_PATH;
+	config["FileWriterOperation"]["format"]= ".gcode";
+
+	// load 1 extruder
+	configureSingleExtruder(config);
+
+	PathData *path = new PathData(0.15, 0.3);
+
+	srand( time(NULL) );
+	int lineCount = 20;
+	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+
+	double dx = 40;
+	double dy = 2.0;
+
+	initGridPath(*path, lowerX, lowerY, dx, dy, 20);
+
+	vector<DataEnvelope*> datas;
+	datas.push_back((DataEnvelope*)path);
+	run_tool_chain(config, datas);
+
+	// cleanup the data
+	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	{
+		DataEnvelope* data = *it;
+		data->release();
+	}
+
+
+	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
+	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+}
 
 void GCoderTestCase::testConfig()
 {
@@ -276,13 +352,11 @@ void GCoderTestCase::testConfig()
 	string confstr = w.write(conf.root);
 	cout << confstr << endl;
 
-
 	CPPUNIT_ASSERT(conf.root["extruders"].isArray());
 	CPPUNIT_ASSERT(conf.root["extruders"].isValidIndex(0));
 
 	cout << "ExtruderCount " << conf.root["extruders"].size() << endl;
-
-	GCoderConfig single;
+	GCoderData single;
 	single.loadData(conf);
 
 	cout << endl << endl << endl << "READ!" << endl;
@@ -304,7 +378,6 @@ void gcodeStreamFormat(ostream &ss)
     }
     ss.setf(ios_base::floatfield, ios::floatfield);            // floatfield not set
 	ss.precision(4);
-    
 }
 
 

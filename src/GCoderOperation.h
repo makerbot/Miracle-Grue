@@ -54,10 +54,6 @@ struct Extruder
 		nozzleZ(0.28)
 	{}
 
-	// this determines the gap between the nozzle tip
-	// and the layer at position z (measured at the middle of the layer)
-	double nozzleZ;
-
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
 	double extrusionTemperature; 	 // the extrusion temperature in Celsius
 	double defaultExtrusionSpeed;
@@ -71,7 +67,81 @@ struct Extruder
 	// different strokes, for different folks
 	double fastFeedRate;
 	double fastExtrusionSpeed;
+
+	// this determines the gap between the nozzle tip
+	// and the layer at position z (measured at the middle of the layer)
+	double nozzleZ;
+
+	// the reversal distance to break the tube
+	// in the xy plane.
+	double reversalXY;
 };
+
+
+#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM 10000000000000
+
+// a toolhead extends the extruder and gives it a purpose,
+// or at least a position, feed rate and other state that
+// change as the print happens.
+struct ToolHead : Extruder
+{
+public:
+	//unsigned int nb;
+	double x,y,z,feed;     // position
+
+
+	std::string comment;   // if I'm not useful by xmas please delete me
+
+
+	ToolHead()
+		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
+	{
+
+	}
+
+	bool sameSame(double a, double b)const
+	{
+		return (a*a + b*b) < 0.00000001;
+	}
+
+private:
+	// emits a g1 command
+	void g1Motion(std::ostream &ss,
+			double x,
+			double y,
+			double z,
+			double feed,
+			const char *comment,
+			bool doX,
+			bool doY,
+			bool doZ,
+			bool doFeed);
+
+public:
+	void squirt(std::ostream &ss);
+	void snort(std::ostream &ss);
+
+
+//	// emits a g1 command to the stream, all parameters are explicit
+//	void moveToLongForm(std::ostream &ss,
+//			double x,
+//			double y,
+//			double z,
+//			double feed,
+//			const char *comment);
+	// emits a g1 command to the stream, only parameters that have changed since the last g1 are explicit
+	void g1(std::ostream &ss,
+			double x,
+			double y,
+			double z,
+			double feed,
+			const char *comment);
+
+
+};
+
 
 // configuration
 struct Outline
@@ -84,9 +154,10 @@ struct Outline
 
 
 //
-// This class contains settings for the 3D printer, and user preferences
+// This class contains settings for the 3D printer,
+// user preferences as well as runtime information
 //
-struct GCoderConfig
+struct GCoderData
 {
     std::string programName;
     std::string versionStr;
@@ -98,7 +169,7 @@ struct GCoderConfig
 
     Platform platform;
     Outline outline;					// outline operation configuration
-    std::vector<Extruder> extruders;	// list of extruder tools
+    std::vector<ToolHead> extruders;	// list of extruder tools
 
 
 	void loadData(const Configuration& config);
@@ -112,7 +183,7 @@ struct GCoderConfig
  */
 class GCoderOperation : public Operation
 {
-	GCoderConfig config;
+	GCoderData config;
 
 /************** Start of Functions each <NAME_OF>Operation must contain***********************/
 public:
@@ -162,6 +233,8 @@ public:
 /************** Start of Functions custom to this <NAME_OF>Operation ***********************/
 private:
 	bool isValidConfig(Configuration& config) const;
+	void wrapAndEmit(const std::stringstream &ss);
+
 
 	// write important config information in gcode file
     void writeGCodeConfig(std::ostream &ss) const;
@@ -169,17 +242,15 @@ private:
     void writePlatformInitialization(std::ostream &ss) const;
     void writeExtrudersInitialization(std::ostream &ss) const;
     void writeHomingSequence(std::ostream &ss) const;
-    void writeWarmupSequence(std::ostream &ss) const;
-    void writeAnchor(std::ostream &ss) const;
+    void writeWarmupSequence(std::ostream &ss);
+    void writeAnchor(std::ostream &ss);
 
-    void writePaths(std::ostream &ss, const PathData& pathData) const;
-
+    void writeLayer(std::ostream &ss, const PathData& pathData);
+    void writePaths(std::ostream& ss, int extruderId, double z, const Paths &paths); // paths for an extruder in a layer
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
-
     void writeGcodeEndOfFile(std::ostream &ss) const;
 
-	void wrapAndEmit(const std::stringstream &ss);
 
 
 /************** End of Functions custom to this <NAME_OF>Operation ***********************/
