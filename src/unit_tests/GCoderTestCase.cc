@@ -20,6 +20,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
 #define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
 #define SINGLE_EXTRUDER_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_grid_path.gcode"
+#define SINGLE_EXTRUDER_MULTI_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_multigrid_path.gcode"
 
 // for now, use cout, until we add Boost support
 //#define BOOST_LOG_TRIVIAL(trace) cout
@@ -49,7 +50,8 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 {
 	Json::Value extruder;
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	extruder["reversalXY"] = 0.5;
+	extruder["leadIn"] = 0.3;
+	extruder["leadOut"] = 0.3;
 	extruder["defaultExtrusionSpeed"] = speed;
 	extruder["extrusionTemperature"] = temperature;
 	extruder["coordinateSystemOffsetX"] = offsetX;
@@ -57,7 +59,7 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 	extruder["slowExtrusionSpeed"] = 1.0;
 	extruder["fastFeedRate"] = 3000;
 	extruder["fastExtrusionSpeed"] = 2.682;
-	extruder["nozzleZ"] = 0.1;
+	extruder["nozzleZ"] = 0.0;
 	extruder["reversalExtrusionSpeed"] = 35.0;
 	config["extruders"].append(extruder);
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
@@ -280,63 +282,6 @@ void GCoderTestCase::testSimplePath()
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-void initGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
-{
-	d.paths.push_back(Paths());
-
-	for (int i=0; i< lineCount; i++)
-	{
-		d.paths[0].push_back(Polygon());
-		size_t index= d.paths[0].size()-1;
-		Polygon &poly = d.paths[0][index];
-		double y = lowerY + i * dy;
-		Point2D p0 (lowerX, y);
-		Point2D p1 (p0.x + dx, y );
-
-		poly.push_back(p0);
-		poly.push_back(p1);
-	}
-}
-
-void GCoderTestCase::testGridPath()
-{
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-
-	Configuration config;
-	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_GRID_PATH;
-	config["FileWriterOperation"]["format"]= ".gcode";
-
-	// load 1 extruder
-	configureSingleExtruder(config);
-
-	PathData *path = new PathData(0.15, 0.3);
-
-	srand( time(NULL) );
-	int lineCount = 20;
-	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
-	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
-
-	double dx = 40;
-	double dy = 2.0;
-
-	initGridPath(*path, lowerX, lowerY, dx, dy, 20);
-
-	vector<DataEnvelope*> datas;
-	datas.push_back((DataEnvelope*)path);
-	run_tool_chain(config, datas);
-
-	// cleanup the data
-	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
-	{
-		DataEnvelope* data = *it;
-		data->release();
-	}
-
-
-	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
-}
-
 void GCoderTestCase::testConfig()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
@@ -385,7 +330,7 @@ void GCoderTestCase::testFloatFormat()
 {
 	stringstream ss;
 	gcodeStreamFormat(ss);
-    
+
 	ss << endl;
 	ss << "loc: " << ss.getloc().name() << endl;
 
@@ -398,5 +343,144 @@ void GCoderTestCase::testFloatFormat()
 	ss << "num: " << 3.1415927 << endl;
 	cout << ss.str() << endl;
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
-    
+
+}
+
+
+void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
+{
+	d.paths.push_back(Paths());
+
+	bool flip = false;
+	for (int i=0; i< lineCount; i++)
+	{
+		d.paths[0].push_back(Polygon());
+		size_t index= d.paths[0].size()-1;
+		Polygon &poly = d.paths[0][index];
+		double y = lowerY + i * dy;
+		Point2D p0 (lowerX, y);
+		Point2D p1 (p0.x + dx, y );
+		if(!flip)
+		{
+			poly.push_back(p0);
+			poly.push_back(p1);
+		}
+		else
+		{
+			poly.push_back(p1);
+			poly.push_back(p0);
+		}
+		flip = !flip;
+	}
+}
+
+void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
+{
+	d.paths.push_back(Paths());
+
+	bool flip = false;
+	for (int i=0; i< lineCount; i++)
+	{
+		d.paths[0].push_back(Polygon());
+		size_t index= d.paths[0].size()-1;
+		Polygon &poly = d.paths[0][index];
+		double x = lowerX + i * dx;
+		Point2D p0 (x, lowerY);
+		Point2D p1 (x, p0.y + dy );
+		if(!flip)
+		{
+			poly.push_back(p0);
+			poly.push_back(p1);
+		}
+		else
+		{
+			poly.push_back(p1);
+			poly.push_back(p0);
+		}
+		flip = !flip;
+	}
+}
+
+
+void GCoderTestCase::testGridPath()
+{
+	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+
+	Configuration config;
+	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_GRID_PATH;
+	config["FileWriterOperation"]["format"]= ".gcode";
+
+	// load 1 extruder
+	configureSingleExtruder(config);
+
+	PathData *path = new PathData(0.15, 0.3);
+
+	srand( time(NULL) );
+	int lineCount = 20;
+	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+
+	double dx = 40;
+	double dy = 2.0;
+
+	initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
+
+	vector<DataEnvelope*> datas;
+	datas.push_back((DataEnvelope*)path);
+	run_tool_chain(config, datas);
+
+	// cleanup the data
+	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	{
+		DataEnvelope* data = *it;
+		data->release();
+	}
+
+	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
+	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+}
+
+void GCoderTestCase::testMultiGrid()
+{
+	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+
+	Configuration config;
+	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_MULTI_GRID_PATH;
+	config["FileWriterOperation"]["format"]= ".gcode";
+
+	// load 1 extruder
+	configureSingleExtruder(config);
+
+
+	vector<DataEnvelope*> datas;
+	srand( time(NULL) );
+	int lineCount = 20;
+	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+	double firstLayerH = 0.11;
+	double layerH = 0.35;
+	bool horizontal = true;
+	double dx = 40;
+	double dy = 2.0;
+	for(int currentLayer=0; currentLayer < 4; currentLayer++)
+	{
+		PathData *path = new PathData(currentLayer * layerH + firstLayerH, layerH);
+		if(horizontal)
+			initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
+		else
+			initVerticalGridPath(*path, lowerX, lowerY, dx, dy, 20);
+		datas.push_back((DataEnvelope*)path);
+		horizontal = !horizontal;
+	}
+	run_tool_chain(config, datas);
+
+	// cleanup the data
+	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	{
+		DataEnvelope* data = *it;
+		data->release();
+	}
+
+	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
+	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }

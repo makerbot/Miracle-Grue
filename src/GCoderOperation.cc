@@ -21,6 +21,7 @@ using namespace std;
 using namespace Json;
 
 
+
 /// other global static values.
 static Value* GCoderOperationConfigRequirements;
 
@@ -54,6 +55,10 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 	return s;
 }
 
+bool sameSame(double a, double b)
+{
+	return (a*a + b*b) < 0.00000001;
+}
 
 void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
 {
@@ -92,34 +97,24 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 	g1Motion(ss, x,y,z,feed,comment,doX,doY,doZ,doFeed);
 }
 
-void ToolHead::squirt(std::ostream &ss )
+void ToolHead::squirt(std::ostream &ss, const Point2D &lineStart, double extrusionSpeed)
 {
 	//ss << "M108 R" << this->fastExtrusionSpeed << endl;
 	//ss << "M101 (squirt)" << endl;
-	int extruderSquirtDelay = 200;
-	double squirtXY = 2.0;
 
-	double dx = reversalXY;
-	double dy = reversalXY;
-
-	ss << "M108 R" << this->reversalExtrusionSpeed << "(squirt)" << endl;
+	// int extruderSquirtDelay = 200;
+	ss << "M108 R" << this->reversalExtrusionSpeed << " (squirt)" << endl;
 	ss << "M101" << endl;
-	g1(ss, x+dx, y+dy, z, fastFeedRate, NULL);
-	ss << "M108 R" << this->fastExtrusionSpeed << endl;
+	g1(ss, lineStart.x, lineStart.y, z, fastFeedRate, NULL);
+	ss << "M108 R" << extrusionSpeed << " (good to go)" << endl;
 }
 
-void ToolHead::snort(std::ostream &ss )
+void ToolHead::snort(std::ostream &ss, const Point2D &lineEnd)
 {
 	double reversalFeedRate = this->fastFeedRate;
-
 	ss << "M108 R" << this->reversalExtrusionSpeed << "  (snort)" << endl;
 	ss << "M102" << endl;
-	double dx =-reversalXY;
-	double dy = -reversalXY;
-//	if(this->y >= 0) dy = dx;
-//	if(this->x >= 0) dx = dy;
-
-	g1(ss, x+dx, y+dy, z, reversalFeedRate, NULL);
+	g1(ss, lineEnd.x, lineEnd.y, z, reversalFeedRate, NULL);
 	ss << "M103" << endl;
 }
 
@@ -227,7 +222,10 @@ void GCoderData::loadData(const Configuration& conf)
 		toolHead.fastExtrusionSpeed = conf.root["extruders"][i]["fastExtrusionSpeed"].asDouble();//(2.682),
 		toolHead.nozzleZ = conf.root["extruders"][i]["nozzleZ"].asDouble();
 		toolHead.reversalExtrusionSpeed = conf.root["extruders"][i]["reversalExtrusionSpeed"].asDouble();
-		toolHead.reversalXY = conf.root["extruders"][i]["reversalXY"].asDouble();
+
+		toolHead.leadIn = conf.root["extruders"][i]["leadIn"].asDouble();
+		toolHead.leadOut = conf.root["extruders"][i]["leadOut"].asDouble();
+
 		extruders.push_back(toolHead);
 	}
 
@@ -442,31 +440,76 @@ void GCoderOperation::finish(){
 
 }
 
+
+
+Point2D unitVector(const Point2D& a, const Point2D& b)
+{
+
+
+	double dx = b.x - a.x;
+	double dy = b.y - a.y;
+	double length = sqrt(dx *dx + dy * dy);
+	Point2D r(dx/length , dy/length);
+	return r;
+}
+
+//
+// computes 2 positions (one before and one at the end of) the polygon and stores them in start and stop.
+// These positions are aligned with the fisrt line and last line of the polygon.
+// LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
+// LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
+void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut, Point2D &start, Point2D &end)
+{
+	size_t count =  polygon.size();
+	assert(count >= 2);
+
+	const Point2D &a = polygon[0];	// first element
+	const Point2D &b = polygon[1];
+
+	const Point2D &c = polygon[count-2];
+	const Point2D &d = polygon[count-1]; // last element
+
+	Point2D ab = unitVector(a,b);
+	Point2D cd = unitVector(c,d);
+
+	start.x = a.x - ab.x * leadIn;
+	start.y = a.y - ab.y * leadIn;
+	end.x   = d.x + cd.x * leadOut;
+	end.y   = d.y + cd.y * leadOut;
+
+}
+
 void GCoderOperation::writePaths(std::ostream& ss, int extruderId, double z, const Paths &paths)
 {
 	// to each extruder its speed
 	double pathFeedrate = config.scalingFactor * config.extruders[extruderId].slowFeedRate;
 	double extrusionSpeed = config.scalingFactor * config.extruders[extruderId].fastExtrusionSpeed;
+	double leadIn = config.extruders[extruderId].leadIn;
+	double leadOut = config.extruders[extruderId].leadOut;
 
 	int path_counter = 0;
 	for (Paths::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
 	{
 
-		path_counter ++; // one based, FTU! (for the user!)
+		path_counter ++; // one based, FTU (for the user!)
 		const Polygon &polygon = *pathIt;
 		ss << "(  path " << path_counter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
-		for(Polygon::const_iterator i= polygon.begin(); i!= polygon.end(); i++ )
+
+		Point2D start(0,0), stop(0,0);
+		polygonLeadInAndLeadOut(polygon, leadIn, leadOut, start, stop);
+
+		config.extruders[extruderId].g1(ss, start.x, start.y, z, config.extruders[extruderId].fastFeedRate);
+		//ss << "(START!)" << endl;
+		config.extruders[extruderId].squirt(ss, polygon[0], extrusionSpeed);
+		//ss << "(!START)" << endl;
+		for(int i=1; i < polygon.size(); i++)
 		{
-			const Point2D &p = *i;
-			if(i==polygon.begin() )
-			{
-				config.extruders[extruderId].g1(ss, p.x, p.y, z, config.extruders[extruderId].fastFeedRate);
-				config.extruders[extruderId].squirt(ss);
-			}
-			// cout << "(      POINT [" << p.x << ", " << p.y << "] )" << endl;
+			const Point2D &p = polygon[i];
 			config.extruders[extruderId].g1(ss, p.x, p.y, z, pathFeedrate);
 		}
-		config.extruders[extruderId].snort(ss);
+		//ss << "(STOP!)" << endl;
+		config.extruders[extruderId].snort(ss, stop);
+		//ss << "(!STOP)" << endl;
 		ss << endl;
 	}
 }
@@ -656,7 +699,6 @@ void GCoderOperation::writeAnchor(std::ostream &ss)
 	double dy = config.platform.waitingPositionY - 1.0;
 
 	config.extruders[0].g1(ss, dx, dy, 0.6, config.extruders[0].slowFeedRate, NULL);
-
 	ss << endl;
 
 }

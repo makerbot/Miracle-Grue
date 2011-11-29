@@ -72,9 +72,10 @@ struct Extruder
 	// and the layer at position z (measured at the middle of the layer)
 	double nozzleZ;
 
-	// the reversal distance to break the tube
-	// in the xy plane.
-	double reversalXY;
+	// the distance to start before a line (and get the extruder going)
+	double leadIn;
+	// the reversal distance after a polygon.
+	double leadOut;
 };
 
 
@@ -101,10 +102,7 @@ public:
 
 	}
 
-	bool sameSame(double a, double b)const
-	{
-		return (a*a + b*b) < 0.00000001;
-	}
+
 
 private:
 	// emits a g1 command
@@ -120,8 +118,8 @@ private:
 			bool doFeed);
 
 public:
-	void squirt(std::ostream &ss);
-	void snort(std::ostream &ss);
+	void squirt(std::ostream &ss, const Point2D &lineStart, double extrusionSpeed);
+	void snort(std::ostream &ss,  const Point2D &lineEnd);
 
 
 //	// emits a g1 command to the stream, all parameters are explicit
