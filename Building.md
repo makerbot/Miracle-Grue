@@ -6,7 +6,6 @@ Building Miracle Grue requires that you install scons and the Qt4 libraries. The
 
     apt-get install libqt4-dev scons libcppunit-dev libcppunit-doc
 		   
- 
 ## OS X installation
 
 Install QT4 (http://qt.nokia.com/downloads)
