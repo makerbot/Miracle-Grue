@@ -57,7 +57,7 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 
 bool sameSame(double a, double b)
 {
-	return (a*a + b*b) < 0.00000001;
+	return (a-b)*(a-b) < 0.00000001;
 }
 
 void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
@@ -479,6 +479,10 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 
 }
 
+//
+// Shouldn't z travel be guided by its own feed rate?
+//
+
 void GCoderOperation::writePaths(std::ostream& ss, int extruderId, double z, const Paths &paths)
 {
 	// to each extruder its speed
@@ -486,6 +490,9 @@ void GCoderOperation::writePaths(std::ostream& ss, int extruderId, double z, con
 	double extrusionSpeed = config.scalingFactor * config.extruders[extruderId].fastExtrusionSpeed;
 	double leadIn = config.extruders[extruderId].leadIn;
 	double leadOut = config.extruders[extruderId].leadOut;
+
+	// moving all up. This is the first move for every new layer
+	config.extruders[extruderId].g1(ss,config.extruders[extruderId].x,  config.extruders[extruderId].y, z, pathFeedrate);
 
 	int path_counter = 0;
 	for (Paths::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
@@ -695,17 +702,16 @@ void GCoderOperation::writeAnchor(std::ostream &ss)
 								config.extruders[0].slowFeedRate,
 								NULL );
 
-	double dx = config.platform.waitingPositionX - 1.0;
-	double dy = config.platform.waitingPositionY - 1.0;
+	double dx = config.platform.waitingPositionX - 3.0;
+	double dy = config.platform.waitingPositionY - 0.0;
 
-	config.extruders[0].g1(ss, dx, dy, 0.6, config.extruders[0].slowFeedRate, NULL);
+	config.extruders[0].g1(ss, dx, dy, 0.6, 0.2 * config.extruders[0].slowFeedRate , NULL);
 	ss << endl;
 
 }
 
 void GCoderOperation::wrapAndEmit(const stringstream &ss)
 {
-
 	GCodeEnvelope* data = new GCodeEnvelope(ss.str().c_str());
 	emit(data);
 	data->release();

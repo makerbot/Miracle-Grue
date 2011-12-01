@@ -50,8 +50,8 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 {
 	Json::Value extruder;
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	extruder["leadIn"] = 0.3;
-	extruder["leadOut"] = 0.3;
+	extruder["leadIn"] = 0.25;
+	extruder["leadOut"] = 0.35;
 	extruder["defaultExtrusionSpeed"] = speed;
 	extruder["extrusionTemperature"] = temperature;
 	extruder["coordinateSystemOffsetX"] = offsetX;
@@ -357,7 +357,8 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 		d.paths[0].push_back(Polygon());
 		size_t index= d.paths[0].size()-1;
 		Polygon &poly = d.paths[0][index];
-		double y = lowerY + i * dy;
+
+		double y = lowerY + i * dy / lineCount;
 		Point2D p0 (lowerX, y);
 		Point2D p1 (p0.x + dx, y );
 		if(!flip)
@@ -379,14 +380,16 @@ void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, 
 	d.paths.push_back(Paths());
 
 	bool flip = false;
+
 	for (int i=0; i< lineCount; i++)
 	{
 		d.paths[0].push_back(Polygon());
 		size_t index= d.paths[0].size()-1;
 		Polygon &poly = d.paths[0][index];
-		double x = lowerX + i * dx;
+
+		double x = lowerX + i * dx / lineCount;
 		Point2D p0 (x, lowerY);
-		Point2D p1 (x, p0.y + dy );
+		Point2D p1 (x, lowerY + dy );
 		if(!flip)
 		{
 			poly.push_back(p0);
@@ -420,8 +423,8 @@ void GCoderTestCase::testGridPath()
 	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
 	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
 
-	double dx = 40;
-	double dy = 2.0;
+	double dx = 20.0;
+	double dy = 20.0;
 
 	initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
 
@@ -440,6 +443,13 @@ void GCoderTestCase::testGridPath()
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
+int random(int start, int range)
+{
+	int r = rand();
+	r = r / (RAND_MAX / range );
+	return start + r;
+}
+
 void GCoderTestCase::testMultiGrid()
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
@@ -451,18 +461,19 @@ void GCoderTestCase::testMultiGrid()
 	// load 1 extruder
 	configureSingleExtruder(config);
 
-
 	vector<DataEnvelope*> datas;
 	srand( time(NULL) );
+
 	int lineCount = 20;
-	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
-	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
+	double lowerX = -35 + random(-10, 20);
+	double lowerY = -35 + random(-10, 20); // 10.0 * ((double) rand()) / RAND_MAX;
 	double firstLayerH = 0.11;
 	double layerH = 0.35;
 	bool horizontal = true;
-	double dx = 40;
-	double dy = 2.0;
-	for(int currentLayer=0; currentLayer < 4; currentLayer++)
+	double dx = 20.0;
+	double dy = 20.0;
+
+	for(int currentLayer=0; currentLayer < 200; currentLayer++)
 	{
 		PathData *path = new PathData(currentLayer * layerH + firstLayerH, layerH);
 		if(horizontal)

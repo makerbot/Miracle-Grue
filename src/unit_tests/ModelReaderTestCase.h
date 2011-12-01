@@ -14,12 +14,19 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( ModelReaderTestCase );
 
-//  CPPUNIT_TEST( testMeshySimple );
+/*
+  CPPUNIT_TEST( testMeshySimple );
   CPPUNIT_TEST( testLayerSplit );
-  //CPPUNIT_TEST( testSlicySimple );
-  //CPPUNIT_TEST( testSlicyWater );
-  //CPPUNIT_TEST( testMeshyLoad );
-  //CPPUNIT_TEST( testLargeMeshy );
+  CPPUNIT_TEST( testSlicySimple );
+
+  CPPUNIT_TEST( testMeshyLoad );
+  CPPUNIT_TEST( testLargeMeshy );
+  CPPUNIT_TEST( testSlicyWater );
+*/
+  CPPUNIT_TEST( testTubularInflate);
+  CPPUNIT_TEST( testCutTriangle);
+  CPPUNIT_TEST( testRotate);
+  CPPUNIT_TEST( test3dKnot );
 
   CPPUNIT_TEST_SUITE_END();
 
@@ -34,6 +41,14 @@ protected:
   void testMeshyLoad();
   void testLargeMeshy();
   void testSlicyWater();
+
+  // cutting a triangle along z line
+  void testCutTriangle();
+  // rotation nad translation of 2D points
+  void testRotate();
+  void testTubularInflate();
+
+  void test3dKnot();
 };
 
 

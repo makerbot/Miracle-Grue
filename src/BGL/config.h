@@ -8,7 +8,7 @@
 // the input files will be.
 //
 
-typedef float Scalar;
+typedef double Scalar;
 
 #endif // CONFIG_H
 

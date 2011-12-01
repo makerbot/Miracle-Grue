@@ -4,7 +4,8 @@
 #include <algorithm> // find
 #include <iterator>  // distance
 #include <iomanip>
-
+#include <limits>
+#include <set>
 
 #define  CPPUNIT_ENABLE_NAKED_ASSERT 1
 
@@ -14,6 +15,7 @@
 #include "../Configuration.h"
 #include "../ModelFileReaderOperation.h"
 
+#include "../BGL/BGLPoint.h"
 #include "../BGL/BGLMesh3d.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
@@ -21,6 +23,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 using namespace std;
 using namespace BGL;
 
+bool sameSame(double a, double b)
+{
+	return (a-b) * (a-b) < 0.00000001;
+}
 
 /*
 CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
@@ -65,9 +71,136 @@ public:
 
 };
 
+
+struct Limits
+{
+
+	friend std::ostream& operator <<(ostream &os, const Limits &l);
+
+	Scalar xMin, xMax, yMin, yMax, zMin, zMax;
+
+	Limits()
+	{
+		xMax = std::numeric_limits<Scalar>::min();
+		yMax = xMax;
+		zMax = xMax;
+
+		xMin = std::numeric_limits<Scalar>::max();
+		yMin = xMin;
+		zMin = zMin;
+
+	}
+/*
+	Limits(const Limits& kat)
+	{
+		xMin = kat.xMin;
+		xMax = kat.xMax;
+		yMin = kat.yMin;
+		yMax = kat.yMax;
+		zMin = kat.zMin;
+		zMax = kat.zMax;
+	}
+*/
+	void grow(const BGL::Point3d &p)
+	{
+		if(p.x < xMin) xMin = p.x;
+		if(p.x > xMax) xMax = p.x;
+		if(p.y < yMin) yMin = p.y;
+		if(p.y > yMax) yMax = p.y;
+		if(p.z < zMin) zMin = p.z;
+		if(p.z > zMax) zMax = p.z;
+	}
+
+	// adds inflate to all sides (half of inflate in + and half inflate in - direction)
+	void inflate(Scalar inflateX, Scalar inflateY, Scalar inflateZ)
+	{
+		xMin -= 0.5 * inflateX;
+		xMax += 0.5 * inflateX;
+		yMin -= 0.5 * inflateY;
+		yMax += 0.5 * inflateY;
+		zMin -= 0.5 * inflateZ;
+		zMax += 0.5 * inflateZ;
+	}
+
+	// grows the limits to contain points that rotate along
+	// the XY center point and Z axis
+	void tubularZ()
+	{
+		BGL::Point3d c = center();
+		Scalar dx = 0.5 * (xMax-xMin);
+		Scalar dy = 0.5 * (yMax - yMin);
+
+		Scalar radius = sqrt(dx*dx + dy*dy);
+
+		BGL::Point3d north = c;
+		north.y += radius;
+
+		BGL::Point3d south = c;
+		south.y -= radius;
+
+		BGL::Point3d east = c;
+		east.x += radius;
+
+		BGL::Point3d west = c;
+		west.x -= radius;
+
+		grow(north);
+		grow(south);
+		grow(east);
+		grow(west);
+	}
+
+	BGL::Point3d center() const
+	{
+		BGL::Point3d c(0.5 * (xMin + xMax), 0.5 * (yMin + yMax), 0.5 *(zMin + zMax) );
+		return c;
+	}
+
+
+	// generates Limits that contain the limits
+	// The new limits allow any point inside the limits
+	// to be rotated around the center (along Z)
+	// and be kept inside the limits
+
+
+};
+
+std::ostream& operator<<(ostream& os, const Limits& l)
+{
+	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
+	return os;
+}
+
 class Meshy
 {
+
+	Scalar sliceHeight;
+	Limits limits;
+
+	std::vector<Triangle3d>  allTriangles;
+	TrianglesInSlices sliceTable;
 public:
+
+	const std::vector<Triangle3d> &readAllTriangles()
+	{
+		return allTriangles;
+	}
+
+	const Limits& readLimits() const
+	{
+		return limits;
+	}
+
+	Scalar readSliceHeight() const
+	{
+		return sliceHeight;
+	}
+
+	const TrianglesInSlices &readSliceTable() const
+	{
+		return sliceTable;
+	}
+
 	Meshy(Scalar sliceHeight)
 		:sliceHeight(sliceHeight)
 	{
@@ -104,7 +237,12 @@ public:
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			trianglesForSlice.push_back(newTriangleId);
 		}
+
+		limits.grow(t.vertex1);
+		limits.grow(t.vertex2);
+		limits.grow(t.vertex3);
 	}
+
 
 	void dump(std::ostream &out)
 	{
@@ -121,18 +259,9 @@ public:
 		}
 	}
 
-	const TrianglesInSlices& getSliceTable() const
-	{
-		return sliceTable;
-	}
-
-	const std::vector<Triangle3d>& getAllTriangles() const
-	{
-		return allTriangles;
-	}
 
 
-private:
+
 
 
 	void writeTriangle(std::ostream &out, const Triangle3d& t) const
@@ -154,6 +283,7 @@ private:
 		out << "  end loop" << endl;
 		out << " end facet" << endl;
 	}
+
 public:
 	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const
 	{
@@ -195,9 +325,6 @@ public:
 		out.close();
 	}
 
-	Scalar sliceHeight;
-	std::vector<Triangle3d>  allTriangles;
-	TrianglesInSlices sliceTable;
 };
 
 
@@ -544,14 +671,24 @@ void ModelReaderTestCase::testMeshySimple()
 
  	mesh.dump(cout);
 
- 	CPPUNIT_ASSERT_EQUAL((size_t)2, mesh.getSliceTable().size());
+ 	CPPUNIT_ASSERT_EQUAL((size_t)2, mesh.readSliceTable().size());
 
-	t.vertex1 =Point3d(0,10,0);
-	t.vertex2 =Point3d(0,10,2.6);
-	t.vertex3 =Point3d(0,10,1);
+	t.vertex1 =Point3d(0,10, 0);
+	t.vertex2 =Point3d(0,10, 2.6);
+	t.vertex3 =Point3d(0,10, 1);
 
 	mesh.addTriangle(t);
-	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.getSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
+
+	const Limits &limits = mesh.readLimits();
+	double tol = 0.00001;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,  limits.xMin, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(10, limits.yMin, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,  limits.zMin, tol);
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,   limits.xMax, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(10,  limits.yMax, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2.6, limits.zMax, tol);
 }
 
 void ModelReaderTestCase::testLayerSplit()
@@ -560,18 +697,17 @@ void ModelReaderTestCase::testLayerSplit()
 	unsigned int t0, t1;
 	t0 = clock();
 	//LoadMeshyFromStl(mesh, "inputs/Water.stl");
-	LoadMeshyFromStl(mesh, "inputs/soap_highres.stl");
+	LoadMeshyFromStl(mesh, "inputs/Water.stl");
 	t1=clock()-t0;
 	mesh.dump(cout);
 
 	cout << " **** testLayerSplit " << endl;
-	for(int i=0; i != mesh.sliceTable.size(); i++)
+	for(int i=0; i != mesh.readSliceTable().size(); i++)
 	{
 		stringstream ss;
 		ss << "test_cases/modelReaderTestCase/output/water_" << i << ".stl";
 		mesh.writeStlFileForLayer(i, ss.str().c_str());
 		cout << ss.str().c_str() << endl;
-
 	}
 }
 
@@ -606,7 +742,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	t1=clock()-t0;
 	mesh.dump(cout);
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)173, mesh.getSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)173, mesh.readSliceTable().size());
 
 	cout << "Land" << endl;
 	Meshy mesh2(0.35);
@@ -615,7 +751,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	LoadMeshyFromStl(mesh2, "inputs/Land.stl");
 	t1=clock()-t0;
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh2.getSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh2.readSliceTable().size());
 	mesh2.dump(cout);
 }
 
@@ -624,12 +760,12 @@ void ModelReaderTestCase::testSlicyWater()
 	Meshy mesh(0.35);
 	LoadMeshyFromStl(mesh, "inputs/Water.stl");
 
-	const TrianglesInSlices& table = mesh.getSliceTable();
+	const TrianglesInSlices& table = mesh.readSliceTable();
 
 	unsigned int t0,t1;
 	t0=clock();
 
-	const vector<Triangle3d>& allTriangles = mesh.getAllTriangles();
+	const vector<Triangle3d>& allTriangles = mesh.readAllTriangles();
 	int sliceIndex = 0;
 	for (TrianglesInSlices::const_iterator i = table.begin(); i != table.end(); i++)
 	{
@@ -655,7 +791,457 @@ void ModelReaderTestCase::testSlicyWater()
 }
 
 
+//
+// NOTE: increase nozzle h between layers, or suffer the consequences
+//
 
 
+bool sameSame(double a, double b);
+
+
+
+bool sliceTriangle(const BGL::Point3d& vertex1, const BGL::Point3d& vertex2, const BGL::Point3d& vertex3, Scalar Z, BGL::Point &a, BGL::Point &b)
+{
+	Scalar u, px, py, v, qx, qy;
+	if (vertex1.z > Z && vertex2.z > Z && vertex3.z > Z)
+	{
+		// Triangle is above Z level.
+		return false;
+	}
+	if (vertex1.z < Z && vertex2.z < Z && vertex3.z < Z)
+	{
+		// Triangle is below Z level.
+		return false;
+	}
+	if (sameSame(vertex1.z, Z) )
+	{
+		if (sameSame(vertex2.z,Z) )
+		{
+			if (sameSame(vertex3.z,Z) )
+			{
+				// flat face.  Ignore.
+				return false;
+			}
+			//lnref = Line(Point(vertex1), Point(vertex2));
+			a.x = vertex1.x;
+			a.y = vertex1.y;
+
+			b.x = vertex2.x;
+			b.y = vertex2.y;
+			return true;
+		}
+		if (sameSame(vertex3.z,Z) )
+		{
+			// lnref = Line(Point(vertex1), Point(vertex3));
+			a.x = vertex1.x;
+			a.y = vertex1.y;
+			b.x = vertex3.x;
+			b.y = vertex3.y;
+			return true;
+		}
+		if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
+		{
+			// only touches vertex1 tip.  Ignore.
+			return false;
+		}
+		u = (Z-vertex2.z)/(vertex3.z-vertex2.z);
+		px =  vertex2.x+u*(vertex3.x-vertex2.x);
+		py =  vertex2.y+u*(vertex3.y-vertex2.y);
+		// lnref = Line(Point(vertex1), Point(px,py));
+		a.x = vertex1.x;
+		a.y = vertex1.y;
+		b.x = px;
+		b.y = py;
+		return true;
+	}
+	else if (sameSame(vertex2.z, Z) )
+	{
+		if (sameSame(vertex3.z,Z) )
+		{
+			// lnref = Line(Point(vertex2), Point(vertex3));
+			a.x = vertex2.x;
+			a.y = vertex2.y;
+			b.x = vertex3.x;
+			b.y = vertex3.y;
+			return true;
+		}
+		if ((vertex1.z > Z && vertex3.z > Z) || (vertex1.z < Z && vertex3.z < Z))
+		{
+			// only touches vertex2 tip.  Ignore.
+			return false;
+		}
+		u = (Z-vertex1.z)/(vertex3.z-vertex1.z);
+		px =  vertex1.x+u*(vertex3.x-vertex1.x);
+		py =  vertex1.y+u*(vertex3.y-vertex1.y);
+		// lnref = Line(Point(vertex2), Point(px,py));
+		a.x = vertex2.x;
+		a.y = vertex2.y;
+		b.x = px;
+		b.y = py;
+		return true;
+	}
+	else if (sameSame(vertex3.z, Z) )
+	{
+		if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
+		{
+			// only touches vertex3 tip.  Ignore.
+			return false;
+		}
+		u = (Z-vertex1.z)/(vertex2.z-vertex1.z);
+		px =  vertex1.x+u*(vertex2.x-vertex1.x);
+		py =  vertex1.y+u*(vertex2.y-vertex1.y);
+		// lnref = Line(Point(vertex3), Point(px,py));
+		a.x = vertex3.x;
+		a.y = vertex3.y;
+		b.x = px;
+		b.y = py;
+		return true;
+	}
+	else if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
+	{
+		u = (Z-vertex3.z)/(vertex1.z-vertex3.z);
+		px =  vertex3.x+u*(vertex1.x-vertex3.x);
+		py =  vertex3.y+u*(vertex1.y-vertex3.y);
+		v = (Z-vertex3.z)/(vertex2.z-vertex3.z);
+		qx =  vertex3.x+v*(vertex2.x-vertex3.x);
+		qy =  vertex3.y+v*(vertex2.y-vertex3.y);
+		// lnref = Line(Point(px,py), Point(qx,qy));
+		a.x = px;
+		a.y = py;
+		b.x = qx;
+		b.y = qy;
+		return true;
+	}
+	else if ((vertex1.z > Z && vertex3.z > Z) || (vertex1.z < Z && vertex3.z < Z))
+	{
+		u = (Z-vertex2.z)/(vertex1.z-vertex2.z);
+		px =  vertex2.x+u*(vertex1.x-vertex2.x);
+		py =  vertex2.y+u*(vertex1.y-vertex2.y);
+		v = (Z-vertex2.z)/(vertex3.z-vertex2.z);
+		qx =  vertex2.x+v*(vertex3.x-vertex2.x);
+		qy =  vertex2.y+v*(vertex3.y-vertex2.y);
+		// lnref = Line(Point(px,py), Point(qx,qy));
+		a.x = px;
+		a.y = py;
+		b.x = qx;
+		b.y = qy;
+		return true;
+	}
+	else if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
+	{
+		u = (Z-vertex1.z)/(vertex2.z-vertex1.z);
+		px =  vertex1.x+u*(vertex2.x-vertex1.x);
+		py =  vertex1.y+u*(vertex2.y-vertex1.y);
+		v = (Z-vertex1.z)/(vertex3.z-vertex1.z);
+		qx =  vertex1.x+v*(vertex3.x-vertex1.x);
+		qy =  vertex1.y+v*(vertex3.y-vertex1.y);
+		// lnref = Line(Point(px,py), Point(qx,qy));
+		a.x = px;
+		a.y = py;
+		b.x = qx;
+		b.y = qy;
+		return true;
+	}
+	return false;
+}
+
+
+BGL::Point rotate2d(const BGL::Point &p, Scalar angle)
+{
+	// rotate point
+	double s = sin(angle); // radians
+	double c = cos(angle);
+	BGL::Point rotated;
+	rotated.x = p.x * c - p.y * s;
+	rotated.y = p.x * s + p.y * c;
+	return rotated;
+}
+
+BGL::Point rotateAroundPoint(const BGL::Point &center, Scalar angle, const BGL::Point &p)
+{
+
+  // translate point back to origin:
+  BGL::Point translated = p - center;
+
+  BGL::Point rotated = rotate2d(translated, angle);
+  // translate point back:
+  BGL::Point r = rotated + center;
+  return r;
+}
+
+
+struct Segment
+{
+	BGL::Point a;
+	BGL::Point b;
+};
+
+
+
+void get2dSegmentsFromTriangles(const std::vector<Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
+{
+	assert(segments.size() == 0);
+	segments.reserve(trianglesForSlice.size());
+	for(TriangleIndices::const_iterator i= trianglesForSlice.begin(); i != trianglesForSlice.end(); i++)
+	{
+		const Triangle3d &t = allTriangles[(*i)];
+		const BGL::Point3d &vertex0 = t.vertex1;
+		const BGL::Point3d &vertex1 = t.vertex2;
+		const BGL::Point3d &vertex2 = t.vertex3;
+
+		Segment s;
+		bool cut = sliceTriangle(vertex0, vertex1, vertex2, z, s.a, s.b);
+		if(cut)
+		{
+			segments.push_back(s);
+		}
+	}
+}
+
+void translateSegments(std::vector<Segment> &segments, Point p)
+{
+	for(int i=0; i < segments.size(); i++)
+	{
+		segments[i].a += p;
+		segments[i].b += p;
+	}
+}
+
+void rotateSegments(std::vector<Segment> &segments, Scalar angle)
+{
+	for(int i=0; i < segments.size(); i++)
+	{
+		segments[i].a = rotate2d(segments[i].a, angle);
+		segments[i].b = rotate2d(segments[i].b, angle);
+	}
+}
+
+bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
+		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y)
+{
+    float s1_x, s1_y, s2_x, s2_y;
+    s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
+    s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
+
+    float s, t;
+    s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    {
+        // Collision detected
+        i_x = p0_x + (t * s1_x);
+        i_y = p0_y + (t * s1_y);
+        return true;
+    }
+
+    return false; // No collision
+}
+
+
+void pathology(	const std::vector<Triangle3d> &allTriangles,
+				const TriangleIndices &trianglesForSlice,
+				const Limits& limits,
+				double z,
+				double tubeSpacing ,
+				double angle,
+				std::vector<std::vector<Segment> > &allTubes)
+{
+	assert(allTubes.size() == 0);
+
+	// It is pitch black. You are likely to be eaten by a grue.
+	std::vector<Segment> segments;
+	get2dSegmentsFromTriangles(allTriangles, trianglesForSlice, z, segments);
+
+
+	// rotate segments for that cool look
+	Point3d c = limits.center();
+	Point toOrigin(-c.x, -c.y);
+	Point toCenter(c.x, c.y);
+
+	translateSegments(segments, toOrigin);
+	rotateSegments(segments, angle);
+	// translateSegments(segments, toCenter);
+
+	int tubeCount = (limits.yMax - limits.yMin) / tubeSpacing;
+
+	std::vector< std::set<Scalar> > intersects;
+	// allocate
+	intersects.resize(tubeCount);
+
+	for (int i=0; i < tubeCount; i++)
+	{
+		Scalar y = -0.5 * (limits.yMax - limits.yMin) + i * tubeSpacing;
+		std::set<Scalar> &lineCuts = intersects[i];
+		for(std::vector<Segment>::iterator i= segments.begin(); i!= segments.end(); i++)
+		{
+			Segment &segment = *i;
+			Scalar intersectionX, intersectionY;
+			if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
+			{
+				lineCuts.insert(intersectionX);
+			}
+		}
+	}
+
+	allTubes.resize(tubeCount);
+	for (int i=0; i < tubeCount; i++)
+	{
+		std::vector<Segment>& lineTubes = allTubes[i];
+		Scalar y = -0.5 * (limits.yMax - limits.yMin) + i * tubeSpacing;
+		std::set<Scalar> &lineCuts = intersects[i];
+
+		Segment segment;
+		bool inside = false;
+		for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
+		{
+			inside =! inside;
+			Scalar x = *it;
+			// cout << "\t" << x << " " << inside <<",";
+			if(inside)
+			{
+				segment.a.x = x;
+				segment.a.y = y;
+			}
+			else
+			{
+				segment.b.x = x;
+				segment.b.y = y;
+				lineTubes.push_back(segment);
+			}
+		}
+	}
+	// unrotate the tube segments (they are tube rays, not cut triangles)
+	for (int i=0; i < tubeCount; i++)
+	{
+		std::vector<Segment>& tubes = allTubes[i];
+		rotateSegments(segments, -angle);
+		translateSegments(segments, toCenter);
+
+	}
+}
+
+std::string tubeScad(int layerIndex, Scalar z, const std::vector<std::vector<Segment> > &allTubes)
+{
+	stringstream ss;
+	ss << "// layer " << layerIndex << endl;
+	int rayCount = allTubes.size();
+	for (int i=0; i < rayCount; i++)
+	{
+		const std::vector<Segment> &tubes = allTubes[i];
+		ss << "// Ray " << i << " z=" << z << endl;
+		for(int j=0; j<tubes.size(); j++)
+		{
+			const Segment &tube = tubes[j];
+			ss << "// segment: " << tube.a << ", " << tube.b << ", z=" << z << endl;
+		}
+	}
+	return ss.str();
+}
+
+void ModelReaderTestCase::testCutTriangle()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	BGL::Point3d vertex1(-1, 0, 0);
+	BGL::Point3d vertex2(1, 0, 0);
+	BGL::Point3d vertex3(0,0,1);
+
+	BGL::Point a,b;
+	bool cut;
+	Scalar z = 0.5;
+	cut = sliceTriangle(vertex1, vertex2, vertex3, z, a, b);
+	cout << "Cutting at z="<< z<< ": a="<<a << " b=" << b << endl;
+
+	CPPUNIT_ASSERT(cut);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( -0.5, a.x, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.0, a.y, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.5, b.x, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.0, b.y, 0.00001 );
+}
+
+void ModelReaderTestCase::testRotate()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	BGL::Point center(4,4);
+	BGL::Point a(4,3);
+
+	Scalar angle = M_PI /2;
+	BGL::Point b = rotateAroundPoint(center, angle, a);
+
+	cout << endl << "rotated " << a << " around " << center << " by " << angle << " rads and got " << b << endl;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 5.0, b.x, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 4.0, b.y, 0.00001 );
+
+}
+
+void ModelReaderTestCase::test3dKnot()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	Meshy mesh(0.35);
+	double tubeSpacing = 1.0;
+
+	LoadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
+	mesh.dump(cout);
+
+	cout << " Splitting up " << endl;
+	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
+	const Limits& limits = mesh.readLimits();
+	std::cout << "LIMITS: " << limits << std::endl;
+
+	Limits tubularLimits = limits;
+	tubularLimits.inflate(1.0, 1.0, 0.0);
+	tubularLimits.tubularZ();
+
+	stringstream tubeScadStr;
+	double dAngle = M_PI / 4;
+	for(int i=0; i != sliceTable.size(); i++)
+	{
+		const TriangleIndices &trianglesForSlice = sliceTable[i];
+		Scalar cutZ = (i + 0.5) * mesh.readSliceHeight();
+		std::vector<std::vector<Segment> > tubes;
+		pathology(allTriangles, trianglesForSlice, tubularLimits, cutZ, tubeSpacing, dAngle * i, tubes);
+
+		tubeScadStr << tubeScad(i, cutZ, tubes);
+
+		stringstream ss;
+		ss << "test_cases/modelReaderTestCase/output/3d_knot_" << i << ".stl";
+		mesh.writeStlFileForLayer(i, ss.str().c_str());
+		cout << ss.str().c_str() << endl;
+	}
+
+	cout << endl << endl << "****************" << endl << endl;
+	cout << tubeScadStr << endl;
+}
+
+void ModelReaderTestCase::testTubularInflate()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	Limits l0;
+
+	Point3d p0(0,0,0);
+	Point3d p1(8,4,1);
+
+	l0.grow(p0);
+	l0.grow(p1);
+
+	Limits l1 = l0;
+	l1.tubularZ();
+
+	cout << "TUBULAR" << l0 << " is " << l1 << endl;
+
+	double dx = l1.xMax - l1.xMin;
+	double dy = l1.yMax - l1.yMin;
+	CPPUNIT_ASSERT(dx > 8 );
+	CPPUNIT_ASSERT(dy > 8 );
+
+	double t = 0.000000000000001;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0, l0.zMin, t);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, l0.zMax, t);
+}
 
 
