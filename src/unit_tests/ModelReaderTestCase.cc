@@ -978,7 +978,7 @@ struct Segment
 
 
 
-void get2dSegmentsFromTriangles(const std::vector<Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
+void segmentology(const std::vector<Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
 {
 	assert(segments.size() == 0);
 	segments.reserve(trianglesForSlice.size());
@@ -1039,8 +1039,7 @@ bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1
 }
 
 
-void pathology(	const std::vector<Triangle3d> &allTriangles,
-				const TriangleIndices &trianglesForSlice,
+void pathology( std::vector<Segment> &segments,
 				const Limits& limits,
 				double z,
 				double tubeSpacing ,
@@ -1050,8 +1049,7 @@ void pathology(	const std::vector<Triangle3d> &allTriangles,
 	assert(allTubes.size() == 0);
 
 	// It is pitch black. You are likely to be eaten by a grue.
-	std::vector<Segment> segments;
-	get2dSegmentsFromTriangles(allTriangles, trianglesForSlice, z, segments);
+
 
 
 	// rotate segments for that cool look
@@ -1176,6 +1174,106 @@ void ModelReaderTestCase::testRotate()
 
 }
 
+class TubeFile
+{
+	ofstream out;
+public:
+	TubeFile(const char* filename)
+	 :out(filename)
+	{
+		if(!out)
+		{
+			stringstream ss;
+			ss << "Can't open \"" << filename << "\"";
+			MeshyMess problem(ss.str().c_str());
+			throw (problem);
+		}
+
+	    //out.setf(ios_base::floatfield, ios::floatfield);
+		//out.precision(18);
+	    out.setf(ios::fixed);
+
+		out << "use<tube.scad>" << endl << endl;
+		out << "d = 0.35;" << endl;
+		out << "f = 6;" << endl;
+		out << "t = 0.6;" << endl << endl;
+
+
+	}
+	void writeStlModule(const char* name, const char *stlName,  int slice)
+	{
+		out << endl;
+		out << "module " << name << slice << "()" << endl;
+		out << "{" << endl;
+		out << "    import(\"" << stlName << slice << ".stl\");" << endl;
+		out << "}" << endl;
+
+	}
+
+	void writeTubesModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
+	{
+		// tube(x,y,z,  x,y,z, d,f,t);
+		out << endl;
+		out << "module " << name << slice << "()"<< endl;
+		out << "{" << endl;
+		for(int i=0; i<segments.size(); i++)
+		{
+			const Segment &segment = segments[i];
+			out << "	tube(" << segment.a.x << ", " << segment.a.y << ", " << z << ", ";
+			out << 				 segment.b.x << ", " << segment.b.y << ", " << z << ", d, f, t);"<<endl;
+		}
+		out << "}" << endl;
+	}
+
+	void writeSwitcher(int count)
+	{
+		out << "module outline(min, max)" << endl;
+		out << "{" << endl;
+		for(int i=0; i< count; i++)
+		{
+			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
+			out << "	{" << endl;
+			out << "		out_"   << i << "();"<< endl;
+			out << "	}" << endl;
+		}
+		out << "}"<< endl;
+		out << endl;
+		out << "module triangles(min, max)" << endl;
+		out << "{" << endl;
+		for(int i=0; i< count; i++)
+		{
+			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
+			out << "	{" << endl;
+			out << "		stl_"   << i << "();"<< endl;
+			out << "	}" << endl;
+		}
+		out << "}"<< endl;
+		out << endl;
+		out << "module fill(min, max)" << endl;
+		out << "{" << endl;
+		for(int i=0; i< count; i++)
+		{
+			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
+			out << "	{" << endl;
+			out << "		fill_" << i << "();"<< endl;
+			out << "	}" << endl;
+		}
+		out << "}"<< endl;
+		out << endl;
+	}
+
+	~TubeFile()
+	{
+		out << "triangles(20,20);" << endl;
+		out << "outline(40,40);" << endl;
+		out << "fill(60,60);" << endl;
+
+		out.close();
+	}
+};
+
+
+
 void ModelReaderTestCase::test3dKnot()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
@@ -1197,22 +1295,49 @@ void ModelReaderTestCase::test3dKnot()
 	tubularLimits.tubularZ();
 
 	stringstream tubeScadStr;
-	double dAngle = M_PI / 4;
+
+	stringstream outScadName;
+
+	TubeFile outlineScad("test_cases/modelReaderTestCase/output/3d_knot.scad");
+
+	double dAngle = 0; // M_PI / 4;
 	for(int i=0; i != sliceTable.size(); i++)
 	{
+		Scalar z = (i + 0.5) * mesh.readSliceHeight();
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
-		Scalar cutZ = (i + 0.5) * mesh.readSliceHeight();
-		std::vector<std::vector<Segment> > tubes;
-		pathology(allTriangles, trianglesForSlice, tubularLimits, cutZ, tubeSpacing, dAngle * i, tubes);
 
-		tubeScadStr << tubeScad(i, cutZ, tubes);
+		std::vector<Segment> outlineSegments;
 
-		stringstream ss;
-		ss << "test_cases/modelReaderTestCase/output/3d_knot_" << i << ".stl";
-		mesh.writeStlFileForLayer(i, ss.str().c_str());
-		cout << ss.str().c_str() << endl;
+		// get 2D paths for outline
+		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
+
+		// get 2D rays for each slice
+		std::vector<std::vector<Segment> > rowsOfTubes;
+		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, rowsOfTubes);
+
+		stringstream stlName;
+		stlName << "test_cases/modelReaderTestCase/output/3d_knot_triangles_" << i << ".stl";
+
+		stringstream rayScadName;
+		rayScadName << "test_cases/modelReaderTestCase/output/3d_knot_ray_" << i << ".scad";
+
+		mesh.writeStlFileForLayer(i, stlName.str().c_str());
+		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
+		outlineScad.writeStlModule("stl_", "3d_knot_triangles_",  i);
+
+		// TubeFile raylineScad(rayScadName.str().c_str());
+		std::vector<Segment> layerSegments;
+		for(int j=0; j<rowsOfTubes.size(); j++)
+		{
+			const std::vector<Segment> &raySegments = rowsOfTubes[j];
+			layerSegments.insert(layerSegments.end(), raySegments.begin(), raySegments.end());
+			// raylineScad.writeTubesModule("rays_", i, rowsOfTubes[j], z);
+		}
+		outlineScad.writeTubesModule("fill_", layerSegments, i, z );
+		//	cout << ss.str().c_str() << endl;
+
 	}
-
+	outlineScad.writeSwitcher(sliceTable.size());
 	cout << endl << endl << "****************" << endl << endl;
 	cout << tubeScadStr << endl;
 }
