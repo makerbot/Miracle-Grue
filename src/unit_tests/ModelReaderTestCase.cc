@@ -24,6 +24,7 @@
 #include "mgl/meshy.h"
 #include "mgl/segment.h"
 #include "mgl/scadtubefile.h"
+#include "mgl/slicy.h"
 
 
 
@@ -33,10 +34,6 @@ using namespace std;
 using namespace BGL;
 using namespace mgl;
 
-bool sameSame(double a, double b)
-{
-	return (a-b) * (a-b) < 0.00000001;
-}
 
 /*
 CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
@@ -44,251 +41,6 @@ CPPUNIT_ASSERT_EQUAL( 12, 12 );
 CPPUNIT_ASSERT( 12L == 12L );
 */
 
-
-
-
-
-class Face
-{
-public:
-	index_t edgeIndices[3];
-};
-
-class Edge
-{
-	index_t vertexIndices[2];	// the index of the vertices that make out the edge
-	index_t face0;
-	int face1;
-
-
-public:
-	friend std::ostream& operator <<(ostream &os,const Edge &pt);
-
-
-	Edge(index_t v0, index_t v1, index_t face)
-		//:vertexIndices({v0,v1},
-		:face0(face), face1(-1)
-	{
-			vertexIndices[0] = v0;
-			vertexIndices[1] = v1;
-
-	}
-
-	void lookUpIncidentFaces(int& f1, int &f2) const
-	{
-		f1 = face0;
-		f2 = face1;
-	}
-
-	int lookUpNeighbor(index_t face) const
-	{
-		if(face0 == face)
-			return face1;
-		if (face1 == face)
-			return face0;
-		assert(0);
-		return -1;
-	}
-
-	bool operator==(const Edge &other) const
-	{
-		assert(&other != this);
-	    // Compare the values, and return a bool result.
-		if(other.vertexIndices[0] == this->vertexIndices[0] && other.vertexIndices[1] == this->vertexIndices[1])
-			return true;
-		if(other.vertexIndices[1] == this->vertexIndices[0] && other.vertexIndices[0] == this->vertexIndices[1])
-			return true;
-		return false;
-	}
-
-	bool operator!=(const Edge &other) const
-	{
-	    return !(*this == other);
-	}
-
-	void connectFace(index_t face)
-	{
-		if(face0 == face)
-		{
-			cout << "BAD: edge connecting to the same face twice! " << endl;
-			cout << "  dump: " << this << endl;
-			cout << ((Edge&)*this) << endl;
-			assert(0);
-
-		}
-
-		if(face1 == -1)
-		{
-			face1 = face;
-		}
-		else
-		{
-			cout << "BAD: edge connected to face "<< face0  << " and face1 "<< face1<<  " trying to connecting to face " << face << endl;
-			cout << "  dump: " << this << endl;
-			cout << ((Edge&)*this) << endl;
-			assert(0);
-		}
-	}
-
-};
-
-std::ostream& operator<<(ostream& os, const Edge& e)
-{
-	os << " " << e.vertexIndices[0] << "\t" << e.vertexIndices[1] << "\t" << e.face0 << "\t" << e.face1;
-	return os;
-}
-
-
-///
-/// This class consumes triangles (3 coordinates) and creates a list
-/// of vertices, edges, and faces.
-///
-class Slicy
-{
-	std::vector<Point3d> vertices;
-	std::vector<Edge> edges;
-	std::vector<Face> faces;
-	Scalar tolerence;
-
-	friend std::ostream& operator <<(ostream &os,const Slicy &pt);
-
-public:
-
-
-	Slicy (Scalar tolerence)
-		:tolerence(tolerence)
-	{
-
-	}
-
-	index_t addTriangle(const Triangle3d &t)
-	{
-		index_t faceId = faces.size();
-
-//		cout << "Slicy::addTriangle " << endl;
-//		cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << endl;
-//		cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << endl;
-		Face face;
-		face.edgeIndices[0] = findOrCreateEdge(t.vertex1, t.vertex2, faceId);
-//		cout << "   a) " << face.edge0 << "(" << edges[face.edge0] << ")" << endl;
-		face.edgeIndices[1] = findOrCreateEdge(t.vertex2, t.vertex3, faceId);
-//		cout << "   b) " << face.edge1 << "(" << edges[face.edge1] << ")" << endl;
-		face.edgeIndices[2] = findOrCreateEdge(t.vertex3, t.vertex1, faceId);
-//		cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << endl;
-
-		/*
-		cout << "EDGE 0: index " << face.edge0 << " : " << edges[face.edge0] << endl;
-		face.edge1 = findOrCreateEdge(t.vertex2, t.vertex3, faceId);
-		cout << "EDGE 1: index " << face.edge0 << " edge (v1,v2, f1,f2): " << edges[face.edge0] << endl;
-		cout << "EDGE 2: index " << face.edge0 << " edge (v1,v2, f1,f2): " << edges[face.edge0] << endl;
-		 */
-		faces.push_back(face);
-		return faces.size() -1;
-	}
-
-
-	// given a face index, this method returns the cached
-	void lookupIncidentFacesToFace(index_t faceId, int& face0, int& face1, int& face2) const
-	{
-		const Face& face = faces[faceId];
-
-		const Edge &e0 = edges[face.edgeIndices[0] ];
-		const Edge &e1 = edges[face.edgeIndices[1] ];
-		const Edge &e2 = edges[face.edgeIndices[2] ];
-
-		face0 = e0.lookUpNeighbor(faceId);
-		face1 = e1.lookUpNeighbor(faceId);
-		face2 = e2.lookUpNeighbor(faceId);
-
-	}
-
-
-
-	void dump(std::ostream& out) const
-	{
-		out << "Slicy" << endl;
-		out << "  vertices: " << vertices.size() << endl;
-		out << "  edges: " << edges.size() << endl;
-		out << "  faces: " << faces.size() << endl;
-
-		cout << endl;
-
-		cout << "Vertices:" << endl;
-
-		int x =0;
-		for(vector<Point3d>::const_iterator i = vertices.begin(); i != vertices.end(); i++ )
-		{
-			cout << x << ": " << *i << endl;
-			x ++;
-		}
-
-		cout << endl;
-		cout << "Edges (vertex 1, vertex2, face 1, face2)" << endl;
-
-		x =0;
-		for(vector<Edge>::const_iterator i = edges.begin(); i != edges.end(); i++)
-		{
-			cout << x << ": " << *i << endl;
-			x ++;
-		}
-
-	}
-private:
-	index_t findOrCreateEdge(const Point3d &coords0, const Point3d &coords1, size_t face)
-	{
-		index_t v0 = findOrCreateVertex(coords0);
-		index_t v1 = findOrCreateVertex(coords1);
-
-		Edge e(v0, v1, face);
-		index_t edgeIndex;
-
-		std::vector<Edge>::iterator it = find(edges.begin(), edges.end(), e);
-		if(it == edges.end())
-		{
-			// cout << "NEW EDGE " << coords << endl;
-			edges.push_back(e);
-			edgeIndex = edges.size() -1;
-		}
-		else
-		{
-			it->connectFace(face);
-			edgeIndex = std::distance(edges.begin(), it);
-		}
-		return edgeIndex;
-	}
-
-
-	index_t findOrCreateVertex(const Point3d &coords)
-	{
-		for(vector<Point3d>::iterator it = vertices.begin(); it != vertices.end(); it++)
-		{
-			const Point3d &p = (*it);
-			Scalar dx = coords.x - p.x;
-			Scalar dy = coords.y - p.y;
-			Scalar dz = coords.z - p.z;
-
-			Scalar dd =  dx * dx + dy * dy + dz * dz;
-			if( dd < tolerence )
-			{
-				//cout << "Found VERTEX" << endl;
-				index_t vertexIndex = std::distance(vertices.begin(), it);
-				return vertexIndex;
-			}
-		}
-
-		index_t vertexIndex;
-		// cout << "NEW VERTEX " << coords << endl;
-		vertices.push_back(coords);
-		vertexIndex = vertices.size() -1;
-		return vertexIndex;
-	}
-};
-
-std::ostream& operator << (ostream &os, const Slicy &s)
-{
-	s.dump(os);
-	return os;
-}
 
 /*
 class Cuts
@@ -542,8 +294,8 @@ void pathology( std::vector<Segment> &segments,
 	Point toOrigin(-c.x, -c.y);
 	Point toCenter(c.x, c.y);
 
-	translateSegments(segments, toOrigin);
-	rotateSegments(segments, angle);
+//	translateSegments(segments, toOrigin);
+//	rotateSegments(segments, angle);
 	// translateSegments(segments, toCenter);
 
 	int tubeCount = (limits.yMax - limits.yMin) / tubeSpacing;
@@ -598,8 +350,8 @@ void pathology( std::vector<Segment> &segments,
 	for (int i=0; i < tubeCount; i++)
 	{
 		std::vector<Segment>& tubes = allTubes[i];
-		rotateSegments(segments, -angle);
-		translateSegments(segments, toCenter);
+//		rotateSegments(segments, -angle);
+//		translateSegments(segments, toCenter);
 
 	}
 }
@@ -661,20 +413,17 @@ void ModelReaderTestCase::testRotate()
 
 
 
-
-
-void ModelReaderTestCase::test3dKnot()
+void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFile)
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
-
 	Meshy mesh(0.35);
 	double tubeSpacing = 1.0;
 
-	LoadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
-	//LoadMeshyFromStl(mesh,"/home/hugo/code/Miracle-Grue/inputs/DURALEX_1.stl");
-	mesh.dump(cout);
+	LoadMeshyFromStl(mesh, modelFile);
+	// mesh.dump(cout);
 
-	cout << " Splitting up " << endl;
+	cout << "Splitting up: " << modelFile << endl;
+	cout << "And creating: " << scadFile << endl;
+
 	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
 	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
 	const Limits& limits = mesh.readLimits();
@@ -684,11 +433,9 @@ void ModelReaderTestCase::test3dKnot()
 	tubularLimits.inflate(1.0, 1.0, 0.0);
 	tubularLimits.tubularZ();
 
-	stringstream tubeScadStr;
 
 	stringstream outScadName;
-
-	ScadTubeFile outlineScad("test_cases/modelReaderTestCase/output/3d_knot.scad");
+	ScadTubeFile outlineScad(scadFile);
 
 	double dAngle = 0; // M_PI / 4;
 	for(int i=0; i != sliceTable.size(); i++)
@@ -706,16 +453,12 @@ void ModelReaderTestCase::test3dKnot()
 		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, rowsOfTubes);
 
 		stringstream stlName;
-		stlName << "test_cases/modelReaderTestCase/output/3d_knot_triangles_" << i << ".stl";
-
-		stringstream rayScadName;
-		rayScadName << "test_cases/modelReaderTestCase/output/3d_knot_ray_" << i << ".scad";
+		stlName << stlFiles << i << ".stl";
 
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
 		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
-		outlineScad.writeStlModule("stl_", "3d_knot_triangles_",  i);
+		outlineScad.writeStlModule("stl_", stlName.str().c_str(),  i);
 
-		// TubeFile raylineScad(rayScadName.str().c_str());
 		std::vector<Segment> layerSegments;
 		for(int j=0; j<rowsOfTubes.size(); j++)
 		{
@@ -728,8 +471,83 @@ void ModelReaderTestCase::test3dKnot()
 
 	}
 	outlineScad.writeSwitcher(sliceTable.size());
-	cout << endl << endl << "****************" << endl << endl;
-	cout << tubeScadStr << endl;
+
+}
+
+void ModelReaderTestCase::test3dKnot()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	std::string outDir = "test_cases/modelReaderTestCase/output";
+
+	std::vector<std::string> models;
+
+	std::string stlDirectory = "inputs";
+	models.push_back("3D_Knot");
+	models.push_back("Water");
+	models.push_back("hexagon");
+	models.push_back("Land");
+
+
+
+/*
+	std::string stlDirectory = "../stls";
+	//std::string stlDirectory = "/home/hugo/code/stls";
+
+	models.push_back("3D_Knot");
+	models.push_back("F1");
+	models.push_back("hexagon");
+	models.push_back("Land");
+	models.push_back("Roal10");
+	models.push_back("soap_highres");
+	models.push_back("TeaPot");
+	models.push_back("Water");
+	models.push_back("Yodsta_Printdata");
+	//models.push_back("Pivot-Joint_-_Ball_End_-1X");
+	//models.push_back("Toymaker_Skull_1_Million_Polys");
+
+	models.push_back("part2");
+*/
+	std::vector<double> times;
+	for (int i=0; i < models.size(); i++)
+	{
+
+		std::string modelFile;
+		modelFile += stlDirectory;
+		modelFile += "/";
+		modelFile += models[i];
+		modelFile += ".stl";
+
+		std::string stlFiles;
+		stlFiles += models[i];
+		stlFiles += "_";
+
+		std::string scadFile;
+		scadFile += outDir;
+		scadFile += "/";
+		scadFile += models[i];
+		scadFile += ".scad";
+
+		cout << endl << endl;
+		cout << modelFile << " to " << stlFiles << " and " << scadFile << endl;
+
+		unsigned int t0,t1;
+		t0=clock();
+		sliceToScad(modelFile.c_str(), stlFiles.c_str(), scadFile.c_str());
+		t1=clock()-t0;
+		double t = t1 / 1000000.0;
+		times.push_back(t);
+		cout << "In only " << t << "seconds" << endl;
+	}
+
+	cout << endl << endl << "MODEL *** TIME 2 SLICE (s)" << endl;
+	cout << " ----------" <<endl;
+	for (int i=0; i < models.size(); i++)
+	{
+		cout << models[i] << "\t" << times[i] << endl;
+	}
+
+
 }
 
 void ModelReaderTestCase::testTubularInflate()

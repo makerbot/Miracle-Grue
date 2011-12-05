@@ -1,3 +1,13 @@
+/**
+   MiracleGrue - Model Generator for toolpathing. <http://www.grue.makerbot.com>
+   Copyright (C) 2011 Far McKon <Far@makerbot.com>, Hugo Boyer (hugo@makerbot.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+*/
 
 
 #ifndef MESHY_H_
@@ -105,8 +115,6 @@ public:
 
 		if (maxSliceIndex > sliceTable.size() )
 		{
-
-			cout << "resize to " << maxSliceIndex << endl;
 			sliceTable.resize(maxSliceIndex); // make room for potentially new slices
 			// cout << "new slices: " << sliceTable.size() << endl;
 		}
@@ -134,6 +142,7 @@ public:
 		out << "dumping " << this << endl;
 		out << "Nb of triangles: " << allTriangles.size() << endl;
 		size_t sliceCount = sliceTable.size();
+
 		out << "triangles per slice: (" << sliceCount << " slices)" << endl;
 		for (int i= 0; i< sliceCount; i++)
 		{
