@@ -13,7 +13,10 @@
 #include <assert.h>
 #include <ctime>
 #include <cmath>
+#include <iomanip>
+
 #include "GCoderOperation.h"
+#include "mgl/scadtubefile.h"
 
 #include "json-cpp/include/json/value.h"
 

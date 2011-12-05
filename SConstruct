@@ -66,7 +66,7 @@ print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separa
 
 
 # Using just one environemt setup for now	
-env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
+env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=['default','qt4'])
 # print "os.environ['PATH']=", os.environ['PATH']
 
 debug = ARGUMENTS.get('debug', 0)
@@ -118,7 +118,7 @@ slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc',
 file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
 example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
-default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL']
+default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
 default_libs = [ '_json','miracleGrue', 'bgl']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
@@ -166,23 +166,27 @@ if run_unit_tests == True:
 #				LIBS = default_libs + debug_libs,
 #				LIBPATH = default_libs_path, 
 #				CPPPATH = default_includes)
-				
+		
+	
 env.Program(	'./bin/tests/configUnitTest',
 				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path , 
 				CPPPATH = default_includes)
+
 if run_unit_tests == True:
 	Command('configUnitTest.passed','./bin/tests/configUnitTest',runUnitTest)
 
+
+			
 env.Program( 	'./bin/tests/gcoderUnitTest', 
-				mix(['src/unit_tests/GCoderTestCase.cc'], 
-				unit_test, pather, gcoder, file_w), 
+				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test, pather, gcoder, file_w), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= default_includes)
 if run_unit_tests == True:
 	Command('gcoderUnitTest.passed','./bin/tests/gcoderUnitTest',runUnitTest)
+
 
 env.Program( 	'./bin/tests/slicerUnitTest', 
 				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
@@ -204,7 +208,7 @@ env.Program(  	'./bin/tests/modelReaderUnitTest',
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
+				CPPPATH= ['../src'])
 if run_unit_tests == True:
 	Command('modelReaderUnitTest.passed','./bin/tests/modelReaderUnitTest',runUnitTest)
 
@@ -212,6 +216,6 @@ env.Program(  	'./bin/tests/chainIntegrationUnitTest',
 				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
     			LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
+				CPPPATH= [".."])
 if run_unit_tests == True:
 	Command('chainIntegrationUnitTest.passed','./bin/tests/chainIntegrationUnitTest',runUnitTest)

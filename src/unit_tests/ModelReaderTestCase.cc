@@ -18,10 +18,20 @@
 #include "../BGL/BGLPoint.h"
 #include "../BGL/BGLMesh3d.h"
 
+#include "../BGL/BGLMesh3d.h"
+
+#include "mgl/limits.h"
+#include "mgl/meshy.h"
+#include "mgl/segment.h"
+#include "mgl/scadtubefile.h"
+
+
+
 CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
 using namespace std;
 using namespace BGL;
+using namespace mgl;
 
 bool sameSame(double a, double b)
 {
@@ -34,313 +44,7 @@ CPPUNIT_ASSERT_EQUAL( 12, 12 );
 CPPUNIT_ASSERT( 12L == 12L );
 */
 
-typedef unsigned int index_t;
-typedef std::vector<index_t> TriangleIndices;
-typedef std::vector<TriangleIndices> TrianglesInSlices;
 
-// returns the minimum and maximum z for the 3 vertices of a triangle
-void minMaxZ(const Triangle3d &t, Scalar &min,  Scalar &max )
-{
-	// find minimum
-	min = t.vertex1.z;
-	if(t.vertex2.z < min)
-		min = t.vertex2.z ;
-
-	if(t.vertex3.z < min)
-		min = t.vertex3.z ;
-
-	// find maximum
-	max = t.vertex1.z;
-	if( t.vertex2.z > max)
-		max = t.vertex2.z;
-
-	if (t.vertex3.z > max)
-		max = t.vertex3.z;
-}
-
-class MeshyMess
-{
-
-public:
-	std::string error;
-	MeshyMess(const char *msg)
-	 :error(msg)
-	{
-
-	}
-
-};
-
-
-struct Limits
-{
-
-	friend std::ostream& operator <<(ostream &os, const Limits &l);
-
-	Scalar xMin, xMax, yMin, yMax, zMin, zMax;
-
-	Limits()
-	{
-		xMax = std::numeric_limits<Scalar>::min();
-		yMax = xMax;
-		zMax = xMax;
-
-		xMin = std::numeric_limits<Scalar>::max();
-		yMin = xMin;
-		zMin = zMin;
-
-	}
-/*
-	Limits(const Limits& kat)
-	{
-		xMin = kat.xMin;
-		xMax = kat.xMax;
-		yMin = kat.yMin;
-		yMax = kat.yMax;
-		zMin = kat.zMin;
-		zMax = kat.zMax;
-	}
-*/
-	void grow(const BGL::Point3d &p)
-	{
-		if(p.x < xMin) xMin = p.x;
-		if(p.x > xMax) xMax = p.x;
-		if(p.y < yMin) yMin = p.y;
-		if(p.y > yMax) yMax = p.y;
-		if(p.z < zMin) zMin = p.z;
-		if(p.z > zMax) zMax = p.z;
-	}
-
-	// adds inflate to all sides (half of inflate in + and half inflate in - direction)
-	void inflate(Scalar inflateX, Scalar inflateY, Scalar inflateZ)
-	{
-		xMin -= 0.5 * inflateX;
-		xMax += 0.5 * inflateX;
-		yMin -= 0.5 * inflateY;
-		yMax += 0.5 * inflateY;
-		zMin -= 0.5 * inflateZ;
-		zMax += 0.5 * inflateZ;
-	}
-
-	// grows the limits to contain points that rotate along
-	// the XY center point and Z axis
-	void tubularZ()
-	{
-		BGL::Point3d c = center();
-		Scalar dx = 0.5 * (xMax-xMin);
-		Scalar dy = 0.5 * (yMax - yMin);
-
-		Scalar radius = sqrt(dx*dx + dy*dy);
-
-		BGL::Point3d north = c;
-		north.y += radius;
-
-		BGL::Point3d south = c;
-		south.y -= radius;
-
-		BGL::Point3d east = c;
-		east.x += radius;
-
-		BGL::Point3d west = c;
-		west.x -= radius;
-
-		grow(north);
-		grow(south);
-		grow(east);
-		grow(west);
-	}
-
-	BGL::Point3d center() const
-	{
-		BGL::Point3d c(0.5 * (xMin + xMax), 0.5 * (yMin + yMax), 0.5 *(zMin + zMax) );
-		return c;
-	}
-
-
-	// generates Limits that contain the limits
-	// The new limits allow any point inside the limits
-	// to be rotated around the center (along Z)
-	// and be kept inside the limits
-
-
-};
-
-std::ostream& operator<<(ostream& os, const Limits& l)
-{
-	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
-	return os;
-}
-
-class Meshy
-{
-
-	Scalar sliceHeight;
-	Limits limits;
-
-	std::vector<Triangle3d>  allTriangles;
-	TrianglesInSlices sliceTable;
-public:
-
-	const std::vector<Triangle3d> &readAllTriangles()
-	{
-		return allTriangles;
-	}
-
-	const Limits& readLimits() const
-	{
-		return limits;
-	}
-
-	Scalar readSliceHeight() const
-	{
-		return sliceHeight;
-	}
-
-	const TrianglesInSlices &readSliceTable() const
-	{
-		return sliceTable;
-	}
-
-	Meshy(Scalar sliceHeight)
-		:sliceHeight(sliceHeight)
-	{
-	}
-
-	//
-	// Adds a triangle to the global array and for each slice of interest
-	//
-	void addTriangle(Triangle3d &t)
-	{
-		Scalar min;
-		Scalar max;
-		minMaxZ(t, min, max);
-		int minSliceIndex = floor( (min+0.5) / sliceHeight);
-		int maxSliceIndex = floor( (max+0.5) / sliceHeight);
-
-
-		if (maxSliceIndex > sliceTable.size() )
-		{
-
-			// cout << "resize to " << maxSliceIndex << endl;
-			sliceTable.resize(maxSliceIndex); // make room for potentially new slices
-			// cout << "new slices: " << sliceTable.size() << endl;
-		}
-
-		allTriangles.push_back(t);
-
-		size_t newTriangleId = allTriangles.size() -1;
-
-
-		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << endl;
-		for (int i= minSliceIndex; i< maxSliceIndex; i++)
-		{
-			TriangleIndices &trianglesForSlice = sliceTable[i];
-			trianglesForSlice.push_back(newTriangleId);
-		}
-
-		limits.grow(t.vertex1);
-		limits.grow(t.vertex2);
-		limits.grow(t.vertex3);
-	}
-
-
-	void dump(std::ostream &out)
-	{
-		out << "dumping " << this << endl;
-		out << "Nb of triangles: " << allTriangles.size() << endl;
-		size_t sliceCount = sliceTable.size();
-		out << "triangles per slice: (" << sliceCount << " slices)" << endl;
-		for (int i= 0; i< sliceCount; i++)
-		{
-			TriangleIndices &trianglesForSlice = sliceTable[i];
-			//trianglesForSlice.push_back(newTriangleId);
-			cout << "  slice " << i << " size: " << trianglesForSlice.size() << endl;
-			//cout << "adding triangle " << newTriangleId << " to layer " << i << endl;
-		}
-	}
-
-
-
-
-
-
-	void writeTriangle(std::ostream &out, const Triangle3d& t) const
-	{
-		//  normalize( (v1-v0) cross (v2 - v0) )
-
-		// normalize
-		// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
-
-		double n0=0;
-		double n1=0;
-		double n2=0;
-
-		out << " facet normal " << n0 << " " << n1 << " " << n2 << endl;
-		out << "  outer loop"<< endl;
-		out << "    vertex " << t.vertex1.x << " " << t.vertex1.y << " " << t.vertex1.z << endl;
-		out << "    vertex " << t.vertex2.x << " " << t.vertex2.y << " " << t.vertex2.z << endl;
-		out << "    vertex " << t.vertex3.x << " " << t.vertex3.y << " " << t.vertex3.z << endl;
-		out << "  end loop" << endl;
-		out << " end facet" << endl;
-	}
-
-public:
-	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const
-	{
-
-		//solid Default
-		//  facet normal 1.435159e-01 2.351864e-02 9.893685e-01
-		//    outer loop
-		//      vertex -7.388980e-02 -2.377973e+01 6.062650e+01
-		//      vertex -1.193778e-01 -2.400027e+01 6.063834e+01
-		//      vertex -4.402440e-06 -2.490700e+01 6.064258e+01
-		//    endloop
-		//  endfacet
-		//endsolid Default
-
-		ofstream out(fileName);
-		if(!out) {
-			stringstream ss;
-			ss << "Can't open \"" << fileName << "\"";
-			MeshyMess problem(ss.str().c_str());
-			throw (problem);
-		}
-		stringstream ss;
-		ss << setfill ('0') << setw(10);
-		ss <<  "slice_" << layerIndex;
-		string solidName = ss.str();
-		// bingo!
-		out << "solid Slice_" << layerIndex << endl;
-		Scalar n0, n1, n2;
-		out << scientific;
-		const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
-		for(std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i!= trianglesForSlice.end(); i++)
-		{
-			index_t index = *i;
-			const Triangle3d &t = allTriangles[index];
-			writeTriangle(out, t);
-		}
-
-		out << "end solid " << solidName;
-		out.close();
-	}
-
-};
-
-
-
-size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
-{
-
-	Mesh3d mesh;
-	int count = mesh.loadFromSTLFile(filename);
-	for (Triangles3d::iterator i= mesh.triangles.begin(); i != mesh.triangles.end(); i++)
-	{
-		Triangle3d &t = *i;
-		meshy.addTriangle(t);
-	}
-	return (size_t) count;
-}
 
 
 
@@ -586,6 +290,7 @@ std::ostream& operator << (ostream &os, const Slicy &s)
 	return os;
 }
 
+/*
 class Cuts
 {
 	index_t triangle;
@@ -604,6 +309,7 @@ class LoopPole
 	// std::list<Point> points;
 };
 
+*/
 
 // Generating the vertices for an arbitrarily oriented cylinder is a common problem that is fairly straightforward to solve.
 // Generating the orthonormal basis vectors used to find the endcap vertices.
@@ -796,247 +502,26 @@ void ModelReaderTestCase::testSlicyWater()
 //
 
 
-bool sameSame(double a, double b);
 
 
 
-bool sliceTriangle(const BGL::Point3d& vertex1, const BGL::Point3d& vertex2, const BGL::Point3d& vertex3, Scalar Z, BGL::Point &a, BGL::Point &b)
-{
-	Scalar u, px, py, v, qx, qy;
-	if (vertex1.z > Z && vertex2.z > Z && vertex3.z > Z)
-	{
-		// Triangle is above Z level.
-		return false;
-	}
-	if (vertex1.z < Z && vertex2.z < Z && vertex3.z < Z)
-	{
-		// Triangle is below Z level.
-		return false;
-	}
-	if (sameSame(vertex1.z, Z) )
-	{
-		if (sameSame(vertex2.z,Z) )
-		{
-			if (sameSame(vertex3.z,Z) )
-			{
-				// flat face.  Ignore.
-				return false;
-			}
-			//lnref = Line(Point(vertex1), Point(vertex2));
-			a.x = vertex1.x;
-			a.y = vertex1.y;
-
-			b.x = vertex2.x;
-			b.y = vertex2.y;
-			return true;
-		}
-		if (sameSame(vertex3.z,Z) )
-		{
-			// lnref = Line(Point(vertex1), Point(vertex3));
-			a.x = vertex1.x;
-			a.y = vertex1.y;
-			b.x = vertex3.x;
-			b.y = vertex3.y;
-			return true;
-		}
-		if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
-		{
-			// only touches vertex1 tip.  Ignore.
-			return false;
-		}
-		u = (Z-vertex2.z)/(vertex3.z-vertex2.z);
-		px =  vertex2.x+u*(vertex3.x-vertex2.x);
-		py =  vertex2.y+u*(vertex3.y-vertex2.y);
-		// lnref = Line(Point(vertex1), Point(px,py));
-		a.x = vertex1.x;
-		a.y = vertex1.y;
-		b.x = px;
-		b.y = py;
-		return true;
-	}
-	else if (sameSame(vertex2.z, Z) )
-	{
-		if (sameSame(vertex3.z,Z) )
-		{
-			// lnref = Line(Point(vertex2), Point(vertex3));
-			a.x = vertex2.x;
-			a.y = vertex2.y;
-			b.x = vertex3.x;
-			b.y = vertex3.y;
-			return true;
-		}
-		if ((vertex1.z > Z && vertex3.z > Z) || (vertex1.z < Z && vertex3.z < Z))
-		{
-			// only touches vertex2 tip.  Ignore.
-			return false;
-		}
-		u = (Z-vertex1.z)/(vertex3.z-vertex1.z);
-		px =  vertex1.x+u*(vertex3.x-vertex1.x);
-		py =  vertex1.y+u*(vertex3.y-vertex1.y);
-		// lnref = Line(Point(vertex2), Point(px,py));
-		a.x = vertex2.x;
-		a.y = vertex2.y;
-		b.x = px;
-		b.y = py;
-		return true;
-	}
-	else if (sameSame(vertex3.z, Z) )
-	{
-		if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
-		{
-			// only touches vertex3 tip.  Ignore.
-			return false;
-		}
-		u = (Z-vertex1.z)/(vertex2.z-vertex1.z);
-		px =  vertex1.x+u*(vertex2.x-vertex1.x);
-		py =  vertex1.y+u*(vertex2.y-vertex1.y);
-		// lnref = Line(Point(vertex3), Point(px,py));
-		a.x = vertex3.x;
-		a.y = vertex3.y;
-		b.x = px;
-		b.y = py;
-		return true;
-	}
-	else if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
-	{
-		u = (Z-vertex3.z)/(vertex1.z-vertex3.z);
-		px =  vertex3.x+u*(vertex1.x-vertex3.x);
-		py =  vertex3.y+u*(vertex1.y-vertex3.y);
-		v = (Z-vertex3.z)/(vertex2.z-vertex3.z);
-		qx =  vertex3.x+v*(vertex2.x-vertex3.x);
-		qy =  vertex3.y+v*(vertex2.y-vertex3.y);
-		// lnref = Line(Point(px,py), Point(qx,qy));
-		a.x = px;
-		a.y = py;
-		b.x = qx;
-		b.y = qy;
-		return true;
-	}
-	else if ((vertex1.z > Z && vertex3.z > Z) || (vertex1.z < Z && vertex3.z < Z))
-	{
-		u = (Z-vertex2.z)/(vertex1.z-vertex2.z);
-		px =  vertex2.x+u*(vertex1.x-vertex2.x);
-		py =  vertex2.y+u*(vertex1.y-vertex2.y);
-		v = (Z-vertex2.z)/(vertex3.z-vertex2.z);
-		qx =  vertex2.x+v*(vertex3.x-vertex2.x);
-		qy =  vertex2.y+v*(vertex3.y-vertex2.y);
-		// lnref = Line(Point(px,py), Point(qx,qy));
-		a.x = px;
-		a.y = py;
-		b.x = qx;
-		b.y = qy;
-		return true;
-	}
-	else if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
-	{
-		u = (Z-vertex1.z)/(vertex2.z-vertex1.z);
-		px =  vertex1.x+u*(vertex2.x-vertex1.x);
-		py =  vertex1.y+u*(vertex2.y-vertex1.y);
-		v = (Z-vertex1.z)/(vertex3.z-vertex1.z);
-		qx =  vertex1.x+v*(vertex3.x-vertex1.x);
-		qy =  vertex1.y+v*(vertex3.y-vertex1.y);
-		// lnref = Line(Point(px,py), Point(qx,qy));
-		a.x = px;
-		a.y = py;
-		b.x = qx;
-		b.y = qy;
-		return true;
-	}
-	return false;
-}
 
 
-BGL::Point rotate2d(const BGL::Point &p, Scalar angle)
-{
-	// rotate point
-	double s = sin(angle); // radians
-	double c = cos(angle);
-	BGL::Point rotated;
-	rotated.x = p.x * c - p.y * s;
-	rotated.y = p.x * s + p.y * c;
-	return rotated;
-}
 
 BGL::Point rotateAroundPoint(const BGL::Point &center, Scalar angle, const BGL::Point &p)
 {
+	// translate point back to origin:
+	BGL::Point translated = p - center;
 
-  // translate point back to origin:
-  BGL::Point translated = p - center;
-
-  BGL::Point rotated = rotate2d(translated, angle);
-  // translate point back:
-  BGL::Point r = rotated + center;
-  return r;
+	BGL::Point rotated = rotate2d(translated, angle);
+	// translate point back:
+	BGL::Point r = rotated + center;
+	return r;
 }
 
 
-struct Segment
-{
-	BGL::Point a;
-	BGL::Point b;
-};
 
 
-
-void segmentology(const std::vector<Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
-{
-	assert(segments.size() == 0);
-	segments.reserve(trianglesForSlice.size());
-	for(TriangleIndices::const_iterator i= trianglesForSlice.begin(); i != trianglesForSlice.end(); i++)
-	{
-		const Triangle3d &t = allTriangles[(*i)];
-		const BGL::Point3d &vertex0 = t.vertex1;
-		const BGL::Point3d &vertex1 = t.vertex2;
-		const BGL::Point3d &vertex2 = t.vertex3;
-
-		Segment s;
-		bool cut = sliceTriangle(vertex0, vertex1, vertex2, z, s.a, s.b);
-		if(cut)
-		{
-			segments.push_back(s);
-		}
-	}
-}
-
-void translateSegments(std::vector<Segment> &segments, Point p)
-{
-	for(int i=0; i < segments.size(); i++)
-	{
-		segments[i].a += p;
-		segments[i].b += p;
-	}
-}
-
-void rotateSegments(std::vector<Segment> &segments, Scalar angle)
-{
-	for(int i=0; i < segments.size(); i++)
-	{
-		segments[i].a = rotate2d(segments[i].a, angle);
-		segments[i].b = rotate2d(segments[i].b, angle);
-	}
-}
-
-bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
-		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y)
-{
-    float s1_x, s1_y, s2_x, s2_y;
-    s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
-    s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
-
-    float s, t;
-    s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
-    t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
-
-    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-    {
-        // Collision detected
-        i_x = p0_x + (t * s1_x);
-        i_y = p0_y + (t * s1_y);
-        return true;
-    }
-
-    return false; // No collision
-}
 
 
 void pathology( std::vector<Segment> &segments,
@@ -1174,103 +659,7 @@ void ModelReaderTestCase::testRotate()
 
 }
 
-class TubeFile
-{
-	ofstream out;
-public:
-	TubeFile(const char* filename)
-	 :out(filename)
-	{
-		if(!out)
-		{
-			stringstream ss;
-			ss << "Can't open \"" << filename << "\"";
-			MeshyMess problem(ss.str().c_str());
-			throw (problem);
-		}
 
-	    //out.setf(ios_base::floatfield, ios::floatfield);
-		//out.precision(18);
-	    out.setf(ios::fixed);
-
-		out << "use<tube.scad>" << endl << endl;
-		out << "d = 0.35;" << endl;
-		out << "f = 6;" << endl;
-		out << "t = 0.6;" << endl << endl;
-
-
-	}
-	void writeStlModule(const char* name, const char *stlName,  int slice)
-	{
-		out << endl;
-		out << "module " << name << slice << "()" << endl;
-		out << "{" << endl;
-		out << "    import(\"" << stlName << slice << ".stl\");" << endl;
-		out << "}" << endl;
-
-	}
-
-	void writeTubesModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
-	{
-		// tube(x,y,z,  x,y,z, d,f,t);
-		out << endl;
-		out << "module " << name << slice << "()"<< endl;
-		out << "{" << endl;
-		for(int i=0; i<segments.size(); i++)
-		{
-			const Segment &segment = segments[i];
-			out << "	tube(" << segment.a.x << ", " << segment.a.y << ", " << z << ", ";
-			out << 				 segment.b.x << ", " << segment.b.y << ", " << z << ", d, f, t);"<<endl;
-		}
-		out << "}" << endl;
-	}
-
-	void writeSwitcher(int count)
-	{
-		out << "module outline(min, max)" << endl;
-		out << "{" << endl;
-		for(int i=0; i< count; i++)
-		{
-			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
-			out << "	{" << endl;
-			out << "		out_"   << i << "();"<< endl;
-			out << "	}" << endl;
-		}
-		out << "}"<< endl;
-		out << endl;
-		out << "module triangles(min, max)" << endl;
-		out << "{" << endl;
-		for(int i=0; i< count; i++)
-		{
-			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
-			out << "	{" << endl;
-			out << "		stl_"   << i << "();"<< endl;
-			out << "	}" << endl;
-		}
-		out << "}"<< endl;
-		out << endl;
-		out << "module fill(min, max)" << endl;
-		out << "{" << endl;
-		for(int i=0; i< count; i++)
-		{
-			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
-			out << "	{" << endl;
-			out << "		fill_" << i << "();"<< endl;
-			out << "	}" << endl;
-		}
-		out << "}"<< endl;
-		out << endl;
-	}
-
-	~TubeFile()
-	{
-		out << "triangles(20,20);" << endl;
-		out << "outline(40,40);" << endl;
-		out << "fill(60,60);" << endl;
-
-		out.close();
-	}
-};
 
 
 
@@ -1282,6 +671,7 @@ void ModelReaderTestCase::test3dKnot()
 	double tubeSpacing = 1.0;
 
 	LoadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
+	//LoadMeshyFromStl(mesh,"/home/hugo/code/Miracle-Grue/inputs/DURALEX_1.stl");
 	mesh.dump(cout);
 
 	cout << " Splitting up " << endl;
@@ -1298,7 +688,7 @@ void ModelReaderTestCase::test3dKnot()
 
 	stringstream outScadName;
 
-	TubeFile outlineScad("test_cases/modelReaderTestCase/output/3d_knot.scad");
+	ScadTubeFile outlineScad("test_cases/modelReaderTestCase/output/3d_knot.scad");
 
 	double dAngle = 0; // M_PI / 4;
 	for(int i=0; i != sliceTable.size(); i++)
