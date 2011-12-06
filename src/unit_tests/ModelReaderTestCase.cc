@@ -1,4 +1,3 @@
-
 #include <time.h>
 #include <fstream>
 #include <algorithm> // find
@@ -356,23 +355,6 @@ void pathology( std::vector<Segment> &segments,
 	}
 }
 
-std::string tubeScad(int layerIndex, Scalar z, const std::vector<std::vector<Segment> > &allTubes)
-{
-	stringstream ss;
-	ss << "// layer " << layerIndex << endl;
-	int rayCount = allTubes.size();
-	for (int i=0; i < rayCount; i++)
-	{
-		const std::vector<Segment> &tubes = allTubes[i];
-		ss << "// Ray " << i << " z=" << z << endl;
-		for(int j=0; j<tubes.size(); j++)
-		{
-			const Segment &tube = tubes[j];
-			ss << "// segment: " << tube.a << ", " << tube.b << ", z=" << z << endl;
-		}
-	}
-	return ss.str();
-}
 
 void ModelReaderTestCase::testCutTriangle()
 {
@@ -413,10 +395,10 @@ void ModelReaderTestCase::testRotate()
 
 
 
-void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFile)
+void sliceToScad(const char*modelFile, double layerH, double layerW, double tubeSpacing, const char* outDir, const char* stlFilePrefix, const char* scadFile)
 {
-	Meshy mesh(0.35);
-	double tubeSpacing = 1.0;
+	Meshy mesh(layerH); // 0.35
+	// double tubeSpacing = 1.0;
 
 	LoadMeshyFromStl(mesh, modelFile);
 	// mesh.dump(cout);
@@ -435,7 +417,8 @@ void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFil
 
 
 	stringstream outScadName;
-	ScadTubeFile outlineScad(scadFile);
+	outScadName << outDir << "/" << scadFile;
+	ScadTubeFile outlineScad(outScadName.str().c_str(), layerH, layerW );
 
 	double dAngle = 0; // M_PI / 4;
 	for(int i=0; i != sliceTable.size(); i++)
@@ -453,11 +436,11 @@ void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFil
 		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, rowsOfTubes);
 
 		stringstream stlName;
-		stlName << stlFiles << i << ".stl";
-
+		stlName << outDir  <<  "/" << stlFilePrefix << i << ".stl";
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
+
 		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
-		outlineScad.writeStlModule("stl_", stlName.str().c_str(),  i);
+		outlineScad.writeStlModule("stl_", stlFilePrefix,  i); // this method adds '#.stl' to the prefix
 
 		std::vector<Segment> layerSegments;
 		for(int j=0; j<rowsOfTubes.size(); j++)
@@ -474,9 +457,49 @@ void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFil
 
 }
 
-void ModelReaderTestCase::test3dKnot()
+/*
+class Cuts
+{
+	index_t triangle;
+	Point3d vertices[2]; // the second one is redundent
+};
+
+class Loopy
+{
+	std::list<index_t> triangleIndices;
+	std::list<Cuts> segments;
+};
+
+class LoopPole
+{
+	std::list<index_t> EdgeIndices;
+	// std::list<Point> points;
+};
+
+*/
+
+void ModelReaderTestCase::fixHexagon()
+{
+	unsigned int t0,t1;
+	t0=clock();
+	double layerH = 0.35;
+	double layerW = 0.583333;
+	double tubeSpacing = 0.5;
+	sliceToScad("inputs/hexagon.stl", layerH, layerW, tubeSpacing, "test_cases/modelReaderTestCase/output",
+				"hexagon_", "hexagon.scad");
+	t1=clock()-t0;
+	double t = t1 / 1000000.0;
+
+	cout << "In only " << t << "seconds" << endl;
+}
+
+void ModelReaderTestCase::testInputStls()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	double layerH = 0.35;
+	double layerW = 0.5833333;
+	double tubeSpacing = 1.0;
 
 	std::string outDir = "test_cases/modelReaderTestCase/output";
 
@@ -523,8 +546,6 @@ void ModelReaderTestCase::test3dKnot()
 		stlFiles += "_";
 
 		std::string scadFile;
-		scadFile += outDir;
-		scadFile += "/";
 		scadFile += models[i];
 		scadFile += ".scad";
 
@@ -533,14 +554,14 @@ void ModelReaderTestCase::test3dKnot()
 
 		unsigned int t0,t1;
 		t0=clock();
-		sliceToScad(modelFile.c_str(), stlFiles.c_str(), scadFile.c_str());
+		sliceToScad(modelFile.c_str(),layerH, layerW, tubeSpacing,  outDir.c_str(), stlFiles.c_str(), scadFile.c_str());
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
 		times.push_back(t);
 		cout << "In only " << t << "seconds" << endl;
 	}
 
-	cout << endl << endl << "MODEL *** TIME 2 SLICE (s)" << endl;
+	cout << endl << endl << "MODEL    TIME 2 SLICE (s)" << endl;
 	cout << " ----------" <<endl;
 	for (int i=0; i < models.size(); i++)
 	{
@@ -576,5 +597,3 @@ void ModelReaderTestCase::testTubularInflate()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0, l0.zMin, t);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, l0.zMax, t);
 }
-
-

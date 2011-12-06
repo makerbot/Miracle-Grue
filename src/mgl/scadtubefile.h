@@ -24,7 +24,7 @@ class ScadTubeFile
 {
 	std::ofstream out;
 public:
-	ScadTubeFile(const char* filename)
+	ScadTubeFile(const char* filename, double layerH, double layerW)
 	 :out(filename, std::ios::out)
 	{
 		if(!out)
@@ -41,9 +41,10 @@ public:
 	    out.setf(ios::fixed);
 
 		//out << "use<tube.scad>" << endl << endl;
-		out << "d = 0.35;" << endl;
-		out << "f = 6;" << endl;
-		out << "t = 0.6;" << endl << endl;
+		out << "d = " << layerH <<"; // layer h" << endl;
+		// out << "w = " << layerW <<"; // layer width" << endl;
+		out << "f = 6; // number of sides per tube" << endl << endl;
+		out << "t = "<< layerH / layerW<< "; // thickness over width ratio" << endl << endl;
 		out  << endl;
 		out << "module tube(x1, y1, z1, x2, y2, z2, diameter, faces, thickness_over_width)" << endl;
 		out << "{" << endl;
@@ -63,19 +64,18 @@ public:
 		out << "	translate([x, y, z])" << endl;
 		out << "	sphere( r = diameter/2 );" << endl;
 		out << "}" << endl;
-		out << "d = 0.35; // tube diameter" << endl;
 		out  << endl;
 
 
 
 
 	}
-	void writeStlModule(const char* name, const char *stlName,  int slice)
+	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
 	{
 		out << endl;
-		out << "module " << name << slice << "()" << endl;
+		out << "module " << moduleName << slice << "()" << endl;
 		out << "{" << endl;
-		out << "    import_stl(\"" << stlName<< "\");" << endl;
+		out << "    import_stl(\"" << stlName<< slice << ".stl\");" << endl;
 		out << "}" << endl;
 
 	}

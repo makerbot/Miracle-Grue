@@ -218,7 +218,6 @@ public:
 };
 
 
-
 size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
 {
 

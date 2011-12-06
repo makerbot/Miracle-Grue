@@ -22,12 +22,13 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
   CPPUNIT_TEST( testMeshyLoad );
   CPPUNIT_TEST( testLargeMeshy );
   CPPUNIT_TEST( testSlicyWater );
-*/
+
   CPPUNIT_TEST( testTubularInflate);
   CPPUNIT_TEST( testCutTriangle);
   CPPUNIT_TEST( testRotate);
-  CPPUNIT_TEST( test3dKnot );
-
+  CPPUNIT_TEST( testInputStls );
+  */
+  CPPUNIT_TEST( fixHexagon );
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -48,7 +49,9 @@ protected:
   void testRotate();
   void testTubularInflate();
 
-  void test3dKnot();
+  void testInputStls();
+
+  void fixHexagon();
 };
 
 
