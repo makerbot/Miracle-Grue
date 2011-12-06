@@ -70,12 +70,12 @@ public:
 
 
 	}
-	void writeStlModule(const char* name, const char *stlName,  int slice)
+	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
 	{
 		out << endl;
-		out << "module " << name << slice << "()" << endl;
+		out << "module " << moduleName << slice << "()" << endl;
 		out << "{" << endl;
-		out << "    import_stl(\"" << stlName<< "\");" << endl;
+		out << "    import_stl(\"" << stlName<< slice << ".stl\");" << endl;
 		out << "}" << endl;
 
 	}

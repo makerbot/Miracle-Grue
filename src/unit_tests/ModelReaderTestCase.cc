@@ -356,23 +356,6 @@ void pathology( std::vector<Segment> &segments,
 	}
 }
 
-std::string tubeScad(int layerIndex, Scalar z, const std::vector<std::vector<Segment> > &allTubes)
-{
-	stringstream ss;
-	ss << "// layer " << layerIndex << endl;
-	int rayCount = allTubes.size();
-	for (int i=0; i < rayCount; i++)
-	{
-		const std::vector<Segment> &tubes = allTubes[i];
-		ss << "// Ray " << i << " z=" << z << endl;
-		for(int j=0; j<tubes.size(); j++)
-		{
-			const Segment &tube = tubes[j];
-			ss << "// segment: " << tube.a << ", " << tube.b << ", z=" << z << endl;
-		}
-	}
-	return ss.str();
-}
 
 void ModelReaderTestCase::testCutTriangle()
 {
@@ -435,7 +418,8 @@ void sliceToScad(const char*modelFile, const char* outDir, const char* stlFilePr
 
 
 	stringstream outScadName;
-	ScadTubeFile outlineScad(scadFile);
+	outScadName << outDir << "/" << scadFile;
+	ScadTubeFile outlineScad(outScadName.str().c_str());
 
 	double dAngle = 0; // M_PI / 4;
 	for(int i=0; i != sliceTable.size(); i++)
@@ -457,7 +441,7 @@ void sliceToScad(const char*modelFile, const char* outDir, const char* stlFilePr
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
 
 		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
-		outlineScad.writeStlModule("stl_", stlFilePrefix,  i);
+		outlineScad.writeStlModule("stl_", stlFilePrefix,  i); // this method adds '#.stl' to the prefix
 
 		std::vector<Segment> layerSegments;
 		for(int j=0; j<rowsOfTubes.size(); j++)
@@ -538,7 +522,7 @@ void ModelReaderTestCase::test3dKnot()
 		cout << "In only " << t << "seconds" << endl;
 	}
 
-	cout << endl << endl << "MODEL *** TIME 2 SLICE (s)" << endl;
+	cout << endl << endl << "MODEL    TIME 2 SLICE (s)" << endl;
 	cout << " ----------" <<endl;
 	for (int i=0; i < models.size(); i++)
 	{
