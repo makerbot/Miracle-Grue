@@ -413,7 +413,7 @@ void ModelReaderTestCase::testRotate()
 
 
 
-void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFile)
+void sliceToScad(const char*modelFile, const char* outDir, const char* stlFilePrefix, const char* scadFile)
 {
 	Meshy mesh(0.35);
 	double tubeSpacing = 1.0;
@@ -453,11 +453,11 @@ void sliceToScad(const char*modelFile, const char* stlFiles, const char* scadFil
 		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, rowsOfTubes);
 
 		stringstream stlName;
-		stlName << stlFiles << i << ".stl";
-
+		stlName << outDir  <<  "/" << stlFilePrefix << i << ".stl";
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
+
 		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
-		outlineScad.writeStlModule("stl_", stlName.str().c_str(),  i);
+		outlineScad.writeStlModule("stl_", stlFilePrefix,  i);
 
 		std::vector<Segment> layerSegments;
 		for(int j=0; j<rowsOfTubes.size(); j++)
@@ -523,8 +523,6 @@ void ModelReaderTestCase::test3dKnot()
 		stlFiles += "_";
 
 		std::string scadFile;
-		scadFile += outDir;
-		scadFile += "/";
 		scadFile += models[i];
 		scadFile += ".scad";
 
@@ -533,7 +531,7 @@ void ModelReaderTestCase::test3dKnot()
 
 		unsigned int t0,t1;
 		t0=clock();
-		sliceToScad(modelFile.c_str(), stlFiles.c_str(), scadFile.c_str());
+		sliceToScad(modelFile.c_str(), outDir.c_str(), stlFiles.c_str(), scadFile.c_str());
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
 		times.push_back(t);
