@@ -393,9 +393,35 @@ void ModelReaderTestCase::testRotate()
 
 }
 
+#define PATH_SEPARATOR '/'
+
+std::string ExtractDirectory(const std::string& path)
+{
+	return path.substr(0, path.find_last_of(PATH_SEPARATOR) + 1);
+}
+
+std::string ExtractFilename(const std::string& path)
+{
+	return path.substr(path.find_last_of(PATH_SEPARATOR) + 1);
+}
+
+std::string ChangeExtension(const std::string& path, const std::string& ext)
+{
+	std::string filename = ExtractFilename(path);
+	return ExtractDirectory(path)
+			+ filename.substr(0, filename.find_last_of('.')) + ext;
+}
+
+std::string removeExtension(const std::string& path)
+{
+	std::string filename = ExtractFilename(path);
+	return ExtractDirectory(path)
+			+ filename.substr(0, filename.find_last_of('.'));
+}
 
 
-void sliceToScad(const char*modelFile, double layerH, double layerW, double tubeSpacing, const char* outDir, const char* stlFilePrefix, const char* scadFile)
+
+void sliceToScad(const char*modelFile, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
 {
 	Meshy mesh(layerH); // 0.35
 	// double tubeSpacing = 1.0;
@@ -416,9 +442,7 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 	tubularLimits.tubularZ();
 
 
-	stringstream outScadName;
-	outScadName << outDir << "/" << scadFile;
-	ScadTubeFile outlineScad(outScadName.str().c_str(), layerH, layerW );
+	ScadTubeFile outlineScad(scadFile, layerH, layerW );
 
 	double dAngle = 0; // M_PI / 4;
 	for(int i=0; i != sliceTable.size(); i++)
@@ -436,11 +460,12 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, rowsOfTubes);
 
 		stringstream stlName;
-		stlName << outDir  <<  "/" << stlFilePrefix << i << ".stl";
+		stlName << stlFilePrefix  << i << ".stl";
+		cout << "#@%$@ " << stlName.str() << endl;
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
 
 		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
-		outlineScad.writeStlModule("stl_", stlFilePrefix,  i); // this method adds '#.stl' to the prefix
+		outlineScad.writeStlModule("stl_", ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
 
 		std::vector<Segment> layerSegments;
 		for(int j=0; j<rowsOfTubes.size(); j++)
@@ -485,13 +510,17 @@ void ModelReaderTestCase::fixHexagon()
 	double layerH = 0.35;
 	double layerW = 0.583333;
 	double tubeSpacing = 0.5;
-	sliceToScad("inputs/hexagon.stl", layerH, layerW, tubeSpacing, "test_cases/modelReaderTestCase/output",
-				"hexagon_", "hexagon.scad");
+	sliceToScad("inputs/hexagon.stl",
+					layerH,
+						layerW,
+							tubeSpacing,
+								"test_cases/modelReaderTestCase/output/hexagon_", "test_cases/modelReaderTestCase/output/hexagon.scad");
 	t1=clock()-t0;
 	double t = t1 / 1000000.0;
 
 	cout << "In only " << t << "seconds" << endl;
 }
+
 
 void ModelReaderTestCase::testInputStls()
 {
@@ -505,60 +534,60 @@ void ModelReaderTestCase::testInputStls()
 
 	std::vector<std::string> models;
 
-	std::string stlDirectory = "inputs";
-	models.push_back("3D_Knot");
-	models.push_back("Water");
-	models.push_back("hexagon");
-	models.push_back("Land");
 
 
 
+	models.push_back("inputs/3D_Knot.stl");
+	models.push_back("inputs/Water.stl");
+	models.push_back("inputs/hexagon.stl");
+	models.push_back("inputs/Land.stl");
 /*
-	std::string stlDirectory = "../stls";
-	//std::string stlDirectory = "/home/hugo/code/stls";
 
-	models.push_back("3D_Knot");
-	models.push_back("F1");
-	models.push_back("hexagon");
-	models.push_back("Land");
-	models.push_back("Roal10");
-	models.push_back("soap_highres");
-	models.push_back("TeaPot");
-	models.push_back("Water");
-	models.push_back("Yodsta_Printdata");
+	models.push_back("inputs/3D_Knot.stl");
+	models.push_back("inputs/Water.stl");
+	models.push_back("inputs/hexagon.stl");
+	models.push_back("inputs/Land.stl");
+
+	models.push_back("../stls/monitor_simple.stl");
+
+	models.push_back("../stls/F1.stl");
+	models.push_back("../stls/hexagon.stl");
+	models.push_back("../stls/Land.stl");
+	models.push_back("../stls/Roal10.stl");
+	models.push_back("../stls/soap_highres.stl");
+	models.push_back("../stls/TeaPot.stl");
+	models.push_back("../stls/Water.stl");
+	models.push_back("../stls/Yodsta_Printdata.stl");
+
+*/
 	//models.push_back("Pivot-Joint_-_Ball_End_-1X");
 	//models.push_back("Toymaker_Skull_1_Million_Polys");
 
-	models.push_back("part2");
-*/
+//	models.push_back("part2");
+
 	std::vector<double> times;
 	for (int i=0; i < models.size(); i++)
 	{
 
-		std::string modelFile;
-		modelFile += stlDirectory;
-		modelFile += "/";
-		modelFile += models[i];
-		modelFile += ".stl";
-
-		std::string stlFiles;
-		stlFiles += models[i];
+		std::string modelFile = models[i];
+		std::string stlFiles = removeExtension(ExtractFilename(models[i]));
 		stlFiles += "_";
 
-		std::string scadFile;
-		scadFile += models[i];
-		scadFile += ".scad";
+		std::string scadFile = outDir + "/";
+		scadFile += ChangeExtension(ExtractFilename(models[i]), ".scad" )  ;
 
+		std::string stlPrefix = outDir + "/";
+		stlPrefix += stlFiles.c_str();
 		cout << endl << endl;
-		cout << modelFile << " to " << stlFiles << " and " << scadFile << endl;
+		cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
 
 		unsigned int t0,t1;
 		t0=clock();
-		sliceToScad(modelFile.c_str(),layerH, layerW, tubeSpacing,  outDir.c_str(), stlFiles.c_str(), scadFile.c_str());
+		sliceToScad(modelFile.c_str(),layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
 		times.push_back(t);
-		cout << "In only " << t << "seconds" << endl;
+		cout << "Sliced in " << t << " seconds" << endl;
 	}
 
 	cout << endl << endl << "MODEL    TIME 2 SLICE (s)" << endl;

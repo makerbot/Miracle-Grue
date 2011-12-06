@@ -26,9 +26,10 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
   CPPUNIT_TEST( testTubularInflate);
   CPPUNIT_TEST( testCutTriangle);
   CPPUNIT_TEST( testRotate);
+*/
   CPPUNIT_TEST( testInputStls );
-  */
-  CPPUNIT_TEST( fixHexagon );
+
+//  CPPUNIT_TEST( fixHexagon );
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -48,9 +49,7 @@ protected:
   // rotation nad translation of 2D points
   void testRotate();
   void testTubularInflate();
-
   void testInputStls();
-
   void fixHexagon();
 };
 

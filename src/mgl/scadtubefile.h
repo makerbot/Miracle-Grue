@@ -66,10 +66,9 @@ public:
 		out << "}" << endl;
 		out  << endl;
 
-
-
-
 	}
+
+
 	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
 	{
 		out << endl;
