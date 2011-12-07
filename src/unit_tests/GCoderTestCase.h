@@ -10,6 +10,7 @@
  */
 class GCoderTestCase : public CPPUNIT_NS::TestFixture
 {
+
   CPPUNIT_TEST_SUITE( GCoderTestCase );
   CPPUNIT_TEST( testConfig );
   CPPUNIT_TEST( testFloatFormat );
@@ -32,6 +33,7 @@ protected:
   void testFloatFormat();
   void testGridPath();
   void testMultiGrid();
+
 
 };
 

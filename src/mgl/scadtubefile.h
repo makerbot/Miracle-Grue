@@ -61,16 +61,26 @@ public:
 		out << "}" << endl;
 		out  << endl;
 
-		out << "module extrusion(x1, y1, z1, x2, y2, z2, diameter, faces, thickness_over_width)" << endl;
-		out << "{" << endl;
-		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=" << layerH<< ", faces=6, thickness_over_width="<< layerH / layerW<< ");" << endl;
+		out << "module corner(x, y, z, diameter, faces, thickness_over_width ){" << endl;
+		out << "	translate([x, y, z])  scale([1,1,thickness_over_width]) sphere( r = diameter/2, $fn = faces );" << endl;
 		out << "}" << endl;
-		out << "" << endl;
+		out  << endl;
+
 		out << "module out_line(x1, y1, z1, x2, y2, z2)" << endl;
 		out << "{" << endl;
 		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=0.01, faces=4, thickness_over_width=1);" << endl;
 		out << "}" << endl;
 
+
+		out  << endl;
+		out << "module extrusion(x1, y1, z1, x2, y2, z2)" << endl;
+		out << "{" << endl;
+		out << "    d = 0.35;" << endl;
+		out << "    f = 6;" << endl;
+		out << "    t =  0.6;" << endl;
+		out << "    corner(x1,y1,z1, diameter=d, faces=f, thickness_over_width =t );" << endl;
+		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=d, faces=f, thickness_over_width=t);" << endl;
+		out << "}" << endl;
 	}
 
 

@@ -109,8 +109,20 @@ public:
 		Scalar min;
 		Scalar max;
 		minMaxZ(t, min, max);
-		int minSliceIndex = floor( (min+0.5) / sliceHeight);
-		int maxSliceIndex = floor( (max+0.5) / sliceHeight);
+
+		Scalar mini = (min+0.5) / sliceHeight;
+		Scalar maxi =  (max+0.5) / sliceHeight;
+		int minSliceIndex = floor( mini);
+		int maxSliceIndex = ceil(maxi);
+
+//		cout << "------" << endl;
+//		cout << "t " << t.vertex1 << ", " << t.vertex2 << ", " << t.vertex3 << endl;
+//		cout << "Minimum   =" << min << endl;
+//		cout << "Maximum   =" << max << endl;
+//		cout << "mini      =" << mini << endl;
+//		cout << "maxi      =" << maxi << endl;
+//		cout << "Min index =" <<  minSliceIndex << endl;
+//		cout << "Max index =" <<  maxSliceIndex << endl;
 
 
 		if (maxSliceIndex > sliceTable.size() )
@@ -122,7 +134,6 @@ public:
 		allTriangles.push_back(t);
 
 		size_t newTriangleId = allTriangles.size() -1;
-
 
 		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << endl;
 		for (int i= minSliceIndex; i< maxSliceIndex; i++)

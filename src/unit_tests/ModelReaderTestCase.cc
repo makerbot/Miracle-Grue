@@ -114,8 +114,13 @@ void ModelReaderTestCase::testSlicySimple()
 //
 void ModelReaderTestCase::testMeshySimple()
 {
+	cout << endl;
+	cout << endl;
+	cout << __FUNCTION__ << endl;
 	Scalar zH = 1.0;
 	Meshy mesh(zH);
+
+	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
 	Triangle3d t;
 	t.vertex1 =Point3d(0,10,0);
@@ -128,14 +133,23 @@ void ModelReaderTestCase::testMeshySimple()
 
  	mesh.dump(cout);
 
- 	CPPUNIT_ASSERT_EQUAL((size_t)2, mesh.readSliceTable().size());
+ 	const TriangleIndices &slice0 =  mesh.readSliceTable()[0];
+ 	CPPUNIT_ASSERT_EQUAL((size_t)1, slice0.size());
+
+    const TriangleIndices &slice1 =  mesh.readSliceTable()[1];
+    CPPUNIT_ASSERT_EQUAL((size_t)1, slice1.size());
+
+    const TriangleIndices &slice2 =  mesh.readSliceTable()[2];
+    CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
+
+ 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
 
 	t.vertex1 =Point3d(0,10, 0);
 	t.vertex2 =Point3d(0,10, 2.6);
 	t.vertex3 =Point3d(0,10, 1);
 
 	mesh.addTriangle(t);
-	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)4, mesh.readSliceTable().size());
 
 	const Limits &limits = mesh.readLimits();
 	double tol = 0.00001;
@@ -199,7 +213,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	t1=clock()-t0;
 	mesh.dump(cout);
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)173, mesh.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh.readSliceTable().size());
 
 	cout << "Land" << endl;
 	Meshy mesh2(0.35);
@@ -208,7 +222,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	LoadMeshyFromStl(mesh2, "inputs/Land.stl");
 	t1=clock()-t0;
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh2.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)175, mesh2.readSliceTable().size());
 	mesh2.dump(cout);
 }
 
@@ -521,49 +535,12 @@ void ModelReaderTestCase::fixHexagon()
 }
 
 
-void ModelReaderTestCase::testInputStls()
+void batchProcess(Scalar layerH,
+					Scalar layerW,
+					Scalar tubeSpacing,
+					const char* outDir,
+					const std::vector<std::string> &models)
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
-
-	double layerH = 0.35;
-	double layerW = 0.5833333;
-	double tubeSpacing = 1.0;
-
-	std::string outDir = "test_cases/modelReaderTestCase/output";
-
-	std::vector<std::string> models;
-
-
-
-
-	models.push_back("inputs/3D_Knot.stl");
-	models.push_back("inputs/Water.stl");
-	models.push_back("inputs/hexagon.stl");
-	models.push_back("inputs/Land.stl");
-/*
-
-	models.push_back("inputs/3D_Knot.stl");
-	models.push_back("inputs/Water.stl");
-	models.push_back("inputs/hexagon.stl");
-	models.push_back("inputs/Land.stl");
-
-	models.push_back("../stls/monitor_simple.stl");
-
-	models.push_back("../stls/F1.stl");
-	models.push_back("../stls/hexagon.stl");
-	models.push_back("../stls/Land.stl");
-	models.push_back("../stls/Roal10.stl");
-	models.push_back("../stls/soap_highres.stl");
-	models.push_back("../stls/TeaPot.stl");
-	models.push_back("../stls/Water.stl");
-	models.push_back("../stls/Yodsta_Printdata.stl");
-
-*/
-	//models.push_back("Pivot-Joint_-_Ball_End_-1X");
-	//models.push_back("Toymaker_Skull_1_Million_Polys");
-
-//	models.push_back("part2");
-
 	std::vector<double> times;
 	for (int i=0; i < models.size(); i++)
 	{
@@ -572,10 +549,12 @@ void ModelReaderTestCase::testInputStls()
 		std::string stlFiles = removeExtension(ExtractFilename(models[i]));
 		stlFiles += "_";
 
-		std::string scadFile = outDir + "/";
+		std::string scadFile = outDir;
+		scadFile += "/";
 		scadFile += ChangeExtension(ExtractFilename(models[i]), ".scad" )  ;
 
-		std::string stlPrefix = outDir + "/";
+		std::string stlPrefix = outDir;
+		stlPrefix += "/";
 		stlPrefix += stlFiles.c_str();
 		cout << endl << endl;
 		cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
@@ -595,7 +574,58 @@ void ModelReaderTestCase::testInputStls()
 	{
 		cout << models[i] << "\t" << times[i] << endl;
 	}
+}
 
+void ModelReaderTestCase::testMyStls()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	double layerH = 0.35;
+	double layerW = 0.5833333;
+	double tubeSpacing = 1.0;
+
+	std::string outDir = "test_cases/modelReaderTestCase/output";
+	std::vector<std::string> models;
+
+	models.push_back("inputs/3D_Knot.stl");
+	models.push_back("inputs/Water.stl");
+	models.push_back("inputs/hexagon.stl");
+	models.push_back("inputs/Land.stl");
+	models.push_back("../stls/monitor_simple.stl");
+	models.push_back("../stls/F1.stl");
+	models.push_back("../stls/hexagon.stl");
+	models.push_back("../stls/Land.stl");
+	models.push_back("../stls/Roal10.stl");
+	models.push_back("../stls/soap_highres.stl");
+	models.push_back("../stls/TeaPot.stl");
+	models.push_back("../stls/Water.stl");
+	models.push_back("../stls/Yodsta_Printdata.stl");
+
+	//models.push_back("Pivot-Joint_-_Ball_End_-1X");
+	//models.push_back("Toymaker_Skull_1_Million_Polys");
+	//	models.push_back("part2");
+
+	batchProcess(layerH, layerW, tubeSpacing, outDir.c_str(), models);
+}
+
+
+void ModelReaderTestCase::testInputStls()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+
+	double layerH = 0.35;
+	double layerW = 0.5833333;
+	double tubeSpacing = 1.0;
+
+	std::string outDir = "test_cases/modelReaderTestCase/output";
+	std::vector<std::string> models;
+
+	models.push_back("inputs/3D_Knot.stl");
+	models.push_back("inputs/Water.stl");
+	models.push_back("inputs/hexagon.stl");
+	models.push_back("inputs/Land.stl");
+
+	batchProcess(layerH, layerW, tubeSpacing, outDir.c_str(), models);
 
 }
 
@@ -625,3 +655,36 @@ void ModelReaderTestCase::testTubularInflate()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0, l0.zMin, t);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, l0.zMax, t);
 }
+
+
+void ModelReaderTestCase::fixContourProblem()
+{
+
+	double layerH = 0.35;
+	int layerIndex = 30;
+	Meshy mesh(layerH); // 0.35
+	LoadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
+	Scalar z = (layerIndex + 0.5) * mesh.readSliceHeight();
+
+	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
+	const TriangleIndices &trianglesForSlice = sliceTable[30];
+	std::vector<Segment> outlineSegments;
+	// get 2D paths for outline
+	segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
+
+	cout << "triangles for layer "<< layerIndex <<", z=" << z<< endl;
+	for (int i=0; i < trianglesForSlice.size(); i++)
+	{
+		index_t idx = trianglesForSlice[i];
+		const Triangle3d &t = allTriangles[idx];
+
+		double min, max;
+		minMaxZ(t,min, max);
+		cout << t.vertex1 << "\t" << t.vertex2 << "\t" << t.vertex3 << "\t" << min << "\t"<< max << endl;
+		CPPUNIT_ASSERT(z >= min);
+		CPPUNIT_ASSERT(z <= max);
+
+	}
+}
+
