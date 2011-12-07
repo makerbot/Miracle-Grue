@@ -40,11 +40,6 @@ public:
 		//out.precision(18);
 	    out.setf(ios::fixed);
 
-		//out << "use<tube.scad>" << endl << endl;
-		out << "d = " << layerH <<"; // layer h" << endl;
-		// out << "w = " << layerW <<"; // layer width" << endl;
-		out << "f = 6; // number of sides per tube" << endl << endl;
-		out << "t = "<< layerH / layerW<< "; // thickness over width ratio" << endl << endl;
 		out  << endl;
 		out << "module tube(x1, y1, z1, x2, y2, z2, diameter, faces, thickness_over_width)" << endl;
 		out << "{" << endl;
@@ -66,6 +61,16 @@ public:
 		out << "}" << endl;
 		out  << endl;
 
+		out << "module extrusion(x1, y1, z1, x2, y2, z2, diameter, faces, thickness_over_width)" << endl;
+		out << "{" << endl;
+		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=" << layerH<< ", faces=6, thickness_over_width="<< layerH / layerW<< ");" << endl;
+		out << "}" << endl;
+		out << "" << endl;
+		out << "module out_line(x1, y1, z1, x2, y2, z2)" << endl;
+		out << "{" << endl;
+		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=0.01, faces=4, thickness_over_width=1);" << endl;
+		out << "}" << endl;
+
 	}
 
 
@@ -79,7 +84,18 @@ public:
 
 	}
 
-	void writeTubesModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
+	void writeExtrusionsModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
+	{
+		writeTubesModule(name, "extrusion", segments, slice, z);
+	}
+
+	void writeOutlinesModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
+	{
+		writeTubesModule(name, "out_line", segments, slice, z);
+	}
+
+private:
+	void writeTubesModule(const char* name, const char* tubeType,const std::vector<Segment> &segments, int slice, Scalar z)
 	{
 		// tube(x,y,z,  x,y,z, d,f,t);
 		out << endl;
@@ -88,12 +104,13 @@ public:
 		for(int i=0; i<segments.size(); i++)
 		{
 			const Segment &segment = segments[i];
-			out << "	tube(" << segment.a.x << ", " << segment.a.y << ", " << z << ", ";
-			out << 				 segment.b.x << ", " << segment.b.y << ", " << z << ", d, f, t);"<<endl;
+			out << "	"<< tubeType<< "(" << segment.a.x << ", " << segment.a.y << ", " << z << ", ";
+			out << 				 segment.b.x << ", " << segment.b.y << ", " << z << ");"<<endl;
 		}
 		out << "}" << endl;
 	}
 
+public:
 	void writeSwitcher(int count)
 	{
 		out << "module outline(min=0, max=" << count-1 <<")" << endl;
@@ -129,15 +146,17 @@ public:
 		}
 		out << "}"<< endl;
 		out << endl;
+
+		out << "// try import instead of import_stl depending on your version of OpenSCAD" << endl;
+		out << "min=0;" << endl;
+		out << "max=" << count -1 << ";" << endl;
+		out << "triangles(min, max);" << endl;
+		out << "outline(min, max);" << endl;
+		out << "fill(min,max);" << endl;
 	}
 
 	~ScadTubeFile()
 	{
-		out << "// try import instead of import_stl depending on your version of OpenSCAD" << endl;
-		out << "triangles();" << endl;
-		out << "outline();" << endl;
-		out << "fill();" << endl;
-
 		out.close();
 	}
 };

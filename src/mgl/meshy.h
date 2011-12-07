@@ -213,7 +213,7 @@ public:
 
 		out << "end solid " << solidName;
 		out.close();
-		cout << fileName << " written!"<< endl;
+		// cout << fileName << " written!"<< endl;
 	}
 
 };

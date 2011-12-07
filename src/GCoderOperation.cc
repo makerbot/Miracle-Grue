@@ -16,11 +16,14 @@
 #include <iomanip>
 
 #include "GCoderOperation.h"
+
+#include "mgl/segment.h"
 #include "mgl/scadtubefile.h"
 
 #include "json-cpp/include/json/value.h"
 
 using namespace std;
+using namespace mgl;
 using namespace Json;
 
 
@@ -58,10 +61,7 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 	return s;
 }
 
-bool sameSame(double a, double b)
-{
-	return (a-b)*(a-b) < 0.00000001;
-}
+
 
 void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
 {
@@ -79,20 +79,20 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 		doFeed = true;
 	}
 
-	if(!sameSame(this->x, x))
+	if(!mgl::sameSame(this->x, x))
 	{
 		doX = true;
 	}
-	if(!sameSame(this->y, y))
+	if(!mgl::sameSame(this->y, y))
 	{
 		doY=true;
 	}
-	if(!sameSame(this->z, z))
+	if(!mgl::sameSame(this->z, z))
 	{
 		doZ=true;
 	}
 
-	if(!sameSame(this->feed, feed))
+	if(!mgl::sameSame(this->feed, feed))
 	{
 		doFeed=true;
 	}

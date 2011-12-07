@@ -461,10 +461,9 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 
 		stringstream stlName;
 		stlName << stlFilePrefix  << i << ".stl";
-		cout << "#@%$@ " << stlName.str() << endl;
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
 
-		outlineScad.writeTubesModule("out_", outlineSegments, i, z);
+		outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
 		outlineScad.writeStlModule("stl_", ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
 
 		std::vector<Segment> layerSegments;
@@ -474,7 +473,7 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 			layerSegments.insert(layerSegments.end(), raySegments.begin(), raySegments.end());
 			// raylineScad.writeTubesModule("rays_", i, rowsOfTubes[j], z);
 		}
-		outlineScad.writeTubesModule("fill_", layerSegments, i, z );
+		outlineScad.writeExtrusionsModule("fill_", layerSegments, i, z );
 		//	cout << ss.str().c_str() << endl;
 
 	}
