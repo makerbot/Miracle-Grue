@@ -13,7 +13,8 @@
 class RegionerTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( RegionerTestCase );
-  CPPUNIT_TEST( example );
+//  CPPUNIT_TEST( example );
+  CPPUNIT_TEST(testMp);
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -23,7 +24,7 @@ public:
 protected:
 
   void example();
-
+  void testMp();
 };
 
 

@@ -79,6 +79,9 @@ if debug != None:
         
 if int(debug):
     env.Append(CCFLAGS = '-g')
+    
+env.Append(CCFLAGS = '-fopenmp')      
+env.Append(LINKFLAGS = '-fopenmp')    
        
 qtModules = ['QtCore', 'QtNetwork' ]
 print "QT modules", qtModules

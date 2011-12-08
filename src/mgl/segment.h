@@ -181,10 +181,15 @@ bool sliceTriangle(const BGL::Point3d& vertex1, const BGL::Point3d& vertex2, con
 void segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
 {
 	assert(segments.size() == 0);
-	segments.reserve(trianglesForSlice.size());
-	for(TriangleIndices::const_iterator i= trianglesForSlice.begin(); i != trianglesForSlice.end(); i++)
+
+	size_t count = trianglesForSlice.size();
+	segments.reserve(count);
+
+	//#pragma omp parallel for
+	for(int i=0; i< count; i++)
 	{
-		const BGL::Triangle3d &t = allTriangles[(*i)];
+		index_t triangleIndex = trianglesForSlice[i];
+		const BGL::Triangle3d &t = allTriangles[triangleIndex];
 		const BGL::Point3d &vertex0 = t.vertex1;
 		const BGL::Point3d &vertex1 = t.vertex2;
 		const BGL::Point3d &vertex2 = t.vertex3;
@@ -193,7 +198,7 @@ void segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const Triang
 		bool cut = sliceTriangle(vertex0, vertex1, vertex2, z, s.a, s.b);
 		if(cut)
 		{
-			segments.push_back(s);
+			segments.push_back(s); // are you thread safe?
 		}
 	}
 }

@@ -6,6 +6,12 @@
 #include <limits>
 #include <set>
 
+#define OMPFF // openMP mulitithreading extensions
+
+#ifdef OMPFF
+#include <omp.h>
+#endif
+
 #define  CPPUNIT_ENABLE_NAKED_ASSERT 1
 
 #include <cppunit/config/SourcePrefix.h>
@@ -300,8 +306,6 @@ void pathology( std::vector<Segment> &segments,
 
 	// It is pitch black. You are likely to be eaten by a grue.
 
-
-
 	// rotate segments for that cool look
 	Point3d c = limits.center();
 	Point toOrigin(-c.x, -c.y);
@@ -309,13 +313,14 @@ void pathology( std::vector<Segment> &segments,
 
 //	translateSegments(segments, toOrigin);
 //	rotateSegments(segments, angle);
-	// translateSegments(segments, toCenter);
+//  translateSegments(segments, toCenter);
 
 	int tubeCount = (limits.yMax - limits.yMin) / tubeSpacing;
 
 	std::vector< std::set<Scalar> > intersects;
 	// allocate
 	intersects.resize(tubeCount);
+
 
 	for (int i=0; i < tubeCount; i++)
 	{
@@ -333,6 +338,9 @@ void pathology( std::vector<Segment> &segments,
 	}
 
 	allTubes.resize(tubeCount);
+
+	bool backAndForth = true;
+
 	for (int i=0; i < tubeCount; i++)
 	{
 		std::vector<Segment>& lineTubes = allTubes[i];
@@ -341,28 +349,52 @@ void pathology( std::vector<Segment> &segments,
 
 		Segment segment;
 		bool inside = false;
-		for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
+		if( backAndForth)
 		{
-			inside =! inside;
-			Scalar x = *it;
-			// cout << "\t" << x << " " << inside <<",";
-			if(inside)
+			for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
 			{
-				segment.a.x = x;
-				segment.a.y = y;
-			}
-			else
-			{
-				segment.b.x = x;
-				segment.b.y = y;
-				lineTubes.push_back(segment);
+				inside =! inside;
+				Scalar x = *it;
+				// cout << "\t" << x << " " << inside <<",";
+				if(inside)
+				{
+					segment.a.x = x;
+					segment.a.y = y;
+				}
+				else
+				{
+					segment.b.x = x;
+					segment.b.y = y;
+					lineTubes.push_back(segment);
+				}
 			}
 		}
+		else
+		{
+			for(std::set<Scalar>::reverse_iterator it = lineCuts.rbegin(); it != lineCuts.rend(); it++)
+			{
+				inside =! inside;
+				Scalar x = *it;
+				// cout << "\t" << x << " " << inside <<",";
+				if(inside)
+				{
+					segment.a.x = x;
+					segment.a.y = y;
+				}
+				else
+				{
+					segment.b.x = x;
+					segment.b.y = y;
+					lineTubes.push_back(segment);
+				}
+			}
+		}
+		backAndForth = !backAndForth;
 	}
 	// unrotate the tube segments (they are tube rays, not cut triangles)
-	for (int i=0; i < tubeCount; i++)
+//	for (int i=0; i < tubeCount; i++)
 	{
-		std::vector<Segment>& tubes = allTubes[i];
+//		std::vector<Segment>& tubes = allTubes[i];
 //		rotateSegments(segments, -angle);
 //		translateSegments(segments, toCenter);
 
@@ -433,6 +465,35 @@ std::string removeExtension(const std::string& path)
 			+ filename.substr(0, filename.find_last_of('.'));
 }
 
+#ifdef OMPFF
+class OmpGuard {
+public:
+    //Acquire the lock and store a pointer to it
+	OmpGuard (omp_lock_t &lock)
+	:lock_ (&lock)
+	{
+		acquire();
+	}
+    void acquire ()
+    {
+    	omp_set_lock (lock_);
+    }
+
+    void release ()
+    {
+    	omp_unset_lock (lock_);
+    }
+
+    ~OmpGuard ()
+    {
+    	release();
+    }
+
+private:
+    omp_lock_t *lock_;  // pointer to our lock
+
+};
+#endif
 
 
 void sliceToScad(const char*modelFile, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
@@ -459,7 +520,15 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 	ScadTubeFile outlineScad(scadFile, layerH, layerW );
 
 	double dAngle = 0; // M_PI / 4;
-	for(int i=0; i != sliceTable.size(); i++)
+
+	size_t sliceCount =sliceTable.size();
+
+#ifdef OMPFF
+	omp_lock_t my_lock;
+	omp_init_lock (&my_lock);
+	#pragma omp parallel for
+#endif
+	for(int i=0; i < sliceCount; i++)
 	{
 		Scalar z = (i + 0.5) * mesh.readSliceHeight();
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
@@ -477,9 +546,14 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 		stlName << stlFilePrefix  << i << ".stl";
 		mesh.writeStlFileForLayer(i, stlName.str().c_str());
 
-		outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
-		outlineScad.writeStlModule("stl_", ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
-
+		// only one thread at a time here
+		{
+#ifdef OMPFF
+			OmpGuard lock (my_lock);
+#endif
+			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
+			outlineScad.writeStlModule("stl_", ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
+		}
 		std::vector<Segment> layerSegments;
 		for(int j=0; j<rowsOfTubes.size(); j++)
 		{
@@ -487,9 +561,14 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 			layerSegments.insert(layerSegments.end(), raySegments.begin(), raySegments.end());
 			// raylineScad.writeTubesModule("rays_", i, rowsOfTubes[j], z);
 		}
-		outlineScad.writeExtrusionsModule("fill_", layerSegments, i, z );
-		//	cout << ss.str().c_str() << endl;
 
+		// only one thread at a time here
+		{
+#ifdef OMPFF
+			OmpGuard lock (my_lock);
+#endif
+			outlineScad.writeExtrusionsModule("fill_", layerSegments, i, z );
+		}
 	}
 	outlineScad.writeSwitcher(sliceTable.size());
 
@@ -659,7 +738,7 @@ void ModelReaderTestCase::testTubularInflate()
 
 void ModelReaderTestCase::fixContourProblem()
 {
-
+	cout << endl;
 	double layerH = 0.35;
 	int layerIndex = 30;
 	Meshy mesh(layerH); // 0.35

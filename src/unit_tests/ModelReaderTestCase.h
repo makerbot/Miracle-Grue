@@ -27,14 +27,14 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 //  CPPUNIT_TEST( testCutTriangle);
 //  CPPUNIT_TEST( testRotate);
 
-  CPPUNIT_TEST( testInputStls );
+//  CPPUNIT_TEST( testInputStls );
 
 
 //  CPPUNIT_TEST( fixHexagon );
 
 //  CPPUNIT_TEST( testMeshySimple );
-  CPPUNIT_TEST( fixContourProblem );
-//CPPUNIT_TEST( testMyStls );
+ // CPPUNIT_TEST( fixContourProblem );
+  CPPUNIT_TEST( testMyStls );
   CPPUNIT_TEST_SUITE_END();
 
 
