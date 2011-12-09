@@ -752,18 +752,77 @@ void ModelReaderTestCase::fixContourProblem()
 	// get 2D paths for outline
 	segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
 
+	std::vector<std::pair<double,double> > minsAndMaxes;
+	size_t triangleCount = trianglesForSlice.size();
+	minsAndMaxes.reserve(triangleCount);
 	cout << "triangles for layer "<< layerIndex <<", z=" << z<< endl;
-	for (int i=0; i < trianglesForSlice.size(); i++)
+
+	for (int i=0; i < triangleCount; i++)
 	{
 		index_t idx = trianglesForSlice[i];
 		const Triangle3d &t = allTriangles[idx];
 
 		double min, max;
 		minMaxZ(t,min, max);
-		cout << t.vertex1 << "\t" << t.vertex2 << "\t" << t.vertex3 << "\t" << min << "\t"<< max << endl;
+		minsAndMaxes.push_back(std::pair<Scalar, Scalar>(min, max) );
+		cout << t.vertex1.z << "\t\t" << t.vertex2.z << "\t\t" << t.vertex3.z << "\t\t" << min << "\t"<< max << endl;
 		CPPUNIT_ASSERT(z >= min);
 		CPPUNIT_ASSERT(z <= max);
-
 	}
+
+	for (int i=0; i < triangleCount; i++)
+	{
+		cout << i  << " ";
+		CPPUNIT_ASSERT(z >= minsAndMaxes[i].first);
+		CPPUNIT_ASSERT(z <= minsAndMaxes[i].second);
+	}
+	cout << endl;
+}
+
+
+
+class LayerMeasure
+{
+	Scalar firstLayerZ;
+	Scalar layerH;
+
+public:
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH) // , Scalar nozzleDelta
+	:firstLayerZ(firstLayerZ), layerH(layerH)
+	{
+	}
+
+	std::pair<unsigned int, unsigned int> zToLayerBelowAndAbove(Scalar z) const
+	{
+		std::pair<unsigned int,Scalar> belowAbove(0.11,0.35);
+		return belowAbove;
+	}
+
+	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
+	{
+		return firstLayerZ + sliceIndex * layerH;
+	}
+
+	std::pair<Scalar,Scalar> sliceIndexToRange(unsigned int sliceIndex)
+	{
+		assert(0);
+
+		std::pair<Scalar,Scalar> floorCeil(0.1,0.2);
+		return floorCeil;
+	}
+
+};
+
+void ModelReaderTestCase::testLayerMeasure()
+{
+	double tol = 0.000000001;
+	LayerMeasure n(0.11, 0.35 ); // n is for nozzle
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.11, n.sliceIndexToHeight(0),tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.46, n.sliceIndexToHeight(1),tol);
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, n.sliceIndexToHeight(0.45), tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, n.sliceIndexToHeight(0.46), tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, n.sliceIndexToHeight(0.47), tol );
 }
 
