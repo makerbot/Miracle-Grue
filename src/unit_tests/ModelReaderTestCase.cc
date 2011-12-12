@@ -124,7 +124,7 @@ void ModelReaderTestCase::testMeshySimple()
 	cout << endl;
 	cout << __FUNCTION__ << endl;
 	Scalar zH = 1.0;
-	Meshy mesh(zH);
+	Meshy mesh(zH, zH);
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
@@ -137,6 +137,7 @@ void ModelReaderTestCase::testMeshySimple()
 	cout << "t " << t.vertex1 << ", " << t.vertex2 << ", " << t.vertex3 << endl;
  	mesh.addTriangle(t);
 
+ 	cout << "mesh.dump(cout);" << endl;
  	mesh.dump(cout);
 
  	const TriangleIndices &slice0 =  mesh.readSliceTable()[0];
@@ -146,9 +147,9 @@ void ModelReaderTestCase::testMeshySimple()
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice1.size());
 
     const TriangleIndices &slice2 =  mesh.readSliceTable()[2];
-    CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
+    CPPUNIT_ASSERT_EQUAL((size_t)4, slice2.size());
 
- 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
+ 	CPPUNIT_ASSERT_EQUAL((size_t)2, mesh.readSliceTable().size());
 
 	t.vertex1 =Point3d(0,10, 0);
 	t.vertex2 =Point3d(0,10, 2.6);
@@ -156,12 +157,13 @@ void ModelReaderTestCase::testMeshySimple()
 
 	mesh.addTriangle(t);
 	CPPUNIT_ASSERT_EQUAL((size_t)4, mesh.readSliceTable().size());
-
+	cout << "#$%^%" << endl;
 	const Limits &limits = mesh.readLimits();
 	double tol = 0.00001;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,  limits.xMin, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(10, limits.yMin, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,  limits.zMin, tol);
+	cout << "#$%^%" << endl;
 
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,   limits.xMax, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(10,  limits.yMax, tol);
@@ -170,7 +172,7 @@ void ModelReaderTestCase::testMeshySimple()
 
 void ModelReaderTestCase::testLayerSplit()
 {
-	Meshy mesh(0.35);
+	Meshy mesh(0.35, 0.35);
 	unsigned int t0, t1;
 	t0 = clock();
 	//LoadMeshyFromStl(mesh, "inputs/Water.stl");
@@ -192,7 +194,7 @@ void ModelReaderTestCase::testLargeMeshy()
 {
 	unsigned int t0,t1;
 	cout << "Light saber" << endl;
-	Meshy mesh3(0.35);
+	Meshy mesh3(0.35, 0.35);
 	t0=clock();
 	LoadMeshyFromStl(mesh3, "inputs/lightsaber.stl");
 	t1=clock()-t0;
@@ -213,7 +215,7 @@ void ModelReaderTestCase::testMeshyLoad()
 {
 	unsigned int t0,t1;
 	cout << "Water" << endl;
-	Meshy mesh(0.35);
+	Meshy mesh(0.35, 0.35);
 	t0=clock();
 	LoadMeshyFromStl(mesh, "inputs/Water.stl");
 	t1=clock()-t0;
@@ -222,7 +224,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh.readSliceTable().size());
 
 	cout << "Land" << endl;
-	Meshy mesh2(0.35);
+	Meshy mesh2(0.35, 0.35);
 
 	t0=clock();
 	LoadMeshyFromStl(mesh2, "inputs/Land.stl");
@@ -234,7 +236,7 @@ void ModelReaderTestCase::testMeshyLoad()
 
 void ModelReaderTestCase::testSlicyWater()
 {
-	Meshy mesh(0.35);
+	Meshy mesh(0.35, 0.35);
 	LoadMeshyFromStl(mesh, "inputs/Water.stl");
 
 	const TrianglesInSlices& table = mesh.readSliceTable();
@@ -266,15 +268,6 @@ void ModelReaderTestCase::testSlicyWater()
 	t1=clock()-t0;
 	cout << "clock: " << t1 << endl;
 }
-
-
-//
-// NOTE: increase nozzle h between layers, or suffer the consequences
-//
-
-
-
-
 
 
 
@@ -496,9 +489,9 @@ private:
 #endif
 
 
-void sliceToScad(const char*modelFile, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
+void sliceToScad(const char*modelFile, double firstLayerZ, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
 {
-	Meshy mesh(layerH); // 0.35
+	Meshy mesh(firstLayerZ, layerH); // 0.35
 	// double tubeSpacing = 1.0;
 
 	LoadMeshyFromStl(mesh, modelFile);
@@ -528,9 +521,11 @@ void sliceToScad(const char*modelFile, double layerH, double layerW, double tube
 	omp_init_lock (&my_lock);
 	#pragma omp parallel for
 #endif
+
 	for(int i=0; i < sliceCount; i++)
 	{
-		Scalar z = (i + 0.5) * mesh.readSliceHeight();
+
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
 
 		std::vector<Segment> outlineSegments;
@@ -599,10 +594,12 @@ void ModelReaderTestCase::fixHexagon()
 {
 	unsigned int t0,t1;
 	t0=clock();
+	double firstLayerZ = 0.11;
 	double layerH = 0.35;
 	double layerW = 0.583333;
 	double tubeSpacing = 0.5;
 	sliceToScad("inputs/hexagon.stl",
+				firstLayerZ,
 					layerH,
 						layerW,
 							tubeSpacing,
@@ -614,7 +611,8 @@ void ModelReaderTestCase::fixHexagon()
 }
 
 
-void batchProcess(Scalar layerH,
+void batchProcess(	Scalar firstLayerZ,
+					Scalar layerH,
 					Scalar layerW,
 					Scalar tubeSpacing,
 					const char* outDir,
@@ -640,7 +638,7 @@ void batchProcess(Scalar layerH,
 
 		unsigned int t0,t1;
 		t0=clock();
-		sliceToScad(modelFile.c_str(),layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
+		sliceToScad(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
 		times.push_back(t);
@@ -659,9 +657,10 @@ void ModelReaderTestCase::testMyStls()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	double layerH = 0.35;
-	double layerW = 0.5833333;
-	double tubeSpacing = 1.0;
+	Scalar firstLayerZ = 0.11;
+	Scalar layerH = 0.35;
+	Scalar layerW = 0.5833333;
+	Scalar tubeSpacing = 1.0;
 
 	std::string outDir = "test_cases/modelReaderTestCase/output";
 	std::vector<std::string> models;
@@ -684,17 +683,17 @@ void ModelReaderTestCase::testMyStls()
 	//models.push_back("Toymaker_Skull_1_Million_Polys");
 	//	models.push_back("part2");
 
-	batchProcess(layerH, layerW, tubeSpacing, outDir.c_str(), models);
+	batchProcess(firstLayerZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
 }
 
 
 void ModelReaderTestCase::testInputStls()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
-
-	double layerH = 0.35;
-	double layerW = 0.5833333;
-	double tubeSpacing = 1.0;
+	Scalar firstZ = 0.11;
+	Scalar layerH = 0.35;
+	Scalar layerW = 0.5833333;
+	Scalar tubeSpacing = 1.0;
 
 	std::string outDir = "test_cases/modelReaderTestCase/output";
 	std::vector<std::string> models;
@@ -704,7 +703,7 @@ void ModelReaderTestCase::testInputStls()
 	models.push_back("inputs/hexagon.stl");
 	models.push_back("inputs/Land.stl");
 
-	batchProcess(layerH, layerW, tubeSpacing, outDir.c_str(), models);
+	batchProcess(firstZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
 
 }
 
@@ -739,11 +738,18 @@ void ModelReaderTestCase::testTubularInflate()
 void ModelReaderTestCase::fixContourProblem()
 {
 	cout << endl;
+
+	Scalar firstZ =0.11;
 	double layerH = 0.35;
 	int layerIndex = 30;
-	Meshy mesh(layerH); // 0.35
+
+	LayerMeasure zTapeMeasure(firstZ, layerH);
+
+	Meshy mesh(firstZ, layerH); // 0.35
+	cout << "LOADING... " << endl;
 	LoadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
-	Scalar z = (layerIndex + 0.5) * mesh.readSliceHeight();
+
+	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
 	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
 	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
@@ -766,6 +772,7 @@ void ModelReaderTestCase::fixContourProblem()
 		minMaxZ(t,min, max);
 		minsAndMaxes.push_back(std::pair<Scalar, Scalar>(min, max) );
 		cout << t.vertex1.z << "\t\t" << t.vertex2.z << "\t\t" << t.vertex3.z << "\t\t" << min << "\t"<< max << endl;
+		cout << "  min " << min << " max " << endl;
 		CPPUNIT_ASSERT(z >= min);
 		CPPUNIT_ASSERT(z <= max);
 	}
@@ -781,48 +788,67 @@ void ModelReaderTestCase::fixContourProblem()
 
 
 
-class LayerMeasure
-{
-	Scalar firstLayerZ;
-	Scalar layerH;
-
-public:
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH) // , Scalar nozzleDelta
-	:firstLayerZ(firstLayerZ), layerH(layerH)
-	{
-	}
-
-	std::pair<unsigned int, unsigned int> zToLayerBelowAndAbove(Scalar z) const
-	{
-		std::pair<unsigned int,Scalar> belowAbove(0.11,0.35);
-		return belowAbove;
-	}
-
-	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
-	{
-		return firstLayerZ + sliceIndex * layerH;
-	}
-
-	std::pair<Scalar,Scalar> sliceIndexToRange(unsigned int sliceIndex)
-	{
-		assert(0);
-
-		std::pair<Scalar,Scalar> floorCeil(0.1,0.2);
-		return floorCeil;
-	}
-
-};
-
 void ModelReaderTestCase::testLayerMeasure()
 {
+	cout << endl;
 	double tol = 0.000000001;
 	LayerMeasure n(0.11, 0.35 ); // n is for nozzle
 
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.11, n.sliceIndexToHeight(0),tol);
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.46, n.sliceIndexToHeight(1),tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.11, n.sliceIndexToHeight(0), tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.46, n.sliceIndexToHeight(1), tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.81, n.sliceIndexToHeight(2), tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1.16, n.sliceIndexToHeight(3), tol);
 
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, n.sliceIndexToHeight(0.45), tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, n.sliceIndexToHeight(0.46), tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, n.sliceIndexToHeight(0.47), tol );
+
+	Scalar z = 0;
+	unsigned int abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 0, abode);
+
+	z = 0.1;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 0, abode);
+
+	z = 0.11;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1, abode);
+
+	z = 0.12;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1, abode);
+
+	z = 0.45;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1, abode);
+
+	z = 0.46;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 2, abode);
+
+	z = 0.47;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 2, abode);
+
+	z = 1.15999;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 3, abode);
+
+	z = 1.1600001;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 4, abode);
+
+	// one million! mouhahahahahaahahahaaha :-)
+	z = 350000.11;
+	abode = n.zToLayerAbove(z);
+	cout << "h=" << z << " layer=" << abode << endl;
+	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1000001, abode);
 }
 

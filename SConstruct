@@ -143,6 +143,9 @@ mand_ops = ['src/Configuration.cc',
 #				LIBPATH = default_libs_path, 
 #				CPPPATH = default_includes )
 
+
+
+
 env.Program('./bin/tests/exampleOpUnitTest',
 				mix(['src/unit_tests/ExampleOpTestCase.cc'],
 					file_w, config, unit_test, example_op),
@@ -153,7 +156,12 @@ env.Program('./bin/tests/exampleOpUnitTest',
 if run_unit_tests == True:
 	Command('exampleOpUnitTest.passed','./bin/tests/exampleOpUnitTest',runUnitTest)
 
-
+env.Program('./bin/morphogen', 
+		mix(['src/morphogen.cc'], ),
+		LIBS = default_libs,
+		LIBPATH = default_libs_path,
+		CPPPATH = default_includes)
+		
 env.Program(	'./bin/tests/fileWriterUnitTest',
 				mix(['src/unit_tests/FileWriterTestCase.cc'],
 					file_w, config, unit_test),

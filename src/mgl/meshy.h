@@ -17,12 +17,31 @@
 #include "BGL/BGLTriangle3d.h"
 #include "BGL/BGLMesh3d.h"
 #include "limits.h"
+
+
+
 ///
 /// Meshyness is what links all these triangles together
 ///
 
-namespace mgl
+namespace mgl // serious about triangles
 {
+
+
+//
+// Exception class! All your errors are belong to us.
+//
+class Except
+{
+public:
+	std::string error;
+	Except(const char *msg)
+	 :error(msg)
+	{
+
+	}
+};
+
 
 typedef unsigned int index_t;
 typedef std::vector<index_t> TriangleIndices;
@@ -51,14 +70,73 @@ void minMaxZ(const BGL::Triangle3d &t, Scalar &min,  Scalar &max )
 
 
 
-
-class MeshyMess
+class LayerMess : public Except
 {
+public:
+	LayerMess(const char *msg)
+	 :Except(msg)
+	{
+
+	}
+
+};
+
+
+//
+// This class assumes that the model's triangles are
+// all above 0 (the z of each of the 3 vertices is >= 0.0).
+// worse, the layers MUST start at 0. Lazy programmer!
+// This is good enough for now, until the class "sees" every triangle
+// during loading and recalcs layers on the fly.
+//
+class LayerMeasure
+{
+	Scalar firstLayerZ;
+	Scalar layerH;
 
 public:
-	std::string error;
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH)
+		:firstLayerZ(firstLayerZ), layerH(layerH)
+	{
+	}
+
+	unsigned int zToLayerAbove(Scalar z) const
+	{
+		if(z<=0)
+		{
+			LayerMess("Model with points below the z axis are not supported in this version. Please center your model on the build area");
+		}
+
+		if (z < firstLayerZ)
+			return 0;
+
+		Scalar tol = 0.00000000000001; // tolerance
+		Scalar layer = (z+tol-firstLayerZ) / layerH;
+		return ceil(layer);
+	}
+
+	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
+	{
+		return firstLayerZ + sliceIndex * layerH;
+	}
+/*
+	std::pair<Scalar,Scalar> sliceIndexToRange(unsigned int sliceIndex)
+	{
+		assert(0);
+		std::pair<Scalar,Scalar> floorCeil(0.1,0.2);
+		return floorCeil;
+	}
+*/
+
+};
+
+
+
+class MeshyMess : public Except
+{
+public:
 	MeshyMess(const char *msg)
-	 :error(msg)
+	 :Except(msg)
 	{
 
 	}
@@ -69,11 +147,12 @@ public:
 class Meshy
 {
 
-	Scalar sliceHeight;
 	mgl::Limits limits;
 
 	std::vector<BGL::Triangle3d>  allTriangles;
 	TrianglesInSlices sliceTable;
+	LayerMeasure zTapeMeasure; // Ze tape measure, for Z mainly
+
 public:
 
 	const std::vector<BGL::Triangle3d> &readAllTriangles()
@@ -86,9 +165,9 @@ public:
 		return limits;
 	}
 
-	Scalar readSliceHeight() const
+	const LayerMeasure& readLayerMeasure()
 	{
-		return sliceHeight;
+		return zTapeMeasure;
 	}
 
 	const TrianglesInSlices &readSliceTable() const
@@ -96,8 +175,8 @@ public:
 		return sliceTable;
 	}
 
-	Meshy(Scalar sliceHeight)
-		:sliceHeight(sliceHeight)
+	Meshy(Scalar firstSliceZ, Scalar layerH)
+		:zTapeMeasure(firstSliceZ, layerH)
 	{
 	}
 
@@ -110,25 +189,20 @@ public:
 		Scalar max;
 		minMaxZ(t, min, max);
 
-		Scalar mini = (min+0.5) / sliceHeight;
-		Scalar maxi =  (max+0.5) / sliceHeight;
-		int minSliceIndex = floor( mini);
-		int maxSliceIndex = ceil(maxi);
+		unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(min);
+		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(max);
+		unsigned int currentSliceCount = sliceTable.size();
 
-//		cout << "------" << endl;
-//		cout << "t " << t.vertex1 << ", " << t.vertex2 << ", " << t.vertex3 << endl;
 //		cout << "Minimum   =" << min << endl;
 //		cout << "Maximum   =" << max << endl;
-//		cout << "mini      =" << mini << endl;
-//		cout << "maxi      =" << maxi << endl;
 //		cout << "Min index =" <<  minSliceIndex << endl;
 //		cout << "Max index =" <<  maxSliceIndex << endl;
+//		cout << "current slice count = " <<  currentSliceCount << endl;
 
-
-		if (maxSliceIndex > sliceTable.size() )
+		if (maxSliceIndex >= currentSliceCount)
 		{
-			sliceTable.resize(maxSliceIndex); // make room for potentially new slices
-			// cout << "new slices: " << sliceTable.size() << endl;
+			sliceTable.resize(maxSliceIndex+1); // make room for potentially new slices
+//			cout << "- new slice count: " << sliceTable.size() << endl;
 		}
 
 		allTriangles.push_back(t);
@@ -136,10 +210,11 @@ public:
 		size_t newTriangleId = allTriangles.size() -1;
 
 		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << endl;
-		for (int i= minSliceIndex; i< maxSliceIndex; i++)
+		for (int i= minSliceIndex; i<= maxSliceIndex; i++)
 		{
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			trianglesForSlice.push_back(newTriangleId);
+//			cout << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << endl;
 		}
 
 		limits.grow(t.vertex1);

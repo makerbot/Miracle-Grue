@@ -13,9 +13,6 @@
 class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( ModelReaderTestCase );
-
-
-
 //  CPPUNIT_TEST( testLayerSplit );
 //  CPPUNIT_TEST( testSlicySimple );
 //  CPPUNIT_TEST( testMeshyLoad );
@@ -24,12 +21,13 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 //  CPPUNIT_TEST( testTubularInflate);
 //  CPPUNIT_TEST( testCutTriangle);
 //  CPPUNIT_TEST( testRotate);
-//  CPPUNIT_TEST( testInputStls );
+    CPPUNIT_TEST( testInputStls );
 //  CPPUNIT_TEST( fixHexagon );
-//  CPPUNIT_TEST( testMeshySimple );
-//  CPPUNIT_TEST( fixContourProblem );
-    CPPUNIT_TEST(testLayerMeasure );
-//  CPPUNIT_TEST( testMyStls );
+
+    CPPUNIT_TEST( fixContourProblem );
+    CPPUNIT_TEST( testLayerMeasure );
+    CPPUNIT_TEST( testMyStls );
+    CPPUNIT_TEST( testMeshySimple );
   CPPUNIT_TEST_SUITE_END();
 
 
