@@ -34,7 +34,7 @@ struct Limits
 
 		xMin = std::numeric_limits<Scalar>::max();
 		yMin = xMin;
-		zMin = zMin;
+		zMin = xMin;
 
 	}
 /*

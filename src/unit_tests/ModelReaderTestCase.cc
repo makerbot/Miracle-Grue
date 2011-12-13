@@ -6,11 +6,7 @@
 #include <limits>
 #include <set>
 
-#define OMPFF // openMP mulitithreading extensions
 
-#ifdef OMPFF
-#include <omp.h>
-#endif
 
 #define  CPPUNIT_ENABLE_NAKED_ASSERT 1
 
@@ -67,7 +63,7 @@ class LoopPole
 };
 
 */
-
+// TODO : read this later
 // Generating the vertices for an arbitrarily oriented cylinder is a common problem that is fairly straightforward to solve.
 // Generating the orthonormal basis vectors used to find the endcap vertices.
 // Let W = normalize(P2-P1). As you've noted you need a unit-length vector 'U' that is perpendicular to W. It will also be convenient to have a unit-length vector V perpendicular to both W and U. U, V, and W form the orthonormal basis for the cylinder.
@@ -140,6 +136,11 @@ void ModelReaderTestCase::testMeshySimple()
  	cout << "mesh.dump(cout);" << endl;
  	mesh.dump(cout);
 
+
+    // 3 layers in this cake!
+ 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
+
+ 	// 1 triangle for each layer
  	const TriangleIndices &slice0 =  mesh.readSliceTable()[0];
  	CPPUNIT_ASSERT_EQUAL((size_t)1, slice0.size());
 
@@ -147,16 +148,15 @@ void ModelReaderTestCase::testMeshySimple()
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice1.size());
 
     const TriangleIndices &slice2 =  mesh.readSliceTable()[2];
-    CPPUNIT_ASSERT_EQUAL((size_t)4, slice2.size());
+    CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
 
- 	CPPUNIT_ASSERT_EQUAL((size_t)2, mesh.readSliceTable().size());
 
 	t.vertex1 =Point3d(0,10, 0);
 	t.vertex2 =Point3d(0,10, 2.6);
 	t.vertex3 =Point3d(0,10, 1);
 
 	mesh.addTriangle(t);
-	CPPUNIT_ASSERT_EQUAL((size_t)4, mesh.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
 	cout << "#$%^%" << endl;
 	const Limits &limits = mesh.readLimits();
 	double tol = 0.00001;
@@ -285,116 +285,6 @@ BGL::Point rotateAroundPoint(const BGL::Point &center, Scalar angle, const BGL::
 
 
 
-
-
-
-void pathology( std::vector<Segment> &segments,
-				const Limits& limits,
-				double z,
-				double tubeSpacing ,
-				double angle,
-				std::vector<std::vector<Segment> > &allTubes)
-{
-	assert(allTubes.size() == 0);
-
-	// It is pitch black. You are likely to be eaten by a grue.
-
-	// rotate segments for that cool look
-	Point3d c = limits.center();
-	Point toOrigin(-c.x, -c.y);
-	Point toCenter(c.x, c.y);
-
-//	translateSegments(segments, toOrigin);
-//	rotateSegments(segments, angle);
-//  translateSegments(segments, toCenter);
-
-	int tubeCount = (limits.yMax - limits.yMin) / tubeSpacing;
-
-	std::vector< std::set<Scalar> > intersects;
-	// allocate
-	intersects.resize(tubeCount);
-
-
-	for (int i=0; i < tubeCount; i++)
-	{
-		Scalar y = -0.5 * (limits.yMax - limits.yMin) + i * tubeSpacing;
-		std::set<Scalar> &lineCuts = intersects[i];
-		for(std::vector<Segment>::iterator i= segments.begin(); i!= segments.end(); i++)
-		{
-			Segment &segment = *i;
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
-			{
-				lineCuts.insert(intersectionX);
-			}
-		}
-	}
-
-	allTubes.resize(tubeCount);
-
-	bool backAndForth = true;
-
-	for (int i=0; i < tubeCount; i++)
-	{
-		std::vector<Segment>& lineTubes = allTubes[i];
-		Scalar y = -0.5 * (limits.yMax - limits.yMin) + i * tubeSpacing;
-		std::set<Scalar> &lineCuts = intersects[i];
-
-		Segment segment;
-		bool inside = false;
-		if( backAndForth)
-		{
-			for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
-			{
-				inside =! inside;
-				Scalar x = *it;
-				// cout << "\t" << x << " " << inside <<",";
-				if(inside)
-				{
-					segment.a.x = x;
-					segment.a.y = y;
-				}
-				else
-				{
-					segment.b.x = x;
-					segment.b.y = y;
-					lineTubes.push_back(segment);
-				}
-			}
-		}
-		else
-		{
-			for(std::set<Scalar>::reverse_iterator it = lineCuts.rbegin(); it != lineCuts.rend(); it++)
-			{
-				inside =! inside;
-				Scalar x = *it;
-				// cout << "\t" << x << " " << inside <<",";
-				if(inside)
-				{
-					segment.a.x = x;
-					segment.a.y = y;
-				}
-				else
-				{
-					segment.b.x = x;
-					segment.b.y = y;
-					lineTubes.push_back(segment);
-				}
-			}
-		}
-		backAndForth = !backAndForth;
-	}
-	// unrotate the tube segments (they are tube rays, not cut triangles)
-//	for (int i=0; i < tubeCount; i++)
-	{
-//		std::vector<Segment>& tubes = allTubes[i];
-//		rotateSegments(segments, -angle);
-//		translateSegments(segments, toCenter);
-
-	}
-}
-
-
 void ModelReaderTestCase::testCutTriangle()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
@@ -432,142 +322,7 @@ void ModelReaderTestCase::testRotate()
 
 }
 
-#define PATH_SEPARATOR '/'
 
-std::string ExtractDirectory(const std::string& path)
-{
-	return path.substr(0, path.find_last_of(PATH_SEPARATOR) + 1);
-}
-
-std::string ExtractFilename(const std::string& path)
-{
-	return path.substr(path.find_last_of(PATH_SEPARATOR) + 1);
-}
-
-std::string ChangeExtension(const std::string& path, const std::string& ext)
-{
-	std::string filename = ExtractFilename(path);
-	return ExtractDirectory(path)
-			+ filename.substr(0, filename.find_last_of('.')) + ext;
-}
-
-std::string removeExtension(const std::string& path)
-{
-	std::string filename = ExtractFilename(path);
-	return ExtractDirectory(path)
-			+ filename.substr(0, filename.find_last_of('.'));
-}
-
-#ifdef OMPFF
-class OmpGuard {
-public:
-    //Acquire the lock and store a pointer to it
-	OmpGuard (omp_lock_t &lock)
-	:lock_ (&lock)
-	{
-		acquire();
-	}
-    void acquire ()
-    {
-    	omp_set_lock (lock_);
-    }
-
-    void release ()
-    {
-    	omp_unset_lock (lock_);
-    }
-
-    ~OmpGuard ()
-    {
-    	release();
-    }
-
-private:
-    omp_lock_t *lock_;  // pointer to our lock
-
-};
-#endif
-
-
-void sliceToScad(const char*modelFile, double firstLayerZ, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
-{
-	Meshy mesh(firstLayerZ, layerH); // 0.35
-	// double tubeSpacing = 1.0;
-
-	LoadMeshyFromStl(mesh, modelFile);
-	// mesh.dump(cout);
-
-	cout << "Splitting up: " << modelFile << endl;
-	cout << "And creating: " << scadFile << endl;
-
-	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
-	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
-	const Limits& limits = mesh.readLimits();
-	std::cout << "LIMITS: " << limits << std::endl;
-
-	Limits tubularLimits = limits;
-	tubularLimits.inflate(1.0, 1.0, 0.0);
-	tubularLimits.tubularZ();
-
-
-	ScadTubeFile outlineScad(scadFile, layerH, layerW );
-
-	double dAngle = 0; // M_PI / 4;
-
-	size_t sliceCount =sliceTable.size();
-
-#ifdef OMPFF
-	omp_lock_t my_lock;
-	omp_init_lock (&my_lock);
-	#pragma omp parallel for
-#endif
-
-	for(int i=0; i < sliceCount; i++)
-	{
-
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
-		const TriangleIndices &trianglesForSlice = sliceTable[i];
-
-		std::vector<Segment> outlineSegments;
-
-		// get 2D paths for outline
-		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
-
-		// get 2D rays for each slice
-		std::vector<std::vector<Segment> > rowsOfTubes;
-		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, rowsOfTubes);
-
-		stringstream stlName;
-		stlName << stlFilePrefix  << i << ".stl";
-		mesh.writeStlFileForLayer(i, stlName.str().c_str());
-
-		// only one thread at a time here
-		{
-#ifdef OMPFF
-			OmpGuard lock (my_lock);
-#endif
-			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
-			outlineScad.writeStlModule("stl_", ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
-		}
-		std::vector<Segment> layerSegments;
-		for(int j=0; j<rowsOfTubes.size(); j++)
-		{
-			const std::vector<Segment> &raySegments = rowsOfTubes[j];
-			layerSegments.insert(layerSegments.end(), raySegments.begin(), raySegments.end());
-			// raylineScad.writeTubesModule("rays_", i, rowsOfTubes[j], z);
-		}
-
-		// only one thread at a time here
-		{
-#ifdef OMPFF
-			OmpGuard lock (my_lock);
-#endif
-			outlineScad.writeExtrusionsModule("fill_", layerSegments, i, z );
-		}
-	}
-	outlineScad.writeSwitcher(sliceTable.size());
-
-}
 
 /*
 class Cuts
@@ -598,7 +353,7 @@ void ModelReaderTestCase::fixHexagon()
 	double layerH = 0.35;
 	double layerW = 0.583333;
 	double tubeSpacing = 0.5;
-	sliceToScad("inputs/hexagon.stl",
+	sliceAndScad("inputs/hexagon.stl",
 				firstLayerZ,
 					layerH,
 						layerW,
@@ -618,17 +373,18 @@ void batchProcess(	Scalar firstLayerZ,
 					const char* outDir,
 					const std::vector<std::string> &models)
 {
+	FileSystemAbstractor fileSystem;
 	std::vector<double> times;
 	for (int i=0; i < models.size(); i++)
 	{
 
 		std::string modelFile = models[i];
-		std::string stlFiles = removeExtension(ExtractFilename(models[i]));
+		std::string stlFiles = fileSystem.removeExtension(fileSystem.ExtractFilename(models[i]));
 		stlFiles += "_";
 
 		std::string scadFile = outDir;
 		scadFile += "/";
-		scadFile += ChangeExtension(ExtractFilename(models[i]), ".scad" )  ;
+		scadFile += fileSystem.ChangeExtension(fileSystem.ExtractFilename(models[i]), ".scad" )  ;
 
 		std::string stlPrefix = outDir;
 		stlPrefix += "/";
@@ -638,7 +394,7 @@ void batchProcess(	Scalar firstLayerZ,
 
 		unsigned int t0,t1;
 		t0=clock();
-		sliceToScad(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
+		sliceAndScad(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
 		times.push_back(t);

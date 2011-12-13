@@ -13,39 +13,27 @@
 #ifndef MESHY_H_
 #define MESHY_H_
 
-#include "BGL/config.h"
-#include "BGL/BGLTriangle3d.h"
-#include "BGL/BGLMesh3d.h"
+#include <iomanip>
+
+#include <set>
+
+#include "segment.h"
 #include "limits.h"
+#include "abstractable.h"
+#include "scadtubefile.h"
 
+#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
 
-
+#ifdef OMPFF
+#include <omp.h>
+#endif
 ///
-/// Meshyness is what links all these triangles together
+/// Meshyness: that property that links all these triangles together
 ///
 
 namespace mgl // serious about triangles
 {
 
-
-//
-// Exception class! All your errors are belong to us.
-//
-class Except
-{
-public:
-	std::string error;
-	Except(const char *msg)
-	 :error(msg)
-	{
-
-	}
-};
-
-
-typedef unsigned int index_t;
-typedef std::vector<index_t> TriangleIndices;
-typedef std::vector<TriangleIndices> TrianglesInSlices;
 
 
 // returns the minimum and maximum z for the 3 vertices of a triangle
@@ -201,7 +189,8 @@ public:
 
 		if (maxSliceIndex >= currentSliceCount)
 		{
-			sliceTable.resize(maxSliceIndex+1); // make room for potentially new slices
+			unsigned int newSize = maxSliceIndex+1;
+			sliceTable.resize(newSize); // make room for potentially new slices
 //			cout << "- new slice count: " << sliceTable.size() << endl;
 		}
 
@@ -305,6 +294,7 @@ public:
 };
 
 
+
 size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
 {
 
@@ -318,6 +308,231 @@ size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
 	return (size_t) count;
 }
 
+
+void pathology( std::vector<Segment> &outlineSegments,
+				const Limits& limits,
+				double z,
+				double tubeSpacing ,
+				double angle,
+				std::vector<Segment> &tubes)
+{
+	assert(tubes.size() == 0);
+
+	// rotate outline Segments for that cool look
+	BGL::Point3d c = limits.center();
+	BGL::Point toOrigin(-c.x, -c.y);
+	BGL::Point toCenter(c.x, c.y);
+
+	translateSegments(outlineSegments, toOrigin);
+//	rotateSegments(segments, angle);
+//  translateSegments(segments, toCenter);
+
+	Scalar deltaY = limits.yMax - limits.yMin;
+	int tubeCount = (deltaY) / tubeSpacing;
+
+	std::vector< std::set<Scalar> > intersects;
+	// allocate
+	intersects.resize(tubeCount);
+
+
+	for (int i=0; i < tubeCount; i++)
+	{
+		Scalar y = -0.5 * deltaY + i * tubeSpacing;
+		std::set<Scalar> &lineCuts = intersects[i];
+		for(std::vector<Segment>::iterator i= outlineSegments.begin(); i!= outlineSegments.end(); i++)
+		{
+			Segment &segment = *i;
+			Scalar intersectionX, intersectionY;
+			if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
+			{
+				lineCuts.insert(intersectionX);
+			}
+		}
+	}
+
+	//tubes.resize(tubeCount);
+
+	bool backAndForth = true;
+
+	Scalar bottom = -0.5 * deltaY;
+	for (int i=0; i < tubeCount; i++)
+	{
+		//std::vector<Segment>& lineTubes = tubes[i];
+		Scalar y = bottom + i * tubeSpacing;
+		std::set<Scalar> &lineCuts = intersects[i];
+
+		Segment segment;
+		bool inside = false;
+		if( backAndForth)
+		{
+			for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
+			{
+				inside =! inside;
+				Scalar x = *it;
+				// cout << "\t" << x << " " << inside <<",";
+				if(inside)
+				{
+					segment.a.x = x;
+					segment.a.y = y;
+				}
+				else
+				{
+					segment.b.x = x;
+					segment.b.y = y;
+					//lineTubes.push_back(segment);
+					tubes.push_back(segment);
+				}
+			}
+		}
+		else
+		{
+			for(std::set<Scalar>::reverse_iterator it = lineCuts.rbegin(); it != lineCuts.rend(); it++)
+			{
+				inside =! inside;
+				Scalar x = *it;
+				// cout << "\t" << x << " " << inside <<",";
+				if(inside)
+				{
+					segment.a.x = x;
+					segment.a.y = y;
+				}
+				else
+				{
+					segment.b.x = x;
+					segment.b.y = y;
+					tubes.push_back(segment);
+				}
+			}
+		}
+		backAndForth = !backAndForth;
+	}
+	// unrotate the tube segments (they are tube rays, not cut triangles)
+//	for (int i=0; i < tubeCount; i++)
+//	{
+//		std::vector<Segment>& tubes = allTubes[i];
+//		rotateSegments(segments, -angle);
+//		translateSegments(segments, toCenter);
+
+//	}
 }
+
+
+
+
+#ifdef OMPFF
+class OmpGuard {
+public:
+    //Acquire the lock and store a pointer to it
+	OmpGuard (omp_lock_t &lock)
+	:lock_ (&lock)
+	{
+		acquire();
+	}
+    void acquire ()
+    {
+    	omp_set_lock (lock_);
+    }
+
+    void release ()
+    {
+    	omp_unset_lock (lock_);
+    }
+
+    ~OmpGuard ()
+    {
+    	release();
+    }
+
+private:
+    omp_lock_t *lock_;  // pointer to our lock
+
+};
+#endif
+
+
+
+
+void sliceAndScad(const char*modelFile, double firstLayerZ, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
+{
+	Meshy mesh(firstLayerZ, layerH); // 0.35
+	// double tubeSpacing = 1.0;
+
+	LoadMeshyFromStl(mesh, modelFile);
+	// mesh.dump(cout);
+
+	const std::vector<BGL::Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
+	const Limits& limits = mesh.readLimits();
+	std::cout << "LIMITS: " << limits << std::endl;
+
+	Limits tubularLimits = limits;
+	tubularLimits.inflate(1.0, 1.0, 0.0);
+	tubularLimits.tubularZ();
+
+
+	ScadTubeFile outlineScad(scadFile, layerH, layerW );
+
+	double dAngle = 0; // M_PI / 4;
+
+	size_t sliceCount =sliceTable.size();
+
+#ifdef OMPFF
+	omp_lock_t my_lock;
+	omp_init_lock (&my_lock);
+	#pragma omp parallel for
+#endif
+	for(int i=0; i < sliceCount; i++)
+	{
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
+		const TriangleIndices &trianglesForSlice = sliceTable[i];
+
+		std::vector<Segment> outlineSegments;
+
+		// get 2D paths for outline
+		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
+
+		// get 2D rays for each slice
+		// std::vector<std::vector<Segment> > rowsOfTubes;
+		std::vector<Segment> tubes;
+		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, tubes);
+
+		stringstream stlName;
+		stlName << stlFilePrefix  << i << ".stl";
+		mesh.writeStlFileForLayer(i, stlName.str().c_str());
+
+		// only one thread at a time here
+		{
+
+#ifdef OMPFF
+			OmpGuard lock (my_lock);
+			// cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
+#endif
+
+			MyComputer deepThought; // 42
+			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
+			outlineScad.writeStlModule("stl_", deepThought.fileSystem.ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
+		}
+//		std::vector<Segment> layerSegments;
+//		for(int j=0; j<rowsOfTubes.size(); j++)
+//		{
+//			const std::vector<Segment> &raySegments = rowsOfTubes[j];
+//			layerSegments.insert(layerSegments.end(), raySegments.begin(), raySegments.end());
+//			// raylineScad.writeTubesModule("rays_", i, rowsOfTubes[j], z);
+//		}
+
+		// only one thread at a time here
+		{
+#ifdef OMPFF
+			OmpGuard lock (my_lock);
+#endif
+			outlineScad.writeExtrusionsModule("fill_", tubes, i, z );
+		}
+	}
+	outlineScad.writeSwitcher(sliceTable.size());
+
+}
+
+
+} // namespace
 
 #endif

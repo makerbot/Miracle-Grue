@@ -14,11 +14,26 @@
 #define SCAD_TUBEFILE_H_
 
 #include <iostream>
+#include <ostream>
+#include <sstream>
+
 #include "segment.h"
 
 
 namespace mgl
 {
+
+class ScadMess : public Except
+{
+public:
+	ScadMess(const char *msg)
+	 :Except(msg)
+	{
+
+	}
+
+};
+
 
 class ScadTubeFile
 {
@@ -32,7 +47,7 @@ public:
 			stringstream ss;
 			ss << "Can't open \"" << filename << "\"";
 			cout << "ERROR: " << ss.str() << endl;
-			MeshyMess problem(ss.str().c_str());
+			ScadMess problem(ss.str().c_str());
 			throw (problem);
 		}
 
@@ -40,7 +55,30 @@ public:
 		//out.precision(18);
 	    out.setf(ios::fixed);
 
+	    out << "// use min and max to see individual layers " << endl;
+	    out << "triangles();" << endl;
+	    out << "outlines();" << endl;
+	    out << "extrusions();" << endl;
+	    out << endl;
+	    out << "stl_color = [0,1,0, 0.025];" << endl;
+		out << "module out_line(x1, y1, z1, x2, y2, z2)" << endl;
+		out << "{" << endl;
+		out << "    color([1,0,0, 0.25])tube(x1, y1, z1, x2, y2, z2, diameter=0.2, faces=4, thickness_over_width=1);" << endl;
+		out << "}" << endl;
+
 		out  << endl;
+		out << "module extrusion(x1, y1, z1, x2, y2, z2)" << endl;
+		out << "{" << endl;
+		out << "    d = 0.35;" << endl;
+		out << "    f = 6;" << endl;
+		out << "    t =  0.6;" << endl;
+		out << "    corner(x1,y1,z1, diameter=d, faces=f, thickness_over_width =t );" << endl;
+		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=d, faces=f, thickness_over_width=t);" << endl;
+		out << "}" << endl;
+
+
+		out  << endl;
+		out << "" << endl;
 		out << "module tube(x1, y1, z1, x2, y2, z2, diameter, faces, thickness_over_width)" << endl;
 		out << "{" << endl;
 		out << "	" << endl;
@@ -66,21 +104,7 @@ public:
 		out << "}" << endl;
 		out  << endl;
 
-		out << "module out_line(x1, y1, z1, x2, y2, z2)" << endl;
-		out << "{" << endl;
-		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=0.01, faces=4, thickness_over_width=1);" << endl;
-		out << "}" << endl;
 
-
-		out  << endl;
-		out << "module extrusion(x1, y1, z1, x2, y2, z2)" << endl;
-		out << "{" << endl;
-		out << "    d = 0.35;" << endl;
-		out << "    f = 6;" << endl;
-		out << "    t =  0.6;" << endl;
-		out << "    corner(x1,y1,z1, diameter=d, faces=f, thickness_over_width =t );" << endl;
-		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=d, faces=f, thickness_over_width=t);" << endl;
-		out << "}" << endl;
 	}
 
 
@@ -89,12 +113,12 @@ public:
 		out << endl;
 		out << "module " << moduleName << slice << "()" << endl;
 		out << "{" << endl;
-		out << "    import_stl(\"" << stlName<< slice << ".stl\");" << endl;
+		out << "    color(stl_color)import_stl(\"" << stlName<< slice << ".stl\");" << endl;
 		out << "}" << endl;
 
 	}
 
-	void writeExtrusionsModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
+	void writeExtrusionsModule(const char* name, const std::vector<mgl::Segment> &segments, int slice, Scalar z)
 	{
 		writeTubesModule(name, "extrusion", segments, slice, z);
 	}
@@ -123,7 +147,7 @@ private:
 public:
 	void writeSwitcher(int count)
 	{
-		out << "module outline(min=0, max=" << count-1 <<")" << endl;
+		out << "module outlines(min=0, max=" << count-1 <<")" << endl;
 		out << "{" << endl;
 		for(int i=0; i< count; i++)
 		{
@@ -145,7 +169,7 @@ public:
 		}
 		out << "}"<< endl;
 		out << endl;
-		out << "module fill(min=0, max=" << count-1<<")" << endl;
+		out << "module extrusions(min=0, max=" << count-1<<")" << endl;
 		out << "{" << endl;
 		for(int i=0; i< count; i++)
 		{
@@ -158,11 +182,11 @@ public:
 		out << endl;
 
 		out << "// try import instead of import_stl depending on your version of OpenSCAD" << endl;
-		out << "min=0;" << endl;
-		out << "max=" << count -1 << ";" << endl;
-		out << "triangles(min, max);" << endl;
-		out << "outline(min, max);" << endl;
-		out << "fill(min,max);" << endl;
+//		out << "min=0;" << endl;
+//		out << "max=" << count -1 << ";" << endl;
+//		out << "triangles(min, max);" << endl;
+//		out << "outline(min, max);" << endl;
+//		out << "fill(min,max);" << endl;
 	}
 
 	~ScadTubeFile()

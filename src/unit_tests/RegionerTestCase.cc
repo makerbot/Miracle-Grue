@@ -6,12 +6,16 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "RegionerTestCase.h"
 
+#include "mgl/abstractable.h"
+
 #include "../Configuration.h"
 #include "../RegionerOperation.h"
 
 #include "ctime"
 
+using namespace mgl;
 using namespace std;
+
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RegionerTestCase );
 
@@ -130,15 +134,7 @@ double multi()
     return result;
 }
 
-std::string now()
-{
-    time_t t = time(0);   // get time now
-    struct tm * now = localtime( & t );
-    stringstream ss;
-    ss << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' <<  now->tm_mday << " "
-   	 <<  now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
-    return ss.str();
-}
+
 
 void RegionerTestCase::testMp()
 {
@@ -147,7 +143,9 @@ void RegionerTestCase::testMp()
 	printf("### Number of host CPUs:\t%d\n", omp_get_num_procs());
 	int nthreads = omp_get_num_threads();
 //	printf("Number of threads = %d\n", nthreads);
-	cout << endl << now() << endl;
+
+	MyComputer theMatrix;
+	cout << endl << theMatrix.clock.now() << endl;
 	cout << "Turbo!" << endl;
 	Timer t2;
 	cout << "result =" << multi()<< endl;
@@ -155,14 +153,14 @@ void RegionerTestCase::testMp()
 	cout << "********\n*************\ndone" << endl;
 	sleep(1);
 
-	cout << endl << now() << endl;
+	cout << endl << theMatrix.clock.now() << endl;
 	cout << endl;
 	cout << "Single thread" << endl;
 	Timer t;
 	cout << "result =" << single()<< endl;
 	cout << t.time() << " seconds" << endl;
 	cout << endl;
-	cout << endl << now() << endl;
+	cout << endl << theMatrix.clock.now() << endl;
 	cout << endl;
 }
 

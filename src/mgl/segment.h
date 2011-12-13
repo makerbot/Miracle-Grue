@@ -13,9 +13,35 @@
 #ifndef SEGMENT_H_
 #define SEGMENT_H_
 
+#include <cassert>
+#include <vector>
+#include <fstream>
+
+#include "BGL/config.h"
+#include "BGL/BGLTriangle3d.h"
+#include "BGL/BGLMesh3d.h"
+
+//
+// Exception class! All your errors are belong to us.
+//
+class Except
+{
+public:
+	std::string error;
+	Except(const char *msg)
+	 :error(msg)
+	{
+
+	}
+};
 
 
-#include "meshy.h"
+typedef unsigned int index_t;
+typedef std::vector<index_t> TriangleIndices;
+typedef std::vector<TriangleIndices> TrianglesInSlices;
+
+
+//#include "meshy.h"
 
 namespace mgl 
 {
