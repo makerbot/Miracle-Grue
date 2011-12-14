@@ -28,8 +28,6 @@ void configurePathTest(Configuration& config)
 
 
 
-
-
 void PatherTestCase::setUp()
 {
 
@@ -63,5 +61,8 @@ void PatherTestCase::example()
 }
 
 
+void  PatherTestCase::testLinea()
+{
 
+}
 

@@ -111,6 +111,8 @@ env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
 
 env.Library('./bin/lib/miracleGrue',['src/Operation.cc'], CPPATH=['src/'])
 
+env.Library('./bin/lib/mgl',['src/mgl/mgl.cc'], CPPATH=['src/'])
+
 unit_test = ['src/unit_tests/UnitTestMain.cc',]
 config 	  = ['src/Configuration.cc']
 file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeEnvelope.cc',]
@@ -122,7 +124,7 @@ file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/Mes
 example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
-default_libs = [ '_json','miracleGrue', 'bgl']
+default_libs = [ '_json','miracleGrue', 'bgl', 'mgl']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
@@ -191,7 +193,7 @@ if run_unit_tests == True:
 
 			
 env.Program( 	'./bin/tests/gcoderUnitTest', 
-				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test, pather, gcoder, file_w), 
+				mix(['src/unit_tests/GCoderTestCase.cc', 'src/mgl/mgl.cc'], unit_test, pather, gcoder, file_w), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= default_includes)

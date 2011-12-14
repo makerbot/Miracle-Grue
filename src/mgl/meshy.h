@@ -22,7 +22,7 @@
 #include "abstractable.h"
 #include "scadtubefile.h"
 
-#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
+
 
 #ifdef OMPFF
 #include <omp.h>
@@ -481,6 +481,7 @@ void sliceAndScad(const char*modelFile, double firstLayerZ, double layerH, doubl
 	omp_init_lock (&my_lock);
 	#pragma omp parallel for
 #endif
+
 	for(int i=0; i < sliceCount; i++)
 	{
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
@@ -503,22 +504,15 @@ void sliceAndScad(const char*modelFile, double firstLayerZ, double layerH, doubl
 		// only one thread at a time here
 		{
 
-#ifdef OMPFF
+			#ifdef OMPFF
 			OmpGuard lock (my_lock);
 			// cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
-#endif
+			#endif
 
 			MyComputer deepThought; // 42
 			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
 			outlineScad.writeStlModule("stl_", deepThought.fileSystem.ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
 		}
-//		std::vector<Segment> layerSegments;
-//		for(int j=0; j<rowsOfTubes.size(); j++)
-//		{
-//			const std::vector<Segment> &raySegments = rowsOfTubes[j];
-//			layerSegments.insert(layerSegments.end(), raySegments.begin(), raySegments.end());
-//			// raylineScad.writeTubesModule("rays_", i, rowsOfTubes[j], z);
-//		}
 
 		// only one thread at a time here
 		{
@@ -529,7 +523,6 @@ void sliceAndScad(const char*modelFile, double firstLayerZ, double layerH, doubl
 		}
 	}
 	outlineScad.writeSwitcher(sliceTable.size());
-
 }
 
 

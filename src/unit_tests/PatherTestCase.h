@@ -13,7 +13,7 @@
 class PatherTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( PatherTestCase );
-  CPPUNIT_TEST( example );
+  CPPUNIT_TEST( testLinea );
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -23,6 +23,8 @@ public:
 protected:
 
   void example();
+
+  void testLinea();
 
 };
 

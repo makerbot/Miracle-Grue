@@ -12,13 +12,14 @@ class GCoderTestCase : public CPPUNIT_NS::TestFixture
 {
 
   CPPUNIT_TEST_SUITE( GCoderTestCase );
-  CPPUNIT_TEST( testConfig );
-  CPPUNIT_TEST( testFloatFormat );
-  CPPUNIT_TEST( testSingleExtruder );
-  CPPUNIT_TEST( testDualExtruders );
-  CPPUNIT_TEST( testSimplePath );
-  CPPUNIT_TEST( testGridPath );
-  CPPUNIT_TEST( testMultiGrid );
+//  CPPUNIT_TEST( testConfig );
+//  CPPUNIT_TEST( testFloatFormat );
+//  CPPUNIT_TEST( testSingleExtruder );
+//  CPPUNIT_TEST( testDualExtruders );
+//  CPPUNIT_TEST( testSimplePath );
+//  CPPUNIT_TEST( testGridPath );
+//  CPPUNIT_TEST( testMultiGrid );
+  CPPUNIT_TEST( testKnot);
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -33,7 +34,7 @@ protected:
   void testFloatFormat();
   void testGridPath();
   void testMultiGrid();
-
+  void testKnot();
 
 };
 

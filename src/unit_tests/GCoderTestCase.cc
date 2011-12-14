@@ -12,7 +12,11 @@
 #include "../PathData.h"
 #include "../GCodeEnvelope.h"
 
+#include "mgl/abstractable.h"
+#include "mgl/meshy.h"
+
 using namespace std;
+using namespace mgl;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
@@ -21,6 +25,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
 #define SINGLE_EXTRUDER_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_grid_path.gcode"
 #define SINGLE_EXTRUDER_MULTI_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_multigrid_path.gcode"
+#define SINGLE_EXTRUDER_KNOT "test_cases/GCoderTestCase/output/knot.gcode"
 
 // for now, use cout, until we add Boost support
 //#define BOOST_LOG_TRIVIAL(trace) cout
@@ -55,10 +60,10 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 	extruder["defaultExtrusionSpeed"] = speed;
 	extruder["extrusionTemperature"] = temperature;
 	extruder["coordinateSystemOffsetX"] = offsetX;
-	extruder["slowFeedRate"] = 1000;
-	extruder["slowExtrusionSpeed"] = 1.0;
+	extruder["slowFeedRate"] = 1800;
+	extruder["slowExtrusionSpeed"] = 4.47;
 	extruder["fastFeedRate"] = 3000;
-	extruder["fastExtrusionSpeed"] = 2.682;
+	extruder["fastExtrusionSpeed"] = 4.47;
 	extruder["nozzleZ"] = 0.0;
 	extruder["reversalExtrusionSpeed"] = 35.0;
 	config["extruders"].append(extruder);
@@ -494,4 +499,173 @@ void GCoderTestCase::testMultiGrid()
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+}
+
+PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z, Scalar layerH)
+{
+	// paths R us
+	PathData *pathData = new PathData(z, layerH);
+	pathData->paths.push_back(Paths());
+
+	size_t tubeCount = tubes.size();
+	for (int i=0; i< tubeCount; i++)
+	{
+		const Segment &segment = tubes[i];
+
+		Paths& paths = pathData->paths[0];
+		cout << "SEGMENT " << i << "/" << tubeCount << endl;
+		paths.push_back(Polygon());
+		size_t index= paths.size()-1;
+		Polygon &poly = paths[index];
+
+		Point2D p0 (segment.a.x, segment.a.y);
+		Point2D p1 (segment.b.x, segment.b.y);
+
+		poly.push_back(p0);
+		poly.push_back(p1);
+
+	}
+	return pathData;
+}
+
+void sliceAndPath(const char*modelFile, double firstLayerZ, double layerH, double layerW, double tubeSpacing,
+		const char* stlFilePrefix, const char* scadFile, vector<DataEnvelope*> &paths)
+{
+	Meshy mesh(firstLayerZ, layerH); // 0.35
+	// double tubeSpacing = 1.0;
+
+	LoadMeshyFromStl(mesh, modelFile);
+	// mesh.dump(cout);
+
+	const std::vector<BGL::Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
+	const Limits& limits = mesh.readLimits();
+	std::cout << "LIMITS: " << limits << std::endl;
+
+	Limits tubularLimits = limits;
+	tubularLimits.inflate(1.0, 1.0, 0.0);
+	tubularLimits.tubularZ();
+
+
+	ScadTubeFile outlineScad(scadFile, layerH, layerW );
+
+	double dAngle = 0; // M_PI / 4;
+	size_t sliceCount =sliceTable.size();
+
+#ifdef OMPFF
+	omp_lock_t my_lock;
+	omp_init_lock (&my_lock);
+	#pragma omp parallel for
+#endif
+
+	for(int i=0; i < sliceCount; i++)
+	{
+
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
+		const TriangleIndices &trianglesForSlice = sliceTable[i];
+
+		std::vector<Segment> outlineSegments;
+
+		// get 2D paths for outline
+		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
+
+		// get 2D rays for each slice
+		// std::vector<std::vector<Segment> > rowsOfTubes;
+		std::vector<Segment> tubes;
+		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, tubes);
+
+		stringstream stlName;
+		stlName << stlFilePrefix  << i << ".stl";
+		mesh.writeStlFileForLayer(i, stlName.str().c_str());
+
+		// only one thread at a time here
+		{
+			cout << "SLICE " << i << "/ " << sliceCount<< endl;
+
+			#ifdef OMPFF
+			OmpGuard lock (my_lock);
+			// cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
+			#endif
+
+			MyComputer deepThought; // 42
+			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
+			string filename = deepThought.fileSystem.ExtractFilename(stlFilePrefix);
+			outlineScad.writeStlModule("stl_",
+										filename.c_str(),
+										i); // this method adds '#.stl' to the prefix
+
+			outlineScad.writeExtrusionsModule("fill_", tubes, i, z );
+
+			PathData *path = createPathFromTubes(tubes, z, layerH);
+			paths.push_back(path);
+		}
+	}
+
+	outlineScad.writeSwitcher(sliceTable.size());
+}
+
+void GCoderTestCase::testKnot()
+{
+	cout << endl;
+
+	string modelFile = "inputs/3D_Knot.stl";
+	double firstLayerZ = 0.20;
+	double layerH = 0.35;
+	double layerW = 0.7;
+	double tubeSpacing = 0.8;
+
+	std::string outDir = "test_cases/GCoderTestCase/output";
+
+	MyComputer theMatrix;
+	cout << endl;
+	cout << endl;
+	cout << "behold!" << endl;
+	cout << modelFile << "\" has begun at " << theMatrix.clock.now() << endl;
+
+	// std::string modelFile = models[i];
+	cout << "firstLayerZ (f) = " << firstLayerZ << endl;
+	cout << "layerH (h) = " << layerH << endl;
+	cout << "layerW (w) = " << layerW << endl;
+	cout << "tubeSpacing (t) = " << tubeSpacing  << endl;
+	cout << endl;
+	std::string stlFiles = theMatrix.fileSystem.removeExtension(theMatrix.fileSystem.ExtractFilename(modelFile));
+	stlFiles += "_";
+
+	std::string scadFile = outDir;
+	scadFile += theMatrix.fileSystem.getPathSeparatorCharacter();
+	scadFile += theMatrix.fileSystem.ChangeExtension(theMatrix.fileSystem.ExtractFilename(modelFile), ".scad" );
+
+	std::string stlPrefix = outDir;
+	stlPrefix += theMatrix.fileSystem.getPathSeparatorCharacter();
+	stlPrefix += stlFiles.c_str();
+	cout << endl << endl;
+	cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
+
+	vector<DataEnvelope*> paths;
+	sliceAndPath(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing,
+			stlPrefix.c_str(), scadFile.c_str(), paths);
+
+	cout << "Sliced until " << theMatrix.clock.now() << endl;
+	cout << endl;
+
+
+	Configuration config;
+	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_KNOT;
+	config["FileWriterOperation"]["format"]= ".gcode";
+
+	// load 1 extruder
+	configureSingleExtruder(config);
+
+
+	srand( time(NULL) );
+	run_tool_chain(config, paths);
+
+	// cleanup the data
+	for(std::vector<DataEnvelope*>::iterator it = paths.begin(); it != paths.end(); it++)
+	{
+		DataEnvelope* path = *it;
+		path->release();
+	}
+
+
 }

@@ -8,11 +8,17 @@
    License, or (at your option) any later version.
 
 */
+
+#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
+
+
 #include <iostream>
 #include <string>
 
 #include <stdlib.h>
 #include "mgl/abstractable.h"
+
+
 #include "mgl/meshy.h"
 
 using namespace std;
@@ -26,7 +32,28 @@ double numberFromCharEqualsStr(const std::string& str)
 	return val;
 }
 
-int main(int argc, char *argv[], char *envp[])
+void parseArgs(int argc, char *argv[], string &modelFile, double & firstLayerZ, double & layerH, double & layerW, double & tubeSpacing)
+{
+	modelFile = argv[argc-1];
+    for(int i = 1;i < argc - 1;i++){
+        string str = argv[i];
+        cout << i << " " << str << endl;
+        if(str.find("f=") != string::npos)
+            firstLayerZ = numberFromCharEqualsStr(str);
+
+        if(str.find("h=") != string::npos)
+            layerH = numberFromCharEqualsStr(str);
+
+        if(str.find("w=") != string::npos)
+            layerW = numberFromCharEqualsStr(str);
+
+        if(str.find("t=") != string::npos)
+            tubeSpacing = numberFromCharEqualsStr(str);
+    }
+}
+
+
+int preConditionsOrShowUsage(int argc, char *argv[])
 {
 	if (argc < 2)
 	{
@@ -37,29 +64,23 @@ int main(int argc, char *argv[], char *envp[])
 		cout << "Find the light: try " << argv[0] << " [FILE]" << endl;
 		return (-1);
 	}
+}
 
-	string modelFile = argv[argc-1];
+
+int main(int argc, char *argv[], char *envp[])
+{
+	// design by contract ;-)
+	int checks = preConditionsOrShowUsage(argc, argv);
+	if(checks != 0) return checks;
+
+	string modelFile;
 	cout << "wer "<< argc -2 << endl;
 	double firstLayerZ = 0.11;
 	double layerH = 0.35;
 	double layerW = 0.583333;
 	double tubeSpacing = 0.5;
 
-	cout << endl;
-	cout << "You argued:" << endl;
-	for (int i=1; i < argc-1; i++)
-	{
-		string str = argv[i];
-		cout << i << " " << str<<endl;
-
-		if (str.find("f=") !=string::npos) firstLayerZ = numberFromCharEqualsStr(str);
-		if (str.find("h=") !=string::npos) layerH = numberFromCharEqualsStr(str);
-		if (str.find("w=") !=string::npos) layerW = numberFromCharEqualsStr(str);
-		if (str.find("t=") !=string::npos) tubeSpacing = numberFromCharEqualsStr(str);
-
-	}
-
-
+    parseArgs(argc, argv, modelFile,  firstLayerZ, layerH, layerW, tubeSpacing);
 
 	MyComputer hal9000;
 	cout << endl;
@@ -86,11 +107,8 @@ int main(int argc, char *argv[], char *envp[])
 	cout << endl << endl;
 	cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
 
-	unsigned int t0,t1;
-	t0=clock();
 	sliceAndScad(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
-	t1=clock()-t0;
-	double t = t1 / 1000000.0;
+
 	cout << "Sliced until " << hal9000.clock.now() << endl;
 	cout << endl;
 }
