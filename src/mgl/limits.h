@@ -103,6 +103,26 @@ struct Limits
 		return c;
 	}
 
+	Scalar deltaX() const
+	{
+		return (xMax - xMin);
+	}
+
+	Scalar deltaY() const
+	{
+		return (yMax - yMin);
+	}
+
+	Limits centeredLimits() const
+	{
+		Limits out;
+		out.xMax = 0.5 * deltaX();
+		out.xMin = -out.xMax;
+		out.yMax = 0.5 * deltaY();
+		out.yMin = -out.yMax;
+		return out;
+	}
+
 
 
 };

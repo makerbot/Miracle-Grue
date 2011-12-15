@@ -313,17 +313,13 @@ void pathology( std::vector<Segment> &outlineSegments,
 				const Limits& limits,
 				double z,
 				double tubeSpacing ,
-				double angle,
+				// double angle,
 				std::vector<Segment> &tubes)
 {
 	assert(tubes.size() == 0);
 
 	// rotate outline Segments for that cool look
-	BGL::Point3d c = limits.center();
-	BGL::Point toOrigin(-c.x, -c.y);
-	BGL::Point toCenter(c.x, c.y);
-
-	translateSegments(outlineSegments, toOrigin);
+//	translateSegments(outlineSegments, toOrigin);
 //	rotateSegments(segments, angle);
 //  translateSegments(segments, toCenter);
 
@@ -495,7 +491,7 @@ void sliceAndScad(const char*modelFile, double firstLayerZ, double layerH, doubl
 		// get 2D rays for each slice
 		// std::vector<std::vector<Segment> > rowsOfTubes;
 		std::vector<Segment> tubes;
-		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, tubes);
+		pathology(outlineSegments, tubularLimits, z, tubeSpacing, tubes);
 
 		stringstream stlName;
 		stlName << stlFilePrefix  << i << ".stl";

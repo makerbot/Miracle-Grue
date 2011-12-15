@@ -90,7 +90,6 @@ void configureDualExtruder(Configuration& config)
 
 
 
-
 void GCoderTestCase::setUp()
 {
 	BOOST_LOG_TRIVIAL(trace)<< " Starting:" <<__FUNCTION__ << endl;
@@ -542,14 +541,17 @@ void sliceAndPath(const char*modelFile, double firstLayerZ, double layerH, doubl
 	const Limits& limits = mesh.readLimits();
 	std::cout << "LIMITS: " << limits << std::endl;
 
-	Limits tubularLimits = limits;
+	Limits tubularLimits = limits.centeredLimits();
 	tubularLimits.inflate(1.0, 1.0, 0.0);
+	// make it square along z so that rotation happens inside the limits
+	// hence, tubular limits around z
 	tubularLimits.tubularZ();
 
+	BGL::Point3d c = limits.center();
+	BGL::Point toRotationCenter(-c.x, -c.y);
+	BGL::Point backToOrigin(c.x, c.y);
 
-	ScadTubeFile outlineScad(scadFile, layerH, layerW );
-
-	double dAngle = 0; // M_PI / 4;
+	double dAngle =  0.25  * M_PI  * 0.5;
 	size_t sliceCount =sliceTable.size();
 
 #ifdef OMPFF
@@ -558,21 +560,34 @@ void sliceAndPath(const char*modelFile, double firstLayerZ, double layerH, doubl
 	#pragma omp parallel for
 #endif
 
+	BGL::Point3d rotationCenter = limits.center();
+
+	// we'll record that in a scad file for you
+	ScadTubeFile outlineScad(scadFile, layerH, layerW );
 	for(int i=0; i < sliceCount; i++)
 	{
-
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
 
 		std::vector<Segment> outlineSegments;
 
-		// get 2D paths for outline
+		// get the "real" 2D paths for outline
 		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
 
-		// get 2D rays for each slice
-		// std::vector<std::vector<Segment> > rowsOfTubes;
+
+		Scalar angle = i* dAngle;
+		// deep copy
+		std::vector<Segment> rotatedOutlines = outlineSegments;
+		mgl::translateSegments(rotatedOutlines, toRotationCenter);
+		// rotate the outlines before generating the tubes...
+		mgl::rotateSegments(rotatedOutlines, angle);
+
 		std::vector<Segment> tubes;
-		pathology(outlineSegments, tubularLimits, z, tubeSpacing, dAngle * i, tubes);
+		pathology(rotatedOutlines, tubularLimits, z, tubeSpacing, tubes);
+
+		// rotate the TUBES so they fit with the ORIGINAL outlines
+		mgl::rotateSegments(tubes, -angle);
+		mgl::translateSegments(tubes, backToOrigin);
 
 		stringstream stlName;
 		stlName << stlFilePrefix  << i << ".stl";
@@ -608,7 +623,7 @@ void GCoderTestCase::testKnot()
 {
 	cout << endl;
 
-	string modelFile = "inputs/3D_Knot.stl";
+	string modelFile = "../stls/xmas.stl"; // "inputs/3D_Knot.stl";
 	double firstLayerZ = 0.20;
 	double layerH = 0.35;
 	double layerW = 0.7;
