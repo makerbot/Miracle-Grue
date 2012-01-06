@@ -51,7 +51,7 @@ void ChainIntegrationTestCase::testChain()
 	RegionData *region = new RegionData(0.2, 0.4);
     
 	Operation *pather = new PatherOperation();
-	PathData *path = new PathData(0.2, 0.4);
+	PathData *path = new PathData(0.2);
     
 	Operation *gcoder = new GCoderOperation();
 	GCodeEnvelope *gcode = new GCodeEnvelope("(This is gcode)");

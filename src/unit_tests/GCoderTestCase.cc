@@ -20,6 +20,8 @@ using namespace mgl;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
+#define SINGLE_EXTRUDER_CONFIG "test_cases/GCoderTestCase/output/single_xtruder.config"
+
 #define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
 #define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
@@ -38,7 +40,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 void configurePlatform(Configuration& config, bool automaticBuildPlatform, double platformTemp )
 {
 	BOOST_LOG_TRIVIAL(trace)  << "Starting:" <<__FUNCTION__ << endl;
-
 	config["scalingFactor"] = 1.0;
 	config["platform"]["temperature"] = platformTemp;
 	config["platform"]["automated"] = automaticBuildPlatform;
@@ -70,6 +71,16 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
+void configureSlicer(Configuration &config)
+{
+	config["slicer"]["firstLayerZ"] = 0.11;
+
+	config["slicer"]["layerH"] = 0.35;
+	config["slicer"]["layerW"] = 0.7;
+	config["slicer"]["tubeSpacing"] = 0.8;
+	config["slicer"]["angle"] = M_PI/2;
+
+}
 void configureSingleExtruder(Configuration &config)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
@@ -266,7 +277,7 @@ void GCoderTestCase::testSimplePath()
 	//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 	// create a path message as if received by a pather operation
 
-	PathData *path = new PathData(0.2, 0.3);
+	PathData *path = new PathData(0.2);
 	// add a simple rectangular path for the single extruder
 	initSimplePath(*path);
 	std::vector<DataEnvelope*> datas;
@@ -291,7 +302,6 @@ void GCoderTestCase::testConfig()
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 
 	Configuration conf;
-
 	std::string p = conf.root["programName"].asString();
 	cout << endl << endl << endl << "PROGRAM NAME: " << p << endl;
 	CPPUNIT_ASSERT(p == "Miracle-Grue");
@@ -311,6 +321,22 @@ void GCoderTestCase::testConfig()
 	cout << endl << endl << endl << "READ!" << endl;
 
 	CPPUNIT_ASSERT(single.extruders.size() ==1);
+
+	// save config for single extruder
+	Configuration config;
+	configureSingleExtruder(config);
+	configureSlicer(config);
+	string s = config.asJson();
+
+	ofstream outfile;
+	outfile.open(SINGLE_EXTRUDER_CONFIG);
+	outfile << s;
+	outfile.close();
+
+	Configuration phoenix;
+	phoenix.readFromFile(SINGLE_EXTRUDER_CONFIG);
+	cout << "phoenix:" << phoenix.root["programName"].asString() << endl;
+	CPPUNIT_ASSERT(phoenix.root["programName"] == "Miracle-Grue");
 
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
@@ -420,7 +446,7 @@ void GCoderTestCase::testGridPath()
 	// load 1 extruder
 	configureSingleExtruder(config);
 
-	PathData *path = new PathData(0.15, 0.3);
+	PathData *path = new PathData(0.15);
 
 	srand( time(NULL) );
 	int lineCount = 20;
@@ -479,7 +505,7 @@ void GCoderTestCase::testMultiGrid()
 
 	for(int currentLayer=0; currentLayer < 200; currentLayer++)
 	{
-		PathData *path = new PathData(currentLayer * layerH + firstLayerH, layerH);
+		PathData *path = new PathData(currentLayer * layerH + firstLayerH);
 		if(horizontal)
 			initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
 		else
@@ -500,22 +526,20 @@ void GCoderTestCase::testMultiGrid()
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z, Scalar layerH)
+PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 {
 	// paths R us
-	PathData *pathData = new PathData(z, layerH);
+	PathData *pathData = new PathData(z);
 	pathData->paths.push_back(Paths());
-
+	Paths& paths = pathData->paths[0];
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{
 		const Segment &segment = tubes[i];
 
-		Paths& paths = pathData->paths[0];
 		cout << "SEGMENT " << i << "/" << tubeCount << endl;
 		paths.push_back(Polygon());
-		size_t index= paths.size()-1;
-		Polygon &poly = paths[index];
+		Polygon &poly = paths[paths.size()-1];
 
 		Point2D p0 (segment.a.x, segment.a.y);
 		Point2D p1 (segment.b.x, segment.b.y);
@@ -527,142 +551,44 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z, Scal
 	return pathData;
 }
 
-void sliceAndPath(const char*modelFile, double firstLayerZ, double layerH, double layerW, double tubeSpacing,
-		const char* stlFilePrefix, const char* scadFile, vector<DataEnvelope*> &paths)
-{
-	Meshy mesh(firstLayerZ, layerH); // 0.35
-	// double tubeSpacing = 1.0;
-
-	LoadMeshyFromStl(mesh, modelFile);
-	// mesh.dump(cout);
-
-	const std::vector<BGL::Triangle3d> &allTriangles = mesh.readAllTriangles();
-	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
-	const Limits& limits = mesh.readLimits();
-	std::cout << "LIMITS: " << limits << std::endl;
-
-	Limits tubularLimits = limits.centeredLimits();
-	tubularLimits.inflate(1.0, 1.0, 0.0);
-	// make it square along z so that rotation happens inside the limits
-	// hence, tubular limits around z
-	tubularLimits.tubularZ();
-
-	BGL::Point3d c = limits.center();
-	BGL::Point toRotationCenter(-c.x, -c.y);
-	BGL::Point backToOrigin(c.x, c.y);
-
-	double dAngle =  0.25  * M_PI  * 0.5;
-	size_t sliceCount =sliceTable.size();
-
-#ifdef OMPFF
-	omp_lock_t my_lock;
-	omp_init_lock (&my_lock);
-	#pragma omp parallel for
-#endif
-
-	BGL::Point3d rotationCenter = limits.center();
-
-	// we'll record that in a scad file for you
-	ScadTubeFile outlineScad(scadFile, layerH, layerW );
-	for(int i=0; i < sliceCount; i++)
-	{
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
-		const TriangleIndices &trianglesForSlice = sliceTable[i];
-
-		std::vector<Segment> outlineSegments;
-
-		// get the "real" 2D paths for outline
-		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
-
-
-		Scalar angle = i* dAngle;
-		// deep copy
-		std::vector<Segment> rotatedOutlines = outlineSegments;
-		mgl::translateSegments(rotatedOutlines, toRotationCenter);
-		// rotate the outlines before generating the tubes...
-		mgl::rotateSegments(rotatedOutlines, angle);
-
-		std::vector<Segment> tubes;
-		pathology(rotatedOutlines, tubularLimits, z, tubeSpacing, tubes);
-
-		// rotate the TUBES so they fit with the ORIGINAL outlines
-		mgl::rotateSegments(tubes, -angle);
-		mgl::translateSegments(tubes, backToOrigin);
-
-		stringstream stlName;
-		stlName << stlFilePrefix  << i << ".stl";
-		mesh.writeStlFileForLayer(i, stlName.str().c_str());
-
-		// only one thread at a time here
-		{
-			cout << "SLICE " << i << "/ " << sliceCount<< endl;
-
-			#ifdef OMPFF
-			OmpGuard lock (my_lock);
-			// cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
-			#endif
-
-			MyComputer deepThought; // 42
-			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
-			string filename = deepThought.fileSystem.ExtractFilename(stlFilePrefix);
-			outlineScad.writeStlModule("stl_",
-										filename.c_str(),
-										i); // this method adds '#.stl' to the prefix
-
-			outlineScad.writeExtrusionsModule("fill_", tubes, i, z );
-
-			PathData *path = createPathFromTubes(tubes, z, layerH);
-			paths.push_back(path);
-		}
-	}
-
-	outlineScad.writeSwitcher(sliceTable.size());
-}
 
 void GCoderTestCase::testKnot()
 {
 	cout << endl;
 
-	string modelFile = "../stls/xmas.stl"; // "inputs/3D_Knot.stl";
-	double firstLayerZ = 0.20;
-	double layerH = 0.35;
-	double layerW = 0.7;
-	double tubeSpacing = 0.8;
-
+	string modelFile = "inputs/3D_Knot.stl";
 	std::string outDir = "test_cases/GCoderTestCase/output";
 
-	MyComputer theMatrix;
+
+//  std::string modelFile = models[i];
+//	double firstLayerZ = 0.20;
+//	double layerH = 0.35;
+//	double layerW = 0.7;
+//	double tubeSpacing = 0.8;
+//	cout << "firstLayerZ (f) = " << firstLayerZ << endl;
+//	cout << "layerH (h) = " << layerH << endl;
+//	cout << "layerW (w) = " << layerW << endl;
+//	cout << "tubeSpacing (t) = " << tubeSpacing  << endl;
+//	cout << endl;
+
+	MyComputer myComputer;
 	cout << endl;
 	cout << endl;
 	cout << "behold!" << endl;
-	cout << modelFile << "\" has begun at " << theMatrix.clock.now() << endl;
+	cout << modelFile << "\" has begun at " << myComputer.clock.now() << endl;
 
-	// std::string modelFile = models[i];
-	cout << "firstLayerZ (f) = " << firstLayerZ << endl;
-	cout << "layerH (h) = " << layerH << endl;
-	cout << "layerW (w) = " << layerW << endl;
-	cout << "tubeSpacing (t) = " << tubeSpacing  << endl;
-	cout << endl;
-	std::string stlFiles = theMatrix.fileSystem.removeExtension(theMatrix.fileSystem.ExtractFilename(modelFile));
+	std::string stlFiles = myComputer.fileSystem.removeExtension(myComputer.fileSystem.ExtractFilename(modelFile));
 	stlFiles += "_";
 
 	std::string scadFile = outDir;
-	scadFile += theMatrix.fileSystem.getPathSeparatorCharacter();
-	scadFile += theMatrix.fileSystem.ChangeExtension(theMatrix.fileSystem.ExtractFilename(modelFile), ".scad" );
+	scadFile += myComputer.fileSystem.getPathSeparatorCharacter();
+	scadFile += myComputer.fileSystem.ChangeExtension(myComputer.fileSystem.ExtractFilename(modelFile), ".scad" );
 
 	std::string stlPrefix = outDir;
-	stlPrefix += theMatrix.fileSystem.getPathSeparatorCharacter();
+	stlPrefix += myComputer.fileSystem.getPathSeparatorCharacter();
 	stlPrefix += stlFiles.c_str();
 	cout << endl << endl;
 	cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
-
-	vector<DataEnvelope*> paths;
-	sliceAndPath(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing,
-			stlPrefix.c_str(), scadFile.c_str(), paths);
-
-	cout << "Sliced until " << theMatrix.clock.now() << endl;
-	cout << endl;
-
 
 	Configuration config;
 	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_KNOT;
@@ -670,7 +596,31 @@ void GCoderTestCase::testKnot()
 
 	// load 1 extruder
 	configureSingleExtruder(config);
+	configureSlicer(config);
 
+	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	std::vector< std::vector<Segment> > allTubes;
+	sliceAndPath(mesh,
+			config["slicer"]["layerW"].asDouble(),
+			config["slicer"]["tubeSpacing"].asDouble(),
+			config["slicer"]["angle"].asDouble(),
+			scadFile.c_str(),
+			allTubes); //paths);
+
+	vector<DataEnvelope*> paths;
+	for (int i=0; i< allTubes.size(); i++)
+	{
+		std::vector<Segment> &tubes = allTubes[i];
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
+
+		PathData *path = createPathFromTubes(tubes, z);
+		paths.push_back(path);
+	}
+
+	cout << "Sliced until " << myComputer.clock.now() << endl;
+	cout << endl;
 
 	srand( time(NULL) );
 	run_tool_chain(config, paths);

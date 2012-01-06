@@ -19,12 +19,11 @@
 #include "../BGL/BGLPoint.h"
 #include "../BGL/BGLMesh3d.h"
 
-#include "../BGL/BGLMesh3d.h"
-
 #include "mgl/limits.h"
 #include "mgl/meshy.h"
 #include "mgl/segment.h"
 #include "mgl/scadtubefile.h"
+
 #include "mgl/slicy.h"
 
 
@@ -176,7 +175,7 @@ void ModelReaderTestCase::testLayerSplit()
 	unsigned int t0, t1;
 	t0 = clock();
 	//LoadMeshyFromStl(mesh, "inputs/Water.stl");
-	LoadMeshyFromStl(mesh, "inputs/Water.stl");
+	loadMeshyFromStl(mesh, "inputs/Water.stl");
 	t1=clock()-t0;
 	mesh.dump(cout);
 
@@ -196,7 +195,7 @@ void ModelReaderTestCase::testLargeMeshy()
 	cout << "Light saber" << endl;
 	Meshy mesh3(0.35, 0.35);
 	t0=clock();
-	LoadMeshyFromStl(mesh3, "inputs/lightsaber.stl");
+	loadMeshyFromStl(mesh3, "inputs/lightsaber.stl");
 	t1=clock()-t0;
 	mesh3.dump(cout);
 	cout << "lightsaber read in " << t1 << endl;
@@ -217,7 +216,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	cout << "Water" << endl;
 	Meshy mesh(0.35, 0.35);
 	t0=clock();
-	LoadMeshyFromStl(mesh, "inputs/Water.stl");
+	loadMeshyFromStl(mesh, "inputs/Water.stl");
 	t1=clock()-t0;
 	mesh.dump(cout);
 	cout << "time: " << t1 << endl;
@@ -227,7 +226,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	Meshy mesh2(0.35, 0.35);
 
 	t0=clock();
-	LoadMeshyFromStl(mesh2, "inputs/Land.stl");
+	loadMeshyFromStl(mesh2, "inputs/Land.stl");
 	t1=clock()-t0;
 	cout << "time: " << t1 << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t)175, mesh2.readSliceTable().size());
@@ -237,16 +236,16 @@ void ModelReaderTestCase::testMeshyLoad()
 void ModelReaderTestCase::testSlicyWater()
 {
 	Meshy mesh(0.35, 0.35);
-	LoadMeshyFromStl(mesh, "inputs/Water.stl");
+	loadMeshyFromStl(mesh, "inputs/Water.stl");
 
-	const TrianglesInSlices& table = mesh.readSliceTable();
+	const SliceTable& table = mesh.readSliceTable();
 
 	unsigned int t0,t1;
 	t0=clock();
 
 	const vector<Triangle3d>& allTriangles = mesh.readAllTriangles();
 	int sliceIndex = 0;
-	for (TrianglesInSlices::const_iterator i = table.begin(); i != table.end(); i++)
+	for (SliceTable::const_iterator i = table.begin(); i != table.end(); i++)
 	{
 		const TriangleIndices& sliceables = *i;
 		t1=clock()-t0;
@@ -345,26 +344,6 @@ class LoopPole
 
 */
 
-void ModelReaderTestCase::fixHexagon()
-{
-	unsigned int t0,t1;
-	t0=clock();
-	double firstLayerZ = 0.11;
-	double layerH = 0.35;
-	double layerW = 0.583333;
-	double tubeSpacing = 0.5;
-	sliceAndScad("inputs/hexagon.stl",
-				firstLayerZ,
-					layerH,
-						layerW,
-							tubeSpacing,
-								"test_cases/modelReaderTestCase/output/hexagon_", "test_cases/modelReaderTestCase/output/hexagon.scad");
-	t1=clock()-t0;
-	double t = t1 / 1000000.0;
-
-	cout << "In only " << t << "seconds" << endl;
-}
-
 
 void batchProcess(	Scalar firstLayerZ,
 					Scalar layerH,
@@ -386,15 +365,25 @@ void batchProcess(	Scalar firstLayerZ,
 		scadFile += "/";
 		scadFile += fileSystem.ChangeExtension(fileSystem.ExtractFilename(models[i]), ".scad" )  ;
 
-		std::string stlPrefix = outDir;
-		stlPrefix += "/";
-		stlPrefix += stlFiles.c_str();
-		cout << endl << endl;
-		cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
+
+		cout << modelFile << " to " << scadFile << endl;
 
 		unsigned int t0,t1;
 		t0=clock();
-		sliceAndScad(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
+
+		Scalar angle = M_PI*0.5;
+		Meshy mesh(firstLayerZ, layerH);
+		loadMeshyFromStl(mesh, modelFile.c_str());
+		cout << modelFile << " LOADED" << endl;
+		std::vector< std::vector<Segment> > allTubes;
+		sliceAndPath( mesh,
+					layerW,
+					tubeSpacing,
+					angle,
+					scadFile.c_str(),
+					allTubes);
+
+
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
 		times.push_back(t);
@@ -503,12 +492,12 @@ void ModelReaderTestCase::fixContourProblem()
 
 	Meshy mesh(firstZ, layerH); // 0.35
 	cout << "LOADING... " << endl;
-	LoadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
+	loadMeshyFromStl(mesh, "inputs/3D_Knot.stl");
 
 	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
 	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
-	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
+	const SliceTable &sliceTable = mesh.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 	std::vector<Segment> outlineSegments;
 	// get 2D paths for outline
@@ -553,7 +542,6 @@ void ModelReaderTestCase::testLayerMeasure()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.46, n.sliceIndexToHeight(1), tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.81, n.sliceIndexToHeight(2), tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1.16, n.sliceIndexToHeight(3), tol);
-
 
 	Scalar z = 0;
 	unsigned int abode = n.zToLayerAbove(z);
@@ -607,3 +595,59 @@ void ModelReaderTestCase::testLayerMeasure()
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1000001, abode);
 }
 
+
+
+
+/*
+
+void dump(const list<index_t> &edges)
+{
+	for(list<index_t>::const_iterator i=edges.begin(); i != edges.end(); i++)
+	{
+		cout << "  " <<  *i << endl;
+	}
+}
+
+void ModelReaderTestCase::testSlicyKnot()
+{
+	string modelFile = "inputs/3D_Knot.stl";
+
+    Configuration config;
+    config["slicer"]["firstLayerZ"] = 0.11;
+	config["slicer"]["layerH"] = 0.35;
+	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	LoadMeshyFromStl(mesh, modelFile.c_str());
+
+	cout << "file " << modelFile << endl;
+	const SliceTable &sliceTable = mesh.readSliceTable();
+	int layerCount = sliceTable.size();
+	cout  << "Slice count: "<< layerCount << endl;
+	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	cout << "Faces: " << allTriangles.size() << endl;
+	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
+
+	int layerIndex = 44;
+	CPPUNIT_ASSERT (layerIndex < layerCount);
+	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
+	unsigned int triangleCount = trianglesInSlice.size();
+	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
+	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
+
+	// Load slice connectivity information
+	Slicy slicy(1e-6);
+	for (int i=0; i < triangleCount; i++)
+	{
+		unsigned int triangleIndex = trianglesInSlice[i];
+		const Triangle3d& t = allTriangles[triangleIndex];
+		slicy.addTriangle(t);
+	}
+	cout << slicy << endl;
+
+	list<index_t> edges;
+	slicy.fillEdgeList(z,edges);
+
+	cout << "edges left: "  << edges.size()  << " / " << slicy.readEdges().size() << endl;
+	//dump(edges);
+
+}
+*/

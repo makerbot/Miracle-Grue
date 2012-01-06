@@ -8,10 +8,14 @@
    License, or (at your option) any later version.
 
 */
-#include "Configuration.h"
 
+#include <cassert>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+
+
+#include "Configuration.h"
 
 #include "json-cpp/include/json/reader.h"
 #include "json-cpp/include/json/writer.h"
@@ -45,13 +49,22 @@ Configuration::Configuration()
 	this->root["shell"] = shell;
 }
 
+void Configuration::readFromFile(const char* filename)
+{
+	std::ifstream file(filename, std::ifstream::binary);
+	Json::Reader reader;
+	reader.parse(file , root);
+}
 
+
+
+/*
 Configuration::Configuration(std::string& srcFilename)
 {
 	this->root["programName"]  = GRUE_PROGRAM_NAME;
-	this->root["versionStr"]  = GRUE_VERSION,
-	this->root["machineName"] = "";
-	this->root["firmware"] = "";
+	this->root["versionStr"]   = GRUE_VERSION,
+	this->root["machineName"]  = "";
+	this->root["firmware"]     = "";
 
 	Json::Reader reader;
 	// root built in default constructor
@@ -59,8 +72,14 @@ Configuration::Configuration(std::string& srcFilename)
 	if(parsedOk){
 		cout << "parsed ok";
 	}
+	else
+	{
+		string msg = reader.getFormattedErrorMessages();
+		cout << msg << endl;
+		assert(0);
+	}
 }
-
+*/
 
 Configuration::~Configuration()
 {

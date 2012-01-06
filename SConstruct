@@ -88,7 +88,7 @@ print "QT modules", qtModules
 env.EnableQt4Modules(qtModules)
 
 
-env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
+bgl_cc =  ['src/BGL/BGLAffine.cc',
     'src/BGL/BGLBounds.cc',
     'src/BGL/BGLCommon.cc',
     'src/BGL/BGLCompoundRegion.cc',
@@ -100,8 +100,14 @@ env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
     'src/BGL/BGLPoint3d.cc',
     'src/BGL/BGLSimpleRegion.cc',
     'src/BGL/BGLTriangle3d.cc',
-    'src/BGL/BGLSVG.cc'])
+    'src/BGL/BGLSVG.cc']
 
+mgl_cc = ['src/mgl/mgl.cc'] + bgl_cc
+
+env.Library('./bin/lib/mgl', mgl_cc)
+
+
+#env.Library('./bin/lib/bgl', bgl_cc  )
 
 
 env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
@@ -111,17 +117,15 @@ env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
 
 env.Library('./bin/lib/miracleGrue',['src/Operation.cc'], CPPATH=['src/'])
 
-env.Library('./bin/lib/mgl',['src/mgl/mgl.cc'], CPPATH=['src/'])
-
-unit_test = ['src/unit_tests/UnitTestMain.cc',]
-config 	  = ['src/Configuration.cc']
-file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeEnvelope.cc',]
-gcoder    = ['src/Configuration.cc', 'src/GCoderOperation.cc', 'src/PathData.cc', 'src/GCodeEnvelope.cc',]
-pather    = ['src/Configuration.cc', 'src/PatherOperation.cc', 'src/PathData.cc', 'src/RegionData.cc',]
-regioner  = ['src/Configuration.cc', 'src/RegionerOperation.cc','src/RegionData.cc','src/SliceData.cc',]
-slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc', 'src/RegionData.cc',]
-file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
-example_op   = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
+unit_test   = ['src/unit_tests/UnitTestMain.cc',]
+config 	    = ['src/Configuration.cc']
+file_w      = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 		'src/GCodeEnvelope.cc',]
+gcoder      = ['src/Configuration.cc', 'src/GCoderOperation.cc', 			'src/PathData.cc', 'src/GCodeEnvelope.cc',]
+pather      = ['src/Configuration.cc', 'src/PatherOperation.cc', 			'src/PathData.cc', 'src/RegionData.cc',]
+regioner    = ['src/Configuration.cc', 'src/RegionerOperation.cc',		'src/RegionData.cc','src/SliceData.cc',]
+slicer      = ['src/Configuration.cc', 'src/SliceOperation.cc', 			'src/MeshData.cc', 'src/RegionData.cc',]
+file_r      = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
+example_op  = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
 default_libs = [ '_json','miracleGrue', 'bgl', 'mgl']
@@ -145,6 +149,30 @@ mand_ops = ['src/Configuration.cc',
 #				LIBPATH = default_libs_path, 
 #				CPPPATH = default_includes )
 
+#env.Program(  	'./bin/tests/mod',   
+#				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, config, slicer), 
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH= ['..'])
+
+
+env.Program( 	'./bin/tests/slicerUnitTest', 
+				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, config, slicer), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+if run_unit_tests == True:
+	Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
+	
+env.Program(  	'./bin/tests/modelReaderUnitTest',   
+				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, config), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+if run_unit_tests == True:
+	Command('modelReaderUnitTest.passed','./bin/tests/modelReaderUnitTest',runUnitTest)
 
 
 
@@ -158,11 +186,6 @@ env.Program('./bin/tests/exampleOpUnitTest',
 if run_unit_tests == True:
 	Command('exampleOpUnitTest.passed','./bin/tests/exampleOpUnitTest',runUnitTest)
 
-env.Program('./bin/morphogen', 
-		mix(['src/morphogen.cc'], ),
-		LIBS = default_libs,
-		LIBPATH = default_libs_path,
-		CPPPATH = default_includes)
 		
 env.Program(	'./bin/tests/fileWriterUnitTest',
 				mix(['src/unit_tests/FileWriterTestCase.cc'],
@@ -201,34 +224,29 @@ if run_unit_tests == True:
 	Command('gcoderUnitTest.passed','./bin/tests/gcoderUnitTest',runUnitTest)
 
 
-env.Program( 	'./bin/tests/slicerUnitTest', 
-				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, slicer), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-if run_unit_tests == True:
-	Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
-
 env.Program(  	'./bin/tests/regionerUnitTest',   
 				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
+
 if run_unit_tests == True:
 	Command('regionerUnitTest.passed','./bin/tests/regionerUnitTest',runUnitTest)
 
-env.Program(  	'./bin/tests/modelReaderUnitTest',   
-				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, file_r), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['../src'])
-if run_unit_tests == True:
-	Command('modelReaderUnitTest.passed','./bin/tests/modelReaderUnitTest',runUnitTest)
 
 env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
 				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
     			LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= [".."])
+
 if run_unit_tests == True:
 	Command('chainIntegrationUnitTest.passed','./bin/tests/chainIntegrationUnitTest',runUnitTest)
+
+env.Program('./bin/morphogen', 
+		mix(['src/morphogen.cc'], config, gcoder, file_w ),
+		LIBS = default_libs + debug_libs,
+		LIBPATH = default_libs_path,
+		CPPPATH = default_includes)
+		
+		

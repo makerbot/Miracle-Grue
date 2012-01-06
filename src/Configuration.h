@@ -34,9 +34,11 @@ class Configuration {
 		/// standard constructor
 		Configuration();
 		/// standard constructor for loading configuration from a json file
-         Configuration(std::string& srcFilename);
+        //    Configuration(std::string& srcFilename);
  		/// standard  destructor
          ~Configuration();
+
+         void readFromFile(const char* filename);
 
     public:
 

@@ -17,6 +17,7 @@
 #include <ostream>
 #include <sstream>
 
+#include "meshy.h"
 #include "segment.h"
 
 
@@ -69,13 +70,12 @@ public:
 		out  << endl;
 		out << "module extrusion(x1, y1, z1, x2, y2, z2)" << endl;
 		out << "{" << endl;
-		out << "    d = 0.35;" << endl;
+		out << "    d = " << layerH << ";" << endl;
 		out << "    f = 6;" << endl;
-		out << "    t =  0.6;" << endl;
+		out << "    t =  "  << layerH / layerW << ";"<< endl;
 		out << "    corner(x1,y1,z1, diameter=d, faces=f, thickness_over_width =t );" << endl;
 		out << "    tube(x1, y1, z1, x2, y2, z2, diameter=d, faces=f, thickness_over_width=t);" << endl;
 		out << "}" << endl;
-
 
 		out  << endl;
 		out << "" << endl;
@@ -107,6 +107,10 @@ public:
 
 	}
 
+//	void write(const char *str)
+//	{
+//		out << str;
+//	}
 
 	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
 	{
@@ -126,6 +130,46 @@ public:
 	void writeOutlinesModule(const char* name, const std::vector<Segment> &segments, int slice, Scalar z)
 	{
 		writeTubesModule(name, "out_line", segments, slice, z);
+	}
+
+	void writeTrianglesModule(const char* name, const Meshy &mesh, unsigned int layerIndex) //const std::vector<BGL::Triangle3d>  &allTriangles, const TriangleIndices &trianglesForSlice)
+	{
+		stringstream ss;
+		ss.setf(ios::fixed);
+		const TriangleIndices &trianglesForSlice = mesh.readSliceTable()[layerIndex];
+		const std::vector<BGL::Triangle3d>  &allTriangles = mesh.readAllTriangles();
+
+		ss << "module " << name << layerIndex << "(col=[1,0,0,1])" << endl;
+		// , [0,2,1], [3,0,4], [1,2,5], [0,5,4], [0,1,5],  [5,2,4], [4,2,3],
+		ss << "{" << endl;
+		ss << "    color(col) polyhedron ( points = [";
+
+		// ss << scientific;
+		ss << dec; // set decimal format for floating point numbers
+
+		for(int i=0; i< trianglesForSlice.size(); i++ )
+		{
+			//index_t index = *i;
+			index_t index = trianglesForSlice[i];
+			const BGL::Triangle3d &t = allTriangles[index];
+			ss << "    [" << t.vertex1.x << ", " << t.vertex1.y << ", " << t.vertex1.z << "], ";
+			ss <<     "[" << t.vertex2.x << ", " << t.vertex2.y << ", " << t.vertex2.z << "], ";
+			ss <<     "[" << t.vertex3.x << ", " << t.vertex3.y << ", " << t.vertex3.z << "], // tri " << i << endl;
+		}
+
+		ss << "]," << endl;
+		ss << "triangles = [" ;
+
+		for (int i=0; i < trianglesForSlice.size(); i++)
+		{
+			int tri = i * 3;
+			ss << "    [" << tri << ", " << tri+1 << ", " << tri + 2 << "], " << endl;
+		}
+
+		ss << "]);" << endl;
+		ss << "}" << endl;
+		ss << endl;
+		out << ss.str();
 	}
 
 private:
@@ -164,7 +208,7 @@ public:
 		{
 			out << "	if(min <= "<< i <<" && max >=" << i << ")" << endl;
 			out << "	{" << endl;
-			out << "		stl_"   << (int)i << "();"<< endl;
+			out << "		tri_"   << (int)i << "();"<< endl;
 			out << "	}" << endl;
 		}
 		out << "}"<< endl;

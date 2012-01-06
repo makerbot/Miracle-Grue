@@ -127,11 +127,9 @@ struct Limits
 
 };
 
-std::ostream& operator<<(ostream& os, const Limits& l)
-{
-	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
-	return os;
-}
+std::ostream& operator<<(ostream& os, const Limits& l);
+
+
 
 }
 

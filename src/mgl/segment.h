@@ -47,7 +47,7 @@ public:
 
 typedef unsigned int index_t;
 typedef std::vector<index_t> TriangleIndices;
-typedef std::vector<TriangleIndices> TrianglesInSlices;
+typedef std::vector<TriangleIndices> SliceTable;
 
 
 

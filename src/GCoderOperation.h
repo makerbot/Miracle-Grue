@@ -41,6 +41,14 @@ struct Platform
     double waitingPositionZ;
 };
 
+
+struct Extrusion
+{
+	double feed; // in mm per min
+	double flow; // in RPMs! its kinda meaningless
+};
+
+
 struct Extruder
 {
 	Extruder()

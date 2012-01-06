@@ -20,8 +20,6 @@
 #include "segment.h"
 #include "limits.h"
 #include "abstractable.h"
-#include "scadtubefile.h"
-
 
 
 #ifdef OMPFF
@@ -37,24 +35,7 @@ namespace mgl // serious about triangles
 
 
 // returns the minimum and maximum z for the 3 vertices of a triangle
-void minMaxZ(const BGL::Triangle3d &t, Scalar &min,  Scalar &max )
-{
-	// find minimum
-	min = t.vertex1.z;
-	if(t.vertex2.z < min)
-		min = t.vertex2.z ;
-
-	if(t.vertex3.z < min)
-		min = t.vertex3.z ;
-
-	// find maximum
-	max = t.vertex1.z;
-	if( t.vertex2.z > max)
-		max = t.vertex2.z;
-
-	if (t.vertex3.z > max)
-		max = t.vertex3.z;
-}
+void minMaxZ(const BGL::Triangle3d &t, Scalar &min,  Scalar &max );
 
 
 
@@ -70,6 +51,7 @@ public:
 };
 
 
+// Helper class that gives relates height to layer id
 //
 // This class assumes that the model's triangles are
 // all above 0 (the z of each of the 3 vertices is >= 0.0).
@@ -107,15 +89,11 @@ public:
 	{
 		return firstLayerZ + sliceIndex * layerH;
 	}
-/*
-	std::pair<Scalar,Scalar> sliceIndexToRange(unsigned int sliceIndex)
-	{
-		assert(0);
-		std::pair<Scalar,Scalar> floorCeil(0.1,0.2);
-		return floorCeil;
-	}
-*/
 
+	Scalar getLayerH() const
+	{
+		return layerH;
+	}
 };
 
 
@@ -131,6 +109,71 @@ public:
 
 };
 
+// simple class that writes
+// a text file STL
+class StlWriter
+{
+
+//solid Default
+//  facet normal 1.435159e-01 2.351864e-02 9.893685e-01
+//    outer loop
+//      vertex -7.388980e-02 -2.377973e+01 6.062650e+01
+//      vertex -1.193778e-01 -2.400027e+01 6.063834e+01
+//      vertex -4.402440e-06 -2.490700e+01 6.064258e+01
+//    endloop
+//  endfacet
+//endsolid Default
+
+	std::ofstream out;
+	std::string solidName;
+
+public:
+	void open(const char* fileName, const char *solid="Default")
+
+	{
+		solidName = solid;
+		out.open(fileName);
+		if(!out)
+		{
+			stringstream ss;
+			ss << "Can't open \"" << fileName << "\"";
+			MeshyMess problem(ss.str().c_str());
+			throw (problem);
+		}
+
+		// bingo!
+		out << scientific;
+		out << "solid " << solidName << endl;
+
+	}
+
+	void writeTriangle(const BGL::Triangle3d& t)
+	{
+		// normalize( (v1-v0) cross (v2 - v0) )
+		// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
+
+		double n0=0;
+		double n1=0;
+		double n2=0;
+
+		out << " facet normal " << n0 << " " << n1 << " " << n2 << std::endl;
+		out << "  outer loop"<< std::endl;
+		out << "    vertex " << t.vertex1.x << " " << t.vertex1.y << " " << t.vertex1.z << std::endl;
+		out << "    vertex " << t.vertex2.x << " " << t.vertex2.y << " " << t.vertex2.z << std::endl;
+		out << "    vertex " << t.vertex3.x << " " << t.vertex3.y << " " << t.vertex3.z << std::endl;
+		out << "  end loop" << std::endl;
+		out << " end facet" << std::endl;
+	}
+
+	void close()
+	{
+		out << "end solid " << solidName << endl;
+		out.close();
+	}
+
+};
+
+
 
 class Meshy
 {
@@ -138,12 +181,12 @@ class Meshy
 	mgl::Limits limits;
 
 	std::vector<BGL::Triangle3d>  allTriangles;
-	TrianglesInSlices sliceTable;
-	LayerMeasure zTapeMeasure; // Ze tape measure, for Z mainly
+	SliceTable sliceTable;
+	LayerMeasure zTapeMeasure; // Ze tape measure, for Z
 
 public:
 
-	const std::vector<BGL::Triangle3d> &readAllTriangles()
+	const std::vector<BGL::Triangle3d> &readAllTriangles() const
 	{
 		return allTriangles;
 	}
@@ -158,7 +201,7 @@ public:
 		return zTapeMeasure;
 	}
 
-	const TrianglesInSlices &readSliceTable() const
+	const SliceTable &readSliceTable() const
 	{
 		return sliceTable;
 	}
@@ -179,14 +222,13 @@ public:
 
 		unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(min);
 		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(max);
-		unsigned int currentSliceCount = sliceTable.size();
-
+		if (maxSliceIndex - minSliceIndex > 1)
+			maxSliceIndex --;
 //		cout << "Minimum   =" << min << endl;
 //		cout << "Maximum   =" << max << endl;
-//		cout << "Min index =" <<  minSliceIndex << endl;
-//		cout << "Max index =" <<  maxSliceIndex << endl;
-//		cout << "current slice count = " <<  currentSliceCount << endl;
-
+		cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< endl;
+		// cout << "Max index =" <<  maxSliceIndex << endl;
+		unsigned int currentSliceCount = sliceTable.size();
 		if (maxSliceIndex >= currentSliceCount)
 		{
 			unsigned int newSize = maxSliceIndex+1;
@@ -229,84 +271,48 @@ public:
 	}
 
 
-	void writeTriangle(std::ostream &out, const BGL::Triangle3d& t) const
-	{
-		//  normalize( (v1-v0) cross (v2 - v0) )
 
-		// normalize
-		// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
-
-		double n0=0;
-		double n1=0;
-		double n2=0;
-
-		out << " facet normal " << n0 << " " << n1 << " " << n2 << endl;
-		out << "  outer loop"<< endl;
-		out << "    vertex " << t.vertex1.x << " " << t.vertex1.y << " " << t.vertex1.z << endl;
-		out << "    vertex " << t.vertex2.x << " " << t.vertex2.y << " " << t.vertex2.z << endl;
-		out << "    vertex " << t.vertex3.x << " " << t.vertex3.y << " " << t.vertex3.z << endl;
-		out << "  end loop" << endl;
-		out << " end facet" << endl;
-	}
 
 public:
+
+
 	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const
 	{
 
-		//solid Default
-		//  facet normal 1.435159e-01 2.351864e-02 9.893685e-01
-		//    outer loop
-		//      vertex -7.388980e-02 -2.377973e+01 6.062650e+01
-		//      vertex -1.193778e-01 -2.400027e+01 6.063834e+01
-		//      vertex -4.402440e-06 -2.490700e+01 6.064258e+01
-		//    endloop
-		//  endfacet
-		//endsolid Default
+		StlWriter out;
+		out.open(fileName);
 
-		ofstream out(fileName);
-		if(!out) {
-			stringstream ss;
-			ss << "Can't open \"" << fileName << "\"";
-			MeshyMess problem(ss.str().c_str());
-			throw (problem);
-		}
-		stringstream ss;
-		ss << setfill ('0') << setw(10);
-		ss <<  "slice_" << layerIndex;
-		string solidName = ss.str();
-		// bingo!
-		out << "solid Slice_" << layerIndex << endl;
-		Scalar n0, n1, n2;
-		out << scientific;
 		const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
 		for(std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i!= trianglesForSlice.end(); i++)
 		{
 			index_t index = *i;
 			const BGL::Triangle3d &t = allTriangles[index];
-			writeTriangle(out, t);
+			out.writeTriangle(t);
 		}
-
-		out << "end solid " << solidName;
 		out.close();
 		// cout << fileName << " written!"<< endl;
 	}
 
 };
 
-
-
-size_t LoadMeshyFromStl(Meshy &meshy, const char* filename)
+/*
+class Triangular
 {
+	Scalar botZ;
+	Scalar topZ;
+	Scalar midX, midY, midZ;
+	Scalar dxTop, dxYTop;
+	Scalar dxBot, dyBot;
 
-	BGL::Mesh3d mesh;
-	int count = mesh.loadFromSTLFile(filename);
-	for (BGL::Triangles3d::iterator i= mesh.triangles.begin(); i != mesh.triangles.end(); i++)
-	{
-		BGL::Triangle3d &t = *i;
-		meshy.addTriangle(t);
-	}
-	return (size_t) count;
-}
+	bool midFirst;
+public:
+
+};
+
+*/
+
+
+size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 
 
 void pathology( std::vector<Segment> &outlineSegments,
@@ -314,104 +320,7 @@ void pathology( std::vector<Segment> &outlineSegments,
 				double z,
 				double tubeSpacing ,
 				// double angle,
-				std::vector<Segment> &tubes)
-{
-	assert(tubes.size() == 0);
-
-	// rotate outline Segments for that cool look
-//	translateSegments(outlineSegments, toOrigin);
-//	rotateSegments(segments, angle);
-//  translateSegments(segments, toCenter);
-
-	Scalar deltaY = limits.yMax - limits.yMin;
-	int tubeCount = (deltaY) / tubeSpacing;
-
-	std::vector< std::set<Scalar> > intersects;
-	// allocate
-	intersects.resize(tubeCount);
-
-
-	for (int i=0; i < tubeCount; i++)
-	{
-		Scalar y = -0.5 * deltaY + i * tubeSpacing;
-		std::set<Scalar> &lineCuts = intersects[i];
-		for(std::vector<Segment>::iterator i= outlineSegments.begin(); i!= outlineSegments.end(); i++)
-		{
-			Segment &segment = *i;
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
-			{
-				lineCuts.insert(intersectionX);
-			}
-		}
-	}
-
-	//tubes.resize(tubeCount);
-
-	bool backAndForth = true;
-
-	Scalar bottom = -0.5 * deltaY;
-	for (int i=0; i < tubeCount; i++)
-	{
-		//std::vector<Segment>& lineTubes = tubes[i];
-		Scalar y = bottom + i * tubeSpacing;
-		std::set<Scalar> &lineCuts = intersects[i];
-
-		Segment segment;
-		bool inside = false;
-		if( backAndForth)
-		{
-			for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
-			{
-				inside =! inside;
-				Scalar x = *it;
-				// cout << "\t" << x << " " << inside <<",";
-				if(inside)
-				{
-					segment.a.x = x;
-					segment.a.y = y;
-				}
-				else
-				{
-					segment.b.x = x;
-					segment.b.y = y;
-					//lineTubes.push_back(segment);
-					tubes.push_back(segment);
-				}
-			}
-		}
-		else
-		{
-			for(std::set<Scalar>::reverse_iterator it = lineCuts.rbegin(); it != lineCuts.rend(); it++)
-			{
-				inside =! inside;
-				Scalar x = *it;
-				// cout << "\t" << x << " " << inside <<",";
-				if(inside)
-				{
-					segment.a.x = x;
-					segment.a.y = y;
-				}
-				else
-				{
-					segment.b.x = x;
-					segment.b.y = y;
-					tubes.push_back(segment);
-				}
-			}
-		}
-		backAndForth = !backAndForth;
-	}
-	// unrotate the tube segments (they are tube rays, not cut triangles)
-//	for (int i=0; i < tubeCount; i++)
-//	{
-//		std::vector<Segment>& tubes = allTubes[i];
-//		rotateSegments(segments, -angle);
-//		translateSegments(segments, toCenter);
-
-//	}
-}
-
+				std::vector<Segment> &tubes);
 
 
 
@@ -445,81 +354,15 @@ private:
 };
 #endif
 
+void sliceAndPath(	Meshy &mesh,
+					double layerW,
+					double tubeSpacing,
+					double angle,
+					const char* scadFile,
+					std::vector< std::vector<Segment> > &allTubes);
 
 
 
-void sliceAndScad(const char*modelFile, double firstLayerZ, double layerH, double layerW, double tubeSpacing, const char* stlFilePrefix, const char* scadFile)
-{
-	Meshy mesh(firstLayerZ, layerH); // 0.35
-	// double tubeSpacing = 1.0;
-
-	LoadMeshyFromStl(mesh, modelFile);
-	// mesh.dump(cout);
-
-	const std::vector<BGL::Triangle3d> &allTriangles = mesh.readAllTriangles();
-	const TrianglesInSlices &sliceTable = mesh.readSliceTable();
-	const Limits& limits = mesh.readLimits();
-	std::cout << "LIMITS: " << limits << std::endl;
-
-	Limits tubularLimits = limits;
-	tubularLimits.inflate(1.0, 1.0, 0.0);
-	tubularLimits.tubularZ();
-
-
-	ScadTubeFile outlineScad(scadFile, layerH, layerW );
-
-	double dAngle = 0; // M_PI / 4;
-
-	size_t sliceCount =sliceTable.size();
-
-#ifdef OMPFF
-	omp_lock_t my_lock;
-	omp_init_lock (&my_lock);
-	#pragma omp parallel for
-#endif
-
-	for(int i=0; i < sliceCount; i++)
-	{
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
-		const TriangleIndices &trianglesForSlice = sliceTable[i];
-
-		std::vector<Segment> outlineSegments;
-
-		// get 2D paths for outline
-		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
-
-		// get 2D rays for each slice
-		// std::vector<std::vector<Segment> > rowsOfTubes;
-		std::vector<Segment> tubes;
-		pathology(outlineSegments, tubularLimits, z, tubeSpacing, tubes);
-
-		stringstream stlName;
-		stlName << stlFilePrefix  << i << ".stl";
-		mesh.writeStlFileForLayer(i, stlName.str().c_str());
-
-		// only one thread at a time here
-		{
-
-			#ifdef OMPFF
-			OmpGuard lock (my_lock);
-			// cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
-			#endif
-
-			MyComputer deepThought; // 42
-			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
-			outlineScad.writeStlModule("stl_", deepThought.fileSystem.ExtractFilename(stlFilePrefix).c_str(),  i); // this method adds '#.stl' to the prefix
-		}
-
-		// only one thread at a time here
-		{
-#ifdef OMPFF
-			OmpGuard lock (my_lock);
-#endif
-			outlineScad.writeExtrusionsModule("fill_", tubes, i, z );
-		}
-	}
-	outlineScad.writeSwitcher(sliceTable.size());
-}
 
 
 } // namespace

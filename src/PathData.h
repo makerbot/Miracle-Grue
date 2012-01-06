@@ -26,13 +26,12 @@
 class PathData: public DataEnvelope {
 
 public:
-	PathData (double z, double thick);
+	PathData (double z);
 	virtual ~PathData();
 
 	std::vector<Paths> paths; // each extruder has paths
-
 	double positionZ;
-	double layerThickness;
+
 };
 
 

@@ -27,13 +27,14 @@ public:
 
 class Edge // it's a line.
 {
-	// vertices is plural for vertex (it's a point, really)
-	index_t vertexIndices[2];	// the index of the vertices that make out the edge
+public:
 	index_t face0;
 	int face1;
 
 
-public:
+	// vertices is plural for vertex (it's a point, really)
+	index_t vertexIndices[2];	// the index of the vertices that make out the edge
+
 	friend std::ostream& operator <<(ostream &os,const Edge &pt);
 
 
@@ -102,12 +103,61 @@ public:
 		}
 	}
 
+
 };
 
 std::ostream& operator<<(ostream& os, const Edge& e)
 {
 	os << " " << e.vertexIndices[0] << "\t" << e.vertexIndices[1] << "\t" << e.face0 << "\t" << e.face1;
 	return os;
+}
+
+class Vertex
+{
+
+public:
+	BGL::Point3d point;
+	std::vector<index_t> faces;
+};
+
+std::ostream& operator<<(ostream& os, const Vertex& v)
+{
+	os << " " << v.point << "\t[ ";
+	for (int i=0; i< v.faces.size(); i++)
+	{
+		if (i>0)  os << ", ";
+		os << v.faces[i];
+	}
+	os << "]";
+	return os;
+}
+
+index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const BGL::Point3d &coords, Scalar tolerence)
+{
+
+	for(vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); it++)
+	{
+		const BGL::Point3d &p = (*it).point;
+		Scalar dx = coords.x - p.x;
+		Scalar dy = coords.y - p.y;
+		Scalar dz = coords.z - p.z;
+
+		Scalar dd =  dx * dx + dy * dy + dz * dz;
+		if( dd < tolerence )
+		{
+			//cout << "Found VERTEX" << endl;
+			index_t vertexIndex = std::distance(vertices.begin(), it);
+			return vertexIndex;
+		}
+	}
+
+	index_t vertexIndex;
+	// cout << "NEW VERTEX " << coords << endl;
+	Vertex vertex;
+	vertex.point = coords;
+	vertices.push_back(vertex);
+	vertexIndex = vertices.size() -1;
+	return vertexIndex;
 }
 
 
@@ -117,11 +167,9 @@ std::ostream& operator<<(ostream& os, const Edge& e)
 /// of vertices, edges, and faces.
 /// The connection between them is then restored (mostly).
 ///
-
-
 class Slicy
 {
-	std::vector<BGL::Point3d> vertices;
+	std::vector<Vertex> vertices; // all vertices
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
 	Scalar tolerence;
@@ -137,6 +185,11 @@ public:
 
 	}
 
+	const std::vector<Edge>& readEdges() const
+	{
+		return edges;
+	}
+
 	index_t addTriangle(const BGL::Triangle3d &t)
 	{
 		index_t faceId = faces.size();
@@ -144,21 +197,26 @@ public:
 //		cout << "Slicy::addTriangle " << endl;
 //		cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << endl;
 //		cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << endl;
+
+
+		index_t v0 = findOrCreateVertex(t.vertex1);
+		index_t v1 = findOrCreateVertex(t.vertex2);
+		index_t v2 = findOrCreateVertex(t.vertex3);
+
 		Face face;
-		face.edgeIndices[0] = findOrCreateEdge(t.vertex1, t.vertex2, faceId);
+		face.edgeIndices[0] = findOrCreateEdge(v0, v1, faceId);
 //		cout << "   a) " << face.edge0 << "(" << edges[face.edge0] << ")" << endl;
-		face.edgeIndices[1] = findOrCreateEdge(t.vertex2, t.vertex3, faceId);
+		face.edgeIndices[1] = findOrCreateEdge(v1, v2, faceId);
 //		cout << "   b) " << face.edge1 << "(" << edges[face.edge1] << ")" << endl;
-		face.edgeIndices[2] = findOrCreateEdge(t.vertex3, t.vertex1, faceId);
+		face.edgeIndices[2] = findOrCreateEdge(v2, v0, faceId);
 //		cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << endl;
 
-		/*
-		cout << "EDGE 0: index " << face.edge0 << " : " << edges[face.edge0] << endl;
-		face.edge1 = findOrCreateEdge(t.vertex2, t.vertex3, faceId);
-		cout << "EDGE 1: index " << face.edge0 << " edge (v1,v2, f1,f2): " << edges[face.edge0] << endl;
-		cout << "EDGE 2: index " << face.edge0 << " edge (v1,v2, f1,f2): " << edges[face.edge0] << endl;
-		 */
+
+		// Update list of neighboring faces
 		faces.push_back(face);
+		vertices[v0].faces.push_back(faceId);
+		vertices[v1].faces.push_back(faceId);
+		vertices[v2].faces.push_back(faceId);
 		return faces.size() -1;
 	}
 
@@ -178,12 +236,44 @@ public:
 
 	}
 
+	//
+	// Adds all edges that cross the specified z
+	//
+	void fillEdgeList(Scalar z, std::list<index_t> & crossingEdges) const
+	{
+		assert(crossingEdges.size() == 0);
+		for (index_t i=0; i < edges.size(); i++)
+		{
+			const Edge &e= edges[i];
+			index_t v0 = e.vertexIndices[0];
+			index_t v1 = e.vertexIndices[1];
 
+			const BGL::Point3d &p0 = vertices[v0].point;
+			const BGL::Point3d &p1 = vertices[v1].point;
+
+			Scalar min = p0.z;
+			Scalar max = p1.z;
+			if(min > max)
+			{
+				min = p1.z;
+				max = p0.z;
+			}
+			// The z less or equal to max while z strictly larger than min
+			// Prevents, in the author's opinion, the possibility of having
+			// 2 edges for the same point. It is also better for the case of
+			// a very flat 3d object with a height that is precisely equal to
+			// the first layer height
+			if ( (max-min > 0) && (z > min)  && (z <= max) )
+			{
+				crossingEdges.push_back(i);
+			}
+		}
+	}
 
 	void dump(std::ostream& out) const
 	{
 		out << "Slicy" << endl;
-		out << "  vertices: " << vertices.size() << endl;
+		out << "  vertices: coords and face list" << vertices.size() << endl;
 		out << "  edges: " << edges.size() << endl;
 		out << "  faces: " << faces.size() << endl;
 
@@ -192,7 +282,7 @@ public:
 		cout << "Vertices:" << endl;
 
 		int x =0;
-		for(vector<BGL::Point3d>::const_iterator i = vertices.begin(); i != vertices.end(); i++ )
+		for(vector<Vertex>::const_iterator i = vertices.begin(); i != vertices.end(); i++ )
 		{
 			cout << x << ": " << *i << endl;
 			x ++;
@@ -207,13 +297,62 @@ public:
 			cout << x << ": " << *i << endl;
 			x ++;
 		}
+	}
+
+	// finds 2 neighboring edges
+	std::pair<index_t, index_t> edgeToEdges(index_t edgeIndex) const
+	{
+		std::pair<index_t, index_t> ret;
+		const Edge &startEdge = edges[edgeIndex];
+		index_t faceIndex = startEdge.face0;
+		const Face &face = faces[faceIndex];
+
+		unsigned int it = 0;
+		ret.first = face.edgeIndices[it];
+		it++;
+		if(ret.first == edgeIndex)
+		{
+			ret.first = face.edgeIndices[it];
+			it++;
+		}
+		ret.second = face.edgeIndices[it];
+		if(ret.second == edgeIndex)
+		{
+			it++;
+			ret.second = face.edgeIndices[it];
+		}
+		return ret;
+	}
+
+	//
+	// An edge is shared by 2 faces. Each face connects an edge to 2 other edges
+	//
+	void splitLoop(std::list<index_t>remainingEdges, std::list<index_t> loop) const
+	{
+		assert(loop.size() == 0);
+		assert(remainingEdges.size() > 0);
+
+		index_t edgeIndex = *remainingEdges.begin();
+		remainingEdges.remove(edgeIndex);
+		loop.push_back(edgeIndex);
+
+		index_t startEdgeIndex = edgeIndex;
+		std::pair<index_t, index_t>neighbors = edgeToEdges(edgeIndex);
 
 	}
+
 private:
-	index_t findOrCreateEdge(const BGL::Point3d &coords0, const BGL::Point3d &coords1, size_t face)
+
+
+	index_t findOrCreateNewEdge(const BGL::Point3d &coords0, const BGL::Point3d &coords1, size_t face)
 	{
 		index_t v0 = findOrCreateVertex(coords0);
 		index_t v1 = findOrCreateVertex(coords1);
+		findOrCreateEdge(v0, v1, face);
+	}
+
+	index_t findOrCreateEdge(index_t v0, index_t v1, size_t face)
+	{
 
 		Edge e(v0, v1, face);
 		index_t edgeIndex;
@@ -233,30 +372,9 @@ private:
 		return edgeIndex;
 	}
 
-
 	index_t findOrCreateVertex(const BGL::Point3d &coords)
 	{
-		for(vector<BGL::Point3d>::iterator it = vertices.begin(); it != vertices.end(); it++)
-		{
-			const BGL::Point3d &p = (*it);
-			Scalar dx = coords.x - p.x;
-			Scalar dy = coords.y - p.y;
-			Scalar dz = coords.z - p.z;
-
-			Scalar dd =  dx * dx + dy * dy + dz * dz;
-			if( dd < tolerence )
-			{
-				//cout << "Found VERTEX" << endl;
-				index_t vertexIndex = std::distance(vertices.begin(), it);
-				return vertexIndex;
-			}
-		}
-
-		index_t vertexIndex;
-		// cout << "NEW VERTEX " << coords << endl;
-		vertices.push_back(coords);
-		vertexIndex = vertices.size() -1;
-		return vertexIndex;
+		return findOrCreateVertexIndex(vertices, coords, tolerence);
 	}
 };
 
