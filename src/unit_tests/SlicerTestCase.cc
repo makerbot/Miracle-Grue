@@ -22,6 +22,7 @@
 #include "../BGL/BGLPoint.h"
 #include "../BGL/BGLMesh3d.h"
 
+
 #include "mgl/limits.h"
 #include "mgl/meshy.h"
 #include "mgl/slicy.h"
@@ -58,232 +59,7 @@ void dumpIntList(const list<index_t> &edges)
 }
 
 
-class Vector3d
-{
-	Scalar x,y,z;
 
-public:
-	Vector3d(){}
-
-	Vector3d(Scalar x, Scalar y, Scalar z)
-	            : x(x), y(y), z(z)
-	{}
-
-    Scalar operator[](unsigned int i) const
-    {
-        if (i == 0) return x;
-        if (i == 1) return y;
-        return z;
-    }
-
-    Scalar& operator[](unsigned int i)
-    {
-        if (i == 0) return x;
-        if (i == 1) return y;
-        return z;
-    }
-
-    void operator*=(const Scalar value)
-    {
-        x *= value;
-        y *= value;
-        z *= value;
-    }
-
-    Vector3d operator*(const real value) const
-    {
-        return Vector3d(x*value, y*value, z*value);
-    }
-
-    // Adds the given vector to this.
-    void operator+=(const Vector3d& v)
-    {
-        x += v.x;
-        y += v.y;
-        z += v.z;
-    }
-
-
-    // Returns the value of the given vector added to this.
-    Vector3d operator+(const Vector3d& v) const
-    {
-        return Vector3d(x+v.x, y+v.y, z+v.z);
-    }
-
-
-    void operator-=(const Vector3d& v)
-    {
-        x -= v.x;
-        y -= v.y;
-        z -= v.z;
-    }
-
-
-    Vector3d operator-(const Vector3d& v) const
-    {
-        return Vector3d(x-v.x, y-v.y, z-v.z);
-    }
-
-    Vector3d crossProduct(const Vector3d &vector) const
-    {
-        return Vector3d(y*vector.z-z*vector.y,
-                       z*vector.x-x*vector.z,
-                       x*vector.y-y*vector.x);
-    }
-
-    void crossProductUpdate(const Vector3d &vector)
-    {
-    	 *this = crossProduct(vector);
-    }
-
-    Scalar dotProduct(const Vector3d &vector) const
-    {
-    	return x*vector.x + y*vector.y + z*vector.z;
-    }
-
-    Scalar magnitude() const
-    {
-        return sqrt(squareMagnitude());
-    }
-
-    // Gets the squared magnitude of this vector.
-    Scalar squareMagnitude() const
-    {
-        return x*x+y*y+z*z;
-    }
-
-    void normalise()
-    {
-        Scalar l = magnitude();
-        if (l > 0)
-        {
-            (*this) *= ((Scalar)1)/l;
-        }
-    }
-
-    Vector3d unit() const
-    {
-        Vector3d result = *this;
-        result.normalise();
-        return result;
-    }
-};
-
-
-
-std::ostream& operator<<(ostream& os, const Vector3d& v)
-{
-	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
-	return os;
-}
-
-class Triangle3
-{
-	Vector3d v0, v1, v2;
-
-
-public:
-
-	Triangle3(const Vector3d& v0, const Vector3d& v1, const Vector3d& v2)
-	:v0(v0),v1(v1),v2(v2)
-	{
-
-	}
-
-	Vector3d& operator[](unsigned int i)
-	{
-		 if (i == 0) return v0;
-		 if (i == 1) return v1;
-		 return v2;
-	}
-
-	Vector3d operator[](unsigned int i) const
-	{
-		 if (i == 0) return v0;
-		 if (i == 1) return v1;
-		 return v2;
-	}
-
-	Vector3d normal() const
-	{
-		Vector3d a = v1 - v0;
-		Vector3d b = v2 - v0;
-
-		Vector3d n = a.crossProduct(b);
-		n.normalise();
-		return n;
-	}
-
-	Vector3d cutDirection() const
-	{
-		Vector3d n = normal();
-		Vector3d up(0,0,1);
-		Vector3d d = n.crossProduct(up);
-		return d;
-	}
-
-	//
-	// Sorts the 3 points in assending order
-	//
-	void zSort(Vector3d &a, Vector3d &b, Vector3d &c ) const
-	{
-
-//		if a<b:
-//		   if b<c:  a<b<c
-//		   else:
-//		      if a<c: a<c<b
-//		      else:    c<a<b
-//		else:
-//		   if a<c:  b<a<c
-//		   else:
-//		      if c<b: c<b<a
-//		      else:    b<a<c
-
-
-		if (v0[2] < v1[2]) {
-			if (v1[2] < v2[2]) {
-				//v0<v1<v2
-				a = v0;
-				b = v1;
-				c = v2;
-			} else {
-				if (v0[2] < v2[2]) {
-					//v0<v2<v1
-					a = v0;
-					b = v2;
-					c = v1;
-				} else {
-					//v2<v0<v1
-					a = v2;
-					b = v0;
-					c = v1;
-				}
-			}
-		} else {
-			if (v0[2] < v2[2]) {
-				//v1<v0<v2
-				a = v1;
-				b = v0;
-				c = v2;
-
-			} else {
-				if (v2[2] < v1[2]) {
-					//v2<v1<v0
-					a = v2;
-					b = v1;
-					c = v0;
-				} else {
-					//v1<v2<v0
-					a = v1;
-					b = v2;
-					c = v0;
-				}
-			}
-		}
-
-	}
-
-};
 
 
 void SlicerTestCase::testNormals()
@@ -310,7 +86,7 @@ void SlicerTestCase::testNormals()
 
 	Vector3d n = a.crossProduct(b);
 	n.normalise();
-	cout << "Facet normal " << n;
+	cout << "Facet normal " << n << endl;
 
 	double tol = 1e-6;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(  7.902860e-01, n[0], tol );
@@ -347,7 +123,6 @@ void SlicerTestCase::testSlicySimple()
 	cout << "xx"<< endl;
 
 
-
 	int a,b,c;
 	sy.lookupIncidentFacesToFace(face0, a,b,c);
 
@@ -363,64 +138,6 @@ void initConfig(Configuration &config)
 {
 	config["slicer"]["firstLayerZ"] = 0.11;
 	config["slicer"]["layerH"] = 0.35;
-
-}
-
-
-
-void SlicerTestCase::testSlicyKnot()
-{
-	cout << endl;
-	string modelFile = "inputs/3D_Knot.stl";
-
-    Configuration config;
-    initConfig(config);
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
-
-	cout << "file " << modelFile << endl;
-	const SliceTable &sliceTable = mesh.readSliceTable();
-	int layerCount = sliceTable.size();
-	cout  << "Slice count: "<< layerCount << endl;
-	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
-	cout << "Faces: " << allTriangles.size() << endl;
-	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
-
-	int layerIndex = 44;
-	CPPUNIT_ASSERT (layerIndex < layerCount);
-	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
-	unsigned int triangleCount = trianglesInSlice.size();
-	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
-	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
-
-	// Load slice connectivity information
-	Slicy slicy(1e-6);
-	for (int i=0; i < triangleCount; i++)
-	{
-		unsigned int triangleIndex = trianglesInSlice[i];
-		const Triangle3d& t = allTriangles[triangleIndex];
-		slicy.addTriangle(t);
-	}
-	cout << slicy << endl;
-
-	list<index_t> faces;
-	size_t faceCount = slicy.readFaces().size();
-	for(index_t i=0; i< faceCount; i++)
-	{
-		faces.push_back(i);
-	}
-
-	list<Segment> loop;
-	slicy.splitLoop(faces, loop);
-
-	cout << "loop with " << loop.size() << "faces" << endl;
-	cout << "faces left: "  << faces.size()  << " / " << slicy.readEdges().size() << endl;
-
-//	list<index_t> edges;
-//	slicy.fillEdgeList(z,edges);
-
-
-	//dumpIntList(edges);
 
 }
 
@@ -477,5 +194,135 @@ void SlicerTestCase::testCut()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 3.165644e+01, c[2], tol);
 
 }
+
+void SlicerTestCase::testSlicyKnot()
+{
+	cout << endl;
+	string modelFile = "inputs/3D_Knot.stl";
+
+    Configuration config;
+    initConfig(config);
+	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	cout << "file " << modelFile << endl;
+	const SliceTable &sliceTable = mesh.readSliceTable();
+	int layerCount = sliceTable.size();
+	cout  << "Slice count: "<< layerCount << endl;
+	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	cout << "Faces: " << allTriangles.size() << endl;
+	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
+
+	int layerIndex = 44;
+	CPPUNIT_ASSERT (layerIndex < layerCount);
+	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
+	unsigned int triangleCount = trianglesInSlice.size();
+	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
+	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
+
+	std::list<Segment> cuts;
+	double tol = 1e-6;
+	// Load slice connectivity information
+	for (int i=0; i < triangleCount; i++)
+	{
+		unsigned int triangleIndex = trianglesInSlice[i];
+		const Triangle3d& t = allTriangles[triangleIndex];
+		Triangle3 triangle( Vector3d(t.vertex1.x,t.vertex1.y,t.vertex1.z ), Vector3d(t.vertex2.x,t.vertex2.y,t.vertex2.z ), Vector3d(t.vertex3.x,t.vertex3.y,t.vertex3.z ));
+
+		if(triangle.cutDirection().magnitude() > tol)
+		{
+			Segment cut;
+			triangle.cut(z, cut);
+			cuts.push_back(cut);
+		}
+	}
+
+	cout << "SEGMENTS" << endl;
+	int i=0;
+	for(std::list<Segment>::iterator it = cuts.begin(); it != cuts.end(); it++)
+	{
+		cout << i << ") " << it->a << " to " << it->b << endl;
+		i++;
+	}
+
+}
+
+
+void slicyTest()
+{
+	cout << endl;
+	string modelFile = "inputs/3D_Knot.stl";
+
+    Configuration config;
+    initConfig(config);
+	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	cout << "file " << modelFile << endl;
+	const SliceTable &sliceTable = mesh.readSliceTable();
+	int layerCount = sliceTable.size();
+	cout  << "Slice count: "<< layerCount << endl;
+	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	cout << "Faces: " << allTriangles.size() << endl;
+	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
+
+	int layerIndex = 44;
+	CPPUNIT_ASSERT (layerIndex < layerCount);
+	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
+	unsigned int triangleCount = trianglesInSlice.size();
+	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
+	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
+
+	// Load slice connectivity information
+	Slicy slicy(1e-6);
+	for (int i=0; i < triangleCount; i++)
+	{
+		unsigned int triangleIndex = trianglesInSlice[i];
+		const Triangle3d& t = allTriangles[triangleIndex];
+		slicy.addTriangle(t);
+	}
+
+
+
+	cout << slicy << endl;
+
+	list<index_t> faces;
+	size_t faceCount = slicy.readFaces().size();
+	for(index_t i=0; i< faceCount; i++)
+	{
+		faces.push_back(i);
+
+	}
+
+
+	const Face &face = slicy.readFaces()[0];
+	Segment cut;
+	bool success = slicy.cutFace(z, face, cut);
+	cout << "FACE cut " << cut.a << " to " << cut.b << endl;
+	CPPUNIT_ASSERT(success);
+
+	list<Segment> loop;
+	slicy.splitLoop(z, faces, loop);
+
+	cout << "First loop has " << loop.size() << " segments" << endl;
+
+	size_t i=0;
+	for(list<Segment>::iterator it = loop.begin(); it != loop.end(); it++)
+	{
+		cout << i << "] " << it->a << ", " << it->b << endl;
+		i++;
+	}
+
+	cout << "loop with " << loop.size() << "faces" << endl;
+	cout << "faces left: "  << faces.size()  << " / " << slicy.readEdges().size() << endl;
+
+//	list<index_t> edges;
+//	slicy.fillEdgeList(z,edges);
+//	dumpIntList(edges);
+
+}
+
+
+
 
 

@@ -189,6 +189,35 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 	return false;
 }
 
+bool mgl::Triangle3::cut(Scalar z, Segment &cut) const
+{
+
+	Vector3d dir = cutDirection();
+	BGL::Point3d p0(v0.x, v0.y, v0.z);
+	BGL::Point3d p1(v1.x, v1.y, v1.z);
+	BGL::Point3d p2(v2.x, v2.y, v2.z);
+
+	// Segment cut;
+	bool success = sliceTriangle(p0,p1,p2, z, cut.a, cut.b );
+
+	Vector3d segmentDir( cut.b.x - cut.a.x, cut.b.y - cut.a.y, z);
+	if(dir.dotProduct(segmentDir) < 0 )
+	{
+//		cout << "INVERTED SEGMENT DETECTED" << endl;
+		BGL::Point p = cut.a;
+		cut.a = cut.b;
+		cut.b = p;
+	}
+	return success;
+}
+
+std::ostream& mgl::operator<<(ostream& os, const Vector3d& v)
+{
+	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
+	return os;
+}
+
+
 void mgl::segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
 {
 	assert(segments.size() == 0);

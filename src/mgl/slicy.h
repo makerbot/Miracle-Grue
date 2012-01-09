@@ -14,7 +14,7 @@
 #define SLICY_H_
 
 #include <ostream>
-#include "BGL/BGLPoint3d.h"
+#include "core.h"
 
 namespace mgl // Miracle-Grue's geometry library
 {
@@ -23,6 +23,7 @@ class Face // it's a triangle, really
 {
 public:
 	index_t edgeIndices[3];
+	index_t vertexIndices[3];
 };
 
 class Edge // it's a line.
@@ -160,26 +161,6 @@ index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const BGL::Point3
 	return vertexIndex;
 }
 
-/*
-class SliceBase
-{
-	std::map<index_t, Triangle3> vertices;
-
-	index_t nextTriangle;
-	index_t nextPoint;
-
-	void addTriangle(const Vector3 &v0, const Vector3 &v1, const Vector3 &v2)
-	{
-
-	}
-
-	void removeTriangle(index_t faceId)
-	{
-
-	}
-
-};
-*/
 
 ///
 /// This class consumes triangles (3 coordinates) and creates a list
@@ -227,7 +208,6 @@ public:
 //		cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << endl;
 //		cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << endl;
 
-
 		index_t v0 = findOrCreateVertex(t.vertex1);
 		index_t v1 = findOrCreateVertex(t.vertex2);
 		index_t v2 = findOrCreateVertex(t.vertex3);
@@ -240,12 +220,19 @@ public:
 		face.edgeIndices[2] = findOrCreateEdge(v2, v0, faceId);
 //		cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << endl;
 
+		face.vertexIndices[0] = v0;
+		face.vertexIndices[1] = v1;
+		face.vertexIndices[2] = v2;
 
 		// Update list of neighboring faces
 		faces.push_back(face);
 		vertices[v0].faces.push_back(faceId);
 		vertices[v1].faces.push_back(faceId);
 		vertices[v2].faces.push_back(faceId);
+
+
+
+
 		return faces.size() -1;
 	}
 
@@ -355,36 +342,151 @@ public:
 		return ret;
 	}
 
-	void splitLoop(std::list<index_t>facesLeft, std::list<Segment> loop) const
+	void getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNeighbors) const
+	{
+		const Face &face = faces[startFaceIndex];
+		const vector<index_t>& neighbors0 = vertices[ face.vertexIndices[0]].faces;
+		const vector<index_t>& neighbors1 = vertices[ face.vertexIndices[1]].faces;
+		const vector<index_t>& neighbors2 = vertices[ face.vertexIndices[2]].faces;
+
+
+		for(int i=0; i< neighbors0.size(); i++)
+		{
+			index_t faceId = neighbors0[i];
+			if (faceId >=0  && faceId != startFaceIndex)
+			{
+				allNeighbors.insert(faceId);
+			}
+		}
+		for(int i=0; i< neighbors1.size(); i++)
+		{
+			index_t faceId = neighbors1[i];
+			if (faceId >=0  && faceId != startFaceIndex)
+			{
+				allNeighbors.insert(faceId);
+			}
+		}
+		for(int i=0; i< neighbors2.size(); i++)
+		{
+			index_t faceId = neighbors2[i];
+			if (faceId >=0  && faceId != startFaceIndex)
+			{
+				allNeighbors.insert(faceId);
+			}
+		}
+
+		//cout << "All Neighbors of face:" << startFaceIndex <<":" << neighbors0.size() << ", " << neighbors1.size() << ", " << neighbors2.size() << endl;
+		//for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
+		//{
+		//	cout << " >" << *i << endl;
+		//}
+	}
+
+	index_t cutNextFace(const std::list<index_t> &facesLeft, Scalar z, index_t startFaceIndex, Segment& cut) const
+	{
+		std::set<index_t> allNeighbors;
+		getAllNeighbors(startFaceIndex, allNeighbors);
+
+		for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
+		{
+			index_t faceIndex = *i;
+			// use it only if its in the list of triangles left
+			if(find(facesLeft.begin(), facesLeft.end(), faceIndex) != facesLeft.end())
+			{
+				const Face& face = faces[faceIndex];
+				if( cutFace(z, face, cut))
+				{
+			//		cout << " " << faceIndex << " CUTS it!" << endl;
+					return faceIndex;
+				}
+			}
+
+		}
+
+		return -1;
+	}
+
+
+	bool cutFace(Scalar z, const Face &face, Segment& cut) const
+	{
+		//	bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
+		//						 const BGL::Point3d& vertex2,
+		//							const BGL::Point3d& vertex3,
+		//							   Scalar Z, BGL::Point &a,
+		//							      BGL::Point &b)
+
+		const Vertex& v0 = vertices[face.vertexIndices[0]];
+		const Vertex& v1 = vertices[face.vertexIndices[1]];
+		const Vertex& v2 = vertices[face.vertexIndices[2]];
+
+		Vector3d a(v0.point.x, v0.point.y, v0.point.z);
+		Vector3d b(v1.point.x, v1.point.y, v1.point.z);
+		Vector3d c(v2.point.x, v2.point.y, v2.point.z);
+		Triangle3 triangle(a,b,c);
+
+		Vector3d dir = triangle.cutDirection();
+		bool success = sliceTriangle(v0.point, v1.point, v2.point, z, cut.a, cut.b );
+
+		Vector3d segmentDir( cut.b.x - cut.a.x, cut.b.y - cut.a.y, z);
+
+		if(dir.dotProduct(segmentDir) < 0 )
+		{
+			cout << "INVERTED SEGMENT DETECTED" << endl;
+			BGL::Point p = cut.a;
+			cut.a = cut.b;
+			cut.b = p;
+		}
+
+		return success;
+	}
+
+	void splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Segment> &loop) const
 	{
 		assert(loop.size() == 0);
 		assert(facesLeft.size() > 0);
 
-		index_t faceIndex = *facesLeft.begin();
-		facesLeft.remove(faceIndex);
+		bool firstCutFound = false;
+		Segment cut;
 
-		// endOfLoop
+		index_t faceIndex;
+		while (!firstCutFound)
+		{
+			if(facesLeft.size() ==0) return;
 
+			faceIndex = *facesLeft.begin();
+			facesLeft.remove(faceIndex);
+			const Face &face = faces[faceIndex];
+			firstCutFound = cutFace(z, face, cut);
 
+		}
+
+		// a cut is found
+		loop.push_back(cut);
+
+		bool loopEnd = false;
+		while(!loopEnd)
+		{
+			faceIndex = *facesLeft.begin();
+			facesLeft.remove(faceIndex);
+			cout << "Current face index:" <<  faceIndex << endl;
+			faceIndex = cutNextFace(facesLeft, z, faceIndex, cut);
+			if(faceIndex >= 0)
+			{
+				facesLeft.remove(faceIndex);
+				loop.push_back(cut);
+			}
+			else
+			{
+				loopEnd = true;
+			}
+			if(facesLeft.size() == 0)
+			{
+				loopEnd = true;
+			}
+		}
 	}
-/*
-	//
-	// An edge is shared by 2 faces. Each face connects an edge to 2 other edges
-	//
-	void splitLoop(std::list<index_t>remainingEdges, std::list<index_t> loop) const
-	{
-		assert(loop.size() == 0);
-		assert(remainingEdges.size() > 0);
 
-		index_t edgeIndex = *remainingEdges.begin();
-		remainingEdges.remove(edgeIndex);
-		loop.push_back(edgeIndex);
 
-		index_t startEdgeIndex = edgeIndex;
-		std::pair<index_t, index_t>neighbors = edgeToEdges(edgeIndex);
-
-	}
-*/
 
 private:
 

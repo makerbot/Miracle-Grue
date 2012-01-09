@@ -21,6 +21,8 @@
 #include "BGL/BGLTriangle3d.h"
 #include "BGL/BGLMesh3d.h"
 
+#include "core.h"
+
 //
 // Exception class! All your errors are belong to us.
 //
@@ -45,19 +47,6 @@ public:
 };
 
 
-typedef unsigned int index_t;
-typedef std::vector<index_t> TriangleIndices;
-typedef std::vector<TriangleIndices> SliceTable;
-
-
-
-
-
-struct Segment
-{
-	BGL::Point a;
-	BGL::Point b;
-};
 
 
 bool sliceTriangle(const BGL::Point3d& vertex1,

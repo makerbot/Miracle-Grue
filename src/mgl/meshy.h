@@ -363,10 +363,6 @@ void sliceAndPath(	Meshy &mesh,
 					const char* scadFile,
 					std::vector< std::vector<Segment> > &allTubes);
 
-
-
-
-
 } // namespace
 
 #endif
