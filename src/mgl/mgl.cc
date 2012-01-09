@@ -396,12 +396,14 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		float x3, y3, z3;
 		uint16_t attrBytes;
 	};
+
 	union {
 		struct vertexes_t vertexes;
 		uint8_t bytes[sizeof(vertexes_t)];
 	} tridata;
 
-	union {
+	union
+	{
 		uint32_t intval;
 		uint16_t shortval;
 		uint8_t bytes[4];
@@ -411,14 +413,21 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 
 	uint8_t buf[512];
 	FILE *f = fopen(filename, "rb");
-	if (!f) {
-		fprintf(stderr, "STL read failed to open\n");
-		return 0;
+	if (!f)
+	{
+		string msg = "Can't open \"";
+		msg += filename;
+		msg += "\"";
+		MeshyMess problem(msg.c_str());
+		throw (problem);
 	}
 
 	if (fread(buf, 1, 5, f) < 5) {
-		fprintf(stderr, "STL read failed read\n");
-		return 0;
+		string msg = "\"";
+		msg += filename;
+		msg += "\" is empty!";
+		MeshyMess problem(msg.c_str());
+		throw (problem);
 	}
 	bool isBinary = true;
 	if (!strncasecmp((const char*) buf, "solid", 5)) {
@@ -428,13 +437,19 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		// Binary STL file
 		// Skip remainder of 80 character comment field
 		if (fread(buf, 1, 75, f) < 75) {
-			fprintf(stderr, "STL read failed header read\n");
-			return 0;
+			string msg = "\"";
+			msg += filename;
+			msg += "\" is not a valid stl file";
+			MeshyMess problem(msg.c_str());
+			throw (problem);
 		}
 		// Read in triangle count
 		if (fread(intdata.bytes, 1, 4, f) < 4) {
-			fprintf(stderr, "STL read failed face count read\n");
-			return 0;
+			string msg = "\"";
+			msg += filename;
+			msg += "\" is not a valid stl file";
+			MeshyMess problem(msg.c_str());
+			throw (problem);
 		}
 		convertFromLittleEndian32(intdata.bytes);
 		uint32_t tricount = intdata.intval;
@@ -468,14 +483,28 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 				break;
 			}
 			vertexes_t &v = tridata.vertexes;
-			fscanf(f, "%*s %f %f %f", &v.nx, &v.ny, &v.nz);
-			fscanf(f, "%*s %*s");
-			fscanf(f, "%*s %f %f %f", &v.x1, &v.y1, &v.z1);
-			fscanf(f, "%*s %f %f %f", &v.x2, &v.y2, &v.z2);
-			fscanf(f, "%*s %f %f %f", &v.x3, &v.y3, &v.z3);
-			fscanf(f, "%*s");
-			fscanf(f, "%*s");
-
+			bool success = true;
+			if (fscanf(f, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
+				success = false;
+			if (fscanf(f, "%*s %*s") < 0)
+				success = false;
+			if (fscanf(f, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
+				success = false;
+			if (fscanf(f, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
+				success = false;
+			if (fscanf(f, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
+				success = false;
+			if (fscanf(f, "%*s")< 0)
+				success = false;
+			if (fscanf(f, "%*s")< 0)
+				success = false;
+			if(!success)
+			{
+				stringstream msg;
+				msg << "Error reading face " << facecount << " in file \"" << filename << "\"";
+				MeshyMess problem(msg.str().c_str());
+				throw(problem);
+			}
 			Point3d pt1(v.x1, v.y1, v.z1);
 			Point3d pt2(v.x2, v.y2, v.z2);
 			Point3d pt3(v.x3, v.y3, v.z3);

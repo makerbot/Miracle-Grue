@@ -160,7 +160,26 @@ index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const BGL::Point3
 	return vertexIndex;
 }
 
+/*
+class SliceBase
+{
+	std::map<index_t, Triangle3> vertices;
 
+	index_t nextTriangle;
+	index_t nextPoint;
+
+	void addTriangle(const Vector3 &v0, const Vector3 &v1, const Vector3 &v2)
+	{
+
+	}
+
+	void removeTriangle(index_t faceId)
+	{
+
+	}
+
+};
+*/
 
 ///
 /// This class consumes triangles (3 coordinates) and creates a list
@@ -188,6 +207,16 @@ public:
 	const std::vector<Edge>& readEdges() const
 	{
 		return edges;
+	}
+
+	const std::vector<Face>& readFaces() const
+	{
+		return faces;
+	}
+
+	const std::vector<Vertex>& readVertices() const
+	{
+		return vertices;
 	}
 
 	index_t addTriangle(const BGL::Triangle3d &t)
@@ -235,6 +264,8 @@ public:
 		face2 = e2.lookUpNeighbor(faceId);
 
 	}
+
+
 
 	//
 	// Adds all edges that cross the specified z
@@ -324,6 +355,19 @@ public:
 		return ret;
 	}
 
+	void splitLoop(std::list<index_t>facesLeft, std::list<Segment> loop) const
+	{
+		assert(loop.size() == 0);
+		assert(facesLeft.size() > 0);
+
+		index_t faceIndex = *facesLeft.begin();
+		facesLeft.remove(faceIndex);
+
+		// endOfLoop
+
+
+	}
+/*
 	//
 	// An edge is shared by 2 faces. Each face connects an edge to 2 other edges
 	//
@@ -340,6 +384,7 @@ public:
 		std::pair<index_t, index_t>neighbors = edgeToEdges(edgeIndex);
 
 	}
+*/
 
 private:
 

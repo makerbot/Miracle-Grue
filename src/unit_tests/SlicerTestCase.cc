@@ -69,14 +69,14 @@ public:
 	            : x(x), y(y), z(z)
 	{}
 
-    Scalar operator[](unsigned i) const
+    Scalar operator[](unsigned int i) const
     {
         if (i == 0) return x;
         if (i == 1) return y;
         return z;
     }
 
-    Scalar& operator[](unsigned i)
+    Scalar& operator[](unsigned int i)
     {
         if (i == 0) return x;
         if (i == 1) return y;
@@ -124,16 +124,16 @@ public:
         return Vector3d(x-v.x, y-v.y, z-v.z);
     }
 
-    Vector3d vectorProduct(const Vector3d &vector) const
+    Vector3d crossProduct(const Vector3d &vector) const
     {
         return Vector3d(y*vector.z-z*vector.y,
                        z*vector.x-x*vector.z,
                        x*vector.y-y*vector.x);
     }
 
-    void vectorProductUpdate(const Vector3d &vector)
+    void crossProductUpdate(const Vector3d &vector)
     {
-    	 *this = vectorProduct(vector);
+    	 *this = crossProduct(vector);
     }
 
     Scalar dotProduct(const Vector3d &vector) const
@@ -167,13 +167,129 @@ public:
         result.normalise();
         return result;
     }
+};
 
+
+
+std::ostream& operator<<(ostream& os, const Vector3d& v)
+{
+	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
+	return os;
+}
+
+class Triangle3
+{
+	Vector3d v0, v1, v2;
+
+
+public:
+
+	Triangle3(const Vector3d& v0, const Vector3d& v1, const Vector3d& v2)
+	:v0(v0),v1(v1),v2(v2)
+	{
+
+	}
+
+	Vector3d& operator[](unsigned int i)
+	{
+		 if (i == 0) return v0;
+		 if (i == 1) return v1;
+		 return v2;
+	}
+
+	Vector3d operator[](unsigned int i) const
+	{
+		 if (i == 0) return v0;
+		 if (i == 1) return v1;
+		 return v2;
+	}
+
+	Vector3d normal() const
+	{
+		Vector3d a = v1 - v0;
+		Vector3d b = v2 - v0;
+
+		Vector3d n = a.crossProduct(b);
+		n.normalise();
+		return n;
+	}
+
+	Vector3d cutDirection() const
+	{
+		Vector3d n = normal();
+		Vector3d up(0,0,1);
+		Vector3d d = n.crossProduct(up);
+		return d;
+	}
+
+	//
+	// Sorts the 3 points in assending order
+	//
+	void zSort(Vector3d &a, Vector3d &b, Vector3d &c ) const
+	{
+
+//		if a<b:
+//		   if b<c:  a<b<c
+//		   else:
+//		      if a<c: a<c<b
+//		      else:    c<a<b
+//		else:
+//		   if a<c:  b<a<c
+//		   else:
+//		      if c<b: c<b<a
+//		      else:    b<a<c
+
+
+		if (v0[2] < v1[2]) {
+			if (v1[2] < v2[2]) {
+				//v0<v1<v2
+				a = v0;
+				b = v1;
+				c = v2;
+			} else {
+				if (v0[2] < v2[2]) {
+					//v0<v2<v1
+					a = v0;
+					b = v2;
+					c = v1;
+				} else {
+					//v2<v0<v1
+					a = v2;
+					b = v0;
+					c = v1;
+				}
+			}
+		} else {
+			if (v0[2] < v2[2]) {
+				//v1<v0<v2
+				a = v1;
+				b = v0;
+				c = v2;
+
+			} else {
+				if (v2[2] < v1[2]) {
+					//v2<v1<v0
+					a = v2;
+					b = v1;
+					c = v0;
+				} else {
+					//v1<v2<v0
+					a = v1;
+					b = v2;
+					c = v0;
+				}
+			}
+		}
+
+	}
 
 };
 
 
 void SlicerTestCase::testNormals()
 {
+
+	cout << endl;
 
 //	solid Default
 //	  facet normal 7.902860e-01 -2.899449e-01 -5.397963e-01
@@ -183,37 +299,23 @@ void SlicerTestCase::testNormals()
 //	      vertex 1.652539e+01 9.044915e-01 2.966791e+01
 //	    endloop
 //	  endfacet
-//	  facet normal 8.312133e-01 -1.572752e-01 -5.332438e-01
-//	    outer loop
-//	      vertex 1.737416e+01 -4.841539e-01 3.165644e+01
-//	      vertex 1.654797e+01 -1.579103e+00 3.069153e+01
-//	      vertex 1.576195e+01 1.465057e-01 2.895734e+01
-//	    endloop
-//	  endfacet
-//	  facet normal 8.324613e-01 -5.462338e-01 -9.293486e-02
-//	    outer loop
-//	      vertex 1.705642e+01 -1.374897e+00 3.404571e+01
-//	      vertex 1.654797e+01 -1.579103e+00 3.069153e+01
-//	      vertex 1.737416e+01 -4.841539e-01 3.165644e+01
-//	    endloop
-//	  endfacet
-//	  facet normal 8.883998e-01 -4.463071e-01 -1.074980e-01
-//	    outer loop
-//	      vertex 1.705642e+01 -1.374897e+00 3.404571e+01
-//	      vertex 1.618299e+01 -2.837972e+00 3.290174e+01
-//	      vertex 1.654797e+01 -1.579103e+00 3.069153e+01
-//	    endloop
-//	  endfacet
-//	  facet normal 6.417707e-01 -6.720219e-01 3.694820e-01
-//	    outer loop
-//	      vertex 1.705642e+01 -1.374897e+00 3.404571e+01
-//	      vertex 1.565729e+01 -1.529066e+00 3.619552e+01
-//	      vertex 1.618299e+01 -2.837972e+00 3.290174e+01
-//	    endloop
-//	  endfacet
 
 
+	Vector3d v0(1.737416e+01, -4.841539e-01, 3.165644e+01);
+	Vector3d v1(1.576195e+01, 1.465057e-01, 2.895734e+01);
+	Vector3d v2(1.652539e+01, 9.044915e-01, 2.966791e+01);
 
+	Vector3d a = v1 - v0;
+	Vector3d b = v2 - v0;
+
+	Vector3d n = a.crossProduct(b);
+	n.normalise();
+	cout << "Facet normal " << n;
+
+	double tol = 1e-6;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  7.902860e-01, n[0], tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.899449e-01, n[1], tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( -5.397963e-01, n[2], tol );
 }
 
 
@@ -268,6 +370,7 @@ void initConfig(Configuration &config)
 
 void SlicerTestCase::testSlicyKnot()
 {
+	cout << endl;
 	string modelFile = "inputs/3D_Knot.stl";
 
     Configuration config;
@@ -300,15 +403,79 @@ void SlicerTestCase::testSlicyKnot()
 	}
 	cout << slicy << endl;
 
-	list<index_t> edges;
-	slicy.fillEdgeList(z,edges);
+	list<index_t> faces;
+	size_t faceCount = slicy.readFaces().size();
+	for(index_t i=0; i< faceCount; i++)
+	{
+		faces.push_back(i);
+	}
 
-	cout << "edges left: "  << edges.size()  << " / " << slicy.readEdges().size() << endl;
-	dumpIntList(edges);
+	list<Segment> loop;
+	slicy.splitLoop(faces, loop);
+
+	cout << "loop with " << loop.size() << "faces" << endl;
+	cout << "faces left: "  << faces.size()  << " / " << slicy.readEdges().size() << endl;
+
+//	list<index_t> edges;
+//	slicy.fillEdgeList(z,edges);
+
+
+	//dumpIntList(edges);
 
 }
 
 
 
+void SlicerTestCase::testCut()
+{
+	double tol = 1e-6;
+
+	cout << endl;
+	//	solid Default
+	//	  facet normal 7.902860e-01 -2.899449e-01 -5.397963e-01
+	//	    outer loop
+	//	      vertex 1.737416e+01 -4.841539e-01 3.165644e+01
+	//	      vertex 1.576195e+01 1.465057e-01 2.895734e+01
+	//	      vertex 1.652539e+01 9.044915e-01 2.966791e+01
+	//	    endloop
+	//	  endfacet
+	Triangle3 triangle(Vector3d(1.737416e+01, -4.841539e-01, 3.165644e+01), Vector3d(1.576195e+01, 1.465057e-01, 2.895734e+01), Vector3d(1.652539e+01, 9.044915e-01, 2.966791e+01));
+
+
+	Vector3d cut = triangle.cutDirection();
+
+	cout <<  "Cut:  "<< cut << endl;
+	// the direction should be on a cpnstant z plane (on a slice)
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut[2], tol );
+
+	// degenerate cases:  a flat triangle, a line and a point
+
+	Triangle3 triangleFlat(Vector3d(1.737416e+01, -4.841539e-01, 0), Vector3d(1.576195e+01, 1.465057e-01, 0), Vector3d(1.652539e+01, 9.044915e-01, 0));
+	cut = triangleFlat.cutDirection();
+
+	// a flat triangle has no direction.
+	cout <<  "Flat Cut:  "<< cut << endl;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
+
+	Triangle3 line(Vector3d(0, 0, 0), Vector3d(1,1,1), Vector3d(3,3,3));
+	cut = line.cutDirection();
+	cout <<  "Line Cut:  "<< cut << endl;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
+
+	Triangle3 point(Vector3d(10, 10, 10), Vector3d(10,10,10), Vector3d(10,10,10));
+	cut = line.cutDirection();
+	cout <<  "Point Cut:  "<< cut << endl;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
+
+
+	// sorting the 3 points
+	Vector3d a, b, c;
+	triangle.zSort(a,b,c);
+	// a=v1, b=v2, c=v0
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.576195e+01, a[0], tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 9.044915e-01, b[1], tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 3.165644e+01, c[2], tol);
+
+}
 
 

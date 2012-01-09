@@ -25,8 +25,9 @@
 #ifdef OMPFF
 #include <omp.h>
 #endif
+
 ///
-/// Meshyness: that property that links all these triangles together
+/// Meshy-ness: that property that links all these triangles together
 ///
 
 namespace mgl // serious about triangles
@@ -97,14 +98,16 @@ public:
 };
 
 
-
+//
+// Exception class
+//
 class MeshyMess : public Except
 {
 public:
 	MeshyMess(const char *msg)
 	 :Except(msg)
 	{
-
+		fprintf(stderr, "%s", msg);
 	}
 
 };
@@ -224,9 +227,8 @@ public:
 		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(max);
 		if (maxSliceIndex - minSliceIndex > 1)
 			maxSliceIndex --;
-//		cout << "Minimum   =" << min << endl;
-//		cout << "Maximum   =" << max << endl;
-		cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< endl;
+
+		// cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< endl;
 		// cout << "Max index =" <<  maxSliceIndex << endl;
 		unsigned int currentSliceCount = sliceTable.size();
 		if (maxSliceIndex >= currentSliceCount)
