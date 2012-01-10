@@ -42,33 +42,6 @@ CPPUNIT_ASSERT( 12L == 12L );
 */
 
 
-/*
-class Cuts
-{
-	index_t triangle;
-	Point3d vertices[2]; // the second one is redundent
-};
-
-class Loopy
-{
-	std::list<index_t> triangleIndices;
-	std::list<Cuts> segments;
-};
-
-class LoopPole
-{
-	std::list<index_t> EdgeIndices;
-	// std::list<Point> points;
-};
-
-*/
-// TODO : read this later
-// Generating the vertices for an arbitrarily oriented cylinder is a common problem that is fairly straightforward to solve.
-// Generating the orthonormal basis vectors used to find the endcap vertices.
-// Let W = normalize(P2-P1). As you've noted you need a unit-length vector 'U' that is perpendicular to W. It will also be convenient to have a unit-length vector V perpendicular to both W and U. U, V, and W form the orthonormal basis for the cylinder.
-// To find a vector perpendicular to W, simply cross W with the world x, y, or z axis. The only caveat is that two vectors which are nearly aligned will produce a cross product with a very small magnitude, which you may not be able to normalize. To avoid this problem, simply cross W with the world axis corresponding to the component of W whose absolute value is least. Then, normalize the result to get U. Finally, V = Cross(W, U).
-// You now have two coordinate systems, each with basis vectors U, V, W, and with origins P1 and P2 respectively. You can then use simple trig to find the vertices of the endcaps.
-
 
 //
 // Adds 2 triangles with a common edge
@@ -424,7 +397,7 @@ void batchProcess(	Scalar firstLayerZ,
 		Meshy mesh(firstLayerZ, layerH);
 		loadMeshyFromStl(mesh, modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
-		std::vector< std::vector<Segment> > allTubes;
+		std::vector< TubesInSlice > allTubes;
 		sliceAndPath( mesh,
 					layerW,
 					tubeSpacing,
@@ -546,6 +519,8 @@ void ModelReaderTestCase::fixContourProblem()
 {
 	cout << endl;
 
+	Scalar tol = 1e-6;
+
 	Scalar firstZ =0.11;
 	double layerH = 0.35;
 	int layerIndex = 30;
@@ -561,9 +536,9 @@ void ModelReaderTestCase::fixContourProblem()
 	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
-	std::vector<Segment> outlineSegments;
+	std::vector< std::vector<Segment> > outlineSegments;
 	// get 2D paths for outline
-	segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
+	segmentology(allTriangles, trianglesForSlice, z, tol, outlineSegments);
 
 	std::vector<std::pair<double,double> > minsAndMaxes;
 	size_t triangleCount = trianglesForSlice.size();

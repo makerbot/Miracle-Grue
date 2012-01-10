@@ -158,7 +158,7 @@ int main(int argc, char *argv[], char *envp[])
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
-	std::vector< std::vector<Segment> > allTubes;
+	std::vector< TubesInSlice >  allTubes;
 	sliceAndPath(mesh,
 			config["slicer"]["layerW"].asDouble(),
 			config["slicer"]["tubeSpacing"].asDouble(),
@@ -169,12 +169,24 @@ int main(int argc, char *argv[], char *envp[])
 
 	vector<DataEnvelope*> paths;
 	//for(std::vector<DataEnvelope*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
+
 	for (int i=0; i< allTubes.size(); i++)
 	{
-		std::vector<Segment> &tubes = allTubes[i];
+		// i is the slice index
+
+		TubesInSlice &tubes = allTubes[i];
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
 
-		PathData *path = createPathFromTubes(tubes, z);
+		for(int j=0; j < tubes.outlines.size(); j++)
+		{
+			// j is the outline loop index
+
+			std::vector<Segment> &loopTubes = tubes.outlines[j];
+			PathData *path = createPathFromTubes(loopTubes, z);
+			paths.push_back(path);
+		}
+
+		PathData *path = createPathFromTubes(tubes.infill, z);
 		paths.push_back(path);
 	}
 
@@ -187,10 +199,8 @@ int main(int argc, char *argv[], char *envp[])
 	fileWriter.init(config, empty);
 	tooler.start();
 
-	for(int i=0; i< allTubes.size(); i++)
+	for(int i=0; i< paths.size(); i++)
 	{
-
-		const std::vector<Segment> &tubes= allTubes[i];
 		DataEnvelope *envelope = paths[i];
 		tooler.accept(*envelope);
 	}

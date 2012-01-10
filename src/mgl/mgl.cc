@@ -233,9 +233,120 @@ std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3d& v)
 	return os;
 }
 
-
-void mgl::segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments)
+// given a point, finds the segment that starts the closest from that point
+// and return the distance. Also, the iterator to the closest segment is "returned"
+Scalar findClosestSegment(const BGL::Point& endOfPreviousSegment, 
+						vector<Segment>::iterator startIt,
+						vector<Segment>::iterator endIt, 
+						vector<Segment>::iterator &bestSegmentIt ) // "returned here"
 {
+	bestSegmentIt = endIt; 	// just in case, we'll check for this on the caller side
+	Scalar minDist = 1e100; 
+	
+	Vector3d end(endOfPreviousSegment.x,endOfPreviousSegment.y, 0);
+	vector<Segment>::iterator it = startIt;
+	while(it != endIt)
+	{
+		Vector3d start(it->a.x, it->a.y, 0);
+		Vector3d v = end-start;
+		Scalar distance = v.squareMagnitude();
+		if (distance < minDist)
+		{
+			minDist = distance;
+			bestSegmentIt = it;
+			// we could decide to stop here ... if we had a threshold
+		}
+		it ++;
+	}
+	return minDist;
+}
+
+void mgl::loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector< std::vector<Segment> > &loops)
+{
+	// Lets sort this mess out so we can extrude in a continuous line of shiny contour
+	// Nota: from the normals, segment know their beginings from their endings  
+	
+
+	std::vector<Scalar> distances;
+	distances.reserve(segments.size());
+	
+	distances.push_back(0); // this value is not used, it represents the distance between the
+							// first segment and the one before (and there is no segment before)
+	for(vector<Segment>::iterator i = segments.begin(); i != segments.end(); i++)
+	{
+		BGL::Point &startingPoint = i->b;
+		vector<Segment>::iterator startIt = i+1;
+		vector<Segment>::iterator bestSegmentIt;
+		if(startIt != segments.end())
+		{
+			Scalar distance = findClosestSegment(startingPoint, startIt, segments.end(), bestSegmentIt);
+			if(bestSegmentIt != segments.end())
+			{
+				// Swap the segments, because the bestSegment is the closest segment to the current one
+				Segment tmp;
+				tmp.a = startIt->a;
+				tmp.b = startIt->b;
+
+				startIt->a = bestSegmentIt->a;
+				startIt->b = bestSegmentIt->b;
+
+				bestSegmentIt->a = tmp.a;
+				bestSegmentIt->b = tmp.b;
+				distances.push_back(distance);
+			}
+		}
+	}
+	
+	// we now have an optimal sequence of segments (except we didn't optimise for interloop traversal).
+	// we also have a hop (distances) between each segment pair
+		
+
+	vector<Scalar>::iterator hopIt = distances.begin();
+	vector<Segment>::iterator i = segments.begin(); 
+	while(i != segments.end())
+	{
+		// lets make a loop
+		loops.push_back(vector<Segment>());
+
+		// cout << "A new loop" << endl;
+
+		vector<Segment> &loop = loops[loops.size()-1];
+		
+		loop.push_back(*i);
+		i++;
+		hopIt++;
+
+		bool thisLoopIsDone = false;
+		while(!thisLoopIsDone)
+		{
+			Scalar distance = *hopIt;
+			if(distance < tol) 
+			{
+				loop.push_back(*i);
+				// cout << " "<< loop.size()<< " Segment " << i->a << ", " << i->b  << endl;
+				i++;
+				hopIt ++;
+			}
+			else
+			{
+				thisLoopIsDone = true;
+			}
+			if(i == segments.end())
+			{
+				thisLoopIsDone = true;
+			}
+		}
+	}
+
+}
+
+void mgl::segmentology(	const std::vector<BGL::Triangle3d> &allTriangles,
+						const TriangleIndices &trianglesForSlice,
+						Scalar z,
+						Scalar tol,
+						std::vector< std::vector<Segment> > &loops)
+{
+	std::vector<Segment> segments;
 	assert(segments.size() == 0);
 
 	size_t count = trianglesForSlice.size();
@@ -249,7 +360,8 @@ void mgl::segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const T
 
 		Triangle3 triangle(t);
 		Vector3d a,b;
-		bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
+		// bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
+		bool cut = triangle.cut(z,a,b);
 		if(cut)
 		{
 			Segment s;
@@ -259,6 +371,20 @@ void mgl::segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const T
 			s.b.y = b.y;
 			segments.push_back(s);
 		}
+	}
+	
+	// what we are left with is a series of tubes (outline tubes... triangle has beens)
+
+	// lets break this vector into loops.
+	loopsAndHoles(segments, tol, loops);
+
+}
+
+void mgl::translateLoops(std::vector<std::vector<mgl::Segment> > &loops, BGL::Point p)
+{
+	for(int i=0; i < loops.size(); i++)
+	{
+		translateSegments(loops[i],p);
 	}
 }
 
@@ -283,8 +409,13 @@ BGL::Point mgl::rotate2d(const BGL::Point &p, Scalar angle)
 	return rotated;
 }
 
-
-
+void mgl::rotateLoops(std::vector<std::vector<mgl::Segment> > &loops, Scalar angle)
+{
+	for(int i=0; i < loops.size(); i++)
+	{
+		rotateSegments(loops[i], angle);
+	}
+}
 
 void mgl::rotateSegments(std::vector<mgl::Segment> &segments, Scalar angle)
 {
@@ -322,9 +453,11 @@ void mgl::sliceAndPath(	Meshy &mesh,
 					double tubeSpacing,
 					double angle,
 					const char* scadFile,
-					std::vector< std::vector<Segment> > &allTubes)
+					std::vector< TubesInSlice >  &allTubes)
 {
+	Scalar tol = 1e-6; // Tolerance for assembling segments into a loop
 
+	// gather context info
 	const std::vector<BGL::Triangle3d> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const Limits& limits = mesh.readLimits();
@@ -347,45 +480,59 @@ void mgl::sliceAndPath(	Meshy &mesh,
 	// we'll record that in a scad file for you
 	ScadTubeFile outlineScad(scadFile, layerH, layerW );
 	allTubes.reserve(sliceCount);
+
+	// multi thread stuff
 #ifdef OMPFF
 	omp_lock_t my_lock;
 	omp_init_lock (&my_lock);
 	#pragma omp parallel for
 #endif
+
 	for(int i=0; i < sliceCount; i++)
 	{
-		allTubes.push_back( std::vector<Segment>());
-		std::vector<Segment> &tubes = allTubes[i];
-
+		//cout << "SLICE>> " << i << endl;
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
+		allTubes.push_back( TubesInSlice(z));
+		std::vector<Segment> &infillTubes = allTubes[i].infill;
+
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
 
-		std::vector<Segment> outlineSegments;
+		std::vector<std::vector<Segment> > &outlineLoops = allTubes[i].outlines;
 		// get the "real" 2D paths for outline
-		segmentology(allTriangles, trianglesForSlice, z, outlineSegments);
+		segmentology(allTriangles, trianglesForSlice, allTubes[i].z, tol, outlineLoops);
+		//cout << "Segmentology: " << outlineLoops.size() << " Loops" << endl;
+
 		Scalar layerAngle = i* angle;
 		// deep copy
-		std::vector<Segment> rotatedOutlines = outlineSegments;
-		mgl::translateSegments(rotatedOutlines, toRotationCenter);
+		std::vector<std::vector<Segment> > rotatedLoops = outlineLoops;
+		mgl::translateLoops(rotatedLoops, toRotationCenter);
 		// rotate the outlines before generating the tubes...
-		mgl::rotateSegments(rotatedOutlines, layerAngle);
-		pathology(rotatedOutlines, tubularLimits, z, tubeSpacing, tubes);
+		mgl::rotateLoops(rotatedLoops, layerAngle);
+
+		pathology(rotatedLoops, tubularLimits, allTubes[i].z, tubeSpacing, infillTubes);
+		//cout << "Pathology: " << infillTubes.size() << " infill segments" << endl;
+
 		// rotate the TUBES so they fit with the ORIGINAL outlines
-		mgl::rotateSegments(tubes, -layerAngle);
-		mgl::translateSegments(tubes, backToOrigin);
+		mgl::rotateSegments(infillTubes, -layerAngle);
+		mgl::translateSegments(infillTubes, backToOrigin);
+
+		// write the scad file
 		// only one thread at a time in here
 		{
 			#ifdef OMPFF
 			OmpGuard lock (my_lock);
 			cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
 			#endif
-			cout << "SLICE " << i << "/ " << sliceCount<< endl;
-
+			cout << "." ;
 			outlineScad.writeTrianglesModule("tri_", mesh, i);
-			outlineScad.writeOutlinesModule("out_", outlineSegments, i, z);
-			outlineScad.writeExtrusionsModule("fill_", tubes, i, z );
+
+			outlineScad.writeOutlinesModule("out_", outlineLoops, i, allTubes[i].z);
+			outlineScad.writeExtrusionsModule("fill_", infillTubes, i, allTubes[i].z );
+
 		}
+
 	}
+	// finalize the scad file
 	outlineScad.writeSwitcher(sliceTable.size());
 }
 
@@ -567,7 +714,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 	return facecount;
 }
 
-void mgl::pathology( std::vector<Segment> &outlineSegments,
+void mgl::pathology( std::vector< std::vector<Segment> > &outlineLoops,
 				const Limits& limits,
 				double z,
 				double tubeSpacing,
@@ -588,17 +735,26 @@ void mgl::pathology( std::vector<Segment> &outlineSegments,
 	intersects.resize(tubeCount);
 
 
-	for (int i=0; i < tubeCount; i++)
+	for (unsigned int i=0; i < tubeCount; i++)
 	{
 		Scalar y = -0.5 * deltaY + i * tubeSpacing;
 		std::set<Scalar> &lineCuts = intersects[i];
-		for(std::vector<Segment>::iterator i= outlineSegments.begin(); i!= outlineSegments.end(); i++)
+
+		// go through all the segments in every loop
+		for(unsigned int j=0; j< outlineLoops.size(); j++)
 		{
-			Segment &segment = *i;
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
+			// cout << "  Loop " << j << endl;
+			std::vector<Segment> &outlineSegments = outlineLoops[j];
+			for(std::vector<Segment>::iterator it= outlineSegments.begin(); it!= outlineSegments.end(); it++)
 			{
-				lineCuts.insert(intersectionX);
+				//cout << "      segment" << endl;
+				Segment &segment = *it;
+				Scalar intersectionX, intersectionY;
+				if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
+				{
+					lineCuts.insert(intersectionX);
+					//cout << "         X" << endl;
+				}
 			}
 		}
 	}
@@ -659,6 +815,8 @@ void mgl::pathology( std::vector<Segment> &outlineSegments,
 		}
 		backAndForth = !backAndForth;
 	}
+
+
 	// unrotate the tube segments (they are tube rays, not cut triangles)
 //	for (int i=0; i < tubeCount; i++)
 //	{
@@ -668,4 +826,5 @@ void mgl::pathology( std::vector<Segment> &outlineSegments,
 
 //	}
 }
+
 

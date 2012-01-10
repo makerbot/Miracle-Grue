@@ -319,7 +319,7 @@ public:
 size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 
 
-void pathology( std::vector<Segment> &outlineSegments,
+void pathology( std::vector<std::vector<Segment> > &outlineSegments,
 				const Limits& limits,
 				double z,
 				double tubeSpacing ,
@@ -358,12 +358,25 @@ private:
 };
 #endif
 
+struct TubesInSlice
+{
+	TubesInSlice(Scalar z)
+		:z(z)
+	{
+
+	}
+
+	Scalar z;
+	std::vector<Segment> infill;
+	std::vector< std::vector<Segment> > outlines;
+};
+
 void sliceAndPath(	Meshy &mesh,
 					double layerW,
 					double tubeSpacing,
 					double angle,
 					const char* scadFile,
-					std::vector< std::vector<Segment> > &allTubes);
+					std::vector< TubesInSlice > &allTubes);
 
 } // namespace
 

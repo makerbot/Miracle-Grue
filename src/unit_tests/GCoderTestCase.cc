@@ -601,21 +601,32 @@ void GCoderTestCase::testKnot()
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
-	std::vector< std::vector<Segment> > allTubes;
+	std::vector< TubesInSlice > allTubes;
 	sliceAndPath(mesh,
 			config["slicer"]["layerW"].asDouble(),
 			config["slicer"]["tubeSpacing"].asDouble(),
 			config["slicer"]["angle"].asDouble(),
 			scadFile.c_str(),
-			allTubes); //paths);
+			allTubes);
 
 	vector<DataEnvelope*> paths;
 	for (int i=0; i< allTubes.size(); i++)
 	{
-		std::vector<Segment> &tubes = allTubes[i];
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
+		// i is the slice index
 
-		PathData *path = createPathFromTubes(tubes, z);
+		TubesInSlice &tubes = allTubes[i];
+		Scalar z = tubes.z;
+
+		for(int j=0; j < tubes.outlines.size(); j++)
+		{
+			// j is the outline loop index
+
+			std::vector<Segment> &loopTubes = tubes.outlines[j];
+			PathData *path = createPathFromTubes(loopTubes, z);
+			paths.push_back(path);
+		}
+
+		PathData *path = createPathFromTubes(tubes.infill, z);
 		paths.push_back(path);
 	}
 

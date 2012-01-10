@@ -34,18 +34,22 @@ namespace mgl
 
 
 
+void segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, Scalar z, Scalar tol, std::vector< std::vector<Segment> > &loops);
 
+void loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector< std::vector<Segment> > &loops);
 
+void translateLoops(std::vector<std::vector<mgl::Segment> > &loops, BGL::Point p);
 
-
-void segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, double z, std::vector<Segment> &segments);
 void translateSegments(std::vector<mgl::Segment> &segments, BGL::Point p);
+
 BGL::Point rotate2d(const BGL::Point &p, Scalar angle);
+
+void rotateLoops(std::vector<std::vector<mgl::Segment> > &loops, Scalar angle);
+
 void rotateSegments(std::vector<mgl::Segment> &segments, Scalar angle);
+
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
-
-
 
 
 
@@ -53,3 +57,4 @@ bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1
 }
 
 #endif
+
