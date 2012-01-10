@@ -163,7 +163,7 @@ struct Outline
 // This class contains settings for the 3D printer,
 // user preferences as well as runtime information
 //
-struct GCoderData
+class GCoder
 {
     std::string programName;
     std::string versionStr;
@@ -177,10 +177,32 @@ struct GCoderData
     Outline outline;					// outline operation configuration
     std::vector<ToolHead> extruders;	// list of extruder tools
 
+public:
+
+    const std::vector<ToolHead> &readExtruders() const
+    {
+    	return extruders;
+    }
 
 	void loadData(const Configuration& config);
 	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
-         // ~GCoderConfig()
+
+	// write important config information in gcode file
+    void writeGCodeConfig(std::ostream &ss) const;
+	void writeMachineInitialization(std::ostream &ss) const;
+    void writePlatformInitialization(std::ostream &ss) const;
+    void writeExtrudersInitialization(std::ostream &ss) const;
+    void writeHomingSequence(std::ostream &ss) const;
+
+    void writeWarmupSequence(std::ostream &ss);
+    void writeAnchor(std::ostream &ss);
+    void writeLayer(std::ostream &ss, const PathData& pathData);
+    void writePaths(std::ostream& ss, int extruderId, double z, const ExtruderPaths &paths); // paths for an extruder in a layer
+
+    void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
+    void writeWipeExtruder(std::ostream& ss, int extruderId) const;
+    void writeGcodeEndOfFile(std::ostream &ss) const;
+
 };
 
 /**
@@ -189,14 +211,13 @@ struct GCoderData
  */
 class GCoderOperation : public Operation
 {
-	GCoderData config;
+	GCoder gcoder;
 
 /************** Start of Functions each <NAME_OF>Operation must contain***********************/
 public:
 
 	///Standard Constructor
 	GCoderOperation();
-
 
 	///Standard Destructor
 	~GCoderOperation();
@@ -234,13 +255,8 @@ public:
 	void finish();
 
 /************** End of Functions each <NAME_OF>Operation must contain***********************/
-
-
-/************** Start of Functions custom to this <NAME_OF>Operation ***********************/
-private:
-	bool isValidConfig(Configuration& config) const;
-	void wrapAndEmit(const std::stringstream &ss);
-
+	void loadData(const Configuration& config);
+	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
 
 	// write important config information in gcode file
     void writeGCodeConfig(std::ostream &ss) const;
@@ -248,14 +264,22 @@ private:
     void writePlatformInitialization(std::ostream &ss) const;
     void writeExtrudersInitialization(std::ostream &ss) const;
     void writeHomingSequence(std::ostream &ss) const;
+
     void writeWarmupSequence(std::ostream &ss);
     void writeAnchor(std::ostream &ss);
-
     void writeLayer(std::ostream &ss, const PathData& pathData);
-    void writePaths(std::ostream& ss, int extruderId, double z, const Paths &paths); // paths for an extruder in a layer
+    void writePaths(std::ostream& ss, int extruderId, double z, const ExtruderPaths &paths); // paths for an extruder in a layer
+
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
     void writeGcodeEndOfFile(std::ostream &ss) const;
+/************** Start of Functions custom to this <NAME_OF>Operation ***********************/
+private:
+	bool isValidConfig(Configuration& config) const;
+	void wrapAndEmit(const std::stringstream &ss);
+
+
+
 
 
 

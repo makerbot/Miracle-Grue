@@ -41,7 +41,6 @@ void FileWriterTestCase::create_FileWriter()
 }
 
 
-
 void FileWriterTestCase::createConfigRunDestroy_FileWriter()
 {
 	/// Minimum use example

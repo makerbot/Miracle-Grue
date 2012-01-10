@@ -22,14 +22,14 @@
 //
 // The Path data is a dictionary of polygons
 // there are multiple polygons for each extruders
-//
+// There is one PathData per slice
 class PathData: public DataEnvelope {
 
 public:
 	PathData (double z);
 	virtual ~PathData();
 
-	std::vector<Paths> paths; // each extruder has paths
+	std::vector<ExtruderPaths> paths; // each extruder has paths
 	double positionZ;
 
 };

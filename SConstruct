@@ -243,7 +243,7 @@ env.Program(  	'./bin/tests/chainIntegrationUnitTest',
 if run_unit_tests == True:
 	Command('chainIntegrationUnitTest.passed','./bin/tests/chainIntegrationUnitTest',runUnitTest)
 
-env.Program('./bin/morphogen', 
+env.Program('./bin/miracle_grue', 
 		mix(['src/morphogen.cc'], config, gcoder, file_w ),
 		LIBS = default_libs + debug_libs,
 		LIBPATH = default_libs_path,

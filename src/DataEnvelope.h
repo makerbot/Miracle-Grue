@@ -30,7 +30,7 @@ struct Point2D
 };
 
 typedef std::vector<Point2D> Polygon;
-typedef std::vector<Polygon> Paths;
+typedef std::vector<Polygon> ExtruderPaths;
 
 // for now, use cout, until we add Boost support
 #define BOOST_LOG_TRIVIAL(trace) std::cout

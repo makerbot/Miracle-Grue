@@ -188,7 +188,7 @@ void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double 
 void initSimplePath(PathData &d)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	d.paths.push_back(Paths());
+	d.paths.push_back(ExtruderPaths());
 
 	srand( time(NULL) );
 
@@ -315,12 +315,12 @@ void GCoderTestCase::testConfig()
 	CPPUNIT_ASSERT(conf.root["extruders"].isValidIndex(0));
 
 	cout << "ExtruderCount " << conf.root["extruders"].size() << endl;
-	GCoderData single;
+	GCoder single;
 	single.loadData(conf);
 
 	cout << endl << endl << endl << "READ!" << endl;
 
-	CPPUNIT_ASSERT(single.extruders.size() ==1);
+	CPPUNIT_ASSERT(single.readExtruders().size() ==1);
 
 	// save config for single extruder
 	Configuration config;
@@ -379,7 +379,7 @@ void GCoderTestCase::testFloatFormat()
 
 void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
-	d.paths.push_back(Paths());
+	d.paths.push_back(ExtruderPaths());
 
 	bool flip = false;
 	for (int i=0; i< lineCount; i++)
@@ -407,7 +407,7 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 
 void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
-	d.paths.push_back(Paths());
+	d.paths.push_back(ExtruderPaths());
 
 	bool flip = false;
 
@@ -530,8 +530,8 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 {
 	// paths R us
 	PathData *pathData = new PathData(z);
-	pathData->paths.push_back(Paths());
-	Paths& paths = pathData->paths[0];
+	pathData->paths.push_back(ExtruderPaths());
+	ExtruderPaths& paths = pathData->paths[0];
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{

@@ -79,8 +79,57 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 {
 	// paths R us
 	PathData *pathData = new PathData(z);
-	pathData->paths.push_back(Paths());
-	Paths& paths = pathData->paths[0];
+	pathData->paths.push_back(ExtruderPaths());
+
+	ExtruderPaths& paths = pathData->paths[0];
+	size_t tubeCount = tubes.size();
+	for (int i=0; i< tubeCount; i++)
+	{
+		const Segment &segment = tubes[i];
+
+		cout << "SEGMENT " << i << "/" << tubeCount << endl;
+		paths.push_back(Polygon());
+		Polygon &poly = paths[paths.size()-1];
+
+		Point2D p0 (segment.a.x, segment.a.y);
+		Point2D p1 (segment.b.x, segment.b.y);
+
+		poly.push_back(p0);
+		poly.push_back(p1);
+
+	}
+	return pathData;
+}
+
+PathData *createPathsForSlice(const TubesInSlice& tubesInSlice)
+{
+	PathData *pathData = new PathData(tubesInSlice.z);
+	pathData->paths.push_back(ExtruderPaths());
+	ExtruderPaths& paths = pathData->paths[0];
+
+	// outline loops
+	for(int i=0; i < tubesInSlice.outlines.size(); i++)
+	{
+		const std::vector<Segment> &loop = tubesInSlice.outlines[i];
+		paths.push_back(Polygon());
+		Polygon &poly = paths[paths.size()-1];
+		poly.reserve(loop.size());
+		for(int j=0; j< loop.size(); j++)
+		{
+			const Segment &line = loop[j];
+			Point2D p(line.a.x, line.a.y);
+			poly.push_back(p);
+
+			if(j == loop.size()-1)
+			{
+				Point2D p(line.b.x, line.b.y);
+				poly.push_back(p);
+			}
+		}
+	}
+
+	// infills
+	const std::vector<Segment> &tubes = tubesInSlice.infill;
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{
@@ -106,12 +155,11 @@ int main(int argc, char *argv[], char *envp[])
 	int checks = preConditionsOrShowUsage(argc, argv);
 	if(checks != 0)
 	{
-		//cout<< "0 @#$#@$" << endl;
+
 		return checks;
 	}
 
 	string modelFile;
-	// cout << "wer "<< argc -2 << endl;
 	double firstLayerZ = 0.11;
 	double layerH = 0.35;
 	double layerW = 0.583333;
@@ -120,7 +168,6 @@ int main(int argc, char *argv[], char *envp[])
 	string configFileName = "miracle.config";
 
     parseArgs(argc, argv, modelFile,  configFileName, firstLayerZ, layerH, layerW, tubeSpacing, angle);
-
 
     Configuration config;
     config.readFromFile(configFileName.c_str());
@@ -173,21 +220,9 @@ int main(int argc, char *argv[], char *envp[])
 	for (int i=0; i< allTubes.size(); i++)
 	{
 		// i is the slice index
-
-		TubesInSlice &tubes = allTubes[i];
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
-
-		for(int j=0; j < tubes.outlines.size(); j++)
-		{
-			// j is the outline loop index
-
-			std::vector<Segment> &loopTubes = tubes.outlines[j];
-			PathData *path = createPathFromTubes(loopTubes, z);
-			paths.push_back(path);
-		}
-
-		PathData *path = createPathFromTubes(tubes.infill, z);
-		paths.push_back(path);
+		TubesInSlice &tubesInSlice = allTubes[i];
+		PathData *data = createPathsForSlice(tubesInSlice);
+		paths.push_back(data);
 	}
 
 	GCoderOperation &tooler = *new GCoderOperation();
