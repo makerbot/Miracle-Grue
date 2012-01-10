@@ -32,28 +32,7 @@
 namespace mgl
 {
 
-bool sameSame(double a, double b);
 
-
-class Except
-{
-public:
-	std::string error;
-	Except(const char *msg)
-	 :error(msg)
-	{
-
-	}
-};
-
-
-
-
-bool sliceTriangle(const BGL::Point3d& vertex1,
-					 const BGL::Point3d& vertex2,
-						const BGL::Point3d& vertex3,
-						   Scalar Z, BGL::Point &a,
-						      BGL::Point &b);
 
 
 

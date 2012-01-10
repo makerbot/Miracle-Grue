@@ -424,18 +424,12 @@ public:
 		Vector3d c(v2.point.x, v2.point.y, v2.point.z);
 		Triangle3 triangle(a,b,c);
 
-		Vector3d dir = triangle.cutDirection();
-		bool success = sliceTriangle(v0.point, v1.point, v2.point, z, cut.a, cut.b );
+		bool success = triangle.cut( z, a, b);
 
-		Vector3d segmentDir( cut.b.x - cut.a.x, cut.b.y - cut.a.y, z);
-
-		if(dir.dotProduct(segmentDir) < 0 )
-		{
-			cout << "INVERTED SEGMENT DETECTED" << endl;
-			BGL::Point p = cut.a;
-			cut.a = cut.b;
-			cut.b = p;
-		}
+		cut.a.x = a.x;
+		cut.a.y = a.y;
+		cut.b.x = b.x;
+		cut.b.y = b.y;
 
 		return success;
 	}

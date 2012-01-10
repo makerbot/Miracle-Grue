@@ -189,6 +189,12 @@ class Meshy
 
 public:
 
+
+	Meshy(Scalar firstSliceZ, Scalar layerH)
+		:zTapeMeasure(firstSliceZ, layerH)
+	{
+	}
+
 	const std::vector<BGL::Triangle3d> &readAllTriangles() const
 	{
 		return allTriangles;
@@ -209,10 +215,6 @@ public:
 		return sliceTable;
 	}
 
-	Meshy(Scalar firstSliceZ, Scalar layerH)
-		:zTapeMeasure(firstSliceZ, layerH)
-	{
-	}
 
 	//
 	// Adds a triangle to the global array and for each slice of interest

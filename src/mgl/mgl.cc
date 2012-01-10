@@ -40,11 +40,12 @@ void mgl::minMaxZ(const BGL::Triangle3d &t, Scalar &min,  Scalar &max )
 }
 
 
-bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
-					 const BGL::Point3d& vertex2,
-						const BGL::Point3d& vertex3,
-						   Scalar Z, BGL::Point &a,
-						      BGL::Point &b)
+bool sliceTriangle(const Vector3d& vertex1,
+					 const Vector3d& vertex2,
+						const Vector3d& vertex3,
+						   Scalar Z,
+						   Vector3d &a,
+						   	   Vector3d &b)
 {
 	Scalar u, px, py, v, qx, qy;
 	if (vertex1.z > Z && vertex2.z > Z && vertex3.z > Z)
@@ -69,9 +70,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 			//lnref = Line(Point(vertex1), Point(vertex2));
 			a.x = vertex1.x;
 			a.y = vertex1.y;
-
+			a.z = Z;
 			b.x = vertex2.x;
 			b.y = vertex2.y;
+			b.z = Z;
 			return true;
 		}
 		if (sameSame(vertex3.z,Z) )
@@ -79,8 +81,11 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 			// lnref = Line(Point(vertex1), Point(vertex3));
 			a.x = vertex1.x;
 			a.y = vertex1.y;
+			a.z = Z;
+
 			b.x = vertex3.x;
 			b.y = vertex3.y;
+			b.z = Z;
 			return true;
 		}
 		if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
@@ -94,8 +99,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 		// lnref = Line(Point(vertex1), Point(px,py));
 		a.x = vertex1.x;
 		a.y = vertex1.y;
+		a.z = Z;
 		b.x = px;
 		b.y = py;
+		b.z = Z;
 		return true;
 	}
 	else if (sameSame(vertex2.z, Z) )
@@ -105,8 +112,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 			// lnref = Line(Point(vertex2), Point(vertex3));
 			a.x = vertex2.x;
 			a.y = vertex2.y;
+			a.z = Z;
 			b.x = vertex3.x;
 			b.y = vertex3.y;
+			b.z = Z;
 			return true;
 		}
 		if ((vertex1.z > Z && vertex3.z > Z) || (vertex1.z < Z && vertex3.z < Z))
@@ -120,8 +129,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 		// lnref = Line(Point(vertex2), Point(px,py));
 		a.x = vertex2.x;
 		a.y = vertex2.y;
+		a.z = Z;
 		b.x = px;
 		b.y = py;
+		b.z = Z;
 		return true;
 	}
 	else if (sameSame(vertex3.z, Z) )
@@ -137,8 +148,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 		// lnref = Line(Point(vertex3), Point(px,py));
 		a.x = vertex3.x;
 		a.y = vertex3.y;
+		a.z = Z;
 		b.x = px;
 		b.y = py;
+		b.z = Z;
 		return true;
 	}
 	else if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
@@ -152,8 +165,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 		// lnref = Line(Point(px,py), Point(qx,qy));
 		a.x = px;
 		a.y = py;
+		a.z = Z;
 		b.x = qx;
 		b.y = qy;
+		b.z = Z;
 		return true;
 	}
 	else if ((vertex1.z > Z && vertex3.z > Z) || (vertex1.z < Z && vertex3.z < Z))
@@ -167,8 +182,10 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 		// lnref = Line(Point(px,py), Point(qx,qy));
 		a.x = px;
 		a.y = py;
+		a.z = Z;
 		b.x = qx;
 		b.y = qy;
+		b.z = Z;
 		return true;
 	}
 	else if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
@@ -182,36 +199,35 @@ bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
 		// lnref = Line(Point(px,py), Point(qx,qy));
 		a.x = px;
 		a.y = py;
+		a.z = Z;
 		b.x = qx;
 		b.y = qy;
+		b.z = Z;
 		return true;
 	}
 	return false;
 }
 
-bool mgl::Triangle3::cut(Scalar z, Segment &cut) const
+bool mgl::Triangle3::cut(Scalar z, Vector3d &a, Vector3d &b) const
 {
 
 	Vector3d dir = cutDirection();
-	BGL::Point3d p0(v0.x, v0.y, v0.z);
-	BGL::Point3d p1(v1.x, v1.y, v1.z);
-	BGL::Point3d p2(v2.x, v2.y, v2.z);
-
 	// Segment cut;
-	bool success = sliceTriangle(p0,p1,p2, z, cut.a, cut.b );
 
-	Vector3d segmentDir( cut.b.x - cut.a.x, cut.b.y - cut.a.y, z);
+	bool success = sliceTriangle(v0,v1,v2, z, a, b );
+
+	Vector3d segmentDir = b - a;
 	if(dir.dotProduct(segmentDir) < 0 )
 	{
 //		cout << "INVERTED SEGMENT DETECTED" << endl;
-		BGL::Point p = cut.a;
-		cut.a = cut.b;
-		cut.b = p;
+		Vector3d p(a);
+		a = b;
+		b = p;
 	}
 	return success;
 }
 
-std::ostream& mgl::operator<<(ostream& os, const Vector3d& v)
+std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3d& v)
 {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
@@ -230,15 +246,18 @@ void mgl::segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const T
 	{
 		index_t triangleIndex = trianglesForSlice[i];
 		const BGL::Triangle3d &t = allTriangles[triangleIndex];
-		const BGL::Point3d &vertex0 = t.vertex1;
-		const BGL::Point3d &vertex1 = t.vertex2;
-		const BGL::Point3d &vertex2 = t.vertex3;
 
-		Segment s;
-		bool cut = sliceTriangle(vertex0, vertex1, vertex2, z, s.a, s.b);
+		Triangle3 triangle(t);
+		Vector3d a,b;
+		bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
 		if(cut)
 		{
-			segments.push_back(s); // are you thread safe?
+			Segment s;
+			s.a.x = a.x;
+			s.a.y = a.y;
+			s.b.x = b.x;
+			s.b.y = b.y;
+			segments.push_back(s);
 		}
 	}
 }

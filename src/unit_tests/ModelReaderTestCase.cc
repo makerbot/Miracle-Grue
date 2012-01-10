@@ -125,7 +125,7 @@ void ModelReaderTestCase::testMeshySimple()
 
 	Triangle3d t;
 	t.vertex1 =Point3d(0,10,0);
-	t.vertex2 =Point3d(0,10,2.4);
+	t.vertex2 =Point3d(0,10,3.4);
 	t.vertex3 =Point3d(0,10,1);
 
 	cout << endl << endl;
@@ -151,30 +151,32 @@ void ModelReaderTestCase::testMeshySimple()
 
 
 	t.vertex1 =Point3d(0,10, 0);
-	t.vertex2 =Point3d(0,10, 2.6);
+	t.vertex2 =Point3d(0,10, 3.6);
 	t.vertex3 =Point3d(0,10, 1);
 
 	mesh.addTriangle(t);
 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
-	cout << "#$%^%" << endl;
+	//cout << "#$%^%" << endl;
 	const Limits &limits = mesh.readLimits();
 	double tol = 0.00001;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,  limits.xMin, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(10, limits.yMin, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,  limits.zMin, tol);
-	cout << "#$%^%" << endl;
+	//cout << "#$%^%" << endl;
 
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0,   limits.xMax, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(10,  limits.yMax, tol);
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(2.6, limits.zMax, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(3.6, limits.zMax, tol);
 }
 
 void ModelReaderTestCase::testLayerSplit()
 {
+	cout << endl;
+
 	Meshy mesh(0.35, 0.35);
 	unsigned int t0, t1;
 	t0 = clock();
-	//LoadMeshyFromStl(mesh, "inputs/Water.stl");
+
 	loadMeshyFromStl(mesh, "inputs/Water.stl");
 	t1=clock()-t0;
 	mesh.dump(cout);
@@ -220,7 +222,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	t1=clock()-t0;
 	mesh.dump(cout);
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)172, mesh.readSliceTable().size());
 
 	cout << "Land" << endl;
 	Meshy mesh2(0.35, 0.35);
@@ -229,7 +231,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	loadMeshyFromStl(mesh2, "inputs/Land.stl");
 	t1=clock()-t0;
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)175, mesh2.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh2.readSliceTable().size());
 	mesh2.dump(cout);
 }
 
@@ -282,27 +284,74 @@ BGL::Point rotateAroundPoint(const BGL::Point &center, Scalar angle, const BGL::
 	return r;
 }
 
+// openscad debugging
+string visibleCut(const Triangle3& t, const Vector3d &a, const Vector3d &b)
+{
+	stringstream out;
 
+	out << "polyhedron ( points   = [  [";
+	out << t[0].x << ", " << t[0].y << ", " << t[0].z << "], [";
+	out << t[1].x << ", " << t[1].y << ", " << t[1].z << "], [";
+	out << t[2].x << ", " << t[2].y << ", " << t[2].z << "] ], ";
+	out << "triangles = [  [0, 1, 2] ]); " << endl;
+    out << "tube(";
+    out << a.x << ", " << a.y << ", " << a.z << ", ";
+    out << b.x << ", " << b.y << ", " << b.z << ", ";
+    out << " diameter=1, faces=4, thickness_over_width=1";
+    out << ");";
+
+    return out.str();
+}
 
 void ModelReaderTestCase::testCutTriangle()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	BGL::Point3d vertex1(-1, 0, 0);
-	BGL::Point3d vertex2(1, 0, 0);
-	BGL::Point3d vertex3(0,0,1);
+	Vector3d v0(-1, 0, 0);
+	Vector3d v1(1, 0, 0);
+	Vector3d v2(0,0,1);
 
-	BGL::Point a,b;
+	Triangle3 t(v0,v1,v2);
+
+	Vector3d a,b;
 	bool cut;
 	Scalar z = 0.5;
-	cut = sliceTriangle(vertex1, vertex2, vertex3, z, a, b);
+	cut = t.cut( z, a, b);
 	cout << "Cutting at z="<< z<< ": a="<<a << " b=" << b << endl;
 
 	CPPUNIT_ASSERT(cut);
-	CPPUNIT_ASSERT_DOUBLES_EQUAL( -0.5, a.x, 0.00001 );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.0, a.y, 0.00001 );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.5, b.x, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( -0.5, b.x, 0.00001 );
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.0, b.y, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.5, a.x, 0.00001 );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.0, a.y, 0.00001 );
+
+//	  facet normal 2.621327e-01 7.901105e-01 -5.540864e-01
+//	    outer loop
+//	      vertex -1.556260e+01, 5.680465e+00, 2.200485e+01
+//	      vertex -1.832293e+01, 4.436024e+00, 1.892443e+01
+//	      vertex -1.800681e+01, 6.473042e+00, 2.197871e+01
+//	    endloop
+//	  endfacet
+
+	Vector3d v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
+	Vector3d v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
+	Vector3d v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
+	Triangle3 tb(v0b,v1b,v2b);
+
+
+
+	cout << "triangle B" << endl;
+	cout << tb[0] << endl;
+	cout << tb[1] << endl;
+	cout << tb[2] << endl;
+	z = 20.5;
+
+	cut = tb.cut( z, a, b);
+	cout << "Cutting at z="<< z<< ": a="<<a << " b=" << b << endl;
+	cout << endl << "VISICUT: " << endl << visibleCut(tb, a, b) << endl<<endl;
+	CPPUNIT_ASSERT(cut);
+
+
 }
 
 void ModelReaderTestCase::testRotate()
@@ -431,6 +480,19 @@ void ModelReaderTestCase::testMyStls()
 	batchProcess(firstLayerZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
 }
 
+void ModelReaderTestCase::testKnot()
+{
+	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	Scalar firstZ = 0.11;
+	Scalar layerH = 0.35;
+	Scalar layerW = 0.5833333;
+	Scalar tubeSpacing = 1.0;
+
+	std::string outDir = "test_cases/modelReaderTestCase/output";
+	std::vector<std::string> models;
+	models.push_back("inputs/3D_Knot.stl");
+	batchProcess(firstZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
+}
 
 void ModelReaderTestCase::testInputStls()
 {

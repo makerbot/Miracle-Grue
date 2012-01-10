@@ -231,8 +231,13 @@ void SlicerTestCase::testSlicyKnot()
 
 		if(triangle.cutDirection().magnitude() > tol)
 		{
+			Vector3d a,b;
+			triangle.cut(z, a,b);
 			Segment cut;
-			triangle.cut(z, cut);
+			cut.a.x = a.x;
+			cut.a.y = a.y;
+			cut.b.x = b.x;
+			cut.b.y = b.y;
 			cuts.push_back(cut);
 		}
 	}
