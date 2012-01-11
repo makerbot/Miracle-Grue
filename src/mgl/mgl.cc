@@ -305,25 +305,30 @@ void mgl::loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector<
 	vector<Segment>::iterator i = segments.begin(); 
 	while(i != segments.end())
 	{
-		// lets make a loop
+		// lets make a loop... we'll call it loop
 		loops.push_back(vector<Segment>());
-
-		// cout << "A new loop" << endl;
-
 		vector<Segment> &loop = loops[loops.size()-1];
 		
 		loop.push_back(*i);
+
 		i++;
 		hopIt++;
-
+		if(i == segments.end())
+		{
+			// this is sad ... a loop with a single segment
+			#ifdef STRONG_CHECKING
+			assert(0);
+			#endif
+			break;
+		}
 		bool thisLoopIsDone = false;
 		while(!thisLoopIsDone)
 		{
 			Scalar distance = *hopIt;
 			if(distance < tol) 
 			{
+				// cout << " "<< loop.size()<< " loopSegment " << i->a << ", " << i->b  << endl;
 				loop.push_back(*i);
-				// cout << " "<< loop.size()<< " Segment " << i->a << ", " << i->b  << endl;
 				i++;
 				hopIt ++;
 			}
@@ -337,7 +342,6 @@ void mgl::loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector<
 			}
 		}
 	}
-
 }
 
 void mgl::segmentology(	const std::vector<BGL::Triangle3d> &allTriangles,

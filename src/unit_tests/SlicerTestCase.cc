@@ -195,7 +195,7 @@ void SlicerTestCase::testCut()
 
 }
 
-void SlicerTestCase::testSlicyKnot()
+void SlicerTestCase::testSlicyKnot_44()
 {
 	cout << endl;
 	string modelFile = "inputs/3D_Knot.stl";

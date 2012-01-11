@@ -13,9 +13,10 @@
 #ifndef CORE_H_
 #define CORE_H_
 
+
 #include "BGL/BGLPoint.h"
 
-
+// #define STRONG_CHECKING
 
 namespace mgl
 {
@@ -41,6 +42,8 @@ public:
 
 	}
 };
+
+
 
 bool sameSame(double a, double b);
 

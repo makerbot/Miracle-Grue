@@ -28,6 +28,7 @@ using namespace Json;
 
 
 
+
 /// other global static values.
 static Value* GCoderOperationConfigRequirements;
 
@@ -55,7 +56,7 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 	bool doZ=false;
 	bool doFeed=false;
 
-	// cout << "ToolHead::g1" << endl;
+
 	if(this->x >= MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
 	{
 		doX = true;
@@ -106,6 +107,8 @@ void ToolHead::snort(std::ostream &ss, const Point2D &lineEnd)
 	ss << "M103" << endl;
 }
 
+
+
 //// writes an extruder reversal gcode snippet
 //void reverseExtrude(std::ostream &ss, double feedrate)
 //{
@@ -114,8 +117,11 @@ void ToolHead::snort(std::ostream &ss, const Point2D &lineEnd)
 //}
 void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double feed, const char *comment, bool doX, bool doY, bool doZ, bool doFeed)
 {
+
 	// not do something is not an option
-	assert(doX || doY || doZ || doFeed);
+	#ifdef STRONG_CHECKING
+		assert(doX || doY || doZ || doFeed);
+	#endif
 
 	ss << "G1";
 	if(doX) ss << " X" << x;
@@ -365,14 +371,14 @@ void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 
 	// - Start custom to GCoderOperation code
 
-	cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
+	//cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
 
 	stringstream ss;
 	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
 	gcoder.writeLayer(ss, pathData);
 	wrapAndEmit(ss);
 
-	cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
+	//cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
 
 	// - End custom to GCoderOperation code
 
@@ -467,14 +473,7 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 
 }
 
-//
-// Shouldn't z travel be guided by its own feed rate?
-//
 
-void GCoderOperation::writePaths(std::ostream& ss, int extruderId, double z, const ExtruderPaths &paths)
-{
-	gcoder.writePaths(ss,extruderId,z, paths);
-}
 
 void GCoder::writePaths(std::ostream& ss, int extruderId, double z, const ExtruderPaths &paths)
 {
@@ -517,64 +516,6 @@ void GCoder::writePaths(std::ostream& ss, int extruderId, double z, const Extrud
 
 /************** Start of Functions custom to GCoderOperation ***********************/
 
-void GCoderOperation::writeLayer(ostream& ss, const PathData& pathData)
-{
-	gcoder.writeLayer(ss,pathData);
-}
-
-void GCoderOperation::writeSwitchExtruder(ostream& ss, int extruderId) const
-{
-	gcoder.writeSwitchExtruder(ss, extruderId);
-}
-
-void GCoderOperation::writeWipeExtruder(ostream& ss, int extruderId) const
-{
-	gcoder.writeWipeExtruder(ss, extruderId);
-}
-
-
-void GCoderOperation::writeExtrudersInitialization(std::ostream &ss) const
-{
-	gcoder.writeExtrudersInitialization(ss);
-}
-
-void GCoderOperation::writePlatformInitialization(std::ostream &ss) const
-{
-	gcoder.writePlatformInitialization(ss);
-}
-
-void GCoderOperation::writeGCodeConfig(std::ostream &ss) const
-{
-	gcoder.writeGCodeConfig(ss);
-}
-
-void GCoderOperation::writeMachineInitialization(std::ostream &ss) const
-{
-	gcoder.writeMachineInitialization(ss);
-}
-
-
-void GCoderOperation::writeHomingSequence(std::ostream &ss) const
-{
-	gcoder.writeHomingSequence(ss);
-}
-
-void GCoderOperation::writeWarmupSequence(std::ostream &ss)
-{
-	gcoder.writeWarmupSequence(ss);
-}
-
-
-void GCoderOperation::writeGcodeEndOfFile(std::ostream &ss) const
-{
-	gcoder.writeGcodeEndOfFile(ss);
-}
-void GCoderOperation::writeAnchor(std::ostream &ss)
-{
-	gcoder.writeAnchor(ss);
-}
-
-
 void GCoderOperation::wrapAndEmit(const stringstream &ss)
 {
 	GCodeEnvelope* data = new GCodeEnvelope(ss.str().c_str());
@@ -591,7 +532,6 @@ void GCoder::writeLayer(ostream& ss, const PathData& pathData)
 	int extruderCount = pathData.paths.size();
 	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
 
-
 	int extruderId = 0;
 
 	cout << "Layer" << endl;
@@ -606,7 +546,6 @@ void GCoder::writeLayer(ostream& ss, const PathData& pathData)
 
 		const ExtruderPaths &paths = *extruderIt;
 		writePaths(ss, extruderId, z, paths);
-
 
 		if (pathData.paths.size() > 0)
 		{
