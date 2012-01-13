@@ -14,14 +14,14 @@
 using namespace std;
 
 PathData::PathData(double z)
-		:DataEnvelope(TYPE_PATH_BINARY), positionZ(z)
+		:positionZ(z)
 {
-	cout << "PathData() @"  << this<< endl;
+	//cout << "PathData() @"  << this<< endl;
 }
 
 PathData::~PathData()
 {
-	cout << "~PathData() @"  << this<< endl;
+	//cout << "~PathData() @"  << this<< endl;
 }
 
 

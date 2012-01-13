@@ -108,7 +108,7 @@ void GCoderTestCase::setUp()
 }
 
 
-void run_tool_chain(Configuration &config, vector<DataEnvelope*> &envelopes)
+void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
 {
 
 	BOOST_LOG_TRIVIAL(trace)<< "get Config static requirements:" <<__FUNCTION__ << endl;
@@ -147,9 +147,9 @@ void run_tool_chain(Configuration &config, vector<DataEnvelope*> &envelopes)
 	tooler.start();
 
 	///7) Send inital one or more data envelopes to the object.
-	for(std::vector<DataEnvelope*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
+	for(std::vector<PathData*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
 	{
-		DataEnvelope *envelope = *it;
+		PathData *envelope = *it;
 		BOOST_LOG_TRIVIAL(trace)<< "Accept Envelope @" << envelope <<" "<<__FUNCTION__ << endl;
 		tooler.accept(*envelope);
 	}
@@ -229,7 +229,7 @@ void GCoderTestCase::testSingleExtruder()
 	Json::StyledWriter w;
 	string confstr = w.write(config.root);
 	cout << confstr << endl;
-	vector<DataEnvelope*> datas;
+	vector<PathData*> datas;
 	run_tool_chain(config,datas );
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
@@ -252,7 +252,7 @@ void GCoderTestCase::testDualExtruders()
 	configureDualExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)2,config.extruders.size());
 	// create a simple Gcode operation (no paths), initialize it and run it
-	vector<DataEnvelope*> datas;
+	vector<PathData*> datas;
 	run_tool_chain(config, datas);
 
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
@@ -280,16 +280,16 @@ void GCoderTestCase::testSimplePath()
 	PathData *path = new PathData(0.2);
 	// add a simple rectangular path for the single extruder
 	initSimplePath(*path);
-	std::vector<DataEnvelope*> datas;
-	datas.push_back( (DataEnvelope*) path);
+	std::vector<PathData*> datas;
+	datas.push_back( (PathData*) path);
 	// instaniate a gcoder and send it the path as an envelope.
 	run_tool_chain(config, datas);
 
 	// cleanup the data
-	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	for(std::vector<PathData*>::iterator it = datas.begin(); it != datas.end(); it++)
 	{
-		DataEnvelope* data = *it;
-		data->release();
+		PathData* data = *it;
+		//data->release();
 	}
 
 	// verify that gcode file has been generated
@@ -458,15 +458,15 @@ void GCoderTestCase::testGridPath()
 
 	initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
 
-	vector<DataEnvelope*> datas;
-	datas.push_back((DataEnvelope*)path);
+	vector<PathData*> datas;
+	datas.push_back((PathData*)path);
 	run_tool_chain(config, datas);
 
 	// cleanup the data
-	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	for(std::vector<PathData*>::iterator it = datas.begin(); it != datas.end(); it++)
 	{
-		DataEnvelope* data = *it;
-		data->release();
+		PathData* data = *it;
+		//data->release();
 	}
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
@@ -491,7 +491,7 @@ void GCoderTestCase::testMultiGrid()
 	// load 1 extruder
 	configureSingleExtruder(config);
 
-	vector<DataEnvelope*> datas;
+	vector<PathData*> datas;
 	srand( time(NULL) );
 
 	int lineCount = 20;
@@ -510,16 +510,16 @@ void GCoderTestCase::testMultiGrid()
 			initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
 		else
 			initVerticalGridPath(*path, lowerX, lowerY, dx, dy, 20);
-		datas.push_back((DataEnvelope*)path);
+		datas.push_back((PathData*)path);
 		horizontal = !horizontal;
 	}
 	run_tool_chain(config, datas);
 
 	// cleanup the data
-	for(std::vector<DataEnvelope*>::iterator it = datas.begin(); it != datas.end(); it++)
+	for(std::vector<PathData*>::iterator it = datas.begin(); it != datas.end(); it++)
 	{
-		DataEnvelope* data = *it;
-		data->release();
+		PathData* data = *it;
+		//data->release();
 	}
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
@@ -609,7 +609,7 @@ void GCoderTestCase::testKnot()
 			scadFile.c_str(),
 			allTubes);
 
-	vector<DataEnvelope*> paths;
+	vector<PathData*> paths;
 	for (int i=0; i< allTubes.size(); i++)
 	{
 		// i is the slice index
@@ -637,10 +637,10 @@ void GCoderTestCase::testKnot()
 	run_tool_chain(config, paths);
 
 	// cleanup the data
-	for(std::vector<DataEnvelope*>::iterator it = paths.begin(); it != paths.end(); it++)
+	for(std::vector<PathData*>::iterator it = paths.begin(); it != paths.end(); it++)
 	{
-		DataEnvelope* path = *it;
-		path->release();
+		PathData* path = *it;
+		//path->release();
 	}
 
 

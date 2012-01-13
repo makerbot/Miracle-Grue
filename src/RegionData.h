@@ -28,7 +28,7 @@ struct Material
 struct Contour
 {
 	std::string materialName;
-	Polygon contour;
+	mgl::Polygon contour;
 	bool isHole; // true if the contour is a hole
 };
 

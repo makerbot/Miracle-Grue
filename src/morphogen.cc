@@ -75,31 +75,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 	return 0;
 }
 
-PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
-{
-	// paths R us
-	PathData *pathData = new PathData(z);
-	pathData->paths.push_back(ExtruderPaths());
 
-	ExtruderPaths& paths = pathData->paths[0];
-	size_t tubeCount = tubes.size();
-	for (int i=0; i< tubeCount; i++)
-	{
-		const Segment &segment = tubes[i];
-
-		cout << "SEGMENT " << i << "/" << tubeCount << endl;
-		paths.push_back(Polygon());
-		Polygon &poly = paths[paths.size()-1];
-
-		Point2D p0 (segment.a.x, segment.a.y);
-		Point2D p1 (segment.b.x, segment.b.y);
-
-		poly.push_back(p0);
-		poly.push_back(p1);
-
-	}
-	return pathData;
-}
 
 
 void addPathsForSlice(PathData &pathData, const TubesInSlice& tubesInSlice)
@@ -136,7 +112,6 @@ void addPathsForSlice(PathData &pathData, const TubesInSlice& tubesInSlice)
 	{
 		const Segment &segment = tubes[i];
 
-		cout << "SEGMENT " << i << "/" << tubeCount << endl;
 		paths.push_back(Polygon());
 		Polygon &poly = paths[paths.size()-1];
 
@@ -194,16 +169,15 @@ int main(int argc, char *argv[], char *envp[])
 	std::string gcodeFile = ".";
 	gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
 	gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".gcode" );
-//	config["FileWriterOperation"]["filename"] = gcodeFile;
-//	config["FileWriterOperation"]["format"]= ".gcode";
+
 	cout << endl << endl;
 	cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
-	// sliceAndScad(modelFile.c_str(), firstLayerZ, layerH, layerW, tubeSpacing, stlPrefix.c_str(), scadFile.c_str());
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
 	std::vector< TubesInSlice >  allTubes;
+	cout << "Slicing" << endl;
 	sliceAndPath(mesh,
 			config["slicer"]["layerW"].asDouble(),
 			config["slicer"]["tubeSpacing"].asDouble(),
@@ -213,7 +187,6 @@ int main(int argc, char *argv[], char *envp[])
 
 
 	vector<DataEnvelope*> paths;
-	//for(std::vector<DataEnvelope*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
 
 
 	GCoder gcoder = GCoder();
@@ -228,18 +201,8 @@ int main(int argc, char *argv[], char *envp[])
 	gcoder.writeWarmupSequence(gout);
 	gcoder.writeAnchor(gout);
 
-
-
-	GCoderOperation &tooler = *new GCoderOperation();
-	FileWriterOperation &fileWriter = *new FileWriterOperation();
-	vector<Operation*> empty;
-	vector<Operation*> toolerOutputs;
-	toolerOutputs.push_back(&fileWriter);
-	tooler.init(config,  toolerOutputs);
-	fileWriter.init(config, empty);
-	tooler.start();
-
-
+	cout << endl;
+	cout << "Writing gcode" << endl;
 	for (int i=0; i< allTubes.size(); i++)
 	{
 		// i is the slice index
@@ -252,6 +215,6 @@ int main(int argc, char *argv[], char *envp[])
 
 	gcoder.writeGcodeEndOfFile(gout);
 
-
+	cout << endl << "Done!" << endl;
 
 }

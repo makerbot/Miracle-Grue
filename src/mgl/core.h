@@ -291,6 +291,25 @@ public:
 
 };
 
+struct Point2D
+{
+	Point2D(Scalar x, Scalar y)
+		:x(x), y(y)
+	{}
+	Scalar x;
+	Scalar y;
+
+	bool sameSame(Point2D &p)const
+	{
+		Scalar dx = p.x - x;
+		Scalar dy = p.y -y;
+		return mgl::sameSame(0, dx*dx + dy*dy);
+	}
+};
+
+typedef std::vector<Point2D> Polygon;
+typedef std::vector<Polygon> ExtruderPaths;
+
 }
 
 #endif

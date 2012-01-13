@@ -361,6 +361,11 @@ void GCoderOperation::deinit()
  */
 void GCoderOperation::processEnvelope(const DataEnvelope& envelope)
 {
+	assert(0);
+}
+
+void GCoderOperation::accept(const PathData& envelope)
+{
 	/// we should be configured before ever doing this
 	assert(this->initalized == true);
 
@@ -537,7 +542,7 @@ void GCoder::writeLayer(ostream& ss, const PathData& pathData)
 	int extruderCount = paths.size();
 	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
 	int extruderId = 0;
-	cout << "Layer" << endl;
+
 	for(std::vector<ExtruderPaths>::const_iterator extruderIt = paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
 	{
 		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;

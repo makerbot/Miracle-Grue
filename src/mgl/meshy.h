@@ -302,7 +302,9 @@ public:
 
 size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 
-
+//
+// Pathology: the operation that generate tool paths from triangle cuts
+//
 void pathology( std::vector<std::vector<Segment> > &outlineSegments,
 				const Limits& limits,
 				double z,

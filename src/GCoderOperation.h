@@ -126,8 +126,8 @@ private:
 			bool doFeed);
 
 public:
-	void squirt(std::ostream &ss, const Point2D &lineStart, double extrusionSpeed);
-	void snort(std::ostream &ss,  const Point2D &lineEnd);
+	void squirt(std::ostream &ss, const mgl::Point2D &lineStart, double extrusionSpeed);
+	void snort(std::ostream &ss,  const mgl::Point2D &lineEnd);
 
 
 //	// emits a g1 command to the stream, all parameters are explicit
@@ -199,7 +199,7 @@ public:
     void writeAnchor(std::ostream &ss);
 
     void writeLayer(std::ostream &ss, const PathData& pathData);
-    void writePaths(std::ostream& ss, int extruderId, double z, const ExtruderPaths &paths); // paths for an extruder in a layer
+    void writePaths(std::ostream& ss, int extruderId, double z, const mgl::ExtruderPaths &paths); // paths for an extruder in a layer
 
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
@@ -238,7 +238,7 @@ public:
 	 * @param envelope reference to a DataEnvelope, or related subclass
 	 */
 	void processEnvelope(const DataEnvelope& envelope);
-
+	void accept(const PathData& envelope);
 	/**
 	 * This initalizes an operation with specific settings for processing this stream.
 	 * See details in implementation

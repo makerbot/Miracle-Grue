@@ -20,26 +20,9 @@
 
 #include "mgl/core.h"
 
-typedef double real;
 
-struct Point2D
-{
-	Point2D(real x, real y)
-		:x(x), y(y)
-	{}
-	real x;
-	real y;
 
-	bool sameSame(Point2D &p)const
-	{
-		real dx = p.x - x;
-		real dy = p.y -y;
-		return mgl::sameSame(0, dx*dx + dy*dy);
-	}
-};
 
-typedef std::vector<Point2D> Polygon;
-typedef std::vector<Polygon> ExtruderPaths;
 
 // for now, use cout, until we add Boost support
 #define BOOST_LOG_TRIVIAL(trace) std::cout
