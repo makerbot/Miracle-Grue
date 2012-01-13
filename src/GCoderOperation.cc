@@ -526,28 +526,31 @@ void GCoderOperation::wrapAndEmit(const stringstream &ss)
 
 void GCoder::writeLayer(ostream& ss, const PathData& pathData)
 {
+
 	GCoder &gcoder = *this;
+	double layerZ = pathData.positionZ;
+
 	// distance above mid layer position of extruzion
-	cout << endl << "GCoderOperation::writeLayer()" << endl;
-	int extruderCount = pathData.paths.size();
+	cout << ":";
+
+	const std::vector<ExtruderPaths> &paths = pathData.paths;
+	int extruderCount = paths.size();
 	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
-
 	int extruderId = 0;
-
 	cout << "Layer" << endl;
-	for(std::vector<ExtruderPaths>::const_iterator extruderIt = pathData.paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
+	for(std::vector<ExtruderPaths>::const_iterator extruderIt = paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
 	{
-		double z = pathData.positionZ + gcoder.extruders[extruderId].nozzleZ;
+		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
+		const ExtruderPaths &exPaths = *extruderIt;
 
-		if (pathData.paths.size() > 0)
+		if (extruderCount > 0)
 		{
 			writeSwitchExtruder(ss, extruderId);
 		}
 
-		const ExtruderPaths &paths = *extruderIt;
-		writePaths(ss, extruderId, z, paths);
+		writePaths(ss, extruderId, z, exPaths);
 
-		if (pathData.paths.size() > 0)
+		if (extruderCount > 0)
 		{
 			writeWipeExtruder(ss, extruderId);
 		}

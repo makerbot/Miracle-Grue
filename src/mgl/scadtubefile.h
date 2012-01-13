@@ -35,7 +35,9 @@ public:
 
 };
 
-
+//
+// OpenSCAD file generator http://www.openscad.org/
+//
 class ScadTubeFile
 {
 	std::ofstream out;

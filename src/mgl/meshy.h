@@ -99,7 +99,7 @@ public:
 
 
 //
-// Exception class
+// Exception class for meshy problems
 //
 class MeshyMess : public Except
 {
@@ -113,7 +113,7 @@ public:
 };
 
 // simple class that writes
-// a text file STL
+// a simple text file STL
 class StlWriter
 {
 
@@ -177,12 +177,12 @@ public:
 };
 
 
-
+// A Mesh class, but sort of messy
+// This one has triangles, and a slice table.
 class Meshy
 {
 
 	mgl::Limits limits;
-
 	std::vector<BGL::Triangle3d>  allTriangles;
 	SliceTable sliceTable;
 	LayerMeasure zTapeMeasure; // Ze tape measure, for Z
@@ -275,8 +275,6 @@ public:
 	}
 
 
-
-
 public:
 
 
@@ -299,21 +297,7 @@ public:
 
 };
 
-/*
-class Triangular
-{
-	Scalar botZ;
-	Scalar topZ;
-	Scalar midX, midY, midZ;
-	Scalar dxTop, dxYTop;
-	Scalar dxBot, dyBot;
 
-	bool midFirst;
-public:
-
-};
-
-*/
 
 
 size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
@@ -327,8 +311,11 @@ void pathology( std::vector<std::vector<Segment> > &outlineSegments,
 				std::vector<Segment> &tubes);
 
 
-
+// compile time enabled
+// Multi threaded stuff
+//
 #ifdef OMPFF
+// a lock class for multithreaded sync
 class OmpGuard {
 public:
     //Acquire the lock and store a pointer to it
@@ -358,12 +345,16 @@ private:
 };
 #endif
 
-struct TubesInSlice
+//
+// The Slice is a series of tubes
+//
+// tubes are plastic extrusions
+class TubesInSlice
 {
+public:
 	TubesInSlice(Scalar z)
 		:z(z)
 	{
-
 	}
 
 	Scalar z;
@@ -371,6 +362,9 @@ struct TubesInSlice
 	std::vector< std::vector<Segment> > outlines;
 };
 
+// little function that does everything...
+// loads an stl, makes slices, returns extrusions
+// and an OpenSCAD file for visualization
 void sliceAndPath(	Meshy &mesh,
 					double layerW,
 					double tubeSpacing,

@@ -39,6 +39,8 @@ class SlicerTestCase : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST( testSlicyKnot_44 );
     CPPUNIT_TEST( testNormals );
     CPPUNIT_TEST( testCut );
+    CPPUNIT_TEST( testInset );
+
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -49,10 +51,11 @@ protected:
 
   void testBootstrap();
   void testSlicySimple();
-  void testSlicyKnot();
+  void testSlicyKnot_44();
   void testNormals();
 
   void testCut();
+  void testInset();
 };
 
 

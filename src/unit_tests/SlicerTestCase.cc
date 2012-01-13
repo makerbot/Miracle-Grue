@@ -287,8 +287,6 @@ void slicyTest()
 		slicy.addTriangle(t);
 	}
 
-
-
 	cout << slicy << endl;
 
 	list<index_t> faces;
@@ -327,6 +325,65 @@ void slicyTest()
 
 }
 
+
+bool pointsSameSame(const Point &a, const Point &b)
+{
+	Scalar dx = a.x - b.x;
+	Scalar dy = a.y - b.y;
+
+	return sameSame(dx*dx + dy*dy,0);
+}
+
+void insetCorner(const Point &a, const Point &b, const Point &c,
+					Scalar insetDist,
+					Scalar facetsPerCircle,
+					std::vector<Point> &newCorner)
+{
+
+	Point delta1(b.x - a.x, b.y - a.y);
+	Point delta2(c.x - b.x, c.y - b.y);
+
+	Scalar d1 = sqrt(delta1.x * delta1.x + delta1.y * delta1.y);
+	Scalar d2 = sqrt(delta2.x * delta2.x + delta2.y * delta2.y);
+
+	assert(d1>0 && d2 > 0);
+
+	Point insetAB (delta1.y/d1 * insetDist, -delta1.x/d1 * insetDist);
+	Point insetA  (a.x + insetAB.x, a.y + insetAB.y);
+	Point insetBab(b.x + insetAB.x, b.y + insetAB.y);
+
+	Point insetBC (delta2.y/d2 * insetDist, -delta2.x/d2 * insetDist);
+	Point insetC  (c.x + insetBC.x, c.y + insetBC.y);
+	Point insetBbc(b.x + insetBC.x, b.y + insetBC.y);
+
+
+	if( pointsSameSame(insetBab, insetBbc) )
+	{
+		newCorner.push_back(insetBab);
+		return;
+	}
+	assert(0);
+}
+
+void SlicerTestCase::testInset()
+{
+
+	Scalar insetDist = 2.0;
+
+	CPPUNIT_ASSERT(1==0);
+
+	Point a(0,0);
+	Point b(10,0);
+	Point c(20,0);
+
+	std::vector<Point> results;
+	insetCorner(a,b,c,
+			insetDist,
+			12,
+			results);
+
+
+}
 
 
 

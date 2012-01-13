@@ -19,13 +19,15 @@
 namespace mgl // Miracle-Grue's geometry library
 {
 
-class Face // it's a triangle, really
+// it's a triangle, really
+class Face
 {
 public:
 	index_t edgeIndices[3];
 	index_t vertexIndices[3];
 };
 
+// 3 edges in a Face
 class Edge // it's a line.
 {
 public:
@@ -113,6 +115,7 @@ std::ostream& operator<<(ostream& os, const Edge& e)
 	return os;
 }
 
+// A point
 class Vertex
 {
 
