@@ -8,7 +8,6 @@
 #include "../Configuration.h"
 #include "../GCoderOperation.h"
 #include "../FileWriterOperation.h"
-
 #include "../PathData.h"
 #include "../GCodeEnvelope.h"
 
@@ -529,7 +528,9 @@ void GCoderTestCase::testMultiGrid()
 PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 {
 	// paths R us
-	PathData *pathData = new PathData(z);
+	PathData *pathData;
+	pathData = new PathData(z);
+
 	pathData->paths.push_back(ExtruderPaths());
 	ExtruderPaths& paths = pathData->paths[0];
 	size_t tubeCount = tubes.size();

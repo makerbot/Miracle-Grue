@@ -15,7 +15,7 @@
 
 #include <vector>
 
-//#include "DataEnvelope.h"
+#include "DataEnvelope.h"
 
 #include "mgl/core.h"
 
@@ -23,14 +23,10 @@
 // The Path data is a dictionary of polygons
 // there are multiple polygons for each extruders
 // There is one PathData per slice
-class PathData // :public DataEnvelope {
+class PathData : public DataEnvelope, public mgl::SliceData
 {
 public:
 	PathData (double z);
-	virtual ~PathData();
-
-	std::vector<mgl::ExtruderPaths> paths; // each extruder has paths
-	double positionZ;
 
 };
 

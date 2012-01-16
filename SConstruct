@@ -88,26 +88,25 @@ print "QT modules", qtModules
 env.EnableQt4Modules(qtModules)
 
 
-bgl_cc =  ['src/BGL/BGLAffine.cc',
-    'src/BGL/BGLBounds.cc',
-    'src/BGL/BGLCommon.cc',
-    'src/BGL/BGLCompoundRegion.cc',
-    'src/BGL/BGLIntersection.cc',
-    'src/BGL/BGLLine.cc',
-    'src/BGL/BGLMesh3d.cc',
-    'src/BGL/BGLPath.cc',
-    'src/BGL/BGLPoint.cc',
-    'src/BGL/BGLPoint3d.cc',
-    'src/BGL/BGLSimpleRegion.cc',
-    'src/BGL/BGLTriangle3d.cc',
-    'src/BGL/BGLSVG.cc']
+#bgl_cc =  ['src/BGL/BGLAffine.cc',
+#    'src/BGL/BGLBounds.cc',
+#    'src/BGL/BGLCommon.cc',
+#    'src/BGL/BGLCompoundRegion.cc',
+#    'src/BGL/BGLIntersection.cc',
+#    'src/BGL/BGLLine.cc',
+#    'src/BGL/BGLMesh3d.cc',
+#    'src/BGL/BGLPath.cc',
+#    'src/BGL/BGLPoint.cc',
+#    'src/BGL/BGLPoint3d.cc',
+#    'src/BGL/BGLSimpleRegion.cc',
+#    'src/BGL/BGLTriangle3d.cc',
+#    'src/BGL/BGLSVG.cc']
+#env.Library('./bin/lib/bgl', bgl_cc  )
 
-mgl_cc = ['src/mgl/mgl.cc']# + bgl_cc
 
+mgl_cc = ['src/mgl/mgl.cc']
 env.Library('./bin/lib/mgl', mgl_cc)
 
-
-#env.Library('./bin/lib/bgl', bgl_cc  )
 
 
 env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
@@ -225,7 +224,7 @@ if run_unit_tests == True:
 
 
 env.Program(  	'./bin/tests/regionerUnitTest',   
-				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test, regioner), 
+				mix(['src/unit_tests/RegionerTestCase.cc'], pather, unit_test, regioner), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])

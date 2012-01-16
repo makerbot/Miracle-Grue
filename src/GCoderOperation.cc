@@ -379,7 +379,9 @@ void GCoderOperation::accept(const PathData& envelope)
 	//cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
 
 	stringstream ss;
-	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
+// 	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
+	const SliceData &pathData = *(dynamic_cast<const SliceData* > (&envelope) );
+
 	gcoder.writeLayer(ss, pathData);
 	wrapAndEmit(ss);
 
@@ -529,20 +531,21 @@ void GCoderOperation::wrapAndEmit(const stringstream &ss)
 }
 
 
-void GCoder::writeLayer(ostream& ss, const PathData& pathData)
+void GCoder::writeLayer(ostream& ss, const SliceData& sliceData)
 {
 
 	GCoder &gcoder = *this;
-	double layerZ = pathData.positionZ;
+	double layerZ = sliceData.positionZ;
 
 	// distance above mid layer position of extruzion
 
-	const std::vector<ExtruderPaths> &paths = pathData.paths;
+	const std::vector<ExtruderPaths> &paths = sliceData.paths;
 	int extruderCount = paths.size();
 	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
 	int extruderId = 0;
 
-	for(std::vector<ExtruderPaths>::const_iterator extruderIt = paths.begin(); extruderIt != pathData.paths.end(); extruderIt++)
+	for(std::vector<ExtruderPaths>::const_iterator extruderIt = paths.begin();
+			extruderIt != sliceData.paths.end(); extruderIt++)
 	{
 		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
 		const ExtruderPaths &exPaths = *extruderIt;

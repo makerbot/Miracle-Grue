@@ -15,7 +15,7 @@ using namespace mgl;
 using namespace std;
 
 
-bool mgl::sameSame(double a, double b)
+bool mgl::sameSame(Scalar a, Scalar b)
 {
 	return (a-b) * (a-b) < 0.00000001;
 }

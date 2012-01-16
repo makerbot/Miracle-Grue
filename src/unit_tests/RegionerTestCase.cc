@@ -8,6 +8,7 @@
 
 #include "mgl/abstractable.h"
 
+#include "../PathData.h"
 #include "../Configuration.h"
 #include "../RegionerOperation.h"
 
@@ -63,7 +64,7 @@ void RegionerTestCase::example()
 	cout << endl <<__FUNCTION__ << endl;
 
 	RegionerOperation operation;
-	SliceData *inputData = new SliceData(0.2, 0.4);
+	PathData *inputData = new PathData(0.2);
 	RegionData *outputData = new RegionData(0.2, 0.4);
 
 //  CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );

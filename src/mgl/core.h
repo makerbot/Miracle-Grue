@@ -14,7 +14,7 @@
 #define CORE_H_
 
 #include <cmath>
-#include "BGL/config.h"
+#include <vector>
 
 
 // #define STRONG_CHECKING
@@ -22,10 +22,14 @@
 namespace mgl
 {
 
+//
+// Our basic numerical type. double for now;
+//
+typedef double Scalar;
 
-// true if two floating point values are approximally the same,
+// true if two Scalar values are approximally the same,
 // using a hard coded tolerance
-bool sameSame(double a, double b);
+bool sameSame(Scalar a, Scalar b);
 
 typedef unsigned int index_t;
 typedef std::vector<index_t> TriangleIndices;
@@ -347,6 +351,25 @@ public:
 
 typedef std::vector<Vector2> Polygon;
 typedef std::vector<Polygon> ExtruderPaths;
+
+//
+// The Slice data is contains polygons
+// for each extruder, for a slice.
+// there are multiple polygons for each extruders
+class SliceData
+{
+public:
+	std::vector<mgl::ExtruderPaths> paths; // each extruder has paths
+	double positionZ;
+
+	SliceData (double z)
+		:positionZ(z)
+	{
+
+	}
+
+
+};
 
 }
 

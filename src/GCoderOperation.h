@@ -1,4 +1,4 @@
-/**
+/*
    MiracleGrue - Model Generator for toolpathing. <http://www.grue.makerbot.com>
    Copyright (C) 2011 Far McKon <Far@makerbot.com>, Hugo Boyer (hugo@makerbot.com)
 
@@ -8,6 +8,7 @@
    License, or (at your option) any later version.
 
 */
+
 #ifndef GCODE_OPERATION_H_
 #define GCODE_OPERATION_H_
 
@@ -18,9 +19,10 @@
 #include <assert.h>
 #include <sstream>
 
+#include "mgl/core.h"
+
 #include "Operation.h"
 #include "PathData.h"
-
 #include "GCodeEnvelope.h"
 
 
@@ -198,7 +200,7 @@ public:
     void writeWarmupSequence(std::ostream &ss);
     void writeAnchor(std::ostream &ss);
 
-    void writeLayer(std::ostream &ss, const PathData& pathData);
+    void writeLayer(std::ostream &ss, const mgl::SliceData& pathData);
     void writePaths(std::ostream& ss, int extruderId, double z, const mgl::ExtruderPaths &paths); // paths for an extruder in a layer
 
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;

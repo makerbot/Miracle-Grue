@@ -78,10 +78,10 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 
 
-void addPathsForSlice(PathData &pathData, const TubesInSlice& tubesInSlice)
+void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice)
 {
-	pathData.paths.push_back(ExtruderPaths());
-	ExtruderPaths& paths = pathData.paths[0];
+	sliceData.paths.push_back(ExtruderPaths());
+	ExtruderPaths& paths = sliceData.paths[0];
 
 	// outline loops
 	for(int i=0; i < tubesInSlice.outlines.size(); i++)
@@ -214,7 +214,7 @@ int main(int argc, char *argv[], char *envp[])
 		cout.flush();
 		// i is the slice index
 		TubesInSlice &tubesInSlice = allTubes[i];
-		PathData data(tubesInSlice.z);
+		SliceData data(tubesInSlice.z);
 		addPathsForSlice(data, tubesInSlice);
 		// paths.push_back(data);
 		gcoder.writeLayer(gout, data);
