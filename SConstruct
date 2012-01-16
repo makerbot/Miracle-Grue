@@ -30,6 +30,12 @@ if ( GetOption('valgrind') != None):
 	run_valgrind = True;
 
 
+def runThisTest(program, run_unit_tests):
+	if run_unit_tests:
+		#print('runThisTest', program[0].path )
+		sts,text = commands.getstatusoutput(program[0].path)
+		print(text)
+	
 
 def runUnitTest(env,target,source):
 	""" runs a unit test in a separate process. Not build-aware,
@@ -37,6 +43,8 @@ def runUnitTest(env,target,source):
 	@target dummy target file, writes 'passed' if tests return no error code
 	@source  unit test program to run """
 	import subprocess
+	
+	
 	app = str(source[0].abspath)
 	retCode = subprocess.call(app)
 	if not retCode == 0:
@@ -155,45 +163,39 @@ mand_ops = ['src/Configuration.cc',
 #				CPPPATH= ['..'])
 
 
-env.Program( 	'./bin/tests/slicerUnitTest', 
+p = env.Program( 	'./bin/tests/slicerUnitTest', 
 				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, config, slicer), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
-
-if run_unit_tests == True:
-	Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
+runThisTest(p, run_unit_tests)
+	#Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
 	
-env.Program(  	'./bin/tests/modelReaderUnitTest',   
+p = env.Program(  	'./bin/tests/modelReaderUnitTest',   
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, config), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
-
-if run_unit_tests == True:
-	Command('modelReaderUnitTest.passed','./bin/tests/modelReaderUnitTest',runUnitTest)
+runThisTest(p, run_unit_tests)
 
 
-
-env.Program('./bin/tests/exampleOpUnitTest',
+p = env.Program('./bin/tests/exampleOpUnitTest',
 				mix(['src/unit_tests/ExampleOpTestCase.cc'],
 					file_w, config, unit_test, example_op),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
+runThisTest(p, run_unit_tests)
 
-if run_unit_tests == True:
-	Command('exampleOpUnitTest.passed','./bin/tests/exampleOpUnitTest',runUnitTest)
 
 		
-env.Program(	'./bin/tests/fileWriterUnitTest',
+p = env.Program(	'./bin/tests/fileWriterUnitTest',
 				mix(['src/unit_tests/FileWriterTestCase.cc'],
 					file_w, config, unit_test),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
-if run_unit_tests == True:
-	Command('fileWriterUnitTest.passed','./bin/tests/fileWriterUnitTest',runUnitTest)
+runThisTest(p, run_unit_tests)
 
 #env.Program(	'./bin/tests/queryInterfaceUnitTest',
 #				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
@@ -203,46 +205,39 @@ if run_unit_tests == True:
 #				CPPPATH = default_includes)
 		
 	
-env.Program(	'./bin/tests/configUnitTest',
+p = env.Program(	'./bin/tests/configUnitTest',
 				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path , 
 				CPPPATH = default_includes)
-
-if run_unit_tests == True:
-	Command('configUnitTest.passed','./bin/tests/configUnitTest',runUnitTest)
-
-
+runThisTest(p, run_unit_tests)
+	
 			
-env.Program( 	'./bin/tests/gcoderUnitTest', 
+p = env.Program( 	'./bin/tests/gcoderUnitTest', 
 				mix(['src/unit_tests/GCoderTestCase.cc', 'src/mgl/mgl.cc'], unit_test, pather, gcoder, file_w), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= default_includes)
-if run_unit_tests == True:
-	Command('gcoderUnitTest.passed','./bin/tests/gcoderUnitTest',runUnitTest)
-
-
-env.Program(  	'./bin/tests/regionerUnitTest',   
+runThisTest(p, run_unit_tests)
+	
+	
+p = env.Program(  	'./bin/tests/regionerUnitTest',   
 				mix(['src/unit_tests/RegionerTestCase.cc'], pather, unit_test, regioner), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 
-if run_unit_tests == True:
-	Command('regionerUnitTest.passed','./bin/tests/regionerUnitTest',runUnitTest)
+runThisTest(p, run_unit_tests)
 
-
-env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
+p = env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
 				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
     			LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= [".."])
 
-if run_unit_tests == True:
-	Command('chainIntegrationUnitTest.passed','./bin/tests/chainIntegrationUnitTest',runUnitTest)
-
-env.Program('./bin/miracle_grue', 
+runThisTest(p, run_unit_tests)
+	
+p = env.Program('./bin/miracle_grue', 
 		mix(['src/morphogen.cc'], config, gcoder, file_w ),
 		LIBS = default_libs + debug_libs,
 		LIBPATH = default_libs_path,
