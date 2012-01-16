@@ -171,10 +171,10 @@ void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
 
 void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double dy)
 {
-	Point2D p0(lower_x, lower_y);
-	Point2D p1(p0.x, p0.y + dy);
-	Point2D p2(p1.x + dx, p1.y);
-	Point2D p3(p2.x, p2.y - dy);
+	Vector2 p0(lower_x, lower_y);
+	Vector2 p1(p0.x, p0.y + dy);
+	Vector2 p2(p1.x + dx, p1.y);
+	Vector2 p3(p2.x, p2.y - dy);
 
 	poly.push_back(p0);
 	poly.push_back(p1);
@@ -389,8 +389,8 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 		Polygon &poly = d.paths[0][index];
 
 		double y = lowerY + i * dy / lineCount;
-		Point2D p0 (lowerX, y);
-		Point2D p1 (p0.x + dx, y );
+		Vector2 p0 (lowerX, y);
+		Vector2 p1 (p0.x + dx, y );
 		if(!flip)
 		{
 			poly.push_back(p0);
@@ -418,8 +418,8 @@ void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, 
 		Polygon &poly = d.paths[0][index];
 
 		double x = lowerX + i * dx / lineCount;
-		Point2D p0 (x, lowerY);
-		Point2D p1 (x, lowerY + dy );
+		Vector2 p0 (x, lowerY);
+		Vector2 p1 (x, lowerY + dy );
 		if(!flip)
 		{
 			poly.push_back(p0);
@@ -541,8 +541,8 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 		paths.push_back(Polygon());
 		Polygon &poly = paths[paths.size()-1];
 
-		Point2D p0 (segment.a.x, segment.a.y);
-		Point2D p1 (segment.b.x, segment.b.y);
+		Vector2 p0 (segment.a.x, segment.a.y);
+		Vector2 p1 (segment.b.x, segment.b.y);
 
 		poly.push_back(p0);
 		poly.push_back(p1);

@@ -126,8 +126,8 @@ private:
 			bool doFeed);
 
 public:
-	void squirt(std::ostream &ss, const mgl::Point2D &lineStart, double extrusionSpeed);
-	void snort(std::ostream &ss,  const mgl::Point2D &lineEnd);
+	void squirt(std::ostream &ss, const mgl::Vector2 &lineStart, double extrusionSpeed);
+	void snort(std::ostream &ss,  const mgl::Vector2 &lineEnd);
 
 
 //	// emits a g1 command to the stream, all parameters are explicit

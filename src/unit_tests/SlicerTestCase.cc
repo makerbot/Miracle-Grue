@@ -17,13 +17,6 @@
 #include "../Configuration.h"
 #include "../ModelFileReaderOperation.h"
 
-//#include "../SliceOperation.h"
-
-#include "../BGL/BGLPoint.h"
-#include "../BGL/BGLMesh3d.h"
-
-
-#include "mgl/limits.h"
 #include "mgl/meshy.h"
 #include "mgl/slicy.h"
 
@@ -32,7 +25,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( SlicerTestCase );
 
 using namespace std;
-using namespace BGL;
 using namespace mgl;
 
 
@@ -77,14 +69,14 @@ void SlicerTestCase::testNormals()
 //	  endfacet
 
 
-	Vector3d v0(1.737416e+01, -4.841539e-01, 3.165644e+01);
-	Vector3d v1(1.576195e+01, 1.465057e-01, 2.895734e+01);
-	Vector3d v2(1.652539e+01, 9.044915e-01, 2.966791e+01);
+	Vector3 v0(1.737416e+01, -4.841539e-01, 3.165644e+01);
+	Vector3 v1(1.576195e+01, 1.465057e-01, 2.895734e+01);
+	Vector3 v2(1.652539e+01, 9.044915e-01, 2.966791e+01);
 
-	Vector3d a = v1 - v0;
-	Vector3d b = v2 - v0;
+	Vector3 a = v1 - v0;
+	Vector3 b = v2 - v0;
 
-	Vector3d n = a.crossProduct(b);
+	Vector3 n = a.crossProduct(b);
 	n.normalise();
 	cout << "Facet normal " << n << endl;
 
@@ -102,13 +94,13 @@ void SlicerTestCase::testNormals()
 void SlicerTestCase::testSlicySimple()
 {
 
-	Point3d p0(0,0,0);
-	Point3d p1(0,1,0);
-	Point3d p2(1,1,0);
-	Point3d p3(1,0,0);
+	Vector3 p0(0,0,0);
+	Vector3 p1(0,1,0);
+	Vector3 p2(1,1,0);
+	Vector3 p3(1,0,0);
 
-	Triangle3d t0(p0, p1, p2);
-	Triangle3d t1(p0, p2, p3);
+	Triangle3 t0(p0, p1, p2);
+	Triangle3 t1(p0, p2, p3);
 
 	Slicy sy(0.001);
 
@@ -156,37 +148,37 @@ void SlicerTestCase::testCut()
 	//	      vertex 1.652539e+01 9.044915e-01 2.966791e+01
 	//	    endloop
 	//	  endfacet
-	Triangle3 triangle(Vector3d(1.737416e+01, -4.841539e-01, 3.165644e+01), Vector3d(1.576195e+01, 1.465057e-01, 2.895734e+01), Vector3d(1.652539e+01, 9.044915e-01, 2.966791e+01));
+	Triangle3 triangle(Vector3(1.737416e+01, -4.841539e-01, 3.165644e+01), Vector3(1.576195e+01, 1.465057e-01, 2.895734e+01), Vector3(1.652539e+01, 9.044915e-01, 2.966791e+01));
 
 
-	Vector3d cut = triangle.cutDirection();
+	Vector3 cut = triangle.cutDirection();
 
 	cout <<  "Cut:  "<< cut << endl;
 	// the direction should be on a cpnstant z plane (on a slice)
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut[2], tol );
 
-	// degenerate cases:  a flat triangle, a line and a point
+	// degenerate cases:  a flat triangle, a line and a Point2
 
-	Triangle3 triangleFlat(Vector3d(1.737416e+01, -4.841539e-01, 0), Vector3d(1.576195e+01, 1.465057e-01, 0), Vector3d(1.652539e+01, 9.044915e-01, 0));
+	Triangle3 triangleFlat(Vector3(1.737416e+01, -4.841539e-01, 0), Vector3(1.576195e+01, 1.465057e-01, 0), Vector3(1.652539e+01, 9.044915e-01, 0));
 	cut = triangleFlat.cutDirection();
 
 	// a flat triangle has no direction.
 	cout <<  "Flat Cut:  "<< cut << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
 
-	Triangle3 line(Vector3d(0, 0, 0), Vector3d(1,1,1), Vector3d(3,3,3));
+	Triangle3 line(Vector3(0, 0, 0), Vector3(1,1,1), Vector3(3,3,3));
 	cut = line.cutDirection();
 	cout <<  "Line Cut:  "<< cut << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
 
-	Triangle3 point(Vector3d(10, 10, 10), Vector3d(10,10,10), Vector3d(10,10,10));
+	Triangle3 Point2(Vector3(10, 10, 10), Vector3(10,10,10), Vector3(10,10,10));
 	cut = line.cutDirection();
-	cout <<  "Point Cut:  "<< cut << endl;
+	cout <<  "Point2 Cut:  "<< cut << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
 
 
-	// sorting the 3 points
-	Vector3d a, b, c;
+	// sorting the 3 Point2s
+	Vector3 a, b, c;
 	triangle.zSort(a,b,c);
 	// a=v1, b=v2, c=v0
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.576195e+01, a[0], tol);
@@ -209,7 +201,7 @@ void SlicerTestCase::testSlicyKnot_44()
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	int layerCount = sliceTable.size();
 	cout  << "Slice count: "<< layerCount << endl;
-	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	cout << "Faces: " << allTriangles.size() << endl;
 	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
 
@@ -226,12 +218,12 @@ void SlicerTestCase::testSlicyKnot_44()
 	for (int i=0; i < triangleCount; i++)
 	{
 		unsigned int triangleIndex = trianglesInSlice[i];
-		const Triangle3d& t = allTriangles[triangleIndex];
-		Triangle3 triangle( Vector3d(t.vertex1.x,t.vertex1.y,t.vertex1.z ), Vector3d(t.vertex2.x,t.vertex2.y,t.vertex2.z ), Vector3d(t.vertex3.x,t.vertex3.y,t.vertex3.z ));
+		const Triangle3& t = allTriangles[triangleIndex];
+		Triangle3 triangle( Vector3(t[0].x,t[0].y,t[0].z ), Vector3(t[1].x,t[1].y,t[1].z ), Vector3(t[2].x,t[2].y,t[2].z ));
 
 		if(triangle.cutDirection().magnitude() > tol)
 		{
-			Vector3d a,b;
+			Vector3 a,b;
 			triangle.cut(z, a,b);
 			Segment cut;
 			cut.a.x = a.x;
@@ -267,7 +259,7 @@ void slicyTest()
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	int layerCount = sliceTable.size();
 	cout  << "Slice count: "<< layerCount << endl;
-	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	cout << "Faces: " << allTriangles.size() << endl;
 	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
 
@@ -283,7 +275,7 @@ void slicyTest()
 	for (int i=0; i < triangleCount; i++)
 	{
 		unsigned int triangleIndex = trianglesInSlice[i];
-		const Triangle3d& t = allTriangles[triangleIndex];
+		const Triangle3& t = allTriangles[triangleIndex];
 		slicy.addTriangle(t);
 	}
 
@@ -326,7 +318,7 @@ void slicyTest()
 }
 
 
-bool pointsSameSame(const Point &a, const Point &b)
+bool Point2sSameSame(const Vector2 &a, const Vector2 &b)
 {
 	Scalar dx = a.x - b.x;
 	Scalar dy = a.y - b.y;
@@ -334,30 +326,30 @@ bool pointsSameSame(const Point &a, const Point &b)
 	return sameSame(dx*dx + dy*dy,0);
 }
 
-void insetCorner(const Point &a, const Point &b, const Point &c,
+void insetCorner(const Vector2 &a, const Vector2 &b, const Vector2 &c,
 					Scalar insetDist,
 					Scalar facetsPerCircle,
-					std::vector<Point> &newCorner)
+					std::vector<Vector2> &newCorner)
 {
 
-	Point delta1(b.x - a.x, b.y - a.y);
-	Point delta2(c.x - b.x, c.y - b.y);
+	Vector2 delta1(b.x - a.x, b.y - a.y);
+	Vector2 delta2(c.x - b.x, c.y - b.y);
 
 	Scalar d1 = sqrt(delta1.x * delta1.x + delta1.y * delta1.y);
 	Scalar d2 = sqrt(delta2.x * delta2.x + delta2.y * delta2.y);
 
 	assert(d1>0 && d2 > 0);
 
-	Point insetAB (delta1.y/d1 * insetDist, -delta1.x/d1 * insetDist);
-	Point insetA  (a.x + insetAB.x, a.y + insetAB.y);
-	Point insetBab(b.x + insetAB.x, b.y + insetAB.y);
+	Vector2 insetAB (delta1.y/d1 * insetDist, -delta1.x/d1 * insetDist);
+	Vector2 insetA  (a.x + insetAB.x, a.y + insetAB.y);
+	Vector2 insetBab(b.x + insetAB.x, b.y + insetAB.y);
 
-	Point insetBC (delta2.y/d2 * insetDist, -delta2.x/d2 * insetDist);
-	Point insetC  (c.x + insetBC.x, c.y + insetBC.y);
-	Point insetBbc(b.x + insetBC.x, b.y + insetBC.y);
+	Vector2 insetBC (delta2.y/d2 * insetDist, -delta2.x/d2 * insetDist);
+	Vector2 insetC  (c.x + insetBC.x, c.y + insetBC.y);
+	Vector2 insetBbc(b.x + insetBC.x, b.y + insetBC.y);
 
 
-	if( pointsSameSame(insetBab, insetBbc) )
+	if( Point2sSameSame(insetBab, insetBbc) )
 	{
 		newCorner.push_back(insetBab);
 		return;
@@ -372,11 +364,11 @@ void SlicerTestCase::testInset()
 
 	CPPUNIT_ASSERT(1==0);
 
-	Point a(0,0);
-	Point b(10,0);
-	Point c(20,0);
+	Vector2 a(0,0);
+	Vector2 b(10,0);
+	Vector2 c(20,0);
 
-	std::vector<Point> results;
+	std::vector<Vector2> results;
 	insetCorner(a,b,c,
 			insetDist,
 			12,

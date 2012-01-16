@@ -86,7 +86,7 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 	g1Motion(ss, x,y,z,feed,comment,doX,doY,doZ,doFeed);
 }
 
-void ToolHead::squirt(std::ostream &ss, const Point2D &lineStart, double extrusionSpeed)
+void ToolHead::squirt(std::ostream &ss, const Vector2 &lineStart, double extrusionSpeed)
 {
 	//ss << "M108 R" << this->fastExtrusionSpeed << endl;
 	//ss << "M101 (squirt)" << endl;
@@ -98,7 +98,7 @@ void ToolHead::squirt(std::ostream &ss, const Point2D &lineStart, double extrusi
 	ss << "M108 R" << extrusionSpeed << " (good to go)" << endl;
 }
 
-void ToolHead::snort(std::ostream &ss, const Point2D &lineEnd)
+void ToolHead::snort(std::ostream &ss, const Vector2 &lineEnd)
 {
 	double reversalFeedRate = this->fastFeedRate;
 	ss << "M108 R" << this->reversalExtrusionSpeed << "  (snort)" << endl;
@@ -443,12 +443,12 @@ void GCoderOperation::finish(){
 
 
 
-Point2D unitVector(const Point2D& a, const Point2D& b)
+Vector2 unitVector(const Vector2& a, const Vector2& b)
 {
 	double dx = b.x - a.x;
 	double dy = b.y - a.y;
 	double length = sqrt(dx *dx + dy * dy);
-	Point2D r(dx/length , dy/length);
+	Vector2 r(dx/length , dy/length);
 	return r;
 }
 
@@ -457,19 +457,19 @@ Point2D unitVector(const Point2D& a, const Point2D& b)
 // These positions are aligned with the fisrt line and last line of the polygon.
 // LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
 // LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
-void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut, Point2D &start, Point2D &end)
+void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut, Vector2 &start, Vector2 &end)
 {
 	size_t count =  polygon.size();
 	assert(count >= 2);
 
-	const Point2D &a = polygon[0];	// first element
-	const Point2D &b = polygon[1];
+	const Vector2 &a = polygon[0];	// first element
+	const Vector2 &b = polygon[1];
 
-	const Point2D &c = polygon[count-2];
-	const Point2D &d = polygon[count-1]; // last element
+	const Vector2 &c = polygon[count-2];
+	const Vector2 &d = polygon[count-1]; // last element
 
-	Point2D ab = unitVector(a,b);
-	Point2D cd = unitVector(c,d);
+	Vector2 ab = unitVector(a,b);
+	Vector2 cd = unitVector(c,d);
 
 	start.x = a.x - ab.x * leadIn;
 	start.y = a.y - ab.y * leadIn;
@@ -500,7 +500,7 @@ void GCoder::writePaths(std::ostream& ss, int extruderId, double z, const Extrud
 		const Polygon &polygon = *pathIt;
 		ss << "(  path " << path_counter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
 
-		Point2D start(0,0), stop(0,0);
+		Vector2 start(0,0), stop(0,0);
 		polygonLeadInAndLeadOut(polygon, leadIn, leadOut, start, stop);
 
 		gcoder.extruders[extruderId].g1(ss, start.x, start.y, z, gcoder.extruders[extruderId].fastFeedRate);
@@ -509,7 +509,7 @@ void GCoder::writePaths(std::ostream& ss, int extruderId, double z, const Extrud
 		//ss << "(!START)" << endl;
 		for(int i=1; i < polygon.size(); i++)
 		{
-			const Point2D &p = polygon[i];
+			const Vector2 &p = polygon[i];
 			gcoder.extruders[extruderId].g1(ss, p.x, p.y, z, pathFeedrate);
 		}
 		//ss << "(STOP!)" << endl;
@@ -536,7 +536,6 @@ void GCoder::writeLayer(ostream& ss, const PathData& pathData)
 	double layerZ = pathData.positionZ;
 
 	// distance above mid layer position of extruzion
-	cout << ":";
 
 	const std::vector<ExtruderPaths> &paths = pathData.paths;
 	int extruderCount = paths.size();

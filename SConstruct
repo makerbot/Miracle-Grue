@@ -102,7 +102,7 @@ bgl_cc =  ['src/BGL/BGLAffine.cc',
     'src/BGL/BGLTriangle3d.cc',
     'src/BGL/BGLSVG.cc']
 
-mgl_cc = ['src/mgl/mgl.cc'] + bgl_cc
+mgl_cc = ['src/mgl/mgl.cc']# + bgl_cc
 
 env.Library('./bin/lib/mgl', mgl_cc)
 
@@ -128,7 +128,7 @@ file_r      = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/M
 example_op  = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
-default_libs = [ '_json','miracleGrue', 'bgl', 'mgl']
+default_libs = [ '_json','miracleGrue', 'mgl']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]

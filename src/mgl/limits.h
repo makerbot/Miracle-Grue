@@ -13,8 +13,9 @@
 #ifndef LIMITS_H_
 #define LIMITS_H_
 
+#include <iostream>
 #include <limits>
-#include "BGL/BGLPoint.h"
+#include "core.h"
 
 
 namespace mgl {
@@ -22,7 +23,7 @@ namespace mgl {
 struct Limits
 {
 
-	friend std::ostream& operator <<(ostream &os, const Limits &l);
+	friend std::ostream& operator <<(std::ostream &os, const Limits &l);
 
 	Scalar xMin, xMax, yMin, yMax, zMin, zMax;
 
@@ -48,7 +49,7 @@ struct Limits
 		zMax = kat.zMax;
 	}
 */
-	void grow(const BGL::Point3d &p)
+	void grow(const Vector3 &p)
 	{
 		if(p.x < xMin) xMin = p.x;
 		if(p.x > xMax) xMax = p.x;
@@ -73,22 +74,22 @@ struct Limits
 	// the XY center point and Z axis
 	void tubularZ()
 	{
-		BGL::Point3d c = center();
+		Vector3 c = center();
 		Scalar dx = 0.5 * (xMax-xMin);
 		Scalar dy = 0.5 * (yMax - yMin);
 
 		Scalar radius = sqrt(dx*dx + dy*dy);
 
-		BGL::Point3d north = c;
+		Vector3 north = c;
 		north.y += radius;
 
-		BGL::Point3d south = c;
+		Vector3 south = c;
 		south.y -= radius;
 
-		BGL::Point3d east = c;
+		Vector3 east = c;
 		east.x += radius;
 
-		BGL::Point3d west = c;
+		Vector3 west = c;
 		west.x -= radius;
 
 		grow(north);
@@ -97,9 +98,9 @@ struct Limits
 		grow(west);
 	}
 
-	BGL::Point3d center() const
+	Vector3 center() const
 	{
-		BGL::Point3d c(0.5 * (xMin + xMax), 0.5 * (yMin + yMax), 0.5 *(zMin + zMax) );
+		Vector3 c(0.5 * (xMin + xMax), 0.5 * (yMin + yMax), 0.5 *(zMin + zMax) );
 		return c;
 	}
 
@@ -120,6 +121,8 @@ struct Limits
 		out.xMin = -out.xMax;
 		out.yMax = 0.5 * deltaY();
 		out.yMin = -out.yMax;
+		out.zMin = zMin;
+		out.zMax = zMax;
 		return out;
 	}
 
@@ -127,7 +130,7 @@ struct Limits
 
 };
 
-std::ostream& operator<<(ostream& os, const Limits& l);
+std::ostream& operator<<(std::ostream& os, const Limits& l);
 
 
 

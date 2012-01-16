@@ -35,10 +35,6 @@ namespace mgl // serious about triangles
 
 
 
-// returns the minimum and maximum z for the 3 vertices of a triangle
-void minMaxZ(const BGL::Triangle3d &t, Scalar &min,  Scalar &max );
-
-
 
 class LayerMess : public Except
 {
@@ -138,39 +134,36 @@ public:
 		out.open(fileName);
 		if(!out)
 		{
-			stringstream ss;
+			std::stringstream ss;
 			ss << "Can't open \"" << fileName << "\"";
 			MeshyMess problem(ss.str().c_str());
 			throw (problem);
 		}
 
 		// bingo!
-		out << scientific;
-		out << "solid " << solidName << endl;
+		out << std::scientific;
+		out << "solid " << solidName << std::endl;
 
 	}
 
-	void writeTriangle(const BGL::Triangle3d& t)
+	void writeTriangle(const Triangle3& t)
 	{
 		// normalize( (v1-v0) cross (v2 - v0) )
 		// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
 
-		double n0=0;
-		double n1=0;
-		double n2=0;
-
-		out << " facet normal " << n0 << " " << n1 << " " << n2 << std::endl;
+		Vector3 n = t.normal();
+		out << " facet normal " << n[0] << " " << n[1] << " " << n[2] << std::endl;
 		out << "  outer loop"<< std::endl;
-		out << "    vertex " << t.vertex1.x << " " << t.vertex1.y << " " << t.vertex1.z << std::endl;
-		out << "    vertex " << t.vertex2.x << " " << t.vertex2.y << " " << t.vertex2.z << std::endl;
-		out << "    vertex " << t.vertex3.x << " " << t.vertex3.y << " " << t.vertex3.z << std::endl;
+		out << "    vertex " << t[0].x << " " << t[0].y << " " << t[0].z << std::endl;
+		out << "    vertex " << t[1].x << " " << t[1].y << " " << t[1].z << std::endl;
+		out << "    vertex " << t[2].x << " " << t[2].y << " " << t[2].z << std::endl;
 		out << "  end loop" << std::endl;
 		out << " end facet" << std::endl;
 	}
 
 	void close()
 	{
-		out << "end solid " << solidName << endl;
+		out << "end solid " << solidName << std::endl;
 		out.close();
 	}
 
@@ -183,7 +176,7 @@ class Meshy
 {
 
 	mgl::Limits limits;
-	std::vector<BGL::Triangle3d>  allTriangles;
+	std::vector<Triangle3>  allTriangles;
 	SliceTable sliceTable;
 	LayerMeasure zTapeMeasure; // Ze tape measure, for Z
 
@@ -195,7 +188,7 @@ public:
 	{
 	}
 
-	const std::vector<BGL::Triangle3d> &readAllTriangles() const
+	const std::vector<Triangle3> &readAllTriangles() const
 	{
 		return allTriangles;
 	}
@@ -219,58 +212,60 @@ public:
 	//
 	// Adds a triangle to the global array and for each slice of interest
 	//
-	void addTriangle(BGL::Triangle3d &t)
+	void addTriangle(Triangle3 &t)
 	{
 		Scalar min;
 		Scalar max;
-		minMaxZ(t, min, max);
 
-		unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(min);
-		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(max);
+		Vector3 a, b, c;
+		t.zSort(a,b,c);
+
+		unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(a.z);
+		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(c.z);
 		if (maxSliceIndex - minSliceIndex > 1)
 			maxSliceIndex --;
 
-		// cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< endl;
-		// cout << "Max index =" <<  maxSliceIndex << endl;
+		// cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
+		// cout << "Max index =" <<  maxSliceIndex << std::endl;
 		unsigned int currentSliceCount = sliceTable.size();
 		if (maxSliceIndex >= currentSliceCount)
 		{
 			unsigned int newSize = maxSliceIndex+1;
 			sliceTable.resize(newSize); // make room for potentially new slices
-//			cout << "- new slice count: " << sliceTable.size() << endl;
+//			cout << "- new slice count: " << sliceTable.size() << std::endl;
 		}
 
 		allTriangles.push_back(t);
 
 		size_t newTriangleId = allTriangles.size() -1;
 
-		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << endl;
+		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
 		for (int i= minSliceIndex; i<= maxSliceIndex; i++)
 		{
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			trianglesForSlice.push_back(newTriangleId);
-//			cout << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << endl;
+//			cout << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
 		}
 
-		limits.grow(t.vertex1);
-		limits.grow(t.vertex2);
-		limits.grow(t.vertex3);
+		limits.grow(t[0]);
+		limits.grow(t[1]);
+		limits.grow(t[2]);
 	}
 
 
 	void dump(std::ostream &out)
 	{
-		out << "dumping " << this << endl;
-		out << "Nb of triangles: " << allTriangles.size() << endl;
+		out << "dumping " << this << std::endl;
+		out << "Nb of triangles: " << allTriangles.size() << std::endl;
 		size_t sliceCount = sliceTable.size();
 
-		out << "triangles per slice: (" << sliceCount << " slices)" << endl;
+		out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
 		for (int i= 0; i< sliceCount; i++)
 		{
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			//trianglesForSlice.push_back(newTriangleId);
-			cout << "  slice " << i << " size: " << trianglesForSlice.size() << endl;
-			//cout << "adding triangle " << newTriangleId << " to layer " << i << endl;
+			out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
+			//cout << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
 		}
 	}
 
@@ -288,11 +283,11 @@ public:
 		for(std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i!= trianglesForSlice.end(); i++)
 		{
 			index_t index = *i;
-			const BGL::Triangle3d &t = allTriangles[index];
+			const Triangle3 &t = allTriangles[index];
 			out.writeTriangle(t);
 		}
 		out.close();
-		// cout << fileName << " written!"<< endl;
+		// cout << fileName << " written!"<< std::endl;
 	}
 
 };

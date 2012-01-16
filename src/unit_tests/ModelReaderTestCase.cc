@@ -16,14 +16,9 @@
 #include "../Configuration.h"
 #include "../ModelFileReaderOperation.h"
 
-#include "../BGL/BGLPoint.h"
-#include "../BGL/BGLMesh3d.h"
-
 #include "mgl/limits.h"
 #include "mgl/meshy.h"
-#include "mgl/segment.h"
 #include "mgl/scadtubefile.h"
-
 #include "mgl/slicy.h"
 
 
@@ -31,7 +26,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
 using namespace std;
-using namespace BGL;
 using namespace mgl;
 
 
@@ -50,13 +44,13 @@ CPPUNIT_ASSERT( 12L == 12L );
 void ModelReaderTestCase::testSlicySimple()
 {
 
-	Point3d p0(0,0,0);
-	Point3d p1(0,1,0);
-	Point3d p2(1,1,0);
-	Point3d p3(1,0,0);
+	Vector3 p0(0,0,0);
+	Vector3 p1(0,1,0);
+	Vector3 p2(1,1,0);
+	Vector3 p3(1,0,0);
 
-	Triangle3d t0(p0, p1, p2);
-	Triangle3d t1(p0, p2, p3);
+	Triangle3 t0(p0, p1, p2);
+	Triangle3 t1(p0, p2, p3);
 
 	Slicy sy(0.001);
 
@@ -96,13 +90,10 @@ void ModelReaderTestCase::testMeshySimple()
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
-	Triangle3d t;
-	t.vertex1 =Point3d(0,10,0);
-	t.vertex2 =Point3d(0,10,3.4);
-	t.vertex3 =Point3d(0,10,1);
+	Triangle3  t(Vector3(0,10,0), Vector3(0,10,3.4), Vector3(0,10,1));
 
 	cout << endl << endl;
-	cout << "t " << t.vertex1 << ", " << t.vertex2 << ", " << t.vertex3 << endl;
+	cout << "t " << t[0] << ", " << t[1] << ", " << t[2] << endl;
  	mesh.addTriangle(t);
 
  	cout << "mesh.dump(cout);" << endl;
@@ -123,9 +114,9 @@ void ModelReaderTestCase::testMeshySimple()
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
 
 
-	t.vertex1 =Point3d(0,10, 0);
-	t.vertex2 =Point3d(0,10, 3.6);
-	t.vertex3 =Point3d(0,10, 1);
+    t[0] =Vector3(0,10, 0);
+    t[1] =Vector3(0,10, 3.6);
+    t[2] =Vector3(0,10, 1);
 
 	mesh.addTriangle(t);
 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
@@ -175,14 +166,6 @@ void ModelReaderTestCase::testLargeMeshy()
 	mesh3.dump(cout);
 	cout << "lightsaber read in " << t1 << endl;
 
-	t0=clock();
-	// do something..
-	Mesh3d meshLightSaber;
-	cout << "RAW read" << endl;
-	int count = meshLightSaber.loadFromSTLFile("inputs/lightsaber.stl");
-	t1=clock()-t0;
-	cout << "lightsaber read in " << t1 << endl;
-
 }
 
 void ModelReaderTestCase::testMeshyLoad()
@@ -218,7 +201,7 @@ void ModelReaderTestCase::testSlicyWater()
 	unsigned int t0,t1;
 	t0=clock();
 
-	const vector<Triangle3d>& allTriangles = mesh.readAllTriangles();
+	const vector<Triangle3>& allTriangles = mesh.readAllTriangles();
 	int sliceIndex = 0;
 	for (SliceTable::const_iterator i = table.begin(); i != table.end(); i++)
 	{
@@ -232,7 +215,7 @@ void ModelReaderTestCase::testSlicyWater()
 		for (TriangleIndices::const_iterator j = sliceables.begin(); j != sliceables.end(); j++ )
 		{
 			index_t index = (*j);
-			const Triangle3d& triangle = allTriangles[index];
+			const Triangle3& triangle = allTriangles[index];
 //			cout << "adding triangle # " << index << endl;
 			sy.addTriangle(triangle);
 		}
@@ -246,19 +229,19 @@ void ModelReaderTestCase::testSlicyWater()
 
 
 
-BGL::Point rotateAroundPoint(const BGL::Point &center, Scalar angle, const BGL::Point &p)
+Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
 {
 	// translate point back to origin:
-	BGL::Point translated = p - center;
+	Vector2 translated = p - center;
 
-	BGL::Point rotated = rotate2d(translated, angle);
+	Vector2 rotated = rotate2d(translated, angle);
 	// translate point back:
-	BGL::Point r = rotated + center;
+	Vector2 r = rotated + center;
 	return r;
 }
 
 // openscad debugging
-string visibleCut(const Triangle3& t, const Vector3d &a, const Vector3d &b)
+string visibleCut(const Triangle3& t, const Vector3 &a, const Vector3 &b)
 {
 	stringstream out;
 
@@ -280,13 +263,13 @@ void ModelReaderTestCase::testCutTriangle()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	Vector3d v0(-1, 0, 0);
-	Vector3d v1(1, 0, 0);
-	Vector3d v2(0,0,1);
+	Vector3 v0(-1, 0, 0);
+	Vector3 v1(1, 0, 0);
+	Vector3 v2(0,0,1);
 
 	Triangle3 t(v0,v1,v2);
 
-	Vector3d a,b;
+	Vector3 a,b;
 	bool cut;
 	Scalar z = 0.5;
 	cut = t.cut( z, a, b);
@@ -306,9 +289,9 @@ void ModelReaderTestCase::testCutTriangle()
 //	    endloop
 //	  endfacet
 
-	Vector3d v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
-	Vector3d v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
-	Vector3d v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
+	Vector3 v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
+	Vector3 v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
+	Vector3 v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
 	Triangle3 tb(v0b,v1b,v2b);
 
 
@@ -331,11 +314,11 @@ void ModelReaderTestCase::testRotate()
 {
 	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	BGL::Point center(4,4);
-	BGL::Point a(4,3);
+	Vector2 center(4,4);
+	Vector2 a(4,3);
 
 	Scalar angle = M_PI /2;
-	BGL::Point b = rotateAroundPoint(center, angle, a);
+	Vector2 b = rotateAroundPoint(center, angle, a);
 
 	cout << endl << "rotated " << a << " around " << center << " by " << angle << " rads and got " << b << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 5.0, b.x, 0.00001 );
@@ -349,7 +332,7 @@ void ModelReaderTestCase::testRotate()
 class Cuts
 {
 	index_t triangle;
-	Point3d vertices[2]; // the second one is redundent
+	Vector3 vertices[2]; // the second one is redundent
 };
 
 class Loopy
@@ -493,8 +476,8 @@ void ModelReaderTestCase::testTubularInflate()
 
 	Limits l0;
 
-	Point3d p0(0,0,0);
-	Point3d p1(8,4,1);
+	Vector3 p0(0,0,0);
+	Vector3 p1(8,4,1);
 
 	l0.grow(p0);
 	l0.grow(p1);
@@ -533,7 +516,7 @@ void ModelReaderTestCase::fixContourProblem()
 
 	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
-	const std::vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 	std::vector< std::vector<Segment> > outlineSegments;
@@ -548,14 +531,15 @@ void ModelReaderTestCase::fixContourProblem()
 	for (int i=0; i < triangleCount; i++)
 	{
 		index_t idx = trianglesForSlice[i];
-		const Triangle3d &t = allTriangles[idx];
+		const Triangle3 &t = allTriangles[idx];
 
-		double min, max;
-		minMaxZ(t,min, max);
-		minsAndMaxes.push_back(std::pair<Scalar, Scalar>(min, max) );
-		cout << t.vertex1.z << "\t\t" << t.vertex2.z << "\t\t" << t.vertex3.z << "\t\t" << min << "\t"<< max << endl;
-		cout << "  min " << min << " max " << endl;
-		CPPUNIT_ASSERT(z >= min);
+		Vector3 a,b,c;
+		t.zSort(a,b,c);
+
+		minsAndMaxes.push_back(std::pair<Scalar, Scalar>(a.z, c.z) );
+		cout << t[0].z << "\t\t" << t[1].z << "\t\t" << t[2].z << "\t\t" << a.z << "\t"<< c.z << endl;
+		cout << "  min " << a.z << " max " << c.z << endl;
+		CPPUNIT_ASSERT(z >= a.z);
 //		CPPUNIT_ASSERT(z <= max);
 	}
 
@@ -634,57 +618,3 @@ void ModelReaderTestCase::testLayerMeasure()
 
 
 
-
-/*
-
-void dump(const list<index_t> &edges)
-{
-	for(list<index_t>::const_iterator i=edges.begin(); i != edges.end(); i++)
-	{
-		cout << "  " <<  *i << endl;
-	}
-}
-
-void ModelReaderTestCase::testSlicyKnot()
-{
-	string modelFile = "inputs/3D_Knot.stl";
-
-    Configuration config;
-    config["slicer"]["firstLayerZ"] = 0.11;
-	config["slicer"]["layerH"] = 0.35;
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
-	LoadMeshyFromStl(mesh, modelFile.c_str());
-
-	cout << "file " << modelFile << endl;
-	const SliceTable &sliceTable = mesh.readSliceTable();
-	int layerCount = sliceTable.size();
-	cout  << "Slice count: "<< layerCount << endl;
-	const vector<Triangle3d> &allTriangles = mesh.readAllTriangles();
-	cout << "Faces: " << allTriangles.size() << endl;
-	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
-
-	int layerIndex = 44;
-	CPPUNIT_ASSERT (layerIndex < layerCount);
-	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
-	unsigned int triangleCount = trianglesInSlice.size();
-	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
-	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
-
-	// Load slice connectivity information
-	Slicy slicy(1e-6);
-	for (int i=0; i < triangleCount; i++)
-	{
-		unsigned int triangleIndex = trianglesInSlice[i];
-		const Triangle3d& t = allTriangles[triangleIndex];
-		slicy.addTriangle(t);
-	}
-	cout << slicy << endl;
-
-	list<index_t> edges;
-	slicy.fillEdgeList(z,edges);
-
-	cout << "edges left: "  << edges.size()  << " / " << slicy.readEdges().size() << endl;
-	//dump(edges);
-
-}
-*/

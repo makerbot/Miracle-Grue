@@ -17,9 +17,6 @@
 #include <vector>
 #include <fstream>
 
-#include "BGL/config.h"
-#include "BGL/BGLTriangle3d.h"
-#include "BGL/BGLMesh3d.h"
 
 #include "core.h"
 
@@ -34,18 +31,18 @@ namespace mgl
 
 
 // Segmentology turns triangles into lines
-void segmentology(const std::vector<BGL::Triangle3d> &allTriangles, const TriangleIndices &trianglesForSlice, Scalar z, Scalar tol, std::vector< std::vector<Segment> > &loops);
+void segmentology(const std::vector<Triangle3> &allTriangles, const TriangleIndices &trianglesForSlice, Scalar z, Scalar tol, std::vector< std::vector<Segment> > &loops);
 
 // Assembles lines segments into loops (perimeter loops and holes)
 void loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector< std::vector<Segment> > &loops);
 
 // I have no idea what this does
-void translateLoops(std::vector<std::vector<mgl::Segment> > &loops, BGL::Point p);
+void translateLoops(std::vector<std::vector<mgl::Segment> > &loops, Vector2 p);
 
 // moves Segments by a position
-void translateSegments(std::vector<mgl::Segment> &segments, BGL::Point p);
+void translateSegments(std::vector<mgl::Segment> &segments, Vector2 p);
 
-BGL::Point rotate2d(const BGL::Point &p, Scalar angle);
+Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
 void rotateLoops(std::vector<std::vector<mgl::Segment> > &loops, Scalar angle);
 

@@ -29,6 +29,36 @@ namespace mgl {
 // <mondane> stuff to deal with 70's style File systems in the 21st century
 //
 //
+class ProgressBar
+{
+	unsigned int total;
+	unsigned int delta;
+	unsigned int progress;
+	unsigned int ticks;
+public:
+	ProgressBar(unsigned int count)
+		: total(count), progress(0), delta(count/10)
+	{
+		std::cout << ":";
+	}
+
+	void tick()
+	{
+		total --;
+		ticks ++;
+		if (ticks >= delta)
+		{
+			ticks = 0;
+			progress ++;
+			std::cout << ".";
+			std::cout.flush();
+		}
+		if (total ==0)
+		{
+			std::cout << "*" << std::endl;
+		}
+	}
+};
 
 class ClockAbstractor
 {

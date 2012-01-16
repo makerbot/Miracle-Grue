@@ -12,7 +12,7 @@
 #include <cstring>
 
 using namespace mgl;
-using namespace BGL;
+using namespace std;
 
 
 bool mgl::sameSame(double a, double b)
@@ -20,32 +20,13 @@ bool mgl::sameSame(double a, double b)
 	return (a-b) * (a-b) < 0.00000001;
 }
 
-void mgl::minMaxZ(const BGL::Triangle3d &t, Scalar &min,  Scalar &max )
-{
-	// find minimum
-	min = t.vertex1.z;
-	if(t.vertex2.z < min)
-		min = t.vertex2.z ;
 
-	if(t.vertex3.z < min)
-		min = t.vertex3.z ;
-
-	// find maximum
-	max = t.vertex1.z;
-	if( t.vertex2.z > max)
-		max = t.vertex2.z;
-
-	if (t.vertex3.z > max)
-		max = t.vertex3.z;
-}
-
-
-bool sliceTriangle(const Vector3d& vertex1,
-					 const Vector3d& vertex2,
-						const Vector3d& vertex3,
+bool sliceTriangle(const Vector3& vertex1,
+					 const Vector3& vertex2,
+						const Vector3& vertex3,
 						   Scalar Z,
-						   Vector3d &a,
-						   	   Vector3d &b)
+						   Vector3 &a,
+						   	   Vector3 &b)
 {
 	Scalar u, px, py, v, qx, qy;
 	if (vertex1.z > Z && vertex2.z > Z && vertex3.z > Z)
@@ -208,26 +189,26 @@ bool sliceTriangle(const Vector3d& vertex1,
 	return false;
 }
 
-bool mgl::Triangle3::cut(Scalar z, Vector3d &a, Vector3d &b) const
+bool mgl::Triangle3::cut(Scalar z, Vector3 &a, Vector3 &b) const
 {
 
-	Vector3d dir = cutDirection();
+	Vector3 dir = cutDirection();
 	// Segment cut;
 
 	bool success = sliceTriangle(v0,v1,v2, z, a, b );
 
-	Vector3d segmentDir = b - a;
+	Vector3 segmentDir = b - a;
 	if(dir.dotProduct(segmentDir) < 0 )
 	{
 //		cout << "INVERTED SEGMENT DETECTED" << endl;
-		Vector3d p(a);
+		Vector3 p(a);
 		a = b;
 		b = p;
 	}
 	return success;
 }
 
-std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3d& v)
+std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
 {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
@@ -235,7 +216,7 @@ std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3d& v)
 
 // given a point, finds the segment that starts the closest from that point
 // and return the distance. Also, the iterator to the closest segment is "returned"
-Scalar findClosestSegment(const BGL::Point& endOfPreviousSegment, 
+Scalar findClosestSegment(const Vector2& endOfPreviousSegment,
 						vector<Segment>::iterator startIt,
 						vector<Segment>::iterator endIt, 
 						vector<Segment>::iterator &bestSegmentIt ) // "returned here"
@@ -243,13 +224,13 @@ Scalar findClosestSegment(const BGL::Point& endOfPreviousSegment,
 	bestSegmentIt = endIt; 	// just in case, we'll check for this on the caller side
 	Scalar minDist = 1e100; 
 	
-	Vector3d end(endOfPreviousSegment.x,endOfPreviousSegment.y, 0);
+	Vector3 end(endOfPreviousSegment.x,endOfPreviousSegment.y, 0);
 	vector<Segment>::iterator it = startIt;
 	while(it != endIt)
 	{
-		Vector3d start(it->a.x, it->a.y, 0);
-		Vector3d v = end-start;
-		Scalar distance = v.squareMagnitude();
+		Vector3 start(it->a.x, it->a.y, 0);
+		Vector3 v = end-start;
+		Scalar distance = v.squaredMagnitude();
 		if (distance < minDist)
 		{
 			minDist = distance;
@@ -274,7 +255,7 @@ void mgl::loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector<
 							// first segment and the one before (and there is no segment before)
 	for(vector<Segment>::iterator i = segments.begin(); i != segments.end(); i++)
 	{
-		BGL::Point &startingPoint = i->b;
+		Vector2 &startingPoint = i->b;
 		vector<Segment>::iterator startIt = i+1;
 		vector<Segment>::iterator bestSegmentIt;
 		if(startIt != segments.end())
@@ -344,7 +325,7 @@ void mgl::loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector<
 	}
 }
 
-void mgl::segmentology(	const std::vector<BGL::Triangle3d> &allTriangles,
+void mgl::segmentology(	const std::vector<Triangle3> &allTriangles,
 						const TriangleIndices &trianglesForSlice,
 						Scalar z,
 						Scalar tol,
@@ -360,10 +341,8 @@ void mgl::segmentology(	const std::vector<BGL::Triangle3d> &allTriangles,
 	for(int i=0; i< count; i++)
 	{
 		index_t triangleIndex = trianglesForSlice[i];
-		const BGL::Triangle3d &t = allTriangles[triangleIndex];
-
-		Triangle3 triangle(t);
-		Vector3d a,b;
+		const Triangle3 &triangle = allTriangles[triangleIndex];
+		Vector3 a,b;
 		// bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
 		bool cut = triangle.cut(z,a,b);
 		if(cut)
@@ -384,7 +363,7 @@ void mgl::segmentology(	const std::vector<BGL::Triangle3d> &allTriangles,
 
 }
 
-void mgl::translateLoops(std::vector<std::vector<mgl::Segment> > &loops, BGL::Point p)
+void mgl::translateLoops(std::vector<std::vector<mgl::Segment> > &loops, Vector2 p)
 {
 	for(int i=0; i < loops.size(); i++)
 	{
@@ -392,7 +371,7 @@ void mgl::translateLoops(std::vector<std::vector<mgl::Segment> > &loops, BGL::Po
 	}
 }
 
-void mgl::translateSegments(std::vector<mgl::Segment> &segments, BGL::Point p)
+void mgl::translateSegments(std::vector<mgl::Segment> &segments, Vector2 p)
 {
 	for(int i=0; i < segments.size(); i++)
 	{
@@ -402,12 +381,12 @@ void mgl::translateSegments(std::vector<mgl::Segment> &segments, BGL::Point p)
 }
 
 
-BGL::Point mgl::rotate2d(const BGL::Point &p, Scalar angle)
+Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
 {
 	// rotate point
 	double s = sin(angle); // radians
 	double c = cos(angle);
-	BGL::Point rotated;
+	Vector2 rotated;
 	rotated.x = p.x * c - p.y * s;
 	rotated.y = p.x * s + p.y * c;
 	return rotated;
@@ -452,6 +431,8 @@ bool mgl::segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scal
     return false; // No collision
 }
 
+
+
 void mgl::sliceAndPath(	Meshy &mesh,
 					double layerW,
 					double tubeSpacing,
@@ -460,26 +441,25 @@ void mgl::sliceAndPath(	Meshy &mesh,
 					std::vector< TubesInSlice >  &allTubes)
 {
 	Scalar tol = 1e-6; // Tolerance for assembling segments into a loop
-
+	// cout << "GO!" << endl;
 	// gather context info
-	const std::vector<BGL::Triangle3d> &allTriangles = mesh.readAllTriangles();
+	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const Limits& limits = mesh.readLimits();
-	// std::cout << "LIMITS: " << limits << std::endl;
-
+	cout << "Limits: " << limits << endl;
 	Limits tubularLimits = limits.centeredLimits();
 	tubularLimits.inflate(1.0, 1.0, 0.0);
 	// make it square along z so that rotation happens inside the limits
 	// hence, tubular limits around z
 	tubularLimits.tubularZ();
 
-	BGL::Point3d c = limits.center();
-	BGL::Point toRotationCenter(-c.x, -c.y);
-	BGL::Point backToOrigin(c.x, c.y);
+	Vector3 c = limits.center();
+	Vector2 toRotationCenter(-c.x, -c.y);
+	Vector2 backToOrigin(c.x, c.y);
 
 	size_t sliceCount = sliceTable.size();
 
-	BGL::Point3d rotationCenter = limits.center();
+	Vector3 rotationCenter = limits.center();
 	Scalar layerH = mesh.readLayerMeasure().getLayerH();
 	// we'll record that in a scad file for you
 	ScadTubeFile outlineScad(scadFile, layerH, layerW );
@@ -492,9 +472,10 @@ void mgl::sliceAndPath(	Meshy &mesh,
 	#pragma omp parallel for
 #endif
 
+	ProgressBar progress(sliceCount);
 	for(int i=0; i < sliceCount; i++)
 	{
-		//cout << "SLICE>> " << i << endl;
+		progress.tick();
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
 		allTubes.push_back( TubesInSlice(z));
 		std::vector<Segment> &infillTubes = allTubes[i].infill;
@@ -515,7 +496,6 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 		pathology(rotatedLoops, tubularLimits, allTubes[i].z, tubeSpacing, infillTubes);
 		//cout << "Pathology: " << infillTubes.size() << " infill segments" << endl;
-
 		// rotate the TUBES so they fit with the ORIGINAL outlines
 		mgl::rotateSegments(infillTubes, -layerAngle);
 		mgl::translateSegments(infillTubes, backToOrigin);
@@ -527,7 +507,7 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			OmpGuard lock (my_lock);
 			cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
 			#endif
-			cout << "." ;
+
 			outlineScad.writeTrianglesModule("tri_", mesh, i);
 
 			outlineScad.writeOutlinesModule("out_", outlineLoops, i, allTubes[i].z);
@@ -544,6 +524,14 @@ std::ostream& mgl::operator<<(ostream& os, const Limits& l)
 {
 	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
 	return os;
+}
+
+ostream& mgl::operator <<(ostream &os,const Vector2 &pt)
+{
+    os.precision(3);
+    os.setf(ios::fixed);
+    os << "(" << pt.x << ", " << pt.y << ")";
+    return os;
 }
 
 
@@ -662,11 +650,11 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			convertFromLittleEndian16((uint8_t*) &tridata.vertexes.attrBytes);
 
 			vertexes_t &v = tridata.vertexes;
-			Point3d pt1(v.x1, v.y1, v.z1);
-			Point3d pt2(v.x2, v.y2, v.z2);
-			Point3d pt3(v.x3, v.y3, v.z3);
+			Vector3 pt1(v.x1, v.y1, v.z1);
+			Vector3 pt2(v.x2, v.y2, v.z2);
+			Vector3 pt3(v.x3, v.y3, v.z3);
 
-			Triangle3d triangle(pt1, pt2, pt3);
+			Triangle3 triangle(pt1, pt2, pt3);
 			meshy.addTriangle(triangle);
 
 			facecount++;
@@ -704,11 +692,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 				MeshyMess problem(msg.str().c_str());
 				throw(problem);
 			}
-			Point3d pt1(v.x1, v.y1, v.z1);
-			Point3d pt2(v.x2, v.y2, v.z2);
-			Point3d pt3(v.x3, v.y3, v.z3);
-
-			Triangle3d triangle(pt1, pt2, pt3);
+			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));
 			meshy.addTriangle(triangle);
 
 			facecount++;
@@ -718,6 +702,10 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 	return facecount;
 }
 
+#define __ cout <<  __FUNCTION__ << "::" << __LINE__  "*" << endl;
+#define ___(s) cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << endl;
+
+
 void mgl::pathology( std::vector< std::vector<Segment> > &outlineLoops,
 				const Limits& limits,
 				double z,
@@ -725,25 +713,16 @@ void mgl::pathology( std::vector< std::vector<Segment> > &outlineLoops,
 				std::vector<Segment> &tubes)
 {
 	assert(tubes.size() == 0);
-
-//  rotate outline Segments for that cool look
-//	translateSegments(outlineSegments, toOrigin);
-//	rotateSegments(segments, angle);
-//  translateSegments(segments, toCenter);
-
 	Scalar deltaY = limits.yMax - limits.yMin;
-	int tubeCount = (deltaY) / tubeSpacing;
 
+	int tubeCount = (deltaY) / tubeSpacing;
 	std::vector< std::set<Scalar> > intersects;
 	// allocate
 	intersects.resize(tubeCount);
-
-
 	for (unsigned int i=0; i < tubeCount; i++)
 	{
 		Scalar y = -0.5 * deltaY + i * tubeSpacing;
 		std::set<Scalar> &lineCuts = intersects[i];
-
 		// go through all the segments in every loop
 		for(unsigned int j=0; j< outlineLoops.size(); j++)
 		{

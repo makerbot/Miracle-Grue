@@ -94,12 +94,12 @@ void addPathsForSlice(PathData &pathData, const TubesInSlice& tubesInSlice)
 		for(int j=0; j< loop.size(); j++)
 		{
 			const Segment &line = loop[j];
-			Point2D p(line.a.x, line.a.y);
+			Vector2 p(line.a.x, line.a.y);
 			poly.push_back(p);
 
 			if(j == loop.size()-1)
 			{
-				Point2D p(line.b.x, line.b.y);
+				Vector2 p(line.b.x, line.b.y);
 				poly.push_back(p);
 			}
 		}
@@ -115,8 +115,8 @@ void addPathsForSlice(PathData &pathData, const TubesInSlice& tubesInSlice)
 		paths.push_back(Polygon());
 		Polygon &poly = paths[paths.size()-1];
 
-		Point2D p0 (segment.a.x, segment.a.y);
-		Point2D p1 (segment.b.x, segment.b.y);
+		Vector2 p0 (segment.a.x, segment.a.y);
+		Vector2 p1 (segment.b.x, segment.b.y);
 
 		poly.push_back(p0);
 		poly.push_back(p1);
@@ -144,21 +144,25 @@ int main(int argc, char *argv[], char *envp[])
 
     Configuration config;
     config.readFromFile(configFileName.c_str());
-
     cout << config.asJson() << endl;
 
 	MyComputer computer;
 	cout << endl;
 	cout << endl;
-	cout << "behold!" << endl;
-	cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
 
 	// std::string modelFile = models[i];
 	cout << "firstLayerZ (f) = " << firstLayerZ << endl;
 	cout << "layerH (h) = " << layerH << endl;
 	cout << "layerW (w) = " << layerW << endl;
 	cout << "tubeSpacing (t) = " << tubeSpacing  << endl;
+	cout << "angle (a) = " << angle << endl;
+	cout << "configuration file (c) = " <<  configFileName << endl;
 	cout << endl;
+
+	cout << "behold!" << endl;
+	cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
+
+
 	std::string stlFiles = computer.fileSystem.removeExtension(computer.fileSystem.ExtractFilename(modelFile));
 	stlFiles += "_";
 
@@ -179,9 +183,9 @@ int main(int argc, char *argv[], char *envp[])
 	std::vector< TubesInSlice >  allTubes;
 	cout << "Slicing" << endl;
 	sliceAndPath(mesh,
-			config["slicer"]["layerW"].asDouble(),
-			config["slicer"]["tubeSpacing"].asDouble(),
-			config["slicer"]["angle"].asDouble(),
+			layerW,
+			tubeSpacing,
+			angle,
 			scadFile.c_str(),
 			allTubes); //paths);
 
@@ -203,8 +207,11 @@ int main(int argc, char *argv[], char *envp[])
 
 	cout << endl;
 	cout << "Writing gcode" << endl;
+	ProgressBar progress(allTubes.size());
 	for (int i=0; i< allTubes.size(); i++)
 	{
+		progress.tick();
+		cout.flush();
 		// i is the slice index
 		TubesInSlice &tubesInSlice = allTubes[i];
 		PathData data(tubesInSlice.z);

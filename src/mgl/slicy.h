@@ -14,6 +14,7 @@
 #define SLICY_H_
 
 #include <ostream>
+#include <list>
 #include "core.h"
 
 namespace mgl // Miracle-Grue's geometry library
@@ -38,7 +39,7 @@ public:
 	// vertices is plural for vertex (it's a point, really)
 	index_t vertexIndices[2];	// the index of the vertices that make out the edge
 
-	friend std::ostream& operator <<(ostream &os,const Edge &pt);
+	friend std::ostream& operator <<(std::ostream &os,const Edge &pt);
 
 
 	Edge(index_t v0, index_t v1, index_t face)
@@ -86,9 +87,9 @@ public:
 	{
 		if(face0 == face)
 		{
-			cout << "BAD: edge connecting to the same face twice! " << endl;
-			cout << "  dump: " << this << endl;
-			cout << ((Edge&)*this) << endl;
+			std::cout << "BAD: edge connecting to the same face twice! " << std::endl;
+			std::cout << "  dump: " << this << std::endl;
+			std::cout << ((Edge&)*this) << std::endl;
 			assert(0);
 
 		}
@@ -99,9 +100,9 @@ public:
 		}
 		else
 		{
-			cout << "BAD: edge connected to face "<< face0  << " and face1 "<< face1<<  " trying to connecting to face " << face << endl;
-			cout << "  dump: " << this << endl;
-			cout << ((Edge&)*this) << endl;
+			std::cout << "BAD: edge connected to face "<< face0  << " and face1 "<< face1<<  " trying to connecting to face " << face << std::endl;
+			std::cout << "  dump: " << this << std::endl;
+			std::cout << ((Edge&)*this) << std::endl;
 			assert(0);
 		}
 	}
@@ -109,7 +110,7 @@ public:
 
 };
 
-std::ostream& operator<<(ostream& os, const Edge& e)
+std::ostream& operator<<(std::ostream& os, const Edge& e)
 {
 	os << " " << e.vertexIndices[0] << "\t" << e.vertexIndices[1] << "\t" << e.face0 << "\t" << e.face1;
 	return os;
@@ -120,11 +121,12 @@ class Vertex
 {
 
 public:
-	BGL::Point3d point;
+	// Vector3 point;
+	mgl::Vector3 point;
 	std::vector<index_t> faces;
 };
 
-std::ostream& operator<<(ostream& os, const Vertex& v)
+std::ostream& operator<<(std::ostream& os, const Vertex& v)
 {
 	os << " " << v.point << "\t[ ";
 	for (int i=0; i< v.faces.size(); i++)
@@ -136,12 +138,13 @@ std::ostream& operator<<(ostream& os, const Vertex& v)
 	return os;
 }
 
-index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const BGL::Point3d &coords, Scalar tolerence)
+index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const Vector3 &coords, Scalar tolerence)
 {
 
-	for(vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); it++)
+	for(std::vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); it++)
 	{
-		const BGL::Point3d &p = (*it).point;
+		//const Vector3 &p = (*it).point;
+		Vector3 &p = (*it).point;
 		Scalar dx = coords.x - p.x;
 		Scalar dy = coords.y - p.y;
 		Scalar dz = coords.z - p.z;
@@ -149,14 +152,14 @@ index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const BGL::Point3
 		Scalar dd =  dx * dx + dy * dy + dz * dz;
 		if( dd < tolerence )
 		{
-			//cout << "Found VERTEX" << endl;
+			//std::cout << "Found VERTEX" << std::endl;
 			index_t vertexIndex = std::distance(vertices.begin(), it);
 			return vertexIndex;
 		}
 	}
 
 	index_t vertexIndex;
-	// cout << "NEW VERTEX " << coords << endl;
+	// std::cout << "NEW VERTEX " << coords << std::endl;
 	Vertex vertex;
 	vertex.point = coords;
 	vertices.push_back(vertex);
@@ -177,7 +180,7 @@ class Slicy
 	std::vector<Face> faces;
 	Scalar tolerence;
 
-	friend std::ostream& operator <<(ostream &os,const Slicy &pt);
+	friend std::ostream& operator <<(std::ostream &os,const Slicy &pt);
 
 public:
 
@@ -203,25 +206,25 @@ public:
 		return vertices;
 	}
 
-	index_t addTriangle(const BGL::Triangle3d &t)
+	index_t addTriangle(const Triangle3 &t)
 	{
 		index_t faceId = faces.size();
 
-//		cout << "Slicy::addTriangle " << endl;
-//		cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << endl;
-//		cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << endl;
+//		std::cout << "Slicy::addTriangle " << std::endl;
+//		std::cout << "  v0 " << t.vertex1 << " v1" << t.vertex2 << " v3 " << t.vertex3 << std::endl;
+//		std::cout << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << std::endl;
 
-		index_t v0 = findOrCreateVertex(t.vertex1);
-		index_t v1 = findOrCreateVertex(t.vertex2);
-		index_t v2 = findOrCreateVertex(t.vertex3);
+		index_t v0 = findOrCreateVertex(t[0]);
+		index_t v1 = findOrCreateVertex(t[1]);
+		index_t v2 = findOrCreateVertex(t[2]);
 
 		Face face;
 		face.edgeIndices[0] = findOrCreateEdge(v0, v1, faceId);
-//		cout << "   a) " << face.edge0 << "(" << edges[face.edge0] << ")" << endl;
+//		std::cout << "   a) " << face.edge0 << "(" << edges[face.edge0] << ")" << std::endl;
 		face.edgeIndices[1] = findOrCreateEdge(v1, v2, faceId);
-//		cout << "   b) " << face.edge1 << "(" << edges[face.edge1] << ")" << endl;
+//		std::cout << "   b) " << face.edge1 << "(" << edges[face.edge1] << ")" << std::endl;
 		face.edgeIndices[2] = findOrCreateEdge(v2, v0, faceId);
-//		cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << endl;
+//		std::cout << "   c) " << face.edge2 << "(" << edges[face.edge2] << ")" << std::endl;
 
 		face.vertexIndices[0] = v0;
 		face.vertexIndices[1] = v1;
@@ -269,8 +272,8 @@ public:
 			index_t v0 = e.vertexIndices[0];
 			index_t v1 = e.vertexIndices[1];
 
-			const BGL::Point3d &p0 = vertices[v0].point;
-			const BGL::Point3d &p1 = vertices[v1].point;
+			const Vector3 &p0 = vertices[v0].point;
+			const Vector3 &p1 = vertices[v1].point;
 
 			Scalar min = p0.z;
 			Scalar max = p1.z;
@@ -293,29 +296,29 @@ public:
 
 	void dump(std::ostream& out) const
 	{
-		out << "Slicy" << endl;
-		out << "  vertices: coords and face list" << vertices.size() << endl;
-		out << "  edges: " << edges.size() << endl;
-		out << "  faces: " << faces.size() << endl;
+		out << "Slicy" << std::endl;
+		out << "  vertices: coords and face list" << vertices.size() << std::endl;
+		out << "  edges: " << edges.size() << std::endl;
+		out << "  faces: " << faces.size() << std::endl;
 
-		cout << endl;
+		std::cout << std::endl;
 
-		cout << "Vertices:" << endl;
+		std::cout << "Vertices:" << std::endl;
 
 		int x =0;
-		for(vector<Vertex>::const_iterator i = vertices.begin(); i != vertices.end(); i++ )
+		for(std::vector<Vertex>::const_iterator i = vertices.begin(); i != vertices.end(); i++ )
 		{
-			cout << x << ": " << *i << endl;
+			std::cout << x << ": " << *i << std::endl;
 			x ++;
 		}
 
-		cout << endl;
-		cout << "Edges (vertex 1, vertex2, face 1, face2)" << endl;
+		std::cout << std::endl;
+		std::cout << "Edges (vertex 1, vertex2, face 1, face2)" << std::endl;
 
 		x =0;
-		for(vector<Edge>::const_iterator i = edges.begin(); i != edges.end(); i++)
+		for(std::vector<Edge>::const_iterator i = edges.begin(); i != edges.end(); i++)
 		{
-			cout << x << ": " << *i << endl;
+			std::cout << x << ": " << *i << std::endl;
 			x ++;
 		}
 	}
@@ -348,9 +351,9 @@ public:
 	void getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNeighbors) const
 	{
 		const Face &face = faces[startFaceIndex];
-		const vector<index_t>& neighbors0 = vertices[ face.vertexIndices[0]].faces;
-		const vector<index_t>& neighbors1 = vertices[ face.vertexIndices[1]].faces;
-		const vector<index_t>& neighbors2 = vertices[ face.vertexIndices[2]].faces;
+		const std::vector<index_t>& neighbors0 = vertices[ face.vertexIndices[0]].faces;
+		const std::vector<index_t>& neighbors1 = vertices[ face.vertexIndices[1]].faces;
+		const std::vector<index_t>& neighbors2 = vertices[ face.vertexIndices[2]].faces;
 
 
 		for(int i=0; i< neighbors0.size(); i++)
@@ -378,10 +381,10 @@ public:
 			}
 		}
 
-		//cout << "All Neighbors of face:" << startFaceIndex <<":" << neighbors0.size() << ", " << neighbors1.size() << ", " << neighbors2.size() << endl;
+		//std::cout << "All Neighbors of face:" << startFaceIndex <<":" << neighbors0.size() << ", " << neighbors1.size() << ", " << neighbors2.size() << std::endl;
 		//for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
 		//{
-		//	cout << " >" << *i << endl;
+		//	std::cout << " >" << *i << std::endl;
 		//}
 	}
 
@@ -399,7 +402,7 @@ public:
 				const Face& face = faces[faceIndex];
 				if( cutFace(z, face, cut))
 				{
-			//		cout << " " << faceIndex << " CUTS it!" << endl;
+			//		std::cout << " " << faceIndex << " CUTS it!" << std::endl;
 					return faceIndex;
 				}
 			}
@@ -412,9 +415,9 @@ public:
 
 	bool cutFace(Scalar z, const Face &face, Segment& cut) const
 	{
-		//	bool mgl::sliceTriangle(const BGL::Point3d& vertex1,
-		//						 const BGL::Point3d& vertex2,
-		//							const BGL::Point3d& vertex3,
+		//	bool mgl::sliceTriangle(const Vector3& vertex1,
+		//						 const Vector3& vertex2,
+		//							const Vector3& vertex3,
 		//							   Scalar Z, BGL::Point &a,
 		//							      BGL::Point &b)
 
@@ -422,9 +425,9 @@ public:
 		const Vertex& v1 = vertices[face.vertexIndices[1]];
 		const Vertex& v2 = vertices[face.vertexIndices[2]];
 
-		Vector3d a(v0.point.x, v0.point.y, v0.point.z);
-		Vector3d b(v1.point.x, v1.point.y, v1.point.z);
-		Vector3d c(v2.point.x, v2.point.y, v2.point.z);
+		Vector3 a(v0.point.x, v0.point.y, v0.point.z);
+		Vector3 b(v1.point.x, v1.point.y, v1.point.z);
+		Vector3 c(v2.point.x, v2.point.y, v2.point.z);
 		Triangle3 triangle(a,b,c);
 
 		bool success = triangle.cut( z, a, b);
@@ -465,7 +468,7 @@ public:
 		{
 			faceIndex = *facesLeft.begin();
 			facesLeft.remove(faceIndex);
-			cout << "Current face index:" <<  faceIndex << endl;
+			std::cout << "Current face index:" <<  faceIndex << std::endl;
 			faceIndex = cutNextFace(facesLeft, z, faceIndex, cut);
 			if(faceIndex >= 0)
 			{
@@ -488,7 +491,7 @@ public:
 private:
 
 
-	index_t findOrCreateNewEdge(const BGL::Point3d &coords0, const BGL::Point3d &coords1, size_t face)
+	index_t findOrCreateNewEdge(const Vector3 &coords0, const Vector3 &coords1, size_t face)
 	{
 		index_t v0 = findOrCreateVertex(coords0);
 		index_t v1 = findOrCreateVertex(coords1);
@@ -504,7 +507,7 @@ private:
 		std::vector<Edge>::iterator it = find(edges.begin(), edges.end(), e);
 		if(it == edges.end())
 		{
-			// cout << "NEW EDGE " << coords << endl;
+			// std::cout << "NEW EDGE " << coords << std::endl;
 			edges.push_back(e);
 			edgeIndex = edges.size() -1;
 		}
@@ -516,7 +519,7 @@ private:
 		return edgeIndex;
 	}
 
-	index_t findOrCreateVertex(const BGL::Point3d &coords)
+	index_t findOrCreateVertex(const Vector3 &coords)
 	{
 		return findOrCreateVertexIndex(vertices, coords, tolerence);
 	}
