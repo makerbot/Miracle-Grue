@@ -350,20 +350,33 @@ public:
 
 
 typedef std::vector<Vector2> Polygon;
-typedef std::vector<Polygon> ExtruderPaths;
+typedef std::vector<Polygon> Polygons;
+
+
+class ExtruderPaths
+{
+public:
+	std::vector<mgl::Polygons> loops;  // outer perimeter loop
+	std::vector<mgl::Polygons> infills;
+
+	std::vector<std::vector<mgl::Polygons> > shells; // multiple inner loops per loop
+	std::vector<mgl::Polygons> roofing;
+	std::vector<mgl::Polygons> flooring;
+};
 
 //
 // The Slice data is contains polygons
 // for each extruder, for a slice.
-// there are multiple polygons for each extruders
+// there are multiple polygons for each extruder
 class SliceData
 {
 public:
-	std::vector<mgl::ExtruderPaths> paths; // each extruder has paths
+	std::vector< Polygons > paths; // each extruder has paths
 	double positionZ;
+	index_t sliceIndex;
 
-	SliceData (double z)
-		:positionZ(z)
+	SliceData (double z, index_t sliceIndex)
+		:positionZ(z), sliceIndex(sliceIndex)
 	{
 
 	}

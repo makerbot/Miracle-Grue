@@ -14,7 +14,7 @@
 using namespace std;
 
 PathData::PathData(double z)
-		:SliceData(z), DataEnvelope(TYPE_PATH_BINARY)
+		:SliceData(z,0), DataEnvelope(TYPE_PATH_BINARY)
 {
 	//cout << "PathData() @"  << this<< endl;
 }

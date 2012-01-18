@@ -187,7 +187,7 @@ void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double 
 void initSimplePath(PathData &d)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	d.paths.push_back(ExtruderPaths());
+	d.paths.push_back(Polygons());
 
 	srand( time(NULL) );
 
@@ -378,7 +378,7 @@ void GCoderTestCase::testFloatFormat()
 
 void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
-	d.paths.push_back(ExtruderPaths());
+	d.paths.push_back(Polygons());
 
 	bool flip = false;
 	for (int i=0; i< lineCount; i++)
@@ -406,7 +406,7 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 
 void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
-	d.paths.push_back(ExtruderPaths());
+	d.paths.push_back(Polygons());
 
 	bool flip = false;
 
@@ -531,8 +531,8 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 	PathData *pathData;
 	pathData = new PathData(z);
 
-	pathData->paths.push_back(ExtruderPaths());
-	ExtruderPaths& paths = pathData->paths[0];
+	pathData->paths.push_back(Polygons());
+	Polygons& paths = pathData->paths[0];
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{

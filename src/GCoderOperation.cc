@@ -123,6 +123,12 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 		assert(doX || doY || doZ || doFeed);
 	#endif
 
+		assert(fabs(x) < 10000000);
+		assert(fabs(y) < 10000000);
+		assert(fabs(z) < 10000000);
+
+
+
 	ss << "G1";
 	if(doX) ss << " X" << x;
 	if(doY) ss << " Y" << y;
@@ -382,7 +388,7 @@ void GCoderOperation::accept(const PathData& envelope)
 // 	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
 	const SliceData &pathData = *(dynamic_cast<const SliceData* > (&envelope) );
 
-	gcoder.writeLayer(ss, pathData);
+	gcoder.writeSlice(ss, pathData);
 	wrapAndEmit(ss);
 
 	//cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;
@@ -482,7 +488,11 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 
 
 
-void GCoder::writePaths(std::ostream& ss, int extruderId, double z, const ExtruderPaths &paths)
+void GCoder::writePaths(std::ostream& ss,
+							unsigned int sliceIndex,
+							unsigned int extruderId,
+							double z,
+							const Polygons &paths)
 {
 	GCoder &gcoder = *this;
 	// to each extruder its speed
@@ -495,12 +505,12 @@ void GCoder::writePaths(std::ostream& ss, int extruderId, double z, const Extrud
 	gcoder.extruders[extruderId].g1(ss,gcoder.extruders[extruderId].x,  gcoder.extruders[extruderId].y, z, pathFeedrate);
 
 	int path_counter = 0;
-	for (ExtruderPaths::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
+	for (Polygons::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
 	{
 
 		path_counter ++; // one based, FTU (for the user!)
 		const Polygon &polygon = *pathIt;
-		ss << "(  path " << path_counter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
+		ss << "(  slice " << sliceIndex << " , path " << path_counter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
 
 		Vector2 start(0,0), stop(0,0);
 		polygonLeadInAndLeadOut(polygon, leadIn, leadOut, start, stop);
@@ -531,31 +541,31 @@ void GCoderOperation::wrapAndEmit(const stringstream &ss)
 }
 
 
-void GCoder::writeLayer(ostream& ss, const SliceData& sliceData)
+void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 {
 
 	GCoder &gcoder = *this;
 	double layerZ = sliceData.positionZ;
 
-	// distance above mid layer position of extruzion
+	// distance above mid layer position of extrusion
 
-	const std::vector<ExtruderPaths> &paths = sliceData.paths;
+	const std::vector<Polygons> &paths = sliceData.paths;
 	int extruderCount = paths.size();
-	ss << "(PATHS for: " << extruderCount << plural("Extruder", extruderCount) << ")"<< endl;
+	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
 	int extruderId = 0;
 
-	for(std::vector<ExtruderPaths>::const_iterator extruderIt = paths.begin();
+	for(std::vector<Polygons>::const_iterator extruderIt = paths.begin();
 			extruderIt != sliceData.paths.end(); extruderIt++)
 	{
 		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
-		const ExtruderPaths &exPaths = *extruderIt;
+		const Polygons &exPaths = *extruderIt;
 
 		if (extruderCount > 0)
 		{
 			writeSwitchExtruder(ss, extruderId);
 		}
 
-		writePaths(ss, extruderId, z, exPaths);
+		writePaths(ss, sliceData.sliceIndex, extruderId, z, exPaths);
 
 		if (extruderCount > 0)
 		{
@@ -713,13 +723,6 @@ void GCoder::writeAnchor(std::ostream &ss)
 	ss << endl;
 }
 
-
-/*
-double dist(double x0, double y0, double x1, double y1)
-{
-	return sqrt( (x1-x0)*(x1-x0) + (y1-y0) * (y1-y0) );
-}
-*/
 
 
 

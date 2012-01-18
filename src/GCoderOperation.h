@@ -200,8 +200,12 @@ public:
     void writeWarmupSequence(std::ostream &ss);
     void writeAnchor(std::ostream &ss);
 
-    void writeLayer(std::ostream &ss, const mgl::SliceData& pathData);
-    void writePaths(std::ostream& ss, int extruderId, double z, const mgl::ExtruderPaths &paths); // paths for an extruder in a layer
+    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData);
+    void writePaths(std::ostream& ss,
+    		unsigned int sliceIndex,
+    		unsigned int extruderId,
+    		double z,
+    		const std::vector<mgl::Polygon> &paths); // paths for an extruder in a layer
 
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
