@@ -369,6 +369,10 @@ void sliceAndPath(	Meshy &mesh,
 					const char* scadFile,
 					std::vector< TubesInSlice > &allTubes);
 
+void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice);
+
 } // namespace
+
+
 
 #endif

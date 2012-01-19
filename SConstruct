@@ -236,7 +236,15 @@ p = env.Program(  	'./bin/tests/chainIntegrationUnitTest',
 				CPPPATH= [".."])
 
 runThisTest(p, run_unit_tests)
-	
+
+
+p = env.Program(  	'./bin/tests/slicerCupUnitTest',   
+				mix(['src/unit_tests/SlicerCupTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= [".."])
+runThisTest(p, run_unit_tests)	
+
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/morphogen.cc'], config, gcoder, file_w ),
 		LIBS = default_libs + debug_libs,

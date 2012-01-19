@@ -123,9 +123,9 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 		assert(doX || doY || doZ || doFeed);
 	#endif
 
-		assert(fabs(x) < 10000000);
-		assert(fabs(y) < 10000000);
-		assert(fabs(z) < 10000000);
+	assert(fabs(x) < 10000000);
+	assert(fabs(y) < 10000000);
+	assert(fabs(z) < 10000000);
 
 
 
@@ -410,21 +410,7 @@ void GCoderOperation::start(){
 	cout << "GCoderOperation::start() !!" << endl;
 	stringstream ss;
 
-	gcoder.writeGCodeConfig(ss);
-	cout << "writeGCodeConfig"<< endl; // << ss.str() << endl;
-	gcoder.writeMachineInitialization(ss);
-	cout << "writeMachineInitialization" << endl; // << ss.str() << endl;
-	gcoder.writeExtrudersInitialization(ss);
-	cout << "writeExtrudersInitialization" << endl; // << ss.str() << endl;
-	gcoder.writePlatformInitialization(ss);
-	cout << "writePlatformInitialization" << endl; // << ss.str() << endl;
-	gcoder.writeHomingSequence(ss);
-	cout << "writeHomingSequence" << endl;// << ss.str() << endl;
-	gcoder.writeWarmupSequence(ss);
-	cout << "writeWarmupSequence" << endl;// << ss.str() << endl;
-	gcoder.writeAnchor(ss);
-	cout << "writeAnchor" << endl;// << ss.str() << endl;
-	cout << endl << endl << "START ENV:" << endl << ss.str() << endl;
+	gcoder.writeStartOfFile(ss);
 
 
 	wrapAndEmit(ss);
@@ -538,6 +524,28 @@ void GCoderOperation::wrapAndEmit(const stringstream &ss)
 	GCodeEnvelope* data = new GCodeEnvelope(ss.str().c_str());
 	emit(data);
 	data->release();
+}
+
+void writeGcodeFile(const Configuration &config, const char* gcodeFilePath, const std::vector<TubesInSlice> & allTubes)
+{
+    GCoder gcoder = GCoder();
+    gcoder.loadData(config);
+    std::ofstream gout(gcodeFilePath);
+    gcoder.writeStartOfFile(gout);
+
+    ProgressBar progress(allTubes.size());
+    for(int i = 0;i < allTubes.size();i++){
+        progress.tick();
+        cout.flush();
+        // i is the slice index
+        const TubesInSlice & tubesInSlice = allTubes[i];
+        SliceData data(tubesInSlice.z, i);
+        addPathsForSlice(data, tubesInSlice);
+        // paths.push_back(data);
+        gcoder.writeSlice(gout, data);
+    }
+    gcoder.writeGcodeEndOfFile(gout);
+    gout.close();
 }
 
 
@@ -687,6 +695,16 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 	ss << endl;
 }
 
+void GCoder::writeStartOfFile(std::ostream &gout)
+{
+	writeGCodeConfig(gout);
+	writeMachineInitialization(gout);
+	writeExtrudersInitialization(gout);
+	writePlatformInitialization(gout);
+	writeHomingSequence(gout);
+	writeWarmupSequence(gout);
+	writeAnchor(gout);
+}
 
 void GCoder::writeGcodeEndOfFile(std::ostream &ss) const
 {

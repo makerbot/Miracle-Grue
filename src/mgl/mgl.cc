@@ -245,9 +245,8 @@ Scalar findClosestSegment(const Vector2& endOfPreviousSegment,
 void mgl::loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector< std::vector<Segment> > &loops)
 {
 	// Lets sort this mess out so we can extrude in a continuous line of shiny contour
-	// Nota: from the normals, segment know their beginings from their endings  
+	// Nota: from their normals (int their previous life as 3d triangles), segment know their beginings from their endings
 	
-
 	std::vector<Scalar> distances;
 	distances.reserve(segments.size());
 	
@@ -509,7 +508,6 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			#endif
 
 			outlineScad.writeTrianglesModule("tri_", mesh, i);
-
 			outlineScad.writeOutlinesModule("out_", outlineLoops, i, allTubes[i].z);
 			outlineScad.writeExtrusionsModule("fill_", infillTubes, i, allTubes[i].z );
 
@@ -726,11 +724,11 @@ void mgl::pathology( std::vector< std::vector<Segment> > &outlineLoops,
 		// go through all the segments in every loop
 		for(unsigned int j=0; j< outlineLoops.size(); j++)
 		{
-			// cout << "  Loop " << j << endl;
+			// cout << " Loop " << j << endl;
 			std::vector<Segment> &outlineSegments = outlineLoops[j];
 			for(std::vector<Segment>::iterator it= outlineSegments.begin(); it!= outlineSegments.end(); it++)
 			{
-				//cout << "      segment" << endl;
+				//cout << " segment" << endl;
 				Segment &segment = *it;
 				Scalar intersectionX, intersectionY;
 				if (segmentSegmentIntersection(limits.xMin, y, limits.xMax, y, segment.a.x, segment.a.y, segment.b.x, segment.b.y,  intersectionX,  intersectionY))
@@ -799,15 +797,52 @@ void mgl::pathology( std::vector< std::vector<Segment> > &outlineLoops,
 		backAndForth = !backAndForth;
 	}
 
-
-	// unrotate the tube segments (they are tube rays, not cut triangles)
-//	for (int i=0; i < tubeCount; i++)
-//	{
-//		std::vector<Segment>& tubes = allTubes[i];
-//		rotateSegments(segments, -angle);
-//		translateSegments(segments, toCenter);
-
-//	}
 }
+
+void mgl::addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice)
+{
+	sliceData.paths.push_back(Polygons());
+	Polygons& paths = sliceData.paths[0];
+
+	// outline loops
+	for(int i=0; i < tubesInSlice.outlines.size(); i++)
+	{
+		const std::vector<Segment> &loop = tubesInSlice.outlines[i];
+		paths.push_back(Polygon());
+		Polygon &poly = paths[paths.size()-1];
+
+		poly.reserve(loop.size());
+		for(int j=0; j< loop.size(); j++)
+		{
+			const Segment &line = loop[j];
+			Vector2 p(line.a.x, line.a.y);
+			poly.push_back(p);
+
+			if(j == loop.size()-1)
+			{
+				Vector2 p(line.b.x, line.b.y);
+				poly.push_back(p);
+			}
+		}
+	}
+
+	// infills
+	const std::vector<Segment> &tubes = tubesInSlice.infill;
+	size_t tubeCount = tubes.size();
+	for (int i=0; i< tubeCount; i++)
+	{
+		const Segment &segment = tubes[i];
+
+		paths.push_back(Polygon());
+		Polygon &poly = paths[paths.size()-1];
+
+		Vector2 p0 (segment.a.x, segment.a.y);
+		Vector2 p1 (segment.b.x, segment.b.y);
+
+		poly.push_back(p0);
+		poly.push_back(p1);
+	}
+}
+
 
 

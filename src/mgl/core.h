@@ -356,12 +356,15 @@ typedef std::vector<Polygon> Polygons;
 class ExtruderPaths
 {
 public:
-	std::vector<mgl::Polygons> loops;  // outer perimeter loop
-	std::vector<mgl::Polygons> infills;
 
-	std::vector<std::vector<mgl::Polygons> > shells; // multiple inner loops per loop
-	std::vector<mgl::Polygons> roofing;
-	std::vector<mgl::Polygons> flooring;
+	std::vector<mgl::Polygons> paths; // everybody!
+
+//	std::vector<mgl::Polygons> outerShells;  // outer perimeter loop
+//	std::vector<mgl::Polygons> infills;
+//
+//	std::vector<std::vector<mgl::Polygons> > InnerShells; // multiple inner loops per loop
+//	std::vector<mgl::Polygons> roofing;
+//	std::vector<mgl::Polygons> flooring;
 };
 
 //

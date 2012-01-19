@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <sstream>
 
-#include "mgl/core.h"
+#include "mgl/meshy.h"
 
 #include "Operation.h"
 #include "PathData.h"
@@ -180,6 +180,9 @@ class GCoder
     std::vector<ToolHead> extruders;	// list of extruder tools
 
 public:
+    void writeStartOfFile(std::ostream &ss);
+    void writeGcodeEndOfFile(std::ostream &ss) const;
+
 
     const std::vector<ToolHead> &readExtruders() const
     {
@@ -189,6 +192,9 @@ public:
 	void loadData(const Configuration& config);
 	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
 
+    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData);
+
+private:
 
 	// write important config information in gcode file
     void writeGCodeConfig(std::ostream &ss) const;
@@ -200,7 +206,6 @@ public:
     void writeWarmupSequence(std::ostream &ss);
     void writeAnchor(std::ostream &ss);
 
-    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData);
     void writePaths(std::ostream& ss,
     		unsigned int sliceIndex,
     		unsigned int extruderId,
@@ -209,9 +214,13 @@ public:
 
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
-    void writeGcodeEndOfFile(std::ostream &ss) const;
+
 
 };
+
+void writeGcodeFile(const Configuration &config,
+					const char* gcodeFilePath,
+					const std::vector< mgl::TubesInSlice> & allTubes);
 
 /**
  * GCoderOperation creates gcode from a stream of path envelopes.

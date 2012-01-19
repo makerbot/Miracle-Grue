@@ -42,7 +42,6 @@ Configuration::Configuration()
 	shell["distance"] = 3.0;
 
 	root["shell"] = shell;
-	cout << "Configuration ctor! " << endl;
 
 	Json::Value gcodeOutput;
 	gcodeOutput["filename"] = "";
@@ -83,7 +82,7 @@ Configuration::Configuration(std::string& srcFilename)
 
 Configuration::~Configuration()
 {
-	cout << __FUNCTION__ << endl;
+//	cout << __FUNCTION__ << endl;
 	this->root.clear();
 }
 

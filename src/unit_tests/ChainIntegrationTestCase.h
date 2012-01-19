@@ -13,7 +13,7 @@
 class ChainIntegrationTestCase : public CPPUNIT_NS::TestFixture
 {
   CPPUNIT_TEST_SUITE( ChainIntegrationTestCase );
-  CPPUNIT_TEST( testChain );
+  	  CPPUNIT_TEST( testChain );
   CPPUNIT_TEST_SUITE_END();
 
 

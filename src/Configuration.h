@@ -42,12 +42,6 @@ class Configuration {
 
     public:
 
-//     	/// Const index function (For when you want to only read a value from the dict)
-//     	Json::Value& operator[] (const std::string key) const
-//     	{
-//			std::cout << "this->root[key]: " << this->root[key] << std::endl;
-//     		return (Json::Value&)this->root[key];
-//     	}
 
      	/// index function, to read/write values as config["foo"]
      	Json::Value& operator[] (const std::string key)

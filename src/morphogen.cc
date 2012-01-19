@@ -33,30 +33,33 @@ double numberFromCharEqualsStr(const std::string& str)
 	return val;
 }
 
-void parseArgs(int argc, char *argv[], string &modelFile, string &configFileName,
-		double & firstLayerZ, double & layerH, double & layerW, double & tubeSpacing, double &angle)
+void parseArgs(Configuration &config,
+				int argc,
+				char *argv[],
+				string &modelFile,
+				string &configFileName)
 {
 	modelFile = argv[argc-1];
     for(int i = 1;i < argc - 1;i++){
         string str = argv[i];
         cout << i << " " << str << endl;
         if(str.find("f=") != string::npos)
-            firstLayerZ = numberFromCharEqualsStr(str);
+        	config["slicer"]["firstLayerZ"]  = numberFromCharEqualsStr(str);
 
         if(str.find("h=") != string::npos)
-            layerH = numberFromCharEqualsStr(str);
+        	config["slicer"]["layerH"] = numberFromCharEqualsStr(str);
 
         if(str.find("w=") != string::npos)
-            layerW = numberFromCharEqualsStr(str);
+        	config["slicer"]["layerW"] = numberFromCharEqualsStr(str);
 
         if(str.find("t=") != string::npos)
-            tubeSpacing = numberFromCharEqualsStr(str);
+        	config["slicer"]["tubeSpacing"] = numberFromCharEqualsStr(str);
 
         if(str.find("c=") != string::npos)
-        	configFileName = str.substr(2, str.length()-2);
+        	config["slicer"]["configFileName"] = str.substr(2, str.length()-2);
 
         if(str.find("a=") != string::npos)
-            angle = numberFromCharEqualsStr(str);
+        	config["slicer"]["angle"] = numberFromCharEqualsStr(str);
     }
 }
 
@@ -78,50 +81,6 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 
 
-void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice)
-{
-	sliceData.paths.push_back(Polygons());
-	Polygons& paths = sliceData.paths[0];
-
-	// outline loops
-	for(int i=0; i < tubesInSlice.outlines.size(); i++)
-	{
-		const std::vector<Segment> &loop = tubesInSlice.outlines[i];
-		paths.push_back(Polygon());
-		Polygon &poly = paths[paths.size()-1];
-
-		poly.reserve(loop.size());
-		for(int j=0; j< loop.size(); j++)
-		{
-			const Segment &line = loop[j];
-			Vector2 p(line.a.x, line.a.y);
-			poly.push_back(p);
-
-			if(j == loop.size()-1)
-			{
-				Vector2 p(line.b.x, line.b.y);
-				poly.push_back(p);
-			}
-		}
-	}
-
-	// infills
-	const std::vector<Segment> &tubes = tubesInSlice.infill;
-	size_t tubeCount = tubes.size();
-	for (int i=0; i< tubeCount; i++)
-	{
-		const Segment &segment = tubes[i];
-
-		paths.push_back(Polygon());
-		Polygon &poly = paths[paths.size()-1];
-
-		Vector2 p0 (segment.a.x, segment.a.y);
-		Vector2 p1 (segment.b.x, segment.b.y);
-
-		poly.push_back(p0);
-		poly.push_back(p1);
-	}
-}
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -140,11 +99,13 @@ int main(int argc, char *argv[], char *envp[])
 	double angle = M_PI *0.5;
 	string configFileName = "miracle.config";
 
-    parseArgs(argc, argv, modelFile,  configFileName, firstLayerZ, layerH, layerW, tubeSpacing, angle);
 
     Configuration config;
     config.readFromFile(configFileName.c_str());
+
+    parseArgs(config, argc, argv, modelFile, configFileName);
     cout << config.asJson() << endl;
+
 
 	MyComputer computer;
 	cout << endl;
@@ -181,7 +142,9 @@ int main(int argc, char *argv[], char *envp[])
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
 	std::vector< TubesInSlice >  allTubes;
+
 	cout << "Slicing" << endl;
+
 	sliceAndPath(mesh,
 			layerW,
 			tubeSpacing,
@@ -189,38 +152,7 @@ int main(int argc, char *argv[], char *envp[])
 			scadFile.c_str(),
 			allTubes); //paths);
 
-
-	vector<DataEnvelope*> paths;
-
-
-	GCoder gcoder = GCoder();
-	gcoder.loadData(config);
-	std::ofstream gout(gcodeFile.c_str());
-
-	gcoder.writeGCodeConfig(gout);
-	gcoder.writeMachineInitialization(gout);
-	gcoder.writeExtrudersInitialization(gout);
-	gcoder.writePlatformInitialization(gout);
-	gcoder.writeHomingSequence(gout);
-	gcoder.writeWarmupSequence(gout);
-	gcoder.writeAnchor(gout);
-
-	cout << endl;
-	cout << "Writing gcode" << endl;
-	ProgressBar progress(allTubes.size());
-	for (int i=0; i< allTubes.size(); i++)
-	{
-		progress.tick();
-		cout.flush();
-		// i is the slice index
-		TubesInSlice &tubesInSlice = allTubes[i];
-		SliceData data(tubesInSlice.z, i);
-		addPathsForSlice(data, tubesInSlice);
-		// paths.push_back(data);
-		gcoder.writeSlice(gout, data);
-	}
-
-	gcoder.writeGcodeEndOfFile(gout);
+    writeGcodeFile(config, gcodeFile.c_str(), allTubes);
 
 	cout << endl << "Done!" << endl;
 
