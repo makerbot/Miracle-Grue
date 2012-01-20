@@ -370,7 +370,6 @@ void batchProcess(	Scalar firstLayerZ,
 		scadFile += "/";
 		scadFile += fileSystem.ChangeExtension(fileSystem.ExtractFilename(models[i]), ".scad" )  ;
 
-
 		cout << modelFile << " to " << scadFile << endl;
 
 		unsigned int t0,t1;

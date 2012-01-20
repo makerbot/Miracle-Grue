@@ -84,6 +84,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 int main(int argc, char *argv[], char *envp[])
 {
+
 	// design by contract ;-)
 	int checks = preConditionsOrShowUsage(argc, argv);
 	if(checks != 0)

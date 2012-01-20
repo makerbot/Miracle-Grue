@@ -602,7 +602,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 	{
 		string msg = "Can't open \"";
 		msg += filename;
-		msg += "\"";
+		msg += "\". Check that the file name is correct and that you have sufficient privileges to open it.";
 		MeshyMess problem(msg.c_str());
 		throw (problem);
 	}
@@ -801,8 +801,12 @@ void mgl::pathology( std::vector< std::vector<Segment> > &outlineLoops,
 
 void mgl::addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice)
 {
-	sliceData.paths.push_back(Polygons());
-	Polygons& paths = sliceData.paths[0];
+	assert(sliceData.extruderSlices.size() == 0 );
+	sliceData.extruderSlices.push_back(ExtruderSlice());
+	Polygons& paths = sliceData.extruderSlices[0].paths;
+
+//	sliceData.paths.push_back(Polygons());
+//	Polygons& paths = sliceData.paths[0];
 
 	// outline loops
 	for(int i=0; i < tubesInSlice.outlines.size(); i++)

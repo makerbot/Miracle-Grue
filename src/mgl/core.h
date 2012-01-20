@@ -353,11 +353,11 @@ typedef std::vector<Vector2> Polygon;
 typedef std::vector<Polygon> Polygons;
 
 
-class ExtruderPaths
+class ExtruderSlice
 {
 public:
 
-	std::vector<mgl::Polygons> paths; // everybody!
+	Polygons paths; // everybody!
 
 //	std::vector<mgl::Polygons> outerShells;  // outer perimeter loop
 //	std::vector<mgl::Polygons> infills;
@@ -365,6 +365,9 @@ public:
 //	std::vector<std::vector<mgl::Polygons> > InnerShells; // multiple inner loops per loop
 //	std::vector<mgl::Polygons> roofing;
 //	std::vector<mgl::Polygons> flooring;
+
+
+
 };
 
 //
@@ -374,7 +377,9 @@ public:
 class SliceData
 {
 public:
-	std::vector< Polygons > paths; // each extruder has paths
+	// std::vector< Polygons > paths; // each extruder has paths
+	std::vector<ExtruderSlice > extruderSlices;
+
 	double positionZ;
 	index_t sliceIndex;
 

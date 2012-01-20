@@ -187,15 +187,17 @@ void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double 
 void initSimplePath(PathData &d)
 {
 	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
-	d.paths.push_back(Polygons());
+	d.extruderSlices.push_back(ExtruderSlice());
 
-	srand( time(NULL) );
+	unsigned int last = d.extruderSlices.size() -1;
+	Polygons &polys = d.extruderSlices[last].paths;
+
 
 	for (int i=0; i< 4; i++)
 	{
-		d.paths[0].push_back(Polygon());
-		size_t index= d.paths[0].size()-1;
-		Polygon &poly = d.paths[0][index];
+		polys.push_back(Polygon());
+		size_t index= polys.size()-1;
+		Polygon &poly = polys[index];
 
 		double lower_x = -40 + 20 * i;
 		double lower_y = -30;
@@ -378,14 +380,15 @@ void GCoderTestCase::testFloatFormat()
 
 void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
-	d.paths.push_back(Polygons());
+	d.extruderSlices.push_back(ExtruderSlice());
+	Polygons &polys = d.extruderSlices[0].paths;
 
 	bool flip = false;
 	for (int i=0; i< lineCount; i++)
 	{
-		d.paths[0].push_back(Polygon());
-		size_t index= d.paths[0].size()-1;
-		Polygon &poly = d.paths[0][index];
+		polys.push_back(Polygon());
+		size_t index= polys.size()-1;
+		Polygon &poly = polys[index];
 
 		double y = lowerY + i * dy / lineCount;
 		Vector2 p0 (lowerX, y);
@@ -406,15 +409,16 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 
 void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
-	d.paths.push_back(Polygons());
+	d.extruderSlices.push_back(ExtruderSlice());
+	Polygons &polys = d.extruderSlices[0].paths;
 
 	bool flip = false;
 
 	for (int i=0; i< lineCount; i++)
 	{
-		d.paths[0].push_back(Polygon());
-		size_t index= d.paths[0].size()-1;
-		Polygon &poly = d.paths[0][index];
+		polys.push_back(Polygon());
+		size_t index= polys.size()-1;
+		Polygon &poly = polys[index];
 
 		double x = lowerX + i * dx / lineCount;
 		Vector2 p0 (x, lowerY);
@@ -531,8 +535,10 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 	PathData *pathData;
 	pathData = new PathData(z);
 
-	pathData->paths.push_back(Polygons());
-	Polygons& paths = pathData->paths[0];
+	pathData->extruderSlices.push_back(ExtruderSlice());
+
+
+	Polygons& paths = pathData->extruderSlices[0].paths;
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{
@@ -560,17 +566,6 @@ void GCoderTestCase::testKnot()
 	string modelFile = "inputs/3D_Knot.stl";
 	std::string outDir = "test_cases/GCoderTestCase/output";
 
-
-//  std::string modelFile = models[i];
-//	double firstLayerZ = 0.20;
-//	double layerH = 0.35;
-//	double layerW = 0.7;
-//	double tubeSpacing = 0.8;
-//	cout << "firstLayerZ (f) = " << firstLayerZ << endl;
-//	cout << "layerH (h) = " << layerH << endl;
-//	cout << "layerW (w) = " << layerW << endl;
-//	cout << "tubeSpacing (t) = " << tubeSpacing  << endl;
-//	cout << endl;
 
 	MyComputer myComputer;
 	cout << endl;

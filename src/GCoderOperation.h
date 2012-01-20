@@ -151,7 +151,7 @@ public:
 };
 
 
-// configuration
+// a line around the print
 struct Outline
 {
 	Outline() :enabled(false), distance(3.0){}
@@ -280,10 +280,6 @@ public:
 private:
 	bool isValidConfig(Configuration& config) const;
 	void wrapAndEmit(const std::stringstream &ss);
-
-
-
-
 
 
 /************** End of Functions custom to this <NAME_OF>Operation ***********************/

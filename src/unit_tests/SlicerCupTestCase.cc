@@ -16,6 +16,7 @@ MyComputer computer;
 
 void miracleGrue(const char *configFilePath, const char *modelFilePath)
 {
+
 	string configFileName(configFilePath);
 	string modelFile(modelFilePath);
 
@@ -45,14 +46,15 @@ void SlicerCupTestCase::testIndividuals()
 	models.push_back("./slicer_cup/Hollow_Pyramid.stl");
 	models.push_back("./slicer_cup/linkCup.stl");
 	models.push_back("./slicer_cup/ultimate_calibration_test.stl");
-	models.push_back("./slicer_cup/Cathedral_Crossing.stl");
+	models.push_back("./slicer_cup/Cathedral_Crossing_fixed.stl");
+
 
 	for(int i=0; i< models.size(); i++)
 	{
 		cout << endl;
 		cout << endl;
 		cout << endl;
-		cout << "********************" << endl;
+		cout << "-----------------------------" << endl;
 		string modelFile = models[i];
 		cout << endl;
 		cout << modelFile << endl;
@@ -61,6 +63,9 @@ void SlicerCupTestCase::testIndividuals()
 		cout << computer.clock.now() << endl;
 		cout << "DONE!" << endl;
 	}
+	cout << endl;
+	cout << endl;
+	cout << endl;
 }
 
 void SlicerCupTestCase::testAllTogeter()
@@ -83,7 +88,7 @@ void SlicerCupTestCase::testAllTogeter()
 
 }
 
-void SlicerCupTestCase::testCathedral_Crossing()
+void SlicerCupTestCase::testCathedral_Crossing_bad()
 {
 	string configFileName("miracle.config");
 	vector<string> models;
@@ -103,3 +108,22 @@ void SlicerCupTestCase::testCathedral_Crossing()
 	cout << "DONE!" << endl;
 }
 
+void SlicerCupTestCase::testCathedral_Crossing_fixed()
+{
+	string configFileName("miracle.config");
+	vector<string> models;
+
+	models.push_back("./slicer_cup/Cathedral_Crossing_fixed.stl");
+
+	for(int i=0; i< models.size(); i++)
+	{
+
+		string modelFile = models[i];
+		cout << endl;
+		cout << modelFile << endl;
+		cout << computer.clock.now() << endl;
+		miracleGrue(configFileName.c_str(), modelFile.c_str());
+	}
+	cout << computer.clock.now() << endl;
+	cout << "DONE!" << endl;
+}

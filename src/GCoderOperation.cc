@@ -554,19 +554,14 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 
 	GCoder &gcoder = *this;
 	double layerZ = sliceData.positionZ;
+	unsigned int extruderCount = sliceData.extruderSlices.size();
 
-	// distance above mid layer position of extrusion
-
-	const std::vector<Polygons> &paths = sliceData.paths;
-	int extruderCount = paths.size();
 	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
-	int extruderId = 0;
-
-	for(std::vector<Polygons>::const_iterator extruderIt = paths.begin();
-			extruderIt != sliceData.paths.end(); extruderIt++)
+	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
 	{
+		ss << "(   Extruder " <<  extruderId << ")" << endl;
+		const Polygons &exPaths = sliceData.extruderSlices[extruderId].paths;
 		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
-		const Polygons &exPaths = *extruderIt;
 
 		if (extruderCount > 0)
 		{

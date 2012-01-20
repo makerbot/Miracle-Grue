@@ -20,14 +20,17 @@
 #ifndef ABSTRACTABLE_H_
 #define ABSTRACTABLE_H_
 
+#include <ctime>
 #include <sstream>
 
 
 namespace mgl {
 
+
+
+
 //
-// <mondane> stuff to deal with 70's style File systems in the 21st century
-//
+// ASCII art
 //
 class ProgressBar
 {
@@ -109,7 +112,35 @@ public:
 
 };
 
-// </mondane>
+/*
+class Timer
+{
+	unsigned int t0;
+
+public:
+
+	Timer()
+	{
+		start();
+	}
+
+	void start()
+	{
+		t0 = clock();
+	}
+
+	double ellapsed()
+	{
+		unsigned int t = clock() - t0;
+		return t / 10000.0;
+	}
+
+	static void init()
+	{
+		srand( time(NULL) );
+	}
+};
+*/
 
 class MyComputer
 {
