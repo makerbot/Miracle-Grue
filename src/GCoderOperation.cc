@@ -560,7 +560,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
 	{
 		ss << "(   Extruder " <<  extruderId << ")" << endl;
-		const Polygons &exPaths = sliceData.extruderSlices[extruderId].paths;
+		const Polygons &loops = sliceData.extruderSlices[extruderId].loops;
+		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
+
 		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
 
 		if (extruderCount > 0)
@@ -568,7 +570,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 			writeSwitchExtruder(ss, extruderId);
 		}
 
-		writePaths(ss, sliceData.sliceIndex, extruderId, z, exPaths);
+		writePaths(ss, sliceData.sliceIndex, extruderId, z, loops);
+		writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
 
 		if (extruderCount > 0)
 		{

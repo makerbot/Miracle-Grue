@@ -439,6 +439,8 @@ void mgl::sliceAndPath(	Meshy &mesh,
 					const char* scadFile,
 					std::vector< TubesInSlice >  &allTubes)
 {
+	assert(allTubes.size() == 0);
+
 	Scalar tol = 1e-6; // Tolerance for assembling segments into a loop
 	// cout << "GO!" << endl;
 	// gather context info
@@ -460,8 +462,14 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 	Vector3 rotationCenter = limits.center();
 	Scalar layerH = mesh.readLayerMeasure().getLayerH();
+
 	// we'll record that in a scad file for you
-	ScadTubeFile outlineScad(scadFile, layerH, layerW );
+	ScadTubeFile outlineScad(layerH, layerW );
+	if(scadFile != NULL)
+	{
+		outlineScad.open(scadFile);
+	}
+
 	allTubes.reserve(sliceCount);
 
 	// multi thread stuff
@@ -481,19 +489,24 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
 
-		std::vector<std::vector<Segment> > &outlineLoops = allTubes[i].outlines;
+		//
+		// ***** ***** *****
+		//
+		std::vector<std::vector<Segment> > &outlineSegments = allTubes[i].outlines;
+		// std::vector<std::vector<Segment> > outlineSegments;
+
 		// get the "real" 2D paths for outline
-		segmentology(allTriangles, trianglesForSlice, allTubes[i].z, tol, outlineLoops);
+		segmentology(allTriangles, trianglesForSlice, allTubes[i].z, tol, outlineSegments);
 		//cout << "Segmentology: " << outlineLoops.size() << " Loops" << endl;
 
 		Scalar layerAngle = i* angle;
 		// deep copy
-		std::vector<std::vector<Segment> > rotatedLoops = outlineLoops;
-		mgl::translateLoops(rotatedLoops, toRotationCenter);
+		std::vector<std::vector<Segment> > rotatedSegments = outlineSegments;
+		mgl::translateLoops(rotatedSegments, toRotationCenter);
 		// rotate the outlines before generating the tubes...
-		mgl::rotateLoops(rotatedLoops, layerAngle);
+		mgl::rotateLoops(rotatedSegments, layerAngle);
 
-		pathology(rotatedLoops, tubularLimits, allTubes[i].z, tubeSpacing, infillTubes);
+		pathology(rotatedSegments, tubularLimits, allTubes[i].z, tubeSpacing, infillTubes);
 		//cout << "Pathology: " << infillTubes.size() << " infill segments" << endl;
 		// rotate the TUBES so they fit with the ORIGINAL outlines
 		mgl::rotateSegments(infillTubes, -layerAngle);
@@ -501,6 +514,7 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 		// write the scad file
 		// only one thread at a time in here
+		if(scadFile != NULL)
 		{
 			#ifdef OMPFF
 			OmpGuard lock (my_lock);
@@ -508,14 +522,17 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			#endif
 
 			outlineScad.writeTrianglesModule("tri_", mesh, i);
-			outlineScad.writeOutlinesModule("out_", outlineLoops, i, allTubes[i].z);
+			outlineScad.writeOutlinesModule("out_", outlineSegments, i, allTubes[i].z);
 			outlineScad.writeExtrusionsModule("fill_", infillTubes, i, allTubes[i].z );
-
 		}
 
 	}
 	// finalize the scad file
-	outlineScad.writeSwitcher(sliceTable.size());
+	if(scadFile != NULL)
+	{
+		outlineScad.writeSwitcher(sliceTable.size());
+		outlineScad.close();
+	}
 }
 
 std::ostream& mgl::operator<<(ostream& os, const Limits& l)
@@ -803,17 +820,15 @@ void mgl::addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlic
 {
 	assert(sliceData.extruderSlices.size() == 0 );
 	sliceData.extruderSlices.push_back(ExtruderSlice());
-	Polygons& paths = sliceData.extruderSlices[0].paths;
+	Polygons& loops = sliceData.extruderSlices[0].loops;
 
-//	sliceData.paths.push_back(Polygons());
-//	Polygons& paths = sliceData.paths[0];
 
 	// outline loops
 	for(int i=0; i < tubesInSlice.outlines.size(); i++)
 	{
 		const std::vector<Segment> &loop = tubesInSlice.outlines[i];
-		paths.push_back(Polygon());
-		Polygon &poly = paths[paths.size()-1];
+		loops.push_back(Polygon());
+		Polygon &poly = loops[loops.size()-1];
 
 		poly.reserve(loop.size());
 		for(int j=0; j< loop.size(); j++)
@@ -830,6 +845,7 @@ void mgl::addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlic
 		}
 	}
 
+	Polygons& infills = sliceData.extruderSlices[0].infills;
 	// infills
 	const std::vector<Segment> &tubes = tubesInSlice.infill;
 	size_t tubeCount = tubes.size();
@@ -837,8 +853,8 @@ void mgl::addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlic
 	{
 		const Segment &segment = tubes[i];
 
-		paths.push_back(Polygon());
-		Polygon &poly = paths[paths.size()-1];
+		infills.push_back(Polygon());
+		Polygon &poly = infills[infills.size()-1];
 
 		Vector2 p0 (segment.a.x, segment.a.y);
 		Vector2 p1 (segment.b.x, segment.b.y);

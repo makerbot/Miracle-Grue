@@ -357,10 +357,10 @@ class ExtruderSlice
 {
 public:
 
-	Polygons paths; // everybody!
+//	Polygons paths; // everybody!
 
-//	std::vector<mgl::Polygons> outerShells;  // outer perimeter loop
-//	std::vector<mgl::Polygons> infills;
+	Polygons loops;  // outer perimeter loop
+	Polygons infills;
 //
 //	std::vector<std::vector<mgl::Polygons> > InnerShells; // multiple inner loops per loop
 //	std::vector<mgl::Polygons> roofing;
@@ -377,7 +377,7 @@ public:
 class SliceData
 {
 public:
-	// std::vector< Polygons > paths; // each extruder has paths
+
 	std::vector<ExtruderSlice > extruderSlices;
 
 	double positionZ;

@@ -35,17 +35,81 @@ public:
 
 };
 
+/*
+
+
+module infill(points, paths)
+{
+     for (p= paths)
+    {
+        extrusion(points[p[0]][0],points[p[0]][1],points[p[0]][2],points[p[1]][0],points[p[1]][1],points[p[1]][2] );
+    }
+}
+
+module outline(points, paths)
+{
+
+    for (p= paths)
+    {
+       out_line(points[p[0]][0],points[p[0]][1],points[p[0]][2],points[p[1]][0],points[p[1]][1],points[p[1]][2] );
+    }
+
+}
+
+
+module out_tou()
+{
+    outlines =[
+               [
+                   [-26.471220,  20.921970, 0.110000],
+                   [-25.441967,  20.921970, 0.110000],
+                   [ 25.262779,  20.921970, 0.110000],
+                   [ 25.262779, -21.743956, 0.110000],
+                   [ 25.262779, -22.610029, 0.110000],
+                   [ 24.233526, -22.610029, 0.110000],
+                   [-26.471220, -22.610029, 0.110000],
+                   [-26.471220,  20.055897, 0.110000],
+                   [-26.471220,  20.921970, 0.110000],
+                ],
+               [
+                   [-26.471220,  20.921970, 1],
+                   [-25.441967,  20.921970, 1],
+                   [ 25.262779,  20.921970, 1],
+                   [ 25.262779, -21.743956, 1],
+                   [ 25.262779, -22.610029, 1],
+                   [ 24.233526, -22.610029, 1],
+                   [-26.471220, -22.610029, 1],
+                   [-26.471220,  20.055897, 1],
+                   [-26.471220,  20.921970, 1],
+                ],
+
+              ];
+
+
+    p_0 = [ [0,1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,7], [7,8] ];
+    outline(outlines[0], p_0);
+    outline(outlines[1], p_0);
+}
+
+*/
+
 //
 // OpenSCAD file generator http://www.openscad.org/
 //
 class ScadTubeFile
 {
 	std::ofstream out;
+	double layerH;
+	double layerW;
 public:
-	ScadTubeFile(const char* filename, double layerH, double layerW)
-	 :out(filename, std::ios::out)
+	ScadTubeFile( double layerH, double layerW)
+	 :layerH(layerH), layerW(layerW)
+	{}
+
+	void open(const char* filename)
 	{
-		if(!out)
+		out.open(filename, std::ios::out);
+		if(!out.good())
 		{
 			std::stringstream ss;
 			ss << "Can't open \"" << filename << "\"";
@@ -101,6 +165,11 @@ public:
 	    out << "			rotate([0,0,90]) cylinder(h = length, r1 = diameter1/2, r2 = diameter2/2, center = false, $fn = faces );" << std::endl;
 	    out << "}" << std::endl;
 
+	}
+
+	void close()
+	{
+		out.close();
 	}
 
 //	void write(const char *str)
@@ -217,6 +286,16 @@ private:
 		}
 
 		out << "}" << std::endl;
+	}
+
+	void writePolygonModule(const char* name, unsigned int slice, Scalar z)
+	{
+		out << std::endl;
+		out << "module " << name << slice << "()"<< std::endl;
+		out << "{" << std::endl;
+
+		out << "}" << std::endl;
+
 	}
 
 public:

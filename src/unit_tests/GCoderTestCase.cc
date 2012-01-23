@@ -190,7 +190,7 @@ void initSimplePath(PathData &d)
 	d.extruderSlices.push_back(ExtruderSlice());
 
 	unsigned int last = d.extruderSlices.size() -1;
-	Polygons &polys = d.extruderSlices[last].paths;
+	Polygons &polys = d.extruderSlices[last].infills;
 
 
 	for (int i=0; i< 4; i++)
@@ -381,7 +381,7 @@ void GCoderTestCase::testFloatFormat()
 void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
 	d.extruderSlices.push_back(ExtruderSlice());
-	Polygons &polys = d.extruderSlices[0].paths;
+	Polygons &polys = d.extruderSlices[0].infills;
 
 	bool flip = false;
 	for (int i=0; i< lineCount; i++)
@@ -410,7 +410,7 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
 	d.extruderSlices.push_back(ExtruderSlice());
-	Polygons &polys = d.extruderSlices[0].paths;
+	Polygons &polys = d.extruderSlices[0].infills;
 
 	bool flip = false;
 
@@ -538,7 +538,7 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 	pathData->extruderSlices.push_back(ExtruderSlice());
 
 
-	Polygons& paths = pathData->extruderSlices[0].paths;
+	Polygons& paths = pathData->extruderSlices[0].infills;
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{
