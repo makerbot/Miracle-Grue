@@ -342,22 +342,7 @@ private:
 };
 #endif
 
-//
-// The Slice is a series of tubes
-//
-// tubes are plastic extrusions
-class TubesInSlice
-{
-public:
-	TubesInSlice(Scalar z)
-		:z(z)
-	{
-	}
 
-	Scalar z;
-	std::vector<Segment> infill;
-	std::vector< std::vector<Segment> > outlines;
-};
 
 // little function that does everything...
 // loads an stl, makes slices, returns extrusions
@@ -367,9 +352,17 @@ void sliceAndPath(	Meshy &mesh,
 					double tubeSpacing,
 					double angle,
 					const char* scadFile,
-					std::vector< TubesInSlice > &allTubes);
+					std::vector< SliceData > &allTubes);
 
-void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice);
+//void updateSlices(std::vector<SliceData> & slices);
+
+void createPolysFromInfillSegments(const std::vector<Segment> &infillSegments,
+									Polygons& infills);
+
+void createPolysFromloopSegments(const std::vector< std::vector<Segment> >  &outlinesSegments,
+									Polygons& loops);
+
+// void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice);
 
 } // namespace
 

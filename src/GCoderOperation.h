@@ -220,7 +220,7 @@ private:
 
 void writeGcodeFile(const Configuration &config,
 					const char* gcodeFilePath,
-					const std::vector< mgl::TubesInSlice> & allTubes);
+					const std::vector< mgl::SliceData> & allTubes);
 
 /**
  * GCoderOperation creates gcode from a stream of path envelopes.

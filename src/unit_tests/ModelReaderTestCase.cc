@@ -379,13 +379,13 @@ void batchProcess(	Scalar firstLayerZ,
 		Meshy mesh(firstLayerZ, layerH);
 		loadMeshyFromStl(mesh, modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
-		std::vector< TubesInSlice > allTubes;
+		std::vector< SliceData > slices;
 		sliceAndPath( mesh,
 					layerW,
 					tubeSpacing,
 					angle,
 					scadFile.c_str(),
-					allTubes);
+					slices);
 
 
 		t1=clock()-t0;

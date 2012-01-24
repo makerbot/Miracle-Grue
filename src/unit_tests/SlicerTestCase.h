@@ -13,7 +13,7 @@ class SlicerTestCase : public CPPUNIT_NS::TestFixture
     CPPUNIT_TEST( testNormals );
     CPPUNIT_TEST( testCut );
     CPPUNIT_TEST( testInset );
-
+    CPPUNIT_TEST( testAngles );
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -29,6 +29,7 @@ protected:
 
   void testCut();
   void testInset();
+  void testAngles();
 };
 
 

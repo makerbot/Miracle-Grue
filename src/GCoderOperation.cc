@@ -526,23 +526,24 @@ void GCoderOperation::wrapAndEmit(const stringstream &ss)
 	data->release();
 }
 
-void writeGcodeFile(const Configuration &config, const char* gcodeFilePath, const std::vector<TubesInSlice> & allTubes)
+
+
+
+void writeGcodeFile(const Configuration &config,
+					const char* gcodeFilePath,
+					const std::vector<SliceData> & slices)
 {
     GCoder gcoder = GCoder();
     gcoder.loadData(config);
     std::ofstream gout(gcodeFilePath);
     gcoder.writeStartOfFile(gout);
 
-    ProgressBar progress(allTubes.size());
-    for(int i = 0;i < allTubes.size();i++){
+    ProgressBar progress(slices.size());
+    for(int i = 0;i < slices.size();i++){
         progress.tick();
         cout.flush();
-        // i is the slice index
-        const TubesInSlice & tubesInSlice = allTubes[i];
-        SliceData data(tubesInSlice.z, i);
-        addPathsForSlice(data, tubesInSlice);
-        // paths.push_back(data);
-        gcoder.writeSlice(gout, data);
+        const SliceData &slice = slices[i];
+        gcoder.writeSlice(gout, slice);
     }
     gcoder.writeGcodeEndOfFile(gout);
     gout.close();
@@ -553,7 +554,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 {
 
 	GCoder &gcoder = *this;
-	double layerZ = sliceData.positionZ;
+	double layerZ = sliceData.z;
 	unsigned int extruderCount = sliceData.extruderSlices.size();
 
 	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;

@@ -19,7 +19,7 @@
 
 #include "mgl/meshy.h"
 #include "mgl/slicy.h"
-
+#include "mgl/scadtubefile.h"
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SlicerTestCase );
@@ -326,6 +326,8 @@ bool Point2sSameSame(const Vector2 &a, const Vector2 &b)
 	return sameSame(dx*dx + dy*dy,0);
 }
 
+/*
+
 void insetCorner(const Vector2 &a, const Vector2 &b, const Vector2 &c,
 					Scalar insetDist,
 					Scalar facetsPerCircle,
@@ -359,9 +361,7 @@ void insetCorner(const Vector2 &a, const Vector2 &b, const Vector2 &c,
 
 void SlicerTestCase::testInset()
 {
-
 	Scalar insetDist = 2.0;
-
 	CPPUNIT_ASSERT(1==0);
 
 	Vector2 a(0,0);
@@ -373,9 +373,120 @@ void SlicerTestCase::testInset()
 			insetDist,
 			12,
 			results);
+}
+*/
+
+
+/*
+def vector_angle(v1, v2):
+    dot = vector_dot(v1,v2)
+    d1 = vector_length(v1)
+    d2 = vector_length(v2)
+    cos_theta = dot / (d1 * d2)
+    if cos_theta > 1.0: cos_theta = 1.0
+    if cos_theta < -1.: cos_theta = -1.0
+    theta =  pi - acos(cos_theta)
+    return theta;
+
+def angle_3_points(i, j, k):
+    """
+    get angle between three points I,J,K where point J is the center point
+    theory behind angle calculation
+    d1 = distance between I & J, d2 = distance between J & K
+    cos(theta) = (dot product of d1 & d2)/(d1*d2)
+    """
+    v1 = vector_sub(i, j) #  v1 = substractVector(I,J);
+    v2 = vector_sub(j, k) # substractVector(J,K);
+    theta = vector_angle(v1, v2)
+    return theta
+*/
+
+// returns the angle between 2 vectors
+Scalar angleFromVector2s(const Vector2 &a, const Vector2 &b)
+{
+	Scalar dot = a.dotProduct(b);
+	Scalar d1 = a.magnitude();
+	Scalar d2 = b.magnitude();
+	Scalar cosTheta = dot / (d1 * d2);
+	if (cosTheta >  1.0) cosTheta  = 1;
+	if (cosTheta < -1.0) cosTheta = -1;
+	Scalar theta = M_PI - acos(cosTheta);
+	return theta;
+}
+
+// returns the angle between 3 points
+Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k)
+{
+	Vector2 a = i - j;
+	Vector2 b = j - k;
+	Scalar theta = angleFromVector2s(a,b);
+	return theta;
+}
+
+void SlicerTestCase::testAngles()
+{
+
+	double t = 1e-10;
+
+	Vector2 i(1,1);
+	Vector2 j(0,0);
+	Vector2 k(2,-2);
+
+	Scalar angle0 = angleFromVector2s(i, k);
+
+	Vector2 p (12,18);
+	i += p;
+	j += p;
+	k += p;
+
+	Scalar angle1 = angleFromPoint2s(i, j, k);
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(M_PI/2, angle0, t);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0, angle1 - angle0, t);
+}
+
+
+void SlicerTestCase::testInset()
+{
+	Polygons polys;
+	polys.push_back(Polygon());
+	Polygon& square = polys[0];
+
+	Vector2 a(1,1);
+	Vector2 b(1,-1);
+	Vector2 c(-1,-1);
+	Vector2 d(-1,1);
+
+	square.push_back(a);
+	square.push_back(b);
+	square.push_back(c);
+	square.push_back(d);
+	square.push_back(a);
+
+	std::vector<Segment> segments;
+
+	segments.push_back(Segment(a,b) );
+	segments.push_back(Segment(b,c) );
+	segments.push_back(Segment(c,d) );
+	segments.push_back(Segment(d,a) );
+
+
+	ScadTubeFile f;
+	f.open("./test_cases/slicerTestCase/output/testInsetSquare.scad", 0.30, 0.5, 1);
+	f.writePolygons("poly_", "outline", polys, 0, 0);
+
+	f.writeSegments("segment_", "outline_segments", segments, 1, 0);
+	std::ofstream &out = f.getOut();
+
+	out << "poly_0();" << endl;
+	out << "segment_0();" << endl;
+
+
+	f.close();
 
 
 }
+
 
 
 

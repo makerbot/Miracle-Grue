@@ -142,7 +142,7 @@ int main(int argc, char *argv[], char *envp[])
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
-	std::vector< TubesInSlice >  allTubes;
+	std::vector< SliceData >  slices;
 
 	cout << "Slicing" << endl;
 
@@ -151,9 +151,9 @@ int main(int argc, char *argv[], char *envp[])
 			tubeSpacing,
 			angle,
 			scadFile.c_str(),
-			allTubes); //paths);
+			slices); //paths
 
-    writeGcodeFile(config, gcodeFile.c_str(), allTubes);
+	writeGcodeFile(config, gcodeFile.c_str(), slices);
 
 	cout << endl << "Done!" << endl;
 

@@ -24,17 +24,25 @@ void miracleGrue(const char *configFilePath, const char *modelFilePath)
     config.readFromFile(configFileName.c_str());
     Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
     loadMeshyFromStl(mesh, modelFile.c_str());
-    std::vector<TubesInSlice> allTubes;
-    string scadFile("./test_cases/slicerCupTestCase/");
+
+    string scadFile("./test_cases/slicerCupTestCase/output/");
     scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".scad");
-    string gcodeFile("./test_cases/slicerCupTestCase/");
+    string gcodeFile("./test_cases/slicerCupTestCase/output/");
     gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".gcode");
 
-    cout << "Slicing the model" << endl;
-    sliceAndPath(mesh, config["slicer"]["layerW"].asDouble(), config["slicer"]["tubeSpacing"].asDouble(), config["slicer"]["angle"].asDouble(), scadFile.c_str(), allTubes);
+    cout << "Slicing: " << modelFilePath << endl;
+
+    //std::vector<TubesInSlice> allTubes;
+    std::vector<SliceData> slices;
+    sliceAndPath(	mesh,
+    				config["slicer"]["layerW"].asDouble(),
+    				config["slicer"]["tubeSpacing"].asDouble(),
+    				config["slicer"]["angle"].asDouble(),
+    				scadFile.c_str(),
+    				slices);
 
     cout << "Writing the gcode to \"" << gcodeFile << "\""<< endl;
-    writeGcodeFile(config, gcodeFile.c_str(), allTubes);
+    writeGcodeFile(config, gcodeFile.c_str(), slices);
 }
 
 void SlicerCupTestCase::testIndividuals()
@@ -42,19 +50,19 @@ void SlicerCupTestCase::testIndividuals()
 	string configFileName("miracle.config");
 	vector<string> models;
 
-	models.push_back("./slicer_cup/3D_Knot.stl");
-	models.push_back("./slicer_cup/Hollow_Pyramid.stl");
-	models.push_back("./slicer_cup/linkCup.stl");
-	models.push_back("./slicer_cup/ultimate_calibration_test.stl");
-	models.push_back("./slicer_cup/Cathedral_Crossing_fixed.stl");
-
+	string stlDir("./test_cases/slicerCupTestCase/stls/");
+	models.push_back(stlDir + "3D_Knot.stl");
+	models.push_back(stlDir + "Hollow_Pyramid.stl");
+	models.push_back(stlDir + "linkCup.stl");
+	models.push_back(stlDir + "ultimate_calibration_test.stl");
+	models.push_back(stlDir + "Cathedral_Crossing_fixed.stl");
 
 	for(int i=0; i< models.size(); i++)
 	{
 		cout << endl;
 		cout << endl;
 		cout << endl;
-		cout << "-----------------------------" << endl;
+		cout << "---------- " << (i+1) << "/"<<  models.size() << " -------------------" << endl;
 		string modelFile = models[i];
 		cout << endl;
 		cout << modelFile << endl;
@@ -63,26 +71,23 @@ void SlicerCupTestCase::testIndividuals()
 		cout << computer.clock.now() << endl;
 		cout << "DONE!" << endl;
 	}
+
 	cout << endl;
 	cout << endl;
 	cout << endl;
 }
 
+void SlicerCupTestCase::testOddShapes()
+{
+	miracleGrue("miracle.config","./inputs/holy_cube.stl");
+}
+
 void SlicerCupTestCase::testAllTogeter()
 {
-	string configFileName("miracle.config");
-	vector<string> models;
-
-	models.push_back("./slicer_cup/all_together.stl");
-
-	for(int i=0; i< models.size(); i++)
-	{
-		string modelFile = models[i];
-		cout << endl;
-		cout << modelFile << endl;
-		cout << computer.clock.now() << endl;
-		miracleGrue(configFileName.c_str(), modelFile.c_str());
-	}
+	cout << endl;
+	cout << computer.clock.now() << endl;
+	miracleGrue("miracle.config",
+				"./test_cases/slicerCupTestCase/stls/all_together.stl");
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
@@ -90,40 +95,22 @@ void SlicerCupTestCase::testAllTogeter()
 
 void SlicerCupTestCase::testCathedral_Crossing_bad()
 {
-	string configFileName("miracle.config");
-	vector<string> models;
-
-	models.push_back("./slicer_cup/Cathedral_Crossing.stl");
-
-	for(int i=0; i< models.size(); i++)
-	{
-
-		string modelFile = models[i];
-		cout << endl;
-		cout << modelFile << endl;
-		cout << computer.clock.now() << endl;
-		miracleGrue(configFileName.c_str(), modelFile.c_str());
-	}
+	cout << endl;
+	cout << computer.clock.now() << endl;
+	miracleGrue("miracle.config",
+				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl");
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
+
 }
 
 void SlicerCupTestCase::testCathedral_Crossing_fixed()
 {
-	string configFileName("miracle.config");
-	vector<string> models;
-
-	models.push_back("./slicer_cup/Cathedral_Crossing_fixed.stl");
-
-	for(int i=0; i< models.size(); i++)
-	{
-
-		string modelFile = models[i];
-		cout << endl;
-		cout << modelFile << endl;
-		cout << computer.clock.now() << endl;
-		miracleGrue(configFileName.c_str(), modelFile.c_str());
-	}
+	cout << endl;
+	cout << computer.clock.now() << endl;
+	miracleGrue("miracle.config",
+				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl");
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
+
 }

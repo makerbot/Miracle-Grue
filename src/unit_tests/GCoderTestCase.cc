@@ -597,47 +597,16 @@ void GCoderTestCase::testKnot()
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
-	std::vector< TubesInSlice > allTubes;
+	std::vector< SliceData > slices;
 	sliceAndPath(mesh,
 			config["slicer"]["layerW"].asDouble(),
 			config["slicer"]["tubeSpacing"].asDouble(),
 			config["slicer"]["angle"].asDouble(),
 			scadFile.c_str(),
-			allTubes);
+			slices);
 
-	vector<PathData*> paths;
-	for (int i=0; i< allTubes.size(); i++)
-	{
-		// i is the slice index
+	writeGcodeFile(config, SINGLE_EXTRUDER_KNOT, slices);
 
-		TubesInSlice &tubes = allTubes[i];
-		Scalar z = tubes.z;
-
-		for(int j=0; j < tubes.outlines.size(); j++)
-		{
-			// j is the outline loop index
-
-			std::vector<Segment> &loopTubes = tubes.outlines[j];
-			PathData *path = createPathFromTubes(loopTubes, z);
-			paths.push_back(path);
-		}
-
-		PathData *path = createPathFromTubes(tubes.infill, z);
-		paths.push_back(path);
-	}
-
-	cout << "Sliced until " << myComputer.clock.now() << endl;
-	cout << endl;
-
-	srand( time(NULL) );
-	run_tool_chain(config, paths);
-
-	// cleanup the data
-	for(std::vector<PathData*>::iterator it = paths.begin(); it != paths.end(); it++)
-	{
-		PathData* path = *it;
-		//path->release();
-	}
 
 
 }

@@ -35,63 +35,6 @@ public:
 
 };
 
-/*
-
-
-module infill(points, paths)
-{
-     for (p= paths)
-    {
-        extrusion(points[p[0]][0],points[p[0]][1],points[p[0]][2],points[p[1]][0],points[p[1]][1],points[p[1]][2] );
-    }
-}
-
-module outline(points, paths)
-{
-
-    for (p= paths)
-    {
-       out_line(points[p[0]][0],points[p[0]][1],points[p[0]][2],points[p[1]][0],points[p[1]][1],points[p[1]][2] );
-    }
-
-}
-
-
-module out_tou()
-{
-    outlines =[
-               [
-                   [-26.471220,  20.921970, 0.110000],
-                   [-25.441967,  20.921970, 0.110000],
-                   [ 25.262779,  20.921970, 0.110000],
-                   [ 25.262779, -21.743956, 0.110000],
-                   [ 25.262779, -22.610029, 0.110000],
-                   [ 24.233526, -22.610029, 0.110000],
-                   [-26.471220, -22.610029, 0.110000],
-                   [-26.471220,  20.055897, 0.110000],
-                   [-26.471220,  20.921970, 0.110000],
-                ],
-               [
-                   [-26.471220,  20.921970, 1],
-                   [-25.441967,  20.921970, 1],
-                   [ 25.262779,  20.921970, 1],
-                   [ 25.262779, -21.743956, 1],
-                   [ 25.262779, -22.610029, 1],
-                   [ 24.233526, -22.610029, 1],
-                   [-26.471220, -22.610029, 1],
-                   [-26.471220,  20.055897, 1],
-                   [-26.471220,  20.921970, 1],
-                ],
-
-              ];
-
-
-    p_0 = [ [0,1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,7], [7,8] ];
-    outline(outlines[0], p_0);
-    outline(outlines[1], p_0);
-}
-
-*/
 
 //
 // OpenSCAD file generator http://www.openscad.org/
@@ -99,14 +42,13 @@ module out_tou()
 class ScadTubeFile
 {
 	std::ofstream out;
-	double layerH;
-	double layerW;
+//	double layerH;
+//	double layerW;
 public:
-	ScadTubeFile( double layerH, double layerW)
-	 :layerH(layerH), layerW(layerW)
+	ScadTubeFile()
 	{}
 
-	void open(const char* filename)
+	void open(const char* filename, double layerH, double layerW,  unsigned int max)
 	{
 		out.open(filename, std::ios::out);
 		if(!out.good())
@@ -122,15 +64,15 @@ public:
 		//out.precision(18);
 	    out.setf(std::ios::fixed);
 
-
 	    out << "// use min and max to see individual layers " << std::endl;
 	    out << "min = 0;" << std::endl;
-	    out << "max = 0;" << std::endl;
-	    out << "triangles(min,max);" << std::endl;
+	    out << "max = " << max << ";" << std::endl;
+	    out << "// triangles(min,max);" << std::endl;
 	    out << "outlines(min,max);" << std::endl;
-	    out << "extrusions(min,max);" << std::endl;
+	    out << "// extrusions(min,max);" << std::endl;
 	    out << std::endl;
 	    out << "stl_color = [0,1,0, 0.025];" << std::endl;
+
 		out << "module out_line(x1, y1, z1, x2, y2, z2)" << std::endl;
 		out << "{" << std::endl;
 		out << "    tube(x1, y1, z1, x2, y2, z2, diameter1=0.4, diameter2=0, faces=4, thickness_over_width=1);" << std::endl;
@@ -146,11 +88,30 @@ public:
 		out << "    tube(x1, y1, z1, x2, y2, z2, diameter1=d, diameter2=d, faces=f, thickness_over_width=t);" << std::endl;
 		out << "}" << std::endl;
 
+		out << std::endl;
+		out << "module outline(points, paths)" << std::endl;
+		out << "{" << std::endl;
+		out << "    for (p= paths)" << std::endl;
+		out << "    {" << std::endl;
+		out << "       out_line(points[p[0]][0],points[p[0]][1],points[p[0]][2],points[p[1]][0],points[p[1]][1],points[p[1]][2] );" << std::endl;
+		out << "    }" << std::endl;
+		out << "}" << std::endl;
+		out << std::endl;
+
+		out << std::endl;
+		out << "module infill(points, paths)" << std::endl;
+		out << "{" << std::endl;
+		out << "     for (p= paths)" << std::endl;
+		out << "    {" << std::endl;
+		out << "        extrusion(points[p[0]][0],points[p[0]][1],points[p[0]][2], points[p[1]][0],points[p[1]][1],points[p[1]][2] );" << std::endl;
+		out << "    }" << std::endl;
+		out << "}" << std::endl;
+		out << std::endl;
+
 		out << "module corner(x, y, z, diameter, faces, thickness_over_width ){" << std::endl;
 		out << "	translate([x, y, z])  scale([1,1,thickness_over_width]) sphere( r = diameter/2, $fn = faces );" << std::endl;
 		out << "}" << std::endl;
 		out  << std::endl;
-
 
 	    out << "module tube(x1, y1, z1, x2, y2, z2, diameter1, diameter2, faces, thickness_over_width)" << std::endl;
 	    out << "{" << std::endl;
@@ -165,39 +126,153 @@ public:
 	    out << "			rotate([0,0,90]) cylinder(h = length, r1 = diameter1/2, r2 = diameter2/2, center = false, $fn = faces );" << std::endl;
 	    out << "}" << std::endl;
 
+	    out << std::endl;
+	    out << "module outline_segments(segments)" << std::endl;
+	    out << "{" << std::endl;
+	    out << "    for(seg = segments)" << std::endl;
+	    out << "    {" << std::endl;
+	    out << "        out_line(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
+	    out << "    }" << std::endl;
+	    out << "}" << std::endl;
+	    out << std::endl;
 	}
+
+	std::ofstream &getOut(){return out;}
+
 
 	void close()
 	{
 		out.close();
 	}
 
-//	void write(const char *str)
-//	{
-//		out << str;
-//	}
 
-	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
+
+	void writeOutlines(const Polygons &loops, Scalar z, int slice)
 	{
-		out << std::endl;
-		out << "module " << moduleName << slice << "()" << std::endl;
+
+		out << "module outlines_" << slice << "()" << std::endl;
 		out << "{" << std::endl;
-		out << "    color(stl_color)import_stl(\"" << stlName<< slice << ".stl\");" << std::endl;
+		out << "    points =[" << std::endl;
+		for (int i=0; i < loops.size(); i++)
+		{
+			out << "               [" << std::endl;
+			const Polygon& loop  = loops[i];
+			for (int j=0; j < loop.size(); j++)
+			{
+				Scalar x = loop[j].x;
+				Scalar y = loop[j].y;
+				out << "                   [" << x << ", " <<  y << ", " << z << "]," << std::endl;
+			}
+			out << "                ]," << std::endl;
+
+		}
+		out << "              ];" << std::endl;
+
+		out << "    segments =[" << std::endl;
+		for (int i=0; i < loops.size(); i++)
+		{
+			out << "               [" << std::endl;
+			const Polygon& loop  = loops[i];
+			for (int j=0; j < loop.size()-1; j++)
+			{
+				int a = j;
+				int b = j+1;
+				out << "                  [" << a << ", " <<  b << "]," << std::endl;
+			}
+			out << "              ]," << std::endl;
+		}
+		out << "            ];" << std::endl;
+
+		out << std::endl;
+		for (int i=0; i < loops.size(); i++)
+		{
+			out << "    outline(points[" << i << "], segments[" << i << "] );" << std::endl;
+		}
+		out << std::endl;
 		out << "}" << std::endl;
 
 	}
 
-	void writeExtrusionsModule(const char* name, const std::vector<mgl::Segment> &segments, int slice, Scalar z)
+	void writePolygons(const char* moduleName,
+						const char* implementation,
+							const Polygons &polygons,
+								Scalar z,
+									int slice)
 	{
-		writeTubesModule(name, "extrusion", segments, slice, z);
+		out << "module " << moduleName << slice << "()" << std::endl;
+		out << "{" << std::endl;
+		out << "    points =[" << std::endl;
+		for (int i=0; i < polygons.size(); i++)
+		{
+			out << "               [" << std::endl;
+			const Polygon& poly  = polygons[i];
+			for (int j=0; j < poly.size(); j++)
+			{
+				Scalar x = poly[j].x;
+				Scalar y = poly[j].y;
+				out << "                   [" << x << ", " <<  y << ", " << z << "]," << std::endl;
+			}
+			out << "                ]," << std::endl;
+
+		}
+		out << "              ];" << std::endl;
+
+		out << "    segments =[" << std::endl;
+		for (int i=0; i < polygons.size(); i++)
+		{
+			out << "               [" << std::endl;
+			const Polygon& poly  = polygons[i];
+			for (int j=0; j < poly.size()-1; j++)
+			{
+				int a = j;
+				int b = j+1;
+				out << "                  [" << a << ", " <<  b << "]," << std::endl;
+			}
+			out << "              ]," << std::endl;
+		}
+		out << "            ];" << std::endl;
+
+		out << std::endl;
+		for (int i=0; i < polygons.size(); i++)
+		{
+			out << "    " <<  implementation << "(points[" << i << "], segments[" << i << "] );" << std::endl;
+		}
+		out << std::endl;
+		out << "}" << std::endl;
+
 	}
 
-	void writeOutlinesModule(const char* name, const std::vector<std::vector<Segment> > &loops, int slice, Scalar z)
+	void writeSegments(const char* name,
+						const char* implementation,
+							const std::vector<Segment> &segments,
+							Scalar z,
+							int slice)
 	{
-		writeMultiTubesModule(name, "out_line", loops, slice, z);
+		out << "module " << name << slice << "()" << std::endl;
+		out << "{" << std::endl;
+		out << "    segments =[" << std::endl;
+		for (int i=0; i < segments.size(); i++)
+		{
+			const Segment& segment  = segments[i];
+			Scalar ax = segment.a[0];
+			Scalar ay = segment.a[1];
+			Scalar bx = segment.b[0];
+			Scalar by = segment.b[1];
+
+			out << "                   ";
+			out << "[[" << ax << ", " <<  ay << ", " << z << "],";
+			out << "[" << bx << ", " <<  by << ", " << z << "]],";
+			out << std::endl;
+		}
+
+		out << "              ];" << std::endl;
+		out << "    " <<  implementation << "(segments);" << std::endl;
+		out << "}" << std::endl;
+		out << std::endl;
 	}
 
-	void writeTrianglesModule(const char* name, const Meshy &mesh, unsigned int layerIndex) //const std::vector<BGL::Triangle3d>  &allTriangles, const TriangleIndices &trianglesForSlice)
+	void writeTrianglesModule(const char* name, const Meshy &mesh,
+								unsigned int layerIndex) //const std::vector<BGL::Triangle3d>  &allTriangles, const TriangleIndices &trianglesForSlice)
 	{
 		std::stringstream ss;
 		ss.setf(std::ios::fixed);
@@ -238,6 +313,28 @@ public:
 	}
 
 private:
+/*
+
+	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
+	{
+		out << std::endl;
+		out << "module " << moduleName << slice << "()" << std::endl;
+		out << "{" << std::endl;
+		out << "    color(stl_color)import_stl(\"" << stlName<< slice << ".stl\");" << std::endl;
+		out << "}" << std::endl;
+
+	}
+
+
+  	void writeExtrusionsModule(const char* name, const std::vector<mgl::Segment> &segments, int slice, Scalar z)
+	{
+		writeTubesModule(name, "extrusion", segments, slice, z);
+	}
+
+	void writeOutlinesModule(const char* name, const std::vector<std::vector<Segment> > &loops, int slice, Scalar z)
+	{
+		writeMultiTubesModule(name, "out_line", loops, slice, z);
+	}
 
 	void writeTubesModule(const char* name, const char* tubeType,const std::vector<Segment> &segments, int slice, Scalar z)
 	{
@@ -288,15 +385,7 @@ private:
 		out << "}" << std::endl;
 	}
 
-	void writePolygonModule(const char* name, unsigned int slice, Scalar z)
-	{
-		out << std::endl;
-		out << "module " << name << slice << "()"<< std::endl;
-		out << "{" << std::endl;
-
-		out << "}" << std::endl;
-
-	}
+*/
 
 public:
 	void writeSwitcher(int count)
@@ -307,7 +396,7 @@ public:
 		{
 			out << "	if(min <= "<< i <<" && max >=" << i << ")" << std::endl;
 			out << "	{" << std::endl;
-			out << "		out_"   << i << "();"<< std::endl;
+			out << "		outlines_"   << i << "();"<< std::endl;
 			out << "	}" << std::endl;
 		}
 		out << "}"<< std::endl;
@@ -329,7 +418,7 @@ public:
 		{
 			out << "	if(min <= "<< i <<" && max >=" << i << ")" << std::endl;
 			out << "	{" << std::endl;
-			out << "		fill_" << i << "();"<< std::endl;
+			out << "		infill_" << i << "();"<< std::endl;
 			out << "	}" << std::endl;
 		}
 		out << "}"<< std::endl;

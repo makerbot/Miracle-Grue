@@ -59,7 +59,7 @@ public:
         return y;
     }
 
-    void operator+=(const Vector2& v)
+    void operator +=(const Vector2& v)
     {
         x += v.x;
         y += v.y;
@@ -71,17 +71,26 @@ public:
         y -= v.y;
     }
 
+	Vector2 operator+(const Vector2& v) const
+	{
+		return Vector2(x+v.x, y+v.y);
+	}
 
-     Vector2 operator+(const Vector2& v) const
-     {
-         return Vector2(x+v.x, y+v.y);
-     }
+	Vector2 operator-(const Vector2& v) const
+	{
+		return Vector2(x-v.x, y-v.y);
+	}
 
-     Vector2 operator-(const Vector2& v) const
-     {
-         return Vector2(x-v.x, y-v.y);
-     }
+    void operator*=(const Scalar value)
+    {
+        x *= value;
+        y *= value;
+    }
 
+    Vector2 operator*(const Scalar value) const
+    {
+        return Vector2(x*value, y*value);
+    }
 
 	bool sameSame(const Vector2 &p) const
 	{
@@ -89,6 +98,40 @@ public:
 		Scalar dy = p.y -y;
 		return mgl::sameSame(0, dx*dx + dy*dy);
 	}
+
+    // the eucledian length
+    Scalar magnitude() const
+    {
+        return sqrt(squaredMagnitude());
+    }
+
+    // Gets the squared length of this vector.
+    Scalar squaredMagnitude() const
+    {
+        return x*x+y*y;
+    }
+
+    // makes you normal. Normal is the perfect size (1)
+    void normalise()
+    {
+        Scalar l = magnitude();
+        if (l > 0)
+        {
+            (*this) *= ((Scalar)1)/l;
+        }
+    }
+
+    Vector2 unit() const
+    {
+        Vector2 result = *this;
+        result.normalise();
+        return result;
+    }
+
+    Scalar dotProduct(const Vector2 &vector) const
+    {
+    	return x*vector.x + y*vector.y;
+    }
 };
 
 std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
@@ -98,6 +141,18 @@ std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
 struct Segment
 {
 	Vector2 a,b;
+
+	/*
+	index_t triangleId;
+	Segment(index_t triangleId)
+	:triangleId(triangleId)
+	{}
+	*/
+	Segment(){}
+
+	Segment(const Vector2 &a, const Vector2 &b)
+	:a(a), b(b){}
+
 };
 
 // base class for exceptions
@@ -243,6 +298,9 @@ class Triangle3
 {
 	Vector3 v0, v1, v2;
 
+	// calculated at load time
+	Vector2 offsetDir; // direction to offset
+	Vector3 cutDir;    // cutting direction
 
 public:
 
@@ -250,6 +308,14 @@ public:
 	:v0(v0),v1(v1),v2(v2)
 	{
 
+		Vector3 n = normal();
+		Vector3 up(0,0,1);
+		Vector3 c;
+		cutDir = n.crossProduct(up);
+
+		offsetDir.x = -n.x;
+		offsetDir.y = -n.y;
+		offsetDir.normalise();
 	}
 
 	// slices this triangle into a segment that
@@ -290,10 +356,7 @@ public:
 	// right hand normal.
 	Vector3 cutDirection() const
 	{
-		Vector3 n = normal();
-		Vector3 up(0,0,1);
-		Vector3 d = n.crossProduct(up);
-		return d;
+		return cutDir;
 	}
 
 	//
@@ -348,9 +411,26 @@ public:
 };
 
 
+//
+// The Slice is a series of tubes
+//
+// tubes are plastic extrusions
+class TubesInSlice
+{
+public:
+	TubesInSlice(Scalar z)
+		:z(z)
+	{
+	}
+
+	Scalar z;
+	std::vector<Segment> infill;
+	std::vector< std::vector<Segment> > outlines;
+};
 
 typedef std::vector<Vector2> Polygon;
 typedef std::vector<Polygon> Polygons;
+
 
 
 class ExtruderSlice
@@ -377,18 +457,18 @@ public:
 class SliceData
 {
 public:
+	// TubesInSlice tubes;
 
 	std::vector<ExtruderSlice > extruderSlices;
 
-	double positionZ;
+	double z;
 	index_t sliceIndex;
 
 	SliceData (double z, index_t sliceIndex)
-		:positionZ(z), sliceIndex(sliceIndex)
+		:z(z), sliceIndex(sliceIndex)//, tubes(z)
 	{
 
 	}
-
 
 };
 
