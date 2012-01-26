@@ -441,6 +441,7 @@ void insetSegments(const std::vector<LineSegment2> &segments,
 	assert(insets.size() == 0);
 	for(int i=0; i<segments.size(); i++)
 	{
+
 		LineSegment2 seg = segments[i];
 		Vector2 inset = getInsetNormal(seg);
 
@@ -497,6 +498,12 @@ void SlicerTestCase::testInset()
 
 	Scalar insetDist = 0.15;
 	std::vector<LineSegment2> insets;
+	std::vector<bool> convex;
+
+	convex.reserve(segments.size());
+	insets.reserve(segments.size()); // may be a little smaller
+
+
 	insetSegments(segments, insets, insetDist);
 	f.writeSegments("inset_", "outline_segments", insets, 1, 0);
 
@@ -537,7 +544,7 @@ void SlicerTestCase::testInset()
 	testInset2();
 }
 
-void dumpAngles(std::vector<LineSegment2> & segments)
+void dumpAngles1(std::vector<LineSegment2> & segments)
 {
     // grab 2 semgments, make sure they are in sequence
     // get the angle
@@ -563,6 +570,209 @@ void dumpAngles(std::vector<LineSegment2> & segments)
     }
 }
 
+Scalar internalAngle(const Vector2 &ab0, const Vector2 &ab1)
+{
+	assert(ab0.squaredMagnitude() > 0);
+	assert(ab1.squaredMagnitude() > 0);
+	Scalar a1 = atan2(ab0.y, ab0.x);
+	Scalar a2 = atan2(ab1.y, ab1.x);
+
+	if(a1 < 0) a1 = 2 * M_PI - a1;
+	if(a2 < 0) a2 = 2 * M_PI - a1;
+
+	return a2-a1;
+
+}
+
+void dumpAngles3(std::vector<LineSegment2> & segments)
+{
+    // grab 2 semgments, make sure they are in sequence
+    // get the angle
+    // inset
+    // ijkAngles(insets);
+
+	cout << "dumpAngles3" << endl;
+	cout << "v0, v1, angle" << endl;
+    cout << "---------------" << endl;
+
+    for(int id = 0;id < segments.size();id++){
+        //cout << id << " / " << insets.size() << endl;
+        LineSegment2 seg = segments[id];
+        unsigned int previousSegmentId;
+        if(id == 0)
+            previousSegmentId = segments.size() - 1;
+
+        else
+            previousSegmentId = id - 1;
+
+        Vector2 ab0 = segments[previousSegmentId].b - segments[previousSegmentId].a;
+        Vector2 ab1 = segments[id].b - segments[id].a ;
+
+        Scalar angle = internalAngle(ab0,ab1);
+        cout << ab0 << " , " << ab1 << " ,\t " << angle << endl;
+    }
+}
+
+void dumpAngles2(std::vector<LineSegment2> & segments)
+{
+    // grab 2 semgments, make sure they are in sequence
+    // get the angle
+    // inset
+    // ijkAngles(insets);
+
+	cout << "dumpAngles2" << endl;
+	cout << "v0, v1, angle" << endl;
+    cout << "---------------" << endl;
+
+    for(int id = 0;id < segments.size();id++){
+        //cout << id << " / " << insets.size() << endl;
+        LineSegment2 seg = segments[id];
+        unsigned int previousSegmentId;
+        if(id == 0)
+            previousSegmentId = segments.size() - 1;
+
+        else
+            previousSegmentId = id - 1;
+
+        Vector2 ab0 = segments[previousSegmentId].b - segments[previousSegmentId].a;
+        Vector2 ab1 = segments[id].b - segments[id].a ;
+
+        Scalar angle = angleFromVector2s(ab0,ab1);
+        cout << ab0 << " , " << ab1 << " ,\t " << angle << endl;
+    }
+}
+
+double AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
+    double area2;
+
+    area2 = (b[0] - a[0] ) * (double)( c[1] - a[1]) -
+            (c[0] - a[0] ) * (double)( b[1] - a[1]);
+
+    return area2;
+}
+
+bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
+{
+	return AreaSign(i,j,k) < 0;
+}
+
+bool trim(LineSegment2 &s0, LineSegment2 &s1)
+{
+	Vector2 intersection;
+	intersection.x = 0;
+	intersection.y = 0;
+	bool success = segmentSegmentIntersection(	s0.a[0], s0.a[1],
+												s0.b[0], s0.b[1],
+												s1.a[0], s0.a[1],
+												s1.b[0], s0.b[1],
+												intersection.x,
+												intersection.y);
+	cout << "Trimming: " <<endl;
+	cout << " a0" << s0.a << endl;
+	cout << " b0" << s0.b << endl;
+	cout << " a1" << s1.a << endl;
+	cout << " b1" << s1.b << endl;
+
+	s0.b = intersection;
+	s1.a = intersection;
+	CPPUNIT_ASSERT(success);
+	return success;
+}
+
+void trimSegments(std::vector<LineSegment2> & segments, std::vector<bool> convexVertices)
+{
+	for(int id = 0;id < segments.size();id++){
+		LineSegment2 &currentSegment = segments[id];
+		unsigned int previousSegmentId;
+		if(id == 0)
+			previousSegmentId = segments.size() - 1;
+		else
+			previousSegmentId = id - 1;
+		LineSegment2 &previousSegment = segments[previousSegmentId];
+
+		Vector2 & i = previousSegment.a;
+		Vector2 & j = currentSegment.a;
+		Vector2 & k = currentSegment.b;
+
+
+
+		//Scalar angle = angleFromPoint2s(i, j, k);
+		bool convex = convexVertices[id];
+//		if(!convex)
+//		{
+//			angle = 2 * M_PI - angle;
+//		}
+//		else
+		if (convex)
+		{
+			cout << "Trimming " << id << endl;
+//			cout << "Previous: [", previousSegment.a << ", " << previousSegment.b << "]" << ", current: " << currentSegment.a << endl;
+			bool trimmed = trim(previousSegment, currentSegment);
+
+		}
+		// cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
+
+	}
+}
+
+void createConvexList(const std::vector<LineSegment2> & segments, std::vector<bool> &convex)
+{
+    for(int id = 0;id < segments.size();id++){
+        //cout << id << " / " << insets.size() << endl;
+        LineSegment2 seg = segments[id];
+        unsigned int previousSegmentId;
+        if(id == 0)
+            previousSegmentId = segments.size() - 1;
+        else
+            previousSegmentId = id - 1;
+
+        const Vector2 & i = segments[previousSegmentId].a;
+        const Vector2 & j = segments[id].a;
+        const Vector2 & k = segments[id].b;
+
+        CPPUNIT_ASSERT(j.sameSame(segments[previousSegmentId].b));
+
+        Scalar angle = angleFromPoint2s(i, j, k);
+        bool vertex = convexVertex(i,j,k);
+        convex.push_back(vertex);
+    }
+}
+
+void dumpAngles4(std::vector<LineSegment2> & segments)
+{
+    // grab 2 semgments, make sure they are in sequence
+    // get the angle
+    // inset
+    // ijkAngles(insets);
+
+	cout << endl;
+	cout << "dumpAngles4" << endl;
+	cout << "i,j,k, angle, convex" << endl;
+    cout << "---------------" << endl;
+
+    for(int id = 0;id < segments.size();id++){
+        //cout << id << " / " << insets.size() << endl;
+        LineSegment2 seg = segments[id];
+        unsigned int previousSegmentId;
+        if(id == 0)
+            previousSegmentId = segments.size() - 1;
+        else
+            previousSegmentId = id - 1;
+
+        Vector2 & i = segments[previousSegmentId].a;
+        Vector2 & j = segments[id].a;
+        Vector2 & k = segments[id].b;
+        Scalar angle = angleFromPoint2s(i, j, k);
+        bool convex = convexVertex(i,j,k);
+        if(!convex)
+        {
+        	angle = 2 * M_PI - angle;
+        }
+        cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
+    }
+}
+
 void SlicerTestCase::testInset2()
 {
 	cout << endl;
@@ -582,29 +792,40 @@ void SlicerTestCase::testInset2()
 	segments.push_back(LineSegment2(e,f));
 	segments.push_back(LineSegment2(f,a));
 
+
 	ScadTubeFile fscad;
 	fscad.open("./test_cases/slicerTestCase/output/testInset2.scad", 0.30, 0.5, 1);
 
-	fscad.writeSegments("segment_", "color([1,0,0,1])outline_segments", segments, 1, 0);
+	fscad.writeSegments("segment_", "color([1,0,0,1])outline_segments", segments, 0, 0);
+
+	std::vector<bool>convex;
+	createConvexList(segments, convex);
 
 	Scalar insetDist = 0.15;
 	std::vector<LineSegment2> insets;
 	insetSegments(segments, insets, insetDist);
-	fscad.writeSegments("inset_", "outline_segments", insets, 1, 0);
+	fscad.writeSegments("inset_", "outline_segments", insets, 0.5, 0);
 
+	cout << "trimming" << endl;
+	trimSegments(insets, convex);
+	fscad.writeSegments("inset_", "outline_segments", insets, 1, 1);
 	std::ofstream &out = fscad.getOut();
 	out << "segment_0();" << endl;
 	out << "inset_0();" << endl;
-
+	out << "inset_1();" << endl;
 	double tol = 1e-6;
 	// grab 2 semgments, make sure they are in sequence
 	// get the angle
 	// inset
 
 	cout << "segments" << endl;
-	dumpAngles(segments);
-	cout << "insets" << endl;
-    dumpAngles(insets);
+//	dumpAngles1(segments);
+//	dumpAngles2(segments);
+//	dumpAngles3(segments);
+
+	dumpAngles4(segments);
+	//cout << "insets" << endl;
+    //dumpAngles(insets);
 
 	fscad.close();
 
