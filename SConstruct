@@ -129,7 +129,7 @@ default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
 
-mand_ops = ['src/Configuration.cc', 
+mand_ops = ['src/mgl/configuration.cc', 
 	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
 	'src/MandTest/MandCarveOperation.cc','src/MandTest/RegionEnvelope.cc',
 	'src/MandTest/MandInsetOperation.cc', 'src/MandTest/ShellEnvelope.cc',
