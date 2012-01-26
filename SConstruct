@@ -23,11 +23,11 @@ if ( GetOption('unit_test') != None):
 	print "running unit test"
 	run_unit_tests = True;
 	
-AddOption('--valgrind')
-run_valgrind = False
-if ( GetOption('valgrind') != None):
-	print "run valgrind"
-	run_valgrind = True;
+#AddOption('--valgrind')
+#run_valgrind = False
+#if ( GetOption('valgrind') != None):
+#	print "run valgrind"
+#	run_valgrind = True;
 
 
 def runThisTest(program, run_unit_tests):
@@ -107,7 +107,7 @@ json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
 
 miracleGrue_cc = ['src/Operation.cc'] 
 
-env.Library('./bin/lib/mgl', mgl_cc + json_cc)
+env.Library('./bin/lib/mgl', mgl_cc )  
 
 env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include'])
 
@@ -123,32 +123,11 @@ file_r      = ['src/ModelFileReaderOperation.cc', 	'src/MeshData.cc',]
 example_op  = ['src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
-default_libs = [ '_json','miracleGrue', 'mgl']
+default_libs = [ 'mgl', '_json',  'miracleGrue']
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
-
-mand_ops = ['src/mgl/configuration.cc', 
-	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
-	'src/MandTest/MandCarveOperation.cc','src/MandTest/RegionEnvelope.cc',
-	'src/MandTest/MandInsetOperation.cc', 'src/MandTest/ShellEnvelope.cc',
-	'src/MandTest/MandInfillOperation.cc',
-	'src/MandTest/MandWriteSvgOperation.cc',
-	'src/MandTest/MandPatherOperation.cc','src/PathData.cc']
-
-#env.Program(	'./farMandolineTest',
-#				mix(['FarScratchpad.cc'],
-#					mand_ops ),
-#				LIBS = default_libs + ['bgl'],
-#				LIBPATH = default_libs_path, 
-#				CPPPATH = default_includes )
-
-#env.Program(  	'./bin/tests/mod',   
-#				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, config, slicer), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
 
 
 p = env.Program( 	'./bin/tests/slicerUnitTest', 
@@ -166,63 +145,11 @@ p = env.Program(  	'./bin/tests/modelReaderUnitTest',
 				CPPPATH= ['..'])
 runThisTest(p, run_unit_tests)
 
-
-p = env.Program('./bin/tests/exampleOpUnitTest',
-				mix(['src/unit_tests/ExampleOpTestCase.cc'],
-					file_w, unit_test, example_op),
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH = default_includes)
-runThisTest(p, run_unit_tests)
-
-
-		
-p = env.Program(	'./bin/tests/fileWriterUnitTest',
-				mix(['src/unit_tests/FileWriterTestCase.cc'],
-					file_w,  unit_test),
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH = default_includes)
-runThisTest(p, run_unit_tests)
-
-#env.Program(	'./bin/tests/queryInterfaceUnitTest',
-#				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
-#					file_w, config, unit_test),
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path, 
-#				CPPPATH = default_includes)
-		
-	
-p = env.Program(	'./bin/tests/configUnitTest',
-				mix(['src/unit_tests/ConfigTestCase.cc'], unit_test),
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path , 
-				CPPPATH = default_includes)
-runThisTest(p, run_unit_tests)
-	
-			
 p = env.Program( 	'./bin/tests/gcoderUnitTest', 
-				mix(['src/unit_tests/GCoderTestCase.cc', 'src/mgl/mgl.cc'], unit_test, pather, gcoder, file_w), 
+				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test, pather, gcoder, file_w), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= default_includes)
-runThisTest(p, run_unit_tests)
-	
-	
-p = env.Program(  	'./bin/tests/regionerUnitTest',   
-				mix(['src/unit_tests/RegionerTestCase.cc'], pather, unit_test, regioner), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-
-runThisTest(p, run_unit_tests)
-
-p = env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
-				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
-    			LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= [".."])
-
+				CPPPATH= default_includes )
 runThisTest(p, run_unit_tests)
 
 
@@ -233,10 +160,90 @@ p = env.Program(  	'./bin/tests/slicerCupUnitTest',
 				CPPPATH= [".."])
 runThisTest(p, run_unit_tests)	
 
+	
+p = env.Program(  	'./bin/tests/regionerUnitTest',   
+				mix(['src/unit_tests/RegionerTestCase.cc'], pather, unit_test, regioner), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+
+runThisTest(p, run_unit_tests)
+
 p = env.Program('./bin/miracle_grue', 
-		mix(['src/morphogen.cc'],  gcoder, file_w ),
-		LIBS = default_libs + debug_libs,
+		mix(['src/morphogen.cc'] ),
+		LIBS = ['mgl', '_json'],
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
+
+
+
+#p = env.Program('./bin/tests/exampleOpUnitTest',
+#				mix(['src/unit_tests/ExampleOpTestCase.cc'],
+#					file_w, unit_test, example_op),
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH = default_includes)
+#runThisTest(p, run_unit_tests)
+#
+#
+#		
+#p = env.Program(	'./bin/tests/fileWriterUnitTest',
+#				mix(['src/unit_tests/FileWriterTestCase.cc'],
+#					file_w,  unit_test),
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH = default_includes)
+#runThisTest(p, run_unit_tests)
+
+
+#env.Program(	'./bin/tests/queryInterfaceUnitTest',
+#				mix(['src/unit_tests/QueryInterfaceTestCase.cc'],
+#					file_w, config, unit_test),
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path, 
+#				CPPPATH = default_includes)
+		
+
+#mand_ops = ['src/mgl/configuration.cc', 
+#	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
+#	'src/MandTest/MandCarveOperation.cc','src/MandTest/RegionEnvelope.cc',
+#	'src/MandTest/MandInsetOperation.cc', 'src/MandTest/ShellEnvelope.cc',
+#	'src/MandTest/MandInfillOperation.cc',
+#	'src/MandTest/MandWriteSvgOperation.cc',
+#	'src/MandTest/MandPatherOperation.cc','src/PathData.cc']
+
+#env.Program(	'./farMandolineTest',
+#				mix(['FarScratchpad.cc'],
+#					mand_ops ),
+#				LIBS = default_libs + ['bgl'],
+#				LIBPATH = default_libs_path, 
+#				CPPPATH = default_includes )
+
+#env.Program(  	'./bin/tests/mod',   
+#				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, config, slicer), 
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH= ['..'])
+		
+	
+#p = env.Program(	'./bin/tests/configUnitTest',
+#				mix(['src/unit_tests/ConfigTestCase.cc'], unit_test),
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path , 
+#				CPPPATH = default_includes)
+#runThisTest(p, run_unit_tests)
+#	
+#			
+#
+#
+#p = env.Program(  	'./bin/tests/chainIntegrationUnitTest',   
+#				mix(['src/unit_tests/ChainIntegrationTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
+#    			LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH= [".."])
+#
+#runThisTest(p, run_unit_tests)
+
+
 		
 		

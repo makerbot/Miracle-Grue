@@ -26,6 +26,41 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 	return s;
 }
 
+Vector2 unitVector(const Vector2& a, const Vector2& b)
+{
+	double dx = b.x - a.x;
+	double dy = b.y - a.y;
+	double length = sqrt(dx *dx + dy * dy);
+	Vector2 r(dx/length , dy/length);
+	return r;
+}
+
+//
+// computes 2 positions (one before and one at the end of) the polygon and stores them in start and stop.
+// These positions are aligned with the fisrt line and last line of the polygon.
+// LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
+// LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
+void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut, Vector2 &start, Vector2 &end)
+{
+	size_t count =  polygon.size();
+	assert(count >= 2);
+
+	const Vector2 &a = polygon[0];	// first element
+	const Vector2 &b = polygon[1];
+
+	const Vector2 &c = polygon[count-2];
+	const Vector2 &d = polygon[count-1]; // last element
+
+	Vector2 ab = unitVector(a,b);
+	Vector2 cd = unitVector(c,d);
+
+	start.x = a.x - ab.x * leadIn;
+	start.y = a.y - ab.y * leadIn;
+	end.x   = d.x + cd.x * leadOut;
+	end.y   = d.y + cd.y * leadOut;
+
+}
+
 void mgl::writeGcodeFile(const Configuration &config,
 					const char* gcodeFilePath,
 					const std::vector<SliceData> & slices)
@@ -251,5 +286,230 @@ void GCoder::writeAnchor(std::ostream &ss)
 	gcoder.extruders[0].g1(ss, dx, dy, 0.6, 0.2 * gcoder.extruders[0].slowFeedRate , NULL);
 	ss << endl;
 }
+
+void GCoder::loadData(const Configuration& conf)
+{
+
+	programName = conf.root["programName"].asString();
+	versionStr  = conf.root["versionStr"].asString();
+	machineName = conf.root["machineName"].asString();
+	firmware    = conf.root["firmware"].asString();		// firmware revision
+	gcodeFilename = conf.root["gcodeFilename"].asString();
+
+	homing.xyMaxHoming = conf.root["homing"]["xyMaxHoming"].asBool();
+	homing.zMaxHoming  = conf.root["homing"]["zMaxHoming" ].asBool();
+
+	//fastFeed = conf.root["firmware"].asString();
+	scalingFactor = conf.root["scalingFactor"].asDouble();
+
+	platform.temperature = conf.root["platform"]["temperature"].asDouble();
+	platform.automated   = conf.root["platform"]["automated"].asBool();
+	platform.waitingPositionX = conf.root["platform"]["waitingPositionX"].asDouble();
+	platform.waitingPositionY = conf.root["platform"]["waitingPositionY"].asDouble();
+	platform.waitingPositionZ = conf.root["platform"]["waitingPositionZ"].asDouble();
+
+	outline.enabled  = conf.root["outline"]["enabled"].asBool();
+	outline.distance = conf.root["outline"]["distance"].asDouble();
+
+	assert(conf.root["extruders"].size() >= 1);
+
+	unsigned int extruderCount = conf.root["extruders"].size();
+	for(int i=0; i < extruderCount; i++)
+	{
+		ToolHead toolHead;
+		toolHead.coordinateSystemOffsetX = conf.root["extruders"][i]["waitingPositionZ"].asDouble();//(0
+		toolHead.extrusionTemperature = conf.root["extruders"][i]["extrusionTemperature"].asDouble();//(220),
+		toolHead.defaultExtrusionSpeed = conf.root["extruders"][i]["defaultExtrusionSpeed"].asDouble();//(3),
+		toolHead.slowFeedRate = conf.root["extruders"][i]["slowFeedRate"].asDouble();//(1080),
+		toolHead.slowExtrusionSpeed = conf.root["extruders"][i]["slowExtrusionSpeed"].asDouble();//(1.0),
+		toolHead.fastFeedRate = conf.root["extruders"][i]["fastFeedRate"].asDouble();//;(3000),
+		toolHead.fastExtrusionSpeed = conf.root["extruders"][i]["fastExtrusionSpeed"].asDouble();//(2.682),
+		toolHead.nozzleZ = conf.root["extruders"][i]["nozzleZ"].asDouble();
+		toolHead.reversalExtrusionSpeed = conf.root["extruders"][i]["reversalExtrusionSpeed"].asDouble();
+
+		toolHead.leadIn = conf.root["extruders"][i]["leadIn"].asDouble();
+		toolHead.leadOut = conf.root["extruders"][i]["leadOut"].asDouble();
+
+		extruders.push_back(toolHead);
+	}
+
+}
+
+void GCoder::writePaths(std::ostream& ss,
+							unsigned int sliceIndex,
+							unsigned int extruderId,
+							double z,
+							const Polygons &paths)
+{
+	GCoder &gcoder = *this;
+	// to each extruder its speed
+	double pathFeedrate = gcoder.scalingFactor * gcoder.extruders[extruderId].slowFeedRate;
+	double extrusionSpeed = gcoder.scalingFactor * gcoder.extruders[extruderId].fastExtrusionSpeed;
+	double leadIn = gcoder.extruders[extruderId].leadIn;
+	double leadOut = gcoder.extruders[extruderId].leadOut;
+
+	// moving all up. This is the first move for every new layer
+	gcoder.extruders[extruderId].g1(ss,
+									gcoder.extruders[extruderId].x,
+									gcoder.extruders[extruderId].y,
+									z,
+									pathFeedrate, NULL);
+
+	int path_counter = 0;
+	for (Polygons::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
+	{
+
+		path_counter ++; // one based, FTU (for the user!)
+		const Polygon &polygon = *pathIt;
+		ss << "(  slice " << sliceIndex << " , path " << path_counter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
+
+		Vector2 start(0,0), stop(0,0);
+		polygonLeadInAndLeadOut(polygon, leadIn, leadOut, start, stop);
+
+		gcoder.extruders[extruderId].g1(ss, start.x, start.y, z, gcoder.extruders[extruderId].fastFeedRate, NULL);
+		//ss << "(START!)" << endl;
+		gcoder.extruders[extruderId].squirt(ss, polygon[0], extrusionSpeed);
+		//ss << "(!START)" << endl;
+		for(int i=1; i < polygon.size(); i++)
+		{
+			const Vector2 &p = polygon[i];
+			gcoder.extruders[extruderId].g1(ss, p.x, p.y, z, pathFeedrate, NULL);
+		}
+		//ss << "(STOP!)" << endl;
+		gcoder.extruders[extruderId].snort(ss, stop);
+		//ss << "(!STOP)" << endl;
+		ss << endl;
+	}
+}
+
+
+
+
+void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
+{
+	bool doX=false;
+	bool doY=false;
+	bool doZ=false;
+	bool doFeed=false;
+
+
+	if(this->x >= MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
+	{
+		doX = true;
+		doY = true;
+		doZ = true;
+		doFeed = true;
+	}
+
+	if(!mgl::sameSame(this->x, x))
+	{
+		doX = true;
+	}
+	if(!mgl::sameSame(this->y, y))
+	{
+		doY=true;
+	}
+	if(!mgl::sameSame(this->z, z))
+	{
+		doZ=true;
+	}
+
+	if(!mgl::sameSame(this->feed, feed))
+	{
+		doFeed=true;
+	}
+
+	g1Motion(ss, x,y,z,feed,comment,doX,doY,doZ,doFeed);
+}
+
+void ToolHead::squirt(std::ostream &ss, const Vector2 &lineStart, double extrusionSpeed)
+{
+	//ss << "M108 R" << this->fastExtrusionSpeed << endl;
+	//ss << "M101 (squirt)" << endl;
+
+	// int extruderSquirtDelay = 200;
+	ss << "M108 R" << this->reversalExtrusionSpeed << " (squirt)" << endl;
+	ss << "M101" << endl;
+	g1(ss, lineStart.x, lineStart.y, z, fastFeedRate, NULL);
+	ss << "M108 R" << extrusionSpeed << " (good to go)" << endl;
+}
+
+void ToolHead::snort(std::ostream &ss, const Vector2 &lineEnd)
+{
+	double reversalFeedRate = this->fastFeedRate;
+	ss << "M108 R" << this->reversalExtrusionSpeed << "  (snort)" << endl;
+	ss << "M102" << endl;
+	g1(ss, lineEnd.x, lineEnd.y, z, reversalFeedRate, NULL);
+	ss << "M103" << endl;
+}
+
+
+
+//// writes an extruder reversal gcode snippet
+//void reverseExtrude(std::ostream &ss, double feedrate)
+//{
+//	ss << "M108 R" << feedrate << endl;
+//	ss << "M102 (reverse)" << endl;
+//}
+void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double feed, const char *comment, bool doX, bool doY, bool doZ, bool doFeed)
+{
+
+	// not do something is not an option
+	#ifdef STRONG_CHECKING
+		assert(doX || doY || doZ || doFeed);
+	#endif
+
+	assert(fabs(x) < 10000000);
+	assert(fabs(y) < 10000000);
+	assert(fabs(z) < 10000000);
+
+
+
+	ss << "G1";
+	if(doX) ss << " X" << x;
+	if(doY) ss << " Y" << y;
+	if(doZ) ss << " Z" << z;
+	if(doFeed) ss << " F" << feed;
+	if(comment) ss << " (" << comment << ")";
+
+	ss << endl;
+
+	// update state machine
+	this->x = x;
+	this->y = y;
+	this->z = z;
+	this->feed = feed;
+
+	if(comment == NULL)
+		this->comment = "";
+	else
+		this->comment = comment;
+
+}
+
+
+void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
+{
+	MyComputer hal9000;
+
+	ss << "(" << indent << "Generated by "<<  programName << " " << versionStr << ")"<< endl;
+	ss << "(" << indent << hal9000.clock.now() <<  ")" << endl;
+
+	ss << "(" << indent << "machine name: " << machineName << ")"<< endl;
+	ss << "(" << indent << "firmware revision:" << firmware << ")" << endl;
+	std::string plurial = extruders.size()? "":"s";
+	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;
+ 	if (outline.enabled)
+ 	{
+ 		ss << "(" << indent << outline.distance << "mm outline" << ")" << endl;
+ 	}
+ 	else
+ 	{
+ 		ss << "(" << indent << "no outline" <<  ")"<< endl;
+ 	}
+ 	ss << endl;
+}
+
+
 
 
