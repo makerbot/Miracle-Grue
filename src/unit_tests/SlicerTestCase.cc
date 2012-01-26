@@ -327,14 +327,6 @@ void slicyTest()
 }
 
 
-bool Point2sSameSame(const Vector2 &a, const Vector2 &b)
-{
-	Scalar dx = a.x - b.x;
-	Scalar dy = a.y - b.y;
-
-	return sameSame(dx*dx + dy*dy,0);
-}
-
 /*
 
 void insetCorner(const Vector2 &a, const Vector2 &b, const Vector2 &c,
