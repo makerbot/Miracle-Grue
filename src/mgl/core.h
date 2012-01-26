@@ -137,23 +137,24 @@ public:
 std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
 
 
+
 // a line segment between 2 points
-struct Segment
+class LineSegment2
 {
-	Vector2 a,b;
+public:
+	Vector2 a,b; // the 2 points
 
-	/*
-	index_t triangleId;
-	Segment(index_t triangleId)
-	:triangleId(triangleId)
-	{}
-	*/
-	Segment(){}
+	LineSegment2(){}
 
-	Segment(const Vector2 &a, const Vector2 &b)
+	LineSegment2(const LineSegment2& other)
+	:a(other.a), b(other.b){}
+
+	LineSegment2(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
 };
+
+
 
 // base class for exceptions
 class Except
@@ -424,8 +425,8 @@ public:
 	}
 
 	Scalar z;
-	std::vector<Segment> infill;
-	std::vector< std::vector<Segment> > outlines;
+	std::vector<LineSegment2> infill;
+	std::vector< std::vector<LineSegment2> > outlines;
 };
 
 typedef std::vector<Vector2> Polygon;

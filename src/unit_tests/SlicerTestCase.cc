@@ -9,18 +9,18 @@
 
 
 
-//#define  CPPUNIT_ENABLE_NAKED_ASSERT 1
+// #define  CPPUNIT_ENABLE_NAKED_ASSERT 1
 
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerTestCase.h"
 
-#include "../Configuration.h"
+
 #include "../ModelFileReaderOperation.h"
 
 #include "mgl/meshy.h"
 #include "mgl/slicy.h"
 #include "mgl/scadtubefile.h"
-
+#include "mgl/configuration.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SlicerTestCase );
 
@@ -28,11 +28,9 @@ using namespace std;
 using namespace mgl;
 
 
-
-//CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
-//CPPUNIT_ASSERT_EQUAL( 12, 12 );
-//CPPUNIT_ASSERT( 12L == 12L );
-
+// CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
+// CPPUNIT_ASSERT_EQUAL( 12, 12 );
+// CPPUNIT_ASSERT( 12L == 12L );
 
 
 // read this later
@@ -50,6 +48,20 @@ void dumpIntList(const list<index_t> &edges)
 	}
 }
 
+// An edge event occurs when an edge col-
+// lapses down to a point if its neighboring edges still have
+// nonzero length, they become adjacent.
+// Note that one of the endpoints of the disappearing edge
+// can be a reflex vertex. A split event occurs when a
+// reflex vertex collides with and splits an edge; the edges
+// adjacent to the reflex vertex are now adjacent to the
+// two parts of the split edge. Each split event divides a
+// component of the shrinking polygon into two smaller
+// components.  Each event introduces a
+// node of degree three into the evolving straight skeleton.
+// In degenerate cases, the straight skeleton can have
+// vertices of degree higher than three, introduced by si-
+// multaneous events at the same location.
 
 
 
@@ -114,7 +126,6 @@ void SlicerTestCase::testSlicySimple()
 
 	cout << "xx"<< endl;
 
-
 	int a,b,c;
 	sy.lookupIncidentFacesToFace(face0, a,b,c);
 
@@ -123,14 +134,13 @@ void SlicerTestCase::testSlicySimple()
 
 	cout << "xxx"<< endl;
 	sy.dump(cout);
-//	cout << sy << endl;
+
 }
 
 void initConfig(Configuration &config)
 {
 	config["slicer"]["firstLayerZ"] = 0.11;
 	config["slicer"]["layerH"] = 0.35;
-
 }
 
 
@@ -140,6 +150,7 @@ void SlicerTestCase::testCut()
 	double tol = 1e-6;
 
 	cout << endl;
+
 	//	solid Default
 	//	  facet normal 7.902860e-01 -2.899449e-01 -5.397963e-01
 	//	    outer loop
@@ -148,9 +159,8 @@ void SlicerTestCase::testCut()
 	//	      vertex 1.652539e+01 9.044915e-01 2.966791e+01
 	//	    endloop
 	//	  endfacet
+
 	Triangle3 triangle(Vector3(1.737416e+01, -4.841539e-01, 3.165644e+01), Vector3(1.576195e+01, 1.465057e-01, 2.895734e+01), Vector3(1.652539e+01, 9.044915e-01, 2.966791e+01));
-
-
 	Vector3 cut = triangle.cutDirection();
 
 	cout <<  "Cut:  "<< cut << endl;
@@ -175,7 +185,6 @@ void SlicerTestCase::testCut()
 	cut = line.cutDirection();
 	cout <<  "Point2 Cut:  "<< cut << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, cut.magnitude(), tol );
-
 
 	// sorting the 3 Point2s
 	Vector3 a, b, c;
@@ -212,7 +221,7 @@ void SlicerTestCase::testSlicyKnot_44()
 	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
 	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
 
-	std::list<Segment> cuts;
+	std::list<LineSegment2> cuts;
 	double tol = 1e-6;
 	// Load slice connectivity information
 	for (int i=0; i < triangleCount; i++)
@@ -225,7 +234,7 @@ void SlicerTestCase::testSlicyKnot_44()
 		{
 			Vector3 a,b;
 			triangle.cut(z, a,b);
-			Segment cut;
+			LineSegment2 cut;
 			cut.a.x = a.x;
 			cut.a.y = a.y;
 			cut.b.x = b.x;
@@ -236,7 +245,7 @@ void SlicerTestCase::testSlicyKnot_44()
 
 	cout << "SEGMENTS" << endl;
 	int i=0;
-	for(std::list<Segment>::iterator it = cuts.begin(); it != cuts.end(); it++)
+	for(std::list<LineSegment2>::iterator it = cuts.begin(); it != cuts.end(); it++)
 	{
 		cout << i << ") " << it->a << " to " << it->b << endl;
 		i++;
@@ -291,18 +300,18 @@ void slicyTest()
 
 
 	const Face &face = slicy.readFaces()[0];
-	Segment cut;
+	LineSegment2 cut;
 	bool success = slicy.cutFace(z, face, cut);
 	cout << "FACE cut " << cut.a << " to " << cut.b << endl;
 	CPPUNIT_ASSERT(success);
 
-	list<Segment> loop;
+	list<LineSegment2> loop;
 	slicy.splitLoop(z, faces, loop);
 
 	cout << "First loop has " << loop.size() << " segments" << endl;
 
 	size_t i=0;
-	for(list<Segment>::iterator it = loop.begin(); it != loop.end(); it++)
+	for(list<LineSegment2>::iterator it = loop.begin(); it != loop.end(); it++)
 	{
 		cout << i << "] " << it->a << ", " << it->b << endl;
 		i++;
@@ -377,29 +386,7 @@ void SlicerTestCase::testInset()
 */
 
 
-/*
-def vector_angle(v1, v2):
-    dot = vector_dot(v1,v2)
-    d1 = vector_length(v1)
-    d2 = vector_length(v2)
-    cos_theta = dot / (d1 * d2)
-    if cos_theta > 1.0: cos_theta = 1.0
-    if cos_theta < -1.: cos_theta = -1.0
-    theta =  pi - acos(cos_theta)
-    return theta;
 
-def angle_3_points(i, j, k):
-    """
-    get angle between three points I,J,K where point J is the center point
-    theory behind angle calculation
-    d1 = distance between I & J, d2 = distance between J & K
-    cos(theta) = (dot product of d1 & d2)/(d1*d2)
-    """
-    v1 = vector_sub(i, j) #  v1 = substractVector(I,J);
-    v2 = vector_sub(j, k) # substractVector(J,K);
-    theta = vector_angle(v1, v2)
-    return theta
-*/
 
 // returns the angle between 2 vectors
 Scalar angleFromVector2s(const Vector2 &a, const Vector2 &b)
@@ -446,8 +433,47 @@ void SlicerTestCase::testAngles()
 }
 
 
+Vector2 getInsetNormal(const LineSegment2 &seg)
+{
+	Vector3 v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
+	Vector3 up(0,0,1);
+	Vector3 inset = v.crossProduct(up);
+	inset.normalise();
+	Vector2 inset2(inset.x, inset.y);
+	return inset2;
+}
+
+void insetSegments(const std::vector<LineSegment2> &segments,
+					std::vector<LineSegment2> &insets, Scalar d)
+{
+	assert(insets.size() == 0);
+	for(int i=0; i<segments.size(); i++)
+	{
+		LineSegment2 seg = segments[i];
+		Vector2 inset = getInsetNormal(seg);
+
+		inset *= d;
+
+		LineSegment2 newSeg(seg);
+		newSeg.a += inset;
+		newSeg.b += inset;
+
+		insets.push_back(newSeg);
+
+	}
+
+}
+
+
+// There are only two ways that a point can reenter the
+// polygon after it leaves: either a slab endpoint overtakes
+// an edge of the polygon, or a slab overtakes a convex
+// vertex of the polygon. Since all the
+// segments and their endpoints are moving at the same
+// speed, neither of these transitions can occur.
 void SlicerTestCase::testInset()
 {
+	cout << endl;
 	Polygons polys;
 	polys.push_back(Polygon());
 	Polygon& square = polys[0];
@@ -463,12 +489,12 @@ void SlicerTestCase::testInset()
 	square.push_back(d);
 	square.push_back(a);
 
-	std::vector<Segment> segments;
+	std::vector<LineSegment2> segments;
 
-	segments.push_back(Segment(a,b) );
-	segments.push_back(Segment(b,c) );
-	segments.push_back(Segment(c,d) );
-	segments.push_back(Segment(d,a) );
+	segments.push_back(LineSegment2(a,b));
+	segments.push_back(LineSegment2(b,c));
+	segments.push_back(LineSegment2(c,d));
+	segments.push_back(LineSegment2(d,a));
 
 
 	ScadTubeFile f;
@@ -476,17 +502,121 @@ void SlicerTestCase::testInset()
 	f.writePolygons("poly_", "outline", polys, 0, 0);
 
 	f.writeSegments("segment_", "outline_segments", segments, 1, 0);
-	std::ofstream &out = f.getOut();
 
+	Scalar insetDist = 0.15;
+	std::vector<LineSegment2> insets;
+	insetSegments(segments, insets, insetDist);
+	f.writeSegments("inset_", "outline_segments", insets, 1, 0);
+
+	std::ofstream &out = f.getOut();
 	out << "poly_0();" << endl;
 	out << "segment_0();" << endl;
+	out << "inset_0();" << endl;
 
+	double tol = 1e-6;
+	// grab 2 semgments, make sure they are in sequence
+	// get the angle
+	// inset
+	cout << "i, j, k, angle" << endl;
+	cout << "---------------" << endl;
+	for(int id=0; id< insets.size(); id++)
+	{
+		cout << id << " / " << insets.size() << endl;
+		LineSegment2 seg = insets[id];
+
+		unsigned int previousSegmentId;
+		if(id == 0)
+			previousSegmentId = insets.size()-1;
+		else
+			previousSegmentId = id -1;
+
+		Vector2 &i = insets[previousSegmentId].a;
+		Vector2 &j = insets[id].a;
+		Vector2 &k = insets[id].b;
+
+		Scalar angle = angleFromPoint2s(i,j,k);
+
+		cout << i<< " , " << j << ", " << k << " ,\t " << angle << endl;
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(M_PI/2, angle, tol);
+	}
 
 	f.close();
 
-
+	testInset2();
 }
 
+void dumpAngles(std::vector<LineSegment2> & segments)
+{
+    // grab 2 semgments, make sure they are in sequence
+    // get the angle
+    // inset
+    // ijkAngles(insets);
+    cout << "i, j, k, angle" << endl;
+    cout << "---------------" << endl;
+    for(int id = 0;id < segments.size();id++){
+        //cout << id << " / " << insets.size() << endl;
+        LineSegment2 seg = segments[id];
+        unsigned int previousSegmentId;
+        if(id == 0)
+            previousSegmentId = segments.size() - 1;
+
+        else
+            previousSegmentId = id - 1;
+
+        Vector2 & i = segments[previousSegmentId].a;
+        Vector2 & j = segments[id].a;
+        Vector2 & k = segments[id].b;
+        Scalar angle = angleFromPoint2s(i, j, k);
+        cout << i << " , " << j << ", " << k << " ,\t " << angle << endl;
+    }
+}
+
+void SlicerTestCase::testInset2()
+{
+	cout << endl;
+	std::vector<LineSegment2> segments;
+
+	Vector2 a( 1, 1);
+	Vector2 b( 1,-1);
+	Vector2 c( 0,-1);
+	Vector2 d( 0, 0);
+	Vector2 e(-1, 0);
+	Vector2 f(-1, 1);
+
+	segments.push_back(LineSegment2(a,b));
+	segments.push_back(LineSegment2(b,c));
+	segments.push_back(LineSegment2(c,d));
+	segments.push_back(LineSegment2(d,e));
+	segments.push_back(LineSegment2(e,f));
+	segments.push_back(LineSegment2(f,a));
+
+	ScadTubeFile fscad;
+	fscad.open("./test_cases/slicerTestCase/output/testInset2.scad", 0.30, 0.5, 1);
+
+	fscad.writeSegments("segment_", "color([1,0,0,1])outline_segments", segments, 1, 0);
+
+	Scalar insetDist = 0.15;
+	std::vector<LineSegment2> insets;
+	insetSegments(segments, insets, insetDist);
+	fscad.writeSegments("inset_", "outline_segments", insets, 1, 0);
+
+	std::ofstream &out = fscad.getOut();
+	out << "segment_0();" << endl;
+	out << "inset_0();" << endl;
+
+	double tol = 1e-6;
+	// grab 2 semgments, make sure they are in sequence
+	// get the angle
+	// inset
+
+	cout << "segments" << endl;
+	dumpAngles(segments);
+	cout << "insets" << endl;
+    dumpAngles(insets);
+
+	fscad.close();
+
+}
 
 
 

@@ -96,43 +96,31 @@ print "QT modules", qtModules
 env.EnableQt4Modules(qtModules)
 
 
-#bgl_cc =  ['src/BGL/BGLAffine.cc',
-#    'src/BGL/BGLBounds.cc',
-#    'src/BGL/BGLCommon.cc',
-#    'src/BGL/BGLCompoundRegion.cc',
-#    'src/BGL/BGLIntersection.cc',
-#    'src/BGL/BGLLine.cc',
-#    'src/BGL/BGLMesh3d.cc',
-#    'src/BGL/BGLPath.cc',
-#    'src/BGL/BGLPoint.cc',
-#    'src/BGL/BGLPoint3d.cc',
-#    'src/BGL/BGLSimpleRegion.cc',
-#    'src/BGL/BGLTriangle3d.cc',
-#    'src/BGL/BGLSVG.cc']
-#env.Library('./bin/lib/bgl', bgl_cc  )
+mgl_cc = [	'src/mgl/mgl.cc',
+			'src/mgl/configuration.cc', 
+			'src/mgl/gcoder.cc']
+
+json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
+            'src/json-cpp/src/lib_json/json_value.cpp',
+            'src/json-cpp/src/lib_json/json_writer.cpp' ]
 
 
-mgl_cc = ['src/mgl/mgl.cc']
-env.Library('./bin/lib/mgl', mgl_cc)
+miracleGrue_cc = ['src/Operation.cc'] 
 
+env.Library('./bin/lib/mgl', mgl_cc + json_cc)
 
+env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include'])
 
-env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
-                       'src/json-cpp/src/lib_json/json_value.cpp',
-                       'src/json-cpp/src/lib_json/json_writer.cpp' ],
-            CPPPATH=['src/json-cpp/include'])
-
-env.Library('./bin/lib/miracleGrue',['src/Operation.cc'], CPPATH=['src/'])
+env.Library('./bin/lib/miracleGrue', miracleGrue_cc, CPPATH=['src/'])
 
 unit_test   = ['src/unit_tests/UnitTestMain.cc',]
-config 	    = ['src/Configuration.cc']
-file_w      = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 		'src/GCodeEnvelope.cc',]
-gcoder      = ['src/Configuration.cc', 'src/GCoderOperation.cc', 			'src/PathData.cc', 'src/GCodeEnvelope.cc',]
-pather      = ['src/Configuration.cc', 'src/PatherOperation.cc', 			'src/PathData.cc', 'src/RegionData.cc',]
-regioner    = ['src/Configuration.cc', 'src/RegionerOperation.cc',		'src/RegionData.cc','src/SliceData.cc',]
-slicer      = ['src/Configuration.cc', 'src/SliceOperation.cc', 			'src/MeshData.cc', 'src/RegionData.cc',]
-file_r      = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
-example_op  = ['src/Configuration.cc', 'src/ExampleOperation.cc',]
+file_w      = [ 'src/FileWriterOperation.cc', 		'src/GCodeEnvelope.cc',]
+gcoder      = ['src/GCoderOperation.cc', 			'src/PathData.cc', 	'src/GCodeEnvelope.cc',]
+pather      = ['src/PatherOperation.cc', 			'src/PathData.cc', 	'src/RegionData.cc',]
+regioner    = ['src/RegionerOperation.cc',			'src/RegionData.cc','src/SliceData.cc',]
+slicer      = ['src/SliceOperation.cc', 			'src/MeshData.cc', 	'src/RegionData.cc',]
+file_r      = ['src/ModelFileReaderOperation.cc', 	'src/MeshData.cc',]
+example_op  = ['src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
 default_libs = [ '_json','miracleGrue', 'mgl']
@@ -164,7 +152,7 @@ mand_ops = ['src/Configuration.cc',
 
 
 p = env.Program( 	'./bin/tests/slicerUnitTest', 
-				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test, config, slicer), 
+				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test,  slicer), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
@@ -172,7 +160,7 @@ runThisTest(p, run_unit_tests)
 	#Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
 	
 p = env.Program(  	'./bin/tests/modelReaderUnitTest',   
-				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test, config), 
+				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
@@ -181,7 +169,7 @@ runThisTest(p, run_unit_tests)
 
 p = env.Program('./bin/tests/exampleOpUnitTest',
 				mix(['src/unit_tests/ExampleOpTestCase.cc'],
-					file_w, config, unit_test, example_op),
+					file_w, unit_test, example_op),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
@@ -191,7 +179,7 @@ runThisTest(p, run_unit_tests)
 		
 p = env.Program(	'./bin/tests/fileWriterUnitTest',
 				mix(['src/unit_tests/FileWriterTestCase.cc'],
-					file_w, config, unit_test),
+					file_w,  unit_test),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH = default_includes)
@@ -206,7 +194,7 @@ runThisTest(p, run_unit_tests)
 		
 	
 p = env.Program(	'./bin/tests/configUnitTest',
-				mix(['src/unit_tests/ConfigTestCase.cc'],config, unit_test),
+				mix(['src/unit_tests/ConfigTestCase.cc'], unit_test),
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path , 
 				CPPPATH = default_includes)
@@ -246,7 +234,7 @@ p = env.Program(  	'./bin/tests/slicerCupUnitTest',
 runThisTest(p, run_unit_tests)	
 
 p = env.Program('./bin/miracle_grue', 
-		mix(['src/morphogen.cc'], config, gcoder, file_w ),
+		mix(['src/morphogen.cc'],  gcoder, file_w ),
 		LIBS = default_libs + debug_libs,
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)

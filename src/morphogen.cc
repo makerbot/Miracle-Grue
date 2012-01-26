@@ -18,9 +18,9 @@
 #include <stdlib.h>
 #include "mgl/abstractable.h"
 #include "mgl/meshy.h"
-#include "Configuration.h"
-#include "GCoderOperation.h"
-#include "FileWriterOperation.h"
+#include "mgl/configuration.h"
+#include "mgl/gcoder.h"
+//#include "FileWriterOperation.h"
 
 using namespace std;
 using namespace mgl;

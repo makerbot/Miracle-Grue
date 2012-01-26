@@ -7,18 +7,18 @@
 
 class SlicerTestCase : public CPPUNIT_NS::TestFixture
 {
-  CPPUNIT_TEST_SUITE( SlicerTestCase );
-    CPPUNIT_TEST( testSlicySimple );
-    CPPUNIT_TEST( testSlicyKnot_44 );
-    CPPUNIT_TEST( testNormals );
-    CPPUNIT_TEST( testCut );
-    CPPUNIT_TEST( testInset );
-    CPPUNIT_TEST( testAngles );
-  CPPUNIT_TEST_SUITE_END();
+
+	CPPUNIT_TEST_SUITE( SlicerTestCase );
+        //CPPUNIT_TEST( testSlicySimple );
+        //CPPUNIT_TEST( testSlicyKnot_44 );
+        //CPPUNIT_TEST( testNormals );
+        //CPPUNIT_TEST( testCut );
+        // CPPUNIT_TEST( testInset );
+        CPPUNIT_TEST( testInset2 );
+        CPPUNIT_TEST( testAngles );
+    CPPUNIT_TEST_SUITE_END();
 
 
-public:
-  //void setUp();
 
 protected:
 
@@ -30,6 +30,7 @@ protected:
   void testCut();
   void testInset();
   void testAngles();
+  void testInset2();
 };
 
 

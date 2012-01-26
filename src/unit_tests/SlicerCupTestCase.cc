@@ -22,6 +22,12 @@ void miracleGrue(const char *configFilePath, const char *modelFilePath)
 
     Configuration config;
     config.readFromFile(configFileName.c_str());
+
+//    GCoder gcoder = GCoder();
+//    gcoder.loadData(config);
+
+
+
     Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
     loadMeshyFromStl(mesh, modelFile.c_str());
 
@@ -34,10 +40,18 @@ void miracleGrue(const char *configFilePath, const char *modelFilePath)
 
     //std::vector<TubesInSlice> allTubes;
     std::vector<SliceData> slices;
+    Scalar layerW = config["slicer"]["layerW"].asDouble();
+    Scalar tubeSpacing = config["slicer"]["tubeSpacing"].asDouble();
+    Scalar angle = config["slicer"]["angle"].asDouble();
+
+    assert(layerW >0);
+    assert(tubeSpacing >0);
+
+
     sliceAndPath(	mesh,
-    				config["slicer"]["layerW"].asDouble(),
-    				config["slicer"]["tubeSpacing"].asDouble(),
-    				config["slicer"]["angle"].asDouble(),
+    				layerW,
+    				tubeSpacing,
+    				angle,
     				scadFile.c_str(),
     				slices);
 

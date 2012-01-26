@@ -13,7 +13,7 @@
 #define MG_OPERATION_H
 
 #include "DataEnvelope.h"
-#include "Configuration.h"
+#include "mgl/configuration.h"
 #include <iostream>
 #include <vector>
 #include <string>

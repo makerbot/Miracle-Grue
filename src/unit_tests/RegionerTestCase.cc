@@ -7,9 +7,9 @@
 #include "RegionerTestCase.h"
 
 #include "mgl/abstractable.h"
+#include "mgl/configuration.h"
 
 #include "../PathData.h"
-#include "../Configuration.h"
 #include "../RegionerOperation.h"
 
 #include "ctime"

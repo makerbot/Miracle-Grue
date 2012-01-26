@@ -13,9 +13,10 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ModelReaderTestCase.h"
 
-#include "../Configuration.h"
+
 #include "../ModelFileReaderOperation.h"
 
+#include "mgl/configuration.h"
 #include "mgl/limits.h"
 #include "mgl/meshy.h"
 #include "mgl/scadtubefile.h"
@@ -518,7 +519,7 @@ void ModelReaderTestCase::fixContourProblem()
 	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
-	std::vector< std::vector<Segment> > outlineSegments;
+	std::vector< std::vector<LineSegment2> > outlineSegments;
 	// get 2D paths for outline
 	segmentology(allTriangles, trianglesForSlice, z, tol, outlineSegments);
 

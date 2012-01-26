@@ -3,7 +3,7 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ChainIntegrationTestCase.h"
 
-#include "../Configuration.h"
+#include "../mgl/configuration.h"
 #include "../ModelFileReaderOperation.h"
 #include "../SliceOperation.h"
 #include "../RegionerOperation.h"

@@ -5,7 +5,7 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "GCoderTestCase.h"
 
-#include "../Configuration.h"
+
 #include "../GCoderOperation.h"
 #include "../FileWriterOperation.h"
 #include "../PathData.h"
@@ -529,7 +529,7 @@ void GCoderTestCase::testMultiGrid()
 	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
+PathData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z)
 {
 	// paths R us
 	PathData *pathData;
@@ -542,7 +542,7 @@ PathData * createPathFromTubes(const std::vector<Segment> &tubes, Scalar z)
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{
-		const Segment &segment = tubes[i];
+		const LineSegment2 &segment = tubes[i];
 
 		cout << "SEGMENT " << i << "/" << tubeCount << endl;
 		paths.push_back(Polygon());

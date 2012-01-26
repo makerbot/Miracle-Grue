@@ -31,22 +31,28 @@ namespace mgl
 
 
 // Segmentology turns triangles into lines
-void segmentology(const std::vector<Triangle3> &allTriangles, const TriangleIndices &trianglesForSlice, Scalar z, Scalar tol, std::vector< std::vector<Segment> > &loops);
+void segmentology(const std::vector<Triangle3> &allTriangles,
+					const TriangleIndices &trianglesForSlice,
+					Scalar z,
+					Scalar tol,
+					std::vector< std::vector<LineSegment2> > &loops);
 
 // Assembles lines segments into loops (perimeter loops and holes)
-void loopsAndHoles(std::vector<Segment> &segments, Scalar tol, std::vector< std::vector<Segment> > &loops);
+void loopsAndHoles(std::vector<LineSegment2> &segments,
+					Scalar tol,
+					std::vector< std::vector<LineSegment2> > &loops);
 
 // I have no idea what this does
-void translateLoops(std::vector<std::vector<mgl::Segment> > &loops, Vector2 p);
+void translateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Vector2 p);
 
 // moves Segments by a position
-void translateSegments(std::vector<mgl::Segment> &segments, Vector2 p);
+void translateSegments(std::vector<mgl::LineSegment2> &segments, Vector2 p);
 
 Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
-void rotateLoops(std::vector<std::vector<mgl::Segment> > &loops, Scalar angle);
+void rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar angle);
 
-void rotateSegments(std::vector<mgl::Segment> &segments, Scalar angle);
+void rotateSegments(std::vector<mgl::LineSegment2> &segments, Scalar angle);
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,

@@ -244,7 +244,7 @@ public:
 
 	void writeSegments(const char* name,
 						const char* implementation,
-							const std::vector<Segment> &segments,
+							const std::vector<LineSegment2> &segments,
 							Scalar z,
 							int slice)
 	{
@@ -253,7 +253,7 @@ public:
 		out << "    segments =[" << std::endl;
 		for (int i=0; i < segments.size(); i++)
 		{
-			const Segment& segment  = segments[i];
+			const LineSegment2& segment  = segments[i];
 			Scalar ax = segment.a[0];
 			Scalar ay = segment.a[1];
 			Scalar bx = segment.b[0];

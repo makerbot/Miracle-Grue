@@ -15,10 +15,9 @@
 #include <fstream>
 
 
-#include "Configuration.h"
+#include "configuration.h"
 
-#include "json-cpp/include/json/reader.h"
-#include "json-cpp/include/json/writer.h"
+
 
 using namespace std;
 

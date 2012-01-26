@@ -388,7 +388,10 @@ public:
 		//}
 	}
 
-	index_t cutNextFace(const std::list<index_t> &facesLeft, Scalar z, index_t startFaceIndex, Segment& cut) const
+	index_t cutNextFace(const std::list<index_t> &facesLeft,
+							Scalar z,
+							index_t startFaceIndex,
+							LineSegment2& cut) const
 	{
 		std::set<index_t> allNeighbors;
 		getAllNeighbors(startFaceIndex, allNeighbors);
@@ -413,7 +416,7 @@ public:
 	}
 
 
-	bool cutFace(Scalar z, const Face &face, Segment& cut) const
+	bool cutFace(Scalar z, const Face &face, LineSegment2& cut) const
 	{
 		//	bool mgl::sliceTriangle(const Vector3& vertex1,
 		//						 const Vector3& vertex2,
@@ -440,13 +443,13 @@ public:
 		return success;
 	}
 
-	void splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Segment> &loop) const
+	void splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<LineSegment2> &loop) const
 	{
 		assert(loop.size() == 0);
 		assert(facesLeft.size() > 0);
 
 		bool firstCutFound = false;
-		Segment cut;
+		LineSegment2 cut;
 
 		index_t faceIndex;
 		while (!firstCutFound)
