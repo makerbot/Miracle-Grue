@@ -135,6 +135,14 @@ public:
 	    out << "    }" << std::endl;
 	    out << "}" << std::endl;
 	    out << std::endl;
+
+	    out << "module infill_segments(segments)" << std::endl;
+	    out << "{" << std::endl;
+	    out << "    for(seg = segments)" << std::endl;
+	    out << "    {" << std::endl;
+	    out << "        extrusion(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
+	    out << "   }" << std::endl;
+	    out << "}" << std::endl;
 	}
 
 	std::ofstream &getOut(){return out;}
@@ -388,6 +396,21 @@ private:
 */
 
 public:
+
+	void writeMinMax(const char*name, const char* implementation, int count)
+	{
+		out << "module "<< name << "(min=0, max=" << count-1 <<")" << std::endl;
+		out << "{" << std::endl;
+		for(int i=0; i< count; i++)
+		{
+			out << "	if(min <= "<< i <<" && max >=" << i << ")" << std::endl;
+			out << "	{" << std::endl;
+			out << "		" << implementation   << i << "();"<< std::endl;
+			out << "	}" << std::endl;
+		}
+		out << "}" << std::endl;
+	}
+
 	void writeSwitcher(int count)
 	{
 		out << "module outlines(min=0, max=" << count-1 <<")" << std::endl;

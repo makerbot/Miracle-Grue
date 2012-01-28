@@ -657,81 +657,65 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
 	return AreaSign(i,j,k) < 0;
 }
 
+std::ostream& operator << (std::ostream &os, const LineSegment2 &s)
+{
+	os << "[ " << s.a << ", " << s.b << "]";
+	return os;
+}
+
 bool trim(LineSegment2 &s0, LineSegment2 &s1)
 {
 	Vector2 intersection;
-	intersection.x = 0;
-	intersection.y = 0;
-	bool success = segmentSegmentIntersection(	s0.a[0], s0.a[1],
-												s0.b[0], s0.b[1],
-												s1.a[0], s0.a[1],
-												s1.b[0], s0.b[1],
-												intersection.x,
-												intersection.y);
+	intersection.x = -10;
+	intersection.y = -10;
+	bool success = segmentSegmentIntersection(	s0, s1, intersection);
+
 	cout << "Trimming: " <<endl;
-	cout << " a0" << s0.a << endl;
-	cout << " b0" << s0.b << endl;
-	cout << " a1" << s1.a << endl;
-	cout << " b1" << s1.b << endl;
+	cout << "	s0" << s0 << endl;
+	cout << "	s1" << s1 << endl;
+	cout << "   has intersection: " << success << endl;
+	cout << "	intersection: " << intersection << endl;
 
 	s0.b = intersection;
 	s1.a = intersection;
-	CPPUNIT_ASSERT(success);
+
+	//CPPUNIT_ASSERT(success);
+
 	return success;
 }
 
-void trimSegments(std::vector<LineSegment2> & segments, std::vector<bool> convexVertices)
-{
-	for(int id = 0;id < segments.size();id++){
-		LineSegment2 &currentSegment = segments[id];
-		unsigned int previousSegmentId;
-		if(id == 0)
-			previousSegmentId = segments.size() - 1;
-		else
-			previousSegmentId = id - 1;
-		LineSegment2 &previousSegment = segments[previousSegmentId];
-
-		Vector2 & i = previousSegment.a;
-		Vector2 & j = currentSegment.a;
-		Vector2 & k = currentSegment.b;
-
-
-
-		//Scalar angle = angleFromPoint2s(i, j, k);
-		bool convex = convexVertices[id];
-//		if(!convex)
-//		{
-//			angle = 2 * M_PI - angle;
-//		}
-//		else
-		if (convex)
-		{
-			cout << "Trimming " << id << endl;
-//			cout << "Previous: [", previousSegment.a << ", " << previousSegment.b << "]" << ", current: " << currentSegment.a << endl;
-			bool trimmed = trim(previousSegment, currentSegment);
-
-		}
-		// cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
-
-	}
-}
 
 void createConvexList(const std::vector<LineSegment2> & segments, std::vector<bool> &convex)
 {
-    for(int id = 0;id < segments.size();id++){
-        //cout << id << " / " << insets.size() << endl;
-        LineSegment2 seg = segments[id];
+
+
+
+    for(int id = 0; id < segments.size(); id++){
+
+        const LineSegment2 &seg = segments[id];
+
         unsigned int previousSegmentId;
         if(id == 0)
             previousSegmentId = segments.size() - 1;
         else
             previousSegmentId = id - 1;
 
-        const Vector2 & i = segments[previousSegmentId].a;
-        const Vector2 & j = segments[id].a;
-        const Vector2 & k = segments[id].b;
+        const LineSegment2 &prevSeg = segments[previousSegmentId];
 
-        CPPUNIT_ASSERT(j.sameSame(segments[previousSegmentId].b));
+        const Vector2 & i = prevSeg.a;
+        const Vector2 & j = seg.a;
+        const Vector2 & j2 = prevSeg.b;
+        const Vector2 & k = seg.b;
+        bool isSameSame = j.sameSame(j2);
+
+        if(!isSameSame)
+        {
+        	cout << endl << "ERROR" <<  endl;
+        	cout << "id: " << id << "/" << segments.size()<< ", prevId: " <<  previousSegmentId << endl;
+        	cout << "j: " << j << ", j2: "<< j2 << endl;
+        	cout << "SameSame " << isSameSame<< endl;
+        	CPPUNIT_ASSERT(isSameSame);
+        }
 
         Scalar angle = angleFromPoint2s(i, j, k);
         bool vertex = convexVertex(i,j,k);
@@ -739,91 +723,321 @@ void createConvexList(const std::vector<LineSegment2> & segments, std::vector<bo
     }
 }
 
-void dumpAngles4(std::vector<LineSegment2> & segments)
+
+void dumpConvexList(const std::vector<bool> &convex)
 {
-    // grab 2 semgments, make sure they are in sequence
-    // get the angle
-    // inset
-    // ijkAngles(insets);
+	cout << "convex list (" <<  convex.size() << ")" << endl;
+	for(int id = 0; id < convex.size(); id++)
+	{
+		cout << "   " << id << ") " << convex[id] << endl;
+	}
+}
+/*
+void trimSegments(const std::vector<LineSegment2> & segments,
+					const std::vector<bool> &convexVertices,
+					std::vector<LineSegment2>&newSegments,
+					std::vector<bool>&newConvex)
+{
+	newSegments.reserve(segments.size());
+	newConvex.reserve(segments.size());
+	for(int id = 0;id < segments.size();id++){
+		const LineSegment2 &currentSegment = segments[id];
+		unsigned int previousSegmentId;
+		if(id == 0)
+			previousSegmentId = segments.size() - 1;
+		else
+			previousSegmentId = id - 1;
+		const LineSegment2 &previousSegment = segments[previousSegmentId];
 
-	cout << endl;
-	cout << "dumpAngles4" << endl;
-	cout << "i,j,k, angle, convex" << endl;
-    cout << "---------------" << endl;
 
-    for(int id = 0;id < segments.size();id++){
-        //cout << id << " / " << insets.size() << endl;
-        LineSegment2 seg = segments[id];
-        unsigned int previousSegmentId;
-        if(id == 0)
-            previousSegmentId = segments.size() - 1;
-        else
-            previousSegmentId = id - 1;
+		bool convex = convexVertices[id];
 
-        Vector2 & i = segments[previousSegmentId].a;
-        Vector2 & j = segments[id].a;
-        Vector2 & k = segments[id].b;
-        Scalar angle = angleFromPoint2s(i, j, k);
-        bool convex = convexVertex(i,j,k);
-        if(!convex)
-        {
-        	angle = 2 * M_PI - angle;
-        }
-        cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
+		if (convex)
+		{
+			cout << "Trimming convex: " << id << endl;
+
+			LineSegment2 newSegment;
+			newSegment = currentSegment;
+			bool trimmed = segmentSegmentIntersection(	previousSegment, currentSegment, newSegment.a);
+			assert(trimmed);
+			newSegments.push_back(newSegment);
+			newConvex.push_back(convex);
+		}
+		// cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
+
+	}
+}
+*/
+
+void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
+						const std::vector<bool> &convex,
+						std::vector<LineSegment2> & segments)
+{
+	assert(segments.size() == 0);
+	segments = rawInsets;
+
+	for(unsigned int id = 0; id < segments.size(); id++)
+	{
+		unsigned int previousSegmentId;
+		if(id == 0)
+			previousSegmentId = segments.size() - 1;
+		else
+			previousSegmentId = id - 1;
+
+		LineSegment2 &currentSegment = segments[id];
+		LineSegment2 &previousSegment = segments[previousSegmentId];
+
+		if (convex[id])
+		{
+			// cout << "Trimming convex: " << id << endl;
+			Vector2 intersection;
+			bool trimmed = segmentSegmentIntersection(previousSegment, currentSegment, intersection);
+			if(!trimmed)
+			{
+				cout << endl;
+				cout << endl;
+				cout << "Trim ERROR:" << endl;
+				cout << "segments = [" <<  previousSegment << ", " << currentSegment << "]; " << endl;
+				cout << "color([0,0.5,0,1])infill_segments(segments);" << endl;
+				// assert(trimmed);
+			}
+			previousSegment.b = intersection;
+			currentSegment.a = intersection;
+		}
+		// cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
+	}
+}
+
+
+void dumpSegments(const std::vector<LineSegment2> & segments)
+{
+	cout << "Dump segments: " << segments.size() << " segments" << endl;
+    for(int id = 0; id < segments.size(); id++)
+    {
+    	LineSegment2 seg = segments[id];
+    	cout << "  " << id << ") a: " << seg.a << ",\tb: " << seg.b << endl;
     }
+}
+
+void createConvexReflexLists(	const std::vector<LineSegment2> & segments,
+								std::vector<unsigned int> &convex,
+								std::vector<unsigned int> &reflex)
+{
+	for(int id = 0; id < segments.size(); id++){
+
+	        const LineSegment2 &seg = segments[id];
+
+	        unsigned int previousSegmentId;
+	        if(id == 0)
+	            previousSegmentId = segments.size() - 1;
+	        else
+	            previousSegmentId = id - 1;
+
+	        const LineSegment2 &prevSeg = segments[previousSegmentId];
+
+	        const Vector2 & i = prevSeg.a;
+	        const Vector2 & j = seg.a;
+	        const Vector2 & j2 = prevSeg.b;
+	        const Vector2 & k = seg.b;
+	        bool isSameSame = j.sameSame(j2);
+
+	        if(!isSameSame)
+	        {
+	        	cout << endl << "ERROR" <<  endl;
+	        	cout << "id: " << id << "/" << segments.size()<< ", prevId: " <<  previousSegmentId << endl;
+	        	cout << "j: " << j << ", j2: "<< j2 << endl;
+	        	cout << "SameSame " << isSameSame<< endl;
+	        	CPPUNIT_ASSERT(isSameSame);
+	        }
+
+	        Scalar angle = angleFromPoint2s(i, j, k);
+	        if( convexVertex(i,j,k))
+	        	convex.push_back(id);
+	        else
+	        	reflex.push_back(id);
+	    }
+}
+
+
+void AddReflexSegments(	const std::vector<LineSegment2> &segments,
+						const std::vector<LineSegment2> &trimmedInsets,
+						const std::vector<bool> &convexVertices,
+						std::vector<LineSegment2> &newSegments)
+{
+	assert(newSegments.size() == 0 );
+	newSegments.reserve(segments.size() * 2);
+
+	for(unsigned int i=0; i < segments.size(); i++)
+	{
+		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
+
+		if(!convexVertices[i])
+		{
+			Vector2 center = segments[i].a;
+			Vector2 start  = trimmedInsets[prevId].b;
+			Vector2 end    = trimmedInsets[i].a;
+//			cout << "HO YO!! semgment " << i << endl;
+//			cout << " center is: " << center << endl;
+//			cout << " start: " << start << endl;
+//			cout << " end: " << end << endl;
+			LineSegment2 straight(start, end);
+			newSegments.push_back(straight);
+		}
+		newSegments.push_back(trimmedInsets[i] );
+	}
+
+}
+
+void removeShortSegments(const std::vector<LineSegment2> &segments,
+						unsigned int trainSize,
+						Scalar maximumLength,
+						std::vector<LineSegment2> &finalInsets)
+{
+
+	finalInsets.reserve(segments.size());
+	assert(trainSize > 0);
+	assert(maximumLength > 0);
+
+
+	for(unsigned int i=0; i < segments.size(); i++)
+	{
+		Scalar trainLength = 0;
+//		for(j=0; j< trainSize; j++)
+//		{
+//			if(j >= segment.size() )
+//		}
+		finalInsets.push_back(segments[i]);
+	}
+
 }
 
 void SlicerTestCase::testInset2()
 {
 	cout << endl;
-	std::vector<LineSegment2> segments;
+
+	std::vector< std::vector<LineSegment2 > > insetTable;
+	//insetTable.push_back(std::vector<LineSegment2 >());
+
+	// std::vector<LineSegment2> &segments = insetTable[insetTable.size() -1] ;
 
 	Vector2 a( 1, 1);
 	Vector2 b( 1,-1);
-	Vector2 c( 0,-1);
+	Vector2 c (-1,-1);// ( 0,-1);
+
 	Vector2 d( 0, 0);
 	Vector2 e(-1, 0);
 	Vector2 f(-1, 1);
 
-	segments.push_back(LineSegment2(a,b));
-	segments.push_back(LineSegment2(b,c));
-	segments.push_back(LineSegment2(c,d));
-	segments.push_back(LineSegment2(d,e));
-	segments.push_back(LineSegment2(e,f));
-	segments.push_back(LineSegment2(f,a));
+	a *= 10;
+	b *= 10;
+	c *= 10;
+	d *= 10;
+	e *= 10;
+	f *= 10;
+
+	std::vector<LineSegment2> segs;
+	segs.push_back(LineSegment2(a,b));
+	segs.push_back(LineSegment2(b,c));
+	segs.push_back(LineSegment2(c,d));
+	segs.push_back(LineSegment2(d,e));
+	segs.push_back(LineSegment2(e,f));
+	segs.push_back(LineSegment2(f,a));
+	insetTable.push_back(segs);
+
+	// std::vector<LineSegment2> &segments = insetTable[insetTable.size() -1] ;
 
 
 	ScadTubeFile fscad;
 	fscad.open("./test_cases/slicerTestCase/output/testInset2.scad", 0.30, 0.5, 1);
-
-	fscad.writeSegments("segment_", "color([1,0,0,1])outline_segments", segments, 0, 0);
-
-	std::vector<bool>convex;
-	createConvexList(segments, convex);
-
-	Scalar insetDist = 0.15;
-	std::vector<LineSegment2> insets;
-	insetSegments(segments, insets, insetDist);
-	fscad.writeSegments("inset_", "outline_segments", insets, 0.5, 0);
-
-	cout << "trimming" << endl;
-	trimSegments(insets, convex);
-	fscad.writeSegments("inset_", "outline_segments", insets, 1, 1);
 	std::ofstream &out = fscad.getOut();
-	out << "segment_0();" << endl;
-	out << "inset_0();" << endl;
-	out << "inset_1();" << endl;
-	double tol = 1e-6;
+
+	Scalar layerH = 2;
+	Scalar insetDist = 0.5;
+
+	unsigned int shells = 10;
+
+	std::vector<LineSegment2> &segments = segs;
+	for (int i=0; i < shells; i++)
+	{
+		cout << "insetTable size " << insetTable.size() << endl;
+
+		cout << "\n\n****** inset # " << i << endl;
+		Scalar z = layerH * i;
+
+		dumpSegments(segments);
+
+		cout << "	createConvexList" << endl;
+		//std::vector<unsigned int>convex;
+		//std::vector<unsigned int>reflex;
+		//createConvexReflexLists(segments, convex, reflex);
+		std::vector<bool> convexVertices;
+		createConvexList(segments, convexVertices);
+		dumpConvexList(convexVertices);
+
+		std::vector<LineSegment2> rawInsets;
+		cout << "	insetSegments" << endl;
+		insetSegments(segments, rawInsets, insetDist);
+
+		std::vector<LineSegment2> trimmedInsets;
+		cout << "	trimConvexSegments" << endl;
+		trimConvexSegments(rawInsets, convexVertices, trimmedInsets);
+
+
+
+		std::vector<LineSegment2> reflexedInsets;
+		AddReflexSegments(segments, trimmedInsets, convexVertices, reflexedInsets);
+
+		//double tol = 1e-6;
+		fscad.writeSegments("segments_", "color([1,0,0,1])outline_segments", segments, z, i);
+		fscad.writeSegments("raw_insets_", "infill_segments", rawInsets, z+ 0.25 * layerH, i);
+		fscad.writeSegments("trimmed_insets_", "color([0,0,1,1])infill_segments",
+								trimmedInsets, z+ 0.5 * layerH, i);
+		fscad.writeSegments("reflexed_insets_", "color([0,0.5,0,1])infill_segments",
+								reflexedInsets, z+ 0.75 * layerH, i);
+
+		insetTable.push_back(std::vector<LineSegment2 >());
+		cout << "insetTable size " << insetTable.size() << endl;
+		std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
+
+		removeShortSegments(reflexedInsets, 4, 0.5, finalInsets);
+
+		segments = reflexedInsets;
+		// insetTable.push_back(segments);
+	}
+
+//	for(int i=0; i < insetTable.size(); i++)
+//	{
+//		cout <<  i << endl;
+//		std::vector<LineSegment2> &segments = insetTable[i];
+//		for(int i=0; i < segments.size(); i++)
+//		{
+//			LineSegment2 segment = segments[i];
+//			cout << "  " << i << "] " << segment.a << ", " << segment.b << endl;
+//		}
+//	}
+
+	fscad.writeMinMax("draw_outlines",  "segments_", shells);
+	fscad.writeMinMax("draw_raw_insets",  "raw_insets_", shells);
+	fscad.writeMinMax("draw_trimmed_insets",  "trimmed_insets_", shells);
+	fscad.writeMinMax("draw_reflexed_insets",  "reflexed_insets_", shells);
+
+
 	// grab 2 semgments, make sure they are in sequence
 	// get the angle
 	// inset
+	out << "min=0;"<<endl;
+	out << "max=" << shells << ";"<< endl;
+	out << endl;
+	out << "draw_outlines(min, max);" << endl;
+	out << "//draw_raw_insets(min, max);" << endl;
+	out << "//draw_trimmed_insets(min, max);" << endl;
+	out << "//draw_reflexed_insets(min, max);" << endl;
 
-	cout << "segments" << endl;
 //	dumpAngles1(segments);
 //	dumpAngles2(segments);
 //	dumpAngles3(segments);
 
-	dumpAngles4(segments);
+//	dumpAngles4(segments);
 	//cout << "insets" << endl;
     //dumpAngles(insets);
 

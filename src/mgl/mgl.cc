@@ -435,7 +435,17 @@ bool mgl::segmentSegmentIntersection(Scalar p0_x, Scalar p0_y,
     return false; // No collision
 }
 
+bool mgl::segmentSegmentIntersection(const LineSegment2 &s0, const LineSegment2 &s1, Vector2 &p)
+{
 
+	bool s;
+	s = segmentSegmentIntersection(	s0.a[0], s0.a[1],
+									s0.b[0], s0.b[1],
+									s1.a[0], s1.a[1],
+									s1.b[0], s1.b[1],
+									p.x, p.y);
+	return s;
+}
 
 void mgl::sliceAndPath(	Meshy &mesh,
 					double layerW,
@@ -560,7 +570,7 @@ ostream& mgl::operator <<(ostream &os,const Vector2 &pt)
 {
     os.precision(3);
     os.setf(ios::fixed);
-    os << "(" << pt.x << ", " << pt.y << ")";
+    os << "[" << pt.x << ", " << pt.y << "]";
     return os;
 }
 

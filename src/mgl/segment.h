@@ -55,8 +55,10 @@ void rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar ang
 void rotateSegments(std::vector<mgl::LineSegment2> &segments, Scalar angle);
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
+bool segmentSegmentIntersection(const LineSegment2 &a, const LineSegment2 &b, Vector2 &p);
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
+
 
 }
 
