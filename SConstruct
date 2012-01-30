@@ -70,7 +70,10 @@ print ""
 print "======================================================="
 print "Miracle-Grue build script"
 print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
-
+print
+print " ** QT version check:",  commands.getoutput("moc -v")
+print
+print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
 
 
 # Using just one environemt setup for now	
