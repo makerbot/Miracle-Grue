@@ -13,10 +13,8 @@
 #ifndef SEGMENT_H_
 #define SEGMENT_H_
 
-#include <cassert>
 #include <vector>
 #include <fstream>
-
 
 #include "core.h"
 

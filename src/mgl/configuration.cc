@@ -9,7 +9,7 @@
 
 */
 
-#include <cassert>
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -36,15 +36,16 @@ Configuration::Configuration()
 	platform["waitingPositionZ"] = 0;
 	this->root["platform"] = platform;
 
-	Json::Value shell;
-	shell["enable"] = false;
-	shell["distance"] = 3.0;
+//	Json::Value outline;
+//	outline["enable"] = false;
+//	outline["distance"] = 3.0;
+//	this->root["shell"] = shell;
+//
+//	root["shell"] = shell;
 
-	root["shell"] = shell;
+//	Json::Value gcodeOutput;
+//	gcodeOutput["filename"] = "";
 
-	Json::Value gcodeOutput;
-	gcodeOutput["filename"] = "";
-	this->root["shell"] = shell;
 }
 
 void Configuration::readFromFile(const char* filename)

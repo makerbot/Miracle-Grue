@@ -15,8 +15,8 @@
 
 #include <cmath>
 #include <vector>
-
-
+#include <iostream>
+#include <cassert>
 // #define STRONG_CHECKING
 
 namespace mgl
@@ -136,6 +136,8 @@ public:
 
 std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
 
+Scalar angleFromVector2s(const Vector2 &a, const Vector2 &b);
+Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k);
 
 
 // a line segment between 2 points
@@ -152,6 +154,11 @@ public:
 	LineSegment2(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
+	Scalar squaredLength() const
+	{
+		Vector2 l = b-a;
+		return l.squaredMagnitude();
+	}
 };
 
 

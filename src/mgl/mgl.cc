@@ -21,6 +21,29 @@ bool mgl::sameSame(Scalar a, Scalar b)
 }
 
 
+
+// returns the angle between 2 vectors
+Scalar mgl::angleFromVector2s(const Vector2 &a, const Vector2 &b)
+{
+	Scalar dot = a.dotProduct(b);
+	Scalar d1 = a.magnitude();
+	Scalar d2 = b.magnitude();
+	Scalar cosTheta = dot / (d1 * d2);
+	if (cosTheta >  1.0) cosTheta  = 1;
+	if (cosTheta < -1.0) cosTheta = -1;
+	Scalar theta = M_PI - acos(cosTheta);
+	return theta;
+}
+
+// returns the angle between 3 points
+Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k)
+{
+	Vector2 a = i - j;
+	Vector2 b = j - k;
+	Scalar theta = angleFromVector2s(a,b);
+	return theta;
+}
+
 bool sliceTriangle(const Vector3& vertex1,
 					 const Vector3& vertex2,
 						const Vector3& vertex3,
@@ -483,7 +506,8 @@ void mgl::sliceAndPath(	Meshy &mesh,
 	ScadTubeFile outlineScad;
 	if(scadFile != NULL)
 	{
-		outlineScad.open(scadFile, layerH, layerW, sliceCount);
+		outlineScad.open(scadFile);
+		outlineScad.writePathViz(layerH, layerW, sliceCount);
 	}
 
 	slices.reserve(sliceCount);
@@ -517,23 +541,24 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 		Scalar layerAngle = i* angle;
 		// deep copy
-		std::vector<std::vector<LineSegment2> > rotatedLineSegment2s = outlinesSegments;
-		mgl::translateLoops(rotatedLineSegment2s, toRotationCenter);
+		std::vector<std::vector<LineSegment2> > rotatedSegments = outlinesSegments;
+		mgl::translateLoops(rotatedSegments, toRotationCenter);
 		// rotate the outlines before generating the tubes...
-		mgl::rotateLoops(rotatedLineSegment2s, layerAngle);
+		mgl::rotateLoops(rotatedSegments, layerAngle);
+
 
 		std::vector<LineSegment2> infillSegments;
-		pathology(rotatedLineSegment2s,
+		infillPathology(rotatedSegments,
 						tubularLimits,
 						slice.z,
 						tubeSpacing,
 						infillSegments);
 
+
+		createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[0].loops);
 		// rotate and translate the TUBES so they fit with the ORIGINAL outlines
 		mgl::rotateSegments(infillSegments, -layerAngle);
 		mgl::translateSegments(infillSegments, backToOrigin);
-
-		createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[0].loops);
 		createPolysFromInfillSegments(infillSegments, slice.extruderSlices[0].infills);
 
 		// write the scad file
@@ -746,7 +771,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 #define ___(s) cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << endl;
 
 
-void mgl::pathology( std::vector< std::vector<LineSegment2> > &outlineLoops,
+void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoops,
 				const Limits& limits,
 				double z,
 				double tubeSpacing,

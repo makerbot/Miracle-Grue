@@ -14,6 +14,7 @@
 #define SLICY_H_
 
 #include <ostream>
+#include <algorithm>
 #include <list>
 #include "core.h"
 

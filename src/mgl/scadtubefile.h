@@ -44,12 +44,16 @@ class ScadTubeFile
 	std::ofstream out;
 //	double layerH;
 //	double layerW;
+
+
+
 public:
 	ScadTubeFile()
 	{}
 
-	void open(const char* filename, double layerH, double layerW,  unsigned int max)
+	void open(const char* filename)
 	{
+
 		out.open(filename, std::ios::out);
 		if(!out.good())
 		{
@@ -64,6 +68,11 @@ public:
 		//out.precision(18);
 	    out.setf(std::ios::fixed);
 
+	    write_header();
+	}
+
+	void writePathViz(double layerH, double layerW,  unsigned int max)
+	{
 	    out << "// use min and max to see individual layers " << std::endl;
 	    out << "min = 0;" << std::endl;
 	    out << "max = " << max << ";" << std::endl;
@@ -108,24 +117,6 @@ public:
 		out << "}" << std::endl;
 		out << std::endl;
 
-		out << "module corner(x, y, z, diameter, faces, thickness_over_width ){" << std::endl;
-		out << "	translate([x, y, z])  scale([1,1,thickness_over_width]) sphere( r = diameter/2, $fn = faces );" << std::endl;
-		out << "}" << std::endl;
-		out  << std::endl;
-
-	    out << "module tube(x1, y1, z1, x2, y2, z2, diameter1, diameter2, faces, thickness_over_width)" << std::endl;
-	    out << "{" << std::endl;
-	    out << "	length = sqrt( pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2) );" << std::endl;
-	    out << "	alpha = ( (y2 - y1 != 0) ? atan( (z2 - z1) / (y2 - y1) ) : 0 );" << std::endl;
-	    out << " 	beta = 90 - ( (x2 - x1 != 0) ? atan( (z2 - z1) / (x2 - x1) ) :  0 );" << std::endl;
-	    out << "	gamma =  ( (x2 - x1 != 0) ? atan( (y2 - y1) / (x2 - x1) ) : ( (y2 - y1 >= 0) ? 90 : -90 ) ) + ( (x2 - x1 >= 0) ? 0 : -180 );" << std::endl;
-	    out << "	// echo(Length = length, Alpha = alpha, Beta = beta, Gamma = gamma);	" << std::endl;
-	    out << "	translate([x1, y1, z1])" << std::endl;
-	    out << "	rotate([ 0, beta, gamma])" << std::endl;
-	    out << "		scale([thickness_over_width,1,1])" << std::endl;
-	    out << "			rotate([0,0,90]) cylinder(h = length, r1 = diameter1/2, r2 = diameter2/2, center = false, $fn = faces );" << std::endl;
-	    out << "}" << std::endl;
-
 	    out << std::endl;
 	    out << "module outline_segments(segments)" << std::endl;
 	    out << "{" << std::endl;
@@ -147,6 +138,25 @@ public:
 
 	std::ofstream &getOut(){return out;}
 
+	void write_header()
+    {
+        out << "module corner(x, y, z, diameter, faces, thickness_over_width ){" << std::endl;
+        out << "	translate([x, y, z])  scale([1,1,thickness_over_width]) sphere( r = diameter/2, $fn = faces );" << std::endl;
+        out << "}" << std::endl;
+        out << std::endl;
+        out << "module tube(x1, y1, z1, x2, y2, z2, diameter1, diameter2, faces, thickness_over_width)" << std::endl;
+        out << "{" << std::endl;
+        out << "	length = sqrt( pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2) );" << std::endl;
+        out << "	alpha = ( (y2 - y1 != 0) ? atan( (z2 - z1) / (y2 - y1) ) : 0 );" << std::endl;
+        out << " 	beta = 90 - ( (x2 - x1 != 0) ? atan( (z2 - z1) / (x2 - x1) ) :  0 );" << std::endl;
+        out << "	gamma =  ( (x2 - x1 != 0) ? atan( (y2 - y1) / (x2 - x1) ) : ( (y2 - y1 >= 0) ? 90 : -90 ) ) + ( (x2 - x1 >= 0) ? 0 : -180 );" << std::endl;
+        out << "	// echo(Length = length, Alpha = alpha, Beta = beta, Gamma = gamma);	" << std::endl;
+        out << "	translate([x1, y1, z1])" << std::endl;
+        out << "	rotate([ 0, beta, gamma])" << std::endl;
+        out << "		scale([thickness_over_width,1,1])" << std::endl;
+        out << "			rotate([0,0,90]) cylinder(h = length, r1 = diameter1/2, r2 = diameter2/2, center = false, $fn = faces );" << std::endl;
+        out << "}" << std::endl;
+    }
 
 	void close()
 	{
@@ -268,13 +278,13 @@ public:
 			Scalar by = segment.b[1];
 
 			out << "                   ";
-			out << "[[" << ax << ", " <<  ay << ", " << z << "],";
-			out << "[" << bx << ", " <<  by << ", " << z << "]],";
+			out << "[[" << ax << ", " <<  ay <<  "],";
+			out << "[ " << bx << ", " <<  by <<  "]],";
 			out << std::endl;
 		}
 
 		out << "              ];" << std::endl;
-		out << "    " <<  implementation << "(segments);" << std::endl;
+		out << "    " <<  implementation << "(segments," << z <<");" << std::endl;
 		out << "}" << std::endl;
 		out << std::endl;
 	}

@@ -424,10 +424,6 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 
 void ToolHead::squirt(std::ostream &ss, const Vector2 &lineStart, double extrusionSpeed)
 {
-	//ss << "M108 R" << this->fastExtrusionSpeed << endl;
-	//ss << "M101 (squirt)" << endl;
-
-	// int extruderSquirtDelay = 200;
 	ss << "M108 R" << this->reversalExtrusionSpeed << " (squirt)" << endl;
 	ss << "M101" << endl;
 	g1(ss, lineStart.x, lineStart.y, z, fastFeedRate, NULL);
@@ -499,7 +495,8 @@ void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 	ss << "(" << indent << "firmware revision:" << firmware << ")" << endl;
 	std::string plurial = extruders.size()? "":"s";
 	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;
- 	if (outline.enabled)
+
+	if (outline.enabled)
  	{
  		ss << "(" << indent << outline.distance << "mm outline" << ")" << endl;
  	}
