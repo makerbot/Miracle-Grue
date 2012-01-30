@@ -71,10 +71,21 @@ print "======================================================="
 print "Miracle-Grue build script"
 print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
 print
+
+operating_system = commands.getoutput("uname")
+
+print "OS: ", operating_system
 print " ** QT version check:",  commands.getoutput("moc -v")
 print
-print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
 
+if operating_system == "Linux":
+    print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
+
+if operating_system.find("_NT") > 0:
+    print " ** CPPUNIT version checK:", commands.getoutput("cygcheck -l cppunit")
+
+if operating_system == "Darwin":
+    print " ** CPPUNIT version checK:", "N/A"
 
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=['default','qt4'])
