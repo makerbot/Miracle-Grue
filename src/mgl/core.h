@@ -449,6 +449,8 @@ public:
 
 	Polygons loops;  // outer perimeter loop
 	Polygons infills;
+
+	std::vector<Polygons> insets;
 //
 //	std::vector<std::vector<mgl::Polygons> > InnerShells; // multiple inner loops per loop
 //	std::vector<mgl::Polygons> roofing;

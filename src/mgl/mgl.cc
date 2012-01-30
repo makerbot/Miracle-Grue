@@ -6,6 +6,7 @@
  */
 
 #include "meshy.h"
+#include "shrinky.h"
 #include "scadtubefile.h"
 
 #include <stdint.h>
@@ -470,6 +471,35 @@ bool mgl::segmentSegmentIntersection(const LineSegment2 &s0, const LineSegment2 
 	return s;
 }
 
+
+void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
+{
+	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
+    for(int id = 0; id < segments.size(); id++)
+    {
+    	LineSegment2 seg = segments[id];
+    	cout << prefix << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
+    }
+    cout << prefix << "]" << endl;
+    cout << "// color([1,0,0.4,1])loop_segments(segments,0.050000);" << endl;
+}
+
+void dumpInsets(const std::vector<InsetTable> &insetsForLoops)
+{
+	for (unsigned int i=0; i < insetsForLoops.size(); i++)
+	{
+		const InsetTable &insetTable =  insetsForLoops[i];
+		cout << "Loop " << i << ") " << insetTable.size() << " insets"<<endl;
+
+		for (unsigned int i=0; i <insetTable.size(); i++)
+		{
+			const std::vector<LineSegment2 >  &loop = insetTable[i];
+			cout << "   inset " << i << ") " << loop.size() << " segments" << endl;
+			dumpSegments("        ",loop);
+		}
+	}
+}
+
 void mgl::sliceAndPath(	Meshy &mesh,
 					double layerW,
 					double tubeSpacing,
@@ -478,6 +508,10 @@ void mgl::sliceAndPath(	Meshy &mesh,
 					// std::vector< TubesInSlice >  &allTubes
 					std::vector< SliceData >  &slices)
 {
+	unsigned int extruderId = 0;
+	unsigned int shells = 3;
+
+
 	assert(slices.size() == 0);
 
 	Scalar tol = 1e-6; // Tolerance for assembling LineSegment2s into a loop
@@ -509,7 +543,6 @@ void mgl::sliceAndPath(	Meshy &mesh,
 		outlineScad.open(scadFile);
 		outlineScad.writePathViz(layerH, layerW, sliceCount);
 	}
-
 	slices.reserve(sliceCount);
 
 	// multi thread stuff
@@ -522,7 +555,7 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 
 	ProgressBar progress(sliceCount);
-	for(int i=0; i < sliceCount; i++)
+	for(unsigned int i=0; i < sliceCount; i++)
 	{
 		const TriangleIndices &trianglesForSlice = sliceTable[i];
 
@@ -533,19 +566,46 @@ void mgl::sliceAndPath(	Meshy &mesh,
 		SliceData &slice = slices[i];
 		slice.extruderSlices.push_back(ExtruderSlice());
 
-
 		// get the "real" 2D paths for outline
 		std::vector< std::vector<LineSegment2> > outlinesSegments;
 		segmentology(allTriangles, trianglesForSlice, slice.z, tol, outlinesSegments);
-		//cout << "LineSegment2ology: " << outlineLoops.size() << " Loops" << endl;
 
+		// keep all segments of insets for each loop
+		std::vector<InsetTable> insetsForLoops;
+		for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
+		{
+			insetsForLoops.push_back(InsetTable());
+			InsetTable &insetTable = *insetsForLoops.rbegin(); // inset curves for a single loop
+
+			std::vector<LineSegment2> &loop =  outlinesSegments[outlineId];
+			for (unsigned int shellId=0; shellId < shells; shellId++)
+			{
+				insetTable.push_back(std::vector<LineSegment2 >());
+				std::vector<LineSegment2> &insets = *insetTable.rbegin();
+				Scalar insetDistance = shellId==0? 0.5*layerW : layerW * 0.8;
+				Shrinky shrinky;
+				shrinky.inset(loop, insetDistance, insets);
+				loop = insets;
+			}
+		}
+
+		dumpInsets(insetsForLoops);
+/*
+		// create a vector of polygons for each shell.
+		for (unsigned int shellId=0; shellId < shells; shellId++)
+		{
+			cout << "inset size " << slice.extruderSlices[extruderId].insets.size() << endl;
+			slice.extruderSlices[extruderId].insets.push_back(Polygons());
+			Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
+			createPolysFromloopSegments(insetsForLoops[shellId] , polygons );
+		}
+*/
 		Scalar layerAngle = i* angle;
-		// deep copy
-		std::vector<std::vector<LineSegment2> > rotatedSegments = outlinesSegments;
+		// deep copy the smallest insets as he infill boundaries
+		std::vector<std::vector<LineSegment2> > rotatedSegments = outlinesSegments; // insetsForLoops[0]; //
 		mgl::translateLoops(rotatedSegments, toRotationCenter);
 		// rotate the outlines before generating the tubes...
 		mgl::rotateLoops(rotatedSegments, layerAngle);
-
 
 		std::vector<LineSegment2> infillSegments;
 		infillPathology(rotatedSegments,
@@ -554,12 +614,12 @@ void mgl::sliceAndPath(	Meshy &mesh,
 						tubeSpacing,
 						infillSegments);
 
+		createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
 
-		createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[0].loops);
 		// rotate and translate the TUBES so they fit with the ORIGINAL outlines
 		mgl::rotateSegments(infillSegments, -layerAngle);
 		mgl::translateSegments(infillSegments, backToOrigin);
-		createPolysFromInfillSegments(infillSegments, slice.extruderSlices[0].infills);
+		createPolysFromInfillSegments(infillSegments, slice.extruderSlices[extruderId].infills);
 
 		// write the scad file
 		// only one thread at a time in here
@@ -572,8 +632,9 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 			outlineScad.writeTrianglesModule("tri_", mesh, i);
 			//outlineScad.writeOutlines(slice.extruderSlices[0].loops,  slices[i].z , i);
-			outlineScad.writePolygons("outlines_", "outline", slice.extruderSlices[0].loops, slices[i].z, i );
-			outlineScad.writePolygons("infill_",   "infill" , slice.extruderSlices[0].infills, slices[i].z, i );
+			outlineScad.writePolygons("outlines_", "outline", slice.extruderSlices[extruderId].loops, slices[i].z, i );
+			outlineScad.writePolygons("infill_",   "infill" , slice.extruderSlices[extruderId].infills, slices[i].z, i );
+
 		}
 	}
 	// finalize the scad file
@@ -871,31 +932,39 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 
 }
 
+
+
+void segments2polygon(Polygon & loop, const std::vector<LineSegment2> & segments)
+{
+    loop.reserve(segments.size());
+    for(int j = 0;j < segments.size();j++){
+        const LineSegment2 & line = segments[j];
+        Vector2 p(line.a.x, line.a.y);
+        loop.push_back(p);
+        if(j == segments.size() - 1){
+            Vector2 p(line.b.x, line.b.y);
+            loop.push_back(p);
+        }
+    }
+
+}
+
+//
+// Converts vectors of segments into polygons.
+// The ordering is reversed... the last vector of segments is the first polygon
+//
 void mgl::createPolysFromloopSegments(const std::vector< std::vector<LineSegment2> >  &outlinesSegments,
-									Polygons& loops)
+										Polygons& loops)
 {
 	// outline loops
-	for(int i=0; i < outlinesSegments.size(); i++)
+	unsigned int count = outlinesSegments.size();
+	for(int i=0; i < count; i++)
 	{
-		const std::vector<LineSegment2> &LineSegment2s = outlinesSegments[i];
+		const std::vector<LineSegment2> &LineSegment2s = outlinesSegments[count-1 - i];
 		loops.push_back(Polygon());
 		Polygon &loop = loops[loops.size()-1];
-
-		loop.reserve(LineSegment2s.size());
-		for(int j=0; j< LineSegment2s.size(); j++)
-		{
-			const LineSegment2 &line = LineSegment2s[j];
-			Vector2 p(line.a.x, line.a.y);
-			loop.push_back(p);
-
-			if(j == LineSegment2s.size()-1)
-			{
-				Vector2 p(line.b.x, line.b.y);
-				loop.push_back(p);
-			}
-		}
+	    segments2polygon(loop, LineSegment2s);
 	}
-
 }
 
 void mgl::createPolysFromInfillSegments(const std::vector<LineSegment2> &infillLineSegment2s,

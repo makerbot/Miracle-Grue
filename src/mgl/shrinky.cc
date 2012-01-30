@@ -95,7 +95,7 @@ void createConvexList(const std::vector<LineSegment2> & segments, std::vector<bo
         	cout << "id: " << id << "/" << segments.size()<< ", prevId: " <<  previousSegmentId << endl;
         	cout << "j: " << j << ", j2: "<< j2 << endl;
         	cout << "SameSame " << isSameSame<< endl;
-        	assert(isSameSame);
+        //	assert(isSameSame);
         }
 
         Scalar angle = angleFromPoint2s(i, j, k);
@@ -246,6 +246,26 @@ void removeShortSegments(const std::vector<LineSegment2> &segments,
 
 }
 
+Shrinky::Shrinky( const char *scadFileName, // = NULL
+					Scalar layerH) // =0.5
+		:scadFileName(scadFileName), color(1), layerH(layerH), counter(0)
+{
+	if(scadFileName)
+	{
+		fscad.open(scadFileName);
+		std::ofstream &out = fscad.getOut();
+		out << endl;
+		out << "module loop_segments(segments, z)"<<endl;
+		out << "{"<<endl;
+		out << "	corner (x=segments[0][0][0],  y=segments[0][0][1], z=z, diameter=0.25, faces=12, thickness_over_width=1);"<<endl;
+		out << "    for(seg = segments)"<<endl;
+		out << "    {"<<endl;
+		out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=z, x2=seg[1][0], y2=seg[1][1], z2=z , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);"<<endl;
+		out << "    }"<<endl;
+		out << "}"<<endl;
+	}
+}
+
 
 void Shrinky::inset(const std::vector<LineSegment2> & segments,
 								Scalar insetDist,
@@ -285,14 +305,6 @@ Shrinky::~Shrinky()
 	if(scadFileName)
 	{
 		std::ofstream &out = fscad.getOut();
-		out << "module loop_segments(segments, z)"<<endl;
-		out << "{"<<endl;
-		out << "	corner (x=segments[0][0][0],  y=segments[0][0][1], z=z, diameter=0.25, faces=12, thickness_over_width=1);"<<endl;
-		out << "    for(seg = segments)"<<endl;
-		out << "    {"<<endl;
-		out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=z, x2=seg[1][0], y2=seg[1][1], z2=z , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);"<<endl;
-		out << "    }"<<endl;
-		out << "}"<<endl;
 
 		unsigned int shells = counter;
 		fscad.writeMinMax("draw_outlines",  "segments_", shells);
@@ -310,7 +322,8 @@ Shrinky::~Shrinky()
 		out << "draw_reflexed_insets(min, max);" <<std::endl;
 		out << "draw_shortened_insets(min, max);" <<std::endl;
 
-		out << "// ss = [\"s.push_back(LineSegment2(%s,%s));\" % (x[0],x[1]) for x in segments]" <<std::endl;
+		// out << "// ss = [\"s.push_back(LineSegment2(%s,%s));\" % (x[0],x[1]) for x in segments]" <<std::endl;
+		out << "// s = [\"segs.push_back(LineSegment2(Vector2(%s, %s), Vector2(%s, %s)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
 		fscad.close();
 	}
 

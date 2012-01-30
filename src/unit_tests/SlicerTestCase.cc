@@ -523,16 +523,6 @@ void trimSegments(const std::vector<LineSegment2> & segments,
 */
 
 
-
-void dumpSegments(const std::vector<LineSegment2> & segments)
-{
-	cout << "Dump segments: " << segments.size() << " segments" << endl;
-    for(int id = 0; id < segments.size(); id++)
-    {
-    	LineSegment2 seg = segments[id];
-    	cout << "  " << id << ") a: " << seg.a << ",\tb: " << seg.b << endl;
-    }
-}
 /*
 
 void createConvexReflexLists(	const std::vector<LineSegment2> & segments,
@@ -623,7 +613,7 @@ void SlicerTestCase::testInset2()
 
 	Vector2 a( 1, 1);
 	Vector2 b( 1,-1);
-	Vector2 c (-1,-1);// ( 0,-1);
+	Vector2 c (-1,-1); // ( 0,-1);
 
 	Vector2 d( 0, 0);
 	Vector2 e(-1, 0);
@@ -666,10 +656,40 @@ void SlicerTestCase::testInset2()
 	    segments = finalInsets;
 	}
 
-
-
 }
 
+void SlicerTestCase::testInset3()
+{
+	// shape of an M
+	std::vector<LineSegment2> segs;
+	segs.push_back(LineSegment2(Vector2(10.0, 10.0), Vector2(10.0, -10.0)));
+	segs.push_back(LineSegment2(Vector2(10.0, -10.0), Vector2(-10.0, -10.0)));
+	segs.push_back(LineSegment2(Vector2(-10.0, -10.0), Vector2(7, -2)));
+	segs.push_back(LineSegment2(Vector2(7, -2), Vector2(7, 2)));
+	segs.push_back(LineSegment2(Vector2(7, 2), Vector2(-10.0, 10.0)));
+	segs.push_back(LineSegment2(Vector2(-10.0, 10.0), Vector2(10.0, 10.0)));
 
+	InsetTable insetTable;
+
+
+	insetTable.push_back(segs);
+
+
+	std::vector<LineSegment2> &segments = segs;
+	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset3.scad", 0.25);
+
+	Scalar insetDist = 1;
+	unsigned int shells = 6;
+
+	for (int i=0; i < shells; i++)
+	{
+		cout << "\n" << insetTable.size() << " ----- "<< endl;
+		//dumpSegments(segments);
+		insetTable.push_back(std::vector<LineSegment2 >());
+		std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
+		shrinky.inset(segments, insetDist,  finalInsets);
+	    segments = finalInsets;
+	}
+}
 
 

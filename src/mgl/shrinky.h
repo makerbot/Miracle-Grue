@@ -21,6 +21,7 @@
 namespace mgl // Miracle-Grue's geometry library
 {
 
+typedef std::vector< std::vector<LineSegment2 > > InsetTable;
 
 class Shrinky
 {
@@ -33,25 +34,12 @@ class Shrinky
 	unsigned int counter;
 
 public:
-	Shrinky( const char *scadFileName, Scalar layerH)
-		:scadFileName(scadFileName), color(1), layerH(layerH), counter(0)
-	{
-		if(scadFileName)
-		{
-			fscad.open(scadFileName);
-		}
-	}
-
-
+	Shrinky( const char *scadFileName=NULL, Scalar layerH=0.5);
 
 	void inset(const std::vector<LineSegment2> & segments,
 							Scalar insetDist,
 									std::vector<LineSegment2> & finalInsets);
-
 	~Shrinky();
-
-
-
 };
 
 }

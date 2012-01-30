@@ -15,9 +15,10 @@ private:
         //CPPUNIT_TEST( testSlicyKnot_44 );
         //CPPUNIT_TEST( testNormals );
         //CPPUNIT_TEST( testCut );
-        // CPPUNIT_TEST( testInset );
+		CPPUNIT_TEST( testAngles );
+		CPPUNIT_TEST( testInset );
         CPPUNIT_TEST( testInset2 );
-        CPPUNIT_TEST( testAngles );
+        CPPUNIT_TEST( testInset3 );
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -30,9 +31,11 @@ protected:
   void testNormals();
 
   void testCut();
-  void testInset();
   void testAngles();
+
+  void testInset();
   void testInset2();
+  void testInset3();
 };
 
 
