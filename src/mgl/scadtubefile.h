@@ -24,11 +24,11 @@
 namespace mgl
 {
 
-class ScadMess : public Except
+class ScadMess : public Messup
 {
 public:
 	ScadMess(const char *msg)
-	 :Except(msg)
+	 :Messup(msg)
 	{
 
 	}
@@ -260,18 +260,9 @@ public:
 
 	}
 
-
-
-	Scalar writeSegments3(const char* name,
-						const char* implementation,
-						const std::vector<LineSegment2> &segments,
-						Scalar z,
-						Scalar dz,
-						int slice)
+	static void segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<LineSegment2> &segments, Scalar z, Scalar dz)
 	{
-		out << "module " << name << slice << "()" << std::endl;
-		out << "{" << std::endl;
-		out << "    segments =[" << std::endl;
+		out << indent << variableName<< " =[" << std::endl;
 		for (int i=0; i < segments.size(); i++)
 		{
 			const LineSegment2& segment  = segments[i];
@@ -283,15 +274,26 @@ public:
 			Scalar by = segment.b[1];
 			Scalar bz = z;
 
-			out << "                   ";
+			out << indent << indent;
 			out << "[[" << ax << ", " <<  ay << ", " << az << "],";
 			out << "[ " << bx << ", " <<  by << ", " << bz << "]],";
 			out << std::endl;
 			z += dz;
 		}
+		out << indent << indent <<  "];" << std::endl;
+	}
 
-		out << "              ];" << std::endl;
-		out << "    " <<  implementation << "(segments," << z <<");" << std::endl;
+	Scalar writeSegments3(const char* name,
+						const char* implementation,
+						const std::vector<LineSegment2> &segments,
+						Scalar z,
+						Scalar dz,
+						int slice)
+	{
+		out << "module " << name << slice << "()" << std::endl;
+		out << "{" << std::endl;
+		segment3(out, "    ", "segments", segments, z, dz);
+		out << "    " <<  implementation << "(segments);" << std::endl;
 		out << "}" << std::endl;
 		out << std::endl;
 		return z;

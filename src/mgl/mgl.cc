@@ -567,7 +567,6 @@ void mgl::sliceAndPath(	Meshy &mesh,
 		std::vector< std::vector<LineSegment2> > outlinesSegments;
 		segmentology(allTriangles, trianglesForSlice, slice.z, tol, outlinesSegments);
 
-/*
 		// keep all segments of insets for each loop
 		std::vector<InsetTable> insetsForLoops;
 		for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
@@ -593,10 +592,10 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			}
 		}
 
-		dumpInsets(insetsForLoops);
-*/
+//		dumpInsets(insetsForLoops);
 
-/*
+
+
 		// create a vector of polygons for each shell.
 		for (unsigned int shellId=0; shellId < shells; shellId++)
 		{
@@ -605,10 +604,16 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
 			createPolysFromloopSegments(insetsForLoops[shellId] , polygons );
 		}
-*/
+
 		Scalar layerAngle = sliceId * angle;
-		// deep copy the smallest insets as he infill boundaries
-		std::vector<std::vector<LineSegment2> > rotatedSegments = outlinesSegments; // insetsForLoops[0]; //
+
+		// deep copy the the infill boundaries
+		//std::vector<std::vector<LineSegment2> > rotatedSegments = outlinesSegments; // insetsForLoops[0];
+
+		// deep copy the smallest insets as the infill boundaries
+		std::vector<std::vector<LineSegment2> > rotatedSegments = insetsForLoops[0]; // outlinesSegments;
+
+
 		mgl::translateLoops(rotatedSegments, toRotationCenter);
 		// rotate the outlines before generating the tubes...
 		mgl::rotateLoops(rotatedSegments, layerAngle);

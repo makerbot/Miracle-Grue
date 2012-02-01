@@ -746,7 +746,7 @@ void SlicerTestCase::testInset4()
 
 	std::vector<LineSegment2> &segments = segs;
 	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset4.scad", 1);
-	shrinky.dz = 0.1;
+	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
 

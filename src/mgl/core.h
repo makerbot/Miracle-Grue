@@ -17,6 +17,7 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
+// #include <stdio.h>
 // #define STRONG_CHECKING
 
 namespace mgl
@@ -171,17 +172,18 @@ public:
 
 
 // base class for exceptions
-class Except
+class Messup
 {
 public:
 	std::string error;
-	Except(const char *msg)
+	Messup(const char *msg)
 	 :error(msg)
 	{
 
+		std::cerr << std::endl << msg << std::endl;
+		// fprintf(stderr, "%s", msg);
 	}
 };
-
 
 
 

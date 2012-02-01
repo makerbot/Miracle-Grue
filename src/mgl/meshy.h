@@ -36,11 +36,11 @@ namespace mgl // serious about triangles
 
 
 
-class LayerMess : public Except
+class LayerMess : public Messup
 {
 public:
 	LayerMess(const char *msg)
-	 :Except(msg)
+	 :Messup(msg)
 	{
 
 	}
@@ -97,13 +97,13 @@ public:
 //
 // Exception class for meshy problems
 //
-class MeshyMess : public Except
+class MeshyMess : public Messup
 {
 public:
 	MeshyMess(const char *msg)
-	 :Except(msg)
+	 :Messup(msg)
 	{
-		fprintf(stderr, "%s", msg);
+
 	}
 
 };
