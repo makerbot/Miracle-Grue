@@ -69,9 +69,10 @@ public:
 
 	unsigned int zToLayerAbove(Scalar z) const
 	{
-		if(z<=0)
+		if(z < 0)
 		{
-			LayerMess("Model with points below the z axis are not supported in this version. Please center your model on the build area");
+			LayerMess mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
+			throw mixup;
 		}
 
 		if (z < firstLayerZ)
