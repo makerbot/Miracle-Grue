@@ -501,17 +501,15 @@ void dumpInsets(const std::vector<InsetTable> &insetsForLoops)
 }
 
 void mgl::sliceAndPath(	Meshy &mesh,
-					double layerW,
-					double tubeSpacing,
-					double angle,
-					const char* scadFile,
-					// std::vector< TubesInSlice >  &allTubes
-					std::vector< SliceData >  &slices)
+						double layerW,
+						double tubeSpacing,
+						double angle,
+						const char* scadFile,
+						// std::vector< TubesInSlice >  &allTubes
+						std::vector< SliceData >  &slices)
 {
 	unsigned int extruderId = 0;
 	unsigned int shells = 3;
-
-
 	assert(slices.size() == 0);
 
 	Scalar tol = 1e-6; // Tolerance for assembling LineSegment2s into a loop
@@ -520,7 +518,7 @@ void mgl::sliceAndPath(	Meshy &mesh,
 	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const Limits& limits = mesh.readLimits();
-	//cout << "Limits: " << limits << endl;
+	// cout << "Limits: " << limits << endl;
 	Limits tubularLimits = limits.centeredLimits();
 	tubularLimits.inflate(1.0, 1.0, 0.0);
 	// make it square along z so that rotation happens inside the limits
@@ -553,43 +551,51 @@ void mgl::sliceAndPath(	Meshy &mesh,
 #endif
 
 
-
 	ProgressBar progress(sliceCount);
-	for(unsigned int i=0; i < sliceCount; i++)
+	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
-		const TriangleIndices &trianglesForSlice = sliceTable[i];
+		const TriangleIndices &trianglesForSlice = sliceTable[sliceId];
 
 		progress.tick();
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(i);
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 
-		slices.push_back( SliceData(z,i));
-		SliceData &slice = slices[i];
+		slices.push_back( SliceData(z,sliceId));
+		SliceData &slice = slices[sliceId];
 		slice.extruderSlices.push_back(ExtruderSlice());
 
 		// get the "real" 2D paths for outline
 		std::vector< std::vector<LineSegment2> > outlinesSegments;
 		segmentology(allTriangles, trianglesForSlice, slice.z, tol, outlinesSegments);
 
+/*
 		// keep all segments of insets for each loop
 		std::vector<InsetTable> insetsForLoops;
 		for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 		{
+			// prepare  a new vector of loops for insets of this outline
 			insetsForLoops.push_back(InsetTable());
 			InsetTable &insetTable = *insetsForLoops.rbegin(); // inset curves for a single loop
 
 			std::vector<LineSegment2> &loop =  outlinesSegments[outlineId];
+			insetTable.push_back(std::vector<LineSegment2 >());
+			std::vector<LineSegment2> &insets = *insetTable.rbegin();
+			MyComputer myComputer;
+			stringstream ss;
+			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
+			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str());
+			Shrinky shrinky(loopScadFile.c_str());
 			for (unsigned int shellId=0; shellId < shells; shellId++)
 			{
-				insetTable.push_back(std::vector<LineSegment2 >());
-				std::vector<LineSegment2> &insets = *insetTable.rbegin();
 				Scalar insetDistance = shellId==0? 0.5*layerW : layerW * 0.8;
-				Shrinky shrinky;
 				shrinky.inset(loop, insetDistance, insets);
+				// next, we'll inset from the new polygon
 				loop = insets;
 			}
 		}
 
 		dumpInsets(insetsForLoops);
+*/
+
 /*
 		// create a vector of polygons for each shell.
 		for (unsigned int shellId=0; shellId < shells; shellId++)
@@ -600,7 +606,7 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			createPolysFromloopSegments(insetsForLoops[shellId] , polygons );
 		}
 */
-		Scalar layerAngle = i* angle;
+		Scalar layerAngle = sliceId * angle;
 		// deep copy the smallest insets as he infill boundaries
 		std::vector<std::vector<LineSegment2> > rotatedSegments = outlinesSegments; // insetsForLoops[0]; //
 		mgl::translateLoops(rotatedSegments, toRotationCenter);
@@ -630,10 +636,10 @@ void mgl::sliceAndPath(	Meshy &mesh,
 			cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
 			#endif
 
-			outlineScad.writeTrianglesModule("tri_", mesh, i);
+			outlineScad.writeTrianglesModule("tri_", mesh, sliceId);
 			//outlineScad.writeOutlines(slice.extruderSlices[0].loops,  slices[i].z , i);
-			outlineScad.writePolygons("outlines_", "outline", slice.extruderSlices[extruderId].loops, slices[i].z, i );
-			outlineScad.writePolygons("infill_",   "infill" , slice.extruderSlices[extruderId].infills, slices[i].z, i );
+			outlineScad.writePolygons("outlines_", "outline", slice.extruderSlices[extruderId].loops, slices[sliceId].z, sliceId);
+			outlineScad.writePolygons("infill_",   "infill" , slice.extruderSlices[extruderId].infills, slices[sliceId].z, sliceId);
 
 		}
 	}

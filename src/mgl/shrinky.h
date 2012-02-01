@@ -29,9 +29,12 @@ class Shrinky
 	ScadTubeFile fscad;
 	const char *scadFileName;
 
-	Scalar layerH;
+	//Scalar layerH;
 	int color;
 	unsigned int counter;
+	Scalar z;
+public:
+	Scalar dz;
 
 public:
 	Shrinky( const char *scadFileName=NULL, Scalar layerH=0.5);

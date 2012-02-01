@@ -159,6 +159,13 @@ public:
 		Vector2 l = b-a;
 		return l.squaredMagnitude();
 	}
+
+	Scalar length()
+	{
+		Scalar l = squaredLength();
+		l = sqrt(l);
+		return l;
+	}
 };
 
 

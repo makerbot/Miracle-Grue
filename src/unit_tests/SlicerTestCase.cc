@@ -670,10 +670,7 @@ void SlicerTestCase::testInset3()
 	segs.push_back(LineSegment2(Vector2(-10.0, 10.0), Vector2(10.0, 10.0)));
 
 	InsetTable insetTable;
-
-
 	insetTable.push_back(segs);
-
 
 	std::vector<LineSegment2> &segments = segs;
 	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset3.scad", 0.25);
@@ -691,5 +688,81 @@ void SlicerTestCase::testInset3()
 	    segments = finalInsets;
 	}
 }
+
+void SlicerTestCase::testInset4()
+{
+
+	// 3d knot slice 51 loop 5
+/*
+	std::vector<LineSegment2> segs;
+	segs.push_back(LineSegment2(Vector2(-13.645961, -4.999121), Vector2(-14.336842, -6.058092)));
+	segs.push_back(LineSegment2(Vector2(-14.336842, -6.058092), Vector2(-14.337009, -6.058348)));
+	segs.push_back(LineSegment2(Vector2(-14.337009, -6.058348), Vector2(-14.802628, -6.773062)));
+	segs.push_back(LineSegment2(Vector2(-14.802628, -6.773062), Vector2(-16.07675, -7.167382)));
+	segs.push_back(LineSegment2(Vector2(-16.07675, -7.167382), Vector2(-16.076844, -7.167411)));
+	segs.push_back(LineSegment2(Vector2(-16.076844, -7.167411), Vector2(-16.848004, -7.40625)));
+	segs.push_back(LineSegment2(Vector2(-16.848004, -7.40625), Vector2(-13.645961, -4.999121)));
+
+	*/
+
+	std::vector<LineSegment2> segs;
+	segs.push_back(LineSegment2(Vector2(-13.645961, -4.999121), Vector2(-14.336842, -6.058092)));
+	segs.push_back(LineSegment2(Vector2(-14.336842, -6.058092), Vector2(-14.337009, -6.058348)));
+	segs.push_back(LineSegment2(Vector2(-14.337009, -6.058348), Vector2(-14.802628, -6.773062)));
+	segs.push_back(LineSegment2(Vector2(-14.802628, -6.773062), Vector2(-16.07675, -7.167382)));
+	segs.push_back(LineSegment2(Vector2(-16.07675, -7.167382), Vector2(-16.076844, -7.167411)));
+	segs.push_back(LineSegment2(Vector2(-16.076844, -7.167411), Vector2(-16.848004, -7.40625)));
+
+	segs.push_back(LineSegment2(Vector2(-16.848004, -7.40625), Vector2(-18.376197, -6.967647)));
+	segs.push_back(LineSegment2(Vector2(-18.376197, -6.967647), Vector2(-19.263841, -6.695174)));
+	segs.push_back(LineSegment2(Vector2(-19.263841, -6.695174), Vector2(-21.191443, -4.741984)));
+	segs.push_back(LineSegment2(Vector2(-21.191443, -4.741984), Vector2(-22.156938, -2.118398)));
+	segs.push_back(LineSegment2(Vector2(-22.156938, -2.118398), Vector2(-21.689291, 0.504512)));
+	segs.push_back(LineSegment2(Vector2(-21.689291, 0.504512), Vector2(-20.943817, 1.445306)));
+	segs.push_back(LineSegment2(Vector2(-20.943817, 1.445306), Vector2(-20.943815, 1.445309)));
+	segs.push_back(LineSegment2(Vector2(-20.943815, 1.445309), Vector2(-20.225564, 2.351764)));
+	segs.push_back(LineSegment2(Vector2(-20.225564, 2.351764), Vector2(-18.768249, 2.821355)));
+	segs.push_back(LineSegment2(Vector2(-18.768249, 2.821355), Vector2(-18.76824, 2.821358)));
+	segs.push_back(LineSegment2(Vector2(-18.76824, 2.821358), Vector2(-18.228663, 2.995237)));
+	segs.push_back(LineSegment2(Vector2(-18.228663, 2.995237), Vector2(-16.146636, 2.324387)));
+	segs.push_back(LineSegment2(Vector2(-16.146636, 2.324387), Vector2(-15.572093, 1.664333)));
+	segs.push_back(LineSegment2(Vector2(-15.572093, 1.664333), Vector2(-15.572093, 1.664333)));
+	segs.push_back(LineSegment2(Vector2(-15.572093, 1.664333), Vector2(-14.511551, 0.493087)));
+	segs.push_back(LineSegment2(Vector2(-14.511551, 0.493087), Vector2(-14.468399, 0.329635)));
+	segs.push_back(LineSegment2(Vector2(-14.468399, 0.329635), Vector2(-14.455353, 0.288157)));
+	segs.push_back(LineSegment2(Vector2(-14.455353, 0.288157), Vector2(-13.845001, -1.377057)));
+	segs.push_back(LineSegment2(Vector2(-13.845001, -1.377057), Vector2(-13.50102, -2.315544)));
+	segs.push_back(LineSegment2(Vector2(-13.50102, -2.315544), Vector2(-13.546223, -2.823043)));
+	segs.push_back(LineSegment2(Vector2(-13.546223, -2.823043), Vector2(-13.655021, -4.041291)));
+	segs.push_back(LineSegment2(Vector2(-13.655021, -4.041291), Vector2(-13.656539, -4.0652)));
+	segs.push_back(LineSegment2(Vector2(-13.656539, -4.0652), Vector2(-13.657668, -4.095116)));
+	segs.push_back(LineSegment2(Vector2(-13.657668, -4.095116), Vector2(-13.657957, -4.119072)));
+	segs.push_back(LineSegment2(Vector2(-13.657957, -4.119072), Vector2(-13.64922, -4.760708)));
+	segs.push_back(LineSegment2(Vector2(-13.64922, -4.760708), Vector2(-13.649219, -4.760731)));
+	segs.push_back(LineSegment2(Vector2(-13.649219, -4.760731), Vector2(-13.645961, -4.999121)));
+
+	InsetTable insetTable;
+	insetTable.push_back(segs);
+
+	std::vector<LineSegment2> &segments = segs;
+	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset4.scad", 1);
+	shrinky.dz = 0.1;
+	Scalar insetDist = 1;
+	unsigned int shells = 1;
+
+	for (int i=0; i < shells; i++)
+	{
+		cout << "\n" << insetTable.size() << " ----- " << endl;
+		//dumpSegments(segments);
+		insetTable.push_back(std::vector<LineSegment2 >());
+
+		std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
+		shrinky.inset(segments, insetDist,  finalInsets);
+	    segments = finalInsets;
+	}
+
+}
+
+
 
 

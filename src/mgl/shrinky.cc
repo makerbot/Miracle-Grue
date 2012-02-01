@@ -26,6 +26,7 @@ using namespace mgl;
 
 double AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
 {
+
     double area2;
 
     area2 = (b[0] - a[0] ) * (double)( c[1] - a[1]) -
@@ -71,17 +72,15 @@ bool trim(LineSegment2 &s0, LineSegment2 &s1)
 void createConvexList(const std::vector<LineSegment2> & segments, std::vector<bool> &convex)
 {
 
-    for(int id = 0; id < segments.size(); id++){
+	cout << "create convex list" << endl;
 
-        const LineSegment2 &seg = segments[id];
+    for(int i = 0; i < segments.size(); i++){
 
-        unsigned int previousSegmentId;
-        if(id == 0)
-            previousSegmentId = segments.size() - 1;
-        else
-            previousSegmentId = id - 1;
+        const LineSegment2 &seg = segments[i];
 
-        const LineSegment2 &prevSeg = segments[previousSegmentId];
+        unsigned int prevId = i==0 ? segments.size()-1 : i-1;
+
+        const LineSegment2 &prevSeg = segments[prevId];
 
         const Vector2 & i = prevSeg.a;
         const Vector2 & j = seg.a;
@@ -92,15 +91,17 @@ void createConvexList(const std::vector<LineSegment2> & segments, std::vector<bo
         if(!isSameSame)
         {
         	cout << endl << "ERROR" <<  endl;
-        	cout << "id: " << id << "/" << segments.size()<< ", prevId: " <<  previousSegmentId << endl;
+        	cout << "id: " << i << "/" << segments.size()<< ", prevId: " <<  prevId << endl;
         	cout << "j: " << j << ", j2: "<< j2 << endl;
         	cout << "SameSame " << isSameSame<< endl;
         //	assert(isSameSame);
         }
-
+        Scalar length = seg.squaredLength();
         Scalar angle = angleFromPoint2s(i, j, k);
         bool vertex = convexVertex(i,j,k);
         convex.push_back(vertex);
+
+
     }
 }
 
@@ -155,18 +156,14 @@ void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
 	assert(segments.size() == 0);
 	segments = rawInsets;
 
-	for(unsigned int id = 0; id < segments.size(); id++)
+	for(unsigned int i = 0; i < segments.size(); i++)
 	{
-		unsigned int previousSegmentId;
-		if(id == 0)
-			previousSegmentId = segments.size() - 1;
-		else
-			previousSegmentId = id - 1;
+		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 
-		LineSegment2 &currentSegment = segments[id];
-		LineSegment2 &previousSegment = segments[previousSegmentId];
+		LineSegment2 &currentSegment = segments[i];
+		LineSegment2 &previousSegment = segments[prevId];
 
-		if (convex[id])
+		if (convex[i])
 		{
 			// cout << "Trimming convex: " << id << endl;
 			Vector2 intersection;
@@ -248,22 +245,37 @@ void removeShortSegments(const std::vector<LineSegment2> &segments,
 
 Shrinky::Shrinky( const char *scadFileName, // = NULL
 					Scalar layerH) // =0.5
-		:scadFileName(scadFileName), color(1), layerH(layerH), counter(0)
+		:scadFileName(scadFileName), color(1),  counter(0), dz(0), z(0)
 {
 	if(scadFileName)
 	{
 		fscad.open(scadFileName);
 		std::ofstream &out = fscad.getOut();
-		out << endl;
-		out << "module loop_segments(segments, z)"<<endl;
+//		out << endl;
+//		out << "module loop_segments2(segments, z)"<<endl;
+//		out << "{"<<endl;
+//		out << "	corner (x=segments[0][0][0],  y=segments[0][0][1], z=z, diameter=0.25, faces=12, thickness_over_width=1);"<<endl;
+//		out << "    for(seg = segments)"<<endl;
+//		out << "    {"<<endl;
+//		out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=z, x2=seg[1][0], y2=seg[1][1], z2=z , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);"<<endl;
+//		out << "    }"<<endl;
+//		out << "}"<<endl;
+
+
+		out << "module loop_segments3(segments)"<<endl;
 		out << "{"<<endl;
-		out << "	corner (x=segments[0][0][0],  y=segments[0][0][1], z=z, diameter=0.25, faces=12, thickness_over_width=1);"<<endl;
+		out << "	corner (x=segments[0][0][0],  y=segments[0][0][1], z=segments[0][0][2], diameter=0.25, faces=12, thickness_over_width=1);"<<endl;
 		out << "    for(seg = segments)"<<endl;
 		out << "    {"<<endl;
-		out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=z, x2=seg[1][0], y2=seg[1][1], z2=z , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);"<<endl;
+		out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=seg[0][2], x2=seg[1][0], y2=seg[1][1], z2=seg[1][2] , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);"<<endl;
 		out << "    }"<<endl;
 		out << "}"<<endl;
+
+
 	}
+
+
+
 }
 
 
@@ -271,31 +283,40 @@ void Shrinky::inset(const std::vector<LineSegment2> & segments,
 								Scalar insetDist,
 									std::vector<LineSegment2> & finalInsets)
 {
+
+
     std::cout << "	createConvexList" << std::endl;
     std::vector<bool> convexVertices;
     createConvexList(segments, convexVertices);
-    //dumpConvexList(convexVertices);
+    dumpConvexList(convexVertices);
+
     std::cout << "	insetSegments" <<std::endl;
     std::vector<LineSegment2> rawInsets;
     insetSegments(segments, rawInsets, insetDist);
     std::vector<LineSegment2> trimmedInsets;
+
     std::cout << "	trimConvexSegments" <<std::endl;
     trimConvexSegments(rawInsets, convexVertices, trimmedInsets);
+
+    std::cout << "	AddReflexSegments" <<std::endl;
     std::vector<LineSegment2> reflexedInsets;
     AddReflexSegments(segments, trimmedInsets, convexVertices, reflexedInsets);
+
+    std::cout << "	removeShortSegments" <<std::endl;
     removeShortSegments(reflexedInsets, insetDist / 10, finalInsets);
+
     stringstream coloredOutline;
     // Scalar color = (1.0 * i)/(shells-1);
     color = color == 0 ? 1 : 0;
-    coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])loop_segments";
+    coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])loop_segments3";
     if(scadFileName)
     {
-        Scalar z = layerH * this->counter;
-        fscad.writeSegments("segments_", coloredOutline.str().c_str(), segments, z, this->counter);
-        fscad.writeSegments("raw_insets_", "color([1,0,0.4,1])loop_segments", rawInsets, z + 0.2 * layerH, this->counter);
-        fscad.writeSegments("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments", trimmedInsets, z + 0.4 * layerH, this->counter);
-        fscad.writeSegments("reflexed_insets_", "color([0,0.5,0,1])loop_segments", reflexedInsets, z + 0.6 * layerH, this->counter);
-        fscad.writeSegments("shortened_insets_", "color([0.5,0.5,0,1])loop_segments", reflexedInsets, z + 0.8 * layerH, this->counter);
+
+        z = fscad.writeSegments3("outlines_", coloredOutline.str().c_str(), segments, z, dz,  this->counter);
+        z = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", rawInsets, z, dz, this->counter);
+        z = fscad.writeSegments3("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments3", trimmedInsets, z , dz, this->counter);
+        z = fscad.writeSegments3("reflexed_insets_", "color([0,0.5,0,1])loop_segments3", reflexedInsets, z ,  dz,this->counter);
+        z = fscad.writeSegments3("shortened_insets_", "color([0.5,0.5,0,1])loop_segments3", reflexedInsets, z, dz, this->counter);
     }
     this->counter ++;
 }
@@ -307,7 +328,7 @@ Shrinky::~Shrinky()
 		std::ofstream &out = fscad.getOut();
 
 		unsigned int shells = counter;
-		fscad.writeMinMax("draw_outlines",  "segments_", shells);
+		fscad.writeMinMax("draw_outlines",  "outlines_", shells);
 		fscad.writeMinMax("draw_raw_insets",  "raw_insets_", shells);
 		fscad.writeMinMax("draw_trimmed_insets",  "trimmed_insets_", shells);
 		fscad.writeMinMax("draw_reflexed_insets",  "reflexed_insets_", shells);

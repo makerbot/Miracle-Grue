@@ -260,7 +260,45 @@ public:
 
 	}
 
-	void writeSegments(const char* name,
+
+
+	Scalar writeSegments3(const char* name,
+						const char* implementation,
+						const std::vector<LineSegment2> &segments,
+						Scalar z,
+						Scalar dz,
+						int slice)
+	{
+		out << "module " << name << slice << "()" << std::endl;
+		out << "{" << std::endl;
+		out << "    segments =[" << std::endl;
+		for (int i=0; i < segments.size(); i++)
+		{
+			const LineSegment2& segment  = segments[i];
+			Scalar ax = segment.a[0];
+			Scalar ay = segment.a[1];
+			Scalar az = z;
+
+			Scalar bx = segment.b[0];
+			Scalar by = segment.b[1];
+			Scalar bz = z;
+
+			out << "                   ";
+			out << "[[" << ax << ", " <<  ay << ", " << az << "],";
+			out << "[ " << bx << ", " <<  by << ", " << bz << "]],";
+			out << std::endl;
+			z += dz;
+		}
+
+		out << "              ];" << std::endl;
+		out << "    " <<  implementation << "(segments," << z <<");" << std::endl;
+		out << "}" << std::endl;
+		out << std::endl;
+		return z;
+	}
+
+
+	void writeSegments2(const char* name,
 						const char* implementation,
 							const std::vector<LineSegment2> &segments,
 							Scalar z,
@@ -289,6 +327,8 @@ public:
 		out << std::endl;
 	}
 
+	// writes a list of triangles into a polyhedron.
+	// It is used to display the triangles involved in a slice (layerIndex).
 	void writeTrianglesModule(const char* name, const Meshy &mesh,
 								unsigned int layerIndex) //const std::vector<BGL::Triangle3d>  &allTriangles, const TriangleIndices &trianglesForSlice)
 	{
@@ -298,16 +338,14 @@ public:
 		const std::vector<Triangle3>  &allTriangles = mesh.readAllTriangles();
 
 		ss << "module " << name << layerIndex << "(col=[1,0,0,1])" << std::endl;
-		// , [0,2,1], [3,0,4], [1,2,5], [0,5,4], [0,1,5],  [5,2,4], [4,2,3],
 		ss << "{" << std::endl;
 		ss << "    color(col) polyhedron ( points = [";
 
-		// ss << scientific;
 		ss << std::dec; // set decimal format for floating point numbers
 
 		for(int i=0; i< trianglesForSlice.size(); i++ )
 		{
-			//index_t index = *i;
+
 			index_t index = trianglesForSlice[i];
 			const Triangle3 &t = allTriangles[index];
 			ss << "    [" << t[0].x << ", " << t[0].y << ", " << t[0].z << "], ";
@@ -331,79 +369,6 @@ public:
 	}
 
 private:
-/*
-
-	void writeStlModule(const char* moduleName, const char *stlName,  int slice)
-	{
-		out << std::endl;
-		out << "module " << moduleName << slice << "()" << std::endl;
-		out << "{" << std::endl;
-		out << "    color(stl_color)import_stl(\"" << stlName<< slice << ".stl\");" << std::endl;
-		out << "}" << std::endl;
-
-	}
-
-
-  	void writeExtrusionsModule(const char* name, const std::vector<mgl::Segment> &segments, int slice, Scalar z)
-	{
-		writeTubesModule(name, "extrusion", segments, slice, z);
-	}
-
-	void writeOutlinesModule(const char* name, const std::vector<std::vector<Segment> > &loops, int slice, Scalar z)
-	{
-		writeMultiTubesModule(name, "out_line", loops, slice, z);
-	}
-
-	void writeTubesModule(const char* name, const char* tubeType,const std::vector<Segment> &segments, int slice, Scalar z)
-	{
-
-		// tube(x,y,z,  x,y,z, d,f,t);
-		out << std::endl;
-		out << "module " << name << slice << "()"<< std::endl;
-		out << "{" << std::endl;
-		for(int j=0; j<segments.size(); j++)
-		{
-			const Segment &segment = segments[j];
-			out << "	"<< tubeType<< "(" << segment.a.x << ", " << segment.a.y << ", " << z << ", ";
-			out << 				 segment.b.x << ", " << segment.b.y << ", " << z << ");"<< std::endl;
-		}
-
-		out << "}" << std::endl;
-	}
-
-
-	void writeMultiTubesModule(const char* name, const char* tubeType,const std::vector<std::vector<Segment> > &loops, int slice, Scalar z)
-	{
-
-		// tube(x,y,z,  x,y,z, d,f,t);
-		out << std::endl;
-		out << "module " << name << slice << "()"<< std::endl;
-		out << "{" << std::endl;
-
-		unsigned int loopCount = loops.size();
-
-		for(int i=0; i<loopCount; i++)
-		{
-			out << "// loop " << i << std::endl;
-			const std::vector<Segment> &segments = loops[i];
-
-			unsigned int segmentCount = segments.size();
-
-			Scalar green = 0.5 + 0.5 * (i+1 / (loopCount )) ;
-			for(int j=0; j<segmentCount; j++)
-			{
-				Scalar blue = 0.5 + 0.5 * (i+1 / (segmentCount )) ;
-				const Segment &segment = segments[j];
-				out << "	"<< "color([0," << green << ", "<< blue <<", 1])" << std::endl;
-				out << "	"<< tubeType<< "(" << segment.a.x << ", " << segment.a.y << ", " << z << ", ";
-				out << 		 segment.b.x << ", " << segment.b.y << ", " << z << ");"<< std::endl;
-			}
-		}
-
-		out << "}" << std::endl;
-	}
-
-*/
 
 public:
 
