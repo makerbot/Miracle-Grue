@@ -796,9 +796,9 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 // segments are OK, but polys are better for paths (no repeat point)
 void segments2polygon(const std::vector<LineSegment2> & segments, Polygon &loop)
 {
-	cout << "<segments2polygon>" << endl;
-	cout << "	segments: " << (void*)&segments << endl;
-	cout << "	segments size: " << segments.size() << endl;
+//	cout << "<segments2polygon>" << endl;
+//	cout << "	segments: " << (void*)&segments << endl;
+//	cout << "	segments size: " << segments.size() << endl;
 
     loop.reserve(segments.size());
     for(int j = 0;j < segments.size();j++){
@@ -810,7 +810,7 @@ void segments2polygon(const std::vector<LineSegment2> & segments, Polygon &loop)
             loop.push_back(p);
         }
     }
-    cout << "</segments2polygon> " << endl;
+//    cout << "</segments2polygon> " << endl;
 }
 
 //

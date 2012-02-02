@@ -93,11 +93,6 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	string modelFile;
-	double firstLayerZ = 0.11;
-	double layerH = 0.35;
-	double layerW = 0.583333;
-	double tubeSpacing = 0.5;
-	double angle = M_PI *0.5;
 	string configFileName = "miracle.config";
 
 
@@ -113,11 +108,11 @@ int main(int argc, char *argv[], char *envp[])
 	cout << endl;
 
 	// std::string modelFile = models[i];
-	cout << "firstLayerZ (f) = " << firstLayerZ << endl;
-	cout << "layerH (h) = " << layerH << endl;
-	cout << "layerW (w) = " << layerW << endl;
-	cout << "tubeSpacing (t) = " << tubeSpacing  << endl;
-	cout << "angle (a) = " << angle << endl;
+	cout << "firstLayerZ (f) = " << config["slicer"]["firstLayerZ"].asDouble()  << endl;
+	cout << "layerH (h) = " << config["slicer"]["layerH"].asDouble()  << endl;
+	cout << "layerW (w) = " << config["slicer"]["layerW"].asDouble()  << endl;
+	cout << "tubeSpacing (t) = " << config["slicer"]["tubeSpacing"].asDouble()   << endl;
+	cout << "angle (a) = " << config["slicer"]["angle"].asDouble() << endl;
 	cout << "configuration file (c) = " <<  configFileName << endl;
 	cout << endl;
 
@@ -147,14 +142,13 @@ int main(int argc, char *argv[], char *envp[])
 	cout << "Slicing" << endl;
 
 	sliceAndPath(mesh,
-			layerW,
-			tubeSpacing,
-			angle,
+			config["slicer"]["layerH"].asDouble(),
+			config["slicer"]["tubeSpacing"].asDouble(),
+			config["slicer"]["angle"].asDouble(),
 			scadFile.c_str(),
 			slices); //paths
 
 	writeGcodeFile(config, gcodeFile.c_str(), slices);
-
 	cout << endl << "Done!" << endl;
 
 }

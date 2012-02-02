@@ -229,7 +229,7 @@ public:
 			out << "               [" << std::endl;
 			const Polygon& poly  = polygons[i];
 
-			std::cout << "   Polygon " << i << ": " << poly.size() << " points "<< std::endl;
+			//std::cout << "   Polygon " << i << ": " << poly.size() << " points "<< std::endl;
 
 			for (int j=0; j < poly.size(); j++)
 			{
@@ -254,7 +254,7 @@ public:
 			int polyCount =  poly.size();
 
 			for (int j=0; j < polyCount-1; j++)
-			{   std::cout << "  writePolygons: " << j << " polycount: " << polyCount << std::endl;
+			{   // std::cout << "  writePolygons: " << j << " polycount: " << polyCount << std::endl;
 				int a = j;
 				int b = j+1;
 				out << "                  [" << a << ", " <<  b << "]," << std::endl;
@@ -278,7 +278,7 @@ public:
 		// std::cout << "</writePolygons>" << std::endl;
 	}
 
-	static void segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<LineSegment2> &segments, Scalar z, Scalar dz)
+	static Scalar segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<LineSegment2> &segments, Scalar z, Scalar dz)
 	{
 		out << indent << variableName<< " =[" << std::endl;
 		for (int i=0; i < segments.size(); i++)
@@ -299,6 +299,7 @@ public:
 			z += dz;
 		}
 		out << indent << indent <<  "];" << std::endl;
+		return z;
 	}
 
 	Scalar writeSegments3(const char* name,
@@ -310,7 +311,7 @@ public:
 	{
 		out << "module " << name << slice << "()" << std::endl;
 		out << "{" << std::endl;
-		segment3(out, "    ", "segments", segments, z, dz);
+		z = segment3(out, "    ", "segments", segments, z, dz);
 		out << "    " <<  implementation << "(segments);" << std::endl;
 		out << "}" << std::endl;
 		out << std::endl;
