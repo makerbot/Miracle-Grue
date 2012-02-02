@@ -49,14 +49,11 @@ std::ostream& operator << (std::ostream &os, const LineSegment2 &s)
 
 void createConvexList(const std::vector<LineSegment2> &segments, std::vector<bool> &convex)
 {
-
-
     for(int id = 0; id < segments.size(); id++)
     {
-
-        const LineSegment2 &seg = segments[id];
         unsigned int prevId = id==0 ? segments.size()-1 : id-1;
 
+        const LineSegment2 &seg = segments[id];
         const LineSegment2 &prevSeg = segments[prevId];
 
         const Vector2 & i = prevSeg.a;
@@ -145,7 +142,7 @@ void insetSegments(const std::vector<LineSegment2> &segments, Scalar d,
 		insets.push_back(newSeg);
 
 	}
-
+	assert(insets.size() == segments.size());
 }
 
 string segment3(const LineSegment2 &s, Scalar z)
@@ -186,7 +183,7 @@ void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
 				ss << "segments = [  " <<  segment3(previousSegment,0) << " , " << segment3(currentSegment,0) << " ]; " << endl;
 				ss << "color([0,0.5,0,1])loop_segments3(segments, false);" << endl;
 				ShrinkyMess mixup(ss.str().c_str());
-				throw mixup;
+				// throw mixup;
 			}
 		}
 		// cout << i << " , " << j << ", " << k << " ,\t " << angle << ", " << convex << endl;
@@ -287,26 +284,46 @@ void Shrinky::inset(const std::vector<LineSegment2> & segments,
 								Scalar insetDist,
 									std::vector<LineSegment2> & finalInsets)
 {
-	std::vector<LineSegment2> shorts;
-	std::vector<bool> convexVertices;
-	std::vector<LineSegment2> rawInsets;
-	std::vector<LineSegment2> trimmedInsets;
+	assert(segments.size() > 0);
+	assert(finalInsets.size() == 0);
+	assert((const void*)&segments != (const void*)&finalInsets);
 
-	cout << endl << endl << "================\nShrinky::inset" << endl;
+	//std::vector<LineSegment2> shorts;
+	std::vector<bool> convexVertices;
+	std::vector<LineSegment2> insets;
+	std::vector<LineSegment2> trims;
+
+	unsigned int segmentCount = segments.size();
+	if(segmentCount < 3)
+	{
+		stringstream ss;
+		ss << segmentCount << " segments are not enough for a polygon";
+		ShrinkyMess mixup(ss.str().c_str());
+		throw mixup;
+	}
 
     try
     {
+    	std::cout << std::endl << "*** Shrinky::inset " << std::endl;
+    	dumpSegments(segments);
 		// std::cout << std::endl << "*** RemoveShortSegments" << std::endl;
-	//	removeShortSegments(segments, 0.000001 , shorts);
+    	//	removeShortSegments(segments, 0.000001 , shorts);
 
 		//std::cout << std::endl<< "*** createConvexList" << std::endl;
 		createConvexList(segments, convexVertices);
-		//std::cout << endl << "*** insetSegments" <<std::endl;
-		insetSegments(shorts, insetDist, rawInsets);
-		//std::cout << endl << "*** trimConvexSegments" <<std::endl;
-		trimConvexSegments(rawInsets, convexVertices, trimmedInsets);
-		//std::cout << std::endl << "*** AddReflexSegments" <<std::endl;
-		AddReflexSegments(shorts, trimmedInsets, convexVertices, finalInsets); // reflexedInsets);
+
+		std::cout << endl << "*** insetSegments" << std::endl;
+		insetSegments(segments, insetDist, insets);
+		dumpSegments(insets);
+
+		std::cout << endl << "*** trimConvexSegments" << std::endl;
+		trimConvexSegments(insets, convexVertices, trims);
+		dumpSegments(trims);
+
+		std::cout << std::endl << "*** AddReflexSegments" << std::endl;
+		AddReflexSegments(segments, trims, convexVertices, finalInsets); // reflexedInsets);
+		dumpSegments(finalInsets);
+
     }
     catch(const ShrinkyMess& ouch)
     {
@@ -317,9 +334,11 @@ void Shrinky::inset(const std::vector<LineSegment2> & segments,
     	cout << "// s = ['segs.push_back(LineSegment2(Vector2(%s, %s), Vector2(%s, %s)));' %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << endl;
         std::cout << std::endl << "// loop_segments3(segments);" << std::endl;
         ScadTubeFile::segment3(cout,"","segments", segments, 0, 0.1);
-        ScadTubeFile::segment3(cout,"","shorts", shorts, 0, 0.1);
-        ScadTubeFile::segment3(cout,"","rawInsets", rawInsets, 0, 0.1);
-        ScadTubeFile::segment3(cout,"","trimmedInsets", trimmedInsets, 0, 0.1);
+        //ScadTubeFile::segment3(cout,"","shorts", shorts, 0, 0.1);
+        ScadTubeFile::segment3(cout,"","rawInsets", insets, 0, 0.1);
+        ScadTubeFile::segment3(cout,"","trimmedInsets", trims, 0, 0.1);
+
+
     }
 
     if(scadFileName)
@@ -330,9 +349,9 @@ void Shrinky::inset(const std::vector<LineSegment2> & segments,
         coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])loop_segments3";
 
     	z = fscad.writeSegments3("outlines_", coloredOutline.str().c_str(), segments, z, dz,  this->counter);
-        z = fscad.writeSegments3("shortened_", "color([0.5,0.5,0,1])loop_segments3", shorts, z, dz, this->counter);
-        z = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", rawInsets, z, dz, this->counter);
-        z = fscad.writeSegments3("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments3", trimmedInsets, z , dz, this->counter);
+        //z = fscad.writeSegments3("shortened_", "color([0.5,0.5,0,1])loop_segments3", shorts, z, dz, this->counter);
+        z = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", insets, z, dz, this->counter);
+        z = fscad.writeSegments3("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments3", trims, z , dz, this->counter);
         z = fscad.writeSegments3("reflexed_insets_", "color([0,0.5,0,1])loop_segments3", finalInsets, z ,  dz,this->counter);
         this->counter ++;
     }

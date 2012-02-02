@@ -161,6 +161,9 @@ public:
 	Homing():xyMaxHoming(true), zMaxHoming(false){}
 };
 
+
+class GcoderMess : public Messup {	public: GcoderMess(const char *msg) :Messup(msg){} };
+
 //
 // This class contains settings for the 3D printer,
 // user preferences as well as runtime information
@@ -194,7 +197,7 @@ public:
 	void loadData(const Configuration& config);
 	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
 
-    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData);
+    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData, unsigned int sliceIndex);
 
 private:
 

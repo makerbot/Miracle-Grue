@@ -21,15 +21,15 @@
 namespace mgl // Miracle-Grue's geometry library
 {
 
-typedef std::vector< std::vector<LineSegment2 > > InsetTable;
+typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
 
 
-class ShrinkyMess : public Messup {	public: ShrinkyMess(const char *msg) :Messup(msg){}} ;
+class ShrinkyMess : public Messup {	public: ShrinkyMess(const char *msg) :Messup(msg){}};
 
 
 class Shrinky
 {
-	// std::vector< std::vector<LineSegment2 > > insetTable;
+
 	ScadTubeFile fscad;
 	const char *scadFileName;
 

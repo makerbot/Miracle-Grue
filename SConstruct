@@ -113,7 +113,8 @@ env.EnableQt4Modules(qtModules)
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
 			'src/mgl/gcoder.cc',
-			'src/mgl/shrinky.cc']
+			'src/mgl/shrinky.cc',
+			'src/mgl/slicy.cc']
 
 json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_value.cpp',

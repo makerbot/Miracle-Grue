@@ -217,13 +217,20 @@ public:
 								Scalar z,
 									int slice)
 	{
+
+		//std::cout << "<writePolygons: " << polygons.size() << " polygons >"<< std::endl;
+
 		out << "module " << moduleName << slice << "()" << std::endl;
 		out << "{" << std::endl;
 		out << "    points =[" << std::endl;
+
 		for (int i=0; i < polygons.size(); i++)
 		{
 			out << "               [" << std::endl;
 			const Polygon& poly  = polygons[i];
+
+			std::cout << "   Polygon " << i << ": " << poly.size() << " points "<< std::endl;
+
 			for (int j=0; j < poly.size(); j++)
 			{
 				Scalar x = poly[j].x;
@@ -235,13 +242,19 @@ public:
 		}
 		out << "              ];" << std::endl;
 
+
 		out << "    segments =[" << std::endl;
-		for (int i=0; i < polygons.size(); i++)
+
+		unsigned int polysCount = polygons.size();
+		for (int i=0; i < polysCount; i++)
 		{
+
 			out << "               [" << std::endl;
 			const Polygon& poly  = polygons[i];
-			for (int j=0; j < poly.size()-1; j++)
-			{
+			int polyCount =  poly.size();
+
+			for (int j=0; j < polyCount-1; j++)
+			{   std::cout << "  writePolygons: " << j << " polycount: " << polyCount << std::endl;
 				int a = j;
 				int b = j+1;
 				out << "                  [" << a << ", " <<  b << "]," << std::endl;
@@ -250,14 +263,19 @@ public:
 		}
 		out << "            ];" << std::endl;
 
+
+
 		out << std::endl;
 		for (int i=0; i < polygons.size(); i++)
 		{
 			out << "    " <<  implementation << "(points[" << i << "], segments[" << i << "] );" << std::endl;
+
+
 		}
 		out << std::endl;
 		out << "}" << std::endl;
 
+		// std::cout << "</writePolygons>" << std::endl;
 	}
 
 	static void segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<LineSegment2> &segments, Scalar z, Scalar dz)

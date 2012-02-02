@@ -97,7 +97,7 @@ void SlicerTestCase::testSlicySimple()
 	Triangle3 t0(p0, p1, p2);
 	Triangle3 t1(p0, p2, p3);
 
-	Slicy sy(0.001);
+	Connexity sy(0.001);
 
 	cout << endl << endl;
 	cout << "******** slicy with 2 triangles *******" << endl;
@@ -263,18 +263,18 @@ void slicyTest()
 	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
 
 	// Load slice connectivity information
-	Slicy slicy(1e-6);
+	Connexity connexity(1e-6);
 	for (int i=0; i < triangleCount; i++)
 	{
 		unsigned int triangleIndex = trianglesInSlice[i];
 		const Triangle3& t = allTriangles[triangleIndex];
-		slicy.addTriangle(t);
+		connexity.addTriangle(t);
 	}
 
-	cout << slicy << endl;
+	cout << connexity << endl;
 
 	list<index_t> faces;
-	size_t faceCount = slicy.readFaces().size();
+	size_t faceCount = connexity.readFaces().size();
 	for(index_t i=0; i< faceCount; i++)
 	{
 		faces.push_back(i);
@@ -282,14 +282,14 @@ void slicyTest()
 	}
 
 
-	const Face &face = slicy.readFaces()[0];
+	const Face &face = connexity.readFaces()[0];
 	LineSegment2 cut;
-	bool success = slicy.cutFace(z, face, cut);
+	bool success = connexity.cutFace(z, face, cut);
 	cout << "FACE cut " << cut.a << " to " << cut.b << endl;
 	CPPUNIT_ASSERT(success);
 
 	list<LineSegment2> loop;
-	slicy.splitLoop(z, faces, loop);
+	connexity.splitLoop(z, faces, loop);
 
 	cout << "First loop has " << loop.size() << " segments" << endl;
 
@@ -301,7 +301,7 @@ void slicyTest()
 	}
 
 	cout << "loop with " << loop.size() << "faces" << endl;
-	cout << "faces left: "  << faces.size()  << " / " << slicy.readEdges().size() << endl;
+	cout << "faces left: "  << faces.size()  << " / " << connexity.readEdges().size() << endl;
 
 //	list<index_t> edges;
 //	slicy.fillEdgeList(z,edges);
@@ -669,7 +669,7 @@ void SlicerTestCase::testInset3()
 	segs.push_back(LineSegment2(Vector2(7, 2), Vector2(-10.0, 10.0)));
 	segs.push_back(LineSegment2(Vector2(-10.0, 10.0), Vector2(10.0, 10.0)));
 
-	InsetTable insetTable;
+	SegmentTable insetTable;
 	insetTable.push_back(segs);
 
 	std::vector<LineSegment2> &segments = segs;
@@ -741,7 +741,7 @@ void SlicerTestCase::testInset4()
 	segs.push_back(LineSegment2(Vector2(-13.64922, -4.760708), Vector2(-13.649219, -4.760731)));
 	segs.push_back(LineSegment2(Vector2(-13.649219, -4.760731), Vector2(-13.645961, -4.999121)));
 
-	InsetTable insetTable;
+	SegmentTable insetTable;
 	insetTable.push_back(segs);
 
 	std::vector<LineSegment2> &segments = segs;

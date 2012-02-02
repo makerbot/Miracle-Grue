@@ -16,6 +16,7 @@
 #include <ostream>
 #include <algorithm>
 #include <list>
+#include <set>
 #include "core.h"
 
 namespace mgl // Miracle-Grue's geometry library
@@ -111,11 +112,9 @@ public:
 
 };
 
-std::ostream& operator<<(std::ostream& os, const Edge& e)
-{
-	os << " " << e.vertexIndices[0] << "\t" << e.vertexIndices[1] << "\t" << e.face0 << "\t" << e.face1;
-	return os;
-}
+std::ostream& operator<<(std::ostream& os, const Edge& e);
+
+
 
 // A point
 class Vertex
@@ -126,47 +125,12 @@ public:
 	mgl::Vector3 point;
 	std::vector<index_t> faces;
 };
+std::ostream& operator<<(std::ostream& os, const Vertex& v);
 
-std::ostream& operator<<(std::ostream& os, const Vertex& v)
-{
-	os << " " << v.point << "\t[ ";
-	for (int i=0; i< v.faces.size(); i++)
-	{
-		if (i>0)  os << ", ";
-		os << v.faces[i];
-	}
-	os << "]";
-	return os;
-}
 
-index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const Vector3 &coords, Scalar tolerence)
-{
-
-	for(std::vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); it++)
-	{
-		//const Vector3 &p = (*it).point;
-		Vector3 &p = (*it).point;
-		Scalar dx = coords.x - p.x;
-		Scalar dy = coords.y - p.y;
-		Scalar dz = coords.z - p.z;
-
-		Scalar dd =  dx * dx + dy * dy + dz * dz;
-		if( dd < tolerence )
-		{
-			//std::cout << "Found VERTEX" << std::endl;
-			index_t vertexIndex = std::distance(vertices.begin(), it);
-			return vertexIndex;
-		}
-	}
-
-	index_t vertexIndex;
-	// std::cout << "NEW VERTEX " << coords << std::endl;
-	Vertex vertex;
-	vertex.point = coords;
-	vertices.push_back(vertex);
-	vertexIndex = vertices.size() -1;
-	return vertexIndex;
-}
+index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices,
+								const Vector3 &coords,
+								Scalar tolerence);
 
 
 ///
@@ -174,19 +138,19 @@ index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices ,const Vector3 &co
 /// of vertices, edges, and faces.
 /// The connection between them is then restored (mostly).
 ///
-class Slicy
+class Connexity
 {
 	std::vector<Vertex> vertices; // all vertices
 	std::vector<Edge> edges;
 	std::vector<Face> faces;
 	Scalar tolerence;
 
-	friend std::ostream& operator <<(std::ostream &os,const Slicy &pt);
+	friend std::ostream& operator <<(std::ostream &os,const Connexity &pt);
 
 public:
 
 
-	Slicy (Scalar tolerence)
+	Connexity (Scalar tolerence)
 		:tolerence(tolerence)
 	{
 
@@ -528,12 +492,9 @@ private:
 		return findOrCreateVertexIndex(vertices, coords, tolerence);
 	}
 };
+std::ostream& operator << (std::ostream &os, const Connexity &s);
 
-std::ostream& operator << (std::ostream &os, const Slicy &s)
-{
-	s.dump(os);
-	return os;
-}
+
 
 
 

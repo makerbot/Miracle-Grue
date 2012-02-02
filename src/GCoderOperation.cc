@@ -207,7 +207,7 @@ void GCoderOperation::accept(const PathData& envelope)
 // 	const PathData &pathData = *(dynamic_cast<const PathData* > (&envelope) );
 	const SliceData &pathData = *(dynamic_cast<const SliceData* > (&envelope) );
 
-	gcoder.writeSlice(ss, pathData);
+	gcoder.writeSlice(ss, pathData, 0);
 	wrapAndEmit(ss);
 
 	//cout << "TODO: test cast and/or flag type in GCoderOperation::processEnvelope" << endl;

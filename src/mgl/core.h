@@ -20,6 +20,10 @@
 // #include <stdio.h>
 // #define STRONG_CHECKING
 
+#define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
+#define dbgs__(s) std::cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << std::endl;
+
+
 namespace mgl
 {
 
@@ -142,6 +146,7 @@ Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k);
 
 
 // a line segment between 2 points
+// Everything that has a beginning, has an end
 class LineSegment2
 {
 public:
