@@ -14,8 +14,11 @@ using namespace mgl;
 MyComputer computer;
 
 
-void miracleGrue(const char *configFilePath, const char *modelFilePath)
+void miracleGrue(const char *configFilePath,
+					const char *modelFilePath,
+						const char* outputDirectory)
 {
+	unsigned int NbOfShells = 0;
 
 	string configFileName(configFilePath);
 	string modelFile(modelFilePath);
@@ -23,15 +26,10 @@ void miracleGrue(const char *configFilePath, const char *modelFilePath)
     Configuration config;
     config.readFromFile(configFileName.c_str());
 
-//    GCoder gcoder = GCoder();
-//    gcoder.loadData(config);
-
-
-
     Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
     loadMeshyFromStl(mesh, modelFile.c_str());
 
-    string scadFile("./test_cases/slicerCupTestCase/output/");
+    string scadFile(outputDirectory);
     scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".scad");
     string gcodeFile("./test_cases/slicerCupTestCase/output/");
     gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".gcode");
@@ -52,6 +50,7 @@ void miracleGrue(const char *configFilePath, const char *modelFilePath)
     				layerW,
     				tubeSpacing,
     				angle,
+    				NbOfShells,
     				scadFile.c_str(),
     				slices);
 
@@ -81,7 +80,9 @@ void SlicerCupTestCase::testIndividuals()
 		cout << endl;
 		cout << modelFile << endl;
 		cout << computer.clock.now() << endl;
-		miracleGrue(configFileName.c_str(), modelFile.c_str());
+		miracleGrue(configFileName.c_str(),
+						modelFile.c_str(),
+							"./test_cases/slicerCupTestCase/output/");
 		cout << computer.clock.now() << endl;
 		cout << "DONE!" << endl;
 	}
@@ -91,17 +92,15 @@ void SlicerCupTestCase::testIndividuals()
 	cout << endl;
 }
 
-void SlicerCupTestCase::testOddShapes()
-{
-	miracleGrue("miracle.config","./inputs/holy_cube.stl");
-}
+
 
 void SlicerCupTestCase::testAllTogeter()
 {
 	cout << endl;
 	cout << computer.clock.now() << endl;
 	miracleGrue("miracle.config",
-				"./test_cases/slicerCupTestCase/stls/all_together.stl");
+				"./test_cases/slicerCupTestCase/stls/all_together.stl",
+				"./test_cases/slicerCupTestCase/output/");
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
@@ -112,7 +111,8 @@ void SlicerCupTestCase::testCathedral_Crossing_bad()
 	cout << endl;
 	cout << computer.clock.now() << endl;
 	miracleGrue("miracle.config",
-				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl");
+				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl",
+				"./test_cases/slicerCupTestCase/output/");
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
@@ -123,8 +123,32 @@ void SlicerCupTestCase::testCathedral_Crossing_fixed()
 	cout << endl;
 	cout << computer.clock.now() << endl;
 	miracleGrue("miracle.config",
-				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl");
+				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl",
+				"./test_cases/slicerCupTestCase/output/");
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
 }
+
+
+void SlicerCupTestCase::testSpecificIssues()
+{
+	cout << endl;
+
+	cout << "Slumping" << endl;
+	miracleGrue("miracle.config",
+				"./test_cases/specific_issues/slumping/full head.stl",
+				"./test_cases/specific_issues/output/");
+
+	miracleGrue("miracle.config",
+				"./test_cases/specific_issues/slumping/half head.stl",
+				"./test_cases/specific_issues/output/");
+
+	cout << "Insetting" << endl;
+	miracleGrue("miracle.config",
+				"./test_cases/specific_issues/insetting/holy_cube.stl",
+				"./test_cases/specific_issues/output/");
+}
+
+
+

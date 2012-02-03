@@ -385,6 +385,7 @@ void batchProcess(	Scalar firstLayerZ,
 					layerW,
 					tubeSpacing,
 					angle,
+					0,
 					scadFile.c_str(),
 					slices);
 

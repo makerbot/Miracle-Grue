@@ -20,6 +20,8 @@ using namespace mgl;
 using namespace std;
 
 
+
+
 void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
 					double layerW,
@@ -27,6 +29,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					const char *scadFile,
 					std::vector<SegmentTable> &insetsForLoops)
 {
+
 	assert(insetsForLoops.size() ==0);
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
     for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
@@ -53,8 +56,9 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			unsigned int segmentCountAfter =0;
 
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+			{
 				insetTable.push_back(std::vector<LineSegment2>());
-
+			}
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
 
@@ -62,7 +66,6 @@ void inshelligence( const SegmentTable & outlinesSegments,
 //				cout << "sliceId: "   << sliceId << endl;
 //				cout << "	loop: " << outlineId << endl;
 //				cout << "	shellId: " <<  shellId << endl;
-
 
 				if(shellId == 0)
 				{
@@ -76,7 +79,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					shrinky.inset(outlineLoop, insetDistance, insets);
 					segmentCountAfter = insets.size();
 
-					assert(segmentCountAfter);
+					// assert(segmentCountAfter);
 					assert(insetTable[0].size() == segmentCountAfter);
 				}
 				else
@@ -88,21 +91,19 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int previousShell = shellId -1;
 					assert(insetTable.size() > previousShell);
 
-
 					std::vector<LineSegment2> &lastInsets = insetTable[previousShell];
 
-					assert(lastInsets.size());
-					std::vector<LineSegment2> &insets = insetTable[shellId];
+					if(lastInsets.size())
+					{
+						std::vector<LineSegment2> &insets = insetTable[shellId];
+						segmentCountBefore = lastInsets.size();
+						assert(segmentCountBefore == segmentCountAfter);
+						assert(insets.size() == 0);
 
-					segmentCountBefore = lastInsets.size();
-
-					assert(segmentCountBefore == segmentCountAfter);
-					assert(insets.size() == 0);
-
-					shrinky.inset(lastInsets, insetDistance, insets);
-					segmentCountAfter = insets.size();
-					assert(insetTable[shellId].size() == insets.size());
-
+						shrinky.inset(lastInsets, insetDistance, insets);
+						segmentCountAfter = insets.size();
+						assert(insetTable[shellId].size() == insets.size());
+					}
 				}
 				//cout << "	inset nb of segments before: " << segmentCountBefore << endl;
 				//cout << "	inset nb of segments after: "  << segmentCountAfter  << endl;
@@ -123,11 +124,11 @@ void mgl::sliceAndPath(	Meshy &mesh,
 						double layerW,
 						double tubeSpacing,
 						double angle,
+						unsigned int nbOfShells,
 						const char* scadFile,
 						std::vector< SliceData >  &slices)
 {
 	unsigned int extruderId = 0;
-	unsigned int nbOfShells = 3;
 	assert(slices.size() == 0);
 
 	Scalar tol = 1e-6; // Tolerance for assembling LineSegment2s into a loop
@@ -193,31 +194,33 @@ void mgl::sliceAndPath(	Meshy &mesh,
 
 			std::vector<SegmentTable> insetsForLoops;
 
-			// create shells inside the outlines (and around holes)
-		    inshelligence(outlinesSegments,
-		    				  nbOfShells,
-		    				  layerW,
-		    				  sliceId,
-		    				  scadFile,
-		    				  insetsForLoops);
-
-		    assert(insetsForLoops.size() == outlineSegmentCount);
-
-	//		dumpInsets(insetsForLoops);
-			// create a vector of polygons for each shell.
-			// for (unsigned int shellId=0; shellId < shells; shellId++)
-			for(unsigned int outlineId=0; outlineId <  insetsForLoops.size(); outlineId++)
+			if(nbOfShells > 0)
 			{
-				// cout << "inset oultline processing: " << outlineId << " of " << outlinesSegments.size() << endl;
-				// cout << "inset size " << slice.extruderSlices[extruderId].insets.size() << endl;
-				slice.extruderSlices[extruderId].insets.push_back(Polygons());
-				Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
-				// contains all the insets for a single loop
-				SegmentTable &insetTable = insetsForLoops[outlineId];
+				// create shells inside the outlines (and around holes)
+				inshelligence(outlinesSegments,
+								  nbOfShells,
+								  layerW,
+								  sliceId,
+								  scadFile,
+								  insetsForLoops);
 
-				createPolysFromloopSegments(insetTable , polygons );
+				assert(insetsForLoops.size() == outlineSegmentCount);
+
+				//	dumpInsets(insetsForLoops);
+				// create a vector of polygons for each shell.
+				// for (unsigned int shellId=0; shellId < shells; shellId++)
+				for(unsigned int outlineId=0; outlineId <  insetsForLoops.size(); outlineId++)
+				{
+					// cout << "inset oultline processing: " << outlineId << " of " << outlinesSegments.size() << endl;
+					// cout << "inset size " << slice.extruderSlices[extruderId].insets.size() << endl;
+					slice.extruderSlices[extruderId].insets.push_back(Polygons());
+					Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
+					// contains all the insets for a single loop
+					SegmentTable &insetTable = insetsForLoops[outlineId];
+
+					createPolysFromloopSegments(insetTable , polygons );
+				}
 			}
-
 			//cout << " ** " << outlinesSegments.size() << " ** " <<  insetsForLoops.size() << endl;
 
 			Scalar layerAngle = sliceId * angle;

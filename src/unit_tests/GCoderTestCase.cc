@@ -602,6 +602,7 @@ void GCoderTestCase::testKnot()
 			config["slicer"]["layerW"].asDouble(),
 			config["slicer"]["tubeSpacing"].asDouble(),
 			config["slicer"]["angle"].asDouble(),
+			config["slicer"]["NbOfSlices"].asUInt(),
 			scadFile.c_str(),
 			slices);
 

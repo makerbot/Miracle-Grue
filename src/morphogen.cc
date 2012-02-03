@@ -123,7 +123,7 @@ int main(int argc, char *argv[], char *envp[])
 	std::string stlFiles = computer.fileSystem.removeExtension(computer.fileSystem.ExtractFilename(modelFile));
 	stlFiles += "_";
 
-	std::string scadFile = "."; // outDir;
+	std::string scadFile = "."; // outDir
 	scadFile += computer.fileSystem.getPathSeparatorCharacter();
 	scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".scad" );
 
@@ -145,6 +145,7 @@ int main(int argc, char *argv[], char *envp[])
 			config["slicer"]["layerH"].asDouble(),
 			config["slicer"]["tubeSpacing"].asDouble(),
 			config["slicer"]["angle"].asDouble(),
+			config["slicer"]["NbOfShells"].asUInt(),
 			scadFile.c_str(),
 			slices); //paths
 

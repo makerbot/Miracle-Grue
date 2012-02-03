@@ -352,6 +352,7 @@ void sliceAndPath(	Meshy &mesh,
 					double layerW,
 					double tubeSpacing,
 					double angle,
+					unsigned int nbOfShells,
 					const char* scadFile,
 					std::vector< SliceData > &allTubes);
 

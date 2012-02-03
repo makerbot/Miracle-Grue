@@ -1,10 +1,21 @@
 # Requirements
 
-Building Miracle Grue requires that you install scons and the Qt4 libraries. The Qt4 tools for scons are included in the source tree.
+Building Miracle Grue requires that you install scons and the Qt4 libraries. 
+The Qt4 tools for scons are included in the source tree.
+
+QT4 is not used yet, so you can get away without installing it, if you are
+willing to play with the SConstruct file. 
 
 ## Ubuntu installation
 
     apt-get install libqt4-dev scons libcppunit-dev libcppunit-doc
+    
+## Windows installation
+
+    We're still working on this. 
+    
+    Scons: scons requires Python, which may not be on your system.
+    cppunit is only supported on 
 		   
 ## OS X installation
 
