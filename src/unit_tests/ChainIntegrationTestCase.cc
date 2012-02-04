@@ -3,7 +3,7 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ChainIntegrationTestCase.h"
 
-#include "../Configuration.h"
+#include "../mgl/configuration.h"
 #include "../ModelFileReaderOperation.h"
 #include "../SliceOperation.h"
 #include "../RegionerOperation.h"
@@ -14,13 +14,13 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ChainIntegrationTestCase );
 
-#define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"
-#define DUAL_EXTRUDER_FILE_NAME "v29_dual_xtruder_warmup.gcode"
+#define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/single_xtruder_warmup.gcode"
+#define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
 
 void configurePathTest(Configuration& config)
 {
 	config["machineName"] = "TOM";
-	config["firmware"] ="v2.9";
+	config["firmware"] ="v9.9";
 
 	Json::Value extruder;
 
@@ -51,10 +51,10 @@ void ChainIntegrationTestCase::testChain()
 	RegionData *region = new RegionData(0.2, 0.4);
     
 	Operation *pather = new PatherOperation();
-	PathData *path = new PathData(0.2, 0.4);
+	PathData *path = new PathData(0.2);
     
 	Operation *gcoder = new GCoderOperation();
-	GCodeData *gcode = new GCodeData("(This is gcode)");
+	GCodeEnvelope *gcode = new GCodeEnvelope("(This is gcode)");
     
 	Operation *writer = new FileWriterOperation();
     
@@ -63,38 +63,47 @@ void ChainIntegrationTestCase::testChain()
     
 	inout readerOut;
 	readerOut.push_back(slicer);
-	reader->init(config, empty, readerOut);
+	reader->init(config,  readerOut);
     
 	inout sliceIn;
 	inout sliceOut;
 	sliceOut.push_back(regioner);
 	sliceIn.push_back(reader);
-	slicer->init(config, sliceIn, sliceOut);
+	slicer->init(config,  sliceOut);
     
 	inout regionIn;
 	inout regionOut;
 	regionIn.push_back(slicer);
 	regionOut.push_back(pather);
-	regioner->init(config, regionIn, regionOut);
+	regioner->init(config,  regionOut);
     
 	inout patherIn;
 	inout patherOut;
 	patherIn.push_back(regioner);
 	patherOut.push_back(gcoder);
-	pather->init(config, patherIn, patherOut);
+	pather->init(config, patherOut);
     
 	inout gcoderIn;
 	inout gcoderOut;
 	gcoderIn.push_back(pather);
 	gcoderOut.push_back(writer);
-	gcoder->init(config, gcoderIn, gcoderOut);
+	gcoder->init(config,  gcoderOut);
     
 	inout writerIn;
 	writerIn.push_back(gcoder);
-	writer->init(config, writerIn, empty);
+	writer->init(config,  empty);
     
+	reader->start();
+
+	DataEnvelope *startEnvelope = new DataEnvelope(TYPE_EMPTY_ENVELOPE);
+	startEnvelope->setInitial();
+	reader->accept( (*startEnvelope) );
+	startEnvelope->release();
+
+	reader->finish();
+
 	// flaky begin
-	writer->start();
+	//writer->start();
 	// magic happens here
 	//reader->finish();
 	// flaky end

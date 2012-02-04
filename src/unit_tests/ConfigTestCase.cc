@@ -3,7 +3,7 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ConfigTestCase.h"
 
-#include "../Configuration.h"
+#include "../mgl/configuration.h"
 #include "../ModelFileReaderOperation.h"
 #include "../SliceOperation.h"
 #include "../RegionerOperation.h"
@@ -17,6 +17,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ConfigTestCase );
 
 using namespace std;
 
+using namespace Json;
 #define SINGLE_EXTRUDER_FILE_NAME "v29_single_xtruder_warmup.gcode"
 
 // for now, use cout, until we add Boost support

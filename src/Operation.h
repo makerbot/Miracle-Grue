@@ -13,10 +13,12 @@
 #define MG_OPERATION_H
 
 #include "DataEnvelope.h"
-#include "Configuration.h"
+#include "mgl/configuration.h"
 #include <iostream>
 #include <vector>
 #include <string>
+
+#include "json-cpp/include/json/value.h"
 
 
 /**
@@ -34,8 +36,9 @@
  */
 class Operation
 {
-    Configuration* pConfig;
 protected:
+    Configuration* pConfig;
+
 
     // uint32_t  envelopesProcessed; // count of envelopes processed since reset
     std::vector<Operation*> outputs; // pointers to consumers
@@ -45,127 +48,93 @@ protected:
     std::vector<AtomType> emitTypes;
     std::vector<AtomType> acceptTypes;
 
+    bool initalized;
+    bool streamRunning;
+
+    //Json::Value configRequirements;
 
 public:
     /// General base constructor for an Operation
-    Operation()
-     :pConfig(NULL)
-    {
-
-    }
+    Operation();
 
     /// General base destructor for an Operation
-    virtual ~Operation()
-    {
+    virtual ~Operation();
 
-    }
-
-    // this is an accessor so that operation can
-    // access their input's previous data
-    const std::vector<DataEnvelope*>& get_data()
-    {
-    	return dataEnvelopes;
-    }
+	bool acceptsType( AtomType type );
 
     /// Init Function: Called to set the configuration
-    virtual void init(Configuration& config, const std::vector<Operation*> &inputs, const std::vector<Operation*> &outputs)
-    {
-    	// copy the contents of the input output vectors
-    	this->outputs = outputs;
-    	this->inputs = inputs;
-    	this->pConfig = &config;
-    }
+    virtual void init(Configuration& config,const std::vector<Operation*> &outputs) = 0;
 
-    // Accepts incoming data, to collect in this Operation until the operation is ready to
-    // process the data, and send it's own data.  It generally checks validity, increments the use count.
-    // and simply returns.
+    /// Accepts incoming data, to collect in this Operation until the operation is ready to
+    /// process the data, and send it's own data.  It generally checks validity, increments the use count.
+    /// and simply returns.
     // TRICKY: in this base implementation, it processes the packet inline, but it will not always do so
-    virtual bool accept(DataEnvelope& envelope)
-    {
-    	envelope.addRef(); //matching 'release' for this object is in function 'emit'
-    	// validate(envelope);
-    	// bool canThread = requestThreadFromPool(this);
+    virtual bool accept(DataEnvelope& envelope);
 
-    	//if(canThread) //process that envelope later
-    	//	return;
-    	//else // process envelope now
-    	//  processEnvelope(envelope);
+	//sends data to the next operation for it's use
+    virtual void emit(DataEnvelope* envelope);
 
-    	processEnvelope(envelope);
-    	return true;
-    }
+    virtual void start() = 0;
 
-	//sends data to the next operation for it'suse
-    virtual void emit(DataEnvelope* envelope)
-    {
-    	dataEnvelopes.push_back(envelope);
-    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
-    	{
-    		Operation& op = *(*i);
-    		bool accepted = op.accept(*envelope);
-    		if(accepted)
-    			envelope->release(); //matching 'addRef' for this object is in fuction 'accept'
-    		 else
-    			 std::cout << __FUNCTION__ << "packet not accepted by next operation. Won't decrement use for safety" << std::endl;
-
-    	}
-
-    }
-    
-    virtual void start()
-    {
-    	for( std::vector<Operation*>::iterator i = inputs.begin(); i != inputs.end(); i++)
-    	{
-    		Operation& op = *(*i);
-    		op.start();
-    	}
-    }
-    
-    virtual void finish()
-    {
-    	for( std::vector<Operation*>::iterator i = outputs.begin(); i != outputs.end(); i++)
-    	{
-    		Operation& op = *(*i);
-    		op.finish();
-    	}
-    }
+    virtual void finish() = 0;
 
 
-    // This is the core processing function, most users only need to override
-    // this function to create their own models
-    virtual void processEnvelope(const DataEnvelope& envelope) = 0;
+    /// This function should tear down settings or objects built by collect
+    virtual void deinit() = 0;
 
-    // This function should tear down settings or objects built by collect
-    virtual void cleanup() {};
 
-/*
-    // This is a function returns data about how this module is used
-    // TODO: this should/can return more detailed and useful data
-    virtual std::string interrogate() = 0;
-*/
-    /// Returns the type of envelope this module can collect without error
-    std::vector<AtomType>& collectsEnvelopeType() {
-			return acceptTypes;
-	}
 
-    /// Returns the type of envelope this module can collect without error
-    virtual std::vector<AtomType>& emitsEnvelopeType(){
-			return emitTypes;
-	}    
+    /**
+     * Base class check to setup outputs list, and set configuration values
+     * @param config
+     * @param outputs
+     * @return
+     */
+	bool initCommon(Configuration& config,const std::vector<Operation*> &outputs);
 
-    /// Simple test function if an envelope of data is the last
-	bool isLastEnvelope(const DataEnvelope& envelope)
-	{ return envelope.isLastEnvelope();}
+    void startCommon();
 
+    void finishCommon();
+
+	void deinitCommon();
+
+	virtual bool isValidConfig(Configuration &cfg) const = 0;
+
+    /**
+     * This is the core processing function, most users only need to override
+     * this function to create their own models
+     * @param envelope
+     */
+	virtual void processEnvelope(const DataEnvelope& envelope) = 0;
+
+
+    /**
+     * Returns the type of envelope this module can collect without error
+     * @return
+     */
+    std::vector<AtomType>& collectsEnvelopeType() ;
+
+    ///
+    /**
+     * Returns the type of envelope this module can collect without error
+     * @return
+     */
+    virtual std::vector<AtomType>& emitsEnvelopeType();
+
+    /**
+     * Simple test function if an envelope of data is the last
+     *
+     */	bool isLastEnvelope(const DataEnvelope& envelope);
 
 
 
 protected:
-	// configuration object accessor
-	Configuration &configuration() const
-	{
-		return *pConfig;
-	}
+
+     /**
+      * configuration object accessor
+      * @return
+      */
+	Configuration &configuration() const ;
 };
 
 #endif

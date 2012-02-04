@@ -20,6 +20,7 @@
 
 #ignore unit tests
 /*UnitTest
+*.passed
 
 #ignore doyxgen generated docs
 documentation/Doxyfile/*

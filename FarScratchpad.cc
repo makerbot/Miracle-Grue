@@ -10,55 +10,94 @@
 */
 #include <stdio.h>
 
+#include <string.h>
+
 #include "src/SliceOperation.h"
 #include "src/DebugOperation.h"
 #include "src/DataEnvelope.h"
 #include "src/Operation.h"
 
+#include "src/MandTest/MandStlLoaderOperation.h"
+#include "src/MandTest/MandCarveOperation.h"
+#include "src/MandTest/MandInsetOperation.h"
+#include "src/MandTest/MandInfillOperation.h"
+#include "src/MandTest/MandWriteSvgOperation.h"
+
+
 int testCallbackCount = 0;
 bool testSliceOp = true;
 
+using namespace std;
+using namespace Json;
+
 int main() {
-  // -- Run hello
+  /// -- Run hello
   printf("Hello world!\n");
 
   if(testSliceOp)
   {
 	  printf("%s: Building DataEnvelope(s)\n", __FUNCTION__);
-	  DataEnvelope de = DataEnvelope();
-	  DataEnvelope deL = DataEnvelope();
 
-	  PathLoadOperation plo = new PathLoadOperation();
-	  GCoderOperation gco  = new GCodeOperation();
+	  MandStlLoaderOperation* loaderOp = new MandStlLoaderOperation();
+	  Json::Value loaderRequires = MandStlLoaderOperation::getStaticConfigRequirements();
 
-	  Configuration c = new Configuration();
+	  MandCarveOperation* carveOp = new MandCarveOperation();
+	  Json::Value carveRequires = MandCarveOperation::getStaticConfigRequirements();
 
-//	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-//	  DebugOperation* dbgOp = new DebugOperation();
-//	  SliceOperation* s1 = new SliceOperation();
-//	  s1->collect(de);
-//
-////	  printf("%s: Creating and Slice -> Debug workflow\n", __FUNCTION__);
-//	  SliceOperation *s2 = new SliceOperation();
-//	  s2->setNext(dbgOp);
-////	  s2->collect(de);
-////	  deL.setLast();
-////	  s2->collect(deL);
-//
-//	  printf("%s: Testing a slice queuing data, w. callback\n", __FUNCTION__);
-//	  DataEnvelope dummyData= DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-//	  DataEnvelope dummyData2 = DataEnvelope(TYPE_DUMMY_DATA, 0x00,0,(char*)"");
-//	  dummyData2.setLast();
-//
-//	  if (s2->collectsEnvelopeType() == dummyData.typeID)
-//	  {
-//		  printf("%s: Queuing one Envelope of dummy to s2\n", __FUNCTION__);
-//		  s2->collect(dummyData);
-//		  s2->collect(dummyData2);
-//	  }
-////	  else {
-////		  printf("%s: Envelope Type Mismatch at s3\n", __FUNCTION__);
-////	  }
+	  MandInsetOperation* insetOp = new MandInsetOperation();
+	  Json::Value insetRequires = MandInsetOperation::getStaticConfigRequirements();
+
+	  MandInfillOperation* infillOp = new MandInfillOperation();
+	  Json::Value infillRequires = MandInfillOperation::getStaticConfigRequirements();
+
+	  MandWriteSvgOperation* svgWriteOp= new MandWriteSvgOperation();
+	  Json::Value svgWriteRequires = MandInfillOperation::getStaticConfigRequirements();
+
+	  Configuration* cfg = new Configuration();
+
+	  (*cfg)["MandWriteSvgOperation"]["format"] = ".svg";
+	  (*cfg)["MandWriteSvgOperation"]["filename"] = "mandStreamTest";
+	  (*cfg)["MandInfillOperation"]["infillDensity"] = 30.0;
+	  (*cfg)["MandInfillOperation"]["extrusionWidth"] = 0.6;
+	  (*cfg)["MandInsetOperation"]["extrusionWidth"] = 0.6;
+	  (*cfg)["MandInsetOperation"]["perimeterShells"] = 3;
+
+
+	  std::vector<Operation*> loadOut, carveOut, insetOut, infillOut, svgWriteOut;
+	  loadOut.push_back(carveOp);
+	  carveOut.push_back(insetOp);
+	  insetOut.push_back(infillOp);
+	  infillOut.push_back(svgWriteOp);
+
+	  loaderOp->init(*cfg, loadOut);
+	  carveOp->init(*cfg, carveOut);
+	  insetOp->init(*cfg, insetOut);
+	  infillOp->init(*cfg, infillOut);
+	  svgWriteOp->init(*cfg, svgWriteOut);
+
+	  loaderOp->start();
+
+	  DataEnvelope* kickstartEnv = new DataEnvelope(/*AtomType*/TYPE_C_ASCII);
+	  string sourceFile = ("input.stl");
+	  const char* srcFilename = sourceFile .c_str();
+	  kickstartEnv->setRawData((void*)srcFilename, strnlen(srcFilename,64) ,false); //allow it to be destroyed as the function exits
+	  kickstartEnv->setInitial();
+
+	  //start the chain running
+	  loaderOp->accept(*kickstartEnv);
+	  kickstartEnv->release();
+
+	  loaderOp->finish();
+	  loaderOp->deinit();
+
+	  delete loaderOp;
+	  delete carveOp;
+	  delete insetOp;
+	  delete infillOp;
+	  delete svgWriteOp;
+
+	  delete cfg;
+
   }
 
 }

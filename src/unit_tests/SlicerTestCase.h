@@ -1,29 +1,43 @@
-
 #ifndef SLICER_TEST_CASE_H
 #define SLICER_TEST_CASE_H
 
 #include <cppunit/extensions/HelperMacros.h>
 
-/*
- * A test case that is designed to produce
- * example errors and failures
- *
- */
+
 
 class SlicerTestCase : public CPPUNIT_NS::TestFixture
 {
-  CPPUNIT_TEST_SUITE( SlicerTestCase );
-  CPPUNIT_TEST( example );
-  CPPUNIT_TEST_SUITE_END();
+
+private:
+
+	CPPUNIT_TEST_SUITE( SlicerTestCase );
+        //CPPUNIT_TEST( testSlicySimple );
+        //CPPUNIT_TEST( testSlicyKnot_44 );
+        //CPPUNIT_TEST( testNormals );
+        //CPPUNIT_TEST( testCut );
+//		CPPUNIT_TEST( testAngles );
+//		CPPUNIT_TEST( testInset );
+//        CPPUNIT_TEST( testInset2 );
+//        CPPUNIT_TEST( testInset3 );
+        CPPUNIT_TEST( testInset4 );
+    CPPUNIT_TEST_SUITE_END();
 
 
-public:
-  void setUp();
 
 protected:
 
-  void example();
+  void testBootstrap();
+  void testSlicySimple();
+  void testSlicyKnot_44();
+  void testNormals();
 
+  void testCut();
+  void testAngles();
+
+  void testInset();
+  void testInset2();
+  void testInset3();
+  void testInset4();
 };
 
 
