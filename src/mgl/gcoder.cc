@@ -243,6 +243,7 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 {
 	GCoder &gcoder = *this;
 	ss << endl;
+	dbgs__(gcoder.extruders.size())
 	gcoder.extruders[0].g1(ss, 	gcoder.platform.waitingPositionX,
 				gcoder.platform.waitingPositionY,
 				gcoder.platform.waitingPositionZ,
@@ -253,6 +254,7 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 	{
 		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
 	}
+
 	ss << "(note: the heated build platform temperature is tied to tool 0 for now)" << endl;
 	ss << endl;
 	ss << endl;
@@ -265,7 +267,9 @@ void GCoder::writeStartOfFile(std::ostream &gout)
 	writeExtrudersInitialization(gout);
 	writePlatformInitialization(gout);
 	writeHomingSequence(gout);
+	dbg__
 	writeWarmupSequence(gout);
+	dbg__
 	writeAnchor(gout);
 }
 

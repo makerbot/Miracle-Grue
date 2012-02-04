@@ -5,27 +5,15 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "GCoderTestCase.h"
 
-/*
-#include "../GCoderOperation.h"
-#include "../FileWriterOperation.h"
-#include "../PathData.h"
-#include "../GCodeEnvelope.h"
-*/
 
 #include "mgl/abstractable.h"
 #include "mgl/meshy.h"
 #include "mgl/configuration.h"
+#include "mgl/gcoder.h"
 
 using namespace std;
 using namespace mgl;
 
-
-class PathData : public mgl::SliceData
-{
-public:
-	PathData (double z);
-
-};
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
@@ -39,13 +27,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define SINGLE_EXTRUDER_MULTI_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_multigrid_path.gcode"
 #define SINGLE_EXTRUDER_KNOT "test_cases/GCoderTestCase/output/knot.gcode"
 
-// for now, use cout, until we add Boost support
-//#define std::cout cout
-//#define BOOST_LOG_TRIVIAL(debug) cout
-//#define BOOST_LOG_TRIVIAL(info) cout
-//#define BOOST_LOG_TRIVIAL(warning) cout
-//#define BOOST_LOG_TRIVIAL(error) cout
-//#define BOOST_LOG_TRIVIAL(fatal) cout
+
 
 void configurePlatform(Configuration& config, bool automaticBuildPlatform, double platformTemp )
 {
@@ -107,6 +89,7 @@ void configureDualExtruder(Configuration& config)
 	configureExtruder(config, 220, 6, 0);
 	configureExtruder(config, 220, 6, 0);
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
+	CPPUNIT_ASSERT(config["extruders"].size() == 2);
 }
 
 
@@ -118,65 +101,7 @@ void GCoderTestCase::setUp()
 }
 
 
-void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
-{
 
-	std::cout<< "get Config static requirements:" <<__FUNCTION__ << endl;
-	/// 1) (Optional)  call getStaticConfigRequirements, to make sure you can build a
-	/// good configuration.
-	Json::Value* gCoderRequires= GCoderOperation::getStaticConfigRequirements();
-	Json::Value* fileWriterRequires= FileWriterOperation::getStaticConfigRequirements();
-	assert( (void*)gCoderRequires != NULL);
-	assert( (void*)fileWriterRequires != NULL);
-
-	/// 2)  Build an instance of the object. This builds member functions, allocates much space etc
-	std::cout<< "Build Operation Instances:" <<__FUNCTION__ << endl;
-	GCoderOperation &tooler = *new GCoderOperation();
-	FileWriterOperation &fileWriter = *new FileWriterOperation();
-
-	///3) Create Output Vector(s) from each operation (not always required)
-	std::cout<< "Build Output Vectors:" <<__FUNCTION__ << endl;
-	vector<Operation*> empty;
-	vector<Operation*> toolerOutputs;
-	toolerOutputs.push_back(&fileWriter);
-
-	///4) Build a Configure object. use the staticConfigRequirements to help you unless you know
-	/// exactly what to build
-	std::cout<< "Build Output Vectors:" <<__FUNCTION__ << endl;
-	Configuration cfg;
-	//	cfg.root["FileWriterOperation"]["prefix"] = Value("tester");
-	//	cfg.root["FileWriterOperation"]["lang"] = Value("eng");
-
-
-	///5) initalize the Object with your configuration, and your output list
-	std::cout<< "Initalizing Operations:" <<__FUNCTION__ << endl;
-	tooler.init(config,  toolerOutputs);
-	fileWriter.init(config, empty);
-
-	/// 6) Send a start signal to the first operation in the Operation Graph
-	tooler.start();
-
-	///7) Send inital one or more data envelopes to the object.
-	for(std::vector<PathData*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
-	{
-		PathData *envelope = *it;
-		std::cout<< "Accept Envelope @" << envelope <<" "<<__FUNCTION__ << endl;
-		tooler.accept(*envelope);
-	}
-
-	/// 8) Send a finish signal to the first operation in the Operation Graph
-	/// that call to finish will propagate down the graph automatically
-	tooler.finish();
-
-	//9) De-init (for safty)
-	tooler.deinit();
-	fileWriter.deinit();
-
-	delete &tooler;
-	delete &fileWriter;
-
-	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
-}
 
 void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double dy)
 {
@@ -195,7 +120,7 @@ void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double 
 
 // a function that adds 4 points to a polygon within the list paths for
 // a new extruder.
-void initSimplePath(PathData &d)
+void initSimplePath(SliceData &d)
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	d.extruderSlices.push_back(ExtruderSlice());
@@ -231,20 +156,20 @@ void GCoderTestCase::testSingleExtruder()
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	Configuration config;
-	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_FILE_NAME;
-	config["FileWriterOperation"]["format"]= ".gcode";
+	GCoder gcoder;
 
 	configureSingleExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 
-
-
-
 	Json::StyledWriter w;
 	string confstr = w.write(config.root);
 	cout << confstr << endl;
-	vector<PathData*> datas;
-	run_tool_chain(config,datas );
+
+	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME); ;
+	gcoder.writeStartOfFile(gout);
+	gcoder.writeGcodeEndOfFile(gout);
+
+
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
@@ -259,18 +184,22 @@ void GCoderTestCase::testDualExtruders()
 	// cerate an empty configuration object
 	Configuration config;
 	// set the output fie
-	config["FileWriterOperation"]["filename"]= DUAL_EXTRUDER_FILE_NAME;
-	config["FileWriterOperation"]["format"]= ".gcode";
 
 	// add extruder information
 	configureDualExtruder(config);
-//	CPPUNIT_ASSERT_EQUAL((size_t)2,config.extruders.size());
+	CPPUNIT_ASSERT_EQUAL((size_t)2,(size_t)config["extruders"].size());
 	// create a simple Gcode operation (no paths), initialize it and run it
-	vector<PathData*> datas;
-	run_tool_chain(config, datas);
 
+	std::ofstream gout(DUAL_EXTRUDER_FILE_NAME);
+	GCoder gcoder;
+
+
+	gcoder.writeStartOfFile(gout);
+	dbg__
+	gcoder.writeGcodeEndOfFile(gout);
+	dbg__
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
-
+	dbg__
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
@@ -283,28 +212,31 @@ void GCoderTestCase::testSimplePath()
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	// create empty configuration and set the file name
 	Configuration config;
-	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_WITH_PATH;
-	config["FileWriterOperation"]["format"]= ".gcode";
-
 	// load 1 extruder
 	configureSingleExtruder(config);
 	//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 	// create a path message as if received by a pather operation
 
-	PathData *path = new PathData(0.2);
+	SliceData path = SliceData(0.2,0);
 	// add a simple rectangular path for the single extruder
-	initSimplePath(*path);
-	std::vector<PathData*> datas;
-	datas.push_back( (PathData*) path);
+	initSimplePath(path);
+	std::vector<SliceData> slices;
+	slices.push_back(path);
 	// instaniate a gcoder and send it the path as an envelope.
-	run_tool_chain(config, datas);
 
-	// cleanup the data
-	for(std::vector<PathData*>::iterator it = datas.begin(); it != datas.end(); it++)
+	std::ofstream gout(SINGLE_EXTRUDER_WITH_PATH);
+	GCoder gcoder;
+	gcoder.writeStartOfFile(gout);
+	gcoder.writeGcodeEndOfFile(gout);
+	for(int i = 0; i < slices.size(); i++)
 	{
-		PathData* data = *it;
-		//data->release();
+    	cout.flush();
+		const SliceData &slice = slices[i];
+		gcoder.writeSlice(gout, slice, i);
 	}
+
+	gcoder.writeGcodeEndOfFile(gout);
+	gout.close();
 
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
@@ -391,7 +323,7 @@ void GCoderTestCase::testFloatFormat()
 }
 
 
-void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
+void initHorizontalGridPath(SliceData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
 	d.extruderSlices.push_back(ExtruderSlice());
 	Polygons &polys = d.extruderSlices[0].infills;
@@ -420,7 +352,7 @@ void initHorizontalGridPath(PathData &d, double lowerX, double lowerY, double dx
 	}
 }
 
-void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
+void initVerticalGridPath(SliceData &d, double lowerX, double lowerY, double dx, double dy, int lineCount)
 {
 	d.extruderSlices.push_back(ExtruderSlice());
 	Polygons &polys = d.extruderSlices[0].infills;
@@ -456,13 +388,11 @@ void GCoderTestCase::testGridPath()
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 
 	Configuration config;
-	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_GRID_PATH;
-	config["FileWriterOperation"]["format"]= ".gcode";
 
 	// load 1 extruder
 	configureSingleExtruder(config);
 
-	PathData *path = new PathData(0.15);
+	SliceData path = SliceData(0.15,0);
 
 	srand( time(NULL) );
 	int lineCount = 20;
@@ -472,18 +402,25 @@ void GCoderTestCase::testGridPath()
 	double dx = 20.0;
 	double dy = 20.0;
 
-	initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
+	initHorizontalGridPath(path, lowerX, lowerY, dx, dy, 20);
 
-	vector<PathData*> datas;
-	datas.push_back((PathData*)path);
-	run_tool_chain(config, datas);
+	vector<SliceData> slices;
+	slices.push_back(path);
 
-	// cleanup the data
-	for(std::vector<PathData*>::iterator it = datas.begin(); it != datas.end(); it++)
+	std::ofstream gout(SINGLE_EXTRUDER_GRID_PATH);
+	GCoder gcoder;
+	gcoder.writeStartOfFile(gout);
+	gcoder.writeGcodeEndOfFile(gout);
+	for(int i = 0; i < slices.size(); i++)
 	{
-		PathData* data = *it;
-		//data->release();
+    	cout.flush();
+		const SliceData &slice = slices[i];
+		gcoder.writeSlice(gout, slice, i);
 	}
+
+	gcoder.writeGcodeEndOfFile(gout);
+	gout.close();
+
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
@@ -501,13 +438,11 @@ void GCoderTestCase::testMultiGrid()
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 
 	Configuration config;
-	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_MULTI_GRID_PATH;
-	config["FileWriterOperation"]["format"]= ".gcode";
 
 	// load 1 extruder
 	configureSingleExtruder(config);
 
-	vector<PathData*> datas;
+	vector<SliceData> slices;
 	srand( time(NULL) );
 
 	int lineCount = 20;
@@ -521,37 +456,45 @@ void GCoderTestCase::testMultiGrid()
 
 	for(int currentLayer=0; currentLayer < 200; currentLayer++)
 	{
-		PathData *path = new PathData(currentLayer * layerH + firstLayerH);
+		SliceData path = SliceData(currentLayer * layerH + firstLayerH,0);
 		if(horizontal)
-			initHorizontalGridPath(*path, lowerX, lowerY, dx, dy, 20);
+			initHorizontalGridPath(path, lowerX, lowerY, dx, dy, 20);
 		else
-			initVerticalGridPath(*path, lowerX, lowerY, dx, dy, 20);
-		datas.push_back((PathData*)path);
+			initVerticalGridPath(path, lowerX, lowerY, dx, dy, 20);
+		slices.push_back(path);
 		horizontal = !horizontal;
 	}
-	run_tool_chain(config, datas);
 
-	// cleanup the data
-	for(std::vector<PathData*>::iterator it = datas.begin(); it != datas.end(); it++)
+	std::ofstream gout(SINGLE_EXTRUDER_MULTI_GRID_PATH);
+	GCoder gcoder;
+	gcoder.writeStartOfFile(gout);
+	gcoder.writeGcodeEndOfFile(gout);
+	for(int i = 0; i < slices.size(); i++)
 	{
-		PathData* data = *it;
-		//data->release();
+    	cout.flush();
+		const SliceData &slice = slices[i];
+		gcoder.writeSlice(gout, slice, i);
 	}
+
+	gcoder.writeGcodeEndOfFile(gout);
+	gout.close();
+
+
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
-PathData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z)
+SliceData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z)
 {
 	// paths R us
-	PathData *pathData;
-	pathData = new PathData(z);
+	SliceData *sliceData;
+	sliceData = new SliceData(z,0);
 
-	pathData->extruderSlices.push_back(ExtruderSlice());
+	sliceData->extruderSlices.push_back(ExtruderSlice());
 
 
-	Polygons& paths = pathData->extruderSlices[0].infills;
+	Polygons& paths = sliceData->extruderSlices[0].infills;
 	size_t tubeCount = tubes.size();
 	for (int i=0; i< tubeCount; i++)
 	{
@@ -568,59 +511,8 @@ PathData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z)
 		poly.push_back(p1);
 
 	}
-	return pathData;
+	return sliceData;
 }
 
 
-void GCoderTestCase::testKnot()
-{
-	cout << endl;
 
-	string modelFile = "inputs/3D_Knot.stl";
-	std::string outDir = "test_cases/GCoderTestCase/output";
-
-
-	MyComputer myComputer;
-	cout << endl;
-	cout << endl;
-	cout << "behold!" << endl;
-	cout << modelFile << "\" has begun at " << myComputer.clock.now() << endl;
-
-	std::string stlFiles = myComputer.fileSystem.removeExtension(myComputer.fileSystem.ExtractFilename(modelFile));
-	stlFiles += "_";
-
-	std::string scadFile = outDir;
-	scadFile += myComputer.fileSystem.getPathSeparatorCharacter();
-	scadFile += myComputer.fileSystem.ChangeExtension(myComputer.fileSystem.ExtractFilename(modelFile), ".scad" );
-
-	std::string stlPrefix = outDir;
-	stlPrefix += myComputer.fileSystem.getPathSeparatorCharacter();
-	stlPrefix += stlFiles.c_str();
-	cout << endl << endl;
-	cout << modelFile << " to " << stlPrefix << "*.stl and " << scadFile << endl;
-
-	Configuration config;
-	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_KNOT;
-	config["FileWriterOperation"]["format"]= ".gcode";
-
-	// load 1 extruder
-	configureSingleExtruder(config);
-	configureSlicer(config);
-
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
-
-	std::vector< SliceData > slices;
-	sliceAndPath(mesh,
-			config["slicer"]["layerW"].asDouble(),
-			config["slicer"]["tubeSpacing"].asDouble(),
-			config["slicer"]["angle"].asDouble(),
-			config["slicer"]["NbOfSlices"].asUInt(),
-			scadFile.c_str(),
-			slices);
-
-	writeGcodeFile(config, SINGLE_EXTRUDER_KNOT, slices);
-
-
-
-}

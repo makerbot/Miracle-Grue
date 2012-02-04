@@ -8,9 +8,22 @@ This project is the basis for a new toolpathing engine to suppliment skeinforge 
 This project is laid out in the following directory tree (roughly)
 
  - documentation/ Documentation
- - visualizers/ Tools for debugging/testing input and output from the engine
+ - configs/ Eclipse project, personal stuff
  - src/  Source Code for the project MiracleGrue
- - inputs/ Test input files for debugging/testing/etc
+	- json-cpp library to read/write JSON text files (configuration)
+	- mgl/ the Miracle-Grue library
+	- morphogen.cc the main file
+	- unit_tests various test programs (using cppunit)
+ - inputs/ Some stl input files for demo
+ - test_cases/ unit test input and output files
+ - site_scons build files for qt
+
+miracle.config 
+this is the default configuration file for Miracle-Grue. It contains information like the layer height, the nb of shells, and the infill pattern. 
+When miracle-grue executes, it looks for a 'miracle.config' in the current directory, unless -c is used to specify a different config file.
+
+Building.md
+A guide to install the tools on various platforms.
 
 
 
