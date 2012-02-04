@@ -9,10 +9,7 @@
 import os
 import commands
 import datetime
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/cooperation
 
 unitTestOutputDir = './test_cases'
 
@@ -25,7 +22,7 @@ run_unit_tests = False
 if ( GetOption('unit_test') != None):
 	print "running unit test"
 	run_unit_tests = True;
-	
+
 #AddOption('--valgrind')
 #run_valgrind = False
 #if ( GetOption('valgrind') != None):
@@ -38,7 +35,7 @@ def runThisTest(program, run_unit_tests):
 		#print('runThisTest', program[0].path )
 		sts,text = commands.getstatusoutput(program[0].path)
 		print(text)
-	
+
 
 def runUnitTest(env,target,source):
 	""" runs a unit test in a separate process. Not build-aware,
@@ -46,8 +43,8 @@ def runUnitTest(env,target,source):
 	@target dummy target file, writes 'passed' if tests return no error code
 	@source  unit test program to run """
 	import subprocess
-	
-	
+
+
 	app = str(source[0].abspath)
 	retCode = subprocess.call(app)
 	if not retCode == 0:
@@ -57,30 +54,22 @@ def runUnitTest(env,target,source):
 		print("runUnitTest failed testing " + str(source[0]) )
 		#Message('runing unit test' + source[0].abspath)
 		Exit(1)
-		
+
 def mix(*args):
 	""" mash items/lists together into a single list, no duplicates"""
 	l = []
 	for arg_list in args:
 		l += arg_list
-	
+
 	no_duplicates =  list(set(l)) # remove duplicates
 	#print "***", no_duplicates
 	scons_list = [env.Object(x) for x in no_duplicates]
 	return scons_list
 
-
 print ""
 print "======================================================="
 print "Miracle-Grue build script"
 print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
-<<<<<<< HEAD
-
-
-
-# Using just one environemt setup for now	
-env = Environment(ENV = {'PATH' : os.environ['PATH']}, tools=['default','qt4'])
-=======
 print
 
 operating_system = commands.getoutput("uname")
@@ -100,7 +89,6 @@ if operating_system == "Darwin":
 
 # Using just one environemt setup for now	
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=['default','qt4'])
->>>>>>> origin/cooperation
 # print "os.environ['PATH']=", os.environ['PATH']
 
 debug = ARGUMENTS.get('debug', 0)
@@ -113,43 +101,6 @@ if debug != None:
         
 if int(debug):
     env.Append(CCFLAGS = '-g')
-<<<<<<< HEAD
-
-
-env.EnableQt4Modules(['QtCore', 'QtNetwork' ])
-
-
-env.Library('./bin/lib/bgl', ['src/BGL/BGLAffine.cc',
-    'src/BGL/BGLBounds.cc',
-    'src/BGL/BGLCommon.cc',
-    'src/BGL/BGLCompoundRegion.cc',
-    'src/BGL/BGLIntersection.cc',
-    'src/BGL/BGLLine.cc',
-    'src/BGL/BGLMesh3d.cc',
-    'src/BGL/BGLPath.cc',
-    'src/BGL/BGLPoint.cc',
-    'src/BGL/BGLPoint3d.cc',
-    'src/BGL/BGLSimpleRegion.cc',
-    'src/BGL/BGLTriangle3d.cc'])
-
-
-env.Library('./bin/lib/_json', ['src/json-cpp/src/lib_json/json_reader.cpp',
-                       'src/json-cpp/src/lib_json/json_value.cpp',
-                       'src/json-cpp/src/lib_json/json_writer.cpp' ],
-            CPPPATH=['src/json-cpp/include'])
-
-unit_test = ['src/unit_tests/UnitTestMain.cc',]
-config 	  = ['src/Configuration.cc']
-file_w    = ['src/Configuration.cc', 'src/FileWriterOperation.cc', 'src/GCodeData.cc',]
-gcoder    = ['src/Configuration.cc', 'src/GCoderOperation.cc', 'src/PathData.cc', 'src/GCodeData.cc',]
-pather    = ['src/Configuration.cc', 'src/PatherOperation.cc', 'src/PathData.cc', 'src/RegionData.cc',]
-regioner  = ['src/Configuration.cc', 'src/RegionerOperation.cc','src/RegionData.cc','src/SliceData.cc',]
-slicer    = ['src/Configuration.cc', 'src/SliceOperation.cc', 'src/MeshData.cc', 'src/RegionData.cc',]
-file_r    = ['src/Configuration.cc', 'src/ModelFileReaderOperation.cc', 'src/MeshData.cc',]
-
-default_includes = ['..','src/json-cpp/include']
-default_libs = [ '_json']
-=======
     
 env.Append(CCFLAGS = '-fopenmp')      
 env.Append(LINKFLAGS = '-fopenmp')    
@@ -189,7 +140,6 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
 default_libs = [ 'mgl', '_json',] # 'miracleGrue'
->>>>>>> origin/cooperation
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
@@ -218,7 +168,7 @@ p = env.Program( 	'./bin/tests/slicerUnitTest',
 runThisTest(p, run_unit_tests)
 	#Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
 
-	
+
 p = env.Program(  	'./bin/tests/modelReaderUnitTest',   
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
@@ -236,7 +186,7 @@ runThisTest(p, run_unit_tests)
 
 
 
-	
+
 p = env.Program(  	'./bin/tests/regionerUnitTest',   
 				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
@@ -273,7 +223,7 @@ runThisTest(p, run_unit_tests)
 #				LIBS = default_libs + debug_libs,
 #				LIBPATH = default_libs_path, 
 #				CPPPATH = default_includes)
-		
+
 
 #mand_ops = ['src/mgl/configuration.cc', 
 #	'src/MandTest/MandStlLoaderOperation.cc','src/MandTest/StlEnvelope.cc' ,
@@ -295,8 +245,8 @@ runThisTest(p, run_unit_tests)
 #				LIBS = default_libs + debug_libs,
 #				LIBPATH = default_libs_path + debug_libs_path, 
 #				CPPPATH= ['..'])
-		
-	
+
+
 #p = env.Program(	'./bin/tests/configUnitTest',
 #				mix(['src/unit_tests/ConfigTestCase.cc'], unit_test),
 #				LIBS = default_libs + debug_libs,
@@ -314,7 +264,3 @@ runThisTest(p, run_unit_tests)
 #				CPPPATH= [".."])
 #
 #runThisTest(p, run_unit_tests)
-
-
-		
-		
