@@ -3,7 +3,8 @@
 #include "SlicerCupTestCase.h"
 
 #include "mgl/meshy.h"
-#include "GCoderOperation.h"
+#include "mgl/configuration.h"
+#include "mgl/gcoder.h"
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SlicerCupTestCase );

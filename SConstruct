@@ -121,38 +121,53 @@ json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_writer.cpp' ]
 
 
-miracleGrue_cc = ['src/Operation.cc'] 
+#miracleGrue_cc = ['src/Operation.cc'] 
+#env.Library('./bin/lib/miracleGrue', miracleGrue_cc, CPPATH=['src/'])
 
 env.Library('./bin/lib/mgl', mgl_cc )  
 
 env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include'])
 
-env.Library('./bin/lib/miracleGrue', miracleGrue_cc, CPPATH=['src/'])
 
 unit_test   = ['src/unit_tests/UnitTestMain.cc',]
-file_w      = [ 'src/FileWriterOperation.cc', 		'src/GCodeEnvelope.cc',]
-gcoder      = ['src/GCoderOperation.cc', 			'src/PathData.cc', 	'src/GCodeEnvelope.cc',]
-pather      = ['src/PatherOperation.cc', 			'src/PathData.cc', 	'src/RegionData.cc',]
-regioner    = ['src/RegionerOperation.cc',			'src/RegionData.cc','src/SliceData.cc',]
-slicer      = ['src/SliceOperation.cc', 			'src/MeshData.cc', 	'src/RegionData.cc',]
-file_r      = ['src/ModelFileReaderOperation.cc', 	'src/MeshData.cc',]
-example_op  = ['src/ExampleOperation.cc',]
+#file_w      = [ 'src/FileWriterOperation.cc', 		'src/GCodeEnvelope.cc',]
+#gcoder      = ['src/GCoderOperation.cc', 			'src/PathData.cc', 	'src/GCodeEnvelope.cc',]
+#pather      = ['src/PatherOperation.cc', 			'src/PathData.cc', 	'src/RegionData.cc',]
+#regioner    = ['src/RegionerOperation.cc',			'src/RegionData.cc','src/SliceData.cc',]
+#slicer      = ['src/SliceOperation.cc', 			'src/MeshData.cc', 	'src/RegionData.cc',]
+#file_r      = ['src/ModelFileReaderOperation.cc', 	'src/MeshData.cc',]
+#example_op  = ['src/ExampleOperation.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
-default_libs = [ 'mgl', '_json',  'miracleGrue']
+default_libs = [ 'mgl', '_json',] # 'miracleGrue'
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
 
 
+p = env.Program('./bin/miracle_grue', 
+		mix(['src/morphogen.cc'] ),
+		LIBS = ['mgl', '_json'],
+		LIBPATH = default_libs_path,
+		CPPPATH = default_includes)
+
+p = env.Program(  	'./bin/tests/slicerCupUnitTest',   
+				mix(['src/unit_tests/SlicerCupTestCase.cc'], unit_test), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= [".."])
+runThisTest(p, run_unit_tests)	
+
+
 p = env.Program( 	'./bin/tests/slicerUnitTest', 
-				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test,  slicer), 
+				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 runThisTest(p, run_unit_tests)
 	#Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
+
 	
 p = env.Program(  	'./bin/tests/modelReaderUnitTest',   
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test), 
@@ -161,35 +176,25 @@ p = env.Program(  	'./bin/tests/modelReaderUnitTest',
 				CPPPATH= ['..'])
 runThisTest(p, run_unit_tests)
 
-p = env.Program( 	'./bin/tests/gcoderUnitTest', 
-				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test, pather, gcoder, file_w), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= default_includes )
-runThisTest(p, run_unit_tests)
+
+#p = env.Program( 	'./bin/tests/gcoderUnitTest', 
+#				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test), 
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH= default_includes )
+#runThisTest(p, run_unit_tests)
 
 
-p = env.Program(  	'./bin/tests/slicerCupUnitTest',   
-				mix(['src/unit_tests/SlicerCupTestCase.cc'], unit_test, file_r, slicer, regioner, pather, gcoder, file_w), 
-    			LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= [".."])
-runThisTest(p, run_unit_tests)	
 
 	
 p = env.Program(  	'./bin/tests/regionerUnitTest',   
-				mix(['src/unit_tests/RegionerTestCase.cc'], pather, unit_test, regioner), 
+				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 
 runThisTest(p, run_unit_tests)
 
-p = env.Program('./bin/miracle_grue', 
-		mix(['src/morphogen.cc'] ),
-		LIBS = ['mgl', '_json'],
-		LIBPATH = default_libs_path,
-		CPPPATH = default_includes)
 
 
 

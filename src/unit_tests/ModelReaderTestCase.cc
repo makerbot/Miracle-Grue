@@ -14,7 +14,7 @@
 #include "ModelReaderTestCase.h"
 
 
-#include "../ModelFileReaderOperation.h"
+//#include "../ModelFileReaderOperation.h"
 
 #include "mgl/configuration.h"
 #include "mgl/limits.h"
@@ -262,7 +262,7 @@ string visibleCut(const Triangle3& t, const Vector3 &a, const Vector3 &b)
 
 void ModelReaderTestCase::testCutTriangle()
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
 	Vector3 v0(-1, 0, 0);
 	Vector3 v1(1, 0, 0);
@@ -313,7 +313,7 @@ void ModelReaderTestCase::testCutTriangle()
 
 void ModelReaderTestCase::testRotate()
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
 	Vector2 center(4,4);
 	Vector2 a(4,3);
@@ -406,7 +406,7 @@ void batchProcess(	Scalar firstLayerZ,
 
 void ModelReaderTestCase::testMyStls()
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
 	Scalar firstLayerZ = 0.11;
 	Scalar layerH = 0.35;
@@ -439,7 +439,7 @@ void ModelReaderTestCase::testMyStls()
 
 void ModelReaderTestCase::testKnot()
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 	Scalar firstZ = 0.11;
 	Scalar layerH = 0.35;
 	Scalar layerW = 0.5833333;
@@ -453,7 +453,7 @@ void ModelReaderTestCase::testKnot()
 
 void ModelReaderTestCase::testInputStls()
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 	Scalar firstZ = 0.11;
 	Scalar layerH = 0.35;
 	Scalar layerW = 0.5833333;
@@ -473,7 +473,7 @@ void ModelReaderTestCase::testInputStls()
 
 void ModelReaderTestCase::testTubularInflate()
 {
-	BOOST_LOG_TRIVIAL(trace) << endl << "Starting: " <<__FUNCTION__ << endl;
+	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
 	Limits l0;
 

@@ -5,17 +5,28 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "GCoderTestCase.h"
 
-
+/*
 #include "../GCoderOperation.h"
 #include "../FileWriterOperation.h"
 #include "../PathData.h"
 #include "../GCodeEnvelope.h"
+*/
 
 #include "mgl/abstractable.h"
 #include "mgl/meshy.h"
+#include "mgl/configuration.h"
 
 using namespace std;
 using namespace mgl;
+
+
+class PathData : public mgl::SliceData
+{
+public:
+	PathData (double z);
+
+};
+
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
@@ -29,7 +40,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define SINGLE_EXTRUDER_KNOT "test_cases/GCoderTestCase/output/knot.gcode"
 
 // for now, use cout, until we add Boost support
-//#define BOOST_LOG_TRIVIAL(trace) cout
+//#define std::cout cout
 //#define BOOST_LOG_TRIVIAL(debug) cout
 //#define BOOST_LOG_TRIVIAL(info) cout
 //#define BOOST_LOG_TRIVIAL(warning) cout
@@ -38,14 +49,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
 void configurePlatform(Configuration& config, bool automaticBuildPlatform, double platformTemp )
 {
-	BOOST_LOG_TRIVIAL(trace)  << "Starting:" <<__FUNCTION__ << endl;
+	std::cout  << "Starting:" <<__FUNCTION__ << endl;
 	config["scalingFactor"] = 1.0;
 	config["platform"]["temperature"] = platformTemp;
 	config["platform"]["automated"] = automaticBuildPlatform;
 	config["platform"]["waitingPositionX"] = 52.0;
 	config["platform"]["waitingPositionY"] = -57.0;
 	config["platform"]["waitingPositionZ"] = 10.0;
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 
 }
 
@@ -54,7 +65,7 @@ void configurePlatform(Configuration& config, bool automaticBuildPlatform, doubl
 void configureExtruder(Configuration& config, double temperature, double speed, double offsetX)
 {
 	Json::Value extruder;
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	extruder["leadIn"] = 0.25;
 	extruder["leadOut"] = 0.35;
 	extruder["defaultExtrusionSpeed"] = speed;
@@ -67,7 +78,7 @@ void configureExtruder(Configuration& config, double temperature, double speed, 
 	extruder["nozzleZ"] = 0.0;
 	extruder["reversalExtrusionSpeed"] = 35.0;
 	config["extruders"].append(extruder);
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 void configureSlicer(Configuration &config)
@@ -82,35 +93,35 @@ void configureSlicer(Configuration &config)
 }
 void configureSingleExtruder(Configuration &config)
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	configurePlatform(config, true, 110);
 	configureExtruder(config, 220, 6, 0);
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 // fills a configuration object with data for 2 extruders
 void configureDualExtruder(Configuration& config)
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	configurePlatform(config, true, 110)	;
 	configureExtruder(config, 220, 6, 0);
 	configureExtruder(config, 220, 6, 0);
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 
 
 void GCoderTestCase::setUp()
 {
-	BOOST_LOG_TRIVIAL(trace)<< " Starting:" <<__FUNCTION__ << endl;
-	BOOST_LOG_TRIVIAL(trace)<< " Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< " Starting:" <<__FUNCTION__ << endl;
+	std::cout<< " Exiting:" <<__FUNCTION__ << endl;
 }
 
 
 void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
 {
 
-	BOOST_LOG_TRIVIAL(trace)<< "get Config static requirements:" <<__FUNCTION__ << endl;
+	std::cout<< "get Config static requirements:" <<__FUNCTION__ << endl;
 	/// 1) (Optional)  call getStaticConfigRequirements, to make sure you can build a
 	/// good configuration.
 	Json::Value* gCoderRequires= GCoderOperation::getStaticConfigRequirements();
@@ -119,26 +130,26 @@ void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
 	assert( (void*)fileWriterRequires != NULL);
 
 	/// 2)  Build an instance of the object. This builds member functions, allocates much space etc
-	BOOST_LOG_TRIVIAL(trace)<< "Build Operation Instances:" <<__FUNCTION__ << endl;
+	std::cout<< "Build Operation Instances:" <<__FUNCTION__ << endl;
 	GCoderOperation &tooler = *new GCoderOperation();
 	FileWriterOperation &fileWriter = *new FileWriterOperation();
 
 	///3) Create Output Vector(s) from each operation (not always required)
-	BOOST_LOG_TRIVIAL(trace)<< "Build Output Vectors:" <<__FUNCTION__ << endl;
+	std::cout<< "Build Output Vectors:" <<__FUNCTION__ << endl;
 	vector<Operation*> empty;
 	vector<Operation*> toolerOutputs;
 	toolerOutputs.push_back(&fileWriter);
 
 	///4) Build a Configure object. use the staticConfigRequirements to help you unless you know
 	/// exactly what to build
-	BOOST_LOG_TRIVIAL(trace)<< "Build Output Vectors:" <<__FUNCTION__ << endl;
+	std::cout<< "Build Output Vectors:" <<__FUNCTION__ << endl;
 	Configuration cfg;
 	//	cfg.root["FileWriterOperation"]["prefix"] = Value("tester");
 	//	cfg.root["FileWriterOperation"]["lang"] = Value("eng");
 
 
 	///5) initalize the Object with your configuration, and your output list
-	BOOST_LOG_TRIVIAL(trace)<< "Initalizing Operations:" <<__FUNCTION__ << endl;
+	std::cout<< "Initalizing Operations:" <<__FUNCTION__ << endl;
 	tooler.init(config,  toolerOutputs);
 	fileWriter.init(config, empty);
 
@@ -149,7 +160,7 @@ void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
 	for(std::vector<PathData*>::iterator it = envelopes.begin(); it != envelopes.end(); it++)
 	{
 		PathData *envelope = *it;
-		BOOST_LOG_TRIVIAL(trace)<< "Accept Envelope @" << envelope <<" "<<__FUNCTION__ << endl;
+		std::cout<< "Accept Envelope @" << envelope <<" "<<__FUNCTION__ << endl;
 		tooler.accept(*envelope);
 	}
 
@@ -164,9 +175,8 @@ void run_tool_chain(Configuration &config, vector<PathData*> &envelopes)
 	delete &tooler;
 	delete &fileWriter;
 
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
-
 
 void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double dy)
 {
@@ -182,11 +192,12 @@ void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double 
 	poly.push_back(p0);
 }
 
+
 // a function that adds 4 points to a polygon within the list paths for
 // a new extruder.
 void initSimplePath(PathData &d)
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	d.extruderSlices.push_back(ExtruderSlice());
 
 	unsigned int last = d.extruderSlices.size() -1;
@@ -209,7 +220,7 @@ void initSimplePath(PathData &d)
 		lower_y += 10.0 * ((double) rand()) / RAND_MAX;
 		rectangle(poly, lower_x, lower_y, dx, dy);
 	}
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 //
@@ -218,13 +229,15 @@ void initSimplePath(PathData &d)
 //
 void GCoderTestCase::testSingleExtruder()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	Configuration config;
 	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_FILE_NAME;
 	config["FileWriterOperation"]["format"]= ".gcode";
 
 	configureSingleExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
+
+
 
 
 	Json::StyledWriter w;
@@ -234,7 +247,7 @@ void GCoderTestCase::testSingleExtruder()
 	run_tool_chain(config,datas );
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 //
@@ -242,7 +255,7 @@ void GCoderTestCase::testSingleExtruder()
 //
 void GCoderTestCase::testDualExtruders()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	// cerate an empty configuration object
 	Configuration config;
 	// set the output fie
@@ -258,7 +271,7 @@ void GCoderTestCase::testDualExtruders()
 
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
 
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 
@@ -267,7 +280,7 @@ void GCoderTestCase::testDualExtruders()
 //
 void GCoderTestCase::testSimplePath()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	// create empty configuration and set the file name
 	Configuration config;
 	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_WITH_PATH;
@@ -295,12 +308,12 @@ void GCoderTestCase::testSimplePath()
 
 	// verify that gcode file has been generated
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 void GCoderTestCase::testConfig()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 
 	Configuration conf;
 	std::string p = conf.root["programName"].asString();
@@ -339,7 +352,7 @@ void GCoderTestCase::testConfig()
 	cout << "phoenix:" << phoenix.root["programName"].asString() << endl;
 	CPPUNIT_ASSERT(phoenix.root["programName"] == "Miracle-Grue");
 
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 void gcodeStreamFormat(ostream &ss)
@@ -373,7 +386,7 @@ void GCoderTestCase::testFloatFormat()
 	// ss << "LOCALE name: " << myloc.name() << endl;
 	ss << "num: " << 3.1415927 << endl;
 	cout << ss.str() << endl;
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 
 }
 
@@ -440,7 +453,7 @@ void initVerticalGridPath(PathData &d, double lowerX, double lowerY, double dx, 
 
 void GCoderTestCase::testGridPath()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 
 	Configuration config;
 	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_GRID_PATH;
@@ -473,7 +486,7 @@ void GCoderTestCase::testGridPath()
 	}
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 int random(int start, int range)
@@ -485,7 +498,7 @@ int random(int start, int range)
 
 void GCoderTestCase::testMultiGrid()
 {
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 
 	Configuration config;
 	config["FileWriterOperation"]["filename"] = SINGLE_EXTRUDER_MULTI_GRID_PATH;
@@ -526,7 +539,7 @@ void GCoderTestCase::testMultiGrid()
 	}
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
-	BOOST_LOG_TRIVIAL(trace)<< "Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 
 PathData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z)

@@ -9,8 +9,8 @@
 #include "mgl/abstractable.h"
 #include "mgl/configuration.h"
 
-#include "../PathData.h"
-#include "../RegionerOperation.h"
+//#include "../PathData.h"
+//#include "../RegionerOperation.h"
 
 #include "ctime"
 
@@ -62,7 +62,7 @@ void RegionerTestCase::setUp()
 void RegionerTestCase::example()
 {
 	cout << endl <<__FUNCTION__ << endl;
-
+/*
 	RegionerOperation operation;
 	PathData *inputData = new PathData(0.2);
 	RegionData *outputData = new RegionData(0.2, 0.4);
@@ -86,7 +86,7 @@ void RegionerTestCase::example()
   CPPUNIT_ASSERT( 12L == 12L );
 //  CPPUNIT_ASSERT_EQUAL( 12, 13 );
 //  CPPUNIT_ASSERT_DOUBLES_EQUAL( 12.0, 11.99, 0.5 );
-
+*/
 }
 
 void stall()
