@@ -30,7 +30,7 @@ if ( GetOption('unit_test') != None):
 def get_environment_flag(flag_name, default):
     flag = default
     try:
-        flag = os.environ['MG_DEBUG']
+        flag = os.environ[flag_name]
         if int(flag):
              flag = True
     except:
@@ -86,22 +86,22 @@ if operating_system == "Linux":
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
 
 if operating_system.find("_NT") > 0:
-    print " ** CPPUNIT version checK:", commands.getoutput("cygcheck -l cppunit")
+    print " ** CPPUNIT version checK:", "N/A"#commands.getoutput("cygcheck -l cppunit")
 
 if operating_system == "Darwin":
     print " ** CPPUNIT version checK:", "N/A"
 
-# Using just one environemt setup for now	
-env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=['default','qt4'])
-# print "os.environ['PATH']=", os.environ['PATH']
-
 debug = get_environment_flag('MG_DEBUG',False)
 multi_thread = get_environment_flag('MG_MT', False)
 qt =  get_environment_flag('MG_QT',False)
-
-
-
         
+# Using just one environemt setup for now	
+tools = ['default']
+if qt:
+	tools = tools+['qt4']
+env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
+# print "os.environ['PATH']=", os.environ['PATH']
+
 if debug:
     env.Append(CCFLAGS = '-g')
 
@@ -188,13 +188,13 @@ runThisTest(p, run_unit_tests)
 
 
 
-p = env.Program(  	'./bin/tests/regionerUnitTest',   
-				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-
-runThisTest(p, run_unit_tests)
+#p = env.Program(  	'./bin/tests/regionerUnitTest',   
+#				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
+#				LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH= ['..'])
+#
+#runThisTest(p, run_unit_tests)
 
 
 

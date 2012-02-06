@@ -9,7 +9,7 @@
 
 */
 
-#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
+//#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
 
 
 #include <iostream>
