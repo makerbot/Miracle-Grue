@@ -362,63 +362,96 @@ void GCoder::loadData(const Configuration& conf)
 		extruders.push_back(toolHead);
 	}
 
+
+	gcoding.outline = conf.root["gcoder"]["ouline"].asBool();
+	gcoding.insets = conf.root["gcoder"]["insets"].asBool();
+	gcoding.infills = conf.root["gcoder"]["infills"].asBool();
+	gcoding.infillFirst = conf.root["gcoder"]["infillFirst"].asBool();
 }
 
-void GCoder::writePaths(std::ostream& ss,
-						unsigned int sliceIndex,
-						unsigned int extruderId,
-						double z,
-						const Polygons &paths)
+void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, unsigned int sliceIndex)
 {
-	GCoder &gcoder = *this;
-	// to each extruder its speed
-	double pathFeedrate = gcoder.scalingFactor * gcoder.extruders[extruderId].slowFeedRate;
-	double extrusionSpeed = gcoder.scalingFactor * gcoder.extruders[extruderId].fastExtrusionSpeed;
-	double leadIn = gcoder.extruders[extruderId].leadIn;
-	double leadOut = gcoder.extruders[extruderId].leadOut;
 
-	// moving all up. This is the first move for every new layer
-	gcoder.extruders[extruderId].g1(ss,
-									gcoder.extruders[extruderId].x,
-									gcoder.extruders[extruderId].y,
-									z,
-									pathFeedrate, NULL);
+	double layerZ = sliceData.z;
+	unsigned int extruderCount = sliceData.extruderSlices.size();
 
-	int pathCounter = 0;
-	for (Polygons::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
+	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
+	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
 	{
-		pathCounter ++; // one based, FTU (for the user!)
-		const Polygon &polygon = *pathIt;
-		ss << "(  slice " << sliceIndex << " , path " << pathCounter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
 
-		unsigned int pointCount = polygon.size();
-		if(pointCount < 2)
+		ss << "(   Extruder " <<  extruderId << ")" << endl;
+		const Polygons &loops = sliceData.extruderSlices[extruderId].loops;
+		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
+		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insets;
+
+		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
+
+		if (extruderCount > 0)
 		{
-			stringstream ss;
-			ss << "Can't generate gcode for polygon " << pathCounter <<" with " << pointCount << " points.";
-			GcoderMess mixup(ss.str().c_str());
-			throw mixup;
+			writeSwitchExtruder(ss, extruderId);
 		}
 
-		Vector2 start(0,0), stop(0,0);
-		polygonLeadInAndLeadOut(polygon, leadIn, leadOut, start, stop);
-
-		gcoder.extruders[extruderId].g1(ss, start.x, start.y, z, gcoder.extruders[extruderId].fastFeedRate, NULL);
-		//ss << "(START!)" << endl;
-		gcoder.extruders[extruderId].squirt(ss, polygon[0], extrusionSpeed);
-		//ss << "(!START)" << endl;
-		for(int i=1; i < polygon.size(); i++)
+		try
 		{
-			const Vector2 &p = polygon[i];
-			gcoder.extruders[extruderId].g1(ss, p.x, p.y, z, pathFeedrate, NULL);
+			if(gcoding.infills && gcoding.infillFirst)
+			{
+				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
+			}
 		}
-		//ss << "(STOP!)" << endl;
-		gcoder.extruders[extruderId].snort(ss, stop);
-		//ss << "(!STOP)" << endl;
-		ss << endl;
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		try
+		{
+			if(gcoding.outline)
+			{
+				writePaths(ss, sliceData.sliceIndex, extruderId, z, loops);
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing loops in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		try
+		{
+			if(gcoding.insets)
+			{
+				// each iteration is for a shell
+				for(unsigned int i=0; i < insets.size(); i++)
+				{
+					const Polygons &polygons = insets[i];
+					writePaths(ss, sliceData.sliceIndex, extruderId, z, polygons);
+				}
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+
+		try
+		{
+			if(gcoding.infills && !gcoding.infillFirst)
+			{
+				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		if (extruderCount > 0)
+		{
+			writeWipeExtruder(ss, extruderId);
+		}
+		extruderId ++;
 	}
 }
-
 
 
 

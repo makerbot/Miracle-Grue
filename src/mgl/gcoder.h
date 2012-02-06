@@ -161,6 +161,14 @@ public:
 	Homing():xyMaxHoming(true), zMaxHoming(false){}
 };
 
+// directives fo the Gcoder
+struct GCoding
+{
+	bool outline;
+	bool insets;
+	bool infills;
+	bool infillFirst;
+};
 
 class GcoderMess : public Messup {	public: GcoderMess(const char *msg) :Messup(msg){} };
 
@@ -179,7 +187,7 @@ class GCoder
     std::string gcodeFilename;			// output file name
 
     Homing homing;
-
+    GCoding gcoding;
     Platform platform;
     Outline outline;					// outline operation configuration
     std::vector<ToolHead> extruders;	// list of extruder tools
