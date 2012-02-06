@@ -48,7 +48,7 @@ typedef double Scalar;
 
 // true if two Scalar values are approximally the same,
 // using a hard coded tolerance
-bool sameSame(Scalar a, Scalar b);
+bool sameSame(Scalar a, Scalar b, Scalar tol); // = 1e-8
 
 typedef unsigned int index_t;
 typedef std::vector<index_t> TriangleIndices;
@@ -111,11 +111,11 @@ public:
         return Vector2(x*value, y*value);
     }
 
-	bool sameSame(const Vector2 &p) const
+	bool sameSame(const Vector2 &p, Scalar tol) const
 	{
 		Scalar dx = p.x - x;
 		Scalar dy = p.y -y;
-		return mgl::sameSame(0, dx*dx + dy*dy);
+		return mgl::sameSame(0, dx*dx + dy*dy, tol);
 	}
 
     // the eucledian length
@@ -160,18 +160,17 @@ Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k);
 
 
 // a line segment between 2 points
-// Everything that has a beginning, has an end
-class LineSegment2
+class TriangleSegment2
 {
 public:
 	Vector2 a,b; // the 2 points
 
-	LineSegment2(){}
+	TriangleSegment2(){}
 
-	LineSegment2(const LineSegment2& other)
+	TriangleSegment2(const TriangleSegment2& other)
 	:a(other.a), b(other.b){}
 
-	LineSegment2(const Vector2 &a, const Vector2 &b)
+	TriangleSegment2(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
 	Scalar squaredLength() const
@@ -188,7 +187,7 @@ public:
 	}
 };
 
-typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
+typedef std::vector< std::vector<TriangleSegment2 > > SegmentTable;
 
 
 
@@ -496,8 +495,8 @@ public:
 	}
 
 	Scalar z;
-	std::vector<LineSegment2> infill;
-	std::vector< std::vector<LineSegment2> > outlines;
+	std::vector<TriangleSegment2> infill;
+	std::vector< std::vector<TriangleSegment2> > outlines;
 };
 
 typedef std::vector<Vector2> Polygon;

@@ -243,7 +243,7 @@ size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 //
 // Pathology: the operation that generate tool paths from triangle cuts
 //
-void infillPathology( std::vector<std::vector<LineSegment2> > &outlineSegments,
+void infillPathology( SegmentTable &outlineSegments,
 				const Limits& limits,
 				double z,
 				double tubeSpacing ,
@@ -300,10 +300,9 @@ void sliceAndPath(	Meshy &mesh,
 
 //void updateSlices(std::vector<SliceData> & slices);
 
-void createPolysFromInfillSegments(const std::vector<LineSegment2> &infillSegments,
-									Polygons& infills);
 
-void createPolysFromloopSegments(const std::vector< std::vector<LineSegment2> >  &outlinesSegments,
+
+void createPolysFromloopSegments(const SegmentTable  &outlinesSegments,
 									Polygons& loops);
 
 // void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice);

@@ -487,8 +487,8 @@ void GCoderTestCase::testMultiGrid()
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
-
-SliceData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z)
+/*
+SliceData * createPathFromTubes(const std::vector<TriangleSegment2> &tubes, Scalar z)
 {
 	// paths R us
 	SliceData *sliceData;
@@ -517,5 +517,5 @@ SliceData * createPathFromTubes(const std::vector<LineSegment2> &tubes, Scalar z
 	return sliceData;
 }
 
-
+*/
 

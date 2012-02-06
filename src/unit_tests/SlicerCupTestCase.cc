@@ -20,7 +20,7 @@ void miracleGrue(const char *configFilePath,
 					const char *modelFilePath,
 						const char* outputDirectory)
 {
-	unsigned int nbOfShells = 0;
+
 
 	string configFileName(configFilePath);
 	string modelFile(modelFilePath);
@@ -43,6 +43,7 @@ void miracleGrue(const char *configFilePath,
     Scalar layerW = config["slicer"]["layerW"].asDouble();
     Scalar tubeSpacing = config["slicer"]["tubeSpacing"].asDouble();
     Scalar angle = config["slicer"]["angle"].asDouble();
+    unsigned int nbOfShells = config["slicer"]["nbOfShells"].asUInt();
 
     assert(layerW >0);
     assert(tubeSpacing >0);

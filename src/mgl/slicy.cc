@@ -33,7 +33,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
     for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 	{
-    	const std::vector<LineSegment2> &outlineLoop = outlinesSegments[outlineId];
+    	const std::vector<TriangleSegment2> &outlineLoop = outlinesSegments[outlineId];
     	assert(outlineLoop.size() > 0);
 
 		// dbgs__("outline " << outlineId << "/" <<  outlinesSegments.size())
@@ -56,16 +56,10 @@ void inshelligence( const SegmentTable & outlinesSegments,
 
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
-				insetTable.push_back(std::vector<LineSegment2>());
+				insetTable.push_back(std::vector<TriangleSegment2>());
 			}
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
-
-//				cout << "\n\n" << endl;
-//				cout << "sliceId: "   << sliceId << endl;
-//				cout << "	loop: " << outlineId << endl;
-//				cout << "	shellId: " <<  shellId << endl;
-
 				if(shellId == 0)
 				{
 					// first inset: inset only by the radius of the extrusion
@@ -73,7 +67,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					Scalar insetDistance = 0.5*layerW;
 					assert(outlineLoop.size());
 
-					std::vector<LineSegment2> &insets = insetTable[0];
+					std::vector<TriangleSegment2> &insets = insetTable[0];
 					segmentCountBefore = outlineLoop.size();
 					shrinky.inset(outlineLoop, insetDistance, insets);
 					segmentCountAfter = insets.size();
@@ -90,11 +84,11 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int previousShell = shellId -1;
 					assert(insetTable.size() > previousShell);
 
-					std::vector<LineSegment2> &lastInsets = insetTable[previousShell];
+					std::vector<TriangleSegment2> &lastInsets = insetTable[previousShell];
 
 					if(lastInsets.size())
 					{
-						std::vector<LineSegment2> &insets = insetTable[shellId];
+						std::vector<TriangleSegment2> &insets = insetTable[shellId];
 						segmentCountBefore = lastInsets.size();
 						assert(segmentCountBefore == segmentCountAfter);
 						assert(insets.size() == 0);
@@ -104,8 +98,6 @@ void inshelligence( const SegmentTable & outlinesSegments,
 						assert(insetTable[shellId].size() == insets.size());
 					}
 				}
-				//cout << "	inset nb of segments before: " << segmentCountBefore << endl;
-				//cout << "	inset nb of segments after: "  << segmentCountAfter  << endl;
 			}
 		}
 		catch(ShrinkyMess &messup)
@@ -181,7 +173,7 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 			{
 				const Polygons &polygons = insetsPolys[outlineId];
 				stringstream ss;
-				ss << "color([0,1,0,1])inset_" << outlineId << "_";
+				ss << "inset_" << outlineId << "_";
 				outlineScad.writePolygons(ss.str().c_str(), "color([0,1,0,1])infill",  polygons, zz, sliceId);
 			}
 
@@ -204,8 +196,8 @@ void Slicy::slice( unsigned int sliceId,
 
 
     // segmentology(allTriangles, trianglesForSlice, z, tol, outlinesSegments);
-    std::vector<LineSegment2> segments;
-	segmentation(trianglesForSlice, allTriangles, z, segments);
+    std::vector<TriangleSegment2> segments;
+    segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 
     // get the "real" 2D paths for outline

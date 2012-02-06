@@ -82,8 +82,8 @@ struct Extruder
 	double leadOut;
 };
 
-
-#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM 1000000000000000
+#define SAMESAME_TOL 1e-6
+#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM 100000000
 
 // a toolhead extends the extruder and gives it a purpose,
 // or at least a position, feed rate and other state that

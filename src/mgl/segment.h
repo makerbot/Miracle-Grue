@@ -26,36 +26,36 @@ namespace mgl
 {
 
 // turns triangles into lines
-void segmentation(const TriangleIndices &trianglesForSlice,
+void segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 		const std::vector<Triangle3> &allTriangles,
 		Scalar z,
-		std::vector<LineSegment2> &segments);
+		std::vector<TriangleSegment2> &segments);
 
 // Assembles lines segments into loops (perimeter loops and holes)
-void loopsAndHoleOgy(std::vector<LineSegment2> &segments,
+void loopsAndHoleOgy(std::vector<TriangleSegment2> &segments,
 					Scalar tol,
-					std::vector< std::vector<LineSegment2> > &loops);
+					std::vector< std::vector<TriangleSegment2> > &loops);
 
 // I have no idea what this does, (2D translation?)
-void translateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Vector2 p);
+void translateLoops(SegmentTable &loops, Vector2 p);
 
 // moves Segments by a position
-void translateSegments(std::vector<mgl::LineSegment2> &segments, Vector2 p);
+void translateSegments(std::vector<TriangleSegment2> &segments, Vector2 p);
 
 void translatePolygon(Polygon &polygon, Vector2 p);
 void translatePolygons(Polygons &polygons, Vector2 p);
 
 Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
-void rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar angle);
-void rotateSegments(std::vector<mgl::LineSegment2> &segments, Scalar angle);
+void rotateLoops(std::vector<std::vector<TriangleSegment2> > &loops, Scalar angle);
+void rotateSegments(std::vector<TriangleSegment2> &segments, Scalar angle);
 
 void rotatePolygon(Polygon& polygon, Scalar angle);
 void rotatePolygons(Polygons& polygons, Scalar angle);
 
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
-bool segmentSegmentIntersection(const LineSegment2 &a, const LineSegment2 &b, Vector2 &p);
+bool segmentSegmentIntersection(const TriangleSegment2 &a, const TriangleSegment2 &b, Vector2 &p);
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
 

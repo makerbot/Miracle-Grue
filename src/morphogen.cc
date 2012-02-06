@@ -143,7 +143,7 @@ int main(int argc, char *argv[], char *envp[])
 	unsigned int extruderId = 0;
 	Scalar tubeSpacing = config["slicer"]["tubeSpacing"].asDouble();
 	Scalar angle = config["slicer"]["angle"].asDouble();
-	unsigned int nbOfShells = config["slicer"]["NbOfShells"].asUInt();
+	unsigned int nbOfShells = config["slicer"]["nbOfShells"].asUInt();
 
 	Slicy slicy(mesh, config["slicer"]["layerW"].asDouble(), scadFile.c_str());
 

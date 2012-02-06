@@ -438,20 +438,20 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 		doFeed = true;
 	}
 
-	if(!mgl::sameSame(this->x, x))
+	if(!mgl::sameSame(this->x, x, SAMESAME_TOL))
 	{
 		doX = true;
 	}
-	if(!mgl::sameSame(this->y, y))
+	if(!mgl::sameSame(this->y, y, SAMESAME_TOL))
 	{
 		doY=true;
 	}
-	if(!mgl::sameSame(this->z, z))
+	if(!mgl::sameSame(this->z, z, SAMESAME_TOL))
 	{
 		doZ=true;
 	}
 
-	if(!mgl::sameSame(this->feed, feed))
+	if(!mgl::sameSame(this->feed, feed, SAMESAME_TOL))
 	{
 		doFeed=true;
 	}

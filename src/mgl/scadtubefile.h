@@ -281,12 +281,12 @@ public:
 		// std::cout << "</writePolygons>" << std::endl;
 	}
 
-	static Scalar segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<LineSegment2> &segments, Scalar z, Scalar dz)
+	static Scalar segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<TriangleSegment2> &segments, Scalar z, Scalar dz)
 	{
 		out << indent << variableName<< " =[" << std::endl;
 		for (int i=0; i < segments.size(); i++)
 		{
-			const LineSegment2& segment  = segments[i];
+			const TriangleSegment2& segment  = segments[i];
 			Scalar ax = segment.a[0];
 			Scalar ay = segment.a[1];
 			Scalar az = z;
@@ -307,7 +307,7 @@ public:
 
 	Scalar writeSegments3(const char* name,
 						const char* implementation,
-						const std::vector<LineSegment2> &segments,
+						const std::vector<TriangleSegment2> &segments,
 						Scalar z,
 						Scalar dz,
 						int slice)
@@ -324,7 +324,7 @@ public:
 
 	void writeSegments2(const char* name,
 						const char* implementation,
-							const std::vector<LineSegment2> &segments,
+							const std::vector<TriangleSegment2> &segments,
 							Scalar z,
 							int slice)
 	{
@@ -333,7 +333,7 @@ public:
 		out << "    segments =[" << std::endl;
 		for (int i=0; i < segments.size(); i++)
 		{
-			const LineSegment2& segment  = segments[i];
+			const TriangleSegment2& segment  = segments[i];
 			Scalar ax = segment.a[0];
 			Scalar ay = segment.a[1];
 			Scalar bx = segment.b[0];
