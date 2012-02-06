@@ -16,7 +16,12 @@ willing to play with the SConstruct file.
     
     Scons: scons requires Python, which may not be on your system.
     cppunit is only supported on 
-		   
+		  
+	Can be built under eclipse with cygwin:
+		install cygwin with python, cppunit, and mingw
+		install scons on cywin python
+		when adding project to eclipse, select makefile project with existing code and under toolchain for indexer settings select "Cygwin GCC"
+		  
 ## OS X installation
 
 Install Qt libraries 4.6.4 for Mac (Cocoa) (http://qt.nokia.com/downloads)
