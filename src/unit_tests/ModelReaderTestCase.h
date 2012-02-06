@@ -35,9 +35,11 @@ public:
   //void setUp();
 
 protected:
+  void testSlicySimple();
+
   void testLayerSplit();
   void testMeshySimple();
-  void testSlicySimple();
+
   void testLayerMeasure();
   void testMeshyLoad();
   void testLargeMeshy();

@@ -271,7 +271,7 @@ Scalar findClosestLineSegment2(const Vector2& endOfPreviousLineSegment2,
 	return minDist;
 }
 
-void mgl::loopsAndHoles(std::vector<LineSegment2> &LineSegment2s,
+void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &LineSegment2s,
 		Scalar tol,
 		std::vector< std::vector<LineSegment2> > &loops)
 {
@@ -355,49 +355,54 @@ void mgl::loopsAndHoles(std::vector<LineSegment2> &LineSegment2s,
 	}
 }
 
-void mgl::segmentology(	const std::vector<Triangle3> &allTriangles,
-						const TriangleIndices &trianglesForSlice,
-						Scalar z,
-						Scalar tol,
-						std::vector< std::vector<LineSegment2> > &loops)
+void mgl::segmentation(const TriangleIndices &trianglesForSlice,
+		const std::vector<Triangle3> &allTriangles,
+		Scalar z,
+		std::vector<LineSegment2> &segments)
 {
-	std::vector<LineSegment2> LineSegment2s;
-	assert(LineSegment2s.size() == 0);
-
-	size_t count = trianglesForSlice.size();
-	LineSegment2s.reserve(count);
-
-	//#pragma omp parallel for
-	for(int i=0; i< count; i++)
-	{
-		index_t triangleIndex = trianglesForSlice[i];
-		const Triangle3 &triangle = allTriangles[triangleIndex];
-		Vector3 a,b;
-		// bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
-		bool cut = triangle.cut(z,a,b);
-		if(cut)
-		{
-			LineSegment2 s;
-			s.a.x = a.x;
-			s.a.y = a.y;
-			s.b.x = b.x;
-			s.b.y = b.y;
-			LineSegment2s.push_back(s);
-		}
-	}
-	
-	// what we are left with is a series of tubes (outline tubes... triangle has beens)
-
-	// lets break this vector into loops.
-	loopsAndHoles(LineSegment2s, tol, loops);
+    size_t triangleCount = trianglesForSlice.size();
+    segments.reserve(triangleCount);
+    //#pragma omp parallel for
+    for(int i = 0;i < triangleCount;i++){
+        index_t triangleIndex = trianglesForSlice[i];
+        const Triangle3 & triangle = allTriangles[triangleIndex];
+        Vector3 a, b;
+        // bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
+        bool cut = triangle.cut(z, a, b);
+        if(cut){
+            LineSegment2 s;
+            s.a.x = a.x;
+            s.a.y = a.y;
+            s.b.x = b.x;
+            s.b.y = b.y;
+            segments.push_back(s);
+        }
+    }
 
 }
 
+
 void mgl::translateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Vector2 p)
 {
-	for(int i=0; i < loops.size(); i++)
+	for(unsigned int i=0; i < loops.size(); i++)
 	{
 		translateSegments(loops[i],p);
+	}
+}
+
+void mgl::translatePolygons(Polygons &polygons, Vector2 p)
+{
+	for(unsigned int i=0; i < polygons.size(); i++)
+	{
+		translatePolygon(polygons[i],p);
+	}
+}
+
+void mgl::translatePolygon(Polygon &polygon, Vector2 p)
+{
+	for(unsigned int i=0; i < polygon.size(); i++)
+	{
+		polygon[i] += p;
 	}
 }
 
@@ -422,9 +427,27 @@ Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
 	return rotated;
 }
 
+void mgl::rotatePolygon(Polygon& polygon, Scalar angle)
+{
+	for(unsigned int i=0; i<polygon.size(); i++)
+	{
+		const Vector2 &p = polygon[i];
+		polygon[i] = rotate2d(p, angle);
+	}
+}
+
+void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
+{
+	for(unsigned int i=0; i<polygons.size(); i++)
+	{
+		Polygon& polygon = polygons[i];
+		rotatePolygon(polygon, angle);
+	}
+}
+
 void mgl::rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar angle)
 {
-	for(int i=0; i < loops.size(); i++)
+	for(unsigned int i=0; i < loops.size(); i++)
 	{
 		rotateSegments(loops[i], angle);
 	}
@@ -696,10 +719,12 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 				const Limits& limits,
 				double z,
 				double tubeSpacing,
-				std::vector<LineSegment2> &tubes)
+				Polygons& infills)
 {
 	assert(tubeSpacing != 0);
-	assert(tubes.size() == 0);
+
+	assert(infills.size() == 0);
+
 	Scalar deltaY = limits.yMax - limits.yMin;
 
 	int tubeCount = (deltaY) / tubeSpacing;
@@ -727,7 +752,7 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 												intersectionX,  intersectionY))
 				{
 					lineCuts.insert(intersectionX);
-					//cout << "         X" << endl;
+
 				}
 			}
 		}
@@ -744,7 +769,9 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 		Scalar y = bottom + i * tubeSpacing;
 		std::set<Scalar> &lineCuts = intersects[i];
 
-		LineSegment2 LineSegment2;
+
+		Vector2 begin;
+		Vector2 end;
 		bool inside = false;
 		if( backAndForth)
 		{
@@ -752,18 +779,21 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 			{
 				inside =! inside;
 				Scalar x = *it;
-				// cout << "\t" << x << " " << inside <<",";
+
 				if(inside)
 				{
-					LineSegment2.a.x = x;
-					LineSegment2.a.y = y;
+
+					begin.x = x;
+					begin.y = y;
 				}
 				else
 				{
-					LineSegment2.b.x = x;
-					LineSegment2.b.y = y;
-					//lineTubes.push_back(LineSegment2);
-					tubes.push_back(LineSegment2);
+					end.x = x;
+					end.y = y;
+					infills.push_back(Polygon());
+					Polygon &poly = infills.back();
+					poly.push_back(begin);
+					poly.push_back(end);
 				}
 			}
 		}
@@ -773,17 +803,20 @@ void mgl::infillPathology( std::vector< std::vector<LineSegment2> > &outlineLoop
 			{
 				inside =! inside;
 				Scalar x = *it;
-				// cout << "\t" << x << " " << inside <<",";
+
 				if(inside)
 				{
-					LineSegment2.a.x = x;
-					LineSegment2.a.y = y;
+					begin.x = x;
+					begin.y = y;
 				}
 				else
 				{
-					LineSegment2.b.x = x;
-					LineSegment2.b.y = y;
-					tubes.push_back(LineSegment2);
+					end.x = x;
+					end.y = y;
+					infills.push_back(Polygon());
+					Polygon &poly = infills.back();
+					poly.push_back(begin);
+					poly.push_back(end);
 				}
 			}
 		}
@@ -831,7 +864,7 @@ void mgl::createPolysFromloopSegments(const std::vector< std::vector<LineSegment
 	    segments2polygon(segments, loop);
 	}
 }
-
+/*
 void mgl::createPolysFromInfillSegments(const std::vector<LineSegment2> &infillLineSegment2s,
 									Polygons& infills)
 {
@@ -850,4 +883,4 @@ void mgl::createPolysFromInfillSegments(const std::vector<LineSegment2> &infillL
 		poly.push_back(p1);
 	}
 }
-
+*/

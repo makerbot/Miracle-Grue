@@ -19,7 +19,6 @@ using namespace mgl;
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
 #define SINGLE_EXTRUDER_CONFIG "test_cases/GCoderTestCase/output/single_xtruder.config"
-
 #define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
 #define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
@@ -156,7 +155,6 @@ void GCoderTestCase::testSingleExtruder()
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	Configuration config;
-	GCoder gcoder;
 
 	configureSingleExtruder(config);
 //	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
@@ -165,6 +163,8 @@ void GCoderTestCase::testSingleExtruder()
 	string confstr = w.write(config.root);
 	cout << confstr << endl;
 
+	GCoder gcoder;
+	gcoder.loadData(config);
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME); ;
 	gcoder.writeStartOfFile(gout);
 	gcoder.writeGcodeEndOfFile(gout);
@@ -192,7 +192,7 @@ void GCoderTestCase::testDualExtruders()
 
 	std::ofstream gout(DUAL_EXTRUDER_FILE_NAME);
 	GCoder gcoder;
-
+	gcoder.loadData(config);
 
 	gcoder.writeStartOfFile(gout);
 	dbg__
@@ -226,6 +226,7 @@ void GCoderTestCase::testSimplePath()
 
 	std::ofstream gout(SINGLE_EXTRUDER_WITH_PATH);
 	GCoder gcoder;
+	gcoder.loadData(config);
 	gcoder.writeStartOfFile(gout);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
@@ -409,6 +410,7 @@ void GCoderTestCase::testGridPath()
 
 	std::ofstream gout(SINGLE_EXTRUDER_GRID_PATH);
 	GCoder gcoder;
+	gcoder.loadData(config);
 	gcoder.writeStartOfFile(gout);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
@@ -467,6 +469,7 @@ void GCoderTestCase::testMultiGrid()
 
 	std::ofstream gout(SINGLE_EXTRUDER_MULTI_GRID_PATH);
 	GCoder gcoder;
+	gcoder.loadData(config);
 	gcoder.writeStartOfFile(gout);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)

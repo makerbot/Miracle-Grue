@@ -241,16 +241,27 @@ void GCoder::writeHomingSequence(std::ostream &ss) const
 
 void GCoder::writeWarmupSequence(std::ostream &ss)
 {
-	GCoder &gcoder = *this;
-	ss << endl;
-	dbgs__(gcoder.extruders.size())
-	gcoder.extruders[0].g1(ss, 	gcoder.platform.waitingPositionX,
-				gcoder.platform.waitingPositionY,
-				gcoder.platform.waitingPositionZ,
-				gcoder.extruders[0].fastFeedRate,
-				"go to waiting position" );
 
-	for (int i=0; i< gcoder.extruders.size(); i++)
+	ss << endl;
+	int extruderCount = extruders.size();
+
+	if (extruderCount >0)
+	{
+		extruders[0].g1(ss, 	platform.waitingPositionX,
+				platform.waitingPositionY,
+				platform.waitingPositionZ,
+				extruders[0].fastFeedRate,
+				"go to waiting position" );
+	}
+	else
+	{
+		stringstream ss;
+		ss << "There are no extruders configured. LoadData has not been called.";
+		GcoderMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+
+	for (int i=0; i< extruderCount; i++)
 	{
 		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
 	}
@@ -267,9 +278,7 @@ void GCoder::writeStartOfFile(std::ostream &gout)
 	writeExtrudersInitialization(gout);
 	writePlatformInitialization(gout);
 	writeHomingSequence(gout);
-	dbg__
 	writeWarmupSequence(gout);
-	dbg__
 	writeAnchor(gout);
 }
 

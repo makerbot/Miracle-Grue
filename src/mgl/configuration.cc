@@ -18,7 +18,7 @@
 #include "configuration.h"
 
 
-
+using namespace mgl;
 using namespace std;
 
 Configuration::Configuration()

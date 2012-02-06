@@ -9,12 +9,11 @@
 
 */
 
-#include "slicy.h"
-#include "shrinky.h"
-#include "scadtubefile.h"
-
 #include <stdint.h>
 #include <cstring>
+
+#include "slicy.h"
+
 
 using namespace mgl;
 using namespace std;
@@ -120,235 +119,225 @@ void inshelligence( const SegmentTable & outlinesSegments,
 	}
 }
 
-void mgl::sliceAndPath(	Meshy &mesh,
-						double layerW,
-						double tubeSpacing,
-						double angle,
-						unsigned int nbOfShells,
-						const char* scadFile,
-						std::vector< SliceData >  &slices)
+Slicy::Slicy(const Meshy &mesh,
+			double layerW,
+			const char* scadFile)
+		:tol(1e-6),
+		 layerW(layerW),
+		 scadFile(scadFile),
+		 sliceTable(mesh.readSliceTable()),
+		 allTriangles(mesh.readAllTriangles()),
+		 limits(mesh.readLimits()),
+		 zTapeMeasure(mesh.readLayerMeasure()),
+		 progress(mesh.readSliceTable().size())
 {
-	unsigned int extruderId = 0;
-	assert(slices.size() == 0);
+	layerH = mesh.readLayerMeasure().getLayerH();
+	size_t sliceCount = sliceTable.size();
 
-	Scalar tol = 1e-6; // Tolerance for assembling LineSegment2s into a loop
+	if(scadFile != NULL)
+	{
+		outlineScad.open(scadFile);
+		outlineScad.writePathViz(layerH, layerW, sliceCount);
+	}
 
-	// gather context info
-	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
-	const SliceTable &sliceTable = mesh.readSliceTable();
-	const Limits& limits = mesh.readLimits();
-	// cout << "Limits: " << limits << endl;
-	Limits tubularLimits = limits.centeredLimits();
+	tubularLimits = limits.centeredLimits();
 	tubularLimits.inflate(1.0, 1.0, 0.0);
 	// make it square along z so that rotation happens inside the limits
 	// hence, tubular limits around z
 	tubularLimits.tubularZ();
 
 	Vector3 c = limits.center();
-	Vector2 toRotationCenter(-c.x, -c.y);
-	Vector2 backToOrigin(c.x, c.y);
 
-	size_t sliceCount = sliceTable.size();
+	toRotationCenter[0] = -c[0];
+	toRotationCenter[1] = -c[1];
+	backToOrigin[0] = c[0];
+	backToOrigin[1] = c[1];
+
 
 	Vector3 rotationCenter = limits.center();
-	Scalar layerH = mesh.readLayerMeasure().getLayerH();
-
-	// we'll record that in a scad file for you
-	ScadTubeFile outlineScad;
-	if(scadFile != NULL)
-	{
-		outlineScad.open(scadFile);
-		outlineScad.writePathViz(layerH, layerW, sliceCount);
-	}
-	slices.reserve(sliceCount);
-
-	// multi thread stuff
-#ifdef OMPFF
-	omp_lock_t my_lock;
-	omp_init_lock (&my_lock);
-	#pragma omp parallel for
-#endif
 
 
-	ProgressBar progress(sliceCount);
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		//cout << "<sliceId "  << sliceId << "/" <<  sliceCount << ">" << endl;
-		const TriangleIndices &trianglesForSlice = sliceTable[sliceId];
+}
 
-		progress.tick();
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
-
-
-		// get the "real" 2D paths for outline
-		SegmentTable outlinesSegments;
-		segmentology(allTriangles, trianglesForSlice, z, tol, outlinesSegments);
-		// keep all segments of insets for each loop
-
-		unsigned int outlineSegmentCount = outlinesSegments.size();
-		if(outlineSegmentCount > 0)
+void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
+							const Polygons & loopsPolys,
+							const Polygons & infillsPolys,
+							const vector<Polygons> & insetsPolys,
+							Scalar zz,
+							unsigned int sliceId)
+{
+    if(scadFile != NULL)
 		{
-			slices.push_back( SliceData(z,sliceId));
-			SliceData &slice = slices[sliceId];
-			slice.extruderSlices.push_back(ExtruderSlice());
+			#ifdef OMPFF
+			OmpGuard lock (my_lock);
+			cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
+			#endif
 
-			std::vector<SegmentTable> insetsForLoops;
+			outlineScad.writeTrianglesModule("tri_", allTriangles, trianglesForSlice, sliceId);
+			outlineScad.writePolygons("outlines_", "color([1,0,0,1])outline", loopsPolys, zz, sliceId);
+			outlineScad.writePolygons("infills_",   "color([0,0,1,1])infill" , infillsPolys, zz, sliceId);
 
-			if(nbOfShells > 0)
+			for(unsigned int outlineId=0; outlineId <  insetsPolys.size(); outlineId++)
 			{
-				// create shells inside the outlines (and around holes)
-				inshelligence(outlinesSegments,
-								  nbOfShells,
-								  layerW,
-								  sliceId,
-								  scadFile,
-								  insetsForLoops);
-
-				assert(insetsForLoops.size() == outlineSegmentCount);
-
-				//	dumpInsets(insetsForLoops);
-				// create a vector of polygons for each shell.
-				// for (unsigned int shellId=0; shellId < shells; shellId++)
-				for(unsigned int outlineId=0; outlineId <  insetsForLoops.size(); outlineId++)
-				{
-					// cout << "inset oultline processing: " << outlineId << " of " << outlinesSegments.size() << endl;
-					// cout << "inset size " << slice.extruderSlices[extruderId].insets.size() << endl;
-					slice.extruderSlices[extruderId].insets.push_back(Polygons());
-					Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
-					// contains all the insets for a single loop
-					SegmentTable &insetTable = insetsForLoops[outlineId];
-
-					createPolysFromloopSegments(insetTable , polygons );
-				}
-			}
-			//cout << " ** " << outlinesSegments.size() << " ** " <<  insetsForLoops.size() << endl;
-
-			Scalar layerAngle = sliceId * angle;
-
-			// deep copy the the infill boundaries
-			SegmentTable rotatedSegments = outlinesSegments; // insetsForLoops[0];
-
-			//dbgs__("insetforloops size " << insetsForLoops.size() )
-			// deep copy the smallest insets as the infill boundaries
-
-			if(insetsForLoops.size() > 0)
-			{
-				rotatedSegments= outlinesSegments;
+				const Polygons &polygons = insetsPolys[outlineId];
+				stringstream ss;
+				ss << "color([0,1,0,1])inset_" << outlineId << "_";
+				outlineScad.writePolygons(ss.str().c_str(), "color([0,1,0,1])infill",  polygons, zz, sliceId);
 			}
 
-			mgl::translateLoops(rotatedSegments, toRotationCenter);
-			// rotate the outlines before generating the tubes...
-			mgl::rotateLoops(rotatedSegments, layerAngle);
+			// cout << "	</scad>" << endl;
+		}
+}
 
-			//cout << "<Pathology nb of loops ";
-			//cout << rotatedSegments.size() << ">" << endl;
-			std::vector<LineSegment2> infillSegments;
-			infillPathology(rotatedSegments,
-							tubularLimits,
-							slice.z,
-							tubeSpacing,
-							infillSegments);
-//			cout << "</Pathology>" << endl;
+void Slicy::slice( unsigned int sliceId,
+					unsigned int extruderId,
+					Scalar tubeSpacing,
+					Scalar sliceAngle,
+					unsigned int nbOfShells,
+					std::vector<SliceData> & slices)
+{
+    //cout << "<sliceId "  << sliceId << "/" <<  sliceCount << ">" << endl;
+    const TriangleIndices & trianglesForSlice = sliceTable[sliceId];
+    progress.tick();
+    Scalar z = zTapeMeasure.sliceIndexToHeight(sliceId);
 
-			createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
 
-			// rotate and translate the TUBES so they fit with the ORIGINAL outlines
-			mgl::rotateSegments(infillSegments, -layerAngle);
-			mgl::translateSegments(infillSegments, backToOrigin);
-			createPolysFromInfillSegments(infillSegments, slice.extruderSlices[extruderId].infills);
 
-			// write the scad file
-			// only one thread at a time in here
-			if(scadFile != NULL)
-			{
-				#ifdef OMPFF
-				OmpGuard lock (my_lock);
-				cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
-				#endif
+    // segmentology(allTriangles, trianglesForSlice, z, tol, outlinesSegments);
+    std::vector<LineSegment2> segments;
+	segmentation(trianglesForSlice, allTriangles, z, segments);
+	// what we are left with is a series of segments (outline segments... triangle has beens)
 
-				outlineScad.writeTrianglesModule("tri_", mesh, sliceId);
-				//outlineScad.writeOutlines(slice.extruderSlices[0].loops,  slices[i].z , i);
-				// cout << "	<scad>" << endl;
-				outlineScad.writePolygons("outlines_", "color([1,0,0,1])outline", slice.extruderSlices[extruderId].loops, slices[sliceId].z, sliceId);
-				outlineScad.writePolygons("infill_",   "color([0,0,1,1])infill" , slice.extruderSlices[extruderId].infills, slices[sliceId].z, sliceId);
+    // get the "real" 2D paths for outline
+	// lets order the segment into loops.
+	SegmentTable outlinesSegments;
+    loopsAndHoleOgy(segments, tol, outlinesSegments);
 
-				for(unsigned int outlineId=0; outlineId <  insetsForLoops.size(); outlineId++)
-				{
-					stringstream ss;
-					ss << "color([0,1,0,1])inset_" << outlineId << "_";
-					outlineScad.writePolygons("infill_",   ss.str().c_str(), slice.extruderSlices[extruderId].insets[outlineId], slices[sliceId].z, sliceId);
-				}
 
-				// cout << "	</scad>" << endl;
-			}
-			// cout << "</sliceId"  << sliceId <<  ">" << endl;
+
+    // keep all segments of insets for each loop
+    unsigned int outlineSegmentCount = outlinesSegments.size();
+    if(outlineSegmentCount == 0)
+    {
+    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
+    	return;
+    }
+
+
+	slices.push_back( SliceData(z,sliceId));
+	SliceData &slice = slices[sliceId];
+	slice.extruderSlices.push_back(ExtruderSlice());
+
+	std::vector<SegmentTable> insetsForLoops;
+
+	if(nbOfShells > 0)
+	{
+		// create shells inside the outlines (and around holes)
+		inshelligence(outlinesSegments,
+						  nbOfShells,
+						  layerW,
+						  sliceId,
+						  scadFile,
+						  insetsForLoops);
+
+		assert(insetsForLoops.size() == outlineSegmentCount);
+
+		//	dumpInsets(insetsForLoops);
+		// create a vector of polygons for each shell.
+		// for (unsigned int shellId=0; shellId < shells; shellId++)
+		for(unsigned int outlineId=0; outlineId <  insetsForLoops.size(); outlineId++)
+		{
+			// cout << "inset oultline processing: " << outlineId << " of " << outlinesSegments.size() << endl;
+			// cout << "inset size " << slice.extruderSlices[extruderId].insets.size() << endl;
+			slice.extruderSlices[extruderId].insets.push_back(Polygons());
+			Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
+			// contains all the insets for a single loop
+			SegmentTable &insetTable = insetsForLoops[outlineId];
+			createPolysFromloopSegments(insetTable , polygons );
 		}
 	}
+	//cout << " ** " << outlinesSegments.size() << " ** " <<  insetsForLoops.size() << endl;
+
+
+
+	// deep copy the the infill boundaries
+	SegmentTable rotatedSegments = outlinesSegments; // insetsForLoops[0];
+
+	//dbgs__("insetforloops size " << insetsForLoops.size() )
+	// deep copy the smallest insets as the infill boundaries
+
+	if(insetsForLoops.size() > 0)
+	{
+		rotatedSegments= outlinesSegments;
+	}
+
+	translateLoops(rotatedSegments, toRotationCenter);
+	// rotate the outlines before generating the tubes...
+	rotateLoops(rotatedSegments, sliceAngle);
+
+	//cout << "<Pathology nb of loops ";
+	//cout << rotatedSegments.size() << ">" << endl;
+
+	Polygons& infills = slice.extruderSlices[extruderId].infills;
+	infillPathology(rotatedSegments,
+					tubularLimits,
+					slice.z,
+					tubeSpacing,
+					infills);
+	// rotate and translate the TUBES so they fit with the ORIGINAL outlines
+	rotatePolygons(infills, -sliceAngle);
+	translatePolygons(infills, backToOrigin);
+
+	//	cout << "</Pathology>" << endl;
+
+	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
+
+	// write the scad file
+	// only one thread at a time in here
+
+	writeScadSlice( trianglesForSlice,
+					slice.extruderSlices[extruderId].loops,
+					slice.extruderSlices[extruderId].infills,
+					slice.extruderSlices[extruderId].insets,
+					slices[sliceId].z,
+					sliceId);
+	// cout << "</sliceId"  << sliceId <<  ">" << endl;
+
+}
+
+void Slicy::sliceAndPath(double tubeSpacing,
+							double angle,
+							unsigned int nbOfShells,
+							std::vector< SliceData >  &slices)
+{
+	size_t sliceCount = sliceTable.size();
+
+	unsigned int extruderId = 0;
+	assert(slices.size() == 0);
+	slices.reserve(sliceCount);
+
+	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+	{
+		Scalar sliceAngle = sliceId * angle;
+	    slice(sliceId, extruderId, tubeSpacing, sliceAngle, nbOfShells, slices);
+	}
 	cout << "Done with slicing" << endl;
+
+}
+
+Slicy::~Slicy()
+{
+
+	size_t sliceCount = sliceTable.size();
 	// finalize the scad file
 	if(scadFile != NULL)
 	{
 		cout << "finalize the scad file" << endl;
-		outlineScad.writeSwitcher(sliceTable.size());
+		outlineScad.writeMinMax("outlines", "outlines_", sliceCount);
+		outlineScad.writeMinMax("triangles", "tri_", sliceCount);
+		outlineScad.writeMinMax("infills", "infills_", sliceCount);
+		outlineScad.writeMinMax("insets", "insets_", sliceCount);
 		outlineScad.close();
 	}
 }
-
-index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
-								const Vector3 &coords,
-								Scalar tolerence)
-{
-
-	for(std::vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); it++)
-	{
-		//const Vector3 &p = (*it).point;
-		Vector3 &p = (*it).point;
-		Scalar dx = coords.x - p.x;
-		Scalar dy = coords.y - p.y;
-		Scalar dz = coords.z - p.z;
-
-		Scalar dd =  dx * dx + dy * dy + dz * dz;
-		if( dd < tolerence )
-		{
-			//std::cout << "Found VERTEX" << std::endl;
-			index_t vertexIndex = std::distance(vertices.begin(), it);
-			return vertexIndex;
-		}
-	}
-
-	index_t vertexIndex;
-	// std::cout << "NEW VERTEX " << coords << std::endl;
-	Vertex vertex;
-	vertex.point = coords;
-	vertices.push_back(vertex);
-	vertexIndex = vertices.size() -1;
-	return vertexIndex;
-}
-
-
-std::ostream& mgl::operator<<(std::ostream& os, const Edge& e)
-{
-	os << " " << e.vertexIndices[0] << "\t" << e.vertexIndices[1] << "\t" << e.face0 << "\t" << e.face1;
-	return os;
-}
-
-std::ostream& mgl::operator<<(std::ostream& os, const Vertex& v)
-{
-	os << " " << v.point << "\t[ ";
-	for (int i=0; i< v.faces.size(); i++)
-	{
-		if (i>0)  os << ", ";
-		os << v.faces[i];
-	}
-	os << "]";
-	return os;
-}
-
-std::ostream& mgl::operator << (std::ostream &os, const Connexity &s)
-{
-	s.dump(os);
-	return os;
-}
-
-
 

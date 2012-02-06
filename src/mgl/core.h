@@ -27,6 +27,20 @@
 namespace mgl
 {
 
+// base class for exceptions
+class Messup
+{
+public:
+	std::string error;
+	Messup(const char *msg)
+	 :error(msg)
+	{
+
+		std::cerr << std::endl << msg << std::endl;
+		// fprintf(stderr, "%s", msg);
+	}
+};
+
 //
 // Our basic numerical type. double for now;
 //
@@ -174,21 +188,9 @@ public:
 	}
 };
 
+typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
 
 
-// base class for exceptions
-class Messup
-{
-public:
-	std::string error;
-	Messup(const char *msg)
-	 :error(msg)
-	{
-
-		std::cerr << std::endl << msg << std::endl;
-		// fprintf(stderr, "%s", msg);
-	}
-};
 
 
 
@@ -431,6 +433,54 @@ public:
 	}
 
 };
+
+class LayerMess : public Messup {public: LayerMess(const char *msg)	 :Messup(msg) {	} };
+// Class that relates height (a scalar) to layer index (unsigned int)
+//
+// This class assumes that the model's triangles are
+// all above 0 (the z of each of the 3 vertices is >= 0.0).
+// worse, the layers MUST start at 0. Lazy programmer!
+// This is good enough for now, until the class "sees" every triangle
+// during loading and recalcs layers on the fly.
+//
+class LayerMeasure
+{
+	Scalar firstLayerZ;
+	Scalar layerH;
+
+public:
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH)
+		:firstLayerZ(firstLayerZ), layerH(layerH)
+	{
+	}
+
+	unsigned int zToLayerAbove(Scalar z) const
+	{
+		if(z < 0)
+		{
+			LayerMess mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
+			throw mixup;
+		}
+
+		if (z < firstLayerZ)
+			return 0;
+
+		Scalar tol = 0.00000000000001; // tolerance
+		Scalar layer = (z+tol-firstLayerZ) / layerH;
+		return ceil(layer);
+	}
+
+	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
+	{
+		return firstLayerZ + sliceIndex * layerH;
+	}
+
+	Scalar getLayerH() const
+	{
+		return layerH;
+	}
+};
+
 
 
 //

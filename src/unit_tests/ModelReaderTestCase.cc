@@ -14,15 +14,13 @@
 #include "ModelReaderTestCase.h"
 
 
-//#include "../ModelFileReaderOperation.h"
-
+#include "mgl/connexity.h"
 #include "mgl/configuration.h"
-#include "mgl/limits.h"
-#include "mgl/meshy.h"
-#include "mgl/scadtubefile.h"
+//#include "mgl/limits.h"
+//#include "mgl/scadtubefile.h"
+//#include "mgl/slicy.h"
+
 #include "mgl/slicy.h"
-
-
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
@@ -45,7 +43,7 @@ CPPUNIT_ASSERT( 12L == 12L );
 void ModelReaderTestCase::testSlicySimple()
 {
 
-	Vector3 p0(0,0,0);
+	mgl::Vector3 p0(0,0,0);
 	Vector3 p1(0,1,0);
 	Vector3 p2(1,1,0);
 	Vector3 p3(1,0,0);
@@ -381,14 +379,10 @@ void batchProcess(	Scalar firstLayerZ,
 		loadMeshyFromStl(mesh, modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
 		std::vector< SliceData > slices;
-		sliceAndPath( mesh,
-					layerW,
-					tubeSpacing,
-					angle,
-					0,
-					scadFile.c_str(),
-					slices);
 
+		unsigned int nbOfShells = 0;
+		Slicy slicy(mesh,layerW, scadFile.c_str());
+		slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, slices);
 
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
@@ -520,9 +514,12 @@ void ModelReaderTestCase::fixContourProblem()
 	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
-	std::vector< std::vector<LineSegment2> > outlineSegments;
+
+	std::vector<LineSegment2> segments;
 	// get 2D paths for outline
-	segmentology(allTriangles, trianglesForSlice, z, tol, outlineSegments);
+	segmentation(trianglesForSlice, allTriangles, z, segments);
+	SegmentTable outlinesSegments;
+	loopsAndHoleOgy(segments, tol, outlinesSegments);
 
 	std::vector<std::pair<double,double> > minsAndMaxes;
 	size_t triangleCount = trianglesForSlice.size();
@@ -617,5 +614,81 @@ void ModelReaderTestCase::testLayerMeasure()
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1000001, abode);
 }
 
+void initConfig(Configuration &config)
+{
+	config["slicer"]["firstLayerZ"] = 0.11;
+	config["slicer"]["layerH"] = 0.35;
+}
 
+void slicyTest()
+{
+	cout << endl;
+	string modelFile = "inputs/3D_Knot.stl";
+
+    Configuration config;
+    initConfig(config);
+	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	cout << "file " << modelFile << endl;
+	const SliceTable &sliceTable = mesh.readSliceTable();
+	int layerCount = sliceTable.size();
+	cout  << "Slice count: "<< layerCount << endl;
+	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+	cout << "Faces: " << allTriangles.size() << endl;
+	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
+
+	int layerIndex = 44;
+	CPPUNIT_ASSERT (layerIndex < layerCount);
+	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
+	unsigned int triangleCount = trianglesInSlice.size();
+	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
+	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
+
+	// Load slice connectivity information
+	Connexity connexity(1e-6);
+	for (int i=0; i < triangleCount; i++)
+	{
+		unsigned int triangleIndex = trianglesInSlice[i];
+		const Triangle3& t = allTriangles[triangleIndex];
+		connexity.addTriangle(t);
+	}
+
+	cout << connexity << endl;
+
+	list<index_t> faces;
+	size_t faceCount = connexity.readFaces().size();
+	for(index_t i=0; i< faceCount; i++)
+	{
+		faces.push_back(i);
+
+	}
+
+
+	const Face &face = connexity.readFaces()[0];
+	LineSegment2 cut;
+	bool success = connexity.cutFace(z, face, cut);
+	cout << "FACE cut " << cut.a << " to " << cut.b << endl;
+	CPPUNIT_ASSERT(success);
+
+	list<LineSegment2> loop;
+	connexity.splitLoop(z, faces, loop);
+
+	cout << "First loop has " << loop.size() << " segments" << endl;
+
+	size_t i=0;
+	for(list<LineSegment2>::iterator it = loop.begin(); it != loop.end(); it++)
+	{
+		cout << i << "] " << it->a << ", " << it->b << endl;
+		i++;
+	}
+
+	cout << "loop with " << loop.size() << "faces" << endl;
+	cout << "faces left: "  << faces.size()  << " / " << connexity.readEdges().size() << endl;
+
+//	list<index_t> edges;
+//	slicy.fillEdgeList(z,edges);
+//	dumpIntList(edges);
+
+}
 

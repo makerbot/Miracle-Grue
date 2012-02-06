@@ -24,6 +24,10 @@
 #include "json-cpp/include/json/value.h"
 #include "json-cpp/include/json/writer.h"
 
+namespace mgl
+{
+
+
 //
 // This class contains settings for the 3D printer, and user preferences
 //
@@ -66,4 +70,5 @@ class Configuration {
 
 };
 
+}
 #endif /* CONFIGURATION_H_ */

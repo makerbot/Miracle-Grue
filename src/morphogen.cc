@@ -17,9 +17,9 @@
 
 #include <stdlib.h>
 #include "mgl/abstractable.h"
-#include "mgl/meshy.h"
 #include "mgl/configuration.h"
 #include "mgl/gcoder.h"
+#include "mgl/slicy.h"
 //#include "FileWriterOperation.h"
 
 using namespace std;
@@ -137,19 +137,42 @@ int main(int argc, char *argv[], char *envp[])
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
+	unsigned int sliceCount = mesh.readSliceTable().size();
+
+
+	unsigned int extruderId = 0;
+	Scalar tubeSpacing = config["slicer"]["tubeSpacing"].asDouble();
+	Scalar angle = config["slicer"]["angle"].asDouble();
+	unsigned int nbOfShells = config["slicer"]["NbOfShells"].asUInt();
+
+	Slicy slicy(mesh, config["slicer"]["layerW"].asDouble(), scadFile.c_str());
+
 	std::vector< SliceData >  slices;
+	slices.reserve(sliceCount);
 
 	cout << "Slicing" << endl;
+	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+	{
+		Scalar sliceAngle = sliceId * angle;
+		slicy.slice(sliceId, extruderId, tubeSpacing, sliceAngle, nbOfShells, slices);
+	}
 
-	sliceAndPath(mesh,
-			config["slicer"]["layerH"].asDouble(),
-			config["slicer"]["tubeSpacing"].asDouble(),
-			config["slicer"]["angle"].asDouble(),
-			config["slicer"]["NbOfShells"].asUInt(),
-			scadFile.c_str(),
-			slices); //paths
+	GCoder gcoder = GCoder();
+	gcoder.loadData(config);
+    std::ofstream gout(gcodeFile.c_str());
+    gcoder.writeStartOfFile(gout);
 
-	writeGcodeFile(config, gcodeFile.c_str(), slices);
+    ProgressBar progress(slices.size());
+    for(int i = 0; i < slices.size(); i++)
+    {
+        progress.tick();
+        cout.flush();
+        const SliceData &slice = slices[i];
+        gcoder.writeSlice(gout, slice, i);
+    }
+
+    gcoder.writeGcodeEndOfFile(gout);
+    gout.close();
 	cout << endl << "Done!" << endl;
 
 }

@@ -16,6 +16,7 @@
 #include <iomanip>
 
 #include <set>
+#include <fstream>
 
 #include "segment.h"
 #include "limits.h"
@@ -34,65 +35,6 @@ namespace mgl // serious about triangles
 {
 
 
-
-
-class LayerMess : public Messup
-{
-public:
-	LayerMess(const char *msg)
-	 :Messup(msg)
-	{
-
-	}
-
-};
-
-
-// Helper class that gives relates height to layer id
-//
-// This class assumes that the model's triangles are
-// all above 0 (the z of each of the 3 vertices is >= 0.0).
-// worse, the layers MUST start at 0. Lazy programmer!
-// This is good enough for now, until the class "sees" every triangle
-// during loading and recalcs layers on the fly.
-//
-class LayerMeasure
-{
-	Scalar firstLayerZ;
-	Scalar layerH;
-
-public:
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH)
-		:firstLayerZ(firstLayerZ), layerH(layerH)
-	{
-	}
-
-	unsigned int zToLayerAbove(Scalar z) const
-	{
-		if(z < 0)
-		{
-			LayerMess mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
-			throw mixup;
-		}
-
-		if (z < firstLayerZ)
-			return 0;
-
-		Scalar tol = 0.00000000000001; // tolerance
-		Scalar layer = (z+tol-firstLayerZ) / layerH;
-		return ceil(layer);
-	}
-
-	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
-	{
-		return firstLayerZ + sliceIndex * layerH;
-	}
-
-	Scalar getLayerH() const
-	{
-		return layerH;
-	}
-};
 
 
 //
@@ -199,7 +141,7 @@ public:
 		return limits;
 	}
 
-	const LayerMeasure& readLayerMeasure()
+	const LayerMeasure& readLayerMeasure() const
 	{
 		return zTapeMeasure;
 	}
@@ -306,7 +248,7 @@ void infillPathology( std::vector<std::vector<LineSegment2> > &outlineSegments,
 				double z,
 				double tubeSpacing ,
 				// double angle,
-				std::vector<LineSegment2> &tubes);
+				Polygons &tubes);
 
 
 // compile time enabled

@@ -11,7 +11,6 @@ class SlicerTestCase : public CPPUNIT_NS::TestFixture
 private:
 
 	CPPUNIT_TEST_SUITE( SlicerTestCase );
-        //CPPUNIT_TEST( testSlicySimple );
         //CPPUNIT_TEST( testSlicyKnot_44 );
         //CPPUNIT_TEST( testNormals );
         //CPPUNIT_TEST( testCut );

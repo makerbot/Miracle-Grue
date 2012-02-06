@@ -2,8 +2,9 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerCupTestCase.h"
 
-#include "mgl/meshy.h"
+
 #include "mgl/configuration.h"
+#include "mgl/slicy.h"
 #include "mgl/gcoder.h"
 
 
@@ -19,7 +20,7 @@ void miracleGrue(const char *configFilePath,
 					const char *modelFilePath,
 						const char* outputDirectory)
 {
-	unsigned int NbOfShells = 0;
+	unsigned int nbOfShells = 0;
 
 	string configFileName(configFilePath);
 	string modelFile(modelFilePath);
@@ -46,14 +47,8 @@ void miracleGrue(const char *configFilePath,
     assert(layerW >0);
     assert(tubeSpacing >0);
 
-
-    sliceAndPath(	mesh,
-    				layerW,
-    				tubeSpacing,
-    				angle,
-    				NbOfShells,
-    				scadFile.c_str(),
-    				slices);
+	Slicy slicy(mesh,layerW, scadFile.c_str());
+	slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, slices);
 
     cout << "Writing the gcode to \"" << gcodeFile << "\""<< endl;
     writeGcodeFile(config, gcodeFile.c_str(), slices);

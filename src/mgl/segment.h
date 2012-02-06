@@ -13,8 +13,6 @@
 #ifndef SEGMENT_H_
 #define SEGMENT_H_
 
-#include <vector>
-#include <fstream>
 
 #include "core.h"
 
@@ -27,30 +25,34 @@
 namespace mgl
 {
 
-
-// Segmentology turns triangles into lines
-void segmentology(const std::vector<Triangle3> &allTriangles,
-					const TriangleIndices &trianglesForSlice,
-					Scalar z,
-					Scalar tol,
-					std::vector< std::vector<LineSegment2> > &loops);
+// turns triangles into lines
+void segmentation(const TriangleIndices &trianglesForSlice,
+		const std::vector<Triangle3> &allTriangles,
+		Scalar z,
+		std::vector<LineSegment2> &segments);
 
 // Assembles lines segments into loops (perimeter loops and holes)
-void loopsAndHoles(std::vector<LineSegment2> &segments,
+void loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 					Scalar tol,
 					std::vector< std::vector<LineSegment2> > &loops);
 
-// I have no idea what this does
+// I have no idea what this does, (2D translation?)
 void translateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Vector2 p);
 
 // moves Segments by a position
 void translateSegments(std::vector<mgl::LineSegment2> &segments, Vector2 p);
 
+void translatePolygon(Polygon &polygon, Vector2 p);
+void translatePolygons(Polygons &polygons, Vector2 p);
+
 Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
 void rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar angle);
-
 void rotateSegments(std::vector<mgl::LineSegment2> &segments, Scalar angle);
+
+void rotatePolygon(Polygon& polygon, Scalar angle);
+void rotatePolygons(Polygons& polygons, Scalar angle);
+
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
 bool segmentSegmentIntersection(const LineSegment2 &a, const LineSegment2 &b, Vector2 &p);

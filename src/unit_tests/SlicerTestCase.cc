@@ -1,24 +1,14 @@
-
-
-
-
-
-// #define  CPPUNIT_ENABLE_NAKED_ASSERT 1
+#include <list>
 
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerTestCase.h"
 
-
-//#include "../ModelFileReaderOperation.h"
-/*
-#include "mgl/meshy.h"
-
-#include "mgl/scadtubefile.h"
-*/
+#include "mgl/core.h"
 #include "mgl/configuration.h"
-
 #include "mgl/slicy.h"
+
 #include "mgl/shrinky.h"
+#include "mgl/meshy.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SlicerTestCase );
 
@@ -82,49 +72,7 @@ void SlicerTestCase::testNormals()
 }
 
 
-//
-// Adds 2 triangles with a common edge
-// to a Slicy
-//
-void SlicerTestCase::testSlicySimple()
-{
 
-	Vector3 p0(0,0,0);
-	Vector3 p1(0,1,0);
-	Vector3 p2(1,1,0);
-	Vector3 p3(1,0,0);
-
-	Triangle3 t0(p0, p1, p2);
-	Triangle3 t1(p0, p2, p3);
-
-	Connexity sy(0.001);
-
-	cout << endl << endl;
-	cout << "******** slicy with 2 triangles *******" << endl;
-	cout << "add t0" << endl;
-	size_t face0 = sy.addTriangle(t0);
-
-	cout << "add t1" << endl;
-	size_t face1 = sy.addTriangle(t1);
-
-	cout << "xx"<< endl;
-
-	int a,b,c;
-	sy.lookupIncidentFacesToFace(face0, a,b,c);
-
-	cout << "xx"<< endl;
-	CPPUNIT_ASSERT(a==face1 || b==face1 || c== face1);
-
-	cout << "xxx"<< endl;
-	sy.dump(cout);
-
-}
-
-void initConfig(Configuration &config)
-{
-	config["slicer"]["firstLayerZ"] = 0.11;
-	config["slicer"]["layerH"] = 0.35;
-}
 
 
 
@@ -177,6 +125,12 @@ void SlicerTestCase::testCut()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 9.044915e-01, b[1], tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 3.165644e+01, c[2], tol);
 
+}
+
+void initConfig(Configuration &config)
+{
+	config["slicer"]["firstLayerZ"] = 0.11;
+	config["slicer"]["layerH"] = 0.35;
 }
 
 void SlicerTestCase::testSlicyKnot_44()
@@ -237,77 +191,7 @@ void SlicerTestCase::testSlicyKnot_44()
 }
 
 
-void slicyTest()
-{
-	cout << endl;
-	string modelFile = "inputs/3D_Knot.stl";
 
-    Configuration config;
-    initConfig(config);
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
-
-	cout << "file " << modelFile << endl;
-	const SliceTable &sliceTable = mesh.readSliceTable();
-	int layerCount = sliceTable.size();
-	cout  << "Slice count: "<< layerCount << endl;
-	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
-	cout << "Faces: " << allTriangles.size() << endl;
-	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
-
-	int layerIndex = 44;
-	CPPUNIT_ASSERT (layerIndex < layerCount);
-	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
-	unsigned int triangleCount = trianglesInSlice.size();
-	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
-	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
-
-	// Load slice connectivity information
-	Connexity connexity(1e-6);
-	for (int i=0; i < triangleCount; i++)
-	{
-		unsigned int triangleIndex = trianglesInSlice[i];
-		const Triangle3& t = allTriangles[triangleIndex];
-		connexity.addTriangle(t);
-	}
-
-	cout << connexity << endl;
-
-	list<index_t> faces;
-	size_t faceCount = connexity.readFaces().size();
-	for(index_t i=0; i< faceCount; i++)
-	{
-		faces.push_back(i);
-
-	}
-
-
-	const Face &face = connexity.readFaces()[0];
-	LineSegment2 cut;
-	bool success = connexity.cutFace(z, face, cut);
-	cout << "FACE cut " << cut.a << " to " << cut.b << endl;
-	CPPUNIT_ASSERT(success);
-
-	list<LineSegment2> loop;
-	connexity.splitLoop(z, faces, loop);
-
-	cout << "First loop has " << loop.size() << " segments" << endl;
-
-	size_t i=0;
-	for(list<LineSegment2>::iterator it = loop.begin(); it != loop.end(); it++)
-	{
-		cout << i << "] " << it->a << ", " << it->b << endl;
-		i++;
-	}
-
-	cout << "loop with " << loop.size() << "faces" << endl;
-	cout << "faces left: "  << faces.size()  << " / " << connexity.readEdges().size() << endl;
-
-//	list<index_t> edges;
-//	slicy.fillEdgeList(z,edges);
-//	dumpIntList(edges);
-
-}
 
 
 /*

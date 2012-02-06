@@ -15,10 +15,13 @@
 
 #include <iostream>
 #include <ostream>
+#include <fstream>
 #include <sstream>
 
-#include "meshy.h"
-#include "segment.h"
+//#include "meshy.h"
+#include "abstractable.h"
+#include "limits.h"
+#include "core.h"
 
 
 namespace mgl
@@ -78,7 +81,7 @@ public:
 	    out << "max = " << max << ";" << std::endl;
 	    out << "// triangles(min,max);" << std::endl;
 	    out << "outlines(min,max);" << std::endl;
-	    out << "// extrusions(min,max);" << std::endl;
+	    out << "// infills(min,max);" << std::endl;
 	    out << std::endl;
 	    out << "stl_color = [0,1,0, 0.025];" << std::endl;
 
@@ -350,13 +353,14 @@ public:
 
 	// writes a list of triangles into a polyhedron.
 	// It is used to display the triangles involved in a slice (layerIndex).
-	void writeTrianglesModule(const char* name, const Meshy &mesh,
-								unsigned int layerIndex) //const std::vector<BGL::Triangle3d>  &allTriangles, const TriangleIndices &trianglesForSlice)
+
+	void writeTrianglesModule(const char* name,
+								const std::vector<Triangle3>  &allTriangles,
+								const TriangleIndices &trianglesForSlice,
+								unsigned int layerIndex)
 	{
 		std::stringstream ss;
 		ss.setf(std::ios::fixed);
-		const TriangleIndices &trianglesForSlice = mesh.readSliceTable()[layerIndex];
-		const std::vector<Triangle3>  &allTriangles = mesh.readAllTriangles();
 
 		ss << "module " << name << layerIndex << "(col=[1,0,0,1])" << std::endl;
 		ss << "{" << std::endl;
@@ -388,7 +392,15 @@ public:
 		ss << std::endl;
 		out << ss.str();
 	}
-
+/*
+	void writeTrianglesModule(const char* name, const Meshy &mesh,
+								unsigned int layerIndex)
+	{
+		const TriangleIndices &trianglesForSlice = mesh.readSliceTable()[layerIndex];
+		const std::vector<Triangle3>  &allTriangles = mesh.readAllTriangles();
+		writeTrianglesModule(name, allTriangles, trianglesForSlice, layerIndex);
+	}
+*/
 private:
 
 public:
@@ -406,9 +418,11 @@ public:
 		}
 		out << "}" << std::endl;
 	}
-
+/*
 	void writeSwitcher(int count)
 	{
+
+
 		out << "module outlines(min=0, max=" << count-1 <<")" << std::endl;
 		out << "{" << std::endl;
 		for(int i=0; i< count; i++)
@@ -446,7 +460,7 @@ public:
 		out << "// try import instead of import_stl depending on your version of OpenSCAD" << std::endl;
 
 	}
-
+*/
 	~ScadTubeFile()
 	{
 		out.close();

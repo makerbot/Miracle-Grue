@@ -16,12 +16,13 @@
 
 
 #include "core.h"
+#include "segment.h"
 #include "scadtubefile.h"
 
 namespace mgl // Miracle-Grue's geometry library
 {
 
-typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
+
 
 
 class ShrinkyMess : public Messup {	public: ShrinkyMess(const char *msg) :Messup(msg){}};
