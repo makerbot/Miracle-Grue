@@ -50,9 +50,57 @@ Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &
 	return theta;
 }
 
-///
-///
-///
+///// Returns 's's relation to 'to' using -1, 0, or 1
+//
+//short compare(const Scalar& s, const Scalar& to, Scalar tol) {
+//	if(sameSame(s, to, tol))
+//		return 0;
+//	else if(s - to < 0)
+//		return -1;
+//	else
+//		return 1;
+//}
+//
+//bool sliceSegment() {
+//
+//	u = (Z-vertex2.z)/(vertex3.z-vertex2.z);
+//	px =  vertex2.x+u*(vertex3.x-vertex2.x);
+//	py =  vertex2.y+u*(vertex3.y-vertex2.y);
+//}
+//
+/////
+/////
+/////
+//bool newSliceTriangle(const Vector3& vertex1,
+//					  const Vector3& vertex2,
+//					  const Vector3& vertex3,
+//					  Scalar Z,
+//					  Scalar tol,
+//					  Vector2 &a,
+//					  Vector2 &b)
+//{
+//
+//	Scalar u, px, py, v, qx, qy;
+//
+//	short v1ToZ = compare(vertex1.z, Z, tol);
+//	short v2ToZ = compare(vertex2.z, Z, tol);
+//	short v3ToZ = compare(vertex3.z, Z, tol);
+//
+//	// flat face.  Ignore.
+//	if(v1ToZ == 0 && v2ToZ == 0 && v3ToZ == 0)
+//		return false;
+//
+//	// Triangle is above/below Z level
+//	short sum = v1ToZ + v2ToZ + v3ToZ;
+//	if(sum == 3 || sum == -3)
+//		return false;
+//
+//	//case where one triangle falls in between other two
+//		//slice other two, get two triangles
+//	hugo wants this to calculate four line segments,
+//		in preparation for future representations of triangles
+//
+//}
 bool sliceTriangle(const Vector3& vertex1,
 					 const Vector3& vertex2,
 						const Vector3& vertex3,
@@ -82,7 +130,7 @@ bool sliceTriangle(const Vector3& vertex1,
 				// flat face.  Ignore.
 				return false;
 			}
-			//lnref = Line(Point(vertex1), Point(vertex2));
+//			lnref = Line(Point(vertex1), Point(vertex2));
 			a.x = vertex1.x;
 			a.y = vertex1.y;
 			a.z = Z;
