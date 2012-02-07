@@ -23,7 +23,7 @@ using namespace std;
 
 bool mgl::sameSame(Scalar a, Scalar b, Scalar tol)
 {
-	return (a-b) * (a-b) < tol;
+	return SCALAR_ABS(a-b) < tol;
 }
 
 
@@ -50,6 +50,9 @@ Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &
 	return theta;
 }
 
+///
+///
+///
 bool sliceTriangle(const Vector3& vertex1,
 					 const Vector3& vertex2,
 						const Vector3& vertex3,
@@ -202,7 +205,7 @@ bool sliceTriangle(const Vector3& vertex1,
 	}
 	else if ((vertex2.z > Z && vertex3.z > Z) || (vertex2.z < Z && vertex3.z < Z))
 	{
-		u = (Z-vertex1.z)/(vertex2.z-vertex1.z);
+		u = (Z-vertex1.z)/(vertex2.z-vertex1.z);//
 		px =  vertex1.x+u*(vertex2.x-vertex1.x);
 		py =  vertex1.y+u*(vertex2.y-vertex1.y);
 		v = (Z-vertex1.z)/(vertex3.z-vertex1.z);
