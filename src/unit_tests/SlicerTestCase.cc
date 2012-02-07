@@ -3,6 +3,7 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerTestCase.h"
 
+#include "mgl/mgl.cc"
 #include "mgl/core.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
@@ -792,7 +793,7 @@ void SlicerTestCase::testSliceTriangle() {
 	Z = 3;
 	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
 	Z = 5;
-	v2.z = 5
+	v2.z = 5;
 	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
 
 	cout << endl << "\t testing length" << endl;
