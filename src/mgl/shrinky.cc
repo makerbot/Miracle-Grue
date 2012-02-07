@@ -184,7 +184,6 @@ void trimConvexSegments(const std::vector<TriangleSegment2> & rawInsets,
 		TriangleSegment2 &previousSegment = segments[prevId];
 
 //		elongateAndTrim(currentSegment, currentSegment);
-
 		if (convex[i])
 		{
 
@@ -344,7 +343,7 @@ void trimSegments(const std::vector<TriangleSegment2> & longSegments, std::vecto
 }
 
 
-void launchMotorcycles(const std::vector<TriangleSegment2>& segments, Scalar tol, std::vector<Vector2>  &motorCycles)
+void createBisectors(const std::vector<TriangleSegment2>& segments, Scalar tol, std::vector<Vector2>  &motorCycles)
 {
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
@@ -392,7 +391,7 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 	std::vector<TriangleSegment2> insets;
 	std::vector<TriangleSegment2> trims;
 
-	std::vector<Vector2> motorCycles;
+	std::vector<Vector2> bisectors;
 
 	unsigned int segmentCount = originalSegments.size();
 	if(segmentCount < 3)
@@ -403,7 +402,8 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 		throw mixup;
 	}
 
-	bool dumpSteps = true;
+	bool dumpSteps = false;
+//	dumpSteps = true;
 
 //	bool byPass = false;
 //	if(byPass)
@@ -425,14 +425,10 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
     	assert(shorts.size() > 0);
     	if(dumpSteps) segmentsDiagnostic("Shorts",shorts);
 
-
-
 		insetSegments(shorts, insetDist, insets);
 		if(dumpSteps) segmentsDiagnostic("Insets", insets);
 
-
-		launchMotorcycles(shorts, tol, motorCycles);
-
+		createBisectors(shorts, tol, bisectors);
 
     	//std::cout << std::endl<< "*** createConvexList" << std::endl;
 		//createConvexList(currentSegments, convexVertices);
@@ -489,7 +485,7 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
     	for(int i=0; i < shorts.size(); i++)
     	{
     		Vector2 a = shorts[i].a;
-    		Vector2 dir = motorCycles[i];
+    		Vector2 dir = bisectors[i];
     		dir *= 2;
     		Vector2 b = a + dir;
     		TriangleSegment2 s(a, b);

@@ -21,12 +21,14 @@ void miracleGrue(const char *configFilePath,
 						const char* outputDirectory)
 {
 
-
 	string configFileName(configFilePath);
 	string modelFile(modelFilePath);
 
     Configuration config;
     config.readFromFile(configFileName.c_str());
+
+    cout << config.asJson() << endl;
+
 
     Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
     loadMeshyFromStl(mesh, modelFile.c_str());

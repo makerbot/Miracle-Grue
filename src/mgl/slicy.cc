@@ -29,7 +29,9 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					std::vector<SegmentTable> &insetsForLoops)
 {
 
+	Scalar interference = 0.4;
 	assert(insetsForLoops.size() ==0);
+	//
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
     for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 	{
@@ -42,71 +44,68 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		assert(insetsForLoops.size() == outlineId + 1);
 
 		SegmentTable &insetTable = *insetsForLoops.rbegin(); // inset curves for a single loop
+		insetTable.reserve(nbOfShells);
 
 		MyComputer myComputer;
-		stringstream ss;
-		ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
-		string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str());
+
+
 		unsigned int shellId = 0;
-		Shrinky shrinky(loopScadFile.c_str());
+		Shrinky shrinky; // loopScadFile.c_str());
+
+		unsigned int segmentCountBefore =0;
+		unsigned int segmentCountAfter =0;
+
+		vector<Scalar> insetDistances;
+		vector<Scalar> layerWidths;
+
+		insetDistances.reserve(nbOfShells);
+		layerWidths.reserve(nbOfShells);
+
+		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+		{
+			insetTable.push_back(std::vector<TriangleSegment2>());
+			Scalar insetDistance = shellId ==0? insetDistance = 0.5*layerW:interference *layerW;
+			insetDistances.push_back(insetDistance);
+			layerWidths.push_back(layerW);
+		}
 		try
 		{
-			unsigned int segmentCountBefore =0;
-			unsigned int segmentCountAfter =0;
-
+			vector<TriangleSegment2> &previousInsets  = const_cast<vector<TriangleSegment2> &> (outlineLoop);
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
-				insetTable.push_back(std::vector<TriangleSegment2>());
-			}
-			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-			{
-				if(shellId == 0)
-				{
-					// first inset: inset only by the radius of the extrusion
-					// (half the extrusion width)
-					Scalar insetDistance = 0.5*layerW;
-					assert(outlineLoop.size());
-
-					std::vector<TriangleSegment2> &insets = insetTable[0];
-					segmentCountBefore = outlineLoop.size();
-					shrinky.inset(outlineLoop, insetDistance, insets);
-					segmentCountAfter = insets.size();
-
-					// assert(segmentCountAfter);
-					assert(insetTable[0].size() == segmentCountAfter);
-				}
-				else
-				{
-					// normal inset: inset by the diameter of the extrusion
-					// but leave interference for extrusions to stick together
-					Scalar insetDistance = 0.8*layerW;
-					assert(shellId > 0);
-					unsigned int previousShell = shellId -1;
-					assert(insetTable.size() > previousShell);
-
-					std::vector<TriangleSegment2> &lastInsets = insetTable[previousShell];
-
-					if(lastInsets.size())
-					{
-						std::vector<TriangleSegment2> &insets = insetTable[shellId];
-						segmentCountBefore = lastInsets.size();
-						assert(segmentCountBefore == segmentCountAfter);
-						assert(insets.size() == 0);
-
-						shrinky.inset(lastInsets, insetDistance, insets);
-						segmentCountAfter = insets.size();
-						assert(insetTable[shellId].size() == insets.size());
-					}
-				}
+				Scalar insetDistance = insetDistances[shellId];
+				std::vector<TriangleSegment2> &insets = insetTable[shellId];
+				shrinky.inset(previousInsets, insetDistance, insets);
+				previousInsets = insets;
 			}
 		}
 		catch(ShrinkyMess &messup)
 		{
-			cout << "sliceId: "   << sliceId << endl;
-			cout << "loopId: " << outlineId << endl;
-			cout << "shellId: " <<  shellId << endl;
+			cout << "sliceId: " <<  sliceId   << endl;
+			cout << "loopId : " <<  outlineId << endl;
+			cout << "shellId: " <<  shellId   << endl;
 
-			assert(0);
+			stringstream ss;
+			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
+			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str());
+			Shrinky shriker(loopScadFile.c_str());
+			try
+			{
+				vector<TriangleSegment2> &previousInsets  = const_cast<vector<TriangleSegment2> &> (outlineLoop);
+				std::vector<TriangleSegment2> insets;
+				for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+				{
+					Scalar insetDistance = insetDistances[shellId];
+					shrinky.inset(previousInsets, insetDistance, insets);
+					previousInsets = insets;
+					insets.clear();
+				}
+			}
+			catch(ShrinkyMess &messup)
+			{
+				cout << "saving to file " << ss.str() << endl;
+			}
+
 		}
 	}
 }

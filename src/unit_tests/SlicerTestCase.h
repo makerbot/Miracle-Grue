@@ -21,10 +21,8 @@ private:
         CPPUNIT_TEST( testInset4 );
         CPPUNIT_TEST(testHexagon);
         CPPUNIT_TEST(testMotorcycles);
-        CPPUNIT_TEST( testSliceTriangle );
+       // CPPUNIT_TEST( testSliceTriangle );
     CPPUNIT_TEST_SUITE_END();
-
-
 
 protected:
 

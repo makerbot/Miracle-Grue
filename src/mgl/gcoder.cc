@@ -398,7 +398,6 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, unsigned int sl
 		{
 			writeSwitchExtruder(ss, extruderId);
 		}
-
 		try
 		{
 			if(gcoding.infills && gcoding.infillFirst)
@@ -410,7 +409,6 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, unsigned int sl
 		{
 			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
 		}
-
 		try
 		{
 			if(gcoding.outline)
@@ -532,9 +530,9 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 		assert(doX || doY || doZ || doFeed);
 	#endif
 
-	assert(fabs(x) < 10000000);
-	assert(fabs(y) < 10000000);
-	assert(fabs(z) < 10000000);
+	assert(fabs(x) < MUCH_LARGER_THAN_THE_BUILD_PLATFORM);
+	assert(fabs(y) < MUCH_LARGER_THAN_THE_BUILD_PLATFORM);
+	assert(fabs(z) < MUCH_LARGER_THAN_THE_BUILD_PLATFORM);
 
 
 
@@ -557,7 +555,9 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 		this->comment = "";
 	else
 		this->comment = comment;
+
 }
+
 
 void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 {
