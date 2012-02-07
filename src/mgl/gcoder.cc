@@ -440,7 +440,6 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, unsigned int sl
 			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
 		}
 
-
 		try
 		{
 			if(gcoding.infills && !gcoding.infillFirst)
@@ -558,9 +557,7 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 		this->comment = "";
 	else
 		this->comment = comment;
-
 }
-
 
 void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 {
