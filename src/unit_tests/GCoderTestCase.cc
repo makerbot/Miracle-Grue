@@ -165,7 +165,7 @@ void GCoderTestCase::testSingleExtruder()
 
 	GCoder gcoder;
 	gcoder.loadData(config);
-	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME); ;
+	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeStartOfFile(gout);
 	gcoder.writeGcodeEndOfFile(gout);
 
@@ -487,35 +487,3 @@ void GCoderTestCase::testMultiGrid()
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
-/*
-SliceData * createPathFromTubes(const std::vector<TriangleSegment2> &tubes, Scalar z)
-{
-	// paths R us
-	SliceData *sliceData;
-	sliceData = new SliceData(z,0);
-
-	sliceData->extruderSlices.push_back(ExtruderSlice());
-
-
-	Polygons& paths = sliceData->extruderSlices[0].infills;
-	size_t tubeCount = tubes.size();
-	for (int i=0; i< tubeCount; i++)
-	{
-		const LineSegment2 &segment = tubes[i];
-
-		cout << "SEGMENT " << i << "/" << tubeCount << endl;
-		paths.push_back(Polygon());
-		Polygon &poly = paths[paths.size()-1];
-
-		Vector2 p0 (segment.a.x, segment.a.y);
-		Vector2 p1 (segment.b.x, segment.b.y);
-
-		poly.push_back(p0);
-		poly.push_back(p1);
-
-	}
-	return sliceData;
-}
-
-*/
-
