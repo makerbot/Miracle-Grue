@@ -16,10 +16,11 @@ private:
         //CPPUNIT_TEST( testCut );
 //		CPPUNIT_TEST( testAngles );
 //		CPPUNIT_TEST( testInset );
-//        CPPUNIT_TEST( testInset2 );
-//        CPPUNIT_TEST( testInset3 );
-//        CPPUNIT_TEST( testInset4 );
+        CPPUNIT_TEST( testInset2 );
+        CPPUNIT_TEST( testInset3 );
+        CPPUNIT_TEST( testInset4 );
         CPPUNIT_TEST(testHexagon);
+        CPPUNIT_TEST(testMotorcycles);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -39,6 +40,8 @@ protected:
   void testInset3();
   void testInset4();
   void testHexagon();
+
+  void testMotorcycles();
 };
 
 

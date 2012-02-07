@@ -686,4 +686,9 @@ void SlicerTestCase::testHexagon()
 	}
 }
 
+void SlicerTestCase::testMotorcycles()
+{
 
+
+
+}
