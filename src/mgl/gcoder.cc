@@ -84,54 +84,6 @@ void mgl::writeGcodeFile(const Configuration &config,
 }
 
 
-void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, unsigned int sliceIndex)
-{
-
-	GCoder &gcoder = *this;
-	double layerZ = sliceData.z;
-	unsigned int extruderCount = sliceData.extruderSlices.size();
-
-	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
-	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
-	{
-
-		ss << "(   Extruder " <<  extruderId << ")" << endl;
-		const Polygons &loops = sliceData.extruderSlices[extruderId].loops;
-		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
-
-		double z = layerZ + gcoder.extruders[extruderId].nozzleZ;
-
-		if (extruderCount > 0)
-		{
-			writeSwitchExtruder(ss, extruderId);
-		}
-
-		try
-		{
-			writePaths(ss, sliceData.sliceIndex, extruderId, z, loops);
-		}
-		catch(GcoderMess &messup)
-		{
-			cout << "ERROR writing loops in slice " << sliceIndex << " for extruder " << extruderId << endl;
-		}
-
-		try
-		{
-			writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
-		}
-		catch(GcoderMess &messup)
-		{
-			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
-		}
-
-		if (extruderCount > 0)
-		{
-			writeWipeExtruder(ss, extruderId);
-		}
-		extruderId ++;
-	}
-}
-
 void GCoder::writeSwitchExtruder(ostream& ss, int extruderId) const
 {
 	ss << "( extruder " << extruderId << " )" << endl;
@@ -362,6 +314,11 @@ void GCoder::loadData(const Configuration& conf)
 		extruders.push_back(toolHead);
 	}
 
+
+	gcoding.outline = conf.root["gcoder"]["ouline"].asBool();
+	gcoding.insets = conf.root["gcoder"]["insets"].asBool();
+	gcoding.infills = conf.root["gcoder"]["infills"].asBool();
+	gcoding.infillFirst = conf.root["gcoder"]["infillFirst"].asBool();
 }
 
 void GCoder::writePaths(std::ostream& ss,
@@ -419,6 +376,89 @@ void GCoder::writePaths(std::ostream& ss,
 	}
 }
 
+
+void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, unsigned int sliceIndex)
+{
+
+	double layerZ = sliceData.z;
+	unsigned int extruderCount = sliceData.extruderSlices.size();
+
+	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
+	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
+	{
+
+		ss << "(   Extruder " <<  extruderId << ")" << endl;
+		const Polygons &loops = sliceData.extruderSlices[extruderId].loops;
+		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
+		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insets;
+
+		double z = layerZ + extruders[extruderId].nozzleZ;
+
+		if (extruderCount > 0)
+		{
+			writeSwitchExtruder(ss, extruderId);
+		}
+
+		try
+		{
+			if(gcoding.infills && gcoding.infillFirst)
+			{
+				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		try
+		{
+			if(gcoding.outline)
+			{
+				writePaths(ss, sliceData.sliceIndex, extruderId, z, loops);
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing loops in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		try
+		{
+			if(gcoding.insets)
+			{
+				// each iteration is for a shell
+				for(unsigned int i=0; i < insets.size(); i++)
+				{
+					const Polygons &polygons = insets[i];
+					writePaths(ss, sliceData.sliceIndex, extruderId, z, polygons);
+				}
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		try
+		{
+			if(gcoding.infills && !gcoding.infillFirst)
+			{
+				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
+			}
+		}
+		catch(GcoderMess &messup)
+		{
+			cout << "ERROR writing infills in slice " << sliceIndex << " for extruder " << extruderId << endl;
+		}
+
+		if (extruderCount > 0)
+		{
+			writeWipeExtruder(ss, extruderId);
+		}
+		extruderId ++;
+	}
+}
 
 
 
@@ -517,9 +557,7 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 		this->comment = "";
 	else
 		this->comment = comment;
-
 }
-
 
 void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 {
@@ -533,15 +571,7 @@ void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 	std::string plurial = extruders.size()? "":"s";
 	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;
 
-	if (outline.enabled)
- 	{
- 		ss << "(" << indent << outline.distance << "mm outline" << ")" << endl;
- 	}
- 	else
- 	{
- 		ss << "(" << indent << "no outline" <<  ")"<< endl;
- 	}
- 	ss << endl;
+	ss << endl;
 }
 
 

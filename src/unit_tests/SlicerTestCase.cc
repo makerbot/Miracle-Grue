@@ -814,4 +814,7 @@ void SlicerTestCase::testSliceTriangle() {
 	cout << endl << "Finished testing 'sliceTriangle'" << endl;
 }
 
+void SlicerTestCase::testMotorcycles()
+{
 
+}

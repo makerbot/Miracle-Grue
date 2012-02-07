@@ -321,7 +321,6 @@ public:
 		return z;
 	}
 
-
 	void writeSegments2(const char* name,
 						const char* implementation,
 							const std::vector<TriangleSegment2> &segments,

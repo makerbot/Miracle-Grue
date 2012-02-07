@@ -343,10 +343,40 @@ void trimSegments(const std::vector<TriangleSegment2> & longSegments, std::vecto
 	}
 }
 
-void Shrinky::inset(const std::vector<TriangleSegment2> & originalSegments,
+
+void launchMotorcycles(const std::vector<TriangleSegment2>& segments, Scalar tol, std::vector<Vector2>  &motorCycles)
+{
+	for(unsigned int i=0; i < segments.size(); i++)
+	{
+		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
+		// unsigned int nextId = i==segments.size()-1 ? 0 : i+1;
+
+		const TriangleSegment2 &prevSeg = segments[prevId];
+		const TriangleSegment2 &seg = segments[i];
+		// const TriangleSegment2 &nextSeg = segments[nextId];
+
+		Vector2 prevInset = getInsetDirection(prevSeg);
+		Vector2 inset = getInsetDirection(seg);
+
+		Vector2 motorCycle = inset;
+
+		// if points are disjoint, do not combine both insets
+		if(prevSeg.b.sameSame(seg.a, tol) )
+		{
+			motorCycle += prevInset;
+		}
+		motorCycle.normalise();
+
+		motorCycles.push_back(motorCycle);
+	}
+}
+
+void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 								Scalar insetDist,
 									std::vector<TriangleSegment2> &finalInsets)
 {
+	Scalar tol = 0.35*4;
+
     // OpenScad
 	Scalar z = 0;
     Scalar dz =0.1;
@@ -361,6 +391,8 @@ void Shrinky::inset(const std::vector<TriangleSegment2> & originalSegments,
 	std::vector<bool> convexVertices;
 	std::vector<TriangleSegment2> insets;
 	std::vector<TriangleSegment2> trims;
+
+	std::vector<Vector2> motorCycles;
 
 	unsigned int segmentCount = originalSegments.size();
 	if(segmentCount < 3)
@@ -389,20 +421,17 @@ void Shrinky::inset(const std::vector<TriangleSegment2> & originalSegments,
     	if(dumpSteps)segmentsDiagnostic("originalSegments", originalSegments);
 		// std::cout << std::endl << "*** RemoveShortSegments" << std::endl;
 
-    	removeShortSegments(originalSegments, 0.35 , shorts);
-
-
-    	//std::vector<TriangleSegment2> &segments = shorts;
-    	//std::vector<TriangleSegment2> &currentSegments = shorts;
+    	removeShortSegments(originalSegments, tol , shorts);
     	assert(shorts.size() > 0);
     	if(dumpSteps) segmentsDiagnostic("Shorts",shorts);
 
-		// std::cout << endl << "*** insetSegments" << std::endl;
-		cout << "/";
+
+
 		insetSegments(shorts, insetDist, insets);
-		//currentSegments = insets;
-		//assert(currentSegments.size() > 0);
 		if(dumpSteps) segmentsDiagnostic("Insets", insets);
+
+
+		launchMotorcycles(shorts, tol, motorCycles);
 
 
     	//std::cout << std::endl<< "*** createConvexList" << std::endl;
@@ -455,12 +484,28 @@ void Shrinky::inset(const std::vector<TriangleSegment2> & originalSegments,
         coloredOutline << "loop_segments3";
 
     	z = fscad.writeSegments3("outlines_", coloredOutline.str().c_str(), originalSegments, z, dz,  this->counter);
-        z = fscad.writeSegments3("shortened_", "color([0.5,0.5,0,1])loop_segments3", shorts, z, dz, this->counter);
-        z = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", insets, z, 0, this->counter);
+
+    	std::vector<TriangleSegment2> motorCycleTraces;
+    	for(int i=0; i < shorts.size(); i++)
+    	{
+    		Vector2 a = shorts[i].a;
+    		Vector2 dir = motorCycles[i];
+    		dir *= 2;
+    		Vector2 b = a + dir;
+    		TriangleSegment2 s(a, b);
+    		motorCycleTraces.push_back(s);
+    	}
+
+    	Scalar shortz = z;
+        z = fscad.writeSegments3("shortened_", "color([0.5,0.5,0,1])loop_segments3", shorts, z, 0, this->counter);
+
+        z = fscad.writeSegments3("motorcycles_", "color([0.75,0.5,0.2,1])loop_segments3", motorCycleTraces, shortz, 0, this->counter);
+        z += dz;
+    	z = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", insets, z, 0, this->counter);
         z += 2 * dz;
-        z = fscad.writeSegments3("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments3", trims, z , 0, this->counter);
+        //z = fscad.writeSegments3("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments3", trims, z , dz, this->counter);
         z += 2 * dz;
-        z = fscad.writeSegments3("final_insets_", "color([0,0.5,0,1])loop_segments3", finalInsets, z ,  dz,this->counter);
+        z = fscad.writeSegments3("final_insets_", "color([0,0.5,0,1])loop_segments3", finalInsets, z ,  0,this->counter);
         this->counter ++;
     }
 
@@ -475,8 +520,9 @@ Shrinky::~Shrinky()
 
 		unsigned int shells = counter;
 		fscad.writeMinMax("draw_outlines",  "outlines_", shells);
+		fscad.writeMinMax("draw_motorcycles",  "motorcycles_", shells);
 		fscad.writeMinMax("draw_raw_insets",  "raw_insets_", shells);
-		fscad.writeMinMax("draw_trimmed_insets",  "trimmed_insets_", shells);
+		//fscad.writeMinMax("draw_trimmed_insets",  "trimmed_insets_", shells);
 		fscad.writeMinMax("draw_shortened_insets",  "shortened_", shells);
 		fscad.writeMinMax("draw_final_insets",  "final_insets_", shells);
 
@@ -484,9 +530,10 @@ Shrinky::~Shrinky()
 		out << "max=" << shells -1 << ";"<<std::endl;
 		out <<std::endl;
 		out << "draw_outlines(min, max);" <<std::endl;
+		out << "draw_motorcycles(min, max);" <<std::endl;
 		out << "draw_shortened_insets(min, max);" <<std::endl;
 		out << "draw_raw_insets(min, max);" <<std::endl;
-		out << "draw_trimmed_insets(min, max);" <<std::endl;
+		//out << "draw_trimmed_insets(min, max);" <<std::endl;
 		out << "draw_final_insets(min, max);" <<std::endl;
 
 		// out << "draw_shortened_insets(min, max);" <<std::endl;
