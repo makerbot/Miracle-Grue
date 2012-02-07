@@ -3,6 +3,7 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerTestCase.h"
 
+#include "mgl/mgl.cc"
 #include "mgl/core.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
@@ -686,9 +687,135 @@ void SlicerTestCase::testHexagon()
 	}
 }
 
+void SlicerTestCase::testSliceTriangle() {
+	cout << endl << "Testing 'sliceTriangle'..." << endl;
+
+	// this should really be passed to the sliceTriangle function
+	double tol = 1e-6;
+	Vector3 v1, v2, v3;
+	Scalar Z = 0;
+	Vector3 a, b;
+	bool result;
+
+	cout << endl << "\t testing above" << endl;
+	v1 = Vector3(1, 2, 3);
+	v2 = Vector3(2, 3, 4);
+	v3 = Vector3(3, 4, 5);
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == false);
+
+	cout << endl << "\t testing below" << endl;
+	Z = 8;
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == false);
+
+	cout << endl << "\t testing == Z" << endl;
+	CPPUNIT_ASSERT(a.z == b.z);
+	CPPUNIT_ASSERT(a.z == Z);
+
+	cout << endl << "\t testing flat face" << endl;
+	v1 = Vector3(1, 2, 5);
+	v2 = Vector3(2, 3, 5);
+	v3 = Vector3(3, 4, 5);
+	Z = 5;
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == false);
+
+	// this should be based on a tolerance. can we pass tolerance to sliceTriangle?
+	cout << endl << "\t testing ~flat face" << endl;
+	v1 = Vector3(1, 2, 4.999999999);
+	v2 = Vector3(2, 3, 5.000000000);
+	v3 = Vector3(3, 4, 5.000000001);
+	Z = 5;
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == false);
+
+	cout << endl << "\t testing tiny triangle" << endl;
+	v1 = Vector3(0.0001, 0.0002, 0.0001);
+	v2 = Vector3(0.0005, 0.0004, 0.0002);
+	v3 = Vector3(0.0003, 0.0001, 0.0003);
+	Z = 0.0002;
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == true);
+	// pre-calculated answer to compare against
+	//a = (.0005, .0004, .0002) b = (.0002, .00015, .0002)
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.x, .0005, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.y, .0004, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.z, Z, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.x, .0002, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.y, .00015, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.z, Z, tol);
+
+	Z = 0.00015;
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == true);
+	// pre-calculated answer to compare against
+	//a = (.0003, .0003, .00015) b = (.00015, .000225, .00015)
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.x, .0003, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.y, .0003, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.z, Z, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.x, .00015, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.y, .000225, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.z, Z, tol);
+
+	Z = 0.00025;
+	result = sliceTriangle(v1, v2, v3, Z, a, b);
+	CPPUNIT_ASSERT(result == true);
+	// pre-calculated answer to compare against
+	//a = (.00025, .000125, .00025) b = (.0004, .00025, .00025)
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.x, .00025, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.y, .000125, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(a.z, Z, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.x, .0004, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.y, .00025, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(b.z, Z, tol);
+
+	cout << endl << "\t testing GIANT triangle" << endl;
+	cout << "This test has not been implemented!";
+	cout << endl << "\t testing order" << endl;
+	Vector3 order1[2], order2[2], order3[2];
+
+	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, order1[0], order1[1]) == true);
+	CPPUNIT_ASSERT(sliceTriangle(v1, v3, v2, Z, order2[0], order2[1]) == true);
+	CPPUNIT_ASSERT(sliceTriangle(v2, v1, v3, Z, order3[0], order3[1]) == true);
+	cout << "o1" << order1[0] << ", " << order1[1] << endl;
+	cout << "o2" << order2[0] << ", " << order2[1] << endl;
+	cout << "o3" << order3[0] << ", " << order3[1] << endl;
+
+	cout << "This test has not been completely implemented!";
+
+	cout << endl << "\t testing corners" << endl;
+	v1 = Vector3(1, 2, 1);
+	v2 = Vector3(5, 4, 2);
+	v3 = Vector3(3, 1, 3);
+	Z = 1;
+	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
+	Z = 3;
+	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
+	Z = 5;
+	v2.z = 5;
+	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
+
+	cout << endl << "\t testing length" << endl;
+	v1 = Vector3(1, 2, 1);
+	v2 = Vector3(5, 4, 2);
+	v3 = Vector3(5, 4, 2);
+	Z = 2;
+	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
+
+	// if a triangle was divided in two along a line
+	// only one triangle should return a slice
+	//
+	cout << endl << "\t testing ???" << endl;
+	v1 = Vector3(1, 2, 1);
+	v2 = Vector3(5, 4, 2);
+	v3 = Vector3(3, 1, 3);
+	Z = 2;
+
+	cout << endl << "Finished testing 'sliceTriangle'" << endl;
+}
+
 void SlicerTestCase::testMotorcycles()
 {
-
-
 
 }

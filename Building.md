@@ -16,9 +16,15 @@ willing to play with the SConstruct file.
     We're still working on this. 
     
     Scons: scons requires Python, which may not be on your system.
+    
     cppunit is only supported on Visual Studio 6
-    It works under Cygwin if QT is disabled and OpenMP is not used.
-		   
+    
+	Miracle Grue can be built under eclipse with cygwin:
+		install cygwin with python, cppunit, and mingw
+		install scons on cygwin python
+		when adding project to eclipse, select makefile project with existing code and under toolchain for indexer settings select "Cygwin GCC"
+		there are some configuration files in configs/eclipse/ that may make setting up the project easier
+		  
 ## OS X installation
 
 Install Qt libraries 4.6.4 for Mac (Cocoa) (http://qt.nokia.com/downloads)
