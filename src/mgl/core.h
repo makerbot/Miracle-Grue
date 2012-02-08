@@ -45,10 +45,12 @@ public:
 // Our basic numerical type. double for now;
 //
 typedef double Scalar;
-
+#define SCALAR_SQRT(s) sqrt(s)
+#define SCALAR_ABS(s) abs(s)
 // true if two Scalar values are approximally the same,
 // using a hard coded tolerance
 bool sameSame(Scalar a, Scalar b, Scalar tol); // = 1e-8
+
 
 typedef unsigned int index_t;
 typedef std::vector<index_t> TriangleIndices;
