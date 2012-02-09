@@ -165,18 +165,31 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 			#endif
 
 			outlineScad.writeTrianglesModule("tri_", allTriangles, trianglesForSlice, sliceId);
-			outlineScad.writePolygons("outlines_", "color([1,0,0,1])outline", loopsPolys, zz, sliceId);
-			outlineScad.writePolygons("infills_",   "color([0,0,1,1])infill" , infillsPolys, zz, sliceId);
+			outlineScad.writePolygons("outlines_", "color([0,0,1,1])outline", loopsPolys, zz, sliceId);
+			outlineScad.writePolygons("infills_",   "color([1,0,0,1])infill" , infillsPolys, zz, sliceId);
 
 			for(unsigned int outlineId=0; outlineId <  insetsPolys.size(); outlineId++)
 			{
 				const Polygons &polygons = insetsPolys[outlineId];
 				stringstream ss;
-				ss << "inset_" << outlineId << "_";
+				ss << "inset_" << sliceId << "_" << outlineId << "_";
 				outlineScad.writePolygons(ss.str().c_str(), "color([0,1,0,1])infill",  polygons, zz, sliceId);
-			}
 
-			// cout << "	</scad>" << endl;
+				cout << ss.str().c_str() << sliceId << endl;
+			}
+			// one function that calls all insets
+
+			unsigned int maxNumberOfOutlines = insetsPolys.size() -1;
+			if(maxNumberOfOutlines > 0)
+			{
+				stringstream ss;
+				ss << "insets_" << sliceId;
+				string insetsForSlice = ss.str();
+				ss << "_";
+				string insetsForSliceForLoop = ss.str();
+				outlineScad.writeMinMax(insetsForSlice.c_str(), insetsForSliceForLoop.c_str(), maxNumberOfOutlines);
+				// cout << "	</scad>" << endl;
+			}
 		}
 }
 
