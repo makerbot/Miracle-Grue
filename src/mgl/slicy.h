@@ -86,6 +86,7 @@ public:
 				Scalar insetDistanceFactor,
 				std::vector<SliceData> & slices);
 
+
 	~Slicy();
 };
 

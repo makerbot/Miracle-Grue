@@ -305,7 +305,17 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 }
 
 
-
+bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
+{
+	Vector2 l = right -left;
+	if(l.magnitude() > 2 * shrinkDistance)
+	{
+		left[0]  +=  shrinkDistance;
+		right[0] -=  shrinkDistance;
+		return true;
+	}
+	return false;
+}
 
 void mgl::infillPathology( SegmentTable &outlineLoops,
 							const Limits& limits,
@@ -344,7 +354,6 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 												intersectionX,  intersectionY))
 				{
 					lineCuts.insert(intersectionX);
-
 				}
 			}
 		}
@@ -353,7 +362,6 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 	// tubes.resize(tubeCount);
 
 	bool backAndForth = true;
-
 	Scalar bottom = -0.5 * deltaY;
 	for (int i=0; i < tubeCount; i++)
 	{
@@ -381,15 +389,14 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 				{
 					end.x = x;
 					end.y = y;
-					infills.push_back(Polygon());
-					Polygon &poly = infills.back();
 
-					// make it smaller as per user demand
-					begin.x += infillShrinking;
-					end.x -= infillShrinking;
-
-					poly.push_back(begin);
-					poly.push_back(end);
+					if(shrinkLine(begin, end, infillShrinking))
+					{
+						infills.push_back(Polygon());
+						Polygon &poly = infills.back();
+						poly.push_back(begin);
+						poly.push_back(end);
+					}
 				}
 			}
 		}
@@ -412,12 +419,13 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 					infills.push_back(Polygon());
 					Polygon &poly = infills.back();
 
-					// make it smaller as per user demand
-					begin.x -= infillShrinking;
-					end.x += infillShrinking;
-
-					poly.push_back(begin);
-					poly.push_back(end);
+					if(shrinkLine(end, begin, infillShrinking))
+					{
+						infills.push_back(Polygon());
+						Polygon &poly = infills.back();
+						poly.push_back(begin);
+						poly.push_back(end);
+					}
 				}
 			}
 		}

@@ -48,7 +48,7 @@ class ScadTubeFile
 //	double layerH;
 //	double layerW;
 
-
+	std::string filename;
 
 public:
 	ScadTubeFile()
@@ -56,7 +56,7 @@ public:
 
 	void open(const char* filename)
 	{
-
+		assert(isOpened() == false);
 		out.open(filename, std::ios::out);
 		if(!out.good())
 		{
@@ -72,6 +72,17 @@ public:
 	    out.setf(std::ios::fixed);
 
 	    write_header();
+	}
+
+	std::string getScadFileName() const
+	{
+		return filename;
+	}
+
+	bool isOpened()
+	{
+		unsigned int l = filename.length();
+		return (l > 0);
 	}
 
 	void writePathViz(double layerH, double layerW,  unsigned int max)
@@ -164,6 +175,7 @@ public:
 	void close()
 	{
 		out.close();
+		filename = "";
 	}
 
 
@@ -417,49 +429,7 @@ public:
 		}
 		out << "}" << std::endl;
 	}
-/*
-	void writeSwitcher(int count)
-	{
 
-
-		out << "module outlines(min=0, max=" << count-1 <<")" << std::endl;
-		out << "{" << std::endl;
-		for(int i=0; i< count; i++)
-		{
-			out << "	if(min <= "<< i <<" && max >=" << i << ")" << std::endl;
-			out << "	{" << std::endl;
-			out << "		outlines_"   << i << "();"<< std::endl;
-			out << "	}" << std::endl;
-		}
-		out << "}"<< std::endl;
-		out << std::endl;
-		out << "module triangles(min=0, max=" << count-1<<")" << std::endl;
-		out << "{" << std::endl;
-		for(int i=0; i< count; i++)
-		{
-			out << "	if(min <= "<< i <<" && max >=" << i << ")" << std::endl;
-			out << "	{" << std::endl;
-			out << "		tri_"   << (int)i << "();"<< std::endl;
-			out << "	}" << std::endl;
-		}
-		out << "}"<< std::endl;
-		out << std::endl;
-		out << "module extrusions(min=0, max=" << count-1<<")" << std::endl;
-		out << "{" << std::endl;
-		for(int i=0; i< count; i++)
-		{
-			out << "	if(min <= "<< i <<" && max >=" << i << ")" << std::endl;
-			out << "	{" << std::endl;
-			out << "		infill_" << i << "();"<< std::endl;
-			out << "	}" << std::endl;
-		}
-		out << "}"<< std::endl;
-		out << std::endl;
-
-		out << "// try import instead of import_stl depending on your version of OpenSCAD" << std::endl;
-
-	}
-*/
 	~ScadTubeFile()
 	{
 		out.close();

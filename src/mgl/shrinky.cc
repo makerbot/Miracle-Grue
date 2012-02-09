@@ -306,13 +306,15 @@ Shrinky::Shrinky( const char *scadFileName, // = NULL
 
 }
 
-void trimSegments(const std::vector<TriangleSegment2> & longSegments, std::vector<TriangleSegment2> &segments)
+void trimSegments(const std::vector<TriangleSegment2> & longSegments,
+					std::vector<TriangleSegment2> &segments)
 {
 	assert(segments.size() == 0);
 	segments.reserve(longSegments.size());
 	for(unsigned int i = 0; i < longSegments.size(); i++)
 	{
-		segments.push_back(longSegments[i]);
+		TriangleSegment2 seg = longSegments[i];
+		segments.push_back(seg);
 	}
 
 	for(unsigned int i = 0; i < segments.size(); i++)
@@ -357,16 +359,20 @@ void createBisectors(const std::vector<TriangleSegment2>& segments, Scalar tol, 
 		Vector2 prevInset = getInsetDirection(prevSeg);
 		Vector2 inset = getInsetDirection(seg);
 
-		Vector2 motorCycle = inset;
+		Vector2 bisector = inset;
 
 		// if points are disjoint, do not combine both insets
 		if(prevSeg.b.sameSame(seg.a, tol) )
 		{
-			motorCycle += prevInset;
+			bisector += prevInset;
 		}
-		motorCycle.normalise();
+		else
+		{
+			assert(0);
+		}
+		bisector.normalise();
 
-		motorCycles.push_back(motorCycle);
+		motorCycles.push_back(bisector);
 	}
 }
 
@@ -405,16 +411,16 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 	bool dumpSteps = false;
 //	dumpSteps = true;
 
-//	bool byPass = false;
-//	if(byPass)
-//	{
-//		finalInsets.reserve(originalSegments.size());
-//		for(int i=0; i< originalSegments.size(); i++)
-//		{
-//			finalInsets.push_back(originalSegments[i]);
-//		}
-//		return;
-//	}
+	bool byPass = false;
+	if(byPass)
+	{
+		finalInsets.reserve(originalSegments.size());
+		for(int i=0; i< originalSegments.size(); i++)
+		{
+			finalInsets.push_back(originalSegments[i]);
+		}
+		return;
+	}
     try
     {
     	// std::cout << std::endl << "*** Shrinky::inset " << std::endl;
@@ -429,23 +435,8 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 		if(dumpSteps) segmentsDiagnostic("Insets", insets);
 
 		createBisectors(shorts, tol, bisectors);
-
-    	//std::cout << std::endl<< "*** createConvexList" << std::endl;
-		//createConvexList(currentSegments, convexVertices);
-
-		/*
-		//std::cout << endl << "*** trimConvexSegments" << std::endl;
-		cout << "-";
-		trimConvexSegments(currentSegments, convexVertices, trims);
-		currentSegments = trims;
-		assert(currentSegments.size() > 0);
-		if(dumpSteps) dumpSegments(currentSegments);
-
-		//std::cout << std::endl << "*** AddReflexSegments" << std::endl;
-		cout << "\\";
-		AddReflexSegments(segments, trims, convexVertices, finalInsets); // reflexedInsets);
-		*/
 		trimSegments(insets, finalInsets);
+
 		// currentSegments = finalInsets ;
 		if(dumpSteps) segmentsDiagnostic("Finals", finalInsets);
 		//assert(currentSegments.size() > 0);

@@ -70,7 +70,8 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		}
 		try
 		{
-			vector<TriangleSegment2> &previousInsets  = const_cast<vector<TriangleSegment2> &> (outlineLoop);
+			vector<TriangleSegment2> tmp = outlineLoop;
+			vector<TriangleSegment2> &previousInsets  = tmp;
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
 				Scalar insetDistance = insetDistances[shellId];
@@ -105,7 +106,6 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			{
 				cout << "saving to file " << ss.str() << endl;
 			}
-
 		}
 	}
 }
@@ -329,12 +329,12 @@ Slicy::~Slicy()
 	// finalize the scad file
 	if(scadFile != NULL)
 	{
-		cout << "finalize the scad file" << endl;
 		outlineScad.writeMinMax("outlines", "outlines_", sliceCount);
 		outlineScad.writeMinMax("triangles", "tri_", sliceCount);
 		outlineScad.writeMinMax("infills", "infills_", sliceCount);
 		outlineScad.writeMinMax("insets", "insets_", sliceCount);
 		outlineScad.close();
 	}
+	std::cout << "Scad file " << outlineScad.getScadFileName() << std::endl;
 }
 

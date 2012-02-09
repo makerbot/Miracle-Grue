@@ -383,11 +383,7 @@ public:
 
 	bool cutFace(Scalar z, const Face &face, TriangleSegment2& cut) const
 	{
-		//	bool mgl::sliceTriangle(const Vector3& vertex1,
-		//						 const Vector3& vertex2,
-		//							const Vector3& vertex3,
-		//							   Scalar Z, BGL::Point &a,
-		//							      BGL::Point &b)
+
 
 		const Vertex& v0 = vertices[face.vertexIndices[0]];
 		const Vertex& v1 = vertices[face.vertexIndices[1]];
