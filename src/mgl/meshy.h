@@ -247,7 +247,7 @@ void infillPathology( SegmentTable &outlineSegments,
 				const Limits& limits,
 				double z,
 				double tubeSpacing ,
-				// double angle,
+				Scalar infillShrinking,
 				Polygons &tubes);
 
 

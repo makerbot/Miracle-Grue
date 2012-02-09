@@ -192,7 +192,7 @@ public:
 typedef std::vector< std::vector<TriangleSegment2 > > SegmentTable;
 
 
-
+Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
 
 // 3d vector class... warning: may be used for points

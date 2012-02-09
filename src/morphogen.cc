@@ -150,11 +150,21 @@ int main(int argc, char *argv[], char *envp[])
 	std::vector< SliceData >  slices;
 	slices.reserve(sliceCount);
 
+	Scalar infillShrinking = config["slicer"]["infillShrinking"].asDouble();
+	Scalar insetDistanceFactor  = config["slicer"]["insetDistance"].asDouble();
+
 	cout << "Slicing" << endl;
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
 		Scalar sliceAngle = sliceId * angle;
-		slicy.slice(sliceId, extruderId, tubeSpacing, sliceAngle, nbOfShells, slices);
+		slicy.slice(sliceId,
+					extruderId,
+					tubeSpacing,
+					sliceAngle,
+					nbOfShells,
+					infillShrinking,
+					insetDistanceFactor,
+					slices);
 	}
 
 	GCoder gcoder = GCoder();
@@ -173,6 +183,8 @@ int main(int argc, char *argv[], char *envp[])
 
     gcoder.writeGcodeEndOfFile(gout);
     gout.close();
-	cout << endl << "Done!" << endl;
+
+    cout << endl << computer.clock.now() << endl;
+    cout << "Done!" << endl;
 
 }

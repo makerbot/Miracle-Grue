@@ -70,15 +70,20 @@ public:
 			double layerW,
 			const char* scadFile=NULL);
 
-	void sliceAndPath(double tubeSpacing,
-			double angle,
-			unsigned int nbOfShells,std::vector< SliceData >  &slices);
+	void sliceAndPath(	double tubeSpacing,
+						double angle,
+						unsigned int nbOfShells,
+						Scalar infillShrinking,
+						Scalar insetDistanceFactor,
+						std::vector< SliceData >  &slices);
 
 	void slice(unsigned int sliceId,
 				unsigned int extruderId,
 				Scalar tubeSpacing,
 				Scalar sliceAngle,
 				unsigned int nbOfShells,
+				Scalar infillShrinking,
+				Scalar insetDistanceFactor,
 				std::vector<SliceData> & slices);
 
 	~Slicy();

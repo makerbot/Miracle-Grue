@@ -353,6 +353,8 @@ void batchProcess(	Scalar firstLayerZ,
 					Scalar layerH,
 					Scalar layerW,
 					Scalar tubeSpacing,
+					Scalar infillShrinking,
+					Scalar insetDistanceFactor,
 					const char* outDir,
 					const std::vector<std::string> &models)
 {
@@ -382,7 +384,7 @@ void batchProcess(	Scalar firstLayerZ,
 
 		unsigned int nbOfShells = 0;
 		Slicy slicy(mesh,layerW, scadFile.c_str());
-		slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, slices);
+		slicy.sliceAndPath(tubeSpacing, angle, nbOfShells,infillShrinking, insetDistanceFactor, slices);
 
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;
@@ -424,11 +426,14 @@ void ModelReaderTestCase::testMyStls()
 	models.push_back("../stls/Water.stl");
 	models.push_back("../stls/Yodsta_Printdata.stl");
 
+	Scalar infillShrinking = 0.35;
+	Scalar insetDistanceFactor = 0.8;
 	//models.push_back("Pivot-Joint_-_Ball_End_-1X");
 	//models.push_back("Toymaker_Skull_1_Million_Polys");
 	//	models.push_back("part2");
 
-	batchProcess(firstLayerZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
+	batchProcess(firstLayerZ, layerH, layerW, tubeSpacing, infillShrinking,
+							insetDistanceFactor, outDir.c_str(), models);
 }
 
 void ModelReaderTestCase::testKnot()
@@ -438,11 +443,14 @@ void ModelReaderTestCase::testKnot()
 	Scalar layerH = 0.35;
 	Scalar layerW = 0.5833333;
 	Scalar tubeSpacing = 1.0;
+	Scalar infillShrinking = 0.35;
+	Scalar insetDistanceFactor = 0.8;
 
 	std::string outDir = "test_cases/modelReaderTestCase/output";
 	std::vector<std::string> models;
 	models.push_back("inputs/3D_Knot.stl");
-	batchProcess(firstZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
+	batchProcess(firstZ, layerH, layerW, tubeSpacing, infillShrinking,
+			insetDistanceFactor, outDir.c_str(), models);
 }
 
 void ModelReaderTestCase::testInputStls()
@@ -452,6 +460,8 @@ void ModelReaderTestCase::testInputStls()
 	Scalar layerH = 0.35;
 	Scalar layerW = 0.5833333;
 	Scalar tubeSpacing = 1.0;
+	Scalar infillShrinking = 0.35;
+	Scalar insetDistanceFactor = 0.8;
 
 	std::string outDir = "test_cases/modelReaderTestCase/output";
 	std::vector<std::string> models;
@@ -461,7 +471,8 @@ void ModelReaderTestCase::testInputStls()
 	models.push_back("inputs/hexagon.stl");
 	models.push_back("inputs/Land.stl");
 
-	batchProcess(firstZ, layerH, layerW, tubeSpacing, outDir.c_str(), models);
+	batchProcess(firstZ, layerH, layerW, tubeSpacing, infillShrinking,
+			insetDistanceFactor,outDir.c_str(), models);
 
 }
 

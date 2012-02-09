@@ -45,13 +45,11 @@ void translateSegments(std::vector<TriangleSegment2> &segments, Vector2 p);
 void translatePolygon(Polygon &polygon, Vector2 p);
 void translatePolygons(Polygons &polygons, Vector2 p);
 
-Vector2 rotate2d(const Vector2 &p, Scalar angle);
+void rotatePolygon(Polygon& polygon, Scalar angle);
+void rotatePolygons(Polygons& polygons, Scalar angle);
 
 void rotateLoops(std::vector<std::vector<TriangleSegment2> > &loops, Scalar angle);
 void rotateSegments(std::vector<TriangleSegment2> &segments, Scalar angle);
-
-void rotatePolygon(Polygon& polygon, Scalar angle);
-void rotatePolygons(Polygons& polygons, Scalar angle);
 
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
@@ -59,7 +57,12 @@ bool segmentSegmentIntersection(const TriangleSegment2 &a, const TriangleSegment
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
 
-
+bool sliceTriangle(const Vector3& vertex1,
+					 const Vector3& vertex2,
+						const Vector3& vertex3,
+						   Scalar Z,
+						   Vector3 &a,
+						   	   Vector3 &b);
 }
 
 #endif

@@ -25,11 +25,11 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
 					double layerW,
 					unsigned int sliceId,
+					Scalar insetDistanceFactor,
 					const char *scadFile,
 					std::vector<SegmentTable> &insetsForLoops)
 {
 
-	Scalar interference = 0.4;
 	assert(insetsForLoops.size() ==0);
 	//
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
@@ -64,7 +64,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 		{
 			insetTable.push_back(std::vector<TriangleSegment2>());
-			Scalar insetDistance = shellId ==0? insetDistance = 0.5*layerW:interference *layerW;
+			Scalar insetDistance = shellId ==0? insetDistance = 0.5*layerW: insetDistanceFactor *layerW;
 			insetDistances.push_back(insetDistance);
 			layerWidths.push_back(layerW);
 		}
@@ -180,11 +180,13 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 		}
 }
 
-void Slicy::slice( unsigned int sliceId,
+void Slicy::slice(  unsigned int sliceId,
 					unsigned int extruderId,
 					Scalar tubeSpacing,
 					Scalar sliceAngle,
 					unsigned int nbOfShells,
+					Scalar infillShrinking,
+					Scalar insetDistanceFactor,
 					std::vector<SliceData> & slices)
 {
     //cout << "<sliceId "  << sliceId << "/" <<  sliceCount << ">" << endl;
@@ -228,6 +230,7 @@ void Slicy::slice( unsigned int sliceId,
 						  nbOfShells,
 						  layerW,
 						  sliceId,
+						  insetDistanceFactor,
 						  scadFile,
 						  insetsForLoops);
 
@@ -274,6 +277,7 @@ void Slicy::slice( unsigned int sliceId,
 					tubularLimits,
 					slice.z,
 					tubeSpacing,
+					infillShrinking,
 					infills);
 	// rotate and translate the TUBES so they fit with the ORIGINAL outlines
 	rotatePolygons(infills, -sliceAngle);
@@ -299,6 +303,8 @@ void Slicy::slice( unsigned int sliceId,
 void Slicy::sliceAndPath(double tubeSpacing,
 							double angle,
 							unsigned int nbOfShells,
+							Scalar infillShrinking,
+							Scalar insetDistanceFactor,
 							std::vector< SliceData >  &slices)
 {
 	size_t sliceCount = sliceTable.size();
@@ -310,7 +316,7 @@ void Slicy::sliceAndPath(double tubeSpacing,
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
 		Scalar sliceAngle = sliceId * angle;
-	    slice(sliceId, extruderId, tubeSpacing, sliceAngle, nbOfShells, slices);
+	    slice(sliceId, extruderId, tubeSpacing, sliceAngle, nbOfShells, infillShrinking, insetDistanceFactor, slices);
 	}
 	cout << "Done with slicing" << endl;
 

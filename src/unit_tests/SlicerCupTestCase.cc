@@ -49,9 +49,11 @@ void miracleGrue(const char *configFilePath,
 
     assert(layerW >0);
     assert(tubeSpacing >0);
+    Scalar infillShrinking =  config["slicer"]["infillShrinking"].asDouble();
+    Scalar insetDistanceFactor = config["slicer"]["insetDistanceFactor"].asDouble();
 
 	Slicy slicy(mesh,layerW, scadFile.c_str());
-	slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, slices);
+	slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, infillShrinking, insetDistanceFactor, slices);
 
     cout << "Writing the gcode to \"" << gcodeFile << "\""<< endl;
     writeGcodeFile(config, gcodeFile.c_str(), slices);
