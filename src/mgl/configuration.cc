@@ -35,17 +35,6 @@ Configuration::Configuration()
 	platform["waitingPositionY"] = 0,
 	platform["waitingPositionZ"] = 0;
 	this->root["platform"] = platform;
-
-//	Json::Value outline;
-//	outline["enable"] = false;
-//	outline["distance"] = 3.0;
-//	this->root["shell"] = shell;
-//
-//	root["shell"] = shell;
-
-//	Json::Value gcodeOutput;
-//	gcodeOutput["filename"] = "";
-
 }
 
 void Configuration::readFromFile(const char* filename)
@@ -56,33 +45,8 @@ void Configuration::readFromFile(const char* filename)
 }
 
 
-
-/*
-Configuration::Configuration(std::string& srcFilename)
-{
-	this->root["programName"]  = GRUE_PROGRAM_NAME;
-	this->root["versionStr"]   = GRUE_VERSION,
-	this->root["machineName"]  = "";
-	this->root["firmware"]     = "";
-
-	Json::Reader reader;
-	// root built in default constructor
-	bool parsedOk = reader.parse(srcFilename, root);
-	if(parsedOk){
-		cout << "parsed ok";
-	}
-	else
-	{
-		string msg = reader.getFormattedErrorMessages();
-		cout << msg << endl;
-		assert(0);
-	}
-}
-*/
-
 Configuration::~Configuration()
 {
-//	cout << __FUNCTION__ << endl;
 	this->root.clear();
 }
 
