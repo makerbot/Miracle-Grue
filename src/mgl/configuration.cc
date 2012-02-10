@@ -22,43 +22,27 @@ using namespace mgl;
 using namespace std;
 
 Configuration::Configuration()
+	:filename("")
 {
-	this->root["programName"]  = GRUE_PROGRAM_NAME;
-	this->root["versionStr"]  = GRUE_VERSION,
-	this->root["machineName"] = "";
-	this->root["firmware"] = "";
 
-	Json::Value platform;
-	platform["temperature"] = 0;
-	platform["automated"] = false;
-	platform["waitingPositionX"] = 0;
-	platform["waitingPositionY"] = 0,
-	platform["waitingPositionZ"] = 0;
-	this->root["platform"] = platform;
 }
 
 void Configuration::readFromFile(const char* filename)
 {
+	this->filename = filename;
 	std::ifstream file(filename, std::ifstream::binary);
 	Json::Reader reader;
 	reader.parse(file , root);
 }
 
-
 Configuration::~Configuration()
 {
-	this->root.clear();
+	// not sure we need to clean up here
+	// this->root.clear();
 }
 
 std::string Configuration::asJson(Json::StyledWriter writer ) const
 {
 	return writer.write(root);
-}
-
-
-void Configuration::writeJsonConfig(ostream &ss) const
-{
-	Json::StyledWriter writer;
-	ss << this->asJson();
 }
 

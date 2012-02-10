@@ -436,6 +436,7 @@ public:
 };
 
 class LayerMess : public Messup {public: LayerMess(const char *msg)	 :Messup(msg) {	} };
+
 // Class that relates height (a scalar) to layer index (unsigned int)
 //
 // This class assumes that the model's triangles are

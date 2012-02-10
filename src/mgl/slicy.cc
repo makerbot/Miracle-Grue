@@ -161,18 +161,20 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 		{
 			#ifdef OMPFF
 			OmpGuard lock (my_lock);
-			cout << "slice "<< i << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
+			cout << "slice "<< sliceId << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
 			#endif
 
 			outlineScad.writeTrianglesModule("tri_", allTriangles, trianglesForSlice, sliceId);
 			outlineScad.writePolygons("outlines_", "color([0,0,1,1])outline", loopsPolys, zz, sliceId);
 			outlineScad.writePolygons("infills_",   "color([1,0,0,1])infill" , infillsPolys, zz, sliceId);
 
-			for(unsigned int outlineId=0; outlineId <  insetsPolys.size(); outlineId++)
+			unsigned int insetCount = insetsPolys.size();
+			for(unsigned int insetId=0; insetId <  insetCount; insetId++)
 			{
-				const Polygons &polygons = insetsPolys[outlineId];
+				const Polygons &polygons = insetsPolys[insetId];
 				stringstream ss;
-				ss << "inset_" << sliceId << "_" << outlineId << "_";
+				cout << "slice " << sliceId << " outline "<< insetId <<  " module: " << endl;
+				ss << "inset_" << sliceId << "_";
 				outlineScad.writePolygons(ss.str().c_str(), "color([0,1,0,1])infill",  polygons, zz, sliceId);
 
 				cout << ss.str().c_str() << sliceId << endl;

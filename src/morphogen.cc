@@ -80,7 +80,29 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 
 
+double doubleCheck(Json::Value &value, const char *name)
+{
+	if(value.isNull())
+	{
+		stringstream ss;
+		ss << "Missing required floating point field \""<< name << "\" in configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+	return value.asDouble();
+}
 
+unsigned int uintCheck(Json::Value &value, const char *name)
+{
+	if(value.isNull())
+	{
+		stringstream ss;
+		ss << "Missing required unsigned integer field \""<< name << "\" in configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+	return value.asUInt();
+}
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -106,6 +128,8 @@ int main(int argc, char *argv[], char *envp[])
 	MyComputer computer;
 	cout << endl;
 	cout << endl;
+
+	cout << "CHECK " << config["slicer"]["firstLayerZ"].isNull();
 
 	// std::string modelFile = models[i];
 	cout << "firstLayerZ (f) = " << config["slicer"]["firstLayerZ"].asDouble()  << endl;
@@ -134,18 +158,20 @@ int main(int argc, char *argv[], char *envp[])
 	cout << endl << endl;
 	cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	Scalar firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
+	Meshy mesh(firstLayerZ, config["slicer"]["layerH"].asDouble()); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
 	unsigned int sliceCount = mesh.readSliceTable().size();
-
-
 	unsigned int extruderId = 0;
-	Scalar tubeSpacing = config["slicer"]["tubeSpacing"].asDouble();
-	Scalar angle = config["slicer"]["angle"].asDouble();
-	unsigned int nbOfShells = config["slicer"]["nbOfShells"].asUInt();
 
-	Slicy slicy(mesh, config["slicer"]["layerW"].asDouble(), scadFile.c_str());
+	Scalar tubeSpacing = doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
+	Scalar angle = doubleCheck(config["slicer"]["angle"], "slicer.angle");
+	unsigned int nbOfShells = uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
+	Scalar layerW = doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
+
+
+	Slicy slicy(mesh, layerW, scadFile.c_str());
 
 	std::vector< SliceData >  slices;
 	slices.reserve(sliceCount);
