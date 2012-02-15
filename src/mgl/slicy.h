@@ -35,18 +35,17 @@ class Slicy
 	// config info
 	double layerW;
 	const char* scadFile;
-
+	unsigned int sliceCount;
 	// Tolerance for assembling LineSegment2s into a loop
 	Scalar tol;
 
 	// we'll record that in a scad file for you
-	ScadTubeFile outlineScad;
+	ScadTubeFile fscad  ;
 
 	//Mesh info
-	const SliceTable &sliceTable;
 	const std::vector<Triangle3> &allTriangles;
 	const Limits& limits;
-	const LayerMeasure& zTapeMeasure;
+	//-const LayerMeasure& zTapeMeasure;
 
 	// state
 	Scalar layerH;
@@ -56,6 +55,7 @@ class Slicy
 	ProgressBar progress;
 
 
+    void openScadFile(const char *scadFile, Scalar layerW, Scalar layerH, size_t sliceCount);
 	void writeScadSlice(const TriangleIndices & trianglesForSlice,
 						const Polygons & loopsPolys,
 						const Polygons & infillsPolys,
@@ -63,28 +63,35 @@ class Slicy
 						Scalar zz,
 						unsigned int sliceId );
 
+	void closeScadFile();
+
 
 
 public:
-	Slicy(const Meshy &mesh,
-			double layerW,
+	Slicy(	const std::vector<Triangle3> &allTriangles,
+			const Limits& limits,
+			Scalar layerW,
+			Scalar layerH,
+			unsigned int sliceCount,
 			const char* scadFile=NULL);
 
-	void sliceAndPath(	double tubeSpacing,
-						double angle,
-						unsigned int nbOfShells,
-						Scalar infillShrinking,
-						Scalar insetDistanceFactor,
-						std::vector< SliceData >  &slices);
+//	void sliceAndPath(	double tubeSpacing,
+//						double angle,
+//						unsigned int nbOfShells,
+//						Scalar infillShrinking,
+//						Scalar insetDistanceFactor,
+//						std::vector< SliceData >  &slices);
 
-	void slice(unsigned int sliceId,
+	bool slice( const TriangleIndices & trianglesForSlice,
+				Scalar z,
+				unsigned int sliceId,
 				unsigned int extruderId,
 				Scalar tubeSpacing,
 				Scalar sliceAngle,
 				unsigned int nbOfShells,
 				Scalar infillShrinking,
 				Scalar insetDistanceFactor,
-				std::vector<SliceData> & slices);
+				SliceData &slice);
 
 
 	~Slicy();

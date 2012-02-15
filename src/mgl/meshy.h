@@ -302,8 +302,7 @@ void sliceAndPath(	Meshy &mesh,
 
 
 
-void createPolysFromloopSegments(const SegmentTable  &outlinesSegments,
-									Polygons& loops);
+// void createPolysFromloopSegments(const SegmentTable  &outlinesSegments, Polygons& loops);
 
 // void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice);
 

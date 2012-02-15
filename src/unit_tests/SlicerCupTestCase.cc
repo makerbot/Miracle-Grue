@@ -43,6 +43,7 @@ void miracleGrue(const char *configFilePath,
     //std::vector<TubesInSlice> allTubes;
     std::vector<SliceData> slices;
     Scalar layerW = config["slicer"]["layerW"].asDouble();
+    Scalar layerH = config["slicer"]["layerH"].asDouble();
     Scalar tubeSpacing = config["slicer"]["tubeSpacing"].asDouble();
     Scalar angle = config["slicer"]["angle"].asDouble();
     unsigned int nbOfShells = config["slicer"]["nbOfShells"].asUInt();
@@ -52,9 +53,35 @@ void miracleGrue(const char *configFilePath,
     Scalar infillShrinking =  config["slicer"]["infillShrinking"].asDouble();
     Scalar insetDistanceFactor = config["slicer"]["insetDistanceFactor"].asDouble();
 
-	Slicy slicy(mesh,layerW, scadFile.c_str());
-	slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, infillShrinking, insetDistanceFactor, slices);
+    unsigned int sliceCount = mesh.readSliceTable().size();
+	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(),layerW, layerH,sliceCount, scadFile.c_str());
+	// slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, infillShrinking, insetDistanceFactor, slices);
+	cout << "Slicing" << endl;
+	unsigned int extruderId = 0;
+	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+	{
+		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
+		Scalar sliceAngle = sliceId * angle;
+		slices.push_back( SliceData(z,sliceId));
+		SliceData &slice = slices[sliceId];
 
+		bool hazNewPaths = slicy.slice( trianglesForSlice,
+										z,
+										sliceId,
+										extruderId,
+										tubeSpacing,
+										sliceAngle,
+										nbOfShells,
+										infillShrinking,
+										insetDistanceFactor,
+										slice);
+		if(!hazNewPaths)
+		{
+			cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
+			slices.pop_back();
+		}
+	}
     cout << "Writing the gcode to \"" << gcodeFile << "\""<< endl;
     writeGcodeFile(config, gcodeFile.c_str(), slices);
 }

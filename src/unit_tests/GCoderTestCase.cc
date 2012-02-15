@@ -233,7 +233,7 @@ void GCoderTestCase::testSimplePath()
 	{
     	cout.flush();
 		const SliceData &slice = slices[i];
-		gcoder.writeSlice(gout, slice, i);
+		gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeGcodeEndOfFile(gout);
@@ -417,7 +417,7 @@ void GCoderTestCase::testGridPath()
 	{
     	cout.flush();
 		const SliceData &slice = slices[i];
-		gcoder.writeSlice(gout, slice, i);
+		gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeGcodeEndOfFile(gout);
@@ -476,7 +476,7 @@ void GCoderTestCase::testMultiGrid()
 	{
     	cout.flush();
 		const SliceData &slice = slices[i];
-		gcoder.writeSlice(gout, slice, i);
+		gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeGcodeEndOfFile(gout);

@@ -205,7 +205,7 @@ public:
 	void loadData(const Configuration& config);
 	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
 
-    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData, unsigned int sliceIndex);
+    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData);
 
 private:
 
@@ -224,6 +224,8 @@ private:
     		unsigned int extruderId,
     		double z,
     		const std::vector<mgl::Polygon> &paths); // paths for an extruder in a layer
+
+
 
     void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;

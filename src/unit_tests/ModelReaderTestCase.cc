@@ -383,8 +383,37 @@ void batchProcess(	Scalar firstLayerZ,
 		std::vector< SliceData > slices;
 
 		unsigned int nbOfShells = 0;
-		Slicy slicy(mesh,layerW, scadFile.c_str());
-		slicy.sliceAndPath(tubeSpacing, angle, nbOfShells,infillShrinking, insetDistanceFactor, slices);
+		Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, mesh.readSliceTable().size(), scadFile.c_str());
+
+		//slicy.sliceAndPath(tubeSpacing, angle, nbOfShells,infillShrinking, insetDistanceFactor, slices);
+		cout << "Slicing" << endl;
+		unsigned int extruderId = 0;
+		unsigned int sliceCount = mesh.readSliceTable().size();
+		for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+		{
+			const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+			Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
+			Scalar sliceAngle = sliceId * angle;
+			slices.push_back( SliceData(z,sliceId));
+			SliceData &slice = slices[sliceId];
+
+			bool hazNewPaths = slicy.slice( trianglesForSlice,
+											z,
+											sliceId,
+											extruderId,
+											tubeSpacing,
+											sliceAngle,
+											nbOfShells,
+											infillShrinking,
+											insetDistanceFactor,
+											slice);
+			if(!hazNewPaths)
+			{
+		    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
+				slices.pop_back();
+			}
+		}
+
 
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;

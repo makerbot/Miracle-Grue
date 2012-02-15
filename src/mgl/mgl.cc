@@ -435,38 +435,4 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 }
 
 
-// segments are OK, but polys are better for paths (no repeat point)
-void segments2polygon(const std::vector<TriangleSegment2> & segments, Polygon &loop)
-{
 
-    loop.reserve(segments.size());
-    for(int j = 0;j < segments.size();j++){
-        const TriangleSegment2 & line = segments[j];
-        Vector2 p(line.a);
-        loop.push_back(p);
-        if(j == segments.size() - 1){
-            Vector2 p(line.b);
-            loop.push_back(p);
-        }
-    }
-
-}
-
-//
-// Converts vectors of segments into polygons.
-// The ordering is reversed... the last vector of segments is the first polygon
-//
-// This function accumulates a table of segments into a table of polygons
-void mgl::createPolysFromloopSegments(const SegmentTable &segmentTable,
-										Polygons& loops)
-{
-	// outline loops
-	unsigned int count = segmentTable.size();
-	for(int i=0; i < count; i++)
-	{
-		const std::vector<TriangleSegment2> &segments = segmentTable[count-1 - i];
-		loops.push_back(Polygon());
-		Polygon &loop = loops[loops.size()-1];
-	    segments2polygon(segments, loop);
-	}
-}

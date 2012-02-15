@@ -67,11 +67,10 @@ public:
 			throw (problem);
 		}
 
-	    //out.setf(ios_base::floatfield, ios::floatfield);
-		//out.precision(18);
+
 	    out.setf(std::ios::fixed);
 
-	    write_header();
+
 	}
 
 	std::string getScadFileName() const
@@ -85,74 +84,11 @@ public:
 		return (l > 0);
 	}
 
-	void writePathViz(double layerH, double layerW,  unsigned int max)
-	{
-	    out << "// use min and max to see individual layers " << std::endl;
-	    out << "min = 0;" << std::endl;
-	    out << "max = " << max << ";" << std::endl;
-	    out << "// triangles(min,max);" << std::endl;
-	    out << "outlines(min,max);" << std::endl;
-	    out << "// infills(min,max);" << std::endl;
-	    out << std::endl;
-	    out << "stl_color = [0,1,0, 0.025];" << std::endl;
 
-		out << "module out_line(x1, y1, z1, x2, y2, z2)" << std::endl;
-		out << "{" << std::endl;
-		out << "    tube(x1, y1, z1, x2, y2, z2, diameter1=0.4, diameter2=0, faces=4, thickness_over_width=1);" << std::endl;
-		out << "}" << std::endl;
-
-		out  << std::endl;
-		out << "module extrusion(x1, y1, z1, x2, y2, z2)" << std::endl;
-		out << "{" << std::endl;
-		out << "    d = " << layerH << ";" << std::endl;
-		out << "    f = 6;" << std::endl;
-		out << "    t =  "  << layerH / layerW << ";"<< std::endl;
-		out << "    corner(x1,y1,z1, diameter=d, faces=f, thickness_over_width =t );" << std::endl;
-		out << "    tube(x1, y1, z1, x2, y2, z2, diameter1=d, diameter2=d, faces=f, thickness_over_width=t);" << std::endl;
-		out << "}" << std::endl;
-
-		out << std::endl;
-		out << "module outline(points, paths)" << std::endl;
-		out << "{" << std::endl;
-		out << "    for (p= paths)" << std::endl;
-		out << "    {" << std::endl;
-		out << "       out_line(points[p[0]][0],points[p[0]][1],points[p[0]][2],points[p[1]][0],points[p[1]][1],points[p[1]][2] );" << std::endl;
-		out << "    }" << std::endl;
-		out << "}" << std::endl;
-		out << std::endl;
-
-		out << std::endl;
-		out << "module infill(points, paths)" << std::endl;
-		out << "{" << std::endl;
-		out << "     for (p= paths)" << std::endl;
-		out << "    {" << std::endl;
-		out << "        extrusion(points[p[0]][0],points[p[0]][1],points[p[0]][2], points[p[1]][0],points[p[1]][1],points[p[1]][2] );" << std::endl;
-		out << "    }" << std::endl;
-		out << "}" << std::endl;
-		out << std::endl;
-
-	    out << std::endl;
-	    out << "module outline_segments(segments)" << std::endl;
-	    out << "{" << std::endl;
-	    out << "    for(seg = segments)" << std::endl;
-	    out << "    {" << std::endl;
-	    out << "        out_line(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
-	    out << "    }" << std::endl;
-	    out << "}" << std::endl;
-	    out << std::endl;
-
-	    out << "module infill_segments(segments)" << std::endl;
-	    out << "{" << std::endl;
-	    out << "    for(seg = segments)" << std::endl;
-	    out << "    {" << std::endl;
-	    out << "        extrusion(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
-	    out << "   }" << std::endl;
-	    out << "}" << std::endl;
-	}
 
 	std::ofstream &getOut(){return out;}
 
-	void write_header()
+	void writeHeader()
     {
         out << "module corner(x, y, z, diameter, faces, thickness_over_width ){" << std::endl;
         out << "	translate([x, y, z])  scale([1,1,thickness_over_width]) sphere( r = diameter/2, $fn = faces );" << std::endl;

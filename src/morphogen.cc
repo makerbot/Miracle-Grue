@@ -158,8 +158,9 @@ int main(int argc, char *argv[], char *envp[])
 	cout << endl << endl;
 	cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
+	Scalar layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
 	Scalar firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
-	Meshy mesh(firstLayerZ, config["slicer"]["layerH"].asDouble()); // 0.35
+	Meshy mesh(firstLayerZ, layerH); // 0.35
 	loadMeshyFromStl(mesh, modelFile.c_str());
 
 	unsigned int sliceCount = mesh.readSliceTable().size();
@@ -171,10 +172,10 @@ int main(int argc, char *argv[], char *envp[])
 	Scalar layerW = doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
 
 
-	Slicy slicy(mesh, layerW, scadFile.c_str());
+	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, sliceCount, scadFile.c_str());
 
 	std::vector< SliceData >  slices;
-	slices.reserve(sliceCount);
+	slices.reserve( mesh.readSliceTable().size());
 
 	Scalar infillShrinking = config["slicer"]["infillShrinking"].asDouble();
 	Scalar insetDistanceFactor  = config["slicer"]["insetDistance"].asDouble();
@@ -182,15 +183,27 @@ int main(int argc, char *argv[], char *envp[])
 	cout << "Slicing" << endl;
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
+		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 		Scalar sliceAngle = sliceId * angle;
-		slicy.slice(sliceId,
-					extruderId,
-					tubeSpacing,
-					sliceAngle,
-					nbOfShells,
-					infillShrinking,
-					insetDistanceFactor,
-					slices);
+		slices.push_back( SliceData(z,sliceId));
+		SliceData &slice = slices[sliceId];
+
+		bool hazNewPaths = slicy.slice( trianglesForSlice,
+										z,
+										sliceId,
+										extruderId,
+										tubeSpacing,
+										sliceAngle,
+										nbOfShells,
+										infillShrinking,
+										insetDistanceFactor,
+										slice);
+		if(!hazNewPaths)
+		{
+	    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
+			slices.pop_back();
+		}
 	}
 
 	GCoder gcoder = GCoder();
@@ -204,7 +217,7 @@ int main(int argc, char *argv[], char *envp[])
         progress.tick();
         cout.flush();
         const SliceData &slice = slices[i];
-        gcoder.writeSlice(gout, slice, i);
+        gcoder.writeSlice(gout, slice);
     }
 
     gcoder.writeGcodeEndOfFile(gout);

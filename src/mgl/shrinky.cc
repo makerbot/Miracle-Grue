@@ -302,6 +302,8 @@ Shrinky::Shrinky( const char *scadFileName, // = NULL
 		out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=seg[0][2], x2=seg[1][0], y2=seg[1][1], z2=seg[1][2] , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);"<<endl;
 		out << "    }"<<endl;
 		out << "}"<<endl;
+
+		fscad.writeHeader();
 	}
 
 }
