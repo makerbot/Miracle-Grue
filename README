@@ -23,7 +23,7 @@ this is the default configuration file for Miracle-Grue. It contains information
 When miracle-grue executes, it looks for a 'miracle.config' in the current directory, unless -c is used to specify a different config file.
 
 Building.md
-A guide to install the tools on various platforms.
+A guide to install the tools on various platforms and compile the code (using scons instead of makefiles)
 
 
 
