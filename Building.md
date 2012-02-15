@@ -13,17 +13,17 @@ To clean the project (remove .o files) type:
 
 
 
-# Compiling with debug symbols:
+## Compiling with debug symbols:
 
 define MG_DEBUG=1 in your environment:
 
-  export MG_DEBUG=0
+    export MG_DEBUG=0
 
-# Compiling without QT:
+## Compiling without QT:
 
 define MG_QT=0 in your environment:
 
-  export MG_QT=0
+    export MG_QT=0
 
 # Requirements
 
