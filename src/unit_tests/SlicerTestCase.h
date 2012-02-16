@@ -16,12 +16,14 @@ private:
         //CPPUNIT_TEST( testCut );
 //		CPPUNIT_TEST( testAngles );
 //		CPPUNIT_TEST( testInset );
-        CPPUNIT_TEST( testInset2 );
+/*
+		CPPUNIT_TEST( testInset2 );
         CPPUNIT_TEST( testInset3 );
         CPPUNIT_TEST( testInset4 );
         CPPUNIT_TEST(testHexagon);
         CPPUNIT_TEST(testFutureSlice);
         CPPUNIT_TEST( testSliceTriangle );
+*/  	CPPUNIT_TEST( testOpenPoly );
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -42,6 +44,8 @@ protected:
   void testHexagon();
 
   void testFutureSlice();
+
+  void testOpenPoly();
 };
 
 

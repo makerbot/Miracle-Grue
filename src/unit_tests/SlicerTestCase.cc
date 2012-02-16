@@ -924,3 +924,86 @@ void SlicerTestCase::testFutureSlice()
 {
 
 }
+
+void SlicerTestCase::testOpenPoly()
+{
+	std::vector<TriangleSegment2> segs;
+//	segs.push_back(TriangleSegment2(Vector2(7.434659, -14.65536), Vector2(7.94381, -14.231865)));
+//	segs.push_back(TriangleSegment2(Vector2(7.94381, -14.231865), Vector2(8.820975, -13.502508)));
+//	segs.push_back(TriangleSegment2(Vector2(8.820975, -13.502508), Vector2(9.391961, -12.935432)));
+//	segs.push_back(TriangleSegment2(Vector2(9.391961, -12.935432), Vector2(9.710244, -12.61952)));
+//	segs.push_back(TriangleSegment2(Vector2(9.710244, -12.61952), Vector2(11.091417, -12.124253)));
+//	segs.push_back(TriangleSegment2(Vector2(11.091417, -12.124253), Vector2(12.563973, -11.596296)));
+//	segs.push_back(TriangleSegment2(Vector2(12.563973, -11.596296), Vector2(12.979924, -11.657763)));
+//	segs.push_back(TriangleSegment2(Vector2(12.979924, -11.657763), Vector2(14.466414, -11.877245)));
+//	segs.push_back(TriangleSegment2(Vector2(14.466414, -11.877245), Vector2(15.077935, -11.937203)));
+//	segs.push_back(TriangleSegment2(Vector2(15.077935, -11.937203), Vector2(15.289729, -11.957943)));
+//	segs.push_back(TriangleSegment2(Vector2(15.289729, -11.957943), Vector2(16.996244, -13.50096)));
+//	segs.push_back(TriangleSegment2(Vector2(16.996244, -13.50096), Vector2(17.194132, -13.679901)));
+//	segs.push_back(TriangleSegment2(Vector2(17.194132, -13.679901), Vector2(17.414868, -14.642047)));
+//	segs.push_back(TriangleSegment2(Vector2(17.414868, -14.642047), Vector2(17.773145, -16.312458)));
+//	segs.push_back(TriangleSegment2(Vector2(17.773145, -16.312458), Vector2(17.588746, -16.848552)));
+//	segs.push_back(TriangleSegment2(Vector2(17.588746, -16.848552), Vector2(16.826791, -19.062725)));
+//	segs.push_back(TriangleSegment2(Vector2(16.826791, -19.062725), Vector2(15.157747, -20.721238)));
+//	segs.push_back(TriangleSegment2(Vector2(15.157747, -20.721238), Vector2(14.633427, -21.24215)));
+//	segs.push_back(TriangleSegment2(Vector2(14.633427, -21.24215), Vector2(13.504083, -21.647671)));
+//	segs.push_back(TriangleSegment2(Vector2(13.504083, -21.647671), Vector2(11.697534, -22.121101)));
+//	segs.push_back(TriangleSegment2(Vector2(11.697534, -22.121101), Vector2(10.708377, -21.919306)));
+//	segs.push_back(TriangleSegment2(Vector2(10.708377, -21.919306), Vector2(8.849025, -21.539908)));
+//	segs.push_back(TriangleSegment2(Vector2(8.849025, -21.539908), Vector2(7.520182, -20.315774)));
+//	segs.push_back(TriangleSegment2(Vector2(7.520182, -20.315774), Vector2(6.905518, -19.749503)));
+//	segs.push_back(TriangleSegment2(Vector2(6.905518, -19.749503), Vector2(6.535313, -17.947854)));
+//	segs.push_back(TriangleSegment2(Vector2(6.535313, -17.947854), Vector2(6.38777, -17.229557)));
+//	segs.push_back(TriangleSegment2(Vector2(6.38777, -17.229557), Vector2(6.939749, -15.872024)));
+//	segs.push_back(TriangleSegment2(Vector2(6.939749, -15.872024), Vector2(7.434659, -14.65536)));
+//
+	segs.push_back(TriangleSegment2(Vector2(-4.565341, 2.34464), Vector2(-4.05619, 2.768135)));
+	segs.push_back(TriangleSegment2(Vector2(-4.05619, 2.768135), Vector2(-3.179025, 3.497492)));
+	segs.push_back(TriangleSegment2(Vector2(-3.179025, 3.497492), Vector2(-2.608039, 4.064568)));
+	segs.push_back(TriangleSegment2(Vector2(-2.608039, 4.064568), Vector2(-2.289756, 4.38048)));
+	segs.push_back(TriangleSegment2(Vector2(-2.289756, 4.38048), Vector2(-0.908583, 4.875747)));
+	segs.push_back(TriangleSegment2(Vector2(-0.908583, 4.875747), Vector2(0.563973, 5.403704)));
+	segs.push_back(TriangleSegment2(Vector2(0.563973, 5.403704), Vector2(0.979924, 5.342237)));
+	segs.push_back(TriangleSegment2(Vector2(0.979924, 5.342237), Vector2(2.466414, 5.122755)));
+	segs.push_back(TriangleSegment2(Vector2(2.466414, 5.122755), Vector2(3.077935, 5.062797)));
+	segs.push_back(TriangleSegment2(Vector2(3.077935, 5.062797), Vector2(3.289729, 5.042057)));
+	segs.push_back(TriangleSegment2(Vector2(3.289729, 5.042057), Vector2(4.996244, 3.49904)));
+	segs.push_back(TriangleSegment2(Vector2(4.996244, 3.49904), Vector2(5.194132, 3.320099)));
+	segs.push_back(TriangleSegment2(Vector2(5.194132, 3.320099), Vector2(5.414868, 2.357953)));
+	segs.push_back(TriangleSegment2(Vector2(5.414868, 2.357953), Vector2(5.773145, 0.687542)));
+	segs.push_back(TriangleSegment2(Vector2(5.773145, 0.687542), Vector2(5.588746, 0.151448)));
+	segs.push_back(TriangleSegment2(Vector2(5.588746, 0.151448), Vector2(4.826791, -2.062725)));
+	segs.push_back(TriangleSegment2(Vector2(4.826791, -2.062725), Vector2(3.157747, -3.721238)));
+	segs.push_back(TriangleSegment2(Vector2(3.157747, -3.721238), Vector2(2.633427, -4.24215)));
+	segs.push_back(TriangleSegment2(Vector2(2.633427, -4.24215), Vector2(1.504083, -4.647671)));
+	segs.push_back(TriangleSegment2(Vector2(1.504083, -4.647671), Vector2(-0.302466, -5.121101)));
+	segs.push_back(TriangleSegment2(Vector2(-0.302466, -5.121101), Vector2(-1.291623, -4.919306)));
+	segs.push_back(TriangleSegment2(Vector2(-1.291623, -4.919306), Vector2(-3.150975, -4.539908)));
+	segs.push_back(TriangleSegment2(Vector2(-3.150975, -4.539908), Vector2(-4.479818, -3.315774)));
+	segs.push_back(TriangleSegment2(Vector2(-4.479818, -3.315774), Vector2(-5.094482, -2.749503)));
+	segs.push_back(TriangleSegment2(Vector2(-5.094482, -2.749503), Vector2(-5.464687, -0.947854)));
+	segs.push_back(TriangleSegment2(Vector2(-5.464687, -0.947854), Vector2(-5.61223, -0.229557)));
+	segs.push_back(TriangleSegment2(Vector2(-5.61223, -0.229557), Vector2(-5.060251, 1.127976)));
+	segs.push_back(TriangleSegment2(Vector2(-5.060251, 1.127976), Vector2(-4.565341, 2.34464)));
+
+	SegmentTable insetTable;
+	insetTable.push_back(segs);
+
+	std::vector<TriangleSegment2> &segments = segs;
+	Shrinky shrinky("./test_cases/slicerTestCase/output/testOpen.scad", 1);
+	shrinky.dz = 0.05;
+	Scalar insetDist = 0.35;
+	unsigned int shells = 1;
+	Scalar cuttOffLength = 1e-6; //0.0001;
+
+	for (int i=0; i < shells; i++)
+	{
+		cout << "\n" << insetTable.size() << " ----- " << endl;
+		//dumpSegments(segments);
+		insetTable.push_back(std::vector<TriangleSegment2 >());
+
+		std::vector<TriangleSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
+		shrinky.inset(segments, insetDist, cuttOffLength, finalInsets);
+		segments = finalInsets;
+	}
+}

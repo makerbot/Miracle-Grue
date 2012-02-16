@@ -38,6 +38,8 @@ class Shrinky
 	int color;
 	unsigned int counter;
 	Scalar z;
+    void openScadFile(const char *scadFileName);
+    void closeScadFile();
 public:
 	Scalar dz;
 

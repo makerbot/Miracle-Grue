@@ -104,15 +104,19 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			insetDistances.push_back(insetDistance);
 			layerWidths.push_back(layerW);
 		}
+
+		vector<TriangleSegment2> masterLoop = outlineLoop;
 		try
 		{
-			vector<TriangleSegment2> tmp = outlineLoop;
-			vector<TriangleSegment2> &previousInsets  = tmp;
+			//ScadTubeFile::segment3(cout,"","segments", masterLoop, 0, 0.1);
+			vector<TriangleSegment2> &previousInsets  = masterLoop;
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
 				Scalar insetDistance = insetDistances[shellId];
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
+				assert(previousInsets.size() > 0);
 				shrinky.inset(previousInsets, insetDistance, cutoffLength, insets);
+
 				previousInsets = insets;
 			}
 		}
@@ -128,7 +132,8 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			Shrinky shriker(loopScadFile.c_str());
 			try
 			{
-				vector<TriangleSegment2> &previousInsets  = const_cast<vector<TriangleSegment2> &> (outlineLoop);
+				vector<TriangleSegment2> &previousInsets  = masterLoop;
+				ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
 				std::vector<TriangleSegment2> insets;
 				for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 				{
@@ -353,7 +358,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
     for(unsigned int i=0; i < outlinesSegments.size(); i++)
     {
     	const std::vector<TriangleSegment2 > &loop = outlinesSegments[i];
-    	if (loop.size() < 10)
+    	if (loop.size() < 2)
     	{
     		cout << "WARNING: slice " << sliceId << " loop " << i << " segments: " << loop.size() << endl;
     	}

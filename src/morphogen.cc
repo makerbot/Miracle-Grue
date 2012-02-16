@@ -182,7 +182,7 @@ int main(int argc, char *argv[], char *envp[])
 	Scalar insetCuttOffMultiplier  	= doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
 
-	Scalar cuttOffLength = 0.5 * layerW;
+	Scalar cuttOffLength = insetCuttOffMultiplier * layerW;
 
 	ProgressBar progress(sliceCount);
 	cout << "Slicing" << endl;

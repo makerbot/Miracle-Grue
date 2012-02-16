@@ -175,6 +175,17 @@ public:
 	TriangleSegment2(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
+	TriangleSegment2 & operator= (const TriangleSegment2 & other)
+	{
+		if (this != &other)
+		{
+			a = other.a;
+			b = other.b;
+
+		}
+		return *this;
+	}
+
 	Scalar squaredLength() const
 	{
 		Vector2 l = b-a;
