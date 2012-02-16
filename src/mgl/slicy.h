@@ -28,6 +28,42 @@
 namespace mgl // Miracle-Grue's geometry library
 {
 
+class ExtruderSlice
+{
+public:
+
+	Polygons loops;  // outer perimeter loop
+	Polygons infills;
+
+	std::vector<Polygons> insets;
+
+	Polygons roofing;
+};
+
+::std::ostream& operator<<(::std::ostream& os, const ExtruderSlice& x);
+
+//
+// The Slice data is contains polygons
+// for each extruder, for a slice.
+// there are multiple polygons for each extruder
+class SliceData
+{
+public:
+	// TubesInSlice tubes;
+	std::vector<ExtruderSlice > extruderSlices;
+
+	double z;
+	index_t sliceIndex;
+
+	SliceData (double z, index_t sliceIndex)
+		:z(z), sliceIndex(sliceIndex)//, tubes(z)
+	{
+
+	}
+
+};
+
+::std::ostream& operator<<(::std::ostream& os, const SliceData& x);
 
 
 class Slicy
@@ -52,7 +88,7 @@ class Slicy
 	Vector2 toRotationCenter;
 	Vector2 backToOrigin;
 	Limits tubularLimits;
-	ProgressBar progress;
+
 
 
     void openScadFile(const char *scadFile, Scalar layerW, Scalar layerH, size_t sliceCount);
@@ -75,12 +111,8 @@ public:
 			unsigned int sliceCount,
 			const char* scadFile=NULL);
 
-//	void sliceAndPath(	double tubeSpacing,
-//						double angle,
-//						unsigned int nbOfShells,
-//						Scalar infillShrinking,
-//						Scalar insetDistanceFactor,
-//						std::vector< SliceData >  &slices);
+	~Slicy();
+
 
 	bool slice( const TriangleIndices & trianglesForSlice,
 				Scalar z,
@@ -89,12 +121,13 @@ public:
 				Scalar tubeSpacing,
 				Scalar sliceAngle,
 				unsigned int nbOfShells,
+				Scalar cutoffLength,
 				Scalar infillShrinking,
 				Scalar insetDistanceFactor,
 				SliceData &slice);
 
 
-	~Slicy();
+
 };
 
 }

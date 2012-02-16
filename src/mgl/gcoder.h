@@ -14,7 +14,7 @@
 #define GCODER_H_
 
 #include "mgl/configuration.h"
-#include "mgl/meshy.h"
+#include "mgl/slicy.h"
 
 namespace mgl
 {

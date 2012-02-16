@@ -166,10 +166,10 @@ int main(int argc, char *argv[], char *envp[])
 	unsigned int sliceCount = mesh.readSliceTable().size();
 	unsigned int extruderId = 0;
 
-	Scalar tubeSpacing = doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
-	Scalar angle = doubleCheck(config["slicer"]["angle"], "slicer.angle");
+	Scalar tubeSpacing 		= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
+	Scalar angle 			= doubleCheck(config["slicer"]["angle"], "slicer.angle");
 	unsigned int nbOfShells = uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
-	Scalar layerW = doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
+	Scalar layerW 			= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
 
 
 	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, sliceCount, scadFile.c_str());
@@ -177,12 +177,19 @@ int main(int argc, char *argv[], char *envp[])
 	std::vector< SliceData >  slices;
 	slices.reserve( mesh.readSliceTable().size());
 
-	Scalar infillShrinking = config["slicer"]["infillShrinking"].asDouble();
-	Scalar insetDistanceFactor  = config["slicer"]["insetDistance"].asDouble();
+	Scalar infillShrinking 			= doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
+	Scalar insetDistanceMultiplier  = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
+	Scalar insetCuttOffMultiplier  	= doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
+
+	Scalar cuttOffLength = 0.5 * layerW;
+
+	ProgressBar progress(sliceCount);
 	cout << "Slicing" << endl;
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
+		progress.tick();
+
 		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 		Scalar sliceAngle = sliceId * angle;
@@ -196,9 +203,12 @@ int main(int argc, char *argv[], char *envp[])
 										tubeSpacing,
 										sliceAngle,
 										nbOfShells,
+										cuttOffLength,
 										infillShrinking,
-										insetDistanceFactor,
+										insetDistanceMultiplier,
 										slice);
+		// cout << endl << endl;
+		// cout << slice << endl;
 		if(!hazNewPaths)
 		{
 	    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
@@ -211,7 +221,7 @@ int main(int argc, char *argv[], char *envp[])
     std::ofstream gout(gcodeFile.c_str());
     gcoder.writeStartOfFile(gout);
 
-    ProgressBar progress(slices.size());
+    progress.reset(slices.size());
     for(int i = 0; i < slices.size(); i++)
     {
         progress.tick();

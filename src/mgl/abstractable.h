@@ -20,7 +20,9 @@
 #ifndef ABSTRACTABLE_H_
 #define ABSTRACTABLE_H_
 
+
 #include <ctime>
+#include <iostream>
 #include <sstream>
 
 
@@ -40,9 +42,16 @@ class ProgressBar
 	unsigned int ticks;
 public:
 	ProgressBar(unsigned int count)
-		: total(count), progress(0), delta(count/10)
 	{
-		std::cout << ":";
+		reset(count);
+		::std::cout << ":";
+	}
+
+	void reset(unsigned int count)
+	{
+		total = count;
+		progress = 0;
+		delta = count /10;
 	}
 
 	void tick()
@@ -53,12 +62,12 @@ public:
 		{
 			ticks = 0;
 			progress ++;
-			std::cout << ".";
-			std::cout.flush();
+			::std::cout << ".";
+			::std::cout.flush();
 		}
 		if (total ==0)
 		{
-			std::cout << "*" << std::endl;
+			::std::cout << "*" << ::std::endl;
 		}
 	}
 };
@@ -66,11 +75,11 @@ public:
 class ClockAbstractor
 {
 public:
-	std::string now() const
+	::std::string now() const
 	{
 		time_t t = time(0);   // get time now
 		struct tm * now = localtime( & t );
-		std::stringstream ss;
+		::std::stringstream ss;
 		ss << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' <<  now->tm_mday << " "
 		 <<  now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
 		return ss.str();
@@ -86,61 +95,32 @@ public:
 		return '/'; // Linux & Mac, works on Windows most times
 	}
 
-	std::string ExtractDirectory(const std::string& path) const
+	::std::string ExtractDirectory(const ::std::string& path) const
 	{
 		return path.substr(0, path.find_last_of(getPathSeparatorCharacter()) + 1);
 	}
 
-	std::string ExtractFilename(const std::string& path) const
+	::std::string ExtractFilename(const ::std::string& path) const
 	{
 		return path.substr(path.find_last_of(getPathSeparatorCharacter()) + 1);
 	}
 
-	std::string ChangeExtension(const std::string& path, const std::string& ext) const
+	::std::string ChangeExtension(const ::std::string& path, const ::std::string& ext) const
 	{
 		std::string filename = ExtractFilename(path);
 		return ExtractDirectory(path)
 				+ filename.substr(0, filename.find_last_of('.')) + ext;
 	}
 
-	std::string removeExtension(const std::string& path) const
+	::std::string removeExtension(const ::std::string& path) const
 	{
-		std::string filename = ExtractFilename(path);
+		::std::string filename = ExtractFilename(path);
 		return ExtractDirectory(path)
 				+ filename.substr(0, filename.find_last_of('.'));
 	}
 
 };
 
-/*
-class Timer
-{
-	unsigned int t0;
-
-public:
-
-	Timer()
-	{
-		start();
-	}
-
-	void start()
-	{
-		t0 = clock();
-	}
-
-	double ellapsed()
-	{
-		unsigned int t = clock() - t0;
-		return t / 10000.0;
-	}
-
-	static void init()
-	{
-		srand( time(NULL) );
-	}
-};
-*/
 
 class MyComputer
 {

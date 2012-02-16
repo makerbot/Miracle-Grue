@@ -14,7 +14,6 @@
 #define MESHY_H_
 
 #include <iomanip>
-
 #include <set>
 #include <fstream>
 
@@ -287,24 +286,6 @@ private:
 
 
 
-// little function that does everything...
-// loads an stl, makes slices, returns extrusions
-// and an OpenSCAD file for visualization
-void sliceAndPath(	Meshy &mesh,
-					double layerW,
-					double tubeSpacing,
-					double angle,
-					unsigned int nbOfShells,
-					const char* scadFile,
-					std::vector< SliceData > &allTubes);
-
-//void updateSlices(std::vector<SliceData> & slices);
-
-
-
-// void createPolysFromloopSegments(const SegmentTable  &outlinesSegments, Polygons& loops);
-
-// void addPathsForSlice(SliceData &sliceData, const TubesInSlice& tubesInSlice);
 
 } // namespace
 

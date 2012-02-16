@@ -399,7 +399,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 
 		double z = layerZ + extruders[extruderId].nozzleZ;
 
-		cout << endl <<  "Slice " << sliceData.sliceIndex << endl;
+		//cout << endl <<  "Slice " << sliceData.sliceIndex << endl;
 		if (extruderCount > 0)
 		{
 			writeSwitchExtruder(ss, extruderId);
@@ -408,7 +408,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		{
 			if(gcoding.infills && gcoding.infillFirst)
 			{
-				cout << "   Write INFILL" << endl;
+				//cout << "   Write INFILL" << endl;
 				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
 			}
 		}
@@ -420,7 +420,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		{
 			if(gcoding.outline)
 			{
-				cout << "   Write OUTLINE" << endl;
+				//cout << "   Write OUTLINE" << endl;
 				writePaths(ss, sliceData.sliceIndex, extruderId, z, loops);
 			}
 		}
@@ -437,7 +437,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				for(unsigned int i=0; i < insets.size(); i++)
 				{
 					const Polygons &polygons = insets[i];
-					cout << "   Write INSETS " << i << endl;
+					// cout << "   Write INSETS " << i << endl;
 					writePaths(ss, sliceData.sliceIndex, extruderId, z, polygons);
 				}
 			}
@@ -451,7 +451,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		{
 			if(gcoding.infills && !gcoding.infillFirst)
 			{
-				cout << "   Write INFILLS" << endl;
+				//cout << "   Write INFILLS" << endl;
 				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
 			}
 		}
@@ -537,13 +537,29 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 
 	// not do something is not an option
 	#ifdef STRONG_CHECKING
-		assert(doX || doY || doZ || doFeed);
+	if( !(doX || doY || doZ || doFeed)   )
+	{
+		stringstream ss;
+		ss << "G1 without moving where x=" << x << ", y=" << y << ", z=" << z << ", feed=" << feed ;
+		GcoderMess mixup(ss.str().c_str());
+		throw mixup;
+	}
 	#endif
 
-	assert(fabs(x) < MUCH_LARGER_THAN_THE_BUILD_PLATFORM);
-	assert(fabs(y) < MUCH_LARGER_THAN_THE_BUILD_PLATFORM);
-	assert(fabs(z) < MUCH_LARGER_THAN_THE_BUILD_PLATFORM);
+	bool bad = false;
 
+	if(fabs(x) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
+	if(fabs(y) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
+	if(fabs(z) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
+	if(feed <0 || feed > 100000) bad = true;
+
+	if(bad)
+	{
+		stringstream ss;
+		ss << "Illegal G1 move where x=" << x << ", y=" << y << ", z=" << z << ", feed=" << feed ;
+		GcoderMess mixup(ss.str().c_str());
+		throw mixup;
+	}
 
 
 	ss << "G1";

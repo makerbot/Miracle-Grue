@@ -46,6 +46,7 @@ public:
 
 	void inset(const std::vector<TriangleSegment2> & segments,
 							Scalar insetDist,
+								Scalar cutoffLength,
 									std::vector<TriangleSegment2> & finalInsets);
 	~Shrinky();
 };

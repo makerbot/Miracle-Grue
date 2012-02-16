@@ -55,8 +55,8 @@ void miracleGrue(const char *configFilePath,
 
     unsigned int sliceCount = mesh.readSliceTable().size();
 	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(),layerW, layerH,sliceCount, scadFile.c_str());
-	// slicy.sliceAndPath(tubeSpacing, angle, nbOfShells, infillShrinking, insetDistanceFactor, slices);
-	cout << "Slicing" << endl;
+
+
 	unsigned int extruderId = 0;
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
@@ -73,6 +73,7 @@ void miracleGrue(const char *configFilePath,
 										tubeSpacing,
 										sliceAngle,
 										nbOfShells,
+										2*layerW,
 										infillShrinking,
 										insetDistanceFactor,
 										slice);

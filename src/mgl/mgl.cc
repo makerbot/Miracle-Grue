@@ -9,13 +9,19 @@
 
 */
 
+#include <iomanip>
+#include <set>
+#include <fstream>
+
+
+#include <stdint.h>
+#include <cstring>
 
 #include "meshy.h"
 #include "shrinky.h"
 #include "scadtubefile.h"
 
-#include <stdint.h>
-#include <cstring>
+
 
 using namespace mgl;
 using namespace std;

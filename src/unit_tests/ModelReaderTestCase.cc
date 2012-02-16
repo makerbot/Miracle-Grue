@@ -385,7 +385,6 @@ void batchProcess(	Scalar firstLayerZ,
 		unsigned int nbOfShells = 0;
 		Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, mesh.readSliceTable().size(), scadFile.c_str());
 
-		//slicy.sliceAndPath(tubeSpacing, angle, nbOfShells,infillShrinking, insetDistanceFactor, slices);
 		cout << "Slicing" << endl;
 		unsigned int extruderId = 0;
 		unsigned int sliceCount = mesh.readSliceTable().size();
@@ -404,6 +403,7 @@ void batchProcess(	Scalar firstLayerZ,
 											tubeSpacing,
 											sliceAngle,
 											nbOfShells,
+											2 * layerW,
 											infillShrinking,
 											insetDistanceFactor,
 											slice);

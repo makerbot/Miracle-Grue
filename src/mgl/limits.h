@@ -18,12 +18,13 @@
 #include "core.h"
 
 
-namespace mgl {
-
-struct Limits
+namespace mgl
 {
 
-	friend std::ostream& operator <<(std::ostream &os, const Limits &l);
+class Limits
+{
+public:
+	friend ::std::ostream& operator << (::std::ostream &os, const Limits &l);
 
 	Scalar xMin, xMax, yMin, yMax, zMin, zMax;
 
@@ -130,7 +131,7 @@ struct Limits
 
 };
 
-std::ostream& operator<<(std::ostream& os, const Limits& l);
+::std::ostream& operator<<(::std::ostream& os, const Limits& l);
 
 
 

@@ -58,6 +58,7 @@ void createPolysFromloopSegments(const SegmentTable &segmentTable,
 
 void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
+					Scalar cutoffLength,
 					double layerW,
 					unsigned int sliceId,
 					Scalar insetDistanceFactor,
@@ -111,7 +112,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			{
 				Scalar insetDistance = insetDistances[shellId];
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
-				shrinky.inset(previousInsets, insetDistance, insets);
+				shrinky.inset(previousInsets, insetDistance, cutoffLength, insets);
 				previousInsets = insets;
 			}
 		}
@@ -132,7 +133,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 				for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 				{
 					Scalar insetDistance = insetDistances[shellId];
-					shrinky.inset(previousInsets, insetDistance, insets);
+					shrinky.inset(previousInsets, insetDistance, cutoffLength, insets);
 					previousInsets = insets;
 					insets.clear();
 				}
@@ -158,7 +159,6 @@ Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
 		 scadFile(scadFile),
 		 allTriangles(allTriangles),
 		 limits(limits),
-		 progress(sliceCount),
 		 sliceCount(sliceCount)
 {
 
@@ -182,6 +182,11 @@ Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
 	Vector3 rotationCenter = limits.center();
 
 
+}
+
+Slicy::~Slicy()
+{
+	closeScadFile();
 }
 
 void Slicy::openScadFile(const char *scadFile, double layerW,Scalar layerH ,size_t sliceCount)
@@ -235,7 +240,7 @@ void Slicy::openScadFile(const char *scadFile, double layerW,Scalar layerH ,size
 		out << "    }" << std::endl;
 		out << "}" << std::endl;
 		out << std::endl;
-
+/*
 	    out << std::endl;
 	    out << "module outline_segments(segments)" << std::endl;
 	    out << "{" << std::endl;
@@ -253,7 +258,7 @@ void Slicy::openScadFile(const char *scadFile, double layerW,Scalar layerH ,size
 	    out << "        extrusion(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
 	    out << "   }" << std::endl;
 	    out << "}" << std::endl;
-
+*/
 	    fscad.writeHeader();
 	}
 }
@@ -286,12 +291,12 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 				ss << "insets_" << sliceId << "_";
 
 				fscad.writePolygons(ss.str().c_str(), "color([0,1,0,1])infill",  polygons, zz, shellId);
-				cout << ss.str().c_str() << endl;
-				cout <<"  NB of polygons: "<< polygons.size()<<endl;
-				for (int i=0; i < polygons.size(); i++)
-				{
-					cout << "     " << polygons[i].size() << " points" << endl;
-				}
+//				cout << ss.str().c_str() << endl;
+//				cout <<"  NB of polygons: "<< polygons.size()<<endl;
+//				for (int i=0; i < polygons.size(); i++)
+//				{
+//					cout << "     " << polygons[i].size() << " points" << endl;
+//				}
 			}
 			// one function that calls all insets
 
@@ -317,9 +322,10 @@ void Slicy::closeScadFile()
 		fscad.writeMinMax("triangles", "tri_", sliceCount);
 		fscad.writeMinMax("infills", "infills_", sliceCount);
 		fscad.writeMinMax("insets", "insets_", sliceCount);
+		std::cout << "closing OpenSCad file: " << fscad.getScadFileName() << std::endl;
 		fscad.close();
 	}
-    std::cout << "closed OpenSCad file: " << fscad.getScadFileName() << std::endl;
+
 }
 
 bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
@@ -329,16 +335,12 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					Scalar tubeSpacing,
 					Scalar sliceAngle,
 					unsigned int nbOfShells,
+					Scalar cutoffLength,
 					Scalar infillShrinking,
 					Scalar insetDistanceFactor,
 					SliceData &slice)
 {
-    //cout << "<sliceId "  << sliceId << "/" <<  sliceCount << ">" << endl;
 
-    progress.tick();
-
-
-    // segmentology(allTriangles, trianglesForSlice, z, tol, outlinesSegments);
     std::vector<TriangleSegment2> segments;
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
@@ -348,11 +350,19 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	SegmentTable outlinesSegments;
     loopsAndHoleOgy(segments, tol, outlinesSegments);
 
+    for(unsigned int i=0; i < outlinesSegments.size(); i++)
+    {
+    	const std::vector<TriangleSegment2 > &loop = outlinesSegments[i];
+    	if (loop.size() < 10)
+    	{
+    		cout << "WARNING: slice " << sliceId << " loop " << i << " segments: " << loop.size() << endl;
+    	}
+    }
+
     // keep all segments of insets for each loop
     unsigned int outlineSegmentCount = outlinesSegments.size();
     if(outlineSegmentCount == 0)
     {
-
     	return false;
     }
 
@@ -366,6 +376,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 		// create shells inside the outlines (and around holes)
 		inshelligence(outlinesSegments,
 						  nbOfShells,
+						  cutoffLength,
 						  layerW,
 						  sliceId,
 						  insetDistanceFactor,
@@ -459,32 +470,41 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	return true;
 }
 
-//void Slicy::sliceAndPath(   double tubeSpacing,
-//							double angle,
-//							unsigned int nbOfShells,
-//							Scalar infillShrinking,
-//							Scalar insetDistanceFactor,
-//							std::vector< SliceData >  &slices)
-//{
-//	size_t sliceCount = sliceTable.size();
-//
-//	unsigned int extruderId = 0;
-//	assert(slices.size() == 0);
-//	slices.reserve(sliceCount);
-//
-//	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-//	{
-//		Scalar sliceAngle = sliceId * angle;
-//	    slice(sliceId, extruderId, tubeSpacing, sliceAngle, nbOfShells, infillShrinking, insetDistanceFactor, slices);
-//	}
-//	cout << "Done with slicing" << endl;
-//
-//}
-
-
-
-Slicy::~Slicy()
+std::ostream& mgl::operator<<(::std::ostream& os, const ExtruderSlice& x)
 {
-    closeScadFile();
+	os << " infill polygons: " << x.infills.size() << endl;
+	os << " perimeter loop count: " << x.loops.size() << endl;
+	for(unsigned int i =0; i < x.loops.size(); i++)
+	{
+		const Polygon &poly = x.loops[i];
+		os << "    " << i << " polygon: " << poly.size() << " points" << endl;
+	}
+	os << " nb of shells: " << x.insets.size() << endl;
+	for(unsigned int i =0; i < x.insets.size(); i++)
+	{
+		const Polygons &polys = x.insets[i];
+		os << "  shell " << i << endl;
+		for(unsigned i=0; i < polys.size(); i++)
+		{
+			const Polygon &poly = polys[i];
+			os << "    " << i << " polygon: " << poly.size() << " points" << endl;
+		}
+	}
+
+
+
+	return os;
+}
+
+std::ostream& mgl::operator<<(::std::ostream& os, const SliceData& x)
+{
+	os << "Slice " << x.sliceIndex << ", z=" << x.z << ", " << x.extruderSlices.size() << " extruders" << endl;
+	for (unsigned int i=0; i< x.extruderSlices.size(); i++)
+	{
+		os << "Extruder " << i << endl;
+		const ExtruderSlice& xt = x.extruderSlices[i];
+		os << xt;
+	}
+	return os;
 }
 

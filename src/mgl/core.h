@@ -17,8 +17,8 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
-// #include <stdio.h>
-// #define STRONG_CHECKING
+
+#define STRONG_CHECKING
 
 #define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
 #define dbgs__(s) std::cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << std::endl;
@@ -507,47 +507,7 @@ typedef std::vector<Polygon> Polygons;
 
 
 
-class ExtruderSlice
-{
-public:
 
-//	Polygons paths; // everybody!
-
-	Polygons loops;  // outer perimeter loop
-	Polygons infills;
-
-	std::vector<Polygons> insets;
-//
-//	std::vector<std::vector<mgl::Polygons> > InnerShells; // multiple inner loops per loop
-//	std::vector<mgl::Polygons> roofing;
-//	std::vector<mgl::Polygons> flooring;
-
-
-
-};
-
-//
-// The Slice data is contains polygons
-// for each extruder, for a slice.
-// there are multiple polygons for each extruder
-class SliceData
-{
-public:
-	// TubesInSlice tubes;
-
-	std::vector<ExtruderSlice > extruderSlices;
-
-	double z;
-	index_t sliceIndex;
-
-	SliceData (double z, index_t sliceIndex)
-		:z(z), sliceIndex(sliceIndex)//, tubes(z)
-	{
-
-	}
-
-};
-
-}
+} // namespace
 
 #endif

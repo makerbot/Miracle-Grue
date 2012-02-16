@@ -480,6 +480,7 @@ void SlicerTestCase::testInset()
 	Shrinky shrinky("./test_cases/slicerTestCase/output/testInsetSquare.scad", 0.25);
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
+	Scalar cuttOffLength = 1.0;
 
 	for (int i=0; i < shells; i++)
 	{
@@ -487,7 +488,7 @@ void SlicerTestCase::testInset()
 		//dumpSegments(segments);
 		insetTable.push_back(std::vector<TriangleSegment2 >());
 		std::vector<TriangleSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist,  finalInsets);
+		shrinky.inset(segments, insetDist, cuttOffLength, finalInsets);
 		segments = finalInsets;
 	}
 }
@@ -531,6 +532,7 @@ void SlicerTestCase::testInset2()
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
+	Scalar cuttOffLength = 1.0;
 
 	for (int i=0; i < shells; i++)
 	{
@@ -538,7 +540,7 @@ void SlicerTestCase::testInset2()
 		//dumpSegments(segments);
 		insetTable.push_back(std::vector<TriangleSegment2 >());
 		std::vector<TriangleSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist,  finalInsets);
+		shrinky.inset(segments, insetDist, cuttOffLength, finalInsets);
 	    segments = finalInsets;
 	}
 
@@ -563,6 +565,7 @@ void SlicerTestCase::testInset3()
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
+	Scalar cuttOffLength = 1.0;
 
 	for (int i=0; i < shells; i++)
 	{
@@ -570,7 +573,7 @@ void SlicerTestCase::testInset3()
 		//dumpSegments(segments);
 		insetTable.push_back(std::vector<TriangleSegment2 >());
 		std::vector<TriangleSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist,  finalInsets);
+		shrinky.inset(segments, insetDist,  cuttOffLength, finalInsets);
 	    segments = finalInsets;
 	}
 }
@@ -637,6 +640,7 @@ void SlicerTestCase::testInset4()
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
+	Scalar cuttOffLength = 1.0;
 
 	for (int i=0; i < shells; i++)
 	{
@@ -645,7 +649,7 @@ void SlicerTestCase::testInset4()
 		insetTable.push_back(std::vector<TriangleSegment2 >());
 
 		std::vector<TriangleSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist,  finalInsets);
+		shrinky.inset(segments, insetDist, cuttOffLength, finalInsets);
 	    segments = finalInsets;
 	}
 
@@ -675,6 +679,7 @@ void SlicerTestCase::testHexagon()
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
+	Scalar cuttOffLength = 1.0;
 
 	for (int i=0; i < shells; i++)
 	{
@@ -683,7 +688,7 @@ void SlicerTestCase::testHexagon()
 		insetTable.push_back(std::vector<TriangleSegment2 >());
 
 		std::vector<TriangleSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist,  finalInsets);
+		shrinky.inset(segments, insetDist, cuttOffLength, finalInsets);
 		segments = finalInsets;
 	}
 }

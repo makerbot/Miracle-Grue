@@ -229,7 +229,12 @@ public:
 		// std::cout << "</writePolygons>" << std::endl;
 	}
 
-	static Scalar segment3(std::ostream &out, const char* indent, const char* variableName, const std::vector<TriangleSegment2> &segments, Scalar z, Scalar dz)
+	static Scalar segment3(	std::ostream &out,
+							const char* indent,
+							const char* variableName,
+							const std::vector<TriangleSegment2> &segments,
+							Scalar z,
+							Scalar dz)
 	{
 		out << indent << variableName<< " =[" << std::endl;
 		for (int i=0; i < segments.size(); i++)
@@ -253,12 +258,12 @@ public:
 		return z;
 	}
 
-	Scalar writeSegments3(const char* name,
-						const char* implementation,
-						const std::vector<TriangleSegment2> &segments,
-						Scalar z,
-						Scalar dz,
-						int slice)
+	Scalar writeSegments3(	const char* name,
+							const char* implementation,
+							const std::vector<TriangleSegment2> &segments,
+							Scalar z,
+							Scalar dz,
+							int slice)
 	{
 		out << "module " << name << slice << "()" << std::endl;
 		out << "{" << std::endl;
@@ -269,8 +274,8 @@ public:
 		return z;
 	}
 
-	void writeSegments2(const char* name,
-						const char* implementation,
+	void writeSegments2(	const char* name,
+							const char* implementation,
 							const std::vector<TriangleSegment2> &segments,
 							Scalar z,
 							int slice)
@@ -301,7 +306,7 @@ public:
 	// writes a list of triangles into a polyhedron.
 	// It is used to display the triangles involved in a slice (layerIndex).
 
-	void writeTrianglesModule(const char* name,
+	void writeTrianglesModule(	const char* name,
 								const std::vector<Triangle3>  &allTriangles,
 								const TriangleIndices &trianglesForSlice,
 								unsigned int layerIndex)

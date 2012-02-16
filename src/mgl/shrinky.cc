@@ -259,10 +259,14 @@ void removeShortSegments(const std::vector<TriangleSegment2> &segments,
 		TriangleSegment2 newSeg(seg);
 		if(length < cutoffLength)
 		{
-			newSeg.b = nextSeg.b;
-			i++; // skip one
+			//newSeg.b = nextSeg.b;
+			//i++; // skip one
 		}
-		shorts.push_back(newSeg);
+		else
+		{
+			shorts.push_back(newSeg);
+		}
+
 //		while(length <= cutoff2  && i < segments.size()-1  )
 //		{
 //			i ++;
@@ -370,7 +374,11 @@ void createBisectors(const std::vector<TriangleSegment2>& segments, Scalar tol, 
 		}
 		else
 		{
-			assert(0);
+			stringstream ss;
+			ss << "This is not a closed polygon";
+			ShrinkyMess mixup(ss.str().c_str());
+			throw mixup;
+			// assert(0);
 		}
 		bisector.normalise();
 
@@ -380,15 +388,22 @@ void createBisectors(const std::vector<TriangleSegment2>& segments, Scalar tol, 
 
 void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 								Scalar insetDist,
-									std::vector<TriangleSegment2> &finalInsets)
+								Scalar cutoffLength,
+								std::vector<TriangleSegment2> &finalInsets)
 {
 	Scalar tol = 0.35*4;
 
     // OpenScad
 	Scalar z = 0;
     Scalar dz =0.1;
-
-	assert(originalSegments.size() > 0);
+    if(originalSegments.size() ==0)
+    {
+    		stringstream ss;
+    		ss << "Trying to inset an empty polygon";
+    		ShrinkyMess mixup(ss.str().c_str());
+    		throw mixup;
+    }
+	// assert(originalSegments.size() > 0);
 	assert(finalInsets.size() == 0);
 
 	// check that we're not playing with ourselves
@@ -402,10 +417,10 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 	std::vector<Vector2> bisectors;
 
 	unsigned int segmentCount = originalSegments.size();
-	if(segmentCount < 3)
+	if(segmentCount < 2)
 	{
 		stringstream ss;
-		ss << segmentCount << " segments are not enough to form a polygon";
+		ss << segmentCount << " line segment is not enough to create a closed polygon";
 		ShrinkyMess mixup(ss.str().c_str());
 		throw mixup;
 	}
@@ -428,8 +443,9 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
     	// std::cout << std::endl << "*** Shrinky::inset " << std::endl;
     	if(dumpSteps)segmentsDiagnostic("originalSegments", originalSegments);
 		// std::cout << std::endl << "*** RemoveShortSegments" << std::endl;
+    	shorts = originalSegments;
 
-    	removeShortSegments(originalSegments, tol , shorts);
+    	//removeShortSegments(originalSegments, tol , shorts);
     	assert(shorts.size() > 0);
     	if(dumpSteps) segmentsDiagnostic("Shorts",shorts);
 
