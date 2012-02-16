@@ -1,6 +1,35 @@
+# Introduction
+
+Miracle-Grue is a C++ project. It is a multiplatform desktop application that slices 3D models and creates GCODE files.
+
+It does not rely on Makefiles, but instead uses scons (http://www.scons.org/) as the build tool (python required).
+Once installed, you can use the following command to build the project from the Miracle-Grue directory:
+
+### Compiling the code
+
+    scons
+    
+To clean the project (remove .o files) type:
+	
+    scons -c
+
+
+
+### Compiling with debug symbols:
+
+define MG_DEBUG=1 in your environment:
+
+    export MG_DEBUG=0
+
+### Compiling without QT:
+
+define MG_QT=0 in your environment:
+
+    export MG_QT=0
+
 # Requirements
 
-Building Miracle Grue requires that you install scons and the Qt4 libraries. 
+Building Miracle Grue requires that you install scons, cppunit and the Qt4 libraries. 
 The Qt4 tools for scons are included in the source tree.
 
 QT4 is not used yet, so you can get away without installing it, if you are
@@ -42,18 +71,3 @@ If you are using an IDE (ex: Eclipse), you may find that your environment variab
 You can learn how to set your global environment here: http://stackoverflow.com/questions/7501678/set-environment-variables-on-mac-os-x-lion
 
 
-# How to build the tool pather
-
-Our build system is SCons v2.0.1 or later. You should be able to build the pather with reasonable defaults by running "scons" with no arguments.
-
-# Compiling with debug symbols:
-
-define MG_DEBUG=1 in your environment:
-
-  export MG_DEBUG=0
-
-# Compiling without QT:
-
-define MG_QT=0 in your environment:
-
-  export MG_QT=0
