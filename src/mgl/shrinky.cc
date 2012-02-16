@@ -1,4 +1,5 @@
-/**
+/*
+
    MiracleGrue - Model Generator for toolpathing. <http://www.grue.makerbot.com>
    Copyright (C) 2011 Far McKon <Far@makerbot.com>, Hugo Boyer (hugo@makerbot.com)
 

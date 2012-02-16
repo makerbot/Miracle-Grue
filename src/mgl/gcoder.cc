@@ -273,47 +273,54 @@ void GCoder::writeAnchor(std::ostream &ss)
 void GCoder::loadData(const Configuration& conf)
 {
 
-	programName = conf.root["programName"].asString();
-	versionStr  = conf.root["versionStr"].asString();
-	machineName = conf.root["machineName"].asString();
-	firmware    = conf.root["firmware"].asString();		// firmware revision
-	gcodeFilename = conf.root["gcodeFilename"].asString();
+	programName = stringCheck(conf.root["programName"],"programName");
+	versionStr  = stringCheck(conf.root["versionStr"],"versionStr");
+	machineName = stringCheck(conf.root["machineName"],"machineName");
+	firmware    = stringCheck(conf.root["firmware"], "firmware");
 
-	homing.xyMaxHoming = conf.root["homing"]["xyMaxHoming"].asBool();
-	homing.zMaxHoming  = conf.root["homing"]["zMaxHoming" ].asBool();
+	homing.xyMaxHoming = boolCheck(conf.root["homing"]["xyMaxHoming"], "homing.xyMaxHoming");
+	homing.zMaxHoming  = boolCheck(conf.root["homing"]["zMaxHoming" ], "homing.zMaxHoming");
 
-	//fastFeed = conf.root["firmware"].asString();
-	scalingFactor = conf.root["scalingFactor"].asDouble();
+	scalingFactor = doubleCheck(conf.root["scalingFactor"], "scalingFactor");
 
-	platform.temperature = conf.root["platform"]["temperature"].asDouble();
-	platform.automated   = conf.root["platform"]["automated"].asBool();
-	platform.waitingPositionX = conf.root["platform"]["waitingPositionX"].asDouble();
-	platform.waitingPositionY = conf.root["platform"]["waitingPositionY"].asDouble();
-	platform.waitingPositionZ = conf.root["platform"]["waitingPositionZ"].asDouble();
+	platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
+	platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
+	platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
+	platform.waitingPositionY = doubleCheck(conf.root["platform"]["waitingPositionY"], "platform.waitingPositionY");
+	platform.waitingPositionZ = doubleCheck(conf.root["platform"]["waitingPositionZ"], "platform.waitingPositionZ");
 
-	outline.enabled  = conf.root["outline"]["enabled"].asBool();
-	outline.distance = conf.root["outline"]["distance"].asDouble();
+	outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
+	outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
 
-	assert(conf.root["extruders"].size() >= 1);
+	if(conf.root["extruders"].size() ==0)
+	{
+		stringstream ss;
+		ss << "No extruder defined in the configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
 
 	unsigned int extruderCount = conf.root["extruders"].size();
 	for(int i=0; i < extruderCount; i++)
 	{
+		stringstream ss;
+		ss << "extruders[" << i << "].";
+		string prefix = ss.str();
+
 		ToolHead toolHead;
-		toolHead.coordinateSystemOffsetX = conf.root["extruders"][i]["waitingPositionZ"].asDouble();//(0
-		toolHead.extrusionTemperature = conf.root["extruders"][i]["extrusionTemperature"].asDouble();//(220),
-		toolHead.defaultExtrusionSpeed = conf.root["extruders"][i]["defaultExtrusionSpeed"].asDouble();//(3),
-		toolHead.slowFeedRate = conf.root["extruders"][i]["slowFeedRate"].asDouble();//(1080),
-		toolHead.slowExtrusionSpeed = conf.root["extruders"][i]["slowExtrusionSpeed"].asDouble();//(1.0),
-		toolHead.fastFeedRate = conf.root["extruders"][i]["fastFeedRate"].asDouble();//;(3000),
-		toolHead.fastExtrusionSpeed = conf.root["extruders"][i]["fastExtrusionSpeed"].asDouble();//(2.682),
-		toolHead.nozzleZ = conf.root["extruders"][i]["nozzleZ"].asDouble();
-		toolHead.reversalExtrusionSpeed = conf.root["extruders"][i]["reversalExtrusionSpeed"].asDouble();
-		toolHead.leadIn = conf.root["extruders"][i]["leadIn"].asDouble();
-		toolHead.leadOut = conf.root["extruders"][i]["leadOut"].asDouble();
+		toolHead.coordinateSystemOffsetX = doubleCheck(conf.root["extruders"][i]["coordinateSystemOffsetX"], (prefix+"coordinateSystemOffsetX").c_str() );
+		toolHead.extrusionTemperature = doubleCheck(conf.root["extruders"][i]["extrusionTemperature"], (prefix+"extrusionTemperature").c_str() );
+		toolHead.defaultExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["defaultExtrusionSpeed"], (prefix+"defaultExtrusionSpeed").c_str() );
+		toolHead.slowFeedRate = doubleCheck(conf.root["extruders"][i]["slowFeedRate"], (prefix+"slowFeedRate").c_str() );
+		toolHead.slowExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["slowExtrusionSpeed"], (prefix+"slowExtrusionSpeed").c_str() );
+		toolHead.fastFeedRate = doubleCheck(conf.root["extruders"][i]["fastFeedRate"], (prefix+"fastFeedRate").c_str() );
+		toolHead.fastExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["fastExtrusionSpeed"], (prefix+"fastExtrusionSpeed").c_str() );
+		toolHead.nozzleZ = doubleCheck(conf.root["extruders"][i]["nozzleZ"], (prefix+"nozzleZ").c_str() );
+		toolHead.reversalExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["reversalExtrusionSpeed"], (prefix+"reversalExtrusionSpeed").c_str() );
+		toolHead.leadIn = doubleCheck(conf.root["extruders"][i]["leadIn"], (prefix+"leadIn").c_str() );
+		toolHead.leadOut = doubleCheck(conf.root["extruders"][i]["leadOut"], (prefix+"leadOut").c_str() );
 		extruders.push_back(toolHead);
 	}
-
 
 	gcoding.outline = conf.root["gcoder"]["ouline"].asBool();
 	gcoding.insets = conf.root["gcoder"]["insets"].asBool();
@@ -597,6 +604,15 @@ void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 	std::string plurial = extruders.size()? "":"s";
 	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;
 
+	ss << "(" << indent << "Extrude infills: " << gcoding.infills <<  ")" << endl;
+	ss << "(" << indent;
+	if(gcoding.infillFirst)
+		ss << "first operation: Infill";
+	else
+		ss << "first operation: Insets";
+	ss << ")" << endl;
+	ss << "(" << indent << "Extrude insets: " << gcoding.insets << ")" << endl;
+	ss << "(" << indent << "Extrude outlines: " << gcoding.outline << ")" << endl;
 	ss << endl;
 }
 

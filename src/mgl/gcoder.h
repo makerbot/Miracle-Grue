@@ -182,9 +182,8 @@ class GCoder
     std::string versionStr;
     std::string machineName;	// 3D printer identifier
     std::string firmware;		// firmware revision
-    // double fastFeed;
+
     double scalingFactor;
-    std::string gcodeFilename;			// output file name
 
     Homing homing;
     GCoding gcoding;

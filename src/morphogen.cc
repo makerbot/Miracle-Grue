@@ -28,7 +28,7 @@ using namespace mgl;
 
 double numberFromCharEqualsStr(const std::string& str)
 {
-	string nb = str.substr(2, str.length()-2);
+	string nb = str.substr(3, str.length()-3);
 	double val = atof(nb.c_str());
 	return val;
 }
@@ -44,22 +44,29 @@ void parseArgs(Configuration &config,
         string str = argv[i];
         cout << i << " " << str << endl;
         if(str.find("f=") != string::npos)
+        {
         	config["slicer"]["firstLayerZ"]  = numberFromCharEqualsStr(str);
+        }
 
-        if(str.find("h=") != string::npos)
+        if(str.find("l=") != string::npos)
+        {
         	config["slicer"]["layerH"] = numberFromCharEqualsStr(str);
+        }
 
         if(str.find("w=") != string::npos)
+        {
         	config["slicer"]["layerW"] = numberFromCharEqualsStr(str);
+        }
 
         if(str.find("t=") != string::npos)
+        {
         	config["slicer"]["tubeSpacing"] = numberFromCharEqualsStr(str);
-
-        if(str.find("c=") != string::npos)
-        	config["slicer"]["configFileName"] = str.substr(2, str.length()-2);
+        }
 
         if(str.find("a=") != string::npos)
+        {
         	config["slicer"]["angle"] = numberFromCharEqualsStr(str);
+        }
     }
 }
 
@@ -80,29 +87,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 
 
-double doubleCheck(Json::Value &value, const char *name)
-{
-	if(value.isNull())
-	{
-		stringstream ss;
-		ss << "Missing required floating point field \""<< name << "\" in configuration file";
-		ConfigMess mixup(ss.str().c_str());
-		throw mixup;
-	}
-	return value.asDouble();
-}
 
-unsigned int uintCheck(Json::Value &value, const char *name)
-{
-	if(value.isNull())
-	{
-		stringstream ss;
-		ss << "Missing required unsigned integer field \""<< name << "\" in configuration file";
-		ConfigMess mixup(ss.str().c_str());
-		throw mixup;
-	}
-	return value.asUInt();
-}
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -117,6 +102,15 @@ int main(int argc, char *argv[], char *envp[])
 	string modelFile;
 	string configFileName = "miracle.config";
 
+	for(int i = 1;i < argc - 1;i++)
+    {
+        string str = argv[i];
+        if(str.find("c=") != string::npos)
+        {
+        	configFileName = str.substr(2, str.length()-2);
+        	cout << "Configuration file: " << configFileName << endl;
+        }
+    }
 
     Configuration config;
     config.readFromFile(configFileName.c_str());
@@ -132,13 +126,13 @@ int main(int argc, char *argv[], char *envp[])
 	cout << "CHECK " << config["slicer"]["firstLayerZ"].isNull();
 
 	// std::string modelFile = models[i];
-	cout << "firstLayerZ (f) = " << config["slicer"]["firstLayerZ"].asDouble()  << endl;
-	cout << "layerH (h) = " << config["slicer"]["layerH"].asDouble()  << endl;
-	cout << "layerW (w) = " << config["slicer"]["layerW"].asDouble()  << endl;
-	cout << "tubeSpacing (t) = " << config["slicer"]["tubeSpacing"].asDouble()   << endl;
-	cout << "angle (a) = " << config["slicer"]["angle"].asDouble() << endl;
-	cout << "configuration file (c) = " <<  configFileName << endl;
-	cout << endl;
+//	cout << "firstLayerZ (f) = " << config["slicer"]["firstLayerZ"].asDouble()  << endl;
+//	cout << "layerH (h) = " << config["slicer"]["layerH"].asDouble()  << endl;
+//	cout << "layerW (w) = " << config["slicer"]["layerW"].asDouble()  << endl;
+//	cout << "tubeSpacing (t) = " << config["slicer"]["tubeSpacing"].asDouble()   << endl;
+//	cout << "angle (a) = " << config["slicer"]["angle"].asDouble() << endl;
+//	cout << "configuration file (c) = " <<  configFileName << endl;
+//	cout << endl;
 
 	cout << "behold!" << endl;
 	cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
@@ -181,6 +175,8 @@ int main(int argc, char *argv[], char *envp[])
 	Scalar insetDistanceMultiplier  = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
 	Scalar insetCuttOffMultiplier  	= doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
+	GCoder gcoder = GCoder();
+	gcoder.loadData(config);
 
 	Scalar cuttOffLength = insetCuttOffMultiplier * layerW;
 
@@ -216,8 +212,7 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	}
 
-	GCoder gcoder = GCoder();
-	gcoder.loadData(config);
+
     std::ofstream gout(gcodeFile.c_str());
     gcoder.writeStartOfFile(gout);
 

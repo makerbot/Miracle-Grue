@@ -206,8 +206,10 @@ void Slicy::openScadFile(const char *scadFile, double layerW,Scalar layerH ,size
 	    out << "min = 0;" << std::endl;
 	    out << "max = " << sliceCount << ";" << std::endl;
 	    out << "// triangles(min,max);" << std::endl;
-	    out << "outlines(min,max);" << std::endl;
+	    out << "// outlines(min,max);" << std::endl;
 	    out << "// infills(min,max);" << std::endl;
+	    out << "// insets(min,max);" << std::endl;
+
 	    out << std::endl;
 	    out << "stl_color = [0,1,0, 0.025];" << std::endl;
 

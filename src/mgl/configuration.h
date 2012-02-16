@@ -31,49 +31,11 @@ namespace mgl
 
 class ConfigMess : public Messup {public: ConfigMess(const char *msg):Messup(msg) {	} };
 
-
-/*
-class ConfigValue
-{
-	Json::Value& value; // the value is inside the value
-public:
-	ConfigValue(Json::Value& value)
-	:value(value)
-	{
-
-	}
-
-	bool isMember( const char *key ) const
-	{
-		bool really = value.isMember(key);
-		return really;
-	}
-
-	ConfigValue& operator[] (const char* key)
-	{
-		return
-	}
-};
-
-
-class ConfigValue : private Json::Value
-{
-
-public:
-	bool isMember( const char *key ) const
-	{
-		bool really = Json::Value::isMember(key);
-		return really;
-	}
-
-	Value &operator[]( const char *key )
-	{
-		Value &really = Json::Value::operator[](key);
-		return really;
-	}
-};
-*/
-
+// checks that the value exist before returning it
+double doubleCheck(const Json::Value &value, const char *name);
+unsigned int uintCheck(const Json::Value &value, const char *name);
+std::string stringCheck(const Json::Value &value, const char *name);
+bool boolCheck(const Json::Value &value, const char *name);
 //
 // This class contains settings for the 3D printer, and user preferences
 //
@@ -118,18 +80,6 @@ public:
      		return this->root[key];
 		}
 
-/*
-     	/// test function for python style key existance checking
-     	bool contains(const std::string &key ) const { return this->root.isMember(key); }
-
-     	/// test function for C/C++ style key existance checking
-     	bool isMember( const std::string &key ) const { return this->root.isMember(key); }
-
-     	void writeJsonConfig(std::ostream &out) const;
-
- 		/// helper functions to easily print/view the config values as json
-      	std::string jsonFromExtruder(Json::Value& extruder) const;
-*/
       	std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
 
 

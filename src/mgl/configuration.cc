@@ -17,14 +17,59 @@
 
 #include "configuration.h"
 
-
 using namespace mgl;
 using namespace std;
 
+double mgl::doubleCheck(const Json::Value &value, const char *name)
+{
+	if(value.isNull())
+	{
+		stringstream ss;
+		ss << "Missing required floating point field \""<< name << "\" in configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+	return value.asDouble();
+}
+
+unsigned int mgl::uintCheck(const Json::Value &value, const char *name)
+{
+	if(value.isNull())
+	{
+		stringstream ss;
+		ss << "Missing required unsigned integer field \""<< name << "\" in configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+	return value.asUInt();
+}
+
+string mgl::stringCheck(const Json::Value &value, const char *name)
+{
+	if(value.isNull())
+	{
+		stringstream ss;
+		ss << "Missing required string field \""<< name << "\" in configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+	return value.asString();
+}
+
+bool mgl::boolCheck(const Json::Value &value, const char *name)
+{
+	if(value.isNull())
+	{
+		stringstream ss;
+		ss << "Missing required string field \""<< name << "\" in configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+	return value.asBool();
+}
 Configuration::Configuration()
 	:filename("")
 {
-
 }
 
 void Configuration::readFromFile(const char* filename)
