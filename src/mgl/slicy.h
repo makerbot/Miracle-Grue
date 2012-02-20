@@ -28,6 +28,21 @@
 namespace mgl // Miracle-Grue's geometry library
 {
 
+// Slicer configuration data
+struct Slicer
+{
+	Scalar layerH;
+	Scalar firstLayerZ;
+	Scalar tubeSpacing;
+	Scalar angle;
+	unsigned int nbOfShells;
+	Scalar layerW;
+	Scalar infillShrinkingMultiplier;
+	Scalar insetDistanceMultiplier;
+	Scalar insetCuttOffMultiplier;
+};
+
+
 class ExtruderSlice
 {
 public:
@@ -129,6 +144,8 @@ public:
 
 
 };
+
+
 
 }
 

@@ -39,10 +39,10 @@ std::ostream& operator << (std::ostream &os, const TriangleSegment2 &s)
 	return os;
 }
 
-void connectivityCheck(const std::vector<TriangleSegment2> &segments)
-{
-
-}
+//void connectivityCheck(const std::vector<TriangleSegment2> &segments)
+//{
+//
+//}
 
 void createConvexList(const std::vector<TriangleSegment2> &segments, std::vector<bool> &convex)
 {

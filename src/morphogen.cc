@@ -18,9 +18,7 @@
 #include <stdlib.h>
 #include "mgl/abstractable.h"
 #include "mgl/configuration.h"
-#include "mgl/gcoder.h"
-#include "mgl/slicy.h"
-//#include "FileWriterOperation.h"
+#include "mgl/miracle.h"
 
 using namespace std;
 using namespace mgl;
@@ -118,115 +116,32 @@ int main(int argc, char *argv[], char *envp[])
     parseArgs(config, argc, argv, modelFile, configFileName);
     cout << config.asJson() << endl;
 
-
 	MyComputer computer;
 	cout << endl;
 	cout << endl;
-
-	cout << "CHECK " << config["slicer"]["firstLayerZ"].isNull();
-
-	// std::string modelFile = models[i];
-//	cout << "firstLayerZ (f) = " << config["slicer"]["firstLayerZ"].asDouble()  << endl;
-//	cout << "layerH (h) = " << config["slicer"]["layerH"].asDouble()  << endl;
-//	cout << "layerW (w) = " << config["slicer"]["layerW"].asDouble()  << endl;
-//	cout << "tubeSpacing (t) = " << config["slicer"]["tubeSpacing"].asDouble()   << endl;
-//	cout << "angle (a) = " << config["slicer"]["angle"].asDouble() << endl;
-//	cout << "configuration file (c) = " <<  configFileName << endl;
-//	cout << endl;
-
 	cout << "behold!" << endl;
 	cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
 
-
-	std::string stlFiles = computer.fileSystem.removeExtension(computer.fileSystem.ExtractFilename(modelFile));
-	stlFiles += "_";
-
 	std::string scadFile = "."; // outDir
 	scadFile += computer.fileSystem.getPathSeparatorCharacter();
-	scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".scad" );
+	scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
 
 	std::string gcodeFile = ".";
 	gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
-	gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile), ".gcode" );
+	gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
 
 	cout << endl << endl;
 	cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
-	Scalar layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
-	Scalar firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
-	Meshy mesh(firstLayerZ, layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	GCoder gcoder;
+	loadGCoderData(config, gcoder);
 
-	unsigned int sliceCount = mesh.readSliceTable().size();
-	unsigned int extruderId = 0;
-
-	Scalar tubeSpacing 		= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
-	Scalar angle 			= doubleCheck(config["slicer"]["angle"], "slicer.angle");
-	unsigned int nbOfShells = uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
-	Scalar layerW 			= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
+	Slicer slicer;
+	loadSlicerDaTa(config, slicer);
 
 
-	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, sliceCount, scadFile.c_str());
+	miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str());
 
-	std::vector< SliceData >  slices;
-	slices.reserve( mesh.readSliceTable().size());
-
-	Scalar infillShrinking 			= doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
-	Scalar insetDistanceMultiplier  = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
-	Scalar insetCuttOffMultiplier  	= doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
-
-	GCoder gcoder = GCoder();
-	gcoder.loadData(config);
-
-	Scalar cuttOffLength = insetCuttOffMultiplier * layerW;
-
-	ProgressBar progress(sliceCount);
-	cout << "Slicing" << endl;
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progress.tick();
-
-		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
-		Scalar sliceAngle = sliceId * angle;
-		slices.push_back( SliceData(z,sliceId));
-		SliceData &slice = slices[sliceId];
-
-		bool hazNewPaths = slicy.slice( trianglesForSlice,
-										z,
-										sliceId,
-										extruderId,
-										tubeSpacing,
-										sliceAngle,
-										nbOfShells,
-										cuttOffLength,
-										infillShrinking,
-										insetDistanceMultiplier,
-										slice);
-		// cout << endl << endl;
-		// cout << slice << endl;
-		if(!hazNewPaths)
-		{
-	    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
-			slices.pop_back();
-		}
-	}
-
-
-    std::ofstream gout(gcodeFile.c_str());
-    gcoder.writeStartOfFile(gout);
-
-    progress.reset(slices.size());
-    for(int i = 0; i < slices.size(); i++)
-    {
-        progress.tick();
-        cout.flush();
-        const SliceData &slice = slices[i];
-        gcoder.writeSlice(gout, slice);
-    }
-
-    gcoder.writeGcodeEndOfFile(gout);
-    gout.close();
 
     cout << endl << computer.clock.now() << endl;
     cout << "Done!" << endl;

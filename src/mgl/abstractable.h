@@ -95,28 +95,33 @@ public:
 		return '/'; // Linux & Mac, works on Windows most times
 	}
 
-	::std::string ExtractDirectory(const ::std::string& path) const
+	::std::string ExtractDirectory(const char *directoryPath) const
 	{
+		const ::std::string path(directoryPath);
 		return path.substr(0, path.find_last_of(getPathSeparatorCharacter()) + 1);
 	}
 
-	::std::string ExtractFilename(const ::std::string& path) const
+	::std::string ExtractFilename(const char* filename) const
 	{
+		std::string path(filename);
 		return path.substr(path.find_last_of(getPathSeparatorCharacter()) + 1);
 	}
 
-	::std::string ChangeExtension(const ::std::string& path, const ::std::string& ext) const
+	::std::string ChangeExtension(const char* filename, const char* extension) const
 	{
-		std::string filename = ExtractFilename(path);
-		return ExtractDirectory(path)
-				+ filename.substr(0, filename.find_last_of('.')) + ext;
+		const ::std::string path(filename);
+		const ::std::string ext(extension);
+		std::string filenameStr = ExtractFilename(path.c_str());
+		return ExtractDirectory(path.c_str())
+				+ filenameStr.substr(0, filenameStr.find_last_of('.')) + ext;
 	}
 
-	::std::string removeExtension(const ::std::string& path) const
+	::std::string removeExtension(const char *filename) const
 	{
-		::std::string filename = ExtractFilename(path);
-		return ExtractDirectory(path)
-				+ filename.substr(0, filename.find_last_of('.'));
+		const ::std::string path(filename);
+		::std::string filenameStr = ExtractFilename(path.c_str());
+		return ExtractDirectory(path.c_str())
+				+ filenameStr.substr(0, filenameStr.find_last_of('.'));
 	}
 
 };

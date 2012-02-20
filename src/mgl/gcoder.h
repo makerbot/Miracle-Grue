@@ -13,11 +13,16 @@
 #ifndef GCODER_H_
 #define GCODER_H_
 
-#include "mgl/configuration.h"
 #include "mgl/slicy.h"
+
+
+#define SAMESAME_TOL 1e-6
+#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM 100000000
 
 namespace mgl
 {
+
+class GcoderMess : public Messup {	public: GcoderMess(const char *msg) :Messup(msg){} };
 
 
 struct Platform
@@ -40,10 +45,19 @@ struct Platform
 
 struct Extrusion
 {
-	double feed; // in mm per min
-	double flow; // in RPMs! its kinda meaningless
-};
+	double feedrate;
+	double flow; // RPM value for the extruder motor... not a real unit :-(
+	double leadIn;
+	double leadOut;
+	double leadInFeed;
+	double leadOutFeed;
 
+	double snortFlow;
+	double snortFeedrate;
+
+	double squirtFlow;
+	double squirtFeedrate;
+};
 
 struct Extruder
 {
@@ -55,7 +69,7 @@ struct Extruder
 		slowExtrusionSpeed(1.0),
 		fastFeedRate(3000),
 		fastExtrusionSpeed(2.682),
-		nozzleZ(0.28)
+		nozzleZ(0)
 	{}
 
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
@@ -82,13 +96,11 @@ struct Extruder
 	double leadOut;
 };
 
-#define SAMESAME_TOL 1e-6
-#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM 100000000
 
-// a toolhead extends the extruder and gives it a purpose,
-// or at least a position, feed rate and other state that
+// a gantry has a purpose,
+// or at least a position in space, feed rate and other state that
 // change as the print happens.
-struct ToolHead : Extruder
+struct Gantry
 {
 public:
 	//unsigned int nb;
@@ -98,7 +110,7 @@ public:
 	std::string comment;   // if I'm not useful by xmas please delete me
 
 
-	ToolHead()
+	Gantry()
 		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
@@ -108,7 +120,7 @@ public:
 
 
 
-private:
+public:
 	// emits a g1 command
 	void g1Motion(std::ostream &ss,
 			double x,
@@ -122,25 +134,18 @@ private:
 			bool doFeed);
 
 public:
-	void squirt(std::ostream &ss, const Vector2 &lineStart, double extrusionSpeed);
-	void snort(std::ostream &ss,  const Vector2 &lineEnd);
+	void squirt(std::ostream &ss, const Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed);
+	void snort(std::ostream &ss, const Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed);
 
+    void writeSwitchExtruder(std::ostream& ss, int extruderId);
 
-//	// emits a g1 command to the stream, all parameters are explicit
-//	void moveToLongForm(std::ostream &ss,
-//			double x,
-//			double y,
-//			double z,
-//			double feed,
-//			const char *comment);
-	// emits a g1 command to the stream, only parameters that have changed since the last g1 are explicit
+	// emits a g1 command to the stream, only writing the parameters that have changed since the last g1.
 	void g1(std::ostream &ss,
 			double x,
 			double y,
 			double z,
 			double feed,
 			const char *comment);
-
 
 };
 
@@ -161,16 +166,18 @@ public:
 	Homing():xyMaxHoming(true), zMaxHoming(false){}
 };
 
-// directives fo the Gcoder
+// directives for the Gcoder
 struct GCoding
 {
 	bool outline;
 	bool insets;
 	bool infills;
 	bool infillFirst;
+	double firstLayerExtrudeMultiplier;
+	bool dualtrick;
 };
 
-class GcoderMess : public Messup {	public: GcoderMess(const char *msg) :Messup(msg){} };
+
 
 //
 // This class contains settings for the 3D printer,
@@ -178,63 +185,64 @@ class GcoderMess : public Messup {	public: GcoderMess(const char *msg) :Messup(m
 //
 class GCoder
 {
+public:
     std::string programName;
     std::string versionStr;
-    std::string machineName;	// 3D printer identifier
-    std::string firmware;		// firmware revision
-
+    std::string machineName;
+    std::string firmware;
     double scalingFactor;
-
     Homing homing;
     GCoding gcoding;
     Platform platform;
-    Outline outline;					// outline operation configuration
-    std::vector<ToolHead> extruders;	// list of extruder tools
+    Outline outline;
+    Gantry gantry;
+
+    std::vector<Extruder> extruders;
+    double moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
 
 public:
-    void writeStartOfFile(std::ostream &ss);
-    void writeGcodeEndOfFile(std::ostream &ss) const;
 
+    void calcInfillExtrusion(	unsigned int extruderId, unsigned int sliceId,
+    								Extrusion &extrusionParams) const;
+    void calcInSetExtrusion (	unsigned int extruderId, unsigned int sliceId,
+    								unsigned int insetId,	 unsigned int insetCount,
+    								Extrusion &extrusionParams) const;
 
-    const std::vector<ToolHead> &readExtruders() const
+    void writeStartOfFile(std::ostream & ss);
+    void writeGcodeEndOfFile(std::ostream & ss) const;
+    const std::vector<Extruder> & readExtruders() const
     {
-    	return extruders;
+        return extruders;
     }
 
-	void loadData(const Configuration& config);
-	void writeGcodeConfig(std::ostream &ss, const std::string indent) const;
 
-    void writeSlice(std::ostream &ss, const mgl::SliceData& pathData);
-
+    void writeGcodeConfig(std::ostream & ss, const std::string indent) const;
+    void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
 private:
-
-	// write important config information in gcode file
-    void writeGCodeConfig(std::ostream &ss) const;
-	void writeMachineInitialization(std::ostream &ss) const;
-    void writePlatformInitialization(std::ostream &ss) const;
-    void writeExtrudersInitialization(std::ostream &ss) const;
-    void writeHomingSequence(std::ostream &ss) const;
-
-    void writeWarmupSequence(std::ostream &ss);
-    void writeAnchor(std::ostream &ss);
-
-    void writePaths(std::ostream& ss,
-    		unsigned int sliceIndex,
-    		unsigned int extruderId,
-    		double z,
-    		const std::vector<mgl::Polygon> &paths); // paths for an extruder in a layer
+    void writeGCodeConfig(std::ostream & ss) const;
+    void writeMachineInitialization(std::ostream & ss) const;
+    void writePlatformInitialization(std::ostream & ss) const;
+    void writeExtrudersInitialization(std::ostream & ss) const;
+    void writeHomingSequence(std::ostream & ss) const;
+    void writeWarmupSequence(std::ostream & ss);
+    void writeAnchor(std::ostream & ss);
 
 
+    void writePolygons(	std::ostream& ss,
+						double z,
+						const Extrusion &extrusionParams,
+						const Polygons &paths);
 
-    void writeSwitchExtruder(std::ostream& ss, int extruderId) const;
+    void writePolygon(	std::ostream & ss,
+						double z,
+						const Extrusion &extrusionParams,
+						const Polygon & polygon);
+
+
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
-
 
 };
 
-void writeGcodeFile(const Configuration &config,
-					const char* gcodeFilePath,
-					const std::vector< mgl::SliceData> & allTubes);
 
 }
 #endif

@@ -25,6 +25,7 @@
 #include "json-cpp/include/json/writer.h"
 
 #include "core.h"
+#include "gcoder.h"
 
 namespace mgl
 {
@@ -64,26 +65,33 @@ public:
      	Json::Value& operator[] (const char* key)
 		{
 
-     		if(filename.length() ==0)
-     		{
-     			ConfigMess mixup("Configuration file has not been read");
-     		    throw mixup;
-     		}
+//     		if(filename.length() ==0)
+//     		{
+//     			ConfigMess mixup("Configuration file has not been read");
+//     		    throw mixup;
+//     		}
 
-     		if( !root.isMember(key) )
-     		{
-     			std::stringstream ss;
-     			ss << "Can't find \"" << key << "\" in " << filename;
-     			ConfigMess mixup(ss.str().c_str());
-     			throw mixup;
-     		}
+//     		if( !root.isMember(key) )
+//     		{
+//     			std::stringstream ss;
+//     			ss << "Can't find \"" << key << "\" in " << filename;
+//     			ConfigMess mixup(ss.str().c_str());
+//     			throw mixup;
+//     		}
      		return this->root[key];
 		}
+     	const Json::Value& operator[] (const char* key) const
+     	{
+     		return this->root[key];
+     	}
 
       	std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
 
 
 };
+
+void loadGCoderData(const Configuration& conf, GCoder &gcoder);
+void loadSlicerDaTa( const Configuration &config, Slicer &slicer);
 
 }
 #endif /* CONFIGURATION_H_ */

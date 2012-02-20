@@ -451,6 +451,16 @@ void mgl::loopsAndHoleOgy(std::vector<TriangleSegment2> &segments,
 			}
 		}
 	}
+
+	// sanity check
+    for(unsigned int i=0; i < loops.size(); i++)
+    {
+    	const std::vector<TriangleSegment2 > &loop = loops[i];
+    	if (loop.size() < 2)
+    	{
+    		cout << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
+    	}
+    }
 }
 
 void mgl::translateLoops(SegmentTable &loops, Vector2 p)

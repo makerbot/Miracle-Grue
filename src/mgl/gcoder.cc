@@ -61,40 +61,19 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 
 }
 
-void mgl::writeGcodeFile(const Configuration &config,
-					const char* gcodeFilePath,
-					const std::vector<SliceData> & slices)
-{
-	GCoder gcoder = GCoder();
-	gcoder.loadData(config);
-    std::ofstream gout(gcodeFilePath);
-    gcoder.writeStartOfFile(gout);
 
-    ProgressBar progress(slices.size());
-    for(int i = 0; i < slices.size(); i++)
-    {
-        progress.tick();
-        cout.flush();
-        const SliceData &slice = slices[i];
-        gcoder.writeSlice(gout, slice);
-    }
-
-    gcoder.writeGcodeEndOfFile(gout);
-    gout.close();
-}
-
-
-void GCoder::writeSwitchExtruder(ostream& ss, int extruderId) const
+void Gantry::writeSwitchExtruder(ostream& ss, int extruderId)
 {
 	ss << "( extruder " << extruderId << " )" << endl;
 	ss << "( GSWITCH T" << extruderId << " )" << endl;
+	ss << "( TODO: add offset management to Gantry )" << endl;
 	ss << endl;
 }
 
 void GCoder::writeWipeExtruder(ostream& ss, int extruderId) const
 {
-	ss << "( GWIPE my extruder #" << extruderId << " )"<< endl;
-	ss << endl;
+	//ss << "( GWIPE my extruder #" << extruderId << " )"<< endl;
+	//ss << endl;
 }
 
 void GCoder::writeGCodeConfig(std::ostream &ss) const
@@ -118,9 +97,9 @@ void GCoder::writeMachineInitialization(std::ostream &ss) const
 	int toolHeadId = 0;
 	if (gcoder.extruders.size() > 1)
 	{
-		for (std::vector<ToolHead>::const_iterator i= gcoder.extruders.begin(); i!=gcoder.extruders.end(); i++)
+		for (std::vector<Extruder>::const_iterator i= gcoder.extruders.begin(); i!=gcoder.extruders.end(); i++)
 		{
-			ToolHead t = *i;
+			const Extruder &t = *i;
 			int coordinateSystemNb = toolHeadId +1;
 			ss << "G10 P" << coordinateSystemNb << " X" <<  t.coordinateSystemOffsetX << " Y0 Z-0.3" << endl;
 			toolHeadId ++;
@@ -137,9 +116,9 @@ void GCoder::writeExtrudersInitialization(std::ostream &ss) const
 	if(gcoder.extruders.size()>1) plural = "s";
 	ss << "(setup extruder" << plural <<")" <<endl;
 	int toolHeadId = 0;
-	for (std::vector<ToolHead>::const_iterator i= gcoder.extruders.begin(); i!=gcoder.extruders.end(); i++)
+	for (std::vector<Extruder>::const_iterator i= gcoder.extruders.begin(); i!=gcoder.extruders.end(); i++)
 	{
-		ToolHead t = *i;
+		const Extruder &t = *i;
 		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
 		ss << "M108 R" << t.defaultExtrusionSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << t.defaultExtrusionSpeed << " RPM)" << endl;
 		ss << "M104 S" << t.extrusionTemperature  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << t.extrusionTemperature << " degrees Celsius)" << endl;
@@ -199,7 +178,8 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 
 	if (extruderCount >0)
 	{
-		extruders[0].g1(ss, 	platform.waitingPositionX,
+
+		gantry.g1(ss, 	platform.waitingPositionX,
 				platform.waitingPositionY,
 				platform.waitingPositionZ,
 				extruders[0].fastFeedRate,
@@ -256,7 +236,7 @@ void GCoder::writeAnchor(std::ostream &ss)
 	ss << "M101        (Start Extruder)" << endl;
 	ss << "G4 P1600" << endl;
 
-	gcoder.extruders[0].g1( ss,
+	gantry.g1( ss,
 							gcoder.platform.waitingPositionX,
 							gcoder.platform.waitingPositionY,
 							0.6,
@@ -266,125 +246,127 @@ void GCoder::writeAnchor(std::ostream &ss)
 	double dx = gcoder.platform.waitingPositionX - 3.0;
 	double dy = gcoder.platform.waitingPositionY - 0.0;
 
-	gcoder.extruders[0].g1(ss, dx, dy, 0.6, 0.2 * gcoder.extruders[0].slowFeedRate , NULL);
+	gantry.g1(ss, dx, dy, 0.6, 0.2 * gcoder.extruders[0].slowFeedRate , NULL);
 	ss << endl;
 }
 
-void GCoder::loadData(const Configuration& conf)
+
+void GCoder::writePolygon(	std::ostream & ss,
+							double z,
+							const Extrusion &extrusion,
+							const Polygon & polygon)
 {
+    Vector2 start(0, 0), stop(0, 0);
 
-	programName = stringCheck(conf.root["programName"],"programName");
-	versionStr  = stringCheck(conf.root["versionStr"],"versionStr");
-	machineName = stringCheck(conf.root["machineName"],"machineName");
-	firmware    = stringCheck(conf.root["firmware"], "firmware");
+    polygonLeadInAndLeadOut(polygon, extrusion.leadIn, extrusion.leadOut, start, stop);
 
-	homing.xyMaxHoming = boolCheck(conf.root["homing"]["xyMaxHoming"], "homing.xyMaxHoming");
-	homing.zMaxHoming  = boolCheck(conf.root["homing"]["zMaxHoming" ], "homing.zMaxHoming");
+    // rapid move into position
+    gantry.g1(ss, start.x, start.y, z, extrusion.feedrate, NULL);
 
-	scalingFactor = doubleCheck(conf.root["scalingFactor"], "scalingFactor");
+    // start extruding ahead of time while moving towards the first point
+    gantry.squirt(ss, polygon[0], extrusion.squirtFeedrate, extrusion.squirtFlow, extrusion.flow);
 
-	platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
-	platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
-	platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
-	platform.waitingPositionY = doubleCheck(conf.root["platform"]["waitingPositionY"], "platform.waitingPositionY");
-	platform.waitingPositionZ = doubleCheck(conf.root["platform"]["waitingPositionZ"], "platform.waitingPositionZ");
-
-	outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
-	outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
-
-	if(conf.root["extruders"].size() ==0)
+   // for all other points in the polygon
+    for(int i=1; i < polygon.size(); i++)
 	{
-		stringstream ss;
-		ss << "No extruder defined in the configuration file";
-		ConfigMess mixup(ss.str().c_str());
-		throw mixup;
+    	// move towards the point
+		const Vector2 &p = polygon[i];
+		gantry.g1(ss, p.x, p.y, z, extrusion.feedrate, NULL);
 	}
+    //ss << "(STOP!)" << endl;
+    gantry.snort(ss, stop, extrusion.snortFeedrate, extrusion.snortFlow);
+    //ss << "(!STOP)" << endl;
+    ss << endl;
 
-	unsigned int extruderCount = conf.root["extruders"].size();
-	for(int i=0; i < extruderCount; i++)
-	{
-		stringstream ss;
-		ss << "extruders[" << i << "].";
-		string prefix = ss.str();
-
-		ToolHead toolHead;
-		toolHead.coordinateSystemOffsetX = doubleCheck(conf.root["extruders"][i]["coordinateSystemOffsetX"], (prefix+"coordinateSystemOffsetX").c_str() );
-		toolHead.extrusionTemperature = doubleCheck(conf.root["extruders"][i]["extrusionTemperature"], (prefix+"extrusionTemperature").c_str() );
-		toolHead.defaultExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["defaultExtrusionSpeed"], (prefix+"defaultExtrusionSpeed").c_str() );
-		toolHead.slowFeedRate = doubleCheck(conf.root["extruders"][i]["slowFeedRate"], (prefix+"slowFeedRate").c_str() );
-		toolHead.slowExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["slowExtrusionSpeed"], (prefix+"slowExtrusionSpeed").c_str() );
-		toolHead.fastFeedRate = doubleCheck(conf.root["extruders"][i]["fastFeedRate"], (prefix+"fastFeedRate").c_str() );
-		toolHead.fastExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["fastExtrusionSpeed"], (prefix+"fastExtrusionSpeed").c_str() );
-		toolHead.nozzleZ = doubleCheck(conf.root["extruders"][i]["nozzleZ"], (prefix+"nozzleZ").c_str() );
-		toolHead.reversalExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["reversalExtrusionSpeed"], (prefix+"reversalExtrusionSpeed").c_str() );
-		toolHead.leadIn = doubleCheck(conf.root["extruders"][i]["leadIn"], (prefix+"leadIn").c_str() );
-		toolHead.leadOut = doubleCheck(conf.root["extruders"][i]["leadOut"], (prefix+"leadOut").c_str() );
-		extruders.push_back(toolHead);
-	}
-
-	gcoding.outline = conf.root["gcoder"]["ouline"].asBool();
-	gcoding.insets = conf.root["gcoder"]["insets"].asBool();
-	gcoding.infills = conf.root["gcoder"]["infills"].asBool();
-	gcoding.infillFirst = conf.root["gcoder"]["infillFirst"].asBool();
 }
 
 
-void GCoder::writePaths(std::ostream& ss,
-						unsigned int sliceIndex,
-						unsigned int extruderId,
-						double z,
-						const Polygons &paths)
+void GCoder::writePolygons(std::ostream& ss,
+		double z,
+		const Extrusion &extrusion,
+		const Polygons &paths)
 {
-	GCoder &gcoder = *this;
-	// to each extruder its speed
-	double pathFeedrate = gcoder.scalingFactor * gcoder.extruders[extruderId].slowFeedRate;
-	double extrusionSpeed = gcoder.scalingFactor * gcoder.extruders[extruderId].fastExtrusionSpeed;
-	double leadIn = gcoder.extruders[extruderId].leadIn;
-	double leadOut = gcoder.extruders[extruderId].leadOut;
-
-	// moving all up. This is the first move for every new layer
-	gcoder.extruders[extruderId].g1(ss,
-									gcoder.extruders[extruderId].x,
-									gcoder.extruders[extruderId].y,
-									z,
-									pathFeedrate, NULL);
-
-	int pathCounter = 0;
-	for (Polygons::const_iterator pathIt = paths.begin() ; pathIt != paths.end();  pathIt ++)
+	unsigned int pathCount = paths.size();
+	for (unsigned int i = 0 ; i < pathCount;  i ++)
 	{
-		pathCounter ++; // one based, FTU (for the user!)
-		const Polygon &polygon = *pathIt;
-		ss << "(  slice " << sliceIndex << " , path " << pathCounter << "/" << paths.size() << ", " << polygon.size() << " points, "  << " )" << endl;
+
+		const Polygon &polygon = paths[i];
+		ss << "(  path " << i << "/" << pathCount << ", " << polygon.size() << " points, "  << " )" << endl;
 
 		unsigned int pointCount = polygon.size();
-		if(pointCount > 0)
+		if(pointCount < 2)
 		{
-			if(pointCount < 2)
-			{
-				stringstream ss;
-				ss << "Can't generate gcode for polygon " << pathCounter <<" with " << pointCount << " points.";
-				GcoderMess mixup(ss.str().c_str());
-				throw mixup;
-			}
-
-			Vector2 start(0,0), stop(0,0);
-			polygonLeadInAndLeadOut(polygon, leadIn, leadOut, start, stop);
-
-			gcoder.extruders[extruderId].g1(ss, start.x, start.y, z, gcoder.extruders[extruderId].fastFeedRate, NULL);
-			//ss << "(START!)" << endl;
-			gcoder.extruders[extruderId].squirt(ss, polygon[0], extrusionSpeed);
-			//ss << "(!START)" << endl;
-			for(int i=1; i < polygon.size(); i++)
-			{
-				const Vector2 &p = polygon[i];
-				gcoder.extruders[extruderId].g1(ss, p.x, p.y, z, pathFeedrate, NULL);
-			}
-			//ss << "(STOP!)" << endl;
-			gcoder.extruders[extruderId].snort(ss, stop);
-			//ss << "(!STOP)" << endl;
-			ss << endl;
+			stringstream ss;
+			ss << "Can't generate gcode for polygon " << i <<" with " << pointCount << " points.";
+			GcoderMess mixup(ss.str().c_str());
+			throw mixup;
 		}
 
+		writePolygon(ss, z, extrusion, polygon);
+	}
+}
+
+double GCoder::moveZ(ostream & ss, double z, unsigned int  extruderId, double zFeedrate)
+{
+    bool doX = false;
+    bool doY = false;
+    bool doZ = true;
+    bool doFeed = true;
+    const char *comment = NULL;
+
+    gantry.g1Motion(ss, 0, 0, z, zFeedrate, "move Z", doX, doY, doZ, doFeed);
+
+}
+
+
+void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, Extrusion &extrusion) const
+{
+	extrusion.flow = scalingFactor * extruders[extruderId].fastExtrusionSpeed;
+	extrusion.feedrate = scalingFactor * extruders[extruderId].slowFeedRate;
+
+	extrusion.leadIn =  extruders[extruderId].leadIn;
+	extrusion.leadInFeed = extruders[extruderId].fastFeedRate;
+	extrusion.leadOut = extruders[extruderId].leadOut;
+	extrusion.leadOutFeed = extruders[extruderId].fastFeedRate;
+
+	extrusion.snortFlow = extruders[extruderId].reversalExtrusionSpeed;
+	extrusion.squirtFlow = extruders[extruderId].reversalExtrusionSpeed;
+
+	extrusion.snortFeedrate = extruders[extruderId].fastFeedRate;
+	extrusion.squirtFeedrate = extruders[extruderId].fastFeedRate;
+
+	if(sliceId == 0)
+	{
+		extrusion.flow *= gcoding.firstLayerExtrudeMultiplier;
+		extrusion.feedrate *= gcoding.firstLayerExtrudeMultiplier;
+	}
+}
+
+void GCoder::calcInSetExtrusion (	unsigned int extruderId,
+										unsigned int sliceId,
+										unsigned int insetId,
+										unsigned int insetCount,
+										Extrusion &extrusion) const
+{
+	extrusion.flow = scalingFactor * extruders[extruderId].fastExtrusionSpeed;
+	extrusion.feedrate = scalingFactor * extruders[extruderId].slowFeedRate;
+
+	extrusion.leadIn =  extruders[extruderId].leadIn;
+	extrusion.leadInFeed = extruders[extruderId].fastFeedRate;
+	extrusion.leadOut = extruders[extruderId].leadOut;
+	extrusion.leadOutFeed = extruders[extruderId].fastFeedRate;
+
+	extrusion.snortFlow = extruders[extruderId].reversalExtrusionSpeed;
+	extrusion.squirtFlow = extruders[extruderId].reversalExtrusionSpeed;
+
+	extrusion.snortFeedrate =  extruders[extruderId].fastFeedRate;
+	extrusion.squirtFeedrate = extruders[extruderId].fastFeedRate;
+
+
+	if(sliceId == 0)
+	{
+		extrusion.flow *= gcoding.firstLayerExtrudeMultiplier;
+		extrusion.feedrate *= gcoding.firstLayerExtrudeMultiplier;
 	}
 }
 
@@ -396,27 +378,37 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 	unsigned int extruderCount = sliceData.extruderSlices.size();
 
 	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
+	// to each extruder its speed
+	double zFeedrate = scalingFactor * extruders[0].slowFeedRate;
+	// moving all up. This is the first move for every new layer
+
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
 	{
+	    double z = layerZ + extruders[extruderId].nozzleZ;
+	    moveZ(ss, z, extruderId, zFeedrate);
 
-		ss << "(   Extruder " <<  extruderId << ")" << endl;
+		unsigned int dualtrickId =  extruderId;
+
+	  	ss << "(   Extruder " <<  extruderId << ")" << endl;
 		const Polygons &loops = sliceData.extruderSlices[extruderId].loops;
 		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
 		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insets;
 
-		double z = layerZ + extruders[extruderId].nozzleZ;
-
 		//cout << endl <<  "Slice " << sliceData.sliceIndex << endl;
 		if (extruderCount > 0)
 		{
-			writeSwitchExtruder(ss, extruderId);
+			gantry.writeSwitchExtruder(ss, extruderId);
+
 		}
 		try
 		{
+
 			if(gcoding.infills && gcoding.infillFirst)
 			{
-				//cout << "   Write INFILL" << endl;
-				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
+				Extrusion extrusion;
+				calcInfillExtrusion(extruderId, sliceData.sliceIndex, extrusion);
+				ss << "(infills: "  << infills.size() << ")"<< endl;
+				writePolygons(ss, z, extrusion, infills);
 			}
 		}
 		catch(GcoderMess &messup)
@@ -427,8 +419,11 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		{
 			if(gcoding.outline)
 			{
+				Extrusion extrusion;
+				calcInfillExtrusion(extruderId, sliceData.sliceIndex, extrusion);
 				//cout << "   Write OUTLINE" << endl;
-				writePaths(ss, sliceData.sliceIndex, extruderId, z, loops);
+				ss << "(outlines: " << loops.size() << " )"<< endl;
+				writePolygons(ss, z, extrusion, loops);
 			}
 		}
 		catch(GcoderMess &messup)
@@ -441,11 +436,16 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 			if(gcoding.insets)
 			{
 				// each iteration is for a shell
-				for(unsigned int i=0; i < insets.size(); i++)
+				unsigned int insetCount = insets.size();
+				for(unsigned int i=0; i < insetCount; i++)
 				{
-					const Polygons &polygons = insets[i];
+					Extrusion extrusion;
+					calcInSetExtrusion(extruderId, sliceData.sliceIndex, i, insetCount, extrusion);
+					const Polygons &inset = insets[i];
 					// cout << "   Write INSETS " << i << endl;
-					writePaths(ss, sliceData.sliceIndex, extruderId, z, polygons);
+					ss << "(inset " << i << "/"<<  insetCount<< " )"<< endl;
+					writePolygons(ss, z, extrusion, inset);
+
 				}
 			}
 		}
@@ -459,7 +459,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 			if(gcoding.infills && !gcoding.infillFirst)
 			{
 				//cout << "   Write INFILLS" << endl;
-				writePaths(ss, sliceData.sliceIndex, extruderId, z, infills);
+				Extrusion extrusion;
+				calcInfillExtrusion(extruderId, sliceData.sliceIndex, extrusion);
+				writePolygons(ss, z, extrusion, infills);
 			}
 		}
 		catch(GcoderMess &messup)
@@ -477,7 +479,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 
 
 
-void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
+void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
 {
 	bool doX=false;
 	bool doY=false;
@@ -514,35 +516,32 @@ void ToolHead::g1(std::ostream &ss, double x, double y, double z, double feed, c
 	g1Motion(ss, x,y,z,feed,comment,doX,doY,doZ,doFeed);
 }
 
-void ToolHead::squirt(std::ostream &ss, const Vector2 &lineStart, double extrusionSpeed)
+void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed)
 {
-	ss << "M108 R" << this->reversalExtrusionSpeed << " (squirt)" << endl;
+
+	ss << "M108 R" <<  reversalExtrusionSpeed << " (squirt)" << endl;
 	ss << "M101" << endl;
-	g1(ss, lineStart.x, lineStart.y, z, fastFeedRate, NULL);
+	g1(ss, lineStart.x, lineStart.y, z, reversalFeedrate, NULL);
 	ss << "M108 R" << extrusionSpeed << " (good to go)" << endl;
 }
 
-void ToolHead::snort(std::ostream &ss, const Vector2 &lineEnd)
+void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed)
 {
-	double reversalFeedRate = this->fastFeedRate;
-	ss << "M108 R" << this->reversalExtrusionSpeed << "  (snort)" << endl;
+	ss << "M108 R" << reversalExtrusionSpeed << "  (snort)" << endl;
 	ss << "M102" << endl;
-	g1(ss, lineEnd.x, lineEnd.y, z, reversalFeedRate, NULL);
+	g1(ss, lineEnd.x, lineEnd.y, z, reversalFeedrate, NULL);
 	ss << "M103" << endl;
 }
 
 
 
-//// writes an extruder reversal gcode snippet
-//void reverseExtrude(std::ostream &ss, double feedrate)
-//{
-//	ss << "M108 R" << feedrate << endl;
-//	ss << "M102 (reverse)" << endl;
-//}
-void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double feed, const char *comment, bool doX, bool doY, bool doZ, bool doFeed)
+
+void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
+								double feed, const char *g1Comment,
+								bool doX, bool doY, bool doZ, bool doFeed)
 {
 
-	// not do something is not an option
+	// not do something is not an option .. under certain conditions
 	#ifdef STRONG_CHECKING
 	if( !(doX || doY || doZ || doFeed)   )
 	{
@@ -553,12 +552,12 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 	}
 	#endif
 
+	// our moto: don't be bad!
 	bool bad = false;
-
 	if(fabs(x) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
 	if(fabs(y) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
 	if(fabs(z) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
-	if(feed <0 || feed > 100000) bad = true;
+	if(feed <= 0 || feed > 100000) bad = true;
 
 	if(bad)
 	{
@@ -574,7 +573,7 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 	if(doY) ss << " Y" << y;
 	if(doZ) ss << " Z" << z;
 	if(doFeed) ss << " F" << feed;
-	if(comment) ss << " (" << comment << ")";
+	if(g1Comment) ss << " (" << g1Comment << ")";
 
 	ss << endl;
 
@@ -584,10 +583,13 @@ void ToolHead::g1Motion(std::ostream &ss, double x, double y, double z, double f
 	this->z = z;
 	this->feed = feed;
 
-	if(comment == NULL)
-		this->comment = "";
+	if(g1Comment == NULL)
+	{
+		string msg = "";
+		this->comment = msg;
+	}
 	else
-		this->comment = comment;
+		this->comment = g1Comment;
 
 }
 
@@ -615,6 +617,7 @@ void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
 	ss << "(" << indent << "Extrude outlines: " << gcoding.outline << ")" << endl;
 	ss << endl;
 }
+
 
 
 

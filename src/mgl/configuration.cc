@@ -17,6 +17,7 @@
 
 #include "configuration.h"
 
+
 using namespace mgl;
 using namespace std;
 
@@ -91,3 +92,75 @@ std::string Configuration::asJson(Json::StyledWriter writer ) const
 	return writer.write(root);
 }
 
+void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
+{
+
+	gcoder.programName = stringCheck(conf.root["programName"],"programName");
+	gcoder.versionStr  = stringCheck(conf.root["versionStr"],"versionStr");
+	gcoder.machineName = stringCheck(conf.root["machineName"],"machineName");
+	gcoder.firmware    = stringCheck(conf.root["firmware"], "firmware");
+
+	gcoder.homing.xyMaxHoming = boolCheck(conf.root["homing"]["xyMaxHoming"], "homing.xyMaxHoming");
+	gcoder.homing.zMaxHoming  = boolCheck(conf.root["homing"]["zMaxHoming" ], "homing.zMaxHoming");
+
+	gcoder.scalingFactor = doubleCheck(conf.root["scalingFactor"], "scalingFactor");
+
+	gcoder.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
+	gcoder.platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
+	gcoder.platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
+	gcoder.platform.waitingPositionY = doubleCheck(conf.root["platform"]["waitingPositionY"], "platform.waitingPositionY");
+	gcoder.platform.waitingPositionZ = doubleCheck(conf.root["platform"]["waitingPositionZ"], "platform.waitingPositionZ");
+
+	gcoder.outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
+	gcoder.outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
+
+	if(conf.root["extruders"].size() ==0)
+	{
+		stringstream ss;
+		ss << "No extruder defined in the configuration file";
+		ConfigMess mixup(ss.str().c_str());
+		throw mixup;
+	}
+
+	unsigned int extruderCount = conf.root["extruders"].size();
+	for(int i=0; i < extruderCount; i++)
+	{
+		stringstream ss;
+		ss << "extruders[" << i << "].";
+		string prefix = ss.str();
+
+		Extruder extruder;
+		extruder.coordinateSystemOffsetX = doubleCheck(conf.root["extruders"][i]["coordinateSystemOffsetX"], (prefix+"coordinateSystemOffsetX").c_str() );
+		extruder.extrusionTemperature = doubleCheck(conf.root["extruders"][i]["extrusionTemperature"], (prefix+"extrusionTemperature").c_str() );
+		extruder.defaultExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["defaultExtrusionSpeed"], (prefix+"defaultExtrusionSpeed").c_str() );
+		extruder.slowFeedRate = doubleCheck(conf.root["extruders"][i]["slowFeedRate"], (prefix+"slowFeedRate").c_str() );
+		extruder.slowExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["slowExtrusionSpeed"], (prefix+"slowExtrusionSpeed").c_str() );
+		extruder.fastFeedRate = doubleCheck(conf.root["extruders"][i]["fastFeedRate"], (prefix+"fastFeedRate").c_str() );
+		extruder.fastExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["fastExtrusionSpeed"], (prefix+"fastExtrusionSpeed").c_str() );
+		extruder.nozzleZ = doubleCheck(conf.root["extruders"][i]["nozzleZ"], (prefix+"nozzleZ").c_str() );
+		extruder.reversalExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["reversalExtrusionSpeed"], (prefix+"reversalExtrusionSpeed").c_str() );
+		extruder.leadIn = doubleCheck(conf.root["extruders"][i]["leadIn"], (prefix+"leadIn").c_str() );
+		extruder.leadOut = doubleCheck(conf.root["extruders"][i]["leadOut"], (prefix+"leadOut").c_str() );
+		gcoder.extruders.push_back(extruder);
+	}
+
+	gcoder.gcoding.outline = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
+	gcoder.gcoding.insets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
+	gcoder.gcoding.infills = boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
+	gcoder.gcoding.infillFirst = boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
+	gcoder.gcoding.firstLayerExtrudeMultiplier = doubleCheck(conf.root["gcoder"]["firstLayerExtrudeMultiplier"], "gcoder.firstLayerExtrudeMultiplier");
+	gcoder.gcoding.dualtrick = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
+}
+
+void mgl::loadSlicerDaTa( const Configuration &config, Slicer &slicer)
+{
+	slicer.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
+	slicer.firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
+	slicer.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
+	slicer.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
+	slicer.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
+	slicer.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
+	slicer.infillShrinkingMultiplier 		= doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
+	slicer.insetDistanceMultiplier  = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
+	slicer.insetCuttOffMultiplier  	= doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
+}

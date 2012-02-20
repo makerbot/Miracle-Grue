@@ -52,16 +52,18 @@ class ScadTubeFile
 
 public:
 	ScadTubeFile()
+	:filename("")
 	{}
 
-	void open(const char* filename)
+	void open(const char* path)
 	{
 		assert(isOpened() == false);
-		out.open(filename, std::ios::out);
+		filename = path;
+		out.open(filename.c_str(), std::ios::out);
 		if(!out.good())
 		{
 			std::stringstream ss;
-			ss << "Can't open \"" << filename << "\"";
+			ss << "Can't open \"" << filename.c_str() << "\"";
 			std::cout << "ERROR: " << ss.str() << std::endl;
 			ScadMess problem(ss.str().c_str());
 			throw (problem);

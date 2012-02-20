@@ -33,7 +33,6 @@ bool mgl::sameSame(Scalar a, Scalar b, Scalar tol)
 }
 
 
-
 // returns the angle between 2 vectors
 Scalar mgl::angleFromVector2s(const Vector2 &a, const Vector2 &b)
 {
@@ -64,9 +63,6 @@ std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
 }
 
 
-
-
-
 Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
 {
 	// rotate point
@@ -95,7 +91,6 @@ void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
 		rotatePolygon(polygon, angle);
 	}
 }
-
 
 
 void dumpSegments(const char* prefix, const std::vector<TriangleSegment2> &segments)
@@ -422,8 +417,6 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 				{
 					end.x = x;
 					end.y = y;
-					infills.push_back(Polygon());
-					Polygon &poly = infills.back();
 
 					if(shrinkLine(end, begin, infillShrinking))
 					{

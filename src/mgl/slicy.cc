@@ -128,7 +128,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 
 			stringstream ss;
 			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
-			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str());
+			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str().c_str());
 			Shrinky shriker(loopScadFile.c_str());
 			try
 			{
@@ -352,29 +352,25 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 
-    // get the "real" 2D paths for outline
-	// lets order the segment into loops.
-	SegmentTable outlinesSegments;
-    loopsAndHoleOgy(segments, tol, outlinesSegments);
 
-    for(unsigned int i=0; i < outlinesSegments.size(); i++)
-    {
-    	const std::vector<TriangleSegment2 > &loop = outlinesSegments[i];
-    	if (loop.size() < 2)
-    	{
-    		cout << "WARNING: slice " << sliceId << " loop " << i << " segments: " << loop.size() << endl;
-    	}
-    }
 
     // keep all segments of insets for each loop
-    unsigned int outlineSegmentCount = outlinesSegments.size();
-    if(outlineSegmentCount == 0)
+    unsigned int cuts = segments.size();
+    if(cuts == 0)
     {
-    	return false;
+    	return false; // no segments for this slice.
     }
 
 
 	slice.extruderSlices.push_back(ExtruderSlice());
+
+	// get the "real" 2D paths for outline
+	// lets order the segment into loops.
+	SegmentTable outlinesSegments;
+	loopsAndHoleOgy(segments, tol, outlinesSegments);
+	unsigned int outlineSegmentCount = outlinesSegments.size();
+	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
+
 
 	std::vector<SegmentTable> insetsForLoops;
 
@@ -415,27 +411,10 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 		}
 
 
-
-//		for(unsigned int outlineId=0; outlineId <  insetsForLoops.size(); outlineId++)
-//		{
-//			// cout << "inset oultline processing: " << outlineId << " of " << outlinesSegments.size() << endl;
-//			// cout << "inset size " << slice.extruderSlices[extruderId].insets.size() << endl;
-//			slice.extruderSlices[extruderId].insets.push_back(Polygons());
-//			Polygons &polygons = *slice.extruderSlices[extruderId].insets.rbegin();
-//			// contains all the insets for a single loop
-//			SegmentTable &insetTable = insetsForLoops[outlineId];
-//			createPolysFromloopSegments(insetTable , polygons );
-//		}
 	}
-	//cout << " ** " << outlinesSegments.size() << " ** " <<  insetsForLoops.size() << endl;
-
-
 
 	// deep copy the the infill boundaries
 	SegmentTable rotatedSegments = outlinesSegments; // insetsForLoops[0];
-
-	//dbgs__("insetforloops size " << insetsForLoops.size() )
-	// deep copy the smallest insets as the infill boundaries
 
 	if(insetsForLoops.size() > 0)
 	{
@@ -445,9 +424,6 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	translateLoops(rotatedSegments, toRotationCenter);
 	// rotate the outlines before generating the tubes...
 	rotateLoops(rotatedSegments, sliceAngle);
-
-	//cout << "<Pathology nb of loops ";
-	//cout << rotatedSegments.size() << ">" << endl;
 
 	Polygons& infills = slice.extruderSlices[extruderId].infills;
 	infillPathology(rotatedSegments,
@@ -460,13 +436,11 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	rotatePolygons(infills, -sliceAngle);
 	translatePolygons(infills, backToOrigin);
 
-	//	cout << "</Pathology>" << endl;
 
-	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
+
 
 	// write the scad file
 	// only one thread at a time in here
-
 	writeScadSlice( trianglesForSlice,
 					slice.extruderSlices[extruderId].loops,
 					slice.extruderSlices[extruderId].infills,

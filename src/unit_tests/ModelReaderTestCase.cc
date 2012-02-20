@@ -364,12 +364,12 @@ void batchProcess(	Scalar firstLayerZ,
 	{
 
 		std::string modelFile = models[i];
-		std::string stlFiles = fileSystem.removeExtension(fileSystem.ExtractFilename(models[i]));
+		std::string stlFiles = fileSystem.removeExtension(fileSystem.ExtractFilename(models[i].c_str()).c_str());
 		stlFiles += "_";
 
 		std::string scadFile = outDir;
 		scadFile += "/";
-		scadFile += fileSystem.ChangeExtension(fileSystem.ExtractFilename(models[i]), ".scad" )  ;
+		scadFile += fileSystem.ChangeExtension(fileSystem.ExtractFilename(models[i].c_str()).c_str(), ".scad" )  ;
 
 		cout << modelFile << " to " << scadFile << endl;
 
