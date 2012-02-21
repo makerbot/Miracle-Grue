@@ -329,6 +329,12 @@ void Slicy::closeScadFile()
 		fscad.writeMinMax("triangles", "tri_", sliceCount);
 		fscad.writeMinMax("infills", "infills_", sliceCount);
 		fscad.writeMinMax("insets", "insets_", sliceCount);
+
+		std::ofstream &out = fscad.getOut();
+		out << "// python snippets to make segments from polygon points" << endl;
+		out << "// segments = [[ points[i], points[i+1]] for i in range(len(points)-1 ) ]" << endl;
+        out << "// s = [\"segs.push_back(TriangleSegment2(Vector2(%s, %s), Vector2(%s, %s)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
+
 		std::cout << "closing OpenSCad file: " << fscad.getScadFileName() << std::endl;
 		fscad.close();
 	}

@@ -61,5 +61,6 @@ void mgl::miracleGrue(	GCoder &gcoder,
 //			slices.pop_back();
 		}
 	}
+
     gout.close();
 }

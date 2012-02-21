@@ -140,6 +140,10 @@ public:
         {
             (*this) *= ((Scalar)1)/l;
         }
+        else
+        {
+        	assert(0);
+        }
     }
 
     Vector2 unit() const
@@ -192,7 +196,7 @@ public:
 		return l.squaredMagnitude();
 	}
 
-	Scalar length()
+	Scalar length() const
 	{
 		Scalar l = squaredLength();
 		l = sqrt(l);
@@ -351,7 +355,8 @@ public:
 
 		offsetDir.x = -n.x;
 		offsetDir.y = -n.y;
-		offsetDir.normalise();
+		if(offsetDir.squaredMagnitude() >0 )
+			offsetDir.normalise();
 	}
 
 	// slices this triangle into a segment that

@@ -11,20 +11,29 @@ class SlicerTestCase : public CPPUNIT_NS::TestFixture
 private:
 
 	CPPUNIT_TEST_SUITE( SlicerTestCase );
+
+        // DOES NOT WORK YET!
+        //        CPPUNIT_TEST(testFutureSlice);
         //CPPUNIT_TEST( testSlicyKnot_44 );
         //CPPUNIT_TEST( testNormals );
         //CPPUNIT_TEST( testCut );
-//		CPPUNIT_TEST( testAngles );
-//		CPPUNIT_TEST( testInset );
-/*
-		CPPUNIT_TEST( testInset2 );
-        CPPUNIT_TEST( testInset3 );
-        CPPUNIT_TEST( testInset4 );
-        CPPUNIT_TEST(testHexagon);
-        CPPUNIT_TEST(testFutureSlice);
-        CPPUNIT_TEST( testSliceTriangle );
-*/  	CPPUNIT_TEST( testOpenPoly );
+        //		CPPUNIT_TEST( testAngles );
+        //		CPPUNIT_TEST( testInset );
+        //		CPPUNIT_TEST( testInset2 );
+        //        CPPUNIT_TEST( testInset3 );
+        //        CPPUNIT_TEST( testInset4 );
+        //        CPPUNIT_TEST(testHexagon);
+        //
+        //        CPPUNIT_TEST( testSliceTriangle );
+        //
+        //  		CPPUNIT_TEST( testOpenPoly );
+        //  		CPPUNIT_TEST( testSquareBug );
+        //  		CPPUNIT_TEST( testHexaBug );
+        	CPPUNIT_TEST( testKnotBug );
     CPPUNIT_TEST_SUITE_END();
+
+
+
 
 protected:
 
@@ -36,6 +45,7 @@ protected:
   void testCut();
   void testAngles();
   void testSliceTriangle();
+  void testSliceTriangle2();
 
   void testInset();
   void testInset2();
@@ -46,6 +56,10 @@ protected:
   void testFutureSlice();
 
   void testOpenPoly();
+
+  void testSquareBug();
+  void testHexaBug();
+  void testKnotBug();
 };
 
 
