@@ -438,12 +438,17 @@ void removeCollapsedSegments(	const std::vector<TriangleSegment2> &segments,
 
 		const TriangleSegment2 &currentSegment =  segments[currId];
 
+		Scalar collapseDistance;
 		// check
-		bool collapsed = edgeCollapse(currentSegment, bisectors[prevBisector],
-				bisectors[nextBisector], insetDist, elongation);
+		bool collapsed = edgeCollapse(	currentSegment,
+										bisectors[prevBisector],
+										bisectors[nextBisector],
+										insetDist,
+										elongation,
+										collapseDistance);
 		if(collapsed)
 		{
-			cout << "GOTCHA: segment " << i << " collapsed" << endl;
+			cout << "GOTCHA: segment " << i << " collapsed at distance " << collapseDistance << endl;
 		}
 		else
 		{
