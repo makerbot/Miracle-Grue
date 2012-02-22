@@ -448,7 +448,7 @@ void removeCollapsedSegments(	const std::vector<TriangleSegment2> &segments,
 										collapseDistance);
 		if(collapsed)
 		{
-			cout << "GOTCHA: segment " << i << " collapsed at distance " << collapseDistance << endl;
+			// cout << "GOTCHA: segment " << i << " collapsed at distance " << collapseDistance << endl;
 		}
 		else
 		{
@@ -569,7 +569,7 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 		throw mixup;
 	}
 
-	bool dumpSteps = true;
+	bool dumpSteps = false;
 //	dumpSteps = true;
 
 	bool byPass = false;
