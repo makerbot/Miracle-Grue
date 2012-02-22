@@ -306,7 +306,7 @@ void GCoder::writePolygons(std::ostream& ss,
 	}
 }
 
-double GCoder::moveZ(ostream & ss, double z, unsigned int  extruderId, double zFeedrate)
+void GCoder::moveZ(ostream & ss, double z, unsigned int  extruderId, double zFeedrate)
 {
     bool doX = false;
     bool doY = false;

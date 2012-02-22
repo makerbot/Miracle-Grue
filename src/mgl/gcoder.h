@@ -198,7 +198,7 @@ public:
     Gantry gantry;
 
     std::vector<Extruder> extruders;
-    double moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
+    void moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
 
 public:
 
