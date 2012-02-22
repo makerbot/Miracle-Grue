@@ -46,11 +46,25 @@ public:
 public:
 	Shrinky( const char *scadFileName=NULL, Scalar layerH=0.5);
 
-	void inset(const std::vector<TriangleSegment2> & segments,
+	void insetClassic(const std::vector<TriangleSegment2> & segments,
 							Scalar insetDist,
 								Scalar cutoffLength,
 									std::vector<TriangleSegment2> & finalInsets);
+
+
+
+	void inset(const std::vector<TriangleSegment2> & segments,
+								Scalar insetDist,
+									std::vector<TriangleSegment2> & finalInsets);
+
 	~Shrinky();
+
+private:
+	Scalar insetStep(const std::vector<TriangleSegment2> & segments,
+							Scalar insetDist,
+								Scalar cutoffLength,
+								bool writeThisStep,
+									std::vector<TriangleSegment2> & finalInsets);
 };
 
 }

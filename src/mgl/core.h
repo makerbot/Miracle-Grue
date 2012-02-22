@@ -18,6 +18,15 @@
 #include <iostream>
 #include <cassert>
 
+// WIN32 compatibility stuff
+#ifdef WIN32
+
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#define M_PI 3.14159265358979323846
+
+#endif // WIN32
+
 #define STRONG_CHECKING
 
 #define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
@@ -30,15 +39,16 @@ namespace mgl
 // base class for exceptions
 class Messup
 {
+
 public:
 	std::string error;
 	Messup(const char *msg)
 	 :error(msg)
 	{
-
 		std::cerr << std::endl << msg << std::endl;
 		// fprintf(stderr, "%s", msg);
 	}
+
 };
 
 //

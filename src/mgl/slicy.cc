@@ -114,10 +114,11 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			{
 				Scalar insetDistance = insetDistances[shellId];
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
-				assert(previousInsets.size() > 0);
-				shrinky.inset(previousInsets, insetDistance, cutoffLength, insets);
-
-				previousInsets = insets;
+				if(previousInsets.size() > 0)
+				{
+					shrinky.insetClassic(previousInsets, insetDistance, cutoffLength, insets);
+					previousInsets = insets;
+				}
 			}
 		}
 		catch(ShrinkyMess &messup)
@@ -132,13 +133,16 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			Shrinky shriker(loopScadFile.c_str());
 			try
 			{
+
 				vector<TriangleSegment2> &previousInsets  = masterLoop;
+				cout << "Creating file " << ss.str() << endl;
+				cout << "	Number of points " << previousInsets.size() << endl;
 				ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
 				std::vector<TriangleSegment2> insets;
 				for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 				{
 					Scalar insetDistance = insetDistances[shellId];
-					shrinky.inset(previousInsets, insetDistance, cutoffLength, insets);
+					shrinky.insetClassic(previousInsets, insetDistance, cutoffLength, insets);
 					previousInsets = insets;
 					insets.clear();
 				}

@@ -29,7 +29,9 @@ private:
         //  		CPPUNIT_TEST( testOpenPoly );
         //  		CPPUNIT_TEST( testSquareBug );
         //  		CPPUNIT_TEST( testHexaBug );
-        	CPPUNIT_TEST( testKnotBug );
+        //	CPPUNIT_TEST( testKnotBug );
+		CPPUNIT_TEST( testKnot89 );
+		CPPUNIT_TEST( scratch );
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -60,6 +62,9 @@ protected:
   void testSquareBug();
   void testHexaBug();
   void testKnotBug();
+  void testKnot89();
+
+  void scratch();
 };
 
 
