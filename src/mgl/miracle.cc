@@ -8,8 +8,11 @@ void mgl::miracleGrue(	GCoder &gcoder,
 					Slicer &slicer,
 					const char *modelFile,
 					const char *scadFile,
-					const char *gcodeFile)
+					const char *gcodeFile,
+					std::vector< SliceData >  &slices)
 {
+	assert(slices.size() ==0);
+
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
 	loadMeshyFromStl(mesh, modelFile);
 
@@ -18,7 +21,7 @@ void mgl::miracleGrue(	GCoder &gcoder,
 
 	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
 
-	std::vector< SliceData >  slices;
+
 	slices.reserve( mesh.readSliceTable().size());
 
 	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;

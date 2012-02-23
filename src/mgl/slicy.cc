@@ -116,13 +116,16 @@ void inshelligence( const SegmentTable & outlinesSegments,
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
 				if(previousInsets.size() > 0)
 				{
-					shrinky.insetClassic(previousInsets, insetDistance, cutoffLength, insets);
+					shrinky.inset(previousInsets, insetDistance, insets);
 					previousInsets = insets;
 				}
 			}
 		}
 		catch(ShrinkyMess &messup)
 		{
+			static int counter =0;
+			cout << endl;
+			cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
 			cout << "sliceId: " <<  sliceId   << endl;
 			cout << "loopId : " <<  outlineId << endl;
 			cout << "shellId: " <<  shellId   << endl;
@@ -135,22 +138,24 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			{
 
 				vector<TriangleSegment2> &previousInsets  = masterLoop;
-				cout << "Creating file " << ss.str() << endl;
+				cout << "Creating file: " << loopScadFile << endl;
 				cout << "	Number of points " << previousInsets.size() << endl;
 				ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
 				std::vector<TriangleSegment2> insets;
 				for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 				{
 					Scalar insetDistance = insetDistances[shellId];
-					shrinky.insetClassic(previousInsets, insetDistance, cutoffLength, insets);
+					shriker.inset(previousInsets, insetDistance, insets);
 					previousInsets = insets;
 					insets.clear();
 				}
 			}
-			catch(ShrinkyMess &messup)
+			catch(ShrinkyMess &messup2)
 			{
-				cout << "saving to file " << ss.str() << endl;
+				cout << "saving " << endl;
 			}
+			cout << "--- --- ERROR " << counter << " END --- ----" << endl;
+			counter ++;
 		}
 	}
 }

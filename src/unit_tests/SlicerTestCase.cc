@@ -1251,7 +1251,7 @@ void SlicerTestCase::testKnot89()
     segs.push_back(TriangleSegment2(Vector2(6.5515+x, 10.157591+y), Vector2(7.134971+x, 8.653125+y)));
     segs.push_back(TriangleSegment2(Vector2(7.134971+x, 8.653125+y), Vector2(7.361654+x, 8.084142+y)));
 
- //   inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_1.scad", 5);
+    inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_1.scad", 5);
 
     segs.clear();
     x = -6;
@@ -1285,55 +1285,38 @@ void SlicerTestCase::testKnot89()
     segs.push_back(TriangleSegment2(Vector2(11.083053+x, 2.525394+y), Vector2(12.290309+x, 2.943339+y)));
     segs.push_back(TriangleSegment2(Vector2(12.290309+x, 2.943339+y), Vector2(12.352334+x, 2.973561+y)));
 
- //   inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_2.scad", 5);
+    inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_2.scad", 5);
 }
 
-void dumpMap(const std::multimap<Scalar, unsigned int> &collapsingSegments)
-{
-	cout << "collapse distance\tsegment id" << endl;
-	cout << "--------------------------------" << endl;
-	for(std::multimap<Scalar, unsigned int>::const_iterator it= collapsingSegments.begin();
-			it != collapsingSegments.end(); it++)
-	{
-		const std::pair<Scalar, unsigned int>& seg = *it;
-		cout << "\t" <<seg.first<< ",\t" << seg.second << endl;
-	}
-}
-
-int pop(std::multimap<Scalar, unsigned int> &collapsingSegments)
-{
-	if(collapsingSegments.empty())
-		return -1;
-
-	std::multimap<Scalar, unsigned int>::iterator b = collapsingSegments.begin();
-	unsigned int result =  (*b).second;
-	collapsingSegments.erase(b);
-	return result;
-}
 
 void SlicerTestCase::scratch()
 {
-	std::multimap<Scalar, unsigned int> collapsingSegments;
-	cout << endl;
-	cout << "Ted's version" << endl;
-	dumpMap(collapsingSegments);
-
-	cout << "FIRST " << pop(collapsingSegments) << endl;
-
-	//std::pair<Scalar, unsigned int> p0
-	collapsingSegments.insert(std::pair<Scalar, unsigned int>(0.5, 1));
-	collapsingSegments.insert(std::pair<Scalar, unsigned int>(0.3, 2));
-	cout << "Hugo's version" << endl;
-	dumpMap(collapsingSegments);
-	collapsingSegments.insert(std::pair<Scalar, unsigned int>(0.5, 3));
-	collapsingSegments.insert(std::pair<Scalar, unsigned int>(0.4, 4));
-
-	cout << "46 version" << endl;
-	dumpMap(collapsingSegments);
-
-
-	cout<< "First 2 collapse " << (*collapsingSegments.begin()).second << endl;
-	cout << "FIRST " << pop(collapsingSegments);
 
 }
 
+
+void SlicerTestCase::test_slice_0_loop_0()
+{
+	std::vector<TriangleSegment2> segs;
+	double x = 0;
+	double y = 0;
+
+	segs.push_back(TriangleSegment2(Vector2(-25.567, 20.4295), Vector2(-24.9313, 20.4295)));
+	segs.push_back(TriangleSegment2(Vector2(-24.9313, 20.4295), Vector2(25.567, 20.4295)));
+	segs.push_back(TriangleSegment2(Vector2(25.567, 20.4295), Vector2(25.567, -22.0152)));
+	segs.push_back(TriangleSegment2(Vector2(25.567, -22.0152), Vector2(25.567, -22.5025)));
+	segs.push_back(TriangleSegment2(Vector2(25.567, -22.5025), Vector2(24.9313, -22.5025)));
+	segs.push_back(TriangleSegment2(Vector2(24.9313, -22.5025), Vector2(-25.567, -22.5025)));
+	segs.push_back(TriangleSegment2(Vector2(-25.567, -22.5025), Vector2(-25.567, 19.9422)));
+	segs.push_back(TriangleSegment2(Vector2(-25.567, 19.9422), Vector2(-25.567, 20.4295)));
+
+	inset2scad(segs, "./test_cases/slicerTestCase/output/test_slice_0_loop_0.scad", 5);
+	segs.clear();
+
+	segs.push_back(TriangleSegment2(Vector2(15.4327, 4.01493), Vector2(15.3874, 3.95251)));
+	segs.push_back(TriangleSegment2(Vector2(15.3874, 3.95251), Vector2(15.3761, 3.9335)));
+	segs.push_back(TriangleSegment2(Vector2(15.3761, 3.9335), Vector2(15.2193, 4.09319)));
+	segs.push_back(TriangleSegment2(Vector2(15.2193, 4.09319), Vector2(15.4386, 4.11746)));
+	segs.push_back(TriangleSegment2(Vector2(15.4386, 4.11746), Vector2(15.4327, 4.01493)));
+	inset2scad(segs, "./test_cases/slicerTestCase/output/null_bisector.scad", 5);
+}

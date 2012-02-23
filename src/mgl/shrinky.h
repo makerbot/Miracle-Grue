@@ -38,6 +38,11 @@ class Shrinky
 	int color;
 	unsigned int counter;
 	Scalar z;
+    void writeScadInset(const std::vector<TriangleSegment2> & originalSegments,
+    					const std::vector<Vector2> &bisectors,
+    					const std::vector<TriangleSegment2> &relevantSegments,
+    					const std::vector<TriangleSegment2> &insets,
+    					const std::vector<TriangleSegment2> &finalInsets);
     void openScadFile(const char *scadFileName);
     void closeScadFile();
 public:
