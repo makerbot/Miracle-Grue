@@ -39,10 +39,28 @@ std::ostream& operator << (std::ostream &os, const TriangleSegment2 &s)
 	return os;
 }
 
-//void connectivityCheck(const std::vector<TriangleSegment2> &segments)
-//{
-//
-//}
+void connectivityCheck(const std::vector<TriangleSegment2> &segments, Scalar tol)
+{
+	for(unsigned int i=0; i < segments.size(); i++)
+	{
+		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
+		const TriangleSegment2 &prevSeg = segments[prevId];
+		const TriangleSegment2 &seg = segments[i];
+
+		if(!prevSeg.b.sameSame(seg.a, tol) )
+		{
+			Vector2 dist = prevSeg.b - seg.a;
+			stringstream ss;
+			ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b ;
+			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
+			ss << endl;
+			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
+			ShrinkyMess mixup(ss.str().c_str());
+			throw mixup;
+			// assert(0);
+		}
+	}
+}
 
 void createConvexList(const std::vector<TriangleSegment2> &segments, std::vector<bool> &convex)
 {
@@ -155,23 +173,27 @@ string segment3(const TriangleSegment2 &s, Scalar z)
 }
 
 
-TriangleSegment2 elongate(const TriangleSegment2 &s, Scalar dist, bool fromStart, bool fromEnd)
+TriangleSegment2 elongate(const TriangleSegment2 &s, Scalar dist)
 {
 	TriangleSegment2 segment(s);
 	Vector2 l = segment.b - segment.a;
 	l.normalise();
 	l *= dist;
-
-	if(fromEnd)
-		segment.b += l;
-
-	if(fromStart)
-		segment.a -= l;
-
+	segment.b += l;
 	return segment;
 }
 
 
+
+TriangleSegment2 prelongate(const TriangleSegment2 &s, Scalar dist)
+{
+	TriangleSegment2 segment(s);
+	Vector2 l = segment.a - segment.b;
+	l.normalise();
+	l *= dist;
+	segment.a += l;
+	return segment;
+}
 void trimConvexSegments(const std::vector<TriangleSegment2> & rawInsets,
 						const std::vector<bool> &convex,
 						std::vector<TriangleSegment2> & segments)
@@ -310,14 +332,15 @@ Shrinky::Shrinky( const char *scadFileName, // = NULL
 
 bool attachSegments(TriangleSegment2 &first, TriangleSegment2 &next, Scalar elongation)
 {
-	TriangleSegment2 a = elongate(first, elongation, false, true);
-	TriangleSegment2 b = elongate(next, elongation, true, false);
+	TriangleSegment2 s0 = elongate(first, elongation);
+	TriangleSegment2 s1 = prelongate(next, elongation);
 	Vector2 intersection;
-	bool trimmed = segmentSegmentIntersection(a, b, intersection);
+	bool trimmed = segmentSegmentIntersection(s0, s1, intersection);
 	if(trimmed)
 	{
 		first.b = intersection;
 		next.a = intersection;
+		//cout <<  endl<<"attach success" << endl;
 		return true;
 	}
 	return false;
@@ -345,15 +368,17 @@ bool edgeCollapse(const TriangleSegment2& segment,
 					Scalar &collapseDistance)
 {
 
-
+	// segment is the base of the triangle
+	// from which we want the altitude
 
 	TriangleSegment2 bisectorSegment0;
 	bisectorSegment0.a = segment.a;
 	bisectorSegment0.b = segment.a + bisector0;
 
 	TriangleSegment2 bisectorSegment1;
-	bisectorSegment1.a = segment.b;
-	bisectorSegment1.b = segment.b + bisector1;
+	bisectorSegment1.a = segment.b + bisector1;
+	bisectorSegment1.b = segment.b;
+
 	bool attached = attachSegments(bisectorSegment0, bisectorSegment1, elongation);
 	if(attached)
 	{
@@ -544,7 +569,39 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 
 		TriangleSegment2 &previousSegment = segments[prevId];
 		TriangleSegment2 &currentSegment =  segments[i];
-		attachSegments(previousSegment, currentSegment, elongation);
+		bool attached = attachSegments(previousSegment, currentSegment, elongation);
+		if(!attached)
+		{
+			cout << "module elongation()" <<  endl;
+			cout << "{" << endl;
+			cout << endl;
+			cout << "	// ATTACH ERROR!" << endl;
+			cout << "	previousSegment = " << previousSegment <<";" <<  endl;
+			cout << "	prev_length= " << previousSegment.length() <<";" <<  endl;
+			cout << "	currentSegment = " << currentSegment << ";" << endl;
+			cout << "	curr_length= " << currentSegment.length() << ";" << endl;
+			TriangleSegment2 s0 = elongate(previousSegment, elongation );
+			TriangleSegment2 s1 = prelongate(currentSegment, elongation );
+			cout << "	s0 = " << s0 << ";" << endl;
+			cout << "	s1 = " << s1 << ";" << endl;
+			cout << "	elongation = " << elongation << ";" << endl;
+
+			cout << "	translate([0,0,0])" << endl;
+			cout << "	{" << endl;
+			cout << "		tube(x1=previousSegment[0][0], y1=previousSegment[0][1], z1=0, x2=previousSegment[1][0], y2=previousSegment[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
+			cout << "		tube(x1=currentSegment[0][0], y1=currentSegment[0][1], z1=0, x2=currentSegment[1][0], y2=currentSegment[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
+			cout << "	}" << endl;
+			cout << "" << endl;
+			cout << "	translate([-16, -17,0])" << endl;
+			cout << "	{" << endl;
+			cout << "		tube(x1=s0[0][0], y1=s0[0][1], z1=0, x2=s0[1][0], y2=s0[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
+			cout << "		tube(x1=s1[0][0], y1=s1[0][1], z1=0, x2=s1[1][0], y2=s1[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
+			cout << "	" << endl;
+			cout << "	}" << endl;
+			cout << ""  << endl;
+			cout << "}" << endl;
+			cout << "//----" << endl << endl;
+		}
 
 	}
 }
@@ -575,8 +632,12 @@ void createBisectors(const std::vector<TriangleSegment2>& segments,
 		}
 		else
 		{
+			Vector2 dist = prevSeg.b - seg.a;
 			stringstream ss;
-			ss << "This is not a closed polygon";
+			ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b ;
+			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
+			ss << endl;
+			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
 			ShrinkyMess mixup(ss.str().c_str());
 			throw mixup;
 			// assert(0);
@@ -598,7 +659,7 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 								Scalar insetDist,
 								std::vector<TriangleSegment2> &finalInsets)
 {
-	bool writePartialSteps = false;
+	bool writePartialSteps = true;
 
 	int count = originalSegments.size();
 	assert(count>0);
@@ -614,9 +675,13 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 	//cout << "INSET " << endl;
 	while (!done)
 	{
+		cout<< "BEFORE" << endl;
+		connectivityCheck(initialSegs, tol);
+		cout<< "AFTER BEFORE" << endl;
 		//cout << " ** distance to go: " <<  distanceToGo << endl;
 		finalInsets.clear();
 		Scalar distanceGone = insetStep(initialSegs, distanceToGo, tol, writePartialSteps, finalInsets);
+
 		distanceToGo -= distanceGone;
 		if( sameSame(distanceToGo, 0, tol))
 		{
@@ -673,21 +738,16 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 								bool writePartialStep,
 								std::vector<TriangleSegment2> &finalInsets)
 {
+	// magic numbers
+	Scalar elongation = insetDist * 100; // continuityTolerance * 5;
+
 
     assert(originalSegments.size() >0);
-
     // assert(originalSegments.size() > 0);
 	assert(finalInsets.size() == 0);
-
 	// check that we're not playing with ourselves
 	assert(&originalSegments != &finalInsets);
 
-	std::vector<TriangleSegment2> relevantSegments;
-	std::vector<bool> convexVertices;
-	std::vector<TriangleSegment2> insets;
-	std::vector<TriangleSegment2> trims;
-
-	std::vector<Vector2> bisectors;
 
 	unsigned int segmentCount = originalSegments.size();
 	if(segmentCount < 2)
@@ -697,6 +757,13 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 		ShrinkyMess mixup(ss.str().c_str());
 		throw mixup;
 	}
+
+
+	std::vector<TriangleSegment2> relevantSegments;
+	std::vector<bool> convexVertices;
+	std::vector<TriangleSegment2> insets;
+	std::vector<TriangleSegment2> trims;
+	std::vector<Vector2> bisectors;
 
 	bool dumpSteps = false;
 
@@ -717,8 +784,6 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 
 			insetSegments(relevantSegments, insetStepDistance, insets);
 			if(dumpSteps) segmentsDiagnostic("Insets", insets);
-
-			Scalar elongation = insetDist * 100; // continuityTolerance * 5;
 
 			elongateAndTrimSegments(insets, elongation, finalInsets);
 
@@ -749,121 +814,6 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 
 
 
-void Shrinky::insetClassic(const std::vector<TriangleSegment2>& originalSegments,
-								Scalar insetDist,
-								Scalar cutoffLength,
-								std::vector<TriangleSegment2> &finalInsets)
-{
-
-    // OpenScad
-	Scalar z = 0;
-    Scalar dz =0.1;
-
-    assert(originalSegments.size() >0);
-
-    // assert(originalSegments.size() > 0);
-	assert(finalInsets.size() == 0);
-
-	// check that we're not playing with ourselves
-	assert(&originalSegments != &finalInsets);
-
-	std::vector<TriangleSegment2> relevantSegments;
-	std::vector<bool> convexVertices;
-	std::vector<TriangleSegment2> insets;
-	std::vector<TriangleSegment2> trims;
-
-	std::vector<Vector2> bisectors;
-
-	unsigned int segmentCount = originalSegments.size();
-	if(segmentCount < 2)
-	{
-		stringstream ss;
-		ss << segmentCount << " line segment is not enough to create a closed polygon";
-		ShrinkyMess mixup(ss.str().c_str());
-		throw mixup;
-	}
-
-	bool dumpSteps = false;
-//	dumpSteps = true;
-
-	bool byPass = false;
-	if(byPass)
-	{
-		finalInsets.reserve(originalSegments.size());
-		for(int i=0; i< originalSegments.size(); i++)
-		{
-			finalInsets.push_back(originalSegments[i]);
-		}
-		return;
-	}
-
-// try
-    {
-    	// std::cout << std::endl << "*** Shrinky::inset " << std::endl;
-    	if(dumpSteps)segmentsDiagnostic("originalSegments", originalSegments);
-		// std::cout << std::endl << "*** RemoveShortSegments" << std::endl;
-    	//shorts = originalSegments;
-
-    	createBisectors(originalSegments, cutoffLength, bisectors);
-
-    	removeCollapsedSegments(originalSegments, bisectors, insetDist, relevantSegments);
-
-    	// assert(relevantSegments.size() > 0);
-    	if( relevantSegments.size() > 0)
-    	{
-			if(dumpSteps) segmentsDiagnostic("relevantSegments",relevantSegments);
-
-			insetSegments(relevantSegments, insetDist, insets);
-			if(dumpSteps) segmentsDiagnostic("Insets", insets);
-
-			Scalar elongation = insetDist * 100; // cutoffLength * 5;
-
-			elongateAndTrimSegments(insets, elongation, finalInsets);
-
-			// currentSegments = finalInsets ;
-			if(dumpSteps) segmentsDiagnostic("Finals", finalInsets);
-			//assert(currentSegments.size() > 0);
-			// cout << "FINALS" << endl;
-    	}
-    }
-
-
-    if(scadFileName)
-    {
-        stringstream coloredOutline;
-        // Scalar color = (1.0 * i)/(shells-1);
-        color = color == 0 ? 1 : 0;
-        coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])";
-        coloredOutline << "loop_segments3";
-
-    	z = fscad.writeSegments3("outlines_", coloredOutline.str().c_str(), originalSegments, z, dz,  this->counter);
-
-    	std::vector<TriangleSegment2> motorCycleTraces;
-    	for(int i=0; i < bisectors.size(); i++)
-    	{
-    		Vector2 a = originalSegments[i].a;
-    		Vector2 dir = bisectors[i];
-    		dir *= 2;
-    		Vector2 b = a + dir;
-    		TriangleSegment2 s(a, b);
-    		motorCycleTraces.push_back(s);
-    	}
-
-    	Scalar shortz = z;
-        z = fscad.writeSegments3("relevants_", "color([0.5,0.5,0,1])loop_segments3", relevantSegments, z, dz, this->counter);
-
-        z = fscad.writeSegments3("motorcycles_", "color([0.75,0.5,0.2,1])loop_segments3", motorCycleTraces, shortz, 0, this->counter);
-        //z += dz;
-    	z = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", insets, z, dz, this->counter);
-        //z += 2 * dz;
-        //z = fscad.writeSegments3("trimmed_insets_", "color([0,0.2,0.2,1])loop_segments3", trims, z , dz, this->counter);
-        z += 2 * dz;
-        z = fscad.writeSegments3("final_insets_", "color([0,0.5,0,1])loop_segments3", finalInsets, z , dz, this->counter);
-        this->counter ++;
-    }
-
-
-}
 
 void Shrinky::closeScadFile()
 {

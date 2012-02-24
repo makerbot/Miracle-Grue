@@ -122,13 +122,13 @@ int main(int argc, char *argv[], char *envp[])
 	cout << "behold!" << endl;
 	cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
 
-//	std::string scadFile = "."; // outDir
-//	scadFile += computer.fileSystem.getPathSeparatorCharacter();
-	std::string scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
+	std::string scadFile = "."; // outDir
+	scadFile += computer.fileSystem.getPathSeparatorCharacter();
+	scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
 
-//	std::string gcodeFile = ".";
-//	gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
-	std::string gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
+	std::string gcodeFile = ".";
+	gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
+	gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
 
 	cout << endl << endl;
 	cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;

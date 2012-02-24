@@ -136,7 +136,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			Shrinky shriker(loopScadFile.c_str());
 			try
 			{
-
+				vector<TriangleSegment2> masterLoop = outlineLoop;
 				vector<TriangleSegment2> &previousInsets  = masterLoop;
 				cout << "Creating file: " << loopScadFile << endl;
 				cout << "	Number of points " << previousInsets.size() << endl;
