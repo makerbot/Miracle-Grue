@@ -592,7 +592,7 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 			cout << "		tube(x1=currentSegment[0][0], y1=currentSegment[0][1], z1=0, x2=currentSegment[1][0], y2=currentSegment[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
 			cout << "	}" << endl;
 			cout << "" << endl;
-			cout << "	translate([-16, -17,0])" << endl;
+			cout << "	translate([0, 0,0.1])" << endl;
 			cout << "	{" << endl;
 			cout << "		tube(x1=s0[0][0], y1=s0[0][1], z1=0, x2=s0[1][0], y2=s0[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
 			cout << "		tube(x1=s1[0][0], y1=s1[0][1], z1=0, x2=s1[1][0], y2=s1[1][1], z2=0 ,  diameter1=d1, diameter2=d2, faces=4, thickness_over_width=1);" << endl;
