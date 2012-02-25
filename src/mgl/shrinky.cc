@@ -57,12 +57,12 @@ void connectivityCheck( const std::vector<TriangleSegment2> &segments, Scalar to
 			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
 			ss << endl;
 			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
-			//ShrinkyMess mixup(ss.str().c_str());
-			// throw mixup;
+			ShrinkyMess mixup(ss.str().c_str());
+			throw mixup;
 			// assert(0);
 //			TriangleSegment2 newSeg(prevSeg.b, seg.a);
-	//		outs.push_back(newSeg);
-			seg.a = prevSeg.b;
+	//	outs.push_back(newSeg);
+			//seg.a = prevSeg.b;
 		}
 		outs.push_back(seg);
 	}
