@@ -39,26 +39,32 @@ std::ostream& operator << (std::ostream &os, const TriangleSegment2 &s)
 	return os;
 }
 
-void connectivityCheck(const std::vector<TriangleSegment2> &segments, Scalar tol)
+void connectivityCheck( const std::vector<TriangleSegment2> &segments, Scalar tol,
+						std::vector<TriangleSegment2> &outs)
 {
+	outs.reserve(segments.size());
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 		const TriangleSegment2 &prevSeg = segments[prevId];
-		const TriangleSegment2 &seg = segments[i];
+		TriangleSegment2 seg = segments[i];
 
 		if(!prevSeg.b.sameSame(seg.a, tol) )
 		{
 			Vector2 dist = prevSeg.b - seg.a;
 			stringstream ss;
-			ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b ;
+			ss << "Connectivity error: segment[" << prevId << "].b = " << prevSeg.b ;
 			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
 			ss << endl;
 			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
-			ShrinkyMess mixup(ss.str().c_str());
-			throw mixup;
+			//ShrinkyMess mixup(ss.str().c_str());
+			// throw mixup;
 			// assert(0);
+//			TriangleSegment2 newSeg(prevSeg.b, seg.a);
+	//		outs.push_back(newSeg);
+			seg.a = prevSeg.b;
 		}
+		outs.push_back(seg);
 	}
 }
 
@@ -143,36 +149,6 @@ Vector2 getInsetDirection(const TriangleSegment2 &seg)
 }
 
 
-void insetSegments(const std::vector<TriangleSegment2> &segments, Scalar d,
-					std::vector<TriangleSegment2> &insets)
-{
-	assert(insets.size() == 0);
-	for(int i=0; i<segments.size(); i++)
-	{
-
-		TriangleSegment2 seg = segments[i];
-		Vector2 inset = getInsetDirection(seg);
-
-		inset *= d;
-
-		TriangleSegment2 newSeg(seg);
-		newSeg.a += inset;
-		newSeg.b += inset;
-
-		insets.push_back(newSeg);
-
-	}
-	assert(insets.size() == segments.size());
-}
-
-string segment3(const TriangleSegment2 &s, Scalar z)
-{
-	stringstream ss;
-	ss << "[[" << s.a[0] << ", " << s.a[1] << ", " << z << "], [" <<  s.b[0] << ", " << s.b[1] << ", " << z << "]]";
-	return ss.str();
-}
-
-
 TriangleSegment2 elongate(const TriangleSegment2 &s, Scalar dist)
 {
 	TriangleSegment2 segment(s);
@@ -194,6 +170,44 @@ TriangleSegment2 prelongate(const TriangleSegment2 &s, Scalar dist)
 	segment.a += l;
 	return segment;
 }
+
+
+TriangleSegment2 elongateAndPrelongate(const TriangleSegment2 &s, Scalar dist)
+{
+	TriangleSegment2 segment(s);
+	Vector2 l = segment.b - segment.a;
+	l.normalise();
+	l *= dist;
+	segment.b += l;
+	segment.a -= l;
+	return segment;
+
+}
+
+void insetSegments(const std::vector<TriangleSegment2> &segments, Scalar d,
+					std::vector<TriangleSegment2> &insets)
+{
+	assert(insets.size() == 0);
+	for(int i=0; i<segments.size(); i++)
+	{
+		TriangleSegment2 seg = segments[i];
+		Vector2 inset = getInsetDirection(seg);
+		inset *= d;
+		seg.a += inset;
+		seg.b += inset;
+		insets.push_back(seg);
+	}
+	assert(insets.size() == segments.size());
+}
+
+string segment3(const TriangleSegment2 &s, Scalar z)
+{
+	stringstream ss;
+	ss << "[[" << s.a[0] << ", " << s.a[1] << ", " << z << "], [" <<  s.b[0] << ", " << s.b[1] << ", " << z << "]]";
+	return ss.str();
+}
+
+
 void trimConvexSegments(const std::vector<TriangleSegment2> & rawInsets,
 						const std::vector<bool> &convex,
 						std::vector<TriangleSegment2> & segments)
@@ -324,23 +338,22 @@ void Shrinky::openScadFile(const char *scadFileName)
 
 Shrinky::Shrinky( const char *scadFileName, // = NULL
 					Scalar layerH) // =0.5
-		:scadFileName(scadFileName), color(1),  counter(0), dz(0), z(0)
+		:scadFileName(scadFileName), color(1),  counter(0), dz(0), scadZ(0)
 {
     openScadFile(scadFileName);
 }
 
 
-bool attachSegments(TriangleSegment2 &first, TriangleSegment2 &next, Scalar elongation)
+bool attachSegments(TriangleSegment2 &first, TriangleSegment2 &second, Scalar elongation)
 {
 	TriangleSegment2 s0 = elongate(first, elongation);
-	TriangleSegment2 s1 = prelongate(next, elongation);
+	TriangleSegment2 s1 = prelongate(second, elongation);
 	Vector2 intersection;
 	bool trimmed = segmentSegmentIntersection(s0, s1, intersection);
 	if(trimmed)
 	{
 		first.b = intersection;
-		next.a = intersection;
-		//cout <<  endl<<"attach success" << endl;
+		second.a = intersection;
 		return true;
 	}
 	return false;
@@ -379,7 +392,11 @@ bool edgeCollapse(const TriangleSegment2& segment,
 	bisectorSegment1.a = segment.b + bisector1;
 	bisectorSegment1.b = segment.b;
 
-	bool attached = attachSegments(bisectorSegment0, bisectorSegment1, elongation);
+
+	TriangleSegment2 s0 = elongate(bisectorSegment0, elongation);
+	TriangleSegment2 s1 = prelongate(bisectorSegment1, elongation);
+	Vector2 intersection;
+	bool attached = segmentSegmentIntersection(s0, s1, intersection);
 	if(attached)
 	{
 		Vector2 intersection = bisectorSegment0.b;
@@ -560,6 +577,8 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 	for(unsigned int i = 0; i < longSegments.size(); i++)
 	{
 		TriangleSegment2 seg = longSegments[i];
+		//TriangleSegment2 seg = elongate(longSegments[i], elongation );
+		//seg = prelongate(seg, elongation );
 		segments.push_back(seg);
 	}
 
@@ -576,6 +595,8 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 			cout << "{" << endl;
 			cout << endl;
 			cout << "	// ATTACH ERROR!" << endl;
+			cout << "   d1 = 0.1;" << endl;
+			cout << "   d2 = 0.01;" << endl;
 			cout << "	previousSegment = " << previousSegment <<";" <<  endl;
 			cout << "	prev_length= " << previousSegment.length() <<";" <<  endl;
 			cout << "	currentSegment = " << currentSegment << ";" << endl;
@@ -675,12 +696,12 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 	//cout << "INSET " << endl;
 	while (!done)
 	{
-		cout<< "BEFORE" << endl;
-		connectivityCheck(initialSegs, tol);
-		cout<< "AFTER BEFORE" << endl;
+		std::vector<TriangleSegment2> connected;
+		connectivityCheck(initialSegs, tol, connected);
+
 		//cout << " ** distance to go: " <<  distanceToGo << endl;
 		finalInsets.clear();
-		Scalar distanceGone = insetStep(initialSegs, distanceToGo, tol, writePartialSteps, finalInsets);
+		Scalar distanceGone = insetStep(connected, distanceToGo, tol, writePartialSteps, finalInsets);
 
 		distanceToGo -= distanceGone;
 		if( sameSame(distanceToGo, 0, tol))
@@ -696,22 +717,9 @@ void Shrinky::inset(const std::vector<TriangleSegment2>& originalSegments,
 	//cout << "Thank you:  " << finalInsets.size() << endl;
 }
 
-void Shrinky::writeScadInset(const std::vector<TriangleSegment2> & originalSegments,
-							const std::vector<Vector2> &bisectors,
-							const std::vector<TriangleSegment2> &relevantSegments,
-							const std::vector<TriangleSegment2> &insets,
-							const std::vector<TriangleSegment2> & finalInsets)
+void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<TriangleSegment2> & originalSegments)
 {
     if(scadFileName){
-        // OpenScad
-        Scalar scadZ = 0;
-        Scalar dz = 0.1;
-        stringstream coloredOutline;
-        // Scalar color = (1.0 * i)/(shells-1);
-        int color = color == 0 ? 1 : 0;
-        coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])";
-        coloredOutline << "loop_segments3";
-        scadZ = fscad.writeSegments3("outlines_", coloredOutline.str().c_str(), originalSegments, scadZ, dz, this->counter);
         std::vector<TriangleSegment2> motorCycleTraces;
         for(int i = 0;i < bisectors.size();i++){
             Vector2 a = originalSegments[i].a;
@@ -722,15 +730,23 @@ void Shrinky::writeScadInset(const std::vector<TriangleSegment2> & originalSegme
             motorCycleTraces.push_back(s);
         }
         scadZ = fscad.writeSegments3("motorcycles_", "color([0.75,0.5,0.2,1])loop_segments3", motorCycleTraces, 0, dz, this->counter);
-        scadZ = fscad.writeSegments3("relevants_", "color([0.5,0.5,0,1])loop_segments3", relevantSegments, scadZ, dz, this->counter);
-        //z += dz;
-        scadZ = fscad.writeSegments3("raw_insets_", "color([1,0,0.4,1])loop_segments3", insets, scadZ, dz, this->counter);
-        //scadZ += 2 * dz;
-        scadZ = fscad.writeSegments3("final_insets_", "color([0,0.5,0,1])loop_segments3", finalInsets, scadZ, dz, this->counter);
-        this->counter++;
     }
 
 }
+
+void Shrinky::writeScadSegments(const char* segNames,
+								const char* prefix,
+								const std::vector<TriangleSegment2> & segments)
+{
+	if(scadFileName)
+	{
+		string funcName = prefix;
+		funcName += "loop_segments3";
+		scadZ = fscad.writeSegments3(segNames, funcName.c_str(), segments, scadZ, dz, this->counter);
+	}
+}
+
+
 
 Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 								Scalar insetDist,
@@ -740,7 +756,6 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 {
 	// magic numbers
 	Scalar elongation = insetDist * 100; // continuityTolerance * 5;
-
 
     assert(originalSegments.size() >0);
     // assert(originalSegments.size() > 0);
@@ -767,48 +782,60 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 
 	bool dumpSteps = false;
 
-
-	// std::cout << std::endl << "*** Shrinky::inset " << std::endl;
 	if(dumpSteps)segmentsDiagnostic("originalSegments", originalSegments);
-	// std::cout << std::endl << "*** RemoveShortSegments" << std::endl;
-	//shorts = originalSegments;
+
 	Scalar insetStepDistance;
 	try
 	{
+	    if(scadFileName)
+	    {
+	        // OpenScad
+	        Scalar dz = 0.1;
+	        stringstream coloredOutline;
+	        // Scalar color = (1.0 * i)/(shells-1);
+	        int color = color == 0 ? 1 : 0;
+	        coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])";
+	        writeScadSegments("outlines_",coloredOutline.str().c_str(), originalSegments );
+	    }
+
+		cout << endl << endl << "-------------------" << endl;
+		cout << "...BISECTING..." << endl;
+
 		createBisectors(originalSegments, continuityTolerance, bisectors);
+	    writeScadBisectors(bisectors, originalSegments);
+
+		cout << "...COLLAPSING..." << endl;
 		insetStepDistance =  removeFirstCollapsedSegment(originalSegments, bisectors, insetDist, relevantSegments);
-		// assert(relevantSegments.size() > 0);
+
 		if( relevantSegments.size() > 0)
 		{
 			if(dumpSteps) segmentsDiagnostic("relevantSegments",relevantSegments);
+			writeScadSegments("relevants_", "color([0.5,0.5,0,1])", relevantSegments);
 
+			cout << "...INSETTING..." << endl;
 			insetSegments(relevantSegments, insetStepDistance, insets);
 			if(dumpSteps) segmentsDiagnostic("Insets", insets);
+			writeScadSegments("raw_insets_", "color([1,0,0.4,1])", insets);
 
+			cout << "...ATTACHING..." << endl;
 			elongateAndTrimSegments(insets, elongation, finalInsets);
-
-			// currentSegments = finalInsets ;
 			if(dumpSteps) segmentsDiagnostic("Finals", finalInsets);
-			//assert(currentSegments.size() > 0);
-			// cout << "FINALS" << endl;
+			writeScadSegments("final_insets_","color([0,0.5,0,1])", finalInsets);
+
+			cout << "...VERIFYING..." << endl;
+
 		}
+		// this is for scad
+
 	}
 	catch(...)
 	{
-		writeScadInset(originalSegments, bisectors, relevantSegments, insets, finalInsets);
-		throw;
-	}
+		cout << "ABORT MISSION!!! " << insetStepDistance << endl;
+		// this is a lie...  but we want to break the loop
+		insetStepDistance = insetDist;
 
-	bool writeThisStep = writePartialStep;
-	if(!writePartialStep)
-	{
-		writeThisStep = sameSame(insetDist, insetStepDistance, continuityTolerance);
 	}
-
-	if(writeThisStep)
-	{
-	    writeScadInset(originalSegments, bisectors, relevantSegments, insets, finalInsets);
-	}
+	this->counter++;
     return insetStepDistance;
 }
 
@@ -819,7 +846,7 @@ void Shrinky::closeScadFile()
 {
     if(scadFileName){
         std::ofstream & out = fscad.getOut();
-        unsigned int shells = counter;
+        int shells = counter;
         fscad.writeMinMax("draw_outlines", "outlines_", shells);
         fscad.writeMinMax("draw_motorcycles", "motorcycles_", shells);
         fscad.writeMinMax("draw_raw_insets", "raw_insets_", shells);
@@ -827,7 +854,7 @@ void Shrinky::closeScadFile()
         fscad.writeMinMax("draw_relevants", "relevants_", shells);
         fscad.writeMinMax("draw_final_insets", "final_insets_", shells);
         out << "min=0;" << endl;
-        out << "max=" << shells - 1 << ";" << std::endl;
+        out << "max=" << shells  << ";" << std::endl;
         out << std::endl;
         out << "draw_outlines(min, max);" << std::endl;
         out << "draw_motorcycles(min, max);" << std::endl;

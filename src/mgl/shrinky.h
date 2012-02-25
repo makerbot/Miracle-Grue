@@ -34,15 +34,17 @@ class Shrinky
 	ScadTubeFile fscad;
 	const char *scadFileName;
 
+	Scalar scadZ ;
 	//Scalar layerH;
 	int color;
 	unsigned int counter;
-	Scalar z;
-    void writeScadInset(const std::vector<TriangleSegment2> & originalSegments,
-    					const std::vector<Vector2> &bisectors,
-    					const std::vector<TriangleSegment2> &relevantSegments,
-    					const std::vector<TriangleSegment2> &insets,
-    					const std::vector<TriangleSegment2> &finalInsets);
+
+    void writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<TriangleSegment2> & originalSegments);
+
+    void writeScadSegments(	const char* segNames,
+							const char* prefix,
+							const std::vector<TriangleSegment2> & segments);
+
     void openScadFile(const char *scadFileName);
     void closeScadFile();
 public:
