@@ -215,7 +215,7 @@ public:
 };
 
 typedef std::vector< std::vector<TriangleSegment2 > > SegmentTable;
-
+std::ostream& operator << (std::ostream &os, const TriangleSegment2 &s);
 
 Vector2 rotate2d(const Vector2 &p, Scalar angle);
 

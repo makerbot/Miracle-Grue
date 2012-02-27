@@ -31,7 +31,7 @@ class ShrinkyMess : public Messup {	public: ShrinkyMess(const char *msg) :Messup
 class Shrinky
 {
 
-	ScadTubeFile fscad;
+
 	const char *scadFileName;
 
 	Scalar scadZ ;
@@ -49,7 +49,7 @@ class Shrinky
     void closeScadFile();
 public:
 	Scalar dz;
-
+	ScadTubeFile fscad;
 public:
 	Shrinky( const char *scadFileName=NULL, Scalar layerH=0.5);
 

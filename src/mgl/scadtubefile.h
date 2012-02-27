@@ -88,7 +88,7 @@ public:
 
 
 
-	std::ofstream &getOut(){return out;}
+	std::ostream &getOut(){return out;}
 
 	void writeHeader()
     {
