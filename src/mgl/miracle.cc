@@ -30,7 +30,7 @@ void mgl::miracleGrue(	GCoder &gcoder,
 	cout << "Slicing" << endl;
 
     std::ofstream gout(gcodeFile);
-    gcoder.writeStartOfFile(gout);
+    gcoder.writeStartOfFile(gout, modelFile);
 
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{

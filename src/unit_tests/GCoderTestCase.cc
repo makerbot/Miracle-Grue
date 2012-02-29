@@ -166,7 +166,7 @@ void GCoderTestCase::testSingleExtruder()
 	GCoder gcoder;
 	loadGCoderData(config, gcoder);
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME);
-	gcoder.writeStartOfFile(gout);
+	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeGcodeEndOfFile(gout);
 
 
@@ -194,7 +194,7 @@ void GCoderTestCase::testDualExtruders()
 	GCoder gcoder;
 	loadGCoderData(config, gcoder);
 
-	gcoder.writeStartOfFile(gout);
+	gcoder.writeStartOfFile(gout, DUAL_EXTRUDER_FILE_NAME );
 	dbg__
 	gcoder.writeGcodeEndOfFile(gout);
 	dbg__
@@ -227,7 +227,7 @@ void GCoderTestCase::testSimplePath()
 	std::ofstream gout(SINGLE_EXTRUDER_WITH_PATH);
 	GCoder gcoder;
 	loadGCoderData(config, gcoder);
-	gcoder.writeStartOfFile(gout);
+	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_WITH_PATH);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
 	{
@@ -411,7 +411,7 @@ void GCoderTestCase::testGridPath()
 	std::ofstream gout(SINGLE_EXTRUDER_GRID_PATH);
 	GCoder gcoder;
 	loadGCoderData(config, gcoder);
-	gcoder.writeStartOfFile(gout);
+	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_GRID_PATH);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
 	{
@@ -470,7 +470,7 @@ void GCoderTestCase::testMultiGrid()
 	std::ofstream gout(SINGLE_EXTRUDER_MULTI_GRID_PATH);
 	GCoder gcoder;
 	loadGCoderData(config, gcoder);
-	gcoder.writeStartOfFile(gout);
+	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
 	{

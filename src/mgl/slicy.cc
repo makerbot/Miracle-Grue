@@ -58,7 +58,6 @@ void createPolysFromloopSegments(const SegmentTable &segmentTable,
 
 void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
-					Scalar cutoffLength,
 					double layerW,
 					unsigned int sliceId,
 					Scalar insetDistanceFactor,
@@ -114,7 +113,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			{
 				Scalar insetDistance = insetDistances[shellId];
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
-				if(previousInsets.size() > 0)
+				if(previousInsets.size() > 2)
 				{
 					shrinky.inset(previousInsets, insetDistance, insets);
 					previousInsets = insets;
@@ -134,6 +133,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
 			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str().c_str());
 			Shrinky shriker(loopScadFile.c_str());
+			shriker.dz=0.1;
 			try
 			{
 				std::ostream &scad = shriker.fscad.getOut();
@@ -226,6 +226,10 @@ void Slicy::openScadFile(const char *scadFile, double layerW,Scalar layerH ,size
 
 	    out << std::endl;
 	    out << "stl_color = [0,1,0, 0.025];" << std::endl;
+
+	    out << endl;
+	    out << "// x = [ [ points[s[0]], points[s[1]] ] for s in segments]" << endl;
+	    out << endl;
 
 		out << "module out_line(x1, y1, z1, x2, y2, z2)" << std::endl;
 		out << "{" << std::endl;
@@ -348,7 +352,6 @@ void Slicy::closeScadFile()
 		out << "// python snippets to make segments from polygon points" << endl;
 		out << "// segments = [[ points[i], points[i+1]] for i in range(len(points)-1 ) ]" << endl;
         out << "// s = [\"segs.push_back(TriangleSegment2(Vector2(%s, %s), Vector2(%s, %s)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
-
 		std::cout << "closing OpenSCad file: " << fscad.getScadFileName() << std::endl;
 		fscad.close();
 	}
@@ -399,7 +402,6 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 		// create shells inside the outlines (and around holes)
 		inshelligence(outlinesSegments,
 						  nbOfShells,
-						  cutoffLength,
 						  layerW,
 						  sliceId,
 						  insetDistanceFactor,

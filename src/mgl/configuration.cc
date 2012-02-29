@@ -100,11 +100,10 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 	gcoder.machineName = stringCheck(conf.root["machineName"],"machineName");
 	gcoder.firmware    = stringCheck(conf.root["firmware"], "firmware");
 
-	gcoder.homing.xyMaxHoming = boolCheck(conf.root["homing"]["xyMaxHoming"], "homing.xyMaxHoming");
-	gcoder.homing.zMaxHoming  = boolCheck(conf.root["homing"]["zMaxHoming" ], "homing.zMaxHoming");
-
-	gcoder.scalingFactor = doubleCheck(conf.root["scalingFactor"], "scalingFactor");
-
+	gcoder.gantry.xyMaxHoming = boolCheck(conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming");
+	gcoder.gantry.zMaxHoming  = boolCheck(conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming");
+	gcoder.gantry.scalingFactor = doubleCheck(conf.root["gantry"]["scalingFactor"], "gantry.scalingFactor");
+	gcoder.gantry.rapidMoveFeedRate = doubleCheck(conf.root["gantry"]["rapidMoveFeedRate"], "gantry.rapidMoveFeedRate");
 	gcoder.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
 	gcoder.platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
 	gcoder.platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
@@ -132,15 +131,17 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 		Extruder extruder;
 		extruder.coordinateSystemOffsetX = doubleCheck(conf.root["extruders"][i]["coordinateSystemOffsetX"], (prefix+"coordinateSystemOffsetX").c_str() );
 		extruder.extrusionTemperature = doubleCheck(conf.root["extruders"][i]["extrusionTemperature"], (prefix+"extrusionTemperature").c_str() );
-		extruder.defaultExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["defaultExtrusionSpeed"], (prefix+"defaultExtrusionSpeed").c_str() );
-		extruder.slowFeedRate = doubleCheck(conf.root["extruders"][i]["slowFeedRate"], (prefix+"slowFeedRate").c_str() );
-		extruder.slowExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["slowExtrusionSpeed"], (prefix+"slowExtrusionSpeed").c_str() );
-		extruder.fastFeedRate = doubleCheck(conf.root["extruders"][i]["fastFeedRate"], (prefix+"fastFeedRate").c_str() );
-		extruder.fastExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["fastExtrusionSpeed"], (prefix+"fastExtrusionSpeed").c_str() );
 		extruder.nozzleZ = doubleCheck(conf.root["extruders"][i]["nozzleZ"], (prefix+"nozzleZ").c_str() );
-		extruder.reversalExtrusionSpeed = doubleCheck(conf.root["extruders"][i]["reversalExtrusionSpeed"], (prefix+"reversalExtrusionSpeed").c_str() );
-		extruder.leadIn = doubleCheck(conf.root["extruders"][i]["leadIn"], (prefix+"leadIn").c_str() );
-		extruder.leadOut = doubleCheck(conf.root["extruders"][i]["leadOut"], (prefix+"leadOut").c_str() );
+		extruder.zFeedRate = doubleCheck(conf.root["extruders"][i]["zFeedRate"], (prefix+"zFeedRate").c_str() );
+
+		extruder.extrusionProfile.feedrate = doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["feedrate"], (prefix+"extrusionProfile.feedrate").c_str() );
+		extruder.extrusionProfile.flow = doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["flow"], (prefix+"extrusionProfile.flow").c_str() );
+		extruder.extrusionProfile.leadIn= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["leadIn"], (prefix+"extrusionProfile.leadIn").c_str() );
+		extruder.extrusionProfile.leadOut= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["leadOut"], (prefix+"extrusionProfile.leadOut").c_str() );
+		extruder.extrusionProfile.snortFlow= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["snortFlow"], (prefix+"extrusionProfile.snortFlow").c_str() );
+		extruder.extrusionProfile.snortFeedrate= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["snortFeedrate"], (prefix+"extrusionProfile.snortFeedrate").c_str() );
+		extruder.extrusionProfile.squirtFlow= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["squirtFlow"], (prefix+"extrusionProfile.squirtFlow").c_str() );
+		extruder.extrusionProfile.squirtFeedrate= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["squirtFeedrate"], (prefix+"extrusionProfile.squirtFeedrate").c_str() );
 		gcoder.extruders.push_back(extruder);
 	}
 

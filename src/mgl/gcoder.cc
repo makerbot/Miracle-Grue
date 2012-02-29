@@ -76,17 +76,7 @@ void GCoder::writeWipeExtruder(ostream& ss, int extruderId) const
 	//ss << endl;
 }
 
-void GCoder::writeGCodeConfig(std::ostream &ss) const
-{
 
-	ss << endl;
-	ss << "(Makerbot Industries)" << endl;
-	ss << "(This file contains digital fabrication directives in gcode format)"<< endl;
-	ss << "(For your 3D printer)" << endl;
-	ss << "(http://wiki.makerbot.com/gcode)" <<  endl;
-	writeGcodeConfig(ss, "* ");
-	ss << endl;
-}
 
 void GCoder::writeMachineInitialization(std::ostream &ss) const
 {
@@ -120,7 +110,7 @@ void GCoder::writeExtrudersInitialization(std::ostream &ss) const
 	{
 		const Extruder &t = *i;
 		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
-		ss << "M108 R" << t.defaultExtrusionSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << t.defaultExtrusionSpeed << " RPM)" << endl;
+//		ss << "M108 R" << t.defaultExtrusionSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << t.defaultExtrusionSpeed << " RPM)" << endl;
 		ss << "M104 S" << t.extrusionTemperature  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << t.extrusionTemperature << " degrees Celsius)" << endl;
 		ss << endl;
 		toolHeadId ++;
@@ -139,14 +129,19 @@ void GCoder::writePlatformInitialization(std::ostream &ss) const
 }
 
 
-void GCoder::writeHomingSequence(std::ostream &ss) const
+void GCoder::writeHomingSequence(std::ostream &ss)
 {
 	const GCoder &gcoder = *this;
 
 	ss << endl;
 	ss << "(go to home position)" << endl;
 
-	if(gcoder.homing.zMaxHoming)
+	if(gcoder.gantry.xyMaxHoming)
+		ss << "G162 X Y F2500 (home XY axes maximum)" << endl;
+	else
+		ss << "G161 X Y F2500 (home XY axes minimum)" << endl;
+
+	if(gcoder.gantry.zMaxHoming)
 		ss << "G162 Z F800 (home Z axis maximum)" << endl;
 	else
 		ss << "G161 Z F800 (home Z axis minimum)" << endl;
@@ -154,35 +149,24 @@ void GCoder::writeHomingSequence(std::ostream &ss) const
 	ss << "G92 Z5 (set Z to 5)" << endl;
 	ss << "G1 Z0.0 (move Z down 0)" << endl;
 
-	if(gcoder.homing.zMaxHoming)
+	if(gcoder.gantry.zMaxHoming)
 		ss << "G162 Z F100 (home Z axis maximum)" << endl;
 	else
 		ss << "G161 Z F100 (home Z axis minimum)" << endl;
-
-	if(gcoder.homing.xyMaxHoming)
-		ss << "G162 X Y F2500 (home XY axes maximum)" << endl;
-	else
-		ss << "G161 X Y F2500 (home XY axes minimum)" << endl;
 
 	ss << "M132 X Y Z A B (Recall stored home offsets for XYZAB axis)" << endl;
 	if (gcoder.extruders.size() > 1)
 		ss << "G54 (first work coordinate system)" << endl;
 	ss << endl;
-}
 
-void GCoder::writeWarmupSequence(std::ostream &ss)
-{
-
-	ss << endl;
 	int extruderCount = extruders.size();
-
 	if (extruderCount >0)
 	{
 
 		gantry.g1(ss, 	platform.waitingPositionX,
 				platform.waitingPositionY,
 				platform.waitingPositionZ,
-				extruders[0].fastFeedRate,
+				gantry.rapidMoveFeedRate,
 				"go to waiting position" );
 	}
 	else
@@ -192,7 +176,13 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 		GcoderMess mixup(ss.str().c_str());
 		throw mixup;
 	}
+}
 
+void GCoder::writeWarmupSequence(std::ostream &ss)
+{
+
+	ss << endl;
+	unsigned int extruderCount = extruders.size();
 	for (int i=0; i< extruderCount; i++)
 	{
 		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
@@ -203,9 +193,9 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 	ss << endl;
 }
 
-void GCoder::writeStartOfFile(std::ostream &gout)
+void GCoder::writeStartOfFile(std::ostream &gout, const char* filename)
 {
-	writeGCodeConfig(gout);
+	writeGCodeConfig(gout, filename);
 	writeMachineInitialization(gout);
 	writeExtrudersInitialization(gout);
 	writePlatformInitialization(gout);
@@ -222,13 +212,16 @@ void GCoder::writeGcodeEndOfFile(std::ostream &ss) const
 		ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
 	}
 
-	if(homing.zMaxHoming)
+	if(gantry.zMaxHoming)
 		ss << "G162 Z F500 (home Z axis maximum)" << endl;
 	ss << "(That's all folks!)" << endl;
 }
 
 void GCoder::writeAnchor(std::ostream &ss)
 {
+	double anchorFeedRate = 3000;
+	double z = 0.6;
+
 	GCoder &gcoder = *this;
 	ss << "(Create Anchor)" << endl;
 	ss << "G1 Z0.6 F300    (Position Height)" << endl;
@@ -236,17 +229,17 @@ void GCoder::writeAnchor(std::ostream &ss)
 	ss << "M101        (Start Extruder)" << endl;
 	ss << "G4 P1600" << endl;
 
-	gantry.g1( ss,
-							gcoder.platform.waitingPositionX,
-							gcoder.platform.waitingPositionY,
-							0.6,
-							gcoder.extruders[0].slowFeedRate,
-							NULL );
+	gantry.g1(  ss,
+				gcoder.platform.waitingPositionX,
+				gcoder.platform.waitingPositionY,
+				z,
+				gantry.rapidMoveFeedRate,
+				NULL );
 
 	double dx = gcoder.platform.waitingPositionX - 3.0;
 	double dy = gcoder.platform.waitingPositionY - 0.0;
 
-	gantry.g1(ss, dx, dy, 0.6, 0.2 * gcoder.extruders[0].slowFeedRate , NULL);
+	gantry.g1(ss, dx, dy, z, 0.2 * anchorFeedRate , NULL);
 	ss << endl;
 }
 
@@ -321,25 +314,19 @@ void GCoder::moveZ(ostream & ss, double z, unsigned int  extruderId, double zFee
 
 void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, Extrusion &extrusion) const
 {
-	extrusion.flow = scalingFactor * extruders[extruderId].fastExtrusionSpeed;
-	extrusion.feedrate = scalingFactor * extruders[extruderId].slowFeedRate;
+	Extrusion *p = &extrusion;
+	*p = extruders[extruderId].extrusionProfile;
 
-	extrusion.leadIn =  extruders[extruderId].leadIn;
-	extrusion.leadInFeed = extruders[extruderId].fastFeedRate;
-	extrusion.leadOut = extruders[extruderId].leadOut;
-	extrusion.leadOutFeed = extruders[extruderId].fastFeedRate;
+	extrusion.feedrate *= gantry.scalingFactor;
+	extrusion.flow *= gantry.scalingFactor;
 
-	extrusion.snortFlow = extruders[extruderId].reversalExtrusionSpeed;
-	extrusion.squirtFlow = extruders[extruderId].reversalExtrusionSpeed;
-
-	extrusion.snortFeedrate = extruders[extruderId].fastFeedRate;
-	extrusion.squirtFeedrate = extruders[extruderId].fastFeedRate;
 
 	if(sliceId == 0)
 	{
 		extrusion.flow *= gcoding.firstLayerExtrudeMultiplier;
 		extrusion.feedrate *= gcoding.firstLayerExtrudeMultiplier;
 	}
+
 }
 
 void GCoder::calcInSetExtrusion (	unsigned int extruderId,
@@ -348,21 +335,11 @@ void GCoder::calcInSetExtrusion (	unsigned int extruderId,
 										unsigned int insetCount,
 										Extrusion &extrusion) const
 {
-	extrusion.flow = scalingFactor * extruders[extruderId].fastExtrusionSpeed;
-	extrusion.feedrate = scalingFactor * extruders[extruderId].slowFeedRate;
+	Extrusion *p = &extrusion;
+	*p = extruders[extruderId].extrusionProfile;
 
-	extrusion.leadIn =  extruders[extruderId].leadIn;
-	extrusion.leadInFeed = extruders[extruderId].fastFeedRate;
-	extrusion.leadOut = extruders[extruderId].leadOut;
-	extrusion.leadOutFeed = extruders[extruderId].fastFeedRate;
-
-	extrusion.snortFlow = extruders[extruderId].reversalExtrusionSpeed;
-	extrusion.squirtFlow = extruders[extruderId].reversalExtrusionSpeed;
-
-	extrusion.snortFeedrate =  extruders[extruderId].fastFeedRate;
-	extrusion.squirtFeedrate = extruders[extruderId].fastFeedRate;
-
-
+	extrusion.feedrate *= gantry.scalingFactor;
+	extrusion.flow *= gantry.scalingFactor;
 	if(sliceId == 0)
 	{
 		extrusion.flow *= gcoding.firstLayerExtrudeMultiplier;
@@ -379,7 +356,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 
 	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
 	// to each extruder its speed
-	double zFeedrate = scalingFactor * extruders[0].slowFeedRate;
+	double zFeedrate = gantry.scalingFactor * extruders[0].zFeedRate;
 	// moving all up. This is the first move for every new layer
 
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
@@ -398,11 +375,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		if (extruderCount > 0)
 		{
 			gantry.writeSwitchExtruder(ss, extruderId);
-
 		}
 		try
 		{
-
 			if(gcoding.infills && gcoding.infillFirst)
 			{
 				Extrusion extrusion;
@@ -481,11 +456,11 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 
 void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
 {
+	/*
 	bool doX=false;
 	bool doY=false;
 	bool doZ=false;
 	bool doFeed=false;
-
 
 	if(this->x >= MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
 	{
@@ -494,6 +469,11 @@ void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, con
 		doZ = true;
 		doFeed = true;
 	}
+	*/
+	bool doX = true;
+	bool doY = true;
+	bool doZ = true;
+	bool doFeed = true;
 
 	if(!mgl::sameSame(this->x, x, SAMESAME_TOL))
 	{
@@ -593,15 +573,23 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 
 }
 
-
-void GCoder::writeGcodeConfig(std::ostream &ss, const std::string indent) const
+void GCoder::writeGCodeConfig(std::ostream &ss, const char* filename) const
 {
+	std::string indent = "* ";
+	ss << endl;
+	ss << "(Makerbot Industries)" << endl;
+	ss << "(This file contains digital fabrication directives in gcode format)"<< endl;
+	ss << "(For your 3D printer)" << endl;
+	ss << "(http://wiki.makerbot.com/gcode)" <<  endl;
+
 	MyComputer hal9000;
+	//std::string indent = "* ";
 
 	ss << "(" << indent << "Generated by "<<  programName << " " << versionStr << ")"<< endl;
 	ss << "(" << indent << hal9000.clock.now() <<  ")" << endl;
 	ss << "(" << indent << "machine name: " << machineName << ")"<< endl;
 	ss << "(" << indent << "firmware revision:" << firmware << ")" << endl;
+	ss << "(" << indent << "3D model filename: " << filename << ")" << endl;
 
 	std::string plurial = extruders.size()? "":"s";
 	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;

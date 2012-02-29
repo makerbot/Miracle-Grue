@@ -47,14 +47,12 @@ struct Extrusion
 {
 	double feedrate;
 	double flow; // RPM value for the extruder motor... not a real unit :-(
+
 	double leadIn;
 	double leadOut;
-	double leadInFeed;
-	double leadOutFeed;
 
 	double snortFlow;
 	double snortFeedrate;
-
 	double squirtFlow;
 	double squirtFeedrate;
 };
@@ -64,16 +62,21 @@ struct Extruder
 	Extruder()
 		:coordinateSystemOffsetX(0),
 		extrusionTemperature(220),
-		defaultExtrusionSpeed(3),
-		slowFeedRate(1080),
-		slowExtrusionSpeed(1.0),
-		fastFeedRate(3000),
-		fastExtrusionSpeed(2.682),
 		nozzleZ(0)
 	{}
 
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
 	double extrusionTemperature; 	 // the extrusion temperature in Celsius
+
+	// this determines the gap between the nozzle tip
+	// and the layer at position z (measured at the middle of the layer)
+	double nozzleZ;
+
+	double zFeedRate;
+	Extrusion extrusionProfile;
+
+
+/*
 	double defaultExtrusionSpeed;
 
 	// first layer settings, for extra stickyness
@@ -85,15 +88,8 @@ struct Extruder
 	// different strokes, for different folks
 	double fastFeedRate;
 	double fastExtrusionSpeed;
+*/
 
-	// this determines the gap between the nozzle tip
-	// and the layer at position z (measured at the middle of the layer)
-	double nozzleZ;
-
-	// the distance to start before a line (and get the extruder going)
-	double leadIn;
-	// the reversal distance after a polygon.
-	double leadOut;
 };
 
 
@@ -102,18 +98,26 @@ struct Extruder
 // change as the print happens.
 struct Gantry
 {
-public:
+
 	//unsigned int nb;
-	double x,y,z,feed;     // position
-
-
+	double x,y,z,feed;     // current position and feed
 	std::string comment;   // if I'm not useful by xmas please delete me
+
+public:
+	double rapidMoveFeedRate;
+	bool xyMaxHoming;
+	bool zMaxHoming;
+	double scalingFactor;
 
 
 	Gantry()
 		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
+		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 rapidMoveFeedRate(100),
+		 xyMaxHoming(true),
+		 zMaxHoming(false),
+		 scalingFactor(1)
 	{
 
 	}
@@ -158,13 +162,7 @@ struct Outline
 	float distance; // the distance in mm  between the model and the rectangular outline
 };
 
-struct Homing
-{
-	bool xyMaxHoming;
-	bool zMaxHoming;
-public:
-	Homing():xyMaxHoming(true), zMaxHoming(false){}
-};
+
 
 // directives for the Gcoder
 struct GCoding
@@ -190,8 +188,7 @@ public:
     std::string versionStr;
     std::string machineName;
     std::string firmware;
-    double scalingFactor;
-    Homing homing;
+
     GCoding gcoding;
     Platform platform;
     Outline outline;
@@ -208,7 +205,7 @@ public:
     								unsigned int insetId,	 unsigned int insetCount,
     								Extrusion &extrusionParams) const;
 
-    void writeStartOfFile(std::ostream & ss);
+    void writeStartOfFile(std::ostream & ss, const char* filename);
     void writeGcodeEndOfFile(std::ostream & ss) const;
     const std::vector<Extruder> & readExtruders() const
     {
@@ -216,17 +213,17 @@ public:
     }
 
 
-    void writeGcodeConfig(std::ostream & ss, const std::string indent) const;
     void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
+
 private:
-    void writeGCodeConfig(std::ostream & ss) const;
+
+    void writeGCodeConfig(std::ostream & ss, const char* filename) const;
     void writeMachineInitialization(std::ostream & ss) const;
     void writePlatformInitialization(std::ostream & ss) const;
     void writeExtrudersInitialization(std::ostream & ss) const;
-    void writeHomingSequence(std::ostream & ss) const;
+    void writeHomingSequence(std::ostream & ss);
     void writeWarmupSequence(std::ostream & ss);
     void writeAnchor(std::ostream & ss);
-
 
     void writePolygons(	std::ostream& ss,
 						double z,
@@ -238,9 +235,7 @@ private:
 						const Extrusion &extrusionParams,
 						const Polygon & polygon);
 
-
     void writeWipeExtruder(std::ostream& ss, int extruderId) const;
-
 };
 
 

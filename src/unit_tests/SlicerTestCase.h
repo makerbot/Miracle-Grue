@@ -38,9 +38,11 @@ private:
 
 		// CPPUNIT_TEST( test_slice_34_loop_0);
 
-		CPPUNIT_TEST(testCollapse);
-		CPPUNIT_TEST( test_slice_56_loop_3_short);
-
+//		CPPUNIT_TEST(testCollapse);
+//		CPPUNIT_TEST( test_slice_56_loop_3_short);
+//		CPPUNIT_TEST( test_hollow_pyramid_1_loop_0);
+//		CPPUNIT_TEST( test_hollow_pyramid_90_loop_0);
+		CPPUNIT_TEST( test_collinear);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -84,6 +86,10 @@ protected:
   void test_isolation();
   void testCollapse();
   void test_slice_56_loop_3_short();
+
+  void test_hollow_pyramid_1_loop_0();
+  void test_hollow_pyramid_90_loop_0();
+  void test_collinear();
 };
 
 
