@@ -506,7 +506,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<TriangleSegment2> &origin
 
 	multimap<Scalar, unsigned int> collapsingSegments;
 
-	cout << endl << "removeFirstCollapsedSegments:: looking for collapses" << endl;
+	// cout << endl << "removeFirstCollapsedSegments:: looking for collapses" << endl;
 	std::vector<TriangleSegment2> segments =  originalSegments;
 	for (unsigned int i=0; i < segments.size(); i++)
 	{
@@ -526,7 +526,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<TriangleSegment2> &origin
 		if(collapsed)
 		{
 			// shortestCollapseDistance = collapseDistance;
-			cout << " **  segment " << i << " ,collapse distance " <<  collapseDistance << endl;
+			//cout << " **  segment " << i << " ,collapse distance " <<  collapseDistance << endl;
 			collapsingSegments.insert(std::pair<Scalar, unsigned int>(collapseDistance, i));
 		}
 	}
@@ -548,15 +548,19 @@ Scalar removeFirstCollapsedSegments(	const std::vector<TriangleSegment2> &origin
 	//cout << "COLLAPSED ID " << firstCollapse << endl;
 	std::set<unsigned int> toRemove;
 
-	cout << "removeFirstCollapsedSegments:: who to remove" << endl;
+	// cout << "removeFirstCollapsedSegments:: who to remove" << endl;
 	bool done = false;
 	do
 	{
 		Scalar d = (*collapserator).first;
 		unsigned int segmentId = (*collapserator).second;
-		cout << " * ++ * " << segmentId << endl;
+		// cout << " * ++ * " << segmentId << endl;
 		toRemove.insert(segmentId);
 		collapserator++;
+		if(collapserator == collapsingSegments.end() )
+		{
+			done = true;
+		}
 		if(d > collapseDistance )
 		{
 			done = true;
@@ -564,12 +568,12 @@ Scalar removeFirstCollapsedSegments(	const std::vector<TriangleSegment2> &origin
 	}
 	while(!done);
 
-	cout << "removeFirstCollapsedSegments:: making new list" << endl;
+	//cout << "removeFirstCollapsedSegments:: making new list" << endl;
 	for (unsigned int i=0; i < segments.size(); i++)
 	{
 		if(toRemove.find(i) ==  toRemove.end() )
 		{
-			cout << " * * " << i << endl;
+
 			relevantSegments.push_back(segments[i]);
 		}
 	}
@@ -586,17 +590,17 @@ begin
 end;
 */
 
-bool collinear(const TriangleSegment2 &prev, const TriangleSegment2 &current, Scalar tol )
+bool collinear(const TriangleSegment2 &prev, const TriangleSegment2 &current, Scalar tol, Vector2 &mid)
 {
 
 	Scalar x1 = prev.a[0];
 	Scalar y1 = prev.a[1];
-	Scalar x2 = 0.5 * (prev.b[0] + current.a[0]);
-	Scalar y2 = 0.5 * (prev.b[1] + current.a[1]);
+	mid.x = 0.5 * (prev.b[0] + current.a[0]);
+	mid.y = 0.5 * (prev.b[1] + current.a[1]);
 	Scalar x3 = current.b[0];
 	Scalar y3 = current.b[1];
 
-	Scalar c = ((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1));
+	Scalar c = ((mid.x - x1) * (y3 - y1) - (x3 - x1) * (mid.y - y1));
 	bool r = sameSame(c, 0, tol);
 	return r;
 }
@@ -605,20 +609,18 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 					Scalar elongation,
 					std::vector<TriangleSegment2> &segments)
 {
+	Scalar tol = 1e-6;
 	assert(longSegments.size() > 0);
 
 //	std::vector<TriangleSegment2> segments =longSegments;
 //	segments.reserve(longSegments.size());
 //	cout<< "****" << endl;
 
+	// deep copy
 	std::vector<TriangleSegment2>* p =  &segments;
 	(*p) = longSegments;
 
-	for(unsigned int i = 0; i < longSegments.size(); i++)
-	{
-		TriangleSegment2 seg = longSegments[i];
-		segments.push_back(seg);
-	}
+
 	assert(longSegments.size() == segments.size());
 
 	for(unsigned int i = 0; i < segments.size(); i++)
@@ -631,16 +633,22 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 		if(previousSegment.length()==0)
 			continue;
 		if(currentSegment.length()==0)
-					continue;
+			continue;
 
 //		cout << i<< "}	previousSegment = " << previousSegment <<";" <<  endl;
 //		cout << "	prev_length= " << previousSegment.length() <<";" <<  endl;
 //		cout << "	currentSegment = " << currentSegment << ";" << endl;
 //		cout << "	curr_length= " << currentSegment.length() << ";" << endl;
 
-		assert(previousSegment.length() >0);
-		assert(currentSegment.length() >0);
+		if (previousSegment.b.sameSame(currentSegment.a, tol))
+			continue;
 
+		Vector2 mid;
+		if(collinear(previousSegment, currentSegment,tol, mid))
+		{
+			previousSegment.b = mid;
+			currentSegment.a = mid;
+		}
 
 		bool attached = attachSegments(previousSegment, currentSegment, elongation);
 		if(!attached)

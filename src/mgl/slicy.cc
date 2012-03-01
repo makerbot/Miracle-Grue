@@ -425,14 +425,15 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 			Polygons &polygons = insetsPolys[shellId];
 			for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
 			{
-				polygons.push_back(Polygon());
-				Polygon &polygon = *polygons.rbegin();
 				const std::vector<TriangleSegment2>& segmentLoop = insetsForLoops[outlineId][nbOfShells -1 - shellId];
-				segments2polygon(segmentLoop, polygon);
+				if(segmentLoop.size() >2)
+				{
+					polygons.push_back(Polygon());
+					Polygon &polygon = *polygons.rbegin();
+					segments2polygon(segmentLoop, polygon);
+				}
 			}
 		}
-
-
 	}
 
 	// deep copy the the infill boundaries

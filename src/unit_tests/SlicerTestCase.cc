@@ -1656,7 +1656,7 @@ void SlicerTestCase::test_hollow_pyramid_90_loop_0()
 			layerW);
 }
 
-bool collinear(const TriangleSegment2 &a, const TriangleSegment2 &b, Scalar tol );
+bool collinear(const TriangleSegment2 &a, const TriangleSegment2 &b, Scalar tol, Vector2 &mid );
 
 void SlicerTestCase::test_collinear()
 {
@@ -1664,7 +1664,8 @@ void SlicerTestCase::test_collinear()
 	TriangleSegment2 current = TriangleSegment2(Vector2(-1.605, 4.612), Vector2(-1.605, 1.446));
 
 	Scalar tol = 1e-6;
-	bool test = collinear(prev, current, tol);
+	Vector2 mid;
+	bool test = collinear(prev, current, tol, mid);
 	CPPUNIT_ASSERT(test);
 
 
