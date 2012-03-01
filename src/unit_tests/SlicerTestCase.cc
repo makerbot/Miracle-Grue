@@ -1670,3 +1670,105 @@ void SlicerTestCase::test_collinear()
 
 
 }
+
+void SlicerTestCase::test_hexagon_0_1()
+{
+	cout << endl;
+	std::vector<TriangleSegment2> segs;
+	Scalar x = 0;
+	Scalar y = 0;
+
+	segs.push_back(TriangleSegment2(Vector2(9.8+x, -5.658031+y), Vector2(9.53+x, -5.813916+y)));
+	segs.push_back(TriangleSegment2(Vector2(9.53+x, -5.813916+y), Vector2(-0.0+x, -11.31607+y)));
+	segs.push_back(TriangleSegment2(Vector2(-0.0+x, -11.31607+y), Vector2(-0.27+x, -11.160186+y)));
+	segs.push_back(TriangleSegment2(Vector2(-0.27+x, -11.160186+y), Vector2(-9.8+x, -5.658031+y)));
+	segs.push_back(TriangleSegment2(Vector2(-9.8+x, -5.658031+y), Vector2(-9.8+x, -5.346262+y)));
+	segs.push_back(TriangleSegment2(Vector2(-9.8+x, -5.346262+y), Vector2(-9.8+x, 5.658034+y)));
+	segs.push_back(TriangleSegment2(Vector2(-9.8+x, 5.658034+y), Vector2(-9.53+x, 5.813918+y)));
+	segs.push_back(TriangleSegment2(Vector2(-9.53+x, 5.813918+y), Vector2(0.0+x, 11.31607+y)));
+	segs.push_back(TriangleSegment2(Vector2(0.0+x, 11.31607+y), Vector2(0.27+x, 11.160186+y)));
+	segs.push_back(TriangleSegment2(Vector2(0.27+x, 11.160186+y), Vector2(9.8+x, 5.658034+y)));
+	segs.push_back(TriangleSegment2(Vector2(9.8+x, 5.658034+y), Vector2(9.8+x, 5.346265+y)));
+	segs.push_back(TriangleSegment2(Vector2(9.8+x, 5.346265+y), Vector2(9.8+x, -5.658031+y)));
+
+	Scalar layerW = 0.8;
+	unsigned int nbOfShells = 3;
+
+	inset2scad(segs,
+			"./test_cases/slicerTestCase/output/test_hexagon_0_1.scad",
+			nbOfShells,
+			layerW);
+
+}
+
+void SlicerTestCase::test_knot_26_0_3()
+{
+	cout << endl;
+	std::vector<TriangleSegment2> initialSegs;
+
+	std::vector<TriangleSegment2>& segs = initialSegs;
+	Scalar x = 0;
+	Scalar y = 0;
+
+	segs.push_back(TriangleSegment2(Vector2(5.450061+x, 15.545332+y), Vector2(5.025458+x, 14.247893+y)));
+	segs.push_back(TriangleSegment2(Vector2(5.025458+x, 14.247893+y), Vector2(4.853937+x, 13.89291+y)));
+	segs.push_back(TriangleSegment2(Vector2(4.853937+x, 13.89291+y), Vector2(4.658089+x, 13.454072+y)));
+	segs.push_back(TriangleSegment2(Vector2(4.658089+x, 13.454072+y), Vector2(3.795509+x, 12.511628+y)));
+	segs.push_back(TriangleSegment2(Vector2(3.795509+x, 12.511628+y), Vector2(3.577698+x, 12.262424+y)));
+	segs.push_back(TriangleSegment2(Vector2(3.578258+x, 12.263054+y), Vector2(2.590469+x, 11.166202+y)));
+	segs.push_back(TriangleSegment2(Vector2(2.590469+x, 11.166202+y), Vector2(2.267582+x, 10.77404+y)));
+	segs.push_back(TriangleSegment2(Vector2(2.267582+x, 10.77404+y), Vector2(1.373256+x, 9.801078+y)));
+	segs.push_back(TriangleSegment2(Vector2(1.373256+x, 9.801078+y), Vector2(1.040342+x, 9.387912+y)));
+	segs.push_back(TriangleSegment2(Vector2(1.040342+x, 9.387912+y), Vector2(-0.07456+x, 8.250493+y)));
+	segs.push_back(TriangleSegment2(Vector2(-0.07456+x, 8.250493+y), Vector2(-0.304133+x, 7.978325+y)));
+	segs.push_back(TriangleSegment2(Vector2(-0.304133+x, 7.978325+y), Vector2(-1.25862+x, 7.102147+y)));
+	segs.push_back(TriangleSegment2(Vector2(-1.25862+x, 7.102147+y), Vector2(-2.349039+x, 6.75854+y)));
+	segs.push_back(TriangleSegment2(Vector2(-2.349039+x, 6.75854+y), Vector2(-4.325067+x, 6.501143+y)));
+	segs.push_back(TriangleSegment2(Vector2(-4.325067+x, 6.501143+y), Vector2(-4.804036+x, 7.082986+y)));
+	segs.push_back(TriangleSegment2(Vector2(-4.804036+x, 7.082986+y), Vector2(-6.049232+x, 8.189452+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.049232+x, 8.189452+y), Vector2(-6.056864+x, 8.335983+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.056864+x, 8.335983+y), Vector2(-6.091451+x, 8.516329+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.091451+x, 8.516329+y), Vector2(-6.041699+x, 9.953586+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.041699+x, 9.953586+y), Vector2(-6.204598+x, 11.476621+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.204598+x, 11.476621+y), Vector2(-6.197295+x, 11.511933+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.197295+x, 11.511933+y), Vector2(-6.1935+x, 11.563446+y)));
+	segs.push_back(TriangleSegment2(Vector2(-6.1935+x, 11.563446+y), Vector2(-5.398063+x, 13.175654+y)));
+	segs.push_back(TriangleSegment2(Vector2(-5.398063+x, 13.175654+y), Vector2(-5.167049+x, 13.764749+y)));
+	segs.push_back(TriangleSegment2(Vector2(-5.167049+x, 13.764749+y), Vector2(-4.336053+x, 14.917946+y)));
+	segs.push_back(TriangleSegment2(Vector2(-4.336053+x, 14.917946+y), Vector2(-3.693982+x, 15.916335+y)));
+	segs.push_back(TriangleSegment2(Vector2(-3.693982+x, 15.916335+y), Vector2(-2.646139+x, 16.835044+y)));
+	segs.push_back(TriangleSegment2(Vector2(-2.646139+x, 16.835044+y), Vector2(-1.57206+x, 17.821738+y)));
+	segs.push_back(TriangleSegment2(Vector2(-1.57206+x, 17.821738+y), Vector2(1.456402+x, 19.364116+y)));
+	segs.push_back(TriangleSegment2(Vector2(1.456402+x, 19.364116+y), Vector2(4.645849+x, 18.766898+y)));
+	segs.push_back(TriangleSegment2(Vector2(4.645849+x, 18.766898+y), Vector2(5.440787+x, 17.39162+y)));
+	segs.push_back(TriangleSegment2(Vector2(5.441104+x, 17.391079+y), Vector2(5.845535+x, 16.708904+y)));
+	segs.push_back(TriangleSegment2(Vector2(5.845535+x, 16.708904+y), Vector2(5.450265+x, 15.545944+y)));
+
+	std::vector<TriangleSegment2> clipped;
+	std::vector<TriangleSegment2> clipb;
+
+
+	clip(initialSegs, 1, 13, clipb);
+	clip(clipb, 6, 16, clipped);
+
+//    segments =[
+//       [[5.450061, 15.545332, 0.000000],[ 5.025458, 14.247893, 0.000000]],
+//       [[5.025458, 14.247893, 0.050000],[ -4.804036, 7.082986, 0.050000]],
+//       [[-4.804036, 7.082986, 0.100000],[ -6.049232, 8.189452, 0.100000]],
+//       [[-6.049232, 8.189452, 0.150000],[ -6.056864, 8.335983, 0.150000]],
+//       [[-6.056864, 8.335983, 0.200000],[ -6.091451, 8.516329, 0.200000]],
+//       [[-6.091451, 8.516329, 0.250000],[ -6.041699, 9.953586, 0.250000]],
+//       [[-6.041699, 9.953586, 0.300000],[ 5.440787, 17.391620, 0.300000]],
+//       [[5.441104, 17.391079, 0.350000],[ 5.845535, 16.708904, 0.350000]],
+//       [[5.845535, 16.708904, 0.400000],[ 5.450265, 15.545944, 0.400000]],
+//       ];
+
+
+	segs = clipped;
+	Scalar layerW =0.839; // 0.8399;
+	unsigned int nbOfShells = 3;
+	inset2scad(segs,
+			"./test_cases/slicerTestCase/output/test_knot_26_0_3.scad",
+			nbOfShells,
+			layerW);
+}
