@@ -45,7 +45,8 @@ private:
 //		CPPUNIT_TEST( test_collinear);
 //		CPPUNIT_TEST( test_hexagon_0_1);
 
-		CPPUNIT_TEST( test_knot_26_0_3);
+//		CPPUNIT_TEST( test_knot_26_0_3);
+		CPPUNIT_TEST(test_3d_knot_57_3);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -95,6 +96,7 @@ protected:
   void test_collinear();
   void test_hexagon_0_1();
   void test_knot_26_0_3();
+  void test_3d_knot_57_3();
 };
 
 
