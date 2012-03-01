@@ -67,25 +67,22 @@ void inshelligence( const SegmentTable & outlinesSegments,
 
 	assert(insetsForLoops.size() ==0);
 	//
+	//
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
     for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 	{
     	const std::vector<TriangleSegment2> &outlineLoop = outlinesSegments[outlineId];
     	assert(outlineLoop.size() > 0);
 
-		// dbgs__("outline " << outlineId << "/" <<  outlinesSegments.size())
-		// prepare  a new vector of loops for insets of this outline
 		insetsForLoops.push_back(SegmentTable());
 		assert(insetsForLoops.size() == outlineId + 1);
 
 		SegmentTable &insetTable = *insetsForLoops.rbegin(); // inset curves for a single loop
 		insetTable.reserve(nbOfShells);
-
-		MyComputer myComputer;
-
-
-		unsigned int shellId = 0;
-		Shrinky shrinky; // loopScadFile.c_str());
+		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+		{
+			insetTable.push_back(std::vector<TriangleSegment2>());
+		}
 
 		unsigned int segmentCountBefore =0;
 		unsigned int segmentCountAfter =0;
@@ -96,27 +93,25 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		insetDistances.reserve(nbOfShells);
 		layerWidths.reserve(nbOfShells);
 
-		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-		{
-			insetTable.push_back(std::vector<TriangleSegment2>());
-			Scalar insetDistance = shellId ==0? insetDistance = 0.5*layerW: insetDistanceFactor *layerW;
-			insetDistances.push_back(insetDistance);
-			layerWidths.push_back(layerW);
-		}
-
-		vector<TriangleSegment2> masterLoop = outlineLoop;
+		unsigned int shellId=0;
 		try
 		{
-			//ScadTubeFile::segment3(cout,"","segments", masterLoop, 0, 0.1);
-			vector<TriangleSegment2> &previousInsets  = masterLoop;
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+			{
+				Scalar insetDistance = shellId ==0? insetDistance = 0.5*layerW: insetDistanceFactor *layerW;
+				insetDistances.push_back(insetDistance);
+				layerWidths.push_back(layerW);
+			}
+			Shrinky shrinky;
+			const vector<TriangleSegment2> *previousInsets  = &outlineLoop;
+			for (shellId=0; shellId < nbOfShells; shellId++)
 			{
 				Scalar insetDistance = insetDistances[shellId];
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
-				if(previousInsets.size() > 2)
+				if((*previousInsets).size() > 2)
 				{
-					shrinky.inset(previousInsets, insetDistance, insets);
-					previousInsets = insets;
+					shrinky.inset(*previousInsets, insetDistance, insets);
+					previousInsets = &insets;
 				}
 			}
 		}
@@ -131,6 +126,8 @@ void inshelligence( const SegmentTable & outlinesSegments,
 
 			stringstream ss;
 			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
+
+			MyComputer myComputer;
 			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str().c_str());
 			Shrinky shriker(loopScadFile.c_str());
 			shriker.dz=0.1;
@@ -155,7 +152,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					insets.clear();
 				}
 			}
-			catch(ShrinkyMess &messup2)
+			catch(ShrinkyMess &messup2) // the same excpetion is thrown again
 			{
 				cout << "saving " << endl;
 			}
@@ -197,10 +194,7 @@ Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
 	backToOrigin[0] = c[0];
 	backToOrigin[1] = c[1];
 
-
 	Vector3 rotationCenter = limits.center();
-
-
 }
 
 Slicy::~Slicy()
@@ -265,25 +259,7 @@ void Slicy::openScadFile(const char *scadFile, double layerW,Scalar layerH ,size
 		out << "    }" << std::endl;
 		out << "}" << std::endl;
 		out << std::endl;
-/*
-	    out << std::endl;
-	    out << "module outline_segments(segments)" << std::endl;
-	    out << "{" << std::endl;
-	    out << "    for(seg = segments)" << std::endl;
-	    out << "    {" << std::endl;
-	    out << "        out_line(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
-	    out << "    }" << std::endl;
-	    out << "}" << std::endl;
-	    out << std::endl;
 
-	    out << "module infill_segments(segments)" << std::endl;
-	    out << "{" << std::endl;
-	    out << "    for(seg = segments)" << std::endl;
-	    out << "    {" << std::endl;
-	    out << "        extrusion(seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]);" << std::endl;
-	    out << "   }" << std::endl;
-	    out << "}" << std::endl;
-*/
 	    fscad.writeHeader();
 	}
 }
@@ -316,16 +292,10 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 				ss << "insets_" << sliceId << "_";
 
 				fscad.writePolygons(ss.str().c_str(), "color([0,1,0,1])infill",  polygons, zz, shellId);
-//				cout << ss.str().c_str() << endl;
-//				cout <<"  NB of polygons: "<< polygons.size()<<endl;
-//				for (int i=0; i < polygons.size(); i++)
-//				{
-//					cout << "     " << polygons[i].size() << " points" << endl;
-//				}
+
 			}
+
 			// one function that calls all insets
-
-
 			if(insetCount > 0)
 			{
 				stringstream ss;
