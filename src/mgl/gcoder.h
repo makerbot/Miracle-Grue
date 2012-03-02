@@ -27,10 +27,10 @@ class GcoderMess : public Messup {	public: GcoderMess(const char *msg) :Messup(m
 
 struct Platform
 {
-	Platform():temperature(0),
+	Platform():temperature(100),
 				automated(false),
-				waitingPositionX(0),
-				waitingPositionY(0),
+				waitingPositionX(50),
+				waitingPositionY(-50),
 				waitingPositionZ(0)
 	{}
 	double temperature;				// temperature of the platform during builds
@@ -45,6 +45,17 @@ struct Platform
 
 struct Extrusion
 {
+	Extrusion()
+		:feedrate(2400),
+		 flow(2.8),
+		 leadIn(0),
+		 leadOut(0),
+		 snortFlow(35),
+		 squirtFlow(35),
+		 snortFeedrate(600),
+		 squirtFeedrate(600)
+	{}
+
 	double feedrate;
 	double flow; // RPM value for the extruder motor... not a real unit :-(
 
@@ -75,20 +86,6 @@ struct Extruder
 	double zFeedRate;
 	Extrusion extrusionProfile;
 
-
-/*
-	double defaultExtrusionSpeed;
-
-	// first layer settings, for extra stickyness
-	double slowFeedRate;
-	double slowExtrusionSpeed;
-
-	double reversalExtrusionSpeed;
-
-	// different strokes, for different folks
-	double fastFeedRate;
-	double fastExtrusionSpeed;
-*/
 
 };
 
@@ -167,6 +164,14 @@ struct Outline
 // directives for the Gcoder
 struct GCoding
 {
+	GCoding()
+		:outline(false),
+		 insets(true),
+		 infills(true),
+		 infillFirst(false),
+		 firstLayerExtrudeMultiplier(0.25),
+		 dualtrick(false)
+		{}
 	bool outline;
 	bool insets;
 	bool infills;
@@ -183,7 +188,13 @@ struct GCoding
 //
 class GCoder
 {
+
 public:
+	GCoder()
+	:programName("Miracle-Grue"),
+	 versionStr("0.0.1")
+	{
+	}
     std::string programName;
     std::string versionStr;
     std::string machineName;
