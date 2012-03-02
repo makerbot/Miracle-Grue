@@ -89,7 +89,7 @@ if operating_system.find("_NT") > 0:
     print " ** CPPUNIT version checK:", "N/A"#commands.getoutput("cygcheck -l cppunit")
 
 if operating_system == "Darwin":
-    print " ** CPPUNIT version checK:", "N/A"
+    print " ** CPPUNIT version checK:", commands.getoutput("port info --line cppunit | grep ^cppunit")
 
 debug = get_environment_flag('MG_DEBUG',False)
 multi_thread = get_environment_flag('MG_MT', False)
@@ -101,6 +101,10 @@ if qt:
 	tools = tools+['qt4']
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
 # print "os.environ['PATH']=", os.environ['PATH']
+
+if operating_system == "Darwin":
+    env.Append(CPPPATH = ['/opt/local/include'])
+    env.Append(LIBPATH = ['/opt/local/lib'])
 
 if debug:
     env.Append(CCFLAGS = '-g')
@@ -144,7 +148,7 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
 default_libs = [ 'mgl', '_json',] 
-default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
+default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
