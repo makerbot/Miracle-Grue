@@ -1,0 +1,25 @@
+﻿Build started 02.03.2012 14:12:07.
+     1>Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\jsoncpplib\jsoncpplib.vcxproj" on node 3 (build target(s)).
+     1>PrepareForBuild:
+         Creating directory "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\Debug\".
+       InitializeBuildStatus:
+         Creating "Debug\jsoncpplib.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"..\..\src\json-cpp\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt "..\..\src\json-cpp\src\lib_json\json_reader.cpp" "..\..\src\json-cpp\src\lib_json\json_value.cpp" "..\..\src\json-cpp\src\lib_json\json_writer.cpp"
+         json_writer.cpp
+         json_value.cpp
+         json_reader.cpp
+         Generating Code...
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\Debug\jsoncpplib.lib" /NOLOGO Debug\json_reader.obj
+         Debug\json_value.obj
+         Debug\json_writer.obj
+         jsoncpplib.vcxproj -> C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\Debug\jsoncpplib.lib
+       FinalizeBuildStatus:
+         Deleting file "Debug\jsoncpplib.unsuccessfulbuild".
+         Touching "Debug\jsoncpplib.lastbuildstate".
+     1>Done Building Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\jsoncpplib\jsoncpplib.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.42

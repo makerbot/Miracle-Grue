@@ -1,0 +1,13 @@
+﻿Build started 02.03.2012 17:43:40.
+     1>Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\regionerUnitTest\regionerUnitTest.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Debug\regionerUnitTest.unsuccessfulbuild".
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I..\..\src /I..\cppunit\ /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\src\unit_tests\RegionerTestCase.cc
+         RegionerTestCase.cc
+     1>c:\users\ted\documents\mg\miracle-grue\src\unit_tests\regionertestcase.cc(4): fatal error C1083: Cannot open include file: 'omp.h': No such file or directory
+     1>Done Building Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\regionerUnitTest\regionerUnitTest.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.30
