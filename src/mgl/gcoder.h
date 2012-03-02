@@ -73,7 +73,8 @@ struct Extruder
 	Extruder()
 		:coordinateSystemOffsetX(0),
 		extrusionTemperature(220),
-		nozzleZ(0)
+		nozzleZ(0),
+		zFeedRate(100)
 	{}
 
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip

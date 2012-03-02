@@ -417,7 +417,6 @@ void GCoderTestCase::testGridPath()
 	gcoder.extruders.push_back(Extruder());
 
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_GRID_PATH);
-	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
@@ -476,7 +475,7 @@ void GCoderTestCase::testMultiGrid()
 	gcoder.extruders.push_back(Extruder());
 //	loadGCoderData(config, gcoder);
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
-	gcoder.writeGcodeEndOfFile(gout);
+
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();

@@ -361,7 +361,15 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
 	{
 	    double z = layerZ + extruders[extruderId].nozzleZ;
-	    moveZ(ss, z, extruderId, zFeedrate);
+
+		try
+		{
+		    moveZ(ss, z, extruderId, zFeedrate);
+		}
+		catch(GcoderMess &mixup)
+		{
+			cout << "ERROR writing Z move in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+		}
 
 		unsigned int dualtrickId =  extruderId;
 
@@ -371,12 +379,13 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insets;
 
 		//cout << endl <<  "Slice " << sliceData.sliceIndex << endl;
-		if (extruderCount > 0)
-		{
-			gantry.writeSwitchExtruder(ss, extruderId);
-		}
+
 		try
 		{
+			if (extruderCount > 0)
+			{
+				gantry.writeSwitchExtruder(ss, extruderId);
+			}
 			if(gcoding.infills && gcoding.infillFirst)
 			{
 				Extrusion extrusion;
@@ -385,9 +394,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				writePolygons(ss, z, extrusion, infills);
 			}
 		}
-		catch(GcoderMess &messup)
+		catch(GcoderMess &mixup)
 		{
-			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << endl;
+			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 		try
 		{
@@ -400,9 +409,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				writePolygons(ss, z, extrusion, loops);
 			}
 		}
-		catch(GcoderMess &messup)
+		catch(GcoderMess &mixup)
 		{
-			cout << "ERROR writing loops in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << endl;
+			cout << "ERROR writing loops in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		try
@@ -423,9 +432,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				}
 			}
 		}
-		catch(GcoderMess &messup)
+		catch(GcoderMess &mixup)
 		{
-			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << endl;
+			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		try
@@ -438,9 +447,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				writePolygons(ss, z, extrusion, infills);
 			}
 		}
-		catch(GcoderMess &messup)
+		catch(GcoderMess &mixup)
 		{
-			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << endl;
+			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		if (extruderCount > 0)
