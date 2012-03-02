@@ -102,7 +102,10 @@ struct Gantry
 	std::string comment;   // if I'm not useful by xmas please delete me
 
 public:
-	double rapidMoveFeedRate;
+	double rapidMoveFeedRateXY;
+	double rapidMoveFeedRateZ;
+	double homingFeedRateZ;
+
 	bool xyMaxHoming;
 	bool zMaxHoming;
 	double scalingFactor;
@@ -112,10 +115,12 @@ public:
 		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 rapidMoveFeedRate(100),
+		 rapidMoveFeedRateXY(5000),
+		 rapidMoveFeedRateZ(1400),
 		 xyMaxHoming(true),
 		 zMaxHoming(false),
-		 scalingFactor(1)
+		 scalingFactor(1),
+		 homingFeedRateZ(100)
 	{
 
 	}

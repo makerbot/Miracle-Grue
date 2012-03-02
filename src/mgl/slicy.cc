@@ -93,7 +93,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		insetDistances.reserve(nbOfShells);
 		layerWidths.reserve(nbOfShells);
 
-		unsigned int shellId=0;
+		unsigned int currentShellIdForErrorReporting=0;
 		try
 		{
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
@@ -104,8 +104,9 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			}
 			Shrinky shrinky;
 			const vector<TriangleSegment2> *previousInsets  = &outlineLoop;
-			for (shellId=0; shellId < nbOfShells; shellId++)
+			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
+				currentShellIdForErrorReporting = shellId;
 				Scalar insetDistance = insetDistances[shellId];
 				std::vector<TriangleSegment2> &insets = insetTable[shellId];
 				if((*previousInsets).size() > 2)
@@ -122,7 +123,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
 			cout << "sliceId: " <<  sliceId   << endl;
 			cout << "loopId : " <<  outlineId << endl;
-			cout << "shellId: " <<  shellId   << endl;
+			cout << "shellId: " <<  currentShellIdForErrorReporting   << endl;
 
 			stringstream ss;
 			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
