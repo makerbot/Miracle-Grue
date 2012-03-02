@@ -109,7 +109,6 @@ void GCoder::writeExtrudersInitialization(std::ostream &ss) const
 	{
 		const Extruder &t = *i;
 		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
-//		ss << "M108 R" << t.defaultExtrusionSpeed << " T" << toolHeadId << " (set extruder " <<  toolHeadId << " speed to the default " << t.defaultExtrusionSpeed << " RPM)" << endl;
 		ss << "M104 S" << t.extrusionTemperature  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << t.extrusionTemperature << " degrees Celsius)" << endl;
 		ss << endl;
 		toolHeadId ++;
@@ -136,24 +135,25 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 	ss << "(go to home position)" << endl;
 
 	if(gcoder.gantry.xyMaxHoming)
-		ss << "G162 X Y F2500 (home XY axes maximum)" << endl;
+		ss << "G162 X Y F" << gantry.rapidMoveFeedRateXY<< " (home XY axes maximum)" << endl;
 	else
-		ss << "G161 X Y F2500 (home XY axes minimum)" << endl;
+		ss << "G161 X Y F" << gantry.rapidMoveFeedRateXY<< " (home XY axes minimum)" << endl;
 
 	if(gcoder.gantry.zMaxHoming)
-		ss << "G162 Z F800 (home Z axis maximum)" << endl;
+		ss << "G162 Z F" << gantry.rapidMoveFeedRateZ<< " (home Z axis maximum)" << endl;
 	else
-		ss << "G161 Z F800 (home Z axis minimum)" << endl;
+		ss << "G161 Z F" << gantry.rapidMoveFeedRateZ<< " (home Z axis minimum)" << endl;
 
 	ss << "G92 Z5 (set Z to 5)" << endl;
 	ss << "G1 Z0.0 (move Z down 0)" << endl;
 
 	if(gcoder.gantry.zMaxHoming)
-		ss << "G162 Z F100 (home Z axis maximum)" << endl;
+		ss << "G162 Z F" << gantry.homingFeedRateZ<< " (home Z axis maximum)" << endl;
 	else
-		ss << "G161 Z F100 (home Z axis minimum)" << endl;
+		ss << "G161 Z F" << gantry.homingFeedRateZ<< " (home Z axis minimum)" << endl;
 
 	ss << "M132 X Y Z A B (Recall stored home offsets for XYZAB axis)" << endl;
+
 	if (gcoder.extruders.size() > 1)
 		ss << "G54 (first work coordinate system)" << endl;
 	ss << endl;
@@ -161,17 +161,17 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 	int extruderCount = extruders.size();
 	if (extruderCount >0)
 	{
-
 		gantry.g1(ss, 	platform.waitingPositionX,
-				platform.waitingPositionY,
-				platform.waitingPositionZ,
-				gantry.rapidMoveFeedRate,
-				"go to waiting position" );
+						platform.waitingPositionY,
+						platform.waitingPositionZ,
+						gantry.rapidMoveFeedRateXY,
+						"go to waiting position" );
+
 	}
 	else
 	{
 		stringstream ss;
-		ss << "There are no extruders configured. LoadData has not been called.";
+		ss << "There are no extruders configured. Has the config file been read?";
 		GcoderMess mixup(ss.str().c_str());
 		throw mixup;
 	}
@@ -232,7 +232,7 @@ void GCoder::writeAnchor(std::ostream &ss)
 				gcoder.platform.waitingPositionX,
 				gcoder.platform.waitingPositionY,
 				z,
-				gantry.rapidMoveFeedRate,
+				gantry.rapidMoveFeedRateXY,
 				NULL );
 
 	double dx = gcoder.platform.waitingPositionX - 3.0;
@@ -464,20 +464,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 
 void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
 {
-	/*
-	bool doX=false;
-	bool doY=false;
-	bool doZ=false;
-	bool doFeed=false;
 
-	if(this->x >= MUCH_LARGER_THAN_THE_BUILD_PLATFORM)
-	{
-		doX = true;
-		doY = true;
-		doZ = true;
-		doFeed = true;
-	}
-	*/
 	bool doX = true;
 	bool doY = true;
 	bool doZ = true;
