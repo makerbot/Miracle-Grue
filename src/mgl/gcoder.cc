@@ -44,7 +44,6 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 {
 	size_t count =  polygon.size();
 
-
 	const Vector2 &a = polygon[0];	// first element
 	const Vector2 &b = polygon[1];
 

@@ -20,7 +20,7 @@ class GCoderTestCase : public CPPUNIT_NS::TestFixture
   CPPUNIT_TEST( testSimplePath );
   CPPUNIT_TEST( testGridPath );
   CPPUNIT_TEST( testMultiGrid );
-  CPPUNIT_TEST( testConfig);
+
 
   CPPUNIT_TEST_SUITE_END();
 
@@ -32,7 +32,7 @@ protected:
   void testSingleExtruder();
   void testDualExtruders();
   void testSimplePath();
-  void testConfig();
+
   void testFloatFormat();
   void testGridPath();
   void testMultiGrid();
