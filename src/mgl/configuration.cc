@@ -103,7 +103,10 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 	gcoder.gantry.xyMaxHoming = boolCheck(conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming");
 	gcoder.gantry.zMaxHoming  = boolCheck(conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming");
 	gcoder.gantry.scalingFactor = doubleCheck(conf.root["gantry"]["scalingFactor"], "gantry.scalingFactor");
-	gcoder.gantry.rapidMoveFeedRate = doubleCheck(conf.root["gantry"]["rapidMoveFeedRate"], "gantry.rapidMoveFeedRate");
+	gcoder.gantry.rapidMoveFeedRateXY = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateXY"], "gantry.rapidMoveFeedRateXY");
+	gcoder.gantry.rapidMoveFeedRateZ = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateZ"], "gantry.rapidMoveFeedRateZ");
+	gcoder.gantry.homingFeedRateZ = doubleCheck(conf.root["gantry"]["homingFeedRateZ"], "gantry.homingFeedRateZ");
+
 	gcoder.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
 	gcoder.platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
 	gcoder.platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");

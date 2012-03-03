@@ -164,7 +164,8 @@ void GCoderTestCase::testSingleExtruder()
 	cout << confstr << endl;
 
 	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+	gcoder.extruders.push_back(Extruder());
+//	loadGCoderData(config, gcoder);
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeGcodeEndOfFile(gout);
@@ -192,7 +193,9 @@ void GCoderTestCase::testDualExtruders()
 
 	std::ofstream gout(DUAL_EXTRUDER_FILE_NAME);
 	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+	gcoder.extruders.push_back(Extruder());
+	gcoder.extruders.push_back(Extruder());
+//	loadGCoderData(config, gcoder);
 
 	gcoder.writeStartOfFile(gout, DUAL_EXTRUDER_FILE_NAME );
 	dbg__
@@ -211,9 +214,9 @@ void GCoderTestCase::testSimplePath()
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 	// create empty configuration and set the file name
-	Configuration config;
+	//Configuration config;
 	// load 1 extruder
-	configureSingleExtruder(config);
+	//configureSingleExtruder(config);
 	//	CPPUNIT_ASSERT_EQUAL((size_t)1, config.extruders.size());
 	// create a path message as if received by a pather operation
 
@@ -226,7 +229,8 @@ void GCoderTestCase::testSimplePath()
 
 	std::ofstream gout(SINGLE_EXTRUDER_WITH_PATH);
 	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+	gcoder.extruders.push_back(Extruder());
+//	loadGCoderData(config, gcoder);
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_WITH_PATH);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
@@ -243,7 +247,7 @@ void GCoderTestCase::testSimplePath()
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
-
+/*
 void GCoderTestCase::testConfig()
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
@@ -263,7 +267,7 @@ void GCoderTestCase::testConfig()
 
 	cout << "ExtruderCount " << conf.root["extruders"].size() << endl;
 	GCoder single;
-	loadGCoderData(conf, single);
+//	loadGCoderData(conf, single);
 
 	cout << endl << endl << endl << "READ!" << endl;
 
@@ -287,7 +291,7 @@ void GCoderTestCase::testConfig()
 
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
-
+*/
 void gcodeStreamFormat(ostream &ss)
 {
     try
@@ -410,9 +414,9 @@ void GCoderTestCase::testGridPath()
 
 	std::ofstream gout(SINGLE_EXTRUDER_GRID_PATH);
 	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+	gcoder.extruders.push_back(Extruder());
+
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_GRID_PATH);
-	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
@@ -422,7 +426,6 @@ void GCoderTestCase::testGridPath()
 
 	gcoder.writeGcodeEndOfFile(gout);
 	gout.close();
-
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
@@ -439,10 +442,10 @@ void GCoderTestCase::testMultiGrid()
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
 
-	Configuration config;
-
-	// load 1 extruder
-	configureSingleExtruder(config);
+//	Configuration config;
+//
+//	// load 1 extruder
+//	configureSingleExtruder(config);
 
 	vector<SliceData> slices;
 	srand( time(NULL) );
@@ -469,9 +472,10 @@ void GCoderTestCase::testMultiGrid()
 
 	std::ofstream gout(SINGLE_EXTRUDER_MULTI_GRID_PATH);
 	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+	gcoder.extruders.push_back(Extruder());
+//	loadGCoderData(config, gcoder);
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
-	gcoder.writeGcodeEndOfFile(gout);
+
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
