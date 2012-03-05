@@ -124,8 +124,9 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 		throw mixup;
 	}
 
-	size_t extruderCount = conf.root["extruders"].size();
-	for(size_t i=0; i < extruderCount; i++)
+	int x = conf.root["extruders"].size();
+	unsigned int extruderCount = (unsigned int)x;
+	for(unsigned int i=0; i < extruderCount; i++)
 	{
 		stringstream ss;
 		ss << "extruders[" << i << "].";
