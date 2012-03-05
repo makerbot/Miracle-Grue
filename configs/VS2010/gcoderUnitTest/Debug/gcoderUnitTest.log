@@ -1,0 +1,20 @@
+﻿Build started 02.03.2012 17:30:58.
+     1>Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\gcoderUnitTest\gcoderUnitTest.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\gcoderUnitTest.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       ManifestResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+       Manifest:
+         All outputs are up-to-date.
+       FinalizeBuildStatus:
+         Deleting file "Debug\gcoderUnitTest.unsuccessfulbuild".
+         Touching "Debug\gcoderUnitTest.lastbuildstate".
+     1>Done Building Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\gcoderUnitTest\gcoderUnitTest.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.03

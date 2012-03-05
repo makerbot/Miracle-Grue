@@ -1,0 +1,56 @@
+﻿Build started 02.03.2012 15:10:06.
+     1>Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\mglib\mglib.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\mglib.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I..\..\src /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\src\mgl\configuration.cc ..\..\src\mgl\gcoder.cc ..\..\src\mgl\miracle.cc
+         gcoder.cc
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\core.h(498): warning C4244: 'return' : conversion from 'double' to 'unsigned int', possible loss of data
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\abstractable.h(81): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\time.inl(112) : see declaration of 'localtime'
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\meshy.h(185): warning C4018: '<=' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\meshy.h(159): warning C4101: 'min' : unreferenced local variable
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\meshy.h(160): warning C4101: 'max' : unreferenced local variable
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\meshy.h(205): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(127): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(131): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(143): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(147): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(158): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(180): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(187): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(202): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(222): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(242): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(288): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(325): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\scadtubefile.h(338): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(185): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(208): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(262): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(388): warning C4101: 'messup' : unreferenced local variable
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(403): warning C4101: 'messup' : unreferenced local variable
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(426): warning C4101: 'messup' : unreferenced local variable
+     1>c:\users\ted\documents\mg\miracle-grue\src\mgl\gcoder.cc(441): warning C4101: 'messup' : unreferenced local variable
+         Generating Code...
+         Skipping... (no relevant changes detected)
+         miracle.cc
+         configuration.cc
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\Debug\mglib.lib" /NOLOGO Debug\configuration.obj
+         Debug\connexity.obj
+         Debug\gcoder.obj
+         Debug\mgl.obj
+         Debug\miracle.obj
+         Debug\segment.obj
+         Debug\shrinky.obj
+         Debug\slicy.obj
+         mglib.vcxproj -> C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\Debug\mglib.lib
+       FinalizeBuildStatus:
+         Deleting file "Debug\mglib.unsuccessfulbuild".
+         Touching "Debug\mglib.lastbuildstate".
+     1>Done Building Project "C:\Users\Ted\Documents\MG\Miracle-Grue\VS2010\mglib\mglib.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.24
