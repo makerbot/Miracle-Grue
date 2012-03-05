@@ -383,9 +383,9 @@ bool edgeCollapse(const TriangleSegment2& segment,
 		a = segment.length();
 		b = edge0.magnitude();
 		c = edge1.magnitude();
-		collapseDistance = triangleAltitude(a,b,c);
 
-		assert(collapseDistance>0);
+		collapseDistance = triangleAltitude(a,b,c);
+		assert(collapseDistance>=0);
 		return true;
 	}
 	return false;
