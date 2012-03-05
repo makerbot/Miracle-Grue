@@ -69,7 +69,7 @@ public:
 			throw (problem);
 		}
 
-
+		out.precision(5);
 	    out.setf(std::ios::fixed);
 
 

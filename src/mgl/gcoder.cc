@@ -26,21 +26,13 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 	return s;
 }
 
-Vector2 unitVector(const Vector2& a, const Vector2& b)
-{
-	double dx = b.x - a.x;
-	double dy = b.y - a.y;
-	double length = sqrt(dx *dx + dy * dy);
-	Vector2 r(dx/length , dy/length);
-	return r;
-}
-
 //
 // computes 2 positions (one before and one at the end of) the polygon and stores them in start and stop.
 // These positions are aligned with the fisrt line and last line of the polygon.
 // LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
 // LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
-void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut, Vector2 &start, Vector2 &end)
+void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut,
+								Vector2 &start, Vector2 &end)
 {
 	size_t count =  polygon.size();
 
@@ -50,8 +42,10 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 	const Vector2 &c = polygon[count-2];
 	const Vector2 &d = polygon[count-1]; // last element
 
-	Vector2 ab = unitVector(a,b);
-	Vector2 cd = unitVector(c,d);
+	Vector2 ab = b - a;
+	ab.normalise();
+	Vector2 cd = d-c;
+	cd.normalise();
 
 	start.x = a.x - ab.x * leadIn;
 	start.y = a.y - ab.y * leadIn;
@@ -194,6 +188,9 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 
 void GCoder::writeStartOfFile(std::ostream &gout, const char* filename)
 {
+	gout.precision(3);
+	gout.setf(ios::fixed);
+
 	writeGCodeConfig(gout, filename);
 	writeMachineInitialization(gout);
 	writeExtrudersInitialization(gout);
@@ -253,7 +250,7 @@ void GCoder::writePolygon(	std::ostream & ss,
     polygonLeadInAndLeadOut(polygon, extrusion.leadIn, extrusion.leadOut, start, stop);
 
     // rapid move into position
-    gantry.g1(ss, start.x, start.y, z, extrusion.feedrate, NULL);
+    gantry.g1(ss, start.x, start.y, z, gantry.rapidMoveFeedRateXY, NULL);
 
     // start extruding ahead of time while moving towards the first point
     gantry.squirt(ss, polygon[0], extrusion.squirtFeedrate, extrusion.squirtFlow, extrusion.flow);
@@ -491,13 +488,16 @@ void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, con
 	g1Motion(ss, x,y,z,feed,comment,doX,doY,doZ,doFeed);
 }
 
-void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed)
+void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
+						double reversalFeedrate,
+						double reversalFlow,
+						double extrusionFlow)
 {
 
-	ss << "M108 R" <<  reversalExtrusionSpeed << " (squirt)" << endl;
+	ss << "M108 R" <<  reversalFlow << " (squirt)" << endl;
 	ss << "M101" << endl;
 	g1(ss, lineStart.x, lineStart.y, z, reversalFeedrate, NULL);
-	ss << "M108 R" << extrusionSpeed << " (good to go)" << endl;
+	ss << "M108 R" << extrusionFlow << " (good to go)" << endl;
 }
 
 void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed)

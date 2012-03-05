@@ -531,7 +531,7 @@ public:
 typedef std::vector<Vector2> Polygon;
 typedef std::vector<Polygon> Polygons;
 
-
+std::ostream& operator<<(std::ostream& os, const Polygon& v);
 
 
 } // namespace

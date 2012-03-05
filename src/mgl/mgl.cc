@@ -62,6 +62,14 @@ std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
 	return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const Polygon& polygon)
+{
+	for(unsigned int i=0; i< polygon.size(); i++)
+	{
+		os << i << ") " << polygon[i] << endl;
+	}
+	return os;
+}
 
 Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
 {
@@ -131,8 +139,6 @@ std::ostream& mgl::operator<<(ostream& os, const Limits& l)
 
 ostream& mgl::operator <<(ostream &os,const Vector2 &pt)
 {
-    os.precision(3);
-    os.setf(ios::fixed);
     os << "[" << pt.x << ", " << pt.y << "]";
     return os;
 }
