@@ -104,7 +104,7 @@ void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
 void dumpSegments(const char* prefix, const std::vector<TriangleSegment2> &segments)
 {
 	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
-    for(int id = 0; id < segments.size(); id++)
+    for(size_t id = 0; id < segments.size(); id++)
     {
     	TriangleSegment2 seg = segments[id];
     	cout << prefix << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
@@ -337,7 +337,7 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 
 	Scalar deltaY = limits.yMax - limits.yMin;
 
-	int tubeCount = (deltaY) / tubeSpacing;
+	unsigned int tubeCount = (unsigned int)((deltaY) / tubeSpacing);
 	std::vector< std::set<Scalar> > intersects;
 	// allocate
 	intersects.resize(tubeCount);
@@ -370,7 +370,7 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 
 	bool backAndForth = true;
 	Scalar bottom = -0.5 * deltaY;
-	for (int i=0; i < tubeCount; i++)
+	for (unsigned int i=0; i < tubeCount; i++)
 	{
 
 		Scalar y = bottom + i * tubeSpacing;

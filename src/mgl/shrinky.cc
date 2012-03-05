@@ -77,9 +77,9 @@ void createConvexList(const std::vector<TriangleSegment2> &segments, std::vector
 {
 	Scalar tol=0.3;
 
-    for(int id = 0; id < segments.size(); id++)
+    for(size_t id = 0; id < segments.size(); id++)
     {
-        unsigned int prevId = id==0 ? segments.size()-1 : id-1;
+        size_t prevId = id==0 ? segments.size()-1 : id-1;
 
         const TriangleSegment2 &seg = segments[id];
         const TriangleSegment2 &prevSeg = segments[prevId];
@@ -119,11 +119,11 @@ void segmentsDiagnostic(const char* title , const std::vector<TriangleSegment2> 
 	cout << endl << title << endl;
 	cout << "id\tconvex\tlength\tdistance\tangle\ta, b" << endl;
 
-    for(int id = 0; id < segments.size(); id++)
+    for(size_t id = 0; id < segments.size(); id++)
     {
 
         const TriangleSegment2 &seg = segments[id];
-        unsigned int prevId = id==0 ? segments.size()-1 : id-1;
+        size_t prevId = id==0 ? segments.size()-1 : id-1;
 
         const TriangleSegment2 &prevSeg = segments[prevId];
 
@@ -192,7 +192,7 @@ void insetSegments(const std::vector<TriangleSegment2> &segments, Scalar d,
 					std::vector<TriangleSegment2> &insets)
 {
 	assert(insets.size() == 0);
-	for(int i=0; i<segments.size(); i++)
+	for(size_t i=0; i<segments.size(); i++)
 	{
 		TriangleSegment2 seg = segments[i];
 		Vector2 inset = getInsetDirection(seg);
@@ -654,7 +654,7 @@ void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const s
 {
     if(scadFileName){
         std::vector<TriangleSegment2> motorCycleTraces;
-        for(int i = 0;i < bisectors.size();i++){
+        for(size_t i = 0;i < bisectors.size();i++){
             Vector2 a = originalSegments[i].a;
             Vector2 dir = bisectors[i];
             dir *= 2;
@@ -766,7 +766,7 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 	        Scalar dz = 0.1;
 	        stringstream coloredOutline;
 	        // Scalar color = (1.0 * i)/(shells-1);
-	        int color = color == 0 ? 1 : 0;
+	        int color = 0;
 	        coloredOutline << "color([" << color << "," << color << "," << 1 - color << " ,1])";
 	        Scalar dzBefore = scadZ;
 	        writeScadSegments("outlines_",coloredOutline.str().c_str(), originalSegments );

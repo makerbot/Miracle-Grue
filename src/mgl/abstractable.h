@@ -78,6 +78,9 @@ public:
 	::std::string now() const
 	{
 		time_t t = time(0);   // get time now
+#ifdef WIN32
+#pragma warning(disable:4996)
+#endif
 		struct tm * now = localtime( & t );
 		::std::stringstream ss;
 		ss << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' <<  now->tm_mday << " "

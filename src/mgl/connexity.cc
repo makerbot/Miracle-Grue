@@ -55,7 +55,7 @@ std::ostream& mgl::operator<<(std::ostream& os, const Edge& e)
 std::ostream& mgl::operator<<(std::ostream& os, const Vertex& v)
 {
 	os << " " << v.point << "\t[ ";
-	for (int i=0; i< v.faces.size(); i++)
+	for (size_t i=0; i< v.faces.size(); i++)
 	{
 		if (i>0)  os << ", ";
 		os << v.faces[i];

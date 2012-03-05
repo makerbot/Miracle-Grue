@@ -124,11 +124,11 @@ public:
 		out << "module outlines_" << slice << "()" << std::endl;
 		out << "{" << std::endl;
 		out << "    points =[" << std::endl;
-		for (int i=0; i < loops.size(); i++)
+		for (size_t i=0; i < loops.size(); i++)
 		{
 			out << "               [" << std::endl;
 			const Polygon& loop  = loops[i];
-			for (int j=0; j < loop.size(); j++)
+			for (size_t j=0; j < loop.size(); j++)
 			{
 				Scalar x = loop[j].x;
 				Scalar y = loop[j].y;
@@ -140,11 +140,11 @@ public:
 		out << "              ];" << std::endl;
 
 		out << "    segments =[" << std::endl;
-		for (int i=0; i < loops.size(); i++)
+		for (size_t i=0; i < loops.size(); i++)
 		{
 			out << "               [" << std::endl;
 			const Polygon& loop  = loops[i];
-			for (int j=0; j < loop.size()-1; j++)
+			for (size_t j=0; j < loop.size()-1; j++)
 			{
 				int a = j;
 				int b = j+1;
@@ -155,7 +155,7 @@ public:
 		out << "            ];" << std::endl;
 
 		out << std::endl;
-		for (int i=0; i < loops.size(); i++)
+		for (size_t i=0; i < loops.size(); i++)
 		{
 			out << "    outline(points[" << i << "], segments[" << i << "] );" << std::endl;
 		}
@@ -177,14 +177,14 @@ public:
 		out << "{" << std::endl;
 		out << "    points =[" << std::endl;
 
-		for (int i=0; i < polygons.size(); i++)
+		for (size_t i=0; i < polygons.size(); i++)
 		{
 			out << "               [" << std::endl;
 			const Polygon& poly  = polygons[i];
 
 			//std::cout << "   Polygon " << i << ": " << poly.size() << " points "<< std::endl;
 
-			for (int j=0; j < poly.size(); j++)
+			for (size_t j=0; j < poly.size(); j++)
 			{
 				Scalar x = poly[j].x;
 				Scalar y = poly[j].y;
@@ -198,15 +198,15 @@ public:
 
 		out << "    segments =[" << std::endl;
 
-		unsigned int polysCount = polygons.size();
-		for (int i=0; i < polysCount; i++)
+		size_t polysCount = polygons.size();
+		for (size_t i=0; i < polysCount; i++)
 		{
 
 			out << "               [" << std::endl;
 			const Polygon& poly  = polygons[i];
-			int polyCount =  poly.size();
+			size_t polyCount =  poly.size();
 
-			for (int j=0; j < polyCount-1; j++)
+			for (size_t j=0; j < polyCount-1; j++)
 			{   // std::cout << "  writePolygons: " << j << " polycount: " << polyCount << std::endl;
 				int a = j;
 				int b = j+1;
@@ -219,7 +219,7 @@ public:
 
 
 		out << std::endl;
-		for (int i=0; i < polygons.size(); i++)
+		for (size_t i=0; i < polygons.size(); i++)
 		{
 			out << "    " <<  implementation << "(points[" << i << "], segments[" << i << "] );" << std::endl;
 
@@ -239,7 +239,7 @@ public:
 							Scalar dz)
 	{
 		out << indent << variableName<< " =[" << std::endl;
-		for (int i=0; i < segments.size(); i++)
+		for (size_t i=0; i < segments.size(); i++)
 		{
 			const TriangleSegment2& segment  = segments[i];
 			Scalar ax = segment.a[0];
@@ -285,7 +285,7 @@ public:
 		out << "module " << name << slice << "()" << std::endl;
 		out << "{" << std::endl;
 		out << "    segments =[" << std::endl;
-		for (int i=0; i < segments.size(); i++)
+		for (size_t i=0; i < segments.size(); i++)
 		{
 			const TriangleSegment2& segment  = segments[i];
 			Scalar ax = segment.a[0];
@@ -322,7 +322,7 @@ public:
 
 		ss << std::dec; // set decimal format for floating point numbers
 
-		for(int i=0; i< trianglesForSlice.size(); i++ )
+		for(size_t i=0; i< trianglesForSlice.size(); i++ )
 		{
 
 			index_t index = trianglesForSlice[i];
@@ -335,7 +335,7 @@ public:
 		ss << "]," << std::endl;
 		ss << "triangles = [" ;
 
-		for (int i=0; i < trianglesForSlice.size(); i++)
+		for (size_t i=0; i < trianglesForSlice.size(); i++)
 		{
 			int tri = i * 3;
 			ss << "    [" << tri << ", " << tri+1 << ", " << tri + 2 << "], " << std::endl;

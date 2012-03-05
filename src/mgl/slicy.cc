@@ -25,7 +25,7 @@ void segments2polygon(const std::vector<TriangleSegment2> & segments, Polygon &l
 {
 
     loop.reserve(segments.size());
-    for(int j = 0;j < segments.size();j++){
+    for(size_t j = 0;j < segments.size();j++){
         const TriangleSegment2 & line = segments[j];
         Vector2 p(line.a);
         loop.push_back(p);
@@ -45,8 +45,8 @@ void createPolysFromloopSegments(const SegmentTable &segmentTable,
 										Polygons& loops)
 {
 	// outline loops
-	unsigned int count = segmentTable.size();
-	for(int i=0; i < count; i++)
+	size_t count = segmentTable.size();
+	for(size_t i=0; i < count; i++)
 	{
 		const std::vector<TriangleSegment2> &segments = segmentTable[count-1 - i];
 		loops.push_back(Polygon());
@@ -155,6 +155,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 			}
 			catch(ShrinkyMess &messup2) // the same excpetion is thrown again
 			{
+				messup2; //ignore
 				cout << "saving " << endl;
 			}
 			cout << "--- --- ERROR " << counter << " END --- ----" << endl;

@@ -175,8 +175,8 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 {
 
 	ss << endl;
-	unsigned int extruderCount = extruders.size();
-	for (int i=0; i< extruderCount; i++)
+	size_t extruderCount = extruders.size();
+	for (size_t i=0; i< extruderCount; i++)
 	{
 		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
 	}
@@ -202,7 +202,7 @@ void GCoder::writeStartOfFile(std::ostream &gout, const char* filename)
 
 void GCoder::writeGcodeEndOfFile(std::ostream &ss) const
 {
-	for (int i=0; i< extruders.size(); i++)
+	for (size_t i=0; i< extruders.size(); i++)
 	{
 		ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
 		ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
@@ -256,7 +256,7 @@ void GCoder::writePolygon(	std::ostream & ss,
     gantry.squirt(ss, polygon[0], extrusion.squirtFeedrate, extrusion.squirtFlow, extrusion.flow);
 
    // for all other points in the polygon
-    for(int i=1; i < polygon.size(); i++)
+    for(size_t i=1; i < polygon.size(); i++)
 	{
     	// move towards the point
 		const Vector2 &p = polygon[i];

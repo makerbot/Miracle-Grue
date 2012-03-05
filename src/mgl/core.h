@@ -495,7 +495,7 @@ public:
 
 		Scalar tol = 0.00000000000001; // tolerance
 		Scalar layer = (z+tol-firstLayerZ) / layerH;
-		return ceil(layer);
+		return (unsigned int)ceil(layer);
 	}
 
 	Scalar sliceIndexToHeight(unsigned int sliceIndex) const

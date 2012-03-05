@@ -24,7 +24,7 @@ using namespace std;
 
 void mgl::rotateLoops(std::vector<std::vector<mgl::TriangleSegment2> > &loops, Scalar angle)
 {
-	for(unsigned int i=0; i < loops.size(); i++)
+	for(size_t i=0; i < loops.size(); i++)
 	{
 		rotateSegments(loops[i], angle);
 	}
@@ -32,7 +32,7 @@ void mgl::rotateLoops(std::vector<std::vector<mgl::TriangleSegment2> > &loops, S
 
 void mgl::rotateSegments(std::vector<TriangleSegment2> &segments, Scalar angle)
 {
-	for(int i=0; i < segments.size(); i++)
+	for(size_t i=0; i < segments.size(); i++)
 	{
 		segments[i].a = rotate2d(segments[i].a, angle);
 		segments[i].b = rotate2d(segments[i].b, angle);
@@ -86,7 +86,7 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
     size_t triangleCount = trianglesForSlice.size();
     segments.reserve(triangleCount);
     //#pragma omp parallel for
-    for(int i = 0;i < triangleCount;i++)
+    for(size_t i = 0;i < triangleCount;i++)
     {
         index_t triangleIndex = trianglesForSlice[i];
         const Triangle3 & triangle = allTriangles[triangleIndex];
@@ -475,7 +475,7 @@ void mgl::translateLoops(SegmentTable &loops, Vector2 p)
 
 void mgl::translatePolygons(Polygons &polygons, Vector2 p)
 {
-	for(unsigned int i=0; i < polygons.size(); i++)
+	for(size_t i=0; i < polygons.size(); i++)
 	{
 		translatePolygon(polygons[i],p);
 	}
@@ -483,7 +483,7 @@ void mgl::translatePolygons(Polygons &polygons, Vector2 p)
 
 void mgl::translatePolygon(Polygon &polygon, Vector2 p)
 {
-	for(unsigned int i=0; i < polygon.size(); i++)
+	for(size_t i=0; i < polygon.size(); i++)
 	{
 		polygon[i] += p;
 	}
@@ -491,7 +491,7 @@ void mgl::translatePolygon(Polygon &polygon, Vector2 p)
 
 void mgl::translateSegments(std::vector<TriangleSegment2> &segments, Vector2 p)
 {
-	for(int i=0; i < segments.size(); i++)
+	for(size_t i=0; i < segments.size(); i++)
 	{
 		segments[i].a += p;
 		segments[i].b += p;

@@ -156,9 +156,6 @@ public:
 	//
 	void addTriangle(Triangle3 &t)
 	{
-		Scalar min;
-		Scalar max;
-
 		Vector3 a, b, c;
 		t.zSort(a,b,c);
 
@@ -182,7 +179,7 @@ public:
 		size_t newTriangleId = allTriangles.size() -1;
 
 		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
-		for (int i= minSliceIndex; i<= maxSliceIndex; i++)
+		for (size_t i= minSliceIndex; i<= maxSliceIndex; i++)
 		{
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			trianglesForSlice.push_back(newTriangleId);
@@ -202,7 +199,7 @@ public:
 		size_t sliceCount = sliceTable.size();
 
 		out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
-		for (int i= 0; i< sliceCount; i++)
+		for (size_t i= 0; i< sliceCount; i++)
 		{
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			//trianglesForSlice.push_back(newTriangleId);

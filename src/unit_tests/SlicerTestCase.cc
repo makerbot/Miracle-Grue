@@ -667,7 +667,6 @@ void SlicerTestCase::testSliceTriangle()
 	Vector3 a = Vector3(0, 0, 0);
 	Vector3 b = Vector3(0, 0, 0);
 	bool result;
-	numeric_limits<Scalar> scalarLimits;
 
 	///Testing triangle above slice height
 	cout << endl << "\t testing above" << endl;

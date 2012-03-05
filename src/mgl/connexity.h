@@ -321,7 +321,7 @@ public:
 		const std::vector<index_t>& neighbors2 = vertices[ face.vertexIndices[2]].faces;
 
 
-		for(int i=0; i< neighbors0.size(); i++)
+		for(size_t i=0; i< neighbors0.size(); i++)
 		{
 			index_t faceId = neighbors0[i];
 			if (faceId >=0  && faceId != startFaceIndex)
@@ -329,7 +329,7 @@ public:
 				allNeighbors.insert(faceId);
 			}
 		}
-		for(int i=0; i< neighbors1.size(); i++)
+		for(size_t i=0; i< neighbors1.size(); i++)
 		{
 			index_t faceId = neighbors1[i];
 			if (faceId >=0  && faceId != startFaceIndex)
@@ -337,7 +337,7 @@ public:
 				allNeighbors.insert(faceId);
 			}
 		}
-		for(int i=0; i< neighbors2.size(); i++)
+		for(size_t i=0; i< neighbors2.size(); i++)
 		{
 			index_t faceId = neighbors2[i];
 			if (faceId >=0  && faceId != startFaceIndex)
