@@ -23,7 +23,7 @@
 #include "segment.h"
 #include "scadtubefile.h"
 #include "shrinky.h"
-
+#include "infill.h"
 
 namespace mgl // Miracle-Grue's geometry library
 {

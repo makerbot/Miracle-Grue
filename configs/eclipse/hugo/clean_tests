@@ -1,0 +1,11 @@
+rm ./test_cases/GCoderTestCase/output/*.gcode
+rm ./test_cases/specific_issues/output/*.gcode
+rm ./test_cases/modelReaderTestCase/output/*.gcode
+rm ./test_cases/slicerCupTestCase/output/*.gcode
+
+rm ./test_cases/slicerTestCase/output/*.scad
+rm ./test_cases/GCoderTestCase/output/*.scad
+rm ./test_cases/specific_issues/output/*.scad
+rm ./test_cases/modelReaderTestCase/output/*.scad
+rm ./test_cases/slicerCupTestCase/output/*.scad
+rm ./test_cases/slicerTestCase/output/*.scad

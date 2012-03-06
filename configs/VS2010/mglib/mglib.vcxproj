@@ -23,6 +23,7 @@
     <ClInclude Include="..\..\src\mgl\segment.h" />
     <ClInclude Include="..\..\src\mgl\shrinky.h" />
     <ClInclude Include="..\..\src\mgl\slicy.h" />
+    <ClInclude Include="..\..\src\mgl\infill.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\mgl\configuration.cc" />
@@ -33,6 +34,7 @@
     <ClCompile Include="..\..\src\mgl\segment.cc" />
     <ClCompile Include="..\..\src\mgl\shrinky.cc" />
     <ClCompile Include="..\..\src\mgl\slicy.cc" />
+    <ClCompile Include="..\..\src\mgl\infill.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FD00A04C-B884-4FDB-8171-F66F9F762B9A}</ProjectGuid>

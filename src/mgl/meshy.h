@@ -236,15 +236,6 @@ public:
 
 size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 
-//
-// Pathology: the operation that generate tool paths from triangle cuts
-//
-void infillPathology( SegmentTable &outlineSegments,
-				const Limits& limits,
-				double z,
-				double tubeSpacing ,
-				Scalar infillShrinking,
-				Polygons &tubes);
 
 
 // compile time enabled
