@@ -55,7 +55,12 @@ void createPolysFromloopSegments(const SegmentTable &segmentTable,
 	}
 }
 
-
+// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
+// and counter clockwise for holes)
+// b) creates nbOfShells insets for each
+// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
+// and nbOffShels insets)
+//
 void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
 					double layerW,
@@ -64,7 +69,6 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					const char *scadFile,
 					std::vector<SegmentTable> &insetsForLoops)
 {
-
 	assert(insetsForLoops.size() ==0);
 	//
 	//
@@ -139,8 +143,8 @@ void inshelligence( const SegmentTable & outlinesSegments,
 				scad << messup.error;
 				scad << endl << "*/" << endl;
 
-				vector<TriangleSegment2> masterLoop = outlineLoop;
-				vector<TriangleSegment2> &previousInsets  = masterLoop;
+
+				vector<TriangleSegment2> previousInsets  = outlineLoop;
 				cout << "Creating file: " << loopScadFile << endl;
 				cout << "	Number of points " << previousInsets.size() << endl;
 				ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
@@ -150,7 +154,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					Scalar insetDistance = insetDistances[shellId];
 					shriker.inset(previousInsets, insetDistance, insets);
 					previousInsets = insets;
-					insets.clear();
+					insets.clear(); // discard...
 				}
 			}
 			catch(ShrinkyMess &messup2) // the same excpetion is thrown again
@@ -409,9 +413,18 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	}
 
 	// deep copy the the infill boundaries
-	SegmentTable rotatedSegments = outlinesSegments; // insetsForLoops[0];
-
+	// because we are going to rotate them
+	// We pick the innermost succesful inset for each loop
+	SegmentTable rotatedSegments; // = outlinesSegments; // insetsForLoops[0];
 	if(insetsForLoops.size() > 0)
+	{
+		for (unsigned int i = 0; i < outlineSegmentCount; ++i)
+		{
+			const std::vector<TriangleSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
+			rotatedSegments.push_back(deppestInset);
+		}
+	}
+	else
 	{
 		rotatedSegments= outlinesSegments;
 	}
@@ -427,12 +440,10 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					tubeSpacing,
 					infillShrinking,
 					infills);
+
 	// rotate and translate the TUBES so they fit with the ORIGINAL outlines
 	rotatePolygons(infills, -sliceAngle);
 	translatePolygons(infills, backToOrigin);
-
-
-
 
 	// write the scad file
 	// only one thread at a time in here

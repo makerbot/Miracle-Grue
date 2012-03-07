@@ -106,11 +106,12 @@ int main(int argc, char *argv[], char *envp[])
         if(str.find("c=") != string::npos)
         {
         	configFileName = str.substr(2, str.length()-2);
-        	cout << "Configuration file: " << configFileName << endl;
+
         }
     }
 
     Configuration config;
+    cout << "Configuration file: " << configFileName << endl;
     config.readFromFile(configFileName.c_str());
 
     parseArgs(config, argc, argv, modelFile, configFileName);
