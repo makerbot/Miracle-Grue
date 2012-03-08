@@ -92,6 +92,20 @@ std::string Configuration::asJson(Json::StyledWriter writer ) const
 	return writer.write(root);
 }
 
+// this is a work in progress...
+void loadExtrusionProfileData(const Configuration& conf, GCoder &gcoder)
+{
+	const Json::Value &extrusionsRoot = conf.root["extrusionProfiles"];
+	for( Json::ValueIterator itr = extrusionsRoot.begin() ; itr != extrusionsRoot.end() ; itr++ )
+	{
+		string profileName = itr.key().asString();
+		cout << "XXX " << profileName << endl;
+		Extrusion extrusion;
+		gcoder.extrusionProfiles.insert( pair<std::string, Extrusion>(profileName, extrusion));
+	}
+}
+
+
 void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 {
 

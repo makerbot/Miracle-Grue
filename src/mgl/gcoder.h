@@ -13,6 +13,7 @@
 #ifndef GCODER_H_
 #define GCODER_H_
 
+#include <map>
 #include "mgl/slicy.h"
 
 
@@ -41,7 +42,6 @@ struct Platform
     double waitingPositionY;
     double waitingPositionZ;
 };
-
 
 struct Extrusion
 {
@@ -201,6 +201,7 @@ public:
 	 versionStr("0.0.1")
 	{
 	}
+
     std::string programName;
     std::string versionStr;
     std::string machineName;
@@ -211,6 +212,7 @@ public:
     Outline outline;
     Gantry gantry;
 
+    std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
     void moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
 
@@ -229,7 +231,6 @@ public:
         return extruders;
     }
 
-
     void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
 
 private:
@@ -241,7 +242,6 @@ private:
     void writeHomingSequence(std::ostream & ss);
     void writeWarmupSequence(std::ostream & ss);
     void writeAnchor(std::ostream & ss);
-
     void writePolygons(	std::ostream& ss,
 						double z,
 						const Extrusion &extrusionParams,

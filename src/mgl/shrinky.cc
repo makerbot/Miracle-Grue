@@ -385,6 +385,11 @@ bool edgeCollapse(const TriangleSegment2& segment,
 		c = edge1.magnitude();
 
 		collapseDistance = triangleAltitude(a,b,c);
+		if(!collapseDistance>=0)
+		{
+			cout << "collapseDistance=" <<  collapseDistance << endl;
+
+		}
 		assert(collapseDistance>=0);
 		return true;
 	}
@@ -627,6 +632,10 @@ void createBisectors(const std::vector<TriangleSegment2>& segments,
 		}
 		else
 		{
+			//
+			// ok... maybe this is a bit drastic and we could combine the biesctors
+			// this author needs to make up his mind about non closed polygon support
+			//
 			Vector2 dist = prevSeg.b - seg.a;
 			stringstream ss;
 			ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b ;
@@ -640,7 +649,8 @@ void createBisectors(const std::vector<TriangleSegment2>& segments,
 		if(bisector.squaredMagnitude() == 0)
 		{
 			stringstream ss;
-			ss << "Null bisector";
+			ss << "Null bisector at segment [" << i << "] position=" << seg.a << endl;
+			ss << " previous_inset=" << prevInset << " inset=" << inset;
 			ShrinkyMess mixup(ss.str().c_str());
 			throw mixup;
 		}
