@@ -52,6 +52,7 @@ void mgl::miracleGrue(	GCoder &gcoder,
 										cuttOffLength,
 										slicer.infillShrinkingMultiplier,
 										slicer.insetDistanceMultiplier,
+										slicer.writeDebugScadFiles,
 										slice);
 		// cout << slice;
 		if(hazNewPaths)

@@ -67,6 +67,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int sliceId,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
+					bool writeDebugScadFiles,
 					std::vector<SegmentTable> &insetsForLoops)
 {
 	assert(insetsForLoops.size() ==0);
@@ -122,48 +123,51 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		}
 		catch(ShrinkyMess &messup)
 		{
-			static int counter =0;
-			cout << endl;
-			cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
-			cout << "sliceId: " <<  sliceId   << endl;
-			cout << "loopId : " <<  outlineId << endl;
-			cout << "shellId: " <<  currentShellIdForErrorReporting   << endl;
-
-			stringstream ss;
-			ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
-
-			MyComputer myComputer;
-			string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str().c_str());
-			Shrinky shriker(loopScadFile.c_str());
-			shriker.dz=0.1;
-			try
+			if(writeDebugScadFiles)
 			{
-				std::ostream &scad = shriker.fscad.getOut();
-				scad << "/*" << endl;
-				scad << messup.error;
-				scad << endl << "*/" << endl;
+				static int counter =0;
+				cout << endl;
+				cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
+				cout << "sliceId: " <<  sliceId   << endl;
+				cout << "loopId : " <<  outlineId << endl;
+				cout << "shellId: " <<  currentShellIdForErrorReporting   << endl;
 
+				stringstream ss;
+				ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
 
-				vector<TriangleSegment2> previousInsets  = outlineLoop;
-				cout << "Creating file: " << loopScadFile << endl;
-				cout << "	Number of points " << previousInsets.size() << endl;
-				ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
-				std::vector<TriangleSegment2> insets;
-				for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+				MyComputer myComputer;
+				string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str().c_str());
+				Shrinky shriker(loopScadFile.c_str());
+				shriker.dz=0.1;
+				try
 				{
-					Scalar insetDistance = insetDistances[shellId];
-					shriker.inset(previousInsets, insetDistance, insets);
-					previousInsets = insets;
-					insets.clear(); // discard...
+					std::ostream &scad = shriker.fscad.getOut();
+					scad << "/*" << endl;
+					scad << messup.error;
+					scad << endl << "*/" << endl;
+
+
+					vector<TriangleSegment2> previousInsets  = outlineLoop;
+					cout << "Creating file: " << loopScadFile << endl;
+					cout << "	Number of points " << previousInsets.size() << endl;
+					ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
+					std::vector<TriangleSegment2> insets;
+					for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+					{
+						Scalar insetDistance = insetDistances[shellId];
+						shriker.inset(previousInsets, insetDistance, insets);
+						previousInsets = insets;
+						insets.clear(); // discard...
+					}
 				}
+				catch(ShrinkyMess &messup2) // the same excpetion is thrown again
+				{
+					messup2; //ignore
+					cout << "saving " << endl;
+				}
+				cout << "--- --- ERROR " << counter << " END --- ----" << endl;
+				counter ++;
 			}
-			catch(ShrinkyMess &messup2) // the same excpetion is thrown again
-			{
-				messup2; //ignore
-				cout << "saving " << endl;
-			}
-			cout << "--- --- ERROR " << counter << " END --- ----" << endl;
-			counter ++;
 		}
 	}
 }
@@ -344,6 +348,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					Scalar cutoffLength,
 					Scalar infillShrinking,
 					Scalar insetDistanceFactor,
+					bool writeDebugScadFiles,
 					SliceData &slice)
 {
 
@@ -351,16 +356,12 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 
-
-
     // keep all segments of insets for each loop
     unsigned int cuts = segments.size();
     if(cuts == 0)
     {
     	return false; // no segments for this slice.
     }
-
-
 	slice.extruderSlices.push_back(ExtruderSlice());
 
 	// get the "real" 2D paths for outline
@@ -370,19 +371,19 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	unsigned int outlineSegmentCount = outlinesSegments.size();
 	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
 
-
 	std::vector<SegmentTable> insetsForLoops;
 
 	if(nbOfShells > 0)
 	{
 		// create shells inside the outlines (and around holes)
 		inshelligence(outlinesSegments,
-						  nbOfShells,
-						  layerW,
-						  sliceId,
-						  insetDistanceFactor,
-						  scadFile,
-						  insetsForLoops);
+					  nbOfShells,
+					  layerW,
+					  sliceId,
+					  insetDistanceFactor,
+					  scadFile,
+					  writeDebugScadFiles,
+					  insetsForLoops);
 
 		assert(insetsForLoops.size() == outlineSegmentCount);
 

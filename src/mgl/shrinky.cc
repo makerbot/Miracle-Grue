@@ -281,7 +281,6 @@ void removeShortSegments(const std::vector<TriangleSegment2> &segments,
 
 	shorts.reserve(segments.size()); // worst case
 	assert(cutoffLength > 0);
-
 	Scalar cutoffLength2 = cutoffLength * cutoffLength;
 
 	for(unsigned int i=0; i < segments.size(); i++)
@@ -293,9 +292,7 @@ void removeShortSegments(const std::vector<TriangleSegment2> &segments,
 			assert(seg.length() >0);
 			shorts.push_back(seg);
 		}
-
 	}
-
 }
 
 void Shrinky::openScadFile(const char *scadFileName)
@@ -357,8 +354,6 @@ bool edgeCollapse(const TriangleSegment2& segment,
 					Scalar elongation,
 					Scalar &collapseDistance)
 {
-
-
 	// segment is the base of the triangle
 	// from which we want the altitude
 
@@ -385,12 +380,10 @@ bool edgeCollapse(const TriangleSegment2& segment,
 		c = edge1.magnitude();
 
 		collapseDistance = triangleAltitude(a,b,c);
-		if(!collapseDistance>=0)
+		if(collapseDistance < 0)
 		{
-			cout << "collapseDistance=" <<  collapseDistance << endl;
-
+			assert(0);
 		}
-		assert(collapseDistance>=0);
 		return true;
 	}
 	return false;

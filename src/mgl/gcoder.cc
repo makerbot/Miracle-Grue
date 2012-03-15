@@ -310,19 +310,20 @@ void GCoder::moveZ(ostream & ss, double z, unsigned int  extruderId, double zFee
 
 void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, Extrusion &extrusion) const
 {
-	Extrusion *p = &extrusion;
-	*p = extruders[extruderId].extrusionProfile;
-
-	extrusion.feedrate *= gantry.scalingFactor;
-	extrusion.flow *= gantry.scalingFactor;
-
-
+	string profileName;
 	if(sliceId == 0)
 	{
-		extrusion.flow *= gcoding.firstLayerExtrudeMultiplier;
-		extrusion.feedrate *= gcoding.firstLayerExtrudeMultiplier;
+		profileName = extruders[extruderId].firstLayerExtrusionProfile;
+	}
+	else
+	{
+		profileName = extruders[extruderId].infillsExtrusionProfile;
 	}
 
+	const std::map<std::string, Extrusion>::const_iterator &it = extrusionProfiles.find(profileName);
+	extrusion = it->second;
+	extrusion.feedrate *= gantry.scalingFactor;
+	extrusion.flow *= gantry.scalingFactor;
 }
 
 void GCoder::calcInSetExtrusion (	unsigned int extruderId,
@@ -331,16 +332,20 @@ void GCoder::calcInSetExtrusion (	unsigned int extruderId,
 										unsigned int insetCount,
 										Extrusion &extrusion) const
 {
-	Extrusion *p = &extrusion;
-	*p = extruders[extruderId].extrusionProfile;
-
-	extrusion.feedrate *= gantry.scalingFactor;
-	extrusion.flow *= gantry.scalingFactor;
+	string profileName;
 	if(sliceId == 0)
 	{
-		extrusion.flow *= gcoding.firstLayerExtrudeMultiplier;
-		extrusion.feedrate *= gcoding.firstLayerExtrudeMultiplier;
+		profileName = extruders[extruderId].firstLayerExtrusionProfile;
 	}
+	else
+	{
+		profileName = extruders[extruderId].insetsExtrusionProfile;
+	}
+
+	const std::map<std::string, Extrusion>::const_iterator &it = extrusionProfiles.find(profileName);
+	extrusion = it->second;
+	extrusion.feedrate *= gantry.scalingFactor;
+	extrusion.flow *= gantry.scalingFactor;
 }
 
 

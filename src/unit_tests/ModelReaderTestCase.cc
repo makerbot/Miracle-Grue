@@ -358,6 +358,7 @@ void batchProcess(	Scalar firstLayerZ,
 					const char* outDir,
 					const std::vector<std::string> &models)
 {
+	bool writeDebugScadFiles = true;
 	FileSystemAbstractor fileSystem;
 	std::vector<double> times;
 	for (int i=0; i < models.size(); i++)
@@ -406,6 +407,7 @@ void batchProcess(	Scalar firstLayerZ,
 											2 * layerW,
 											infillShrinking,
 											insetDistanceFactor,
+											writeDebugScadFiles,
 											slice);
 			if(!hazNewPaths)
 			{

@@ -83,11 +83,11 @@ struct Extruder
 	// this determines the gap between the nozzle tip
 	// and the layer at position z (measured at the middle of the layer)
 	double nozzleZ;
-
 	double zFeedRate;
-	Extrusion extrusionProfile;
 
-
+	std::string firstLayerExtrusionProfile;
+	std::string insetsExtrusionProfile;
+	std::string infillsExtrusionProfile;
 };
 
 
@@ -175,14 +175,12 @@ struct GCoding
 		 insets(true),
 		 infills(true),
 		 infillFirst(false),
-		 firstLayerExtrudeMultiplier(0.25),
 		 dualtrick(false)
 		{}
 	bool outline;
 	bool insets;
 	bool infills;
 	bool infillFirst;
-	double firstLayerExtrudeMultiplier;
 	bool dualtrick;
 };
 

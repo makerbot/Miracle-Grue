@@ -99,8 +99,20 @@ void loadExtrusionProfileData(const Configuration& conf, GCoder &gcoder)
 	for( Json::ValueIterator itr = extrusionsRoot.begin() ; itr != extrusionsRoot.end() ; itr++ )
 	{
 		string profileName = itr.key().asString();
-		cout << "XXX " << profileName << endl;
+		stringstream ss;
+		ss << "extrusionProfiles[\"" << profileName << "\"].";
+		string prefix = ss.str();
+		const Json::Value &value = *itr;
 		Extrusion extrusion;
+		extrusion.feedrate 	= doubleCheck(value["feedrate"], (prefix + "feedrate").c_str());
+		extrusion.flow 		= doubleCheck(value["flow"], (prefix + "flow").c_str());
+		extrusion.leadIn 	= doubleCheck(value["leadIn"], (prefix + "leadIn").c_str());
+		extrusion.leadOut	= doubleCheck(value["leadOut"], (prefix + "leadOut").c_str());
+		extrusion.snortFeedrate = doubleCheck(value["snortFeedrate"], (prefix + "snortFeedrate").c_str());
+		extrusion.snortFlow 	= doubleCheck(value["snortFlow"], (prefix + "snortFlow").c_str());
+		extrusion.squirtFeedrate= doubleCheck(value["squirtFeedrate"], (prefix + "squirtFeedrate").c_str());
+		extrusion.squirtFlow 	= doubleCheck(value["squirtFlow"], (prefix + "squirtFlow").c_str());
+
 		gcoder.extrusionProfiles.insert( pair<std::string, Extrusion>(profileName, extrusion));
 	}
 }
@@ -130,6 +142,8 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 	gcoder.outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
 	gcoder.outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
 
+	loadExtrusionProfileData(conf, gcoder);
+
 	if(conf.root["extruders"].size() ==0)
 	{
 		stringstream ss;
@@ -142,44 +156,44 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 	unsigned int extruderCount = (unsigned int)x;
 	for(unsigned int i=0; i < extruderCount; i++)
 	{
+		const Json::Value &value = conf.root["extruders"][i];
+
 		stringstream ss;
 		ss << "extruders[" << i << "].";
 		string prefix = ss.str();
 
 		Extruder extruder;
-		extruder.coordinateSystemOffsetX = doubleCheck(conf.root["extruders"][i]["coordinateSystemOffsetX"], (prefix+"coordinateSystemOffsetX").c_str() );
-		extruder.extrusionTemperature = doubleCheck(conf.root["extruders"][i]["extrusionTemperature"], (prefix+"extrusionTemperature").c_str() );
-		extruder.nozzleZ = doubleCheck(conf.root["extruders"][i]["nozzleZ"], (prefix+"nozzleZ").c_str() );
-		extruder.zFeedRate = doubleCheck(conf.root["extruders"][i]["zFeedRate"], (prefix+"zFeedRate").c_str() );
+		extruder.coordinateSystemOffsetX = doubleCheck(value["coordinateSystemOffsetX"], (prefix+"coordinateSystemOffsetX").c_str() );
+		extruder.extrusionTemperature = doubleCheck(value["extrusionTemperature"], (prefix+"extrusionTemperature").c_str() );
+		extruder.nozzleZ = doubleCheck(value["nozzleZ"], (prefix+"nozzleZ").c_str() );
+		extruder.zFeedRate = doubleCheck(value["zFeedRate"], (prefix+"zFeedRate").c_str() );
 
-		extruder.extrusionProfile.feedrate = doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["feedrate"], (prefix+"extrusionProfile.feedrate").c_str() );
-		extruder.extrusionProfile.flow = doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["flow"], (prefix+"extrusionProfile.flow").c_str() );
-		extruder.extrusionProfile.leadIn= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["leadIn"], (prefix+"extrusionProfile.leadIn").c_str() );
-		extruder.extrusionProfile.leadOut= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["leadOut"], (prefix+"extrusionProfile.leadOut").c_str() );
-		extruder.extrusionProfile.snortFlow= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["snortFlow"], (prefix+"extrusionProfile.snortFlow").c_str() );
-		extruder.extrusionProfile.snortFeedrate= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["snortFeedrate"], (prefix+"extrusionProfile.snortFeedrate").c_str() );
-		extruder.extrusionProfile.squirtFlow= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["squirtFlow"], (prefix+"extrusionProfile.squirtFlow").c_str() );
-		extruder.extrusionProfile.squirtFeedrate= doubleCheck(conf.root["extruders"][i]["extrusionProfile"]["squirtFeedrate"], (prefix+"extrusionProfile.squirtFeedrate").c_str() );
+		extruder.firstLayerExtrusionProfile = stringCheck(value["firstLayerExtrusionProfile"], (prefix+"firstLayerExtrusionProfile").c_str() );
+		extruder.insetsExtrusionProfile = stringCheck(value["insetsExtrusionProfile"], (prefix+"insetsExtrusionProfile").c_str() );
+		extruder.infillsExtrusionProfile = stringCheck(value["infillsExtrusionProfile"], (prefix+"infillsExtrusionProfile").c_str() );
+
 		gcoder.extruders.push_back(extruder);
 	}
 
 	gcoder.gcoding.outline = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
-	gcoder.gcoding.insets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
+	gcoder.gcoding.insets  = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoder.gcoding.infills = boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
 	gcoder.gcoding.infillFirst = boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
-	gcoder.gcoding.firstLayerExtrudeMultiplier = doubleCheck(conf.root["gcoder"]["firstLayerExtrudeMultiplier"], "gcoder.firstLayerExtrudeMultiplier");
-	gcoder.gcoding.dualtrick = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
+	gcoder.gcoding.dualtrick   = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
 }
 
 void mgl::loadSlicerDaTa( const Configuration &config, Slicer &slicer)
 {
 	slicer.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
-	slicer.firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
+	slicer.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
 	slicer.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
 	slicer.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
 	slicer.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
 	slicer.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
-	slicer.infillShrinkingMultiplier 		= doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
-	slicer.insetDistanceMultiplier  = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
-	slicer.insetCuttOffMultiplier  	= doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
+	slicer.infillShrinkingMultiplier = doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
+	slicer.insetDistanceMultiplier   = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
+	slicer.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
+
+	slicer.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
+
 }

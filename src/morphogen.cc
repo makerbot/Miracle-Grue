@@ -65,6 +65,11 @@ void parseArgs(Configuration &config,
         {
         	config["slicer"]["angle"] = numberFromCharEqualsStr(str);
         }
+
+        if(str.find("-d") != string::npos)
+        {
+        	config["slicer"]["writeDebugScadFiles"] = true;
+        }
     }
 }
 
@@ -109,40 +114,48 @@ int main(int argc, char *argv[], char *envp[])
     }
 
     Configuration config;
-    cout << "Configuration file: " << configFileName << endl;
-    config.readFromFile(configFileName.c_str());
+    try
+    {
+		cout << "Configuration file: " << configFileName << endl;
+		config.readFromFile(configFileName.c_str());
 
-    parseArgs(config, argc, argv, modelFile, configFileName);
-    cout << config.asJson() << endl;
+		parseArgs(config, argc, argv, modelFile, configFileName);
+		cout << config.asJson() << endl;
 
-	MyComputer computer;
-	cout << endl;
-	cout << endl;
-	cout << "behold!" << endl;
-	cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
+		MyComputer computer;
+		cout << endl;
+		cout << endl;
+		cout << "behold!" << endl;
+		cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
 
-	std::string scadFile = "."; // outDir
-	scadFile += computer.fileSystem.getPathSeparatorCharacter();
-	scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
+		std::string scadFile = "."; // outDir
+		scadFile += computer.fileSystem.getPathSeparatorCharacter();
+		scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
 
-	std::string gcodeFile = ".";
-	gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
-	gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
+		std::string gcodeFile = ".";
+		gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
+		gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
 
-	cout << endl << endl;
-	cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
+		cout << endl << endl;
+		cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
-	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+		GCoder gcoder;
+		loadGCoderData(config, gcoder);
 
-	Slicer slicer;
-	loadSlicerDaTa(config, slicer);
+		Slicer slicer;
+		loadSlicerDaTa(config, slicer);
 
-	std::vector<mgl::SliceData> slices;
-	miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), slices);
+		std::vector<mgl::SliceData> slices;
+		miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), slices);
+	    cout << endl << computer.clock.now() << endl;
+	    cout << "Done!" << endl;
 
+    }
+    catch(mgl::Messup &mixup)
+    {
+    	cout << "ERROR: "<< mixup.error << endl;
+    	return -1;
+    }
 
-    cout << endl << computer.clock.now() << endl;
-    cout << "Done!" << endl;
 
 }

@@ -1523,6 +1523,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					double layerW,
 					unsigned int sliceId,
 					Scalar insetDistanceFactor,
+					bool writeDebugScadFiles,
 					std::vector<SegmentTable> &insetsForLoops);
 
 void SlicerTestCase::test_hollow_pyramid_1_loop_0()
