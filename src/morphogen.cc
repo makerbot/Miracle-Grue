@@ -143,7 +143,7 @@ int main(int argc, char *argv[], char *envp[])
 		loadGCoderData(config, gcoder);
 
 		Slicer slicer;
-		loadSlicerDaTa(config, slicer);
+		loadSlicerData(config, slicer);
 
 		std::vector<mgl::SliceData> slices;
 		miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), slices);

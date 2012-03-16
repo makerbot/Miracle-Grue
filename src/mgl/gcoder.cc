@@ -236,6 +236,7 @@ void GCoder::writeAnchor(std::ostream &ss)
 	double dy = gcoder.platform.waitingPositionY - 0.0;
 
 	gantry.g1(ss, dx, dy, z, 0.2 * anchorFeedRate , NULL);
+	ss << "M102 (Stop extruder)" << endl;
 	ss << endl;
 }
 

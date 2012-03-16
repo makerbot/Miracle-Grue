@@ -45,7 +45,7 @@ public:
 	Messup(const char *msg)
 	 :error(msg)
 	{
-		std::cerr << std::endl << msg << std::endl;
+	//	std::cerr << std::endl << msg << std::endl;
 		// fprintf(stderr, "%s", msg);
 	}
 

@@ -560,6 +560,7 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 		bool attached = attachSegments(previousSegment, currentSegment, elongation);
 		if(!attached)
 		{
+		/*
 			Scalar elong =10;
 			cout << "// ATTACH ERROR in elongateAndTrimSegments!" << endl;
 			cout << "module elongation()" <<  endl;
@@ -593,7 +594,8 @@ void elongateAndTrimSegments(const std::vector<TriangleSegment2> & longSegments,
 			cout << ""  << endl;
 			cout << "}" << endl;
 			cout << "//----" << endl << endl;
-
+*/
+			cout << "!";
 		}
 	}
 
@@ -813,7 +815,8 @@ Scalar Shrinky::insetStep(const std::vector<TriangleSegment2>& originalSegments,
 	}
 	catch(ShrinkyMess &mixup)
 	{
-		cout << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
+		cout << "*";
+		// cout << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
 		// this is a lie...  but we want to break the loop
 		insetStepDistance = insetDist;
 		throw;
