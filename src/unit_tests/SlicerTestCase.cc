@@ -4,7 +4,8 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerTestCase.h"
 
-#include "mgl/mgl.cc"
+#include "insetTests.h"
+
 #include "mgl/core.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
@@ -1343,39 +1344,7 @@ void SlicerTestCase::testAttach()
 	}
 }
 
-void clip(const std::vector<TriangleSegment2> &in,
-			unsigned int min,
-			unsigned int max,
-			std::vector<TriangleSegment2> &out)
-{
-	int newSize = in.size() - (max -min);
-	cout << "NEW SIZE " << newSize << endl;
-	assert(newSize > 0);
-	out.reserve(newSize);
 
-
-	for(unsigned int i =0; i <in.size(); i++)
-	{
-		const TriangleSegment2 s = in[i];
-		if(i == min-1)
-		{
-			i = max+1;
-			TriangleSegment2 s1 = in[i];
-			s1.a = s.b;
-			out.push_back(s);
-			out.push_back(s1);
-		}
-		else
-		{
-			out.push_back(s);
-		}
-
-	}
-
-	cout << "clipped segments" << endl;
-	ScadTubeFile::segment3(cout,"","segments", out, 0, 0.1);
-
-}
 
 void SlicerTestCase::test_slice_60_loop_5()
 {

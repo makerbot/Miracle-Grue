@@ -195,6 +195,12 @@ p = env.Program( 	'./bin/tests/gcoderUnitTest',
 runThisTest(p, run_unit_tests)
 
 
+p = env.Program( 	'./bin/tests/slicerSplitUnitTest', 
+				mix(['src/unit_tests/SlicerSplitTestCase.cc'], unit_test), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+runThisTest(p, run_unit_tests)
 
 #p = env.Program(  	'./bin/tests/regionerUnitTest',   
 #				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
