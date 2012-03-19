@@ -27,7 +27,7 @@
 
 #endif // WIN32
 
-#define STRONG_CHECKING
+// #define STRONG_CHECKING
 
 #define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
 #define dbgs__(s) std::cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << std::endl;
