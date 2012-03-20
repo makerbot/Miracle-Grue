@@ -447,21 +447,21 @@ void ModelReaderTestCase::testMyStls()
 	models.push_back("inputs/Water.stl");
 	models.push_back("inputs/hexagon.stl");
 	models.push_back("inputs/Land.stl");
-	models.push_back("../stls/monitor_simple.stl");
-	models.push_back("../stls/F1.stl");
-	models.push_back("../stls/hexagon.stl");
-	models.push_back("../stls/Land.stl");
-	models.push_back("../stls/Roal10.stl");
-	models.push_back("../stls/soap_highres.stl");
-	models.push_back("../stls/TeaPot.stl");
-	models.push_back("../stls/Water.stl");
-	models.push_back("../stls/Yodsta_Printdata.stl");
+//	models.push_back("../stls/monitor_simple.stl");
+//	models.push_back("../stls/F1.stl");
+//	models.push_back("../stls/hexagon.stl");
+//	models.push_back("../stls/Land.stl");
+//	models.push_back("../stls/Roal10.stl");
+//	models.push_back("../stls/soap_highres.stl");
+//	models.push_back("../stls/TeaPot.stl");
+//	models.push_back("../stls/Water.stl");
+//	models.push_back("../stls/Yodsta_Printdata.stl");
 
 	Scalar infillShrinking = 0.35;
 	Scalar insetDistanceFactor = 0.8;
 	//models.push_back("Pivot-Joint_-_Ball_End_-1X");
 	//models.push_back("Toymaker_Skull_1_Million_Polys");
-	//	models.push_back("part2");
+	//models.push_back("part2");
 
 	batchProcess(firstLayerZ, layerH, layerW, tubeSpacing, infillShrinking,
 							insetDistanceFactor, outDir.c_str(), models);
