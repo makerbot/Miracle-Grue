@@ -162,7 +162,14 @@ p = env.Program('./bin/miracle_grue',
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
 
-p = env.Program(  	'./bin/tests/slicerCupUnitTest',   
+p = env.Program(  	'./bin/unit_tests/mglCoreUnitTest',   
+				mix(['src/unit_tests/MglCoreTestCase.cc'], unit_test), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= [".."])
+runThisTest(p, run_unit_tests)	
+
+p = env.Program(  	'./bin/unit_tests/slicerCupUnitTest',   
 				mix(['src/unit_tests/SlicerCupTestCase.cc'], unit_test), 
     			LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
@@ -170,7 +177,7 @@ p = env.Program(  	'./bin/tests/slicerCupUnitTest',
 runThisTest(p, run_unit_tests)	
 
 
-p = env.Program( 	'./bin/tests/slicerUnitTest', 
+p = env.Program( 	'./bin/unit_tests/slicerUnitTest', 
 				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
@@ -179,7 +186,7 @@ runThisTest(p, run_unit_tests)
 	#Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
 
 
-p = env.Program(  	'./bin/tests/modelReaderUnitTest',   
+p = env.Program(  	'./bin/unit_tests/modelReaderUnitTest',   
 				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
@@ -187,7 +194,7 @@ p = env.Program(  	'./bin/tests/modelReaderUnitTest',
 runThisTest(p, run_unit_tests)
 
 
-p = env.Program( 	'./bin/tests/gcoderUnitTest', 
+p = env.Program( 	'./bin/unit_tests/gcoderUnitTest', 
 				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
@@ -195,14 +202,14 @@ p = env.Program( 	'./bin/tests/gcoderUnitTest',
 runThisTest(p, run_unit_tests)
 
 
-p = env.Program( 	'./bin/tests/slicerSplitUnitTest', 
+p = env.Program( 	'./bin/unit_tests/slicerSplitUnitTest', 
 				mix(['src/unit_tests/SlicerSplitTestCase.cc'], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
 runThisTest(p, run_unit_tests)
 
-#p = env.Program(  	'./bin/tests/regionerUnitTest',   
+#p = env.Program(  	'./bin/unit_tests/regionerUnitTest',   
 #				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
 #				LIBS = default_libs + debug_libs,
 #				LIBPATH = default_libs_path + debug_libs_path, 
