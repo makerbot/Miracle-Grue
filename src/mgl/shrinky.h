@@ -25,7 +25,7 @@ namespace mgl // Miracle-Grue's geometry library
 
 
 
-class ShrinkyMess : public Messup {	public: ShrinkyMess(const char *msg) :Messup(msg){}};
+class ShrinkyMess : public Exception {	public: ShrinkyMess(const char *msg) :Exception(msg){}};
 
 
 class Shrinky
@@ -39,11 +39,11 @@ class Shrinky
 	unsigned int counter;
 
     void writeScadBisectors(const std::vector<Vector2> & bisectors,
-    						const std::vector<TriangleSegment2> & originalSegments);
+    						const std::vector<LineSegment2d> & originalSegments);
 
     void writeScadSegments(	const char* segNames,
 							const char* prefix,
-							const std::vector<TriangleSegment2> & segments);
+							const std::vector<LineSegment2d> & segments);
 
     void openScadFile(const char *scadFileName);
     void closeScadFile();
@@ -60,18 +60,18 @@ public:
 
 
 
-	void inset(const std::vector<TriangleSegment2> & segments,
+	void inset(const std::vector<LineSegment2d> & segments,
 								Scalar insetDist,
-									std::vector<TriangleSegment2> & finalInsets);
+									std::vector<LineSegment2d> & finalInsets);
 
 	~Shrinky();
 
 private:
-	Scalar insetStep(const std::vector<TriangleSegment2> & segments,
+	Scalar insetStep(const std::vector<LineSegment2d> & segments,
 							Scalar insetDist,
 								Scalar cutoffLength,
 								bool writeThisStep,
-									std::vector<TriangleSegment2> & finalInsets);
+									std::vector<LineSegment2d> & finalInsets);
 };
 
 }

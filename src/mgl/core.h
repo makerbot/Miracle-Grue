@@ -37,12 +37,12 @@ namespace mgl
 {
 
 // base class for exceptions
-class Messup
+class Exception
 {
 
 public:
 	std::string error;
-	Messup(const char *msg)
+	Exception(const char *msg)
 	 :error(msg)
 	{
 	//	std::cerr << std::endl << msg << std::endl;
@@ -57,15 +57,25 @@ public:
 typedef double Scalar;
 #define SCALAR_SQRT(s) sqrt(s)
 #define SCALAR_ABS(s) abs(s)
-// true if two Scalar values are approximally the same,
-// using a hard coded tolerance
-bool sameSame(Scalar a, Scalar b, Scalar tol); // = 1e-8
+
+
+// (t)olerance (equals)
+// true if two Scalar values are approximally the same using tolernce
+bool tequals(Scalar a, Scalar b, Scalar tol); // = 1e-8
 
 
 typedef unsigned int index_t;
+
+/// Structure contains list of triangle 'id's, used to
+/// reference which triangle in the master list is related.
 typedef std::vector<index_t> TriangleIndices;
+
+/// A list of all slices, where each slice
+/// is just a list of triangles id's that are related to
+/// that specified slice.
 typedef std::vector<TriangleIndices> SliceTable;
 
+/// Standard X/Y Vector value
 class Vector2
 {
 public:
@@ -123,11 +133,12 @@ public:
         return Vector2(x*value, y*value);
     }
 
-	bool sameSame(const Vector2 &p, Scalar tol) const
+    /// tolerance equals of p to this vector
+	bool tequals(const Vector2 &p, Scalar tol) const
 	{
 		Scalar dx = p.x - x;
 		Scalar dy = p.y -y;
-		return mgl::sameSame(0, dx*dx + dy*dy, tol);
+		return mgl::tequals(0, dx*dx + dy*dy, tol);
 	}
 
     // the eucledian length
@@ -169,27 +180,49 @@ public:
     }
 };
 
-std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
-
+// move these two into the base class ^^^ TODO:Far
+// get an angle from 2 vectors
 Scalar angleFromVector2s(const Vector2 &a, const Vector2 &b);
+
+/// get an angle from 3 points. j is the base of
+// i-j and k-j lines in the triangle
+// @ returns ??? TODO:Far
 Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k);
 
+/// rotates a vector by ??? returns a new vector rotated
+// around 0,0
+Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
-// a line segment between 2 points
-class TriangleSegment2
+
+
+std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
+
+
+//// A line segment that also contains cut direction
+//// and inset direction.
+//class TriangleSegment2 :LineSegment
+//{
+//	Vector2 cutDirection;
+//	Vector2 insetDirection;
+//}
+
+
+/// a line segment between 2 points.
+class LineSegment2d
 {
 public:
 	Vector2 a,b; // the 2 points
 
-	TriangleSegment2(){}
 
-	TriangleSegment2(const TriangleSegment2& other)
+	LineSegment2d(){}
+
+	LineSegment2d(const LineSegment2d& other)
 	:a(other.a), b(other.b){}
 
-	TriangleSegment2(const Vector2 &a, const Vector2 &b)
+	LineSegment2d(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
-	TriangleSegment2 & operator= (const TriangleSegment2 & other)
+	LineSegment2d & operator= (const LineSegment2d & other)
 	{
 		if (this != &other)
 		{
@@ -214,13 +247,16 @@ public:
 	}
 };
 
-typedef std::vector< std::vector<TriangleSegment2 > > SegmentTable;
-std::ostream& operator << (std::ostream &os, const TriangleSegment2 &s);
+/// List of Lists of line segments. Used to lookup
+/// A SegmentTable may contain, for example, a perimeter
+/// and hole(s) in that perimeter of a slice.
+typedef std::vector< std::vector<LineSegment2d > > SegmentTable;
 
-Vector2 rotate2d(const Vector2 &p, Scalar angle);
+std::ostream& operator << (std::ostream &os, const LineSegment2d &s);
 
 
-// 3d vector class... warning: may be used for points
+/// your basic XYZ vector table
+/// 3d vector class... warning: may be used for points
 class Vector3
 {
 public:
@@ -461,8 +497,11 @@ public:
 
 };
 
-class LayerMess : public Messup {public: LayerMess(const char *msg)	 :Messup(msg) {	} };
+class LayerException : public Exception {
+	public: LayerException(const char *msg)	 :Exception(msg) {	};
+};
 
+// A tape measure for layers, since layers have variable height.
 // Class that relates height (a scalar) to layer index (unsigned int)
 //
 // This class assumes that the model's triangles are
@@ -486,7 +525,7 @@ public:
 	{
 		if(z < 0)
 		{
-			LayerMess mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
+			LayerException mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
 			throw mixup;
 		}
 
@@ -510,25 +549,28 @@ public:
 };
 
 
-
 //
-// The Slice is a series of tubes
+////
+//// The Slice is a series of tubes
+////
+//// tubes are plastic extrusions
+//class TubesInSlice
+//{
+//public:
+//	TubesInSlice(Scalar z)
+//		:z(z)
+//	{
+//	}
 //
-// tubes are plastic extrusions
-class TubesInSlice
-{
-public:
-	TubesInSlice(Scalar z)
-		:z(z)
-	{
-	}
+//	Scalar z;
+//	std::vector<LineSegment2d> infill;
+//	std::vector< std::vector<LineSegment2d> > outlines;
+//};
 
-	Scalar z;
-	std::vector<TriangleSegment2> infill;
-	std::vector< std::vector<TriangleSegment2> > outlines;
-};
-
+/// A polygon is an arbitarty collection of 2d points
 typedef std::vector<Vector2> Polygon;
+
+/// A vector of polygon objects
 typedef std::vector<Polygon> Polygons;
 
 std::ostream& operator<<(std::ostream& os, const Polygon& v);

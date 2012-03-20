@@ -21,12 +21,12 @@ using namespace std;
 
 
 // segments are OK, but polys are better for paths (no repeat point)
-void segments2polygon(const std::vector<TriangleSegment2> & segments, Polygon &loop)
+void segments2polygon(const std::vector<LineSegment2d> & segments, Polygon &loop)
 {
 
     loop.reserve(segments.size());
     for(size_t j = 0;j < segments.size();j++){
-        const TriangleSegment2 & line = segments[j];
+        const LineSegment2d & line = segments[j];
         Vector2 p(line.a);
         loop.push_back(p);
         if(j == segments.size() - 1){
@@ -48,7 +48,7 @@ void createPolysFromloopSegments(const SegmentTable &segmentTable,
 	size_t count = segmentTable.size();
 	for(size_t i=0; i < count; i++)
 	{
-		const std::vector<TriangleSegment2> &segments = segmentTable[count-1 - i];
+		const std::vector<LineSegment2d> &segments = segmentTable[count-1 - i];
 		loops.push_back(Polygon());
 		Polygon &loop = loops[loops.size()-1];
 	    segments2polygon(segments, loop);
@@ -76,7 +76,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
     for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 	{
-    	const std::vector<TriangleSegment2> &outlineLoop = outlinesSegments[outlineId];
+    	const std::vector<LineSegment2d> &outlineLoop = outlinesSegments[outlineId];
     	assert(outlineLoop.size() > 0);
 
 		insetsForLoops.push_back(SegmentTable());
@@ -86,7 +86,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 		insetTable.reserve(nbOfShells);
 		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 		{
-			insetTable.push_back(std::vector<TriangleSegment2>());
+			insetTable.push_back(std::vector<LineSegment2d>());
 		}
 
 		unsigned int segmentCountBefore =0;
@@ -108,12 +108,12 @@ void inshelligence( const SegmentTable & outlinesSegments,
 				layerWidths.push_back(layerW);
 			}
 			Shrinky shrinky;
-			const vector<TriangleSegment2> *previousInsets  = &outlineLoop;
+			const vector<LineSegment2d> *previousInsets  = &outlineLoop;
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
 				currentShellIdForErrorReporting = shellId;
 				Scalar insetDistance = insetDistances[shellId];
-				std::vector<TriangleSegment2> &insets = insetTable[shellId];
+				std::vector<LineSegment2d> &insets = insetTable[shellId];
 				if((*previousInsets).size() > 2)
 				{
 					shrinky.inset(*previousInsets, insetDistance, insets);
@@ -147,11 +147,11 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					scad << endl << "*/" << endl;
 
 
-					vector<TriangleSegment2> previousInsets  = outlineLoop;
+					vector<LineSegment2d> previousInsets  = outlineLoop;
 					cout << "Creating file: " << loopScadFile << endl;
 					cout << "	Number of points " << previousInsets.size() << endl;
 					ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
-					std::vector<TriangleSegment2> insets;
+					std::vector<LineSegment2d> insets;
 					for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 					{
 						Scalar insetDistance = insetDistances[shellId];
@@ -352,7 +352,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					SliceData &slice)
 {
 
-    std::vector<TriangleSegment2> segments;
+    std::vector<LineSegment2d> segments;
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 
@@ -402,7 +402,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 			Polygons &polygons = insetsPolys[shellId];
 			for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
 			{
-				const std::vector<TriangleSegment2>& segmentLoop = insetsForLoops[outlineId][nbOfShells -1 - shellId];
+				const std::vector<LineSegment2d>& segmentLoop = insetsForLoops[outlineId][nbOfShells -1 - shellId];
 				if(segmentLoop.size() >2)
 				{
 					polygons.push_back(Polygon());
@@ -421,7 +421,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	{
 		for (unsigned int i = 0; i < outlineSegmentCount; ++i)
 		{
-			const std::vector<TriangleSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
+			const std::vector<LineSegment2d > &deppestInset = *insetsForLoops[i].rbegin();
 			rotatedSegments.push_back(deppestInset);
 		}
 	}

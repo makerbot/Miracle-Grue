@@ -151,7 +151,7 @@ int main(int argc, char *argv[], char *envp[])
 	    cout << "Done!" << endl;
 
     }
-    catch(mgl::Messup &mixup)
+    catch(mgl::Exception &mixup)
     {
     	cout << "ERROR: "<< mixup.error << endl;
     	return -1;

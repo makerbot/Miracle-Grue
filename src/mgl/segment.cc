@@ -22,7 +22,7 @@ using namespace std;
 
 
 
-void mgl::rotateLoops(std::vector<std::vector<mgl::TriangleSegment2> > &loops, Scalar angle)
+void mgl::rotateLoops(std::vector<std::vector<mgl::LineSegment2d> > &loops, Scalar angle)
 {
 	for(size_t i=0; i < loops.size(); i++)
 	{
@@ -30,7 +30,7 @@ void mgl::rotateLoops(std::vector<std::vector<mgl::TriangleSegment2> > &loops, S
 	}
 }
 
-void mgl::rotateSegments(std::vector<TriangleSegment2> &segments, Scalar angle)
+void mgl::rotateSegments(std::vector<LineSegment2d> &segments, Scalar angle)
 {
 	for(size_t i=0; i < segments.size(); i++)
 	{
@@ -66,7 +66,7 @@ bool mgl::segmentSegmentIntersection(Scalar p0_x, Scalar p0_y,
     return false; // No collision
 }
 
-bool mgl::segmentSegmentIntersection(const TriangleSegment2 &s0, const TriangleSegment2 &s1, Vector2 &p)
+bool mgl::segmentSegmentIntersection(const LineSegment2d &s0, const LineSegment2d &s1, Vector2 &p)
 {
 
 	bool s;
@@ -81,7 +81,7 @@ bool mgl::segmentSegmentIntersection(const TriangleSegment2 &s0, const TriangleS
 void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 		const std::vector<Triangle3> &allTriangles,
 		Scalar z,
-		std::vector<TriangleSegment2> &segments)
+		std::vector<LineSegment2d> &segments)
 {
     size_t triangleCount = trianglesForSlice.size();
     segments.reserve(triangleCount);
@@ -94,7 +94,7 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
         // bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
         bool cut = triangle.cut(z, a, b);
         if(cut){
-        	TriangleSegment2 s;
+        	LineSegment2d s;
             s.a.x = a.x;
             s.a.y = a.y;
             s.b.x = b.x;
@@ -178,11 +178,11 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 		// Triangle is below Z level.
 		return false;
 	}
-	if (sameSame(vertex1.z, Z, tol) )
+	if (tequals(vertex1.z, Z, tol) )
 	{
-		if (sameSame(vertex2.z,Z, tol) )
+		if (tequals(vertex2.z,Z, tol) )
 		{
-			if (sameSame(vertex3.z,Z, tol) )
+			if (tequals(vertex3.z,Z, tol) )
 			{
 				// flat face.  Ignore.
 				return false;
@@ -196,7 +196,7 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 			b.z = Z;
 			return true;
 		}
-		if (sameSame(vertex3.z,Z, tol) )
+		if (tequals(vertex3.z,Z, tol) )
 		{
 			// lnref = Line(Point(vertex1), Point(vertex3));
 			a.x = vertex1.x;
@@ -225,9 +225,9 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 		b.z = Z;
 		return true;
 	}
-	else if (sameSame(vertex2.z, Z, tol) )
+	else if (tequals(vertex2.z, Z, tol) )
 	{
-		if (sameSame(vertex3.z,Z, tol) )
+		if (tequals(vertex3.z,Z, tol) )
 		{
 			// lnref = Line(Point(vertex2), Point(vertex3));
 			a.x = vertex2.x;
@@ -255,7 +255,7 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 		b.z = Z;
 		return true;
 	}
-	else if (sameSame(vertex3.z, Z, tol) )
+	else if (tequals(vertex3.z, Z, tol) )
 	{
 		if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
 		{
@@ -349,15 +349,15 @@ bool mgl::Triangle3::cut(Scalar z, Vector3 &a, Vector3 &b) const
 // given a point, finds the LineSegment2 that starts the closest from that point
 // and return the distance. Also, the iterator to the closest LineSegment2 is "returned"
 Scalar findClosestLineSegment2(const Vector2& endOfPreviousLineSegment2,
-						vector<TriangleSegment2>::iterator startIt,
-						vector<TriangleSegment2>::iterator endIt,
-						vector<TriangleSegment2>::iterator &bestSegmentIt ) // "returned here"
+						vector<LineSegment2d>::iterator startIt,
+						vector<LineSegment2d>::iterator endIt,
+						vector<LineSegment2d>::iterator &bestSegmentIt ) // "returned here"
 {
 	bestSegmentIt = endIt; 	// just in case, we'll check for this on the caller side
 	Scalar minDist = 1e100;
 
 	Vector3 end(endOfPreviousLineSegment2.x,endOfPreviousLineSegment2.y, 0);
-	vector<TriangleSegment2>::iterator it = startIt;
+	vector<LineSegment2d>::iterator it = startIt;
 	while(it != endIt)
 	{
 		Vector3 start(it->a.x, it->a.y, 0);
@@ -376,9 +376,9 @@ Scalar findClosestLineSegment2(const Vector2& endOfPreviousLineSegment2,
 
 
 
-void mgl::loopsAndHoleOgy(std::vector<TriangleSegment2> &segments,
+void mgl::loopsAndHoleOgy(std::vector<LineSegment2d> &segments,
 		Scalar tol,
-		std::vector< std::vector<TriangleSegment2> > &loops)
+		std::vector< std::vector<LineSegment2d> > &loops)
 {
 	// Lets sort this mess out so we can extrude in a continuous line of shiny contour
 	// Nota: from their normals (int their previous life as 3d triangles), LineSegment2 know their beginings from their endings
@@ -388,19 +388,19 @@ void mgl::loopsAndHoleOgy(std::vector<TriangleSegment2> &segments,
 
 	distances.push_back(0); // this value is not used, it represents the distance between the
 							// first LineSegment2 and the one before (and there is no LineSegment2 before)
-	for(vector<TriangleSegment2>::iterator i = segments.begin(); i != segments.end(); i++)
+	for(vector<LineSegment2d>::iterator i = segments.begin(); i != segments.end(); i++)
 	{
 		Vector2 &startingPoint = i->b;
-		vector<TriangleSegment2>::iterator startIt = i+1;
-		vector<TriangleSegment2>::iterator bestSegmentIt;
+		vector<LineSegment2d>::iterator startIt = i+1;
+		vector<LineSegment2d>::iterator bestSegmentIt;
 		if(startIt != segments.end())
 		{
 			Scalar distance = findClosestLineSegment2(startingPoint, startIt, segments.end(), bestSegmentIt);
 			if(bestSegmentIt != segments.end())
 			{
 				// Swap the segments, because the best is the closest segment to the current one
-				TriangleSegment2 tmp(*startIt);
-				TriangleSegment2 best(*bestSegmentIt);
+				LineSegment2d tmp(*startIt);
+				LineSegment2d best(*bestSegmentIt);
 				*startIt = best;
 				*bestSegmentIt = tmp;
 				distances.push_back(distance);
@@ -414,12 +414,12 @@ void mgl::loopsAndHoleOgy(std::vector<TriangleSegment2> &segments,
 
 
 	vector<Scalar>::iterator hopIt = distances.begin();
-	vector<TriangleSegment2>::iterator i = segments.begin();
+	vector<LineSegment2d>::iterator i = segments.begin();
 	while(i != segments.end())
 	{
 		// lets make a loop... we'll call it loop
-		loops.push_back(vector<TriangleSegment2>());
-		vector<TriangleSegment2> &loop = loops[loops.size()-1];
+		loops.push_back(vector<LineSegment2d>());
+		vector<LineSegment2d> &loop = loops[loops.size()-1];
 
 		loop.push_back(*i);
 
@@ -457,7 +457,7 @@ void mgl::loopsAndHoleOgy(std::vector<TriangleSegment2> &segments,
 	// sanity check
     for(unsigned int i=0; i < loops.size(); i++)
     {
-    	const std::vector<TriangleSegment2 > &loop = loops[i];
+    	const std::vector<LineSegment2d > &loop = loops[i];
     	if (loop.size() < 2)
     	{
     		cout << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
@@ -489,7 +489,7 @@ void mgl::translatePolygon(Polygon &polygon, Vector2 p)
 	}
 }
 
-void mgl::translateSegments(std::vector<TriangleSegment2> &segments, Vector2 p)
+void mgl::translateSegments(std::vector<LineSegment2d> &segments, Vector2 p)
 {
 	for(size_t i=0; i < segments.size(); i++)
 	{

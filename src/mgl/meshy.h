@@ -39,11 +39,11 @@ namespace mgl // serious about triangles
 //
 // Exception class for meshy problems
 //
-class MeshyMess : public Messup
+class MeshyMess : public Exception
 {
 public:
 	MeshyMess(const char *msg)
-	 :Messup(msg)
+	 :Exception(msg)
 	{
 
 	}

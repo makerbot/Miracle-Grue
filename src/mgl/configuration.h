@@ -30,7 +30,7 @@
 namespace mgl
 {
 
-class ConfigMess : public Messup {public: ConfigMess(const char *msg):Messup(msg) {	} };
+class ConfigMess : public Exception {public: ConfigMess(const char *msg):Exception(msg) {	} };
 
 // checks that the value exist before returning it
 double doubleCheck(const Json::Value &value, const char *name);

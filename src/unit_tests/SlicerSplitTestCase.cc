@@ -21,24 +21,24 @@ using namespace mgl;
 
 void SlicerSplitTestCase::test_m()
 {
-	std::vector<TriangleSegment2> segs;
+	std::vector<LineSegment2d> segs;
 	Scalar x = 0;
 	Scalar y = 0;
 
-	segs.push_back(TriangleSegment2(Vector2(0.2+x, 0.2+y), Vector2(0.2+x, 4.63+y)));
-	segs.push_back(TriangleSegment2(Vector2(0.2+x, 4.63+y), Vector2(0.2+x, 4.8+y)));
-	segs.push_back(TriangleSegment2(Vector2(0.2+x, 4.8+y), Vector2(3.52+x, 4.8+y)));
-	segs.push_back(TriangleSegment2(Vector2(3.52+x, 4.8+y), Vector2(4.8+x, 4.8+y)));
-	segs.push_back(TriangleSegment2(Vector2(4.8+x, 4.8+y), Vector2(4.8+x, 4.63+y)));
-	segs.push_back(TriangleSegment2(Vector2(4.8+x, 4.63+y), Vector2(4.8+x, 0.2+y)));
-	segs.push_back(TriangleSegment2(Vector2(4.8+x, 0.2+y), Vector2(4.63+x, 0.2+y)));
-	segs.push_back(TriangleSegment2(Vector2(4.63+x, 0.2+y), Vector2(0.2+x, 0.2+y)));
+	segs.push_back(LineSegment2d(Vector2(0.2+x, 0.2+y), Vector2(0.2+x, 4.63+y)));
+	segs.push_back(LineSegment2d(Vector2(0.2+x, 4.63+y), Vector2(0.2+x, 4.8+y)));
+	segs.push_back(LineSegment2d(Vector2(0.2+x, 4.8+y), Vector2(3.52+x, 4.8+y)));
+	segs.push_back(LineSegment2d(Vector2(3.52+x, 4.8+y), Vector2(4.8+x, 4.8+y)));
+	segs.push_back(LineSegment2d(Vector2(4.8+x, 4.8+y), Vector2(4.8+x, 4.63+y)));
+	segs.push_back(LineSegment2d(Vector2(4.8+x, 4.63+y), Vector2(4.8+x, 0.2+y)));
+	segs.push_back(LineSegment2d(Vector2(4.8+x, 0.2+y), Vector2(4.63+x, 0.2+y)));
+	segs.push_back(LineSegment2d(Vector2(4.63+x, 0.2+y), Vector2(0.2+x, 0.2+y)));
 
 
     Shrinky shrinky;
 	Scalar insetDistance = 0.9 * 0.4 * 2;
 
-	std::vector<TriangleSegment2> finalInsets;
+	std::vector<LineSegment2d> finalInsets;
 
 	shrinky.inset(segs, insetDistance , finalInsets);
 
@@ -46,7 +46,7 @@ void SlicerSplitTestCase::test_m()
 	for (unsigned int i=0; i < finalInsets.size(); i++)
 	{
 
-		const TriangleSegment2 &seg = finalInsets[i];
+		const LineSegment2d &seg = finalInsets[i];
 		Scalar l = seg.length();
 		cout << "seg[" << i << "] = " << seg << " l = " << l << endl;
 		CPPUNIT_ASSERT(l > 0);
@@ -69,7 +69,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 
 	const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[70];
 	const vector<mgl::Triangle3> &allTriangles = mesh.readAllTriangles();
-	std::vector<TriangleSegment2> segments;
+	std::vector<LineSegment2d> segments;
 	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(70);
 	cout  << "z="<< z << endl;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);

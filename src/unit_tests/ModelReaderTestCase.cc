@@ -557,7 +557,7 @@ void ModelReaderTestCase::fixContourProblem()
 	const SliceTable &sliceTable = mesh.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 
-	std::vector<TriangleSegment2> segments;
+	std::vector<LineSegment2d> segments;
 	// get 2D paths for outline
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	SegmentTable outlinesSegments;
@@ -708,18 +708,18 @@ void slicyTest()
 
 
 	const Face &face = connexity.readFaces()[0];
-	TriangleSegment2 cut;
+	LineSegment2d cut;
 	bool success = connexity.cutFace(z, face, cut);
 	cout << "FACE cut " << cut.a << " to " << cut.b << endl;
 	CPPUNIT_ASSERT(success);
 
-	list<TriangleSegment2> loop;
+	list<LineSegment2d> loop;
 	connexity.splitLoop(z, faces, loop);
 
 	cout << "First loop has " << loop.size() << " segments" << endl;
 
 	size_t i=0;
-	for(list<TriangleSegment2>::iterator it = loop.begin(); it != loop.end(); it++)
+	for(list<LineSegment2d>::iterator it = loop.begin(); it != loop.end(); it++)
 	{
 		cout << i << "] " << it->a << ", " << it->b << endl;
 		i++;

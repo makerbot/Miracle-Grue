@@ -27,11 +27,11 @@
 namespace mgl
 {
 
-class ScadMess : public Messup
+class ScadMess : public Exception
 {
 public:
 	ScadMess(const char *msg)
-	 :Messup(msg)
+	 :Exception(msg)
 	{
 
 	}
@@ -234,14 +234,14 @@ public:
 	static Scalar segment3(	std::ostream &out,
 							const char* indent,
 							const char* variableName,
-							const std::vector<TriangleSegment2> &segments,
+							const std::vector<LineSegment2d> &segments,
 							Scalar z,
 							Scalar dz)
 	{
 		out << indent << variableName<< " =[" << std::endl;
 		for (size_t i=0; i < segments.size(); i++)
 		{
-			const TriangleSegment2& segment  = segments[i];
+			const LineSegment2d& segment  = segments[i];
 			Scalar ax = segment.a[0];
 			Scalar ay = segment.a[1];
 			Scalar az = z;
@@ -262,7 +262,7 @@ public:
 
 	Scalar writeSegments3(	const char* name,
 							const char* implementation,
-							const std::vector<TriangleSegment2> &segments,
+							const std::vector<LineSegment2d> &segments,
 							Scalar z,
 							Scalar dz,
 							int slice)
@@ -278,7 +278,7 @@ public:
 
 	void writeSegments2(	const char* name,
 							const char* implementation,
-							const std::vector<TriangleSegment2> &segments,
+							const std::vector<LineSegment2d> &segments,
 							Scalar z,
 							int slice)
 	{
@@ -287,7 +287,7 @@ public:
 		out << "    segments =[" << std::endl;
 		for (size_t i=0; i < segments.size(); i++)
 		{
-			const TriangleSegment2& segment  = segments[i];
+			const LineSegment2d& segment  = segments[i];
 			Scalar ax = segment.a[0];
 			Scalar ay = segment.a[1];
 			Scalar bx = segment.b[0];
