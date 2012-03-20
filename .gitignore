@@ -21,7 +21,10 @@
 #ignore unit tests
 /*UnitTest
 *.passed
-
+test_cases/slicerCupTestCase/output/*.scad
+test_cases/slicerCupTestCase/output/*.gcode
+test_cases/GCoderTestCase/output/*.gcode
+test_cases/fileWriterTestCase/output/*
 #ignore doyxgen generated docs
 documentation/Doxyfile/*
 documentation/html/*
@@ -30,3 +33,4 @@ documentation/man/*
 
 #ignore bin directory
 bin/*
+
