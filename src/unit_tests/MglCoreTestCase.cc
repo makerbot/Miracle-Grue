@@ -31,15 +31,15 @@ void throwsException(){
 	throw e;
 }
 
-void MglCoreTestCase::ExceptionTest() {
+void MglCoreTestCase::testExceptions() {
 	CPPUNIT_ASSERT_THROW(throwsException(), Exception);
 }
 
 
-void  MglCoreTestCase::ScalarBasics(){
+void  MglCoreTestCase::testScalarBasics(){
 }
 
-void  MglCoreTestCase::ScalarMaths(){
+void  MglCoreTestCase::testScalarMaths(){
 	/** basic math (assuming it works)*/
 
 	/** complex math **/
@@ -68,7 +68,7 @@ void  MglCoreTestCase::ScalarMaths(){
 
 }
 
-void  MglCoreTestCase::Vector2Basics()
+void  MglCoreTestCase::testVector2Basics()
 {
 	Vector2 foo;
 	CPPUNIT_ASSERT( foo.x == 0);
@@ -93,7 +93,7 @@ void  MglCoreTestCase::Vector2Basics()
 //}
 
 
-void MglCoreTestCase::LineSegment2dBasics()
+void MglCoreTestCase::testLineSegment2dBasics()
 {
 	LineSegment2d seg1;
 	CPPUNIT_ASSERT( seg1.a.x == 0);
@@ -115,7 +115,7 @@ void MglCoreTestCase::LineSegment2dBasics()
 
 }
 
-void MglCoreTestCase::Vector3Basics()
+void MglCoreTestCase::testVector3Basics()
 {
 	Vector3 foo;
 	CPPUNIT_ASSERT( foo.x == 0);
@@ -146,7 +146,7 @@ void MglCoreTestCase::Vector3Basics()
 
 }
 
-void MglCoreTestCase::Triangle3Maths() {
+void MglCoreTestCase::testTriangle3Maths() {
 
 	//Vector3 v0, v1, v2;
 	Vector3 v0(0,0,0);
@@ -161,8 +161,11 @@ void MglCoreTestCase::Triangle3Maths() {
 	CPPUNIT_ASSERT( x2.tequals(foo[1],SCALAR_EPSILON ) );
 	CPPUNIT_ASSERT( x3.tequals(foo[2],SCALAR_EPSILON ) );
 
-
 	Vector3 value = foo.normal();
 	CPPUNIT_ASSERT( v0.tequals(value,SCALAR_EPSILON ) );
 
+	Vector3 v3(0,0,0);
+	Vector3 v4(0,0,0);
+	Vector3 v5(0,0,0);
+	Triangle3 foo(v0,v1,v2);
 }
