@@ -18,7 +18,7 @@
 #include <list>
 #include <set>
 
-#include "core.h"
+#include "mgl.h"
 #include "meshy.h"
 #include "segment.h"
 #include "scadtubefile.h"

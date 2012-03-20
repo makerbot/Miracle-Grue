@@ -21,7 +21,7 @@
 //#include "meshy.h"
 #include "abstractable.h"
 #include "limits.h"
-#include "core.h"
+#include "mgl.h"
 
 
 namespace mgl

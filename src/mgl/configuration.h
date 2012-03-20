@@ -24,7 +24,7 @@
 #include "json-cpp/include/json/value.h"
 #include "json-cpp/include/json/writer.h"
 
-#include "core.h"
+#include "mgl.h"
 #include "gcoder.h"
 
 namespace mgl

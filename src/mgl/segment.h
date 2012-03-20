@@ -14,7 +14,7 @@
 #define SEGMENT_H_
 
 
-#include "core.h"
+#include "mgl.h"
 
 //
 // Exception class! All your errors are belong to us.

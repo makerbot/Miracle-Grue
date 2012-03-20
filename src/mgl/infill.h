@@ -13,7 +13,7 @@
 #ifndef INFILL_H_
 #define INFILL_H_
 
-#include "core.h"
+#include "mgl.h"
 #include "limits.h"
 #include "segment.h"
 

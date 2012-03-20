@@ -6,7 +6,7 @@
 
 #include "insetTests.h"
 
-#include "mgl/core.h"
+#include "mgl/mgl.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
 

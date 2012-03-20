@@ -18,7 +18,7 @@
 #include <list>
 #include <set>
 
-#include "core.h"
+#include "mgl.h"
 
 namespace mgl // Miracle-Grue's geometry library
 {
