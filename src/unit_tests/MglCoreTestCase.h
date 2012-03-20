@@ -13,14 +13,30 @@ class MglCoreTestCase : public CPPUNIT_NS::TestFixture
 
   CPPUNIT_TEST_SUITE( MglCoreTestCase );
 
-  CPPUNIT_TEST_SUITE_END();
+  // test base exception clas
+  CPPUNIT_TEST( ExceptionTest );
+
+  // test base scalar value
+  CPPUNIT_TEST( ScalarBasics );
+  CPPUNIT_TEST( ScalarMaths );
+
+  CPPUNIT_TEST( Vector2Basics );
+  CPPUNIT_TEST( Vector2Maths );
+
+CPPUNIT_TEST_SUITE_END();
 
 
 public:
   void setUp();
 
-//protected:
+protected:
+ void ExceptionTest();
 
+ void  ScalarBasics();
+ void  ScalarMaths();
+
+ void  Vector2Basics();
+ void  Vector2Maths();
 };
 
 

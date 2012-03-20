@@ -233,7 +233,7 @@ Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
 	// translate point back to origin:
 	Vector2 translated = p - center;
 
-	Vector2 rotated = rotate2d(translated, angle);
+	Vector2 rotated = translated.rotate2d( angle );
 	// translate point back:
 	Vector2 r = rotated + center;
 	return r;

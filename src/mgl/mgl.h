@@ -36,34 +36,45 @@
 namespace mgl
 {
 
-// base class for exceptions
+/**
+ * base class for all MGL Exceptions
+ */
 class Exception
 {
 
 public:
 	std::string error;
-	Exception(const char *msg)
-	 :error(msg)
+	Exception(const char *msg) :error(msg)
 	{
-	//	std::cerr << std::endl << msg << std::endl;
+		//	std::cerr << std::endl << msg << std::endl;
 		// fprintf(stderr, "%s", msg);
 	}
 
 };
 
-//
-// Our basic numerical type. double for now;
-//
+//////////
+// Scalar: Our basic numerical type. double for now;
+///////////
 typedef double Scalar;
 #define SCALAR_SQRT(s) sqrt(s)
 #define SCALAR_ABS(s) abs(s)
+#define SCALAR_ACOS(s) acos(s)
+#define SCALAR_SIN(s) sin(s)
+#define SCALAR_COS(s) cos(s)
 
+// See float.h for details on these
+#define SCALAR_EPSILON DBL_EPSILON
 
-// (t)olerance (equals)
-// true if two Scalar values are approximally the same using tolernce
+/** (t)olerance (equals)
+ * @returns true if two Scalar values are approximally the same using tolernce
+ */
 bool tequals(Scalar a, Scalar b, Scalar tol); // = 1e-8
 
+//////////
+// Scalar: End numeric type info
+///////////
 
+// Type used for indexes of triangles/etc for unique indexing
 typedef unsigned int index_t;
 
 /// Structure contains list of triangle 'id's, used to
@@ -82,7 +93,7 @@ public:
 	Scalar x;
 	Scalar y;
 
-	Vector2(){}
+	Vector2():x(0),y(0){}
 
 	Vector2(Scalar x, Scalar y)
 		:x(x), y(y)
@@ -91,13 +102,15 @@ public:
     Scalar operator[](unsigned i) const
     {
         if (i == 0) return x;
-        return y;
+        if (i == 1) return y;
+        throw Exception("index out of range in Vector2");
     }
 
     Scalar& operator[](unsigned i)
     {
         if (i == 0) return x;
-        return y;
+        if (i == 1) return y;
+        throw Exception("index out of range in Vector2");
     }
 
     void operator +=(const Vector2& v)
@@ -133,7 +146,7 @@ public:
         return Vector2(x*value, y*value);
     }
 
-    /// tolerance equals of p to this vector
+    /// tolerance equals of this vector vs pased vector p
 	bool tequals(const Vector2 &p, Scalar tol) const
 	{
 		Scalar dx = p.x - x;
@@ -178,20 +191,45 @@ public:
     {
     	return x*vector.x + y*vector.y;
     }
+
+    //@returns an angle from 2 passed vectors
+    // as 2 rays based at 0,0 in radians
+    Scalar angleFromVector2s(const Vector2 &a, const Vector2 &b) const
+    {
+       	Scalar dot = a.dotProduct(b);
+		Scalar cosTheta = dot / (a.magnitude() * b.magnitude());
+		if (cosTheta >  1.0) cosTheta  = 1;
+		if (cosTheta < -1.0) cosTheta = -1;
+		Scalar theta = M_PI - SCALAR_ACOS(cosTheta);
+		return theta;
+    }
+
+    // @ returns angle between Vector i-j and Vector j-k in radians
+    //
+    Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k) const
+    {
+    	Vector2 a = i - j;
+    	Vector2 b = j - k;
+    	Scalar theta = angleFromVector2s(a,b);
+    	return theta;
+    }
+
+    /// rotates a vector by ??? returns a new vector rotated
+    // around 0,0
+    //@ returns a new vector rotated around point 0,0
+    Vector2 rotate2d(Scalar angle) const
+	{
+		// rotate point
+		Scalar s = SCALAR_SIN(angle); // radians
+		Scalar c = SCALAR_COS(angle);
+		Vector2 rotated;
+		rotated.x = x * c - y * s;
+		rotated.y = x * s + y * c;
+		return rotated;
+	}
 };
 
-// move these two into the base class ^^^ TODO:Far
-// get an angle from 2 vectors
-Scalar angleFromVector2s(const Vector2 &a, const Vector2 &b);
 
-/// get an angle from 3 points. j is the base of
-// i-j and k-j lines in the triangle
-// @ returns ??? TODO:Far
-Scalar angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k);
-
-/// rotates a vector by ??? returns a new vector rotated
-// around 0,0
-Vector2 rotate2d(const Vector2 &p, Scalar angle);
 
 
 

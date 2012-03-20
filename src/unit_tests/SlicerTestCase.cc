@@ -256,14 +256,14 @@ void SlicerTestCase::testAngles()
 	Vector2 j(0,0);
 	Vector2 k(2,-2);
 
-	Scalar angle0 = angleFromVector2s(i, k);
+	Scalar angle0 = i.angleFromVector2s(i, k);
 
 	Vector2 p (12,18);
 	i += p;
 	j += p;
 	k += p;
 
-	Scalar angle1 = angleFromPoint2s(i, j, k);
+	Scalar angle1 = i.angleFromPoint2s(i, j, k);
 
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(M_PI/2, angle0, t);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0, angle1 - angle0, t);
@@ -292,7 +292,7 @@ void dumpAngles1(std::vector<LineSegment2d> & segments)
         Vector2 & i = segments[previousSegmentId].a;
         Vector2 & j = segments[id].a;
         Vector2 & k = segments[id].b;
-        Scalar angle = angleFromPoint2s(i, j, k);
+        Scalar angle = i.angleFromPoint2s(i, j, k);
         cout << i << " , " << j << ", " << k << " ,\t " << angle << endl;
     }
 }
@@ -364,7 +364,7 @@ void dumpAngles2(std::vector<LineSegment2d> & segments)
         Vector2 ab0 = segments[previousSegmentId].b - segments[previousSegmentId].a;
         Vector2 ab1 = segments[id].b - segments[id].a ;
 
-        Scalar angle = angleFromVector2s(ab0,ab1);
+        Scalar angle = ab0.angleFromVector2s(ab0,ab1);
         cout << ab0 << " , " << ab1 << " ,\t " << angle << endl;
     }
 }

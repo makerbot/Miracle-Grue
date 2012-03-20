@@ -32,28 +32,15 @@ bool mgl::tequals(Scalar a, Scalar b, Scalar tol)
 	return SCALAR_ABS(a-b) < tol;
 }
 
-
-// returns the angle between 2 vectors
-Scalar mgl::angleFromVector2s(const Vector2 &a, const Vector2 &b)
-{
-	Scalar dot = a.dotProduct(b);
-	Scalar d1 = a.magnitude();
-	Scalar d2 = b.magnitude();
-	Scalar cosTheta = dot / (d1 * d2);
-	if (cosTheta >  1.0) cosTheta  = 1;
-	if (cosTheta < -1.0) cosTheta = -1;
-	Scalar theta = M_PI - acos(cosTheta);
-	return theta;
-}
-
-// returns the angle between 3 points
-Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k)
-{
-	Vector2 a = i - j;
-	Vector2 b = j - k;
-	Scalar theta = angleFromVector2s(a,b);
-	return theta;
-}
+//
+//// returns the angle between 3 points
+//Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k)
+//{
+//	Vector2 a = i - j;
+//	Vector2 b = j - k;
+//	Scalar theta = angleFromVector2s(a,b);
+//	return theta;
+//}
 
 
 std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
@@ -71,23 +58,23 @@ std::ostream& operator<<(std::ostream& os, const Polygon& polygon)
 	return os;
 }
 
-Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
-{
-	// rotate point
-	double s = sin(angle); // radians
-	double c = cos(angle);
-	Vector2 rotated;
-	rotated.x = p.x * c - p.y * s;
-	rotated.y = p.x * s + p.y * c;
-	return rotated;
-}
+//Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
+//{
+//	// rotate point
+//	Scalar s = SCALAR_SIN(angle); // radians
+//	Scalar c = SCALAR_COS(angle);
+//	Vector2 rotated;
+//	rotated.x = p.x * c - p.y * s;
+//	rotated.y = p.x * s + p.y * c;
+//	return rotated;
+//}
 
 void mgl::rotatePolygon(Polygon& polygon, Scalar angle)
 {
 	for(unsigned int i=0; i<polygon.size(); i++)
 	{
 		const Vector2 &p = polygon[i];
-		polygon[i] = rotate2d(p, angle);
+		polygon[i] = p.rotate2d(angle);
 	}
 }
 

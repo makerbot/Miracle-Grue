@@ -15,7 +15,7 @@
 
 
 
-#include "core.h"
+#include "mgl.h"
 #include "segment.h"
 #include "scadtubefile.h"
 

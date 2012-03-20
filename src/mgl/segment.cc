@@ -34,8 +34,8 @@ void mgl::rotateSegments(std::vector<LineSegment2d> &segments, Scalar angle)
 {
 	for(size_t i=0; i < segments.size(); i++)
 	{
-		segments[i].a = rotate2d(segments[i].a, angle);
-		segments[i].b = rotate2d(segments[i].b, angle);
+		segments[i].a = segments[i].a.rotate2d(angle);
+		segments[i].b = segments[i].b.rotate2d(angle);
 	}
 }
 

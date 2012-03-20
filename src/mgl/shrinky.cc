@@ -161,7 +161,7 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2d> &se
         Vector2 d = j2 - j;
         Scalar distance = d.magnitude();
         Scalar length = seg.squaredLength();
-        Scalar angle = angleFromPoint2s(i, j, k);
+        Scalar angle = d.angleFromPoint2s(i, j, k);
         bool vertex = convexVertex(i,j,k);
 
         cout << id << "\t" << vertex << "\t" << length << ",\t" << distance << ",\t" <<  angle << "\t" << seg.a << ", " << seg.b <<"\t" << endl;

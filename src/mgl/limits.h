@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <limits>
-#include "core.h"
+#include "mgl.h"
 
 
 namespace mgl
