@@ -107,8 +107,8 @@ if operating_system == "Darwin":
     env.Append(CPPPATH = ['/opt/local/include'])
     env.Append(LIBPATH = ['/opt/local/lib'])
 
-if debug:
-    env.Append(CCFLAGS = '-g')
+#if debug:
+env.Append(CCFLAGS = '-g')
 
 if  multi_thread:  
     env.Append(CCFLAGS = '-fopenmp')      

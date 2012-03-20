@@ -112,23 +112,28 @@ public:
 };
 
 
-// A Mesh class, but sort of messy
-// This one has triangles, and a slice table.
+/**
+ *
+ * A Mesh class
+ */
 class Meshy
 {
 
-	mgl::Limits limits;
-	std::vector<Triangle3>  allTriangles;
+	mgl::Limits limits; 	/// Bounding box for the model
+	std::vector<Triangle3>  allTriangles; /// every triangle in the model.
+	/// for each slice, a list of indicies, each index is a lookup into vector
+	// allTriangles
 	SliceTable sliceTable;
-	LayerMeasure zTapeMeasure; // Ze tape measure, for Z
+
+	// Ze tape measure, for Z
+	LayerMeasure zTapeMeasure;
 
 public:
 
 
 	Meshy(Scalar firstSliceZ, Scalar layerH)
 		:zTapeMeasure(firstSliceZ, layerH)
-	{
-	}
+	{ 	}
 
 	const std::vector<Triangle3> &readAllTriangles() const
 	{
@@ -211,6 +216,25 @@ public:
 
 public:
 
+	void writeStlFile(const char* fileName) const
+	{
+		StlWriter out;
+		std::cout << "foo1" << std::endl;
+		out.open(fileName);
+		std::cout << "foo" << std::endl;
+		size_t triCount = allTriangles.size();
+		for (size_t i= 0; i < triCount; i++)
+		{
+			std::cout << "i = " << i <<  std::endl;
+			const Triangle3 &t = allTriangles[i];
+			out.writeTriangle(t);
+		}
+		std::cout << "baz" << std::endl;
+		out.close();
+		std::cout << "baz1" << std::endl;
+		// cout << fileName << " written!"<< std::endl;
+
+	}
 
 	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const
 	{
@@ -232,7 +256,7 @@ public:
 };
 
 
-
+size_t writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
 
 size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 

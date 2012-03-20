@@ -103,7 +103,7 @@ class Slicy
 	Scalar tol;
 
 	// we'll record that in a scad file for you
-	ScadTubeFile fscad  ;
+	ScadTubeFile fscad;
 
 	//Mesh info
 	const std::vector<Triangle3> &allTriangles;

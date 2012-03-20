@@ -169,6 +169,12 @@ static inline void convertFromLittleEndian16(uint8_t* bytes)
 #endif
 
 
+size_t mgl::writeMeshyToStl(mgl::Meshy &meshy, const char* filename)
+{
+	meshy.writeStlFile(filename);
+}
+
+
 size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 {
 

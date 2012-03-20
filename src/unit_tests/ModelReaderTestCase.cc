@@ -190,6 +190,40 @@ void ModelReaderTestCase::testMeshyLoad()
 	mesh2.dump(cout);
 }
 
+void ModelReaderTestCase::testMeshyCycle()
+{
+	unsigned int t0,t1;
+	string target = "inputs/3D_Knot.stl";
+	string drop = "outputs/3D_Knot.stl";
+	string drop2 = "outputs/3D_Knot_v2.stl";
+
+	cout << "Reading test file:"  << target << endl;
+	Meshy mesh3(0.35, 0.35);
+	t0=clock();
+	loadMeshyFromStl(mesh3, target.c_str());
+	t1=clock()-t0;
+//	mesh3.dump(cout);
+	cout << "Read: " << target <<" in seconds: " << t1 << endl;
+	cout << "Writing test file:"  << drop << endl;
+	writeMeshyToStl(mesh3, drop.c_str());
+	unsigned int t2=clock()-t1;
+	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
+
+	cout << "Reload test, reloading file: "  << drop << endl;
+	Meshy mesh4(0.35, 0.35);
+	t0=clock();
+	loadMeshyFromStl(mesh4, drop.c_str());
+	t1=clock()-t0;
+	cout << "Re-Read: " << target <<" in seconds: " << t1 << endl;
+//	CPP_UNIT_ASSERT(mesh3 == mesh4);
+	cout << "Writing test file: "  << drop2 << endl;
+//	writeMeshyToStl(mesh4, drop2.c_str());
+	t2=clock()-t1;
+	cout << "Wrote: " << drop2 <<" in seconds: " << t2 << endl;
+
+}
+
+
 void ModelReaderTestCase::testSlicyWater()
 {
 	Meshy mesh(0.35, 0.35);

@@ -147,7 +147,7 @@ public:
     }
 
     /// tolerance equals of this vector vs pased vector p
-	bool tequals(const Vector2 &p, Scalar tol) const
+	bool tequals(const Vector2 &p, const Scalar tol) const
 	{
 		Scalar dx = p.x - x;
 		Scalar dy = p.y -y;
@@ -363,6 +363,15 @@ public:
         return Vector3(x-v.x, y-v.y, z-v.z);
     }
 
+
+    // Vector3 other matches this vector within tolerance tol
+    bool tequals(const Vector3 &other, const Scalar tol) const
+    {
+    	return mgl::tequals(x, other.x,tol) &&
+    			mgl::tequals(y, other.y, tol) &&
+    			mgl::tequals(z, other.z, tol);
+    }
+
     Vector3 crossProduct(const Vector3 &vector) const
     {
         return Vector3(y*vector.z-z*vector.y,
@@ -454,19 +463,44 @@ public:
 	{
 		 if (i == 0) return v0;
 		 if (i == 1) return v1;
-		 return v2;
+		 if (i == 2) return v2;
+        throw Exception("index out of range in Vector3& Triangle3[]");
 	}
 
 	Vector3 operator[](unsigned int i) const
 	{
 		 if (i == 0) return v0;
 		 if (i == 1) return v1;
-		 return v2;
+		 if (i == 2) return v2;
+        throw Exception("index out of range in Vector3 Triangle3[]");
 	}
 
-	//
+
+	Triangle3& operator= (const Triangle3& other)
+	{
+		if (this != &other)
+		{
+			v0 = other.v0;
+			v1 = other.v1;
+			v2 = other.v2;
+			offsetDir = other.offsetDir;
+			cutDir = other.cutDir;
+
+		}
+		return *this;
+	}
+
+    /// tolerance equals of this vector vs pased vector p
+	bool tequals(const Triangle3 &other, Scalar tol) const
+	{
+		return v0.tequals(other.v0,tol) &&
+				v1.tequals(other.v1,tol) &&
+				v2.tequals(other.v2,tol);
+	}
+
+
 	// Normal vector using the right hand rule.
-	// The STL convection is that it points "outside"
+	// The STL convention is that it points "outside"
 	// http://en.wikipedia.org/wiki/STL_(file_format)
 	Vector3 normal() const
 	{
@@ -477,6 +511,7 @@ public:
 		n.normalise();
 		return n;
 	}
+
 
 	// Returns a vector that points in the
 	// direction of the cut, using the
@@ -558,8 +593,7 @@ class LayerMeasure
 public:
 	LayerMeasure(Scalar firstLayerZ, Scalar layerH)
 		:firstLayerZ(firstLayerZ), layerH(layerH)
-	{
-	}
+	{}
 
 	unsigned int zToLayerAbove(Scalar z) const
 	{
