@@ -60,6 +60,12 @@ void  MglCoreTestCase::ScalarMaths(){
 	// Note the behavior of tequals vs. SCALAR_EPSILON
 	s1 = 0, s2 = SCALAR_EPSILON;
 	CPPUNIT_ASSERT( tequals(s1, s2, 0) == false);
+
+	// Note the behavior of tequals vs. SCALAR_EPSILON
+	s1 = 0, s2 = SCALAR_EPSILON;
+	t1 = SCALAR_EPSILON;
+	CPPUNIT_ASSERT( tequals(s1, s2, t1) == false);
+
 }
 
 void  MglCoreTestCase::Vector2Basics()

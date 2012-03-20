@@ -13,7 +13,7 @@ class MglCoreTestCase : public CPPUNIT_NS::TestFixture
 
   CPPUNIT_TEST_SUITE( MglCoreTestCase );
 
-  // test base exception clas
+  // test base exception class
   CPPUNIT_TEST( ExceptionTest );
 
   // test base scalar value
@@ -27,7 +27,8 @@ class MglCoreTestCase : public CPPUNIT_NS::TestFixture
 
   CPPUNIT_TEST( Vector3Basics );
 
-CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST( Triangle3Maths );
+  CPPUNIT_TEST_SUITE_END();
 
 
 public:
@@ -45,6 +46,8 @@ protected:
  void LineSegment2dBasics();
 
  void Vector3Basics();
+
+ void Triangle3Maths();
 };
 
 
