@@ -103,14 +103,14 @@ public:
     {
         if (i == 0) return x;
         if (i == 1) return y;
-        throw Exception("index out of range in Vector2");
+        throw Exception("index out of range in Scalar Vector2[]");
     }
 
     Scalar& operator[](unsigned i)
     {
         if (i == 0) return x;
         if (i == 1) return y;
-        throw Exception("index out of range in Vector2");
+        throw Exception("index out of range in Scalar& Vector2[]");
     }
 
     void operator +=(const Vector2& v)
@@ -300,7 +300,7 @@ class Vector3
 public:
 	Scalar x,y,z;
 
-	Vector3(){}
+	Vector3():x(0),y(0),z(0){}
 
 	Vector3(Scalar x, Scalar y, Scalar z)
 	            : x(x), y(y), z(z)
@@ -310,14 +310,16 @@ public:
     {
         if (i == 0) return x;
         if (i == 1) return y;
-        return z;
+        if (i == 2) return z;
+        throw Exception("index out of range in Scalar Vector3[]");
     }
 
     Scalar& operator[](unsigned i)
     {
         if (i == 0) return x;
         if (i == 1) return y;
-        return z;
+        if (i == 2) return z;
+        throw Exception("index out of range in Scalar& Vector3[]");
     }
 
     void operator*=(const Scalar value)

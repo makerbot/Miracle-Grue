@@ -81,8 +81,54 @@ void  MglCoreTestCase::Vector2Basics()
 }
 
 
-void  MglCoreTestCase::Vector2Maths()
+//void  MglCoreTestCase::Vector2Maths()
+//{
+//
+//}
+
+
+void MglCoreTestCase::LineSegment2dBasics()
 {
+	LineSegment2d seg1;
+	CPPUNIT_ASSERT( seg1.a.x == 0);
+	CPPUNIT_ASSERT( seg1.a.y == 0);
+	CPPUNIT_ASSERT( seg1.b.x == 0);
+	CPPUNIT_ASSERT( seg1.b.y == 0);
+
+	Vector2 v1(10,20), v2(100,200);
+	LineSegment2d seg2(v1, v2);
+	CPPUNIT_ASSERT( seg2.a.x == 10);
+	CPPUNIT_ASSERT( seg2.a.y == 20);
+	CPPUNIT_ASSERT( seg2.b.x == 100);
+	CPPUNIT_ASSERT( seg2.b.y == 200);
+
+	LineSegment2d seg3 = seg2;
+	CPPUNIT_ASSERT( (void*)&seg2 != (void*)&seg3);
+	CPPUNIT_ASSERT( (void*)&seg2.a != (void*)&seg3.a);
+	CPPUNIT_ASSERT( (void*)&seg2.a.x != (void*)&seg3.a.x);
+
+}
+
+void MglCoreTestCase::Vector3Basics()
+{
+	Vector3 foo;
+	CPPUNIT_ASSERT( foo.x == 0);
+	CPPUNIT_ASSERT( foo.y == 0);
+	CPPUNIT_ASSERT( foo.z == 0);
+	Vector3 bar = foo;
+	CPPUNIT_ASSERT( (void*)&bar != (void*)&foo);
+	CPPUNIT_ASSERT( (void*)&bar.x != (void*)&foo.x);
+
+	Vector3 baz(10, 40, 50 );
+	CPPUNIT_ASSERT( baz[0] == 10);
+	CPPUNIT_ASSERT( baz[1] == 40);
+	CPPUNIT_ASSERT( baz[2] == 50);
+	CPPUNIT_ASSERT_THROW(baz[3] = 20, Exception);
+
+	baz[0] = 100; baz[1] = 400, baz[2] = 500;
+	CPPUNIT_ASSERT( baz.x == 100);
+	CPPUNIT_ASSERT( baz.y == 400);
+	CPPUNIT_ASSERT( baz.z == 500);
 
 }
 
