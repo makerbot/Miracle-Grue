@@ -23,7 +23,7 @@
 namespace mgl
 {
 
-class GcoderMess : public Exception {	public: GcoderMess(const char *msg) :Exception(msg){} };
+class GcoderException : public Exception {	public: GcoderException(const char *msg) :Exception(msg){} };
 
 
 struct Platform

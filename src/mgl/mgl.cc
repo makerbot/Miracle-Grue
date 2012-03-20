@@ -27,7 +27,7 @@ using namespace mgl;
 using namespace std;
 
 
-bool mgl::sameSame(Scalar a, Scalar b, Scalar tol)
+bool mgl::tequals(Scalar a, Scalar b, Scalar tol)
 {
 	return SCALAR_ABS(a-b) < tol;
 }
@@ -101,12 +101,12 @@ void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
 }
 
 
-void dumpSegments(const char* prefix, const std::vector<TriangleSegment2> &segments)
+void dumpSegments(const char* prefix, const std::vector<LineSegment2d> &segments)
 {
 	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
     for(size_t id = 0; id < segments.size(); id++)
     {
-    	TriangleSegment2 seg = segments[id];
+    	LineSegment2d seg = segments[id];
     	cout << prefix << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
     }
     cout << prefix << "]" << endl;
@@ -122,7 +122,7 @@ void dumpInsets(const std::vector<SegmentTable> &insetsForLoops)
 
 		for (unsigned int i=0; i <insetTable.size(); i++)
 		{
-			const std::vector<TriangleSegment2 >  &loop = insetTable[i];
+			const std::vector<LineSegment2d >  &loop = insetTable[i];
 			cout << "   inset " << i << ") " << loop.size() << " segments" << endl;
 			dumpSegments("        ",loop);
 		}
@@ -214,7 +214,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		string msg = "Can't open \"";
 		msg += filename;
 		msg += "\". Check that the file name is correct and that you have sufficient privileges to open it.";
-		MeshyMess problem(msg.c_str());
+		MeshyException problem(msg.c_str());
 		throw (problem);
 	}
 
@@ -222,7 +222,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		string msg = "\"";
 		msg += filename;
 		msg += "\" is empty!";
-		MeshyMess problem(msg.c_str());
+		MeshyException problem(msg.c_str());
 		throw (problem);
 	}
 	bool isBinary = true;
@@ -236,7 +236,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			string msg = "\"";
 			msg += filename;
 			msg += "\" is not a valid stl file";
-			MeshyMess problem(msg.c_str());
+			MeshyException problem(msg.c_str());
 			throw (problem);
 		}
 		// Read in triangle count
@@ -244,7 +244,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			string msg = "\"";
 			msg += filename;
 			msg += "\" is not a valid stl file";
-			MeshyMess problem(msg.c_str());
+			MeshyException problem(msg.c_str());
 			throw (problem);
 		}
 		convertFromLittleEndian32(intdata.bytes);
@@ -298,7 +298,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			{
 				stringstream msg;
 				msg << "Error reading face " << facecount << " in file \"" << filename << "\"";
-				MeshyMess problem(msg.str().c_str());
+				MeshyException problem(msg.str().c_str());
 				throw(problem);
 			}
 			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));

@@ -39,10 +39,10 @@ namespace mgl // serious about triangles
 //
 // Exception class for meshy problems
 //
-class MeshyMess : public Exception
+class MeshyException : public Exception
 {
 public:
-	MeshyMess(const char *msg)
+	MeshyException(const char *msg)
 	 :Exception(msg)
 	{
 
@@ -78,7 +78,7 @@ public:
 		{
 			std::stringstream ss;
 			ss << "Can't open \"" << fileName << "\"";
-			MeshyMess problem(ss.str().c_str());
+			MeshyException problem(ss.str().c_str());
 			throw (problem);
 		}
 

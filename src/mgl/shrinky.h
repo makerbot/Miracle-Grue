@@ -25,7 +25,7 @@ namespace mgl // Miracle-Grue's geometry library
 
 
 
-class ShrinkyMess : public Exception {	public: ShrinkyMess(const char *msg) :Exception(msg){}};
+class ShrinkyException : public Exception {	public: ShrinkyException(const char *msg) :Exception(msg){}};
 
 
 class Shrinky

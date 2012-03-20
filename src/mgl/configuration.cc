@@ -27,7 +27,7 @@ double mgl::doubleCheck(const Json::Value &value, const char *name)
 	{
 		stringstream ss;
 		ss << "Missing required floating point field \""<< name << "\" in configuration file";
-		ConfigMess mixup(ss.str().c_str());
+		ConfigException mixup(ss.str().c_str());
 		throw mixup;
 	}
 	return value.asDouble();
@@ -39,7 +39,7 @@ unsigned int mgl::uintCheck(const Json::Value &value, const char *name)
 	{
 		stringstream ss;
 		ss << "Missing required unsigned integer field \""<< name << "\" in configuration file";
-		ConfigMess mixup(ss.str().c_str());
+		ConfigException mixup(ss.str().c_str());
 		throw mixup;
 	}
 	return value.asUInt();
@@ -51,7 +51,7 @@ string mgl::stringCheck(const Json::Value &value, const char *name)
 	{
 		stringstream ss;
 		ss << "Missing required string field \""<< name << "\" in configuration file";
-		ConfigMess mixup(ss.str().c_str());
+		ConfigException mixup(ss.str().c_str());
 		throw mixup;
 	}
 	return value.asString();
@@ -63,7 +63,7 @@ bool mgl::boolCheck(const Json::Value &value, const char *name)
 	{
 		stringstream ss;
 		ss << "Missing required string field \""<< name << "\" in configuration file";
-		ConfigMess mixup(ss.str().c_str());
+		ConfigException mixup(ss.str().c_str());
 		throw mixup;
 	}
 	return value.asBool();
@@ -148,7 +148,7 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 	{
 		stringstream ss;
 		ss << "No extruder defined in the configuration file";
-		ConfigMess mixup(ss.str().c_str());
+		ConfigException mixup(ss.str().c_str());
 		throw mixup;
 	}
 

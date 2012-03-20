@@ -52,7 +52,7 @@ void lengthCheck(const std::vector<LineSegment2d> &segments, const char *msg)
 			stringstream ss;
 			ss << msg << " Zero length: segment[" << i << "] = " << seg << endl;
 			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
-			ShrinkyMess mixup(ss.str().c_str());
+			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 		}
 	}
@@ -88,7 +88,7 @@ void connectivityCheck( const std::vector<LineSegment2d> &segments,
 
 			ss << endl;
 			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
-			ShrinkyMess mixup(ss.str().c_str());
+			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 
 			// assert(0);
@@ -129,7 +129,7 @@ void createConvexList(const std::vector<LineSegment2d> &segments, std::vector<bo
         	Scalar distance = d.magnitude();
         	ss << "distance " << distance << endl;
         	ss << "SameSame " << isSameSame << endl;
-        	ShrinkyMess mixup(ss.str().c_str());
+        	ShrinkyException mixup(ss.str().c_str());
         	throw mixup;
 
         }
@@ -268,7 +268,7 @@ void trimConvexSegments(const std::vector<LineSegment2d> & rawInsets,
 				ss << "Trim ERROR: segment " << i << endl;
 				ss << "segments = [  " <<  segment3(previousSegment,0) << " , " << segment3(currentSegment,0) << " ]; " << endl;
 				ss << "color([0,0.5,0,1])loop_segments3(segments, false);" << endl;
-				ShrinkyMess mixup(ss.str().c_str());
+				ShrinkyException mixup(ss.str().c_str());
 				// throw mixup;
 			}
 		}
@@ -663,7 +663,7 @@ void createBisectors(const std::vector<LineSegment2d>& segments,
 			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
 			ss << endl;
 			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
-			ShrinkyMess mixup(ss.str().c_str());
+			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 			// assert(0);
 		}
@@ -672,7 +672,7 @@ void createBisectors(const std::vector<LineSegment2d>& segments,
 			stringstream ss;
 			ss << "Null bisector at segment [" << i << "] position=" << seg.a << endl;
 			ss << " previous_inset=" << prevInset << " inset=" << inset;
-			ShrinkyMess mixup(ss.str().c_str());
+			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 		}
 		bisector.normalise();
@@ -779,7 +779,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2d>& originalSegments,
 		stringstream ss;
 		ss <<  "1 line segment is not enough to create a closed polygon";
 		assert(0);
-		ShrinkyMess mixup(ss.str().c_str());
+		ShrinkyException mixup(ss.str().c_str());
 		throw mixup;
 	}
 
@@ -840,7 +840,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2d>& originalSegments,
 		}
 
 	}
-	catch(ShrinkyMess &mixup)
+	catch(ShrinkyException &mixup)
 	{
 		cout << "*";
 		// cout << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;

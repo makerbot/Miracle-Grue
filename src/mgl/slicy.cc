@@ -121,7 +121,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 				}
 			}
 		}
-		catch(ShrinkyMess &messup)
+		catch(ShrinkyException &messup)
 		{
 			if(writeDebugScadFiles)
 			{
@@ -160,7 +160,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 						insets.clear(); // discard...
 					}
 				}
-				catch(ShrinkyMess &messup2) // the same excpetion is thrown again
+				catch(ShrinkyException &messup2) // the same excpetion is thrown again
 				{
 					messup2; //ignore
 					cout << "saving " << endl;

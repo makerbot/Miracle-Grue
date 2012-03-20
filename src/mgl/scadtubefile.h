@@ -27,10 +27,10 @@
 namespace mgl
 {
 
-class ScadMess : public Exception
+class ScadException : public Exception
 {
 public:
-	ScadMess(const char *msg)
+	ScadException(const char *msg)
 	 :Exception(msg)
 	{
 
@@ -65,7 +65,7 @@ public:
 			std::stringstream ss;
 			ss << "Can't open \"" << filename.c_str() << "\"";
 			std::cout << "ERROR: " << ss.str() << std::endl;
-			ScadMess problem(ss.str().c_str());
+			ScadException problem(ss.str().c_str());
 			throw (problem);
 		}
 

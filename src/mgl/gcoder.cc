@@ -166,7 +166,7 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 	{
 		stringstream ss;
 		ss << "There are no extruders configured. Has the config file been read?";
-		GcoderMess mixup(ss.str().c_str());
+		GcoderException mixup(ss.str().c_str());
 		throw mixup;
 	}
 }
@@ -288,7 +288,7 @@ void GCoder::writePolygons(std::ostream& ss,
 		{
 			stringstream ss;
 			ss << "Can't generate gcode for polygon " << i <<" with " << pointCount << " points.";
-			GcoderMess mixup(ss.str().c_str());
+			GcoderException mixup(ss.str().c_str());
 			throw mixup;
 		}
 
@@ -369,7 +369,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		{
 		    moveZ(ss, z, extruderId, zFeedrate);
 		}
-		catch(GcoderMess &mixup)
+		catch(GcoderException &mixup)
 		{
 			cout << "ERROR writing Z move in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
@@ -397,7 +397,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				writePolygons(ss, z, extrusion, infills);
 			}
 		}
-		catch(GcoderMess &mixup)
+		catch(GcoderException &mixup)
 		{
 			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
@@ -412,7 +412,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				writePolygons(ss, z, extrusion, loops);
 			}
 		}
-		catch(GcoderMess &mixup)
+		catch(GcoderException &mixup)
 		{
 			cout << "ERROR writing loops in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
@@ -435,7 +435,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				}
 			}
 		}
-		catch(GcoderMess &mixup)
+		catch(GcoderException &mixup)
 		{
 			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
@@ -450,7 +450,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				writePolygons(ss, z, extrusion, infills);
 			}
 		}
-		catch(GcoderMess &mixup)
+		catch(GcoderException &mixup)
 		{
 			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
@@ -528,7 +528,7 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 	{
 		stringstream ss;
 		ss << "G1 without moving where x=" << x << ", y=" << y << ", z=" << z << ", feed=" << feed ;
-		GcoderMess mixup(ss.str().c_str());
+		GcoderException mixup(ss.str().c_str());
 		throw mixup;
 	}
 	#endif
@@ -544,7 +544,7 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 	{
 		stringstream ss;
 		ss << "Illegal G1 move where x=" << x << ", y=" << y << ", z=" << z << ", feed=" << feed ;
-		GcoderMess mixup(ss.str().c_str());
+		GcoderException mixup(ss.str().c_str());
 		throw mixup;
 	}
 
