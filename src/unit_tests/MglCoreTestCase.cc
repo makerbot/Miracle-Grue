@@ -167,5 +167,5 @@ void MglCoreTestCase::testTriangle3Maths() {
 	Vector3 v3(0,0,0);
 	Vector3 v4(0,0,0);
 	Vector3 v5(0,0,0);
-	Triangle3 foo(v0,v1,v2);
+	Triangle3 foo2(v0,v1,v2);
 }
