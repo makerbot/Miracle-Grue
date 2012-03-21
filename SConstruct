@@ -113,7 +113,7 @@ if operating_system == "Darwin":
 if debug:
     env.Append(CCFLAGS = '-g')
 
-env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
+#env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
 
 if  multi_thread:  
     env.Append(CCFLAGS = '-fopenmp')      
