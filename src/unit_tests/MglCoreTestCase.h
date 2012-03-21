@@ -21,7 +21,7 @@ class MglCoreTestCase : public CPPUNIT_NS::TestFixture
   CPPUNIT_TEST( testScalarMaths );
 
   CPPUNIT_TEST( testVector2Basics );
-//  CPPUNIT_TEST( Vector2Maths );
+  CPPUNIT_TEST( Vector2Maths );
 
   CPPUNIT_TEST(testLineSegment2dBasics);
 
@@ -41,7 +41,7 @@ protected:
  void  testScalarMaths();
 
  void  testVector2Basics();
-// void  Vector2Maths();
+ void  Vector2Maths();
 
  void testLineSegment2dBasics();
 

@@ -18,30 +18,9 @@
 using namespace std;
 using namespace mgl;
 
-Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
-{
 
-	Scalar area2;
 
-    area2 = (b[0] - a[0] ) * (Scalar)( c[1] - a[1]) -
-            (c[0] - a[0] ) * (Scalar)( b[1] - a[1]);
 
-    return area2;
-}
-
-/**
- * @returns true if the trina of these vectors has a negative index
- */
-bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
-{
-	return AreaSign(i,j,k) < 0;
-}
-
-std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
-{
-	os << "[ " << s.a << ", " << s.b << "]";
-	return os;
-}
 
 void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
 {

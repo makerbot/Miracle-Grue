@@ -66,7 +66,7 @@ typedef double Scalar;
 #define SCALAR_EPSILON DBL_EPSILON
 
 /** (t)olerance (equals)
- * @returns true if two Scalar values are approximally the same using tolernce
+ * @returns true if two Scalar values are approximately the same using tolerance
  */
 bool tequals(Scalar a, Scalar b, Scalar tol); // = 1e-8
 
@@ -88,9 +88,16 @@ typedef std::vector<TriangleIndices> SliceTable;
 
 #include "Vector2.cc"
 
+// Bring over from mgl.cc
+Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c);
+bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k);
+
 std::ostream& operator << (std::ostream &os,const Vector2 &pt);
 
+
 #include "LineSegment2.cc"
+
+std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
 
 /// List of Lists of line segments. Used to lookup
 /// A SegmentTable may contain, for example, a perimeter
@@ -106,9 +113,6 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v);
 
 
 #include "Triangle3.cc"
-
-
-
 
 
 class LayerException : public Exception {

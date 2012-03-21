@@ -307,6 +307,35 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 }
 
 
+/**
+ * Assuming the 2d points are on a plane, and that point order indicates a
+ * vector out of that plane, returns magnitude of that vector.
+ *  See Also: Right-hand-rule
+ * Ex: ((0,0)(0,1)(1,0))  returns -1 (normal points negative Z out of plane)
+ * Ex: ((1,0)(0,0)(0,1))  returns 1 (normal points positive Z out of plane)
+ */
+Scalar mgl::AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
+	Scalar area2;
+    area2 = (b[0] - a[0] ) * (Scalar)( c[1] - a[1]) -
+            (c[0] - a[0] ) * (Scalar)( b[1] - a[1]);
+
+    return area2;
+}
 
 
+/**
+ * @returns true if the triangle of these vectors has a negative index,
+ * false otherwise
+ */
+bool mgl::convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
+{
+	return AreaSign(i,j,k) < 0;
+}
+
+std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
+{
+	os << "[ " << s.a << ", " << s.b << "]";
+	return os;
+}
 

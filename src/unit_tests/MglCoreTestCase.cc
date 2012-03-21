@@ -87,10 +87,29 @@ void  MglCoreTestCase::testVector2Basics()
 }
 
 
-//void  MglCoreTestCase::Vector2Maths()
-//{
-//
-//}
+void  MglCoreTestCase::Vector2Maths()
+{
+	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
+	Vector2 v4(0,0.04);
+
+	Scalar r0 = AreaSign(v0,v1,v2);
+	CPPUNIT_ASSERT(r0 < 0 );
+	cout << "foo " << r0 << endl;
+
+	r0 = AreaSign(v2,v1,v0);
+	CPPUNIT_ASSERT(r0 > 0 );
+	cout << "foo " << r0 << endl;
+
+	r0 = AreaSign(v2,v1,v4);
+	CPPUNIT_ASSERT(r0 > 0 );
+	cout << "foo " << r0 << endl;
+
+	//	r1 = AreaSign(v0,v1,v3);
+//	cout << "foo " << r1 << endl;
+
+//	Scalar r2 = AreaSign(v0,v2,v3);
+//	cout << "foo " << r2 << endl;
+}
 
 
 void MglCoreTestCase::testLineSegment2dBasics()

@@ -144,8 +144,6 @@ public:
 };
 
 
-
-
 //// A line segment that also contains cut direction
 //// and inset direction.
 //class TriangleSegment2 :LineSegment
