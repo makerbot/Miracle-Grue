@@ -179,10 +179,10 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 {
 
 	struct vertexes_t {
-		float nx, ny, nz;
-		float x1, y1, z1;
-		float x2, y2, z2;
-		float x3, y3, z3;
+		double nx, ny, nz;
+		double x1, y1, z1;
+		double x2, y2, z2;
+		double x3, y3, z3;
 		uint16_t attrBytes;
 	};
 
@@ -273,15 +273,15 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			}
 			vertexes_t &v = tridata.vertexes;
 			bool success = true;
-			if (fscanf(f, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
+			if (fscanf(f, "%*s %lf %lf %lf", &v.nx, &v.ny, &v.nz) < 3)
 				success = false;
 			if (fscanf(f, "%*s %*s") < 0)
 				success = false;
-			if (fscanf(f, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
+			if (fscanf(f, "%*s %lf %lf %lf", &v.x1, &v.y1, &v.z1) < 3)
 				success = false;
-			if (fscanf(f, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
+			if (fscanf(f, "%*s %lf %lf %lf", &v.x2, &v.y2, &v.z2) < 3)
 				success = false;
-			if (fscanf(f, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
+			if (fscanf(f, "%*s %lf %lf %lf", &v.x3, &v.y3, &v.z3) < 3)
 				success = false;
 			if (fscanf(f, "%*s")< 0)
 				success = false;
@@ -292,6 +292,8 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 				stringstream msg;
 				msg << "Error reading face " << facecount << " in file \"" << filename << "\"";
 				MeshyException problem(msg.str().c_str());
+				cout << msg.str().c_str()<< endl;
+				cout << buf << endl;
 				throw(problem);
 			}
 			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));

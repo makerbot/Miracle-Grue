@@ -16,6 +16,8 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 //	  CPPUNIT_TEST( testLayerSplit );
 //	  CPPUNIT_TEST( testSlicySimple );
 
+	  CPPUNIT_TEST( testMeshyCycleNull);
+  	  CPPUNIT_TEST( testMeshyCycleMin );
 	  CPPUNIT_TEST( testMeshyCycle );
 ////	  CPPUNIT_TEST( testMeshyLoad );
 //// //	  CPPUNIT_TEST( testLargeMeshy );
@@ -36,9 +38,14 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 
 
 public:
-  //void setUp();
+  void setUp();
 
 protected:
+
+  void testMeshyCycleNull();
+  void testMeshyCycleMin();
+  void testMeshyCycle();
+
   void testSlicySimple();
 
   void testLayerSplit();
@@ -47,7 +54,6 @@ protected:
   void testLayerMeasure();
 
   void testMeshyLoad();
-  void testMeshyCycle();
   void testLargeMeshy();
   void testSlicyWater();
 

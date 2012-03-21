@@ -13,13 +13,10 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ModelReaderTestCase.h"
 
+#include <sys/stat.h>
 
 #include "mgl/connexity.h"
 #include "mgl/configuration.h"
-//#include "mgl/limits.h"
-//#include "mgl/scadtubefile.h"
-//#include "mgl/slicy.h"
-
 #include "mgl/slicy.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
@@ -34,6 +31,19 @@ CPPUNIT_ASSERT_EQUAL( 12, 12 );
 CPPUNIT_ASSERT( 12L == 12L );
 */
 
+void ModelReaderTestCase::setUp()
+{
+	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
+	struct stat st;
+	if(stat("outputs",&st) == 0)
+	        printf("outputs is present\n");
+	else {
+		int n=mkdir("outputs",0777);
+		if(n==0) // mkdir succeeded
+			std::cout<< " Starting:" <<__FUNCTION__ << endl;
+	}
+	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
+}
 
 
 //
@@ -132,6 +142,10 @@ void ModelReaderTestCase::testMeshySimple()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(3.6, limits.zMax, tol);
 }
 
+
+
+
+
 void ModelReaderTestCase::testLayerSplit()
 {
 	cout << endl;
@@ -217,7 +231,72 @@ void ModelReaderTestCase::testMeshyCycle()
 	cout << "Re-Read: " << target <<" in seconds: " << t1 << endl;
 //	CPP_UNIT_ASSERT(mesh3 == mesh4);
 	cout << "Writing test file: "  << drop2 << endl;
-//	writeMeshyToStl(mesh4, drop2.c_str());
+	writeMeshyToStl(mesh4, drop2.c_str());
+	t2=clock()-t1;
+	cout << "Wrote: " << drop2 <<" in seconds: " << t2 << endl;
+
+}
+
+void ModelReaderTestCase::testMeshyCycleNull()
+{
+	unsigned int t0,t1;
+	string target = "inputs/Null.stl";
+	string drop = "outputs/Null.stl";
+	string drop2 = "outputs/Null_v2.stl";
+
+	cout << "Reading test file:"  << target << endl;
+	Meshy mesh3(0.35, 0.35);
+	t0=clock();
+	loadMeshyFromStl(mesh3, target.c_str());
+	t1=clock()-t0;
+//	mesh3.dump(cout);
+	cout << "Read: " << target <<" in seconds: " << t1 << endl;
+	cout << "Writing test file:"  << drop << endl;
+	writeMeshyToStl(mesh3, drop.c_str());
+	unsigned int t2=clock()-t1;
+	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
+
+	cout << "Reload test, reloading file: "  << drop << endl;
+	Meshy mesh4(0.35, 0.35);
+	t0=clock();
+	loadMeshyFromStl(mesh4, drop.c_str());
+	t1=clock()-t0;
+	cout << "Re-Read: " << target <<" in seconds: " << t1 << endl;
+//	CPP_UNIT_ASSERT(mesh3 == mesh4);
+	cout << "Writing test file: "  << drop2 << endl;
+	writeMeshyToStl(mesh4, drop2.c_str());
+	t2=clock()-t1;
+	cout << "Wrote: " << drop2 <<" in seconds: " << t2 << endl;
+}
+
+void ModelReaderTestCase::testMeshyCycleMin()
+{
+	unsigned int t0,t1;
+	string target = "inputs/OneTriangle.stl";
+	string drop = "outputs/OneTriangl.stl";
+	string drop2 = "outputs/OneTriangl_v2.stl";
+
+	cout << "Reading test file:"  << target << endl;
+	Meshy mesh3(0.35, 0.35);
+	t0=clock();
+	loadMeshyFromStl(mesh3, target.c_str());
+	t1=clock()-t0;
+//	mesh3.dump(cout);
+	cout << "Read: " << target <<" in seconds: " << t1 << endl;
+	cout << "Writing test file:"  << drop << endl;
+	writeMeshyToStl(mesh3, drop.c_str());
+	unsigned int t2=clock()-t1;
+	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
+
+	cout << "Reload test, reloading file: "  << drop << endl;
+	Meshy mesh4(0.35, 0.35);
+	t0=clock();
+	loadMeshyFromStl(mesh4, drop.c_str());
+	t1=clock()-t0;
+	cout << "Re-Read: " << target <<" in seconds: " << t1 << endl;
+//	CPP_UNIT_ASSERT(mesh3 == mesh4);
+	cout << "Writing test file: "  << drop2 << endl;
+	writeMeshyToStl(mesh4, drop2.c_str());
 	t2=clock()-t1;
 	cout << "Wrote: " << drop2 <<" in seconds: " << t2 << endl;
 

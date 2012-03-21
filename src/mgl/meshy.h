@@ -99,13 +99,13 @@ public:
 		out << "    vertex " << t[0].x << " " << t[0].y << " " << t[0].z << std::endl;
 		out << "    vertex " << t[1].x << " " << t[1].y << " " << t[1].z << std::endl;
 		out << "    vertex " << t[2].x << " " << t[2].y << " " << t[2].z << std::endl;
-		out << "  end loop" << std::endl;
-		out << " end facet" << std::endl;
+		out << "  endloop" << std::endl;
+		out << " endfacet" << std::endl;
 	}
 
 	void close()
 	{
-		out << "end solid " << solidName << std::endl;
+		out << "endsolid " << solidName << std::endl;
 		out.close();
 	}
 
@@ -219,19 +219,14 @@ public:
 	void writeStlFile(const char* fileName) const
 	{
 		StlWriter out;
-		std::cout << "foo1" << std::endl;
 		out.open(fileName);
-		std::cout << "foo" << std::endl;
 		size_t triCount = allTriangles.size();
 		for (size_t i= 0; i < triCount; i++)
 		{
-			std::cout << "i = " << i <<  std::endl;
 			const Triangle3 &t = allTriangles[i];
 			out.writeTriangle(t);
 		}
-		std::cout << "baz" << std::endl;
 		out.close();
-		std::cout << "baz1" << std::endl;
 		// cout << fileName << " written!"<< std::endl;
 
 	}

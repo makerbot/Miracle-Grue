@@ -11,6 +11,8 @@
 #include "mgl/configuration.h"
 #include "mgl/gcoder.h"
 
+#include <sys/stat.h>
+
 using namespace std;
 using namespace mgl;
 
@@ -95,8 +97,16 @@ void configureDualExtruder(Configuration& config)
 
 void GCoderTestCase::setUp()
 {
-	std::cout<< " Starting:" <<__FUNCTION__ << endl;
-	std::cout<< " Exiting:" <<__FUNCTION__ << endl;
+	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
+	struct stat st;
+	if(stat("outputs",&st) == 0)
+	        printf("outputs is present\n");
+	else {
+		int n=mkdir("outputs",0666);
+		if(n==0) // mkdir succeeded
+			std::cout<< " Starting:" <<__FUNCTION__ << endl;
+	}
+	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 
 
@@ -182,7 +192,7 @@ void GCoderTestCase::testSingleExtruder()
 void GCoderTestCase::testDualExtruders()
 {
 	std::cout<< "Starting:" <<__FUNCTION__ << endl;
-	// cerate an empty configuration object
+	// create an empty configuration object
 	Configuration config;
 	// set the output fie
 
