@@ -19,19 +19,19 @@
 #include "segment.h"
 #include "scadtubefile.h"
 
-namespace mgl // Miracle-Grue's geometry library
+namespace mgl
 {
 
 
 
-
-class ShrinkyException : public Exception {	public: ShrinkyException(const char *msg) :Exception(msg){}};
+/// Exception for Shrinky errors
+class ShrinkyException : public Exception {
+	public: ShrinkyException(const char *msg) :Exception(msg){};
+};
 
 
 class Shrinky
 {
-
-
 	const char *scadFileName;
 
 	Scalar scadZ ;

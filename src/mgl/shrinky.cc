@@ -18,17 +18,20 @@
 using namespace std;
 using namespace mgl;
 
-double AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
 {
 
-    double area2;
+	Scalar area2;
 
-    area2 = (b[0] - a[0] ) * (double)( c[1] - a[1]) -
-            (c[0] - a[0] ) * (double)( b[1] - a[1]);
+    area2 = (b[0] - a[0] ) * (Scalar)( c[1] - a[1]) -
+            (c[0] - a[0] ) * (Scalar)( b[1] - a[1]);
 
     return area2;
 }
 
+/**
+ * @returns true if the trina of these vectors has a negative index
+ */
 bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
 {
 	return AreaSign(i,j,k) < 0;
@@ -356,11 +359,13 @@ bool attachSegments(LineSegment2 &first, LineSegment2 &second, Scalar elongation
 	return false;
 }
 
-// http://en.wikipedia.org/wiki/Altitude_(triangle)
-// see Altitude in terms of the sides
-//
-// returns the altitude  from side a
-// imputs: the lenght of each side
+/**
+ * Calculates altitude in terms of the sides
+ * http://en.wikipedia.org/wiki/Altitude_(triangle)
+ *
+ * @inputs: the length of 3 triangle sides
+ * @returns the altitude  from side a
+ */
 Scalar triangleAltitude(Scalar a, Scalar b, Scalar c)
 {
 	Scalar s = 0.5 * (a+b+c);
@@ -402,8 +407,7 @@ bool edgeCollapse(const LineSegment2& segment,
 		c = edge1.magnitude();
 
 		collapseDistance = triangleAltitude(a,b,c);
-		if(collapseDistance < 0)
-		{
+		if(collapseDistance < 0) {
 			assert(0);
 		}
 		return true;
