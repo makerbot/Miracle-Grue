@@ -131,6 +131,7 @@ class Meshy
 public:
 
 
+	/// requires firstLayerSlice height, and general layer height
 	Meshy(Scalar firstSliceZ, Scalar layerH)
 		:zTapeMeasure(firstSliceZ, layerH)
 	{ 	}
