@@ -45,13 +45,14 @@ class Shrinky
 							const char* prefix,
 							const std::vector<LineSegment2> & segments);
 
-    void openScadFile(const char *scadFileName);
     void closeScadFile();
 public:
-	Scalar dz;
+    Scalar dz;
 	ScadTubeFile fscad;
 public:
 	Shrinky( const char *scadFileName=NULL);
+
+	void openScadFile(const char *scadFileName);
 
 //	void insetClassic(const std::vector<LineSegment2d> & segments,
 //							Scalar insetDist,

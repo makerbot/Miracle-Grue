@@ -441,7 +441,16 @@ void SlicerTestCase::testInset()
 	std::vector< std::vector<LineSegment2 > > insetTable;
 	std::vector<LineSegment2> &segments = square;
 
-	Shrinky shrinky("./test_cases/slicerTestCase/output/testInsetSquare.scad");
+	string targetFile = "./test_cases/slicerTestCase/output/testInsetSquare.scad";
+	Shrinky shrinky;
+	try {
+		shrinky.openScadFile(targetFile.c_str());
+	}
+	catch(...){
+		cout << "File read fail for: " << targetFile.c_str() << endl;
+		CPPUNIT_FAIL("File read fail" );
+	}
+
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
 	Scalar cuttOffLength = 1.0;
@@ -557,6 +566,7 @@ void SlicerTestCase::testInset4()
 	segs.push_back(TriangleSegment2(Vector2(-16.848004, -7.40625), Vector2(-13.645961, -4.999121+y)));
 
 	*/
+
 	Scalar x = 17.5;
 	Scalar y = 2.5;
 
@@ -599,8 +609,17 @@ void SlicerTestCase::testInset4()
 	SegmentTable insetTable;
 	insetTable.push_back(segs);
 
+	string targetFile = "./test_cases/slicerTestCase/output/testInset4.scad";
+
+	Shrinky shrinky;
 	std::vector<LineSegment2> &segments = segs;
-	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset4.scad");
+	try {
+		shrinky.openScadFile(targetFile.c_str());
+	}
+	catch(...){
+		cout << "File read fail for: " << targetFile.c_str() << endl;
+		CPPUNIT_FAIL("File read fail" );
+	}
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
