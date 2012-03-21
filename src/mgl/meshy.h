@@ -217,6 +217,11 @@ public:
 
 public:
 
+	size_t triangleCount() {
+		return allTriangles.size();
+		std::cout << "all triangle count" << allTriangles.size();
+	}
+
 	void writeStlFile(const char* fileName) const
 	{
 		StlWriter out;

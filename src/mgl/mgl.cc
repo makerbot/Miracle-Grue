@@ -175,6 +175,25 @@ size_t mgl::writeMeshyToStl(mgl::Meshy &meshy, const char* filename)
 }
 
 
+inline std::string mgl::stringify(double x)
+{
+  std::ostringstream o;
+  if (!(o << x))
+    throw Exception("stringify(double)");
+  return o.str();
+}
+
+inline std::string mgl::stringify(size_t x)
+{
+  std::ostringstream o;
+  if (!(o << x))
+    throw Exception("stringify(double)");
+  return o.str();
+}
+
+/**
+ * @returns count of triangles loaded in this call
+ */
 size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 {
 
@@ -201,8 +220,8 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 	size_t facecount = 0;
 
 	uint8_t buf[512];
-	FILE *f = fopen(filename, "rb");
-	if (!f)
+	FILE *fHandle = fopen(filename, "rb");
+	if (!fHandle)
 	{
 		string msg = "Can't open \"";
 		msg += filename;
@@ -211,7 +230,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		throw (problem);
 	}
 
-	if (fread(buf, 1, 5, f) < 5) {
+	if (fread(buf, 1, 5, fHandle) < 5) {
 		string msg = "\"";
 		msg += filename;
 		msg += "\" is empty!";
@@ -225,7 +244,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 	if (isBinary) {
 		// Binary STL file
 		// Skip remainder of 80 character comment field
-		if (fread(buf, 1, 75, f) < 75) {
+		if (fread(buf, 1, 75, fHandle) < 75) {
 			string msg = "\"";
 			msg += filename;
 			msg += "\" is not a valid stl file";
@@ -233,7 +252,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			throw (problem);
 		}
 		// Read in triangle count
-		if (fread(intdata.bytes, 1, 4, f) < 4) {
+		if (fread(intdata.bytes, 1, 4, fHandle) < 4) {
 			string msg = "\"";
 			msg += filename;
 			msg += "\" is not a valid stl file";
@@ -242,8 +261,9 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		}
 		convertFromLittleEndian32(intdata.bytes);
 		uint32_t tricount = intdata.intval;
-		while (!feof(f) && tricount-- > 0) {
-			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, f) < 3 * 4 * 4 + 2) {
+		uint32_t countdown = countdown;
+		while (!feof(fHandle) && countdown-- > 0) {
+			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
 				break;
 			}
 			for (int i = 0; i < 3 * 4; i++) {
@@ -261,31 +281,45 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 
 			facecount++;
 		}
-		fclose(f);
+		if(meshy.triangleCount() != tricount) {
+			string msg = "triangle count err in \"";
+			msg += filename;
+			msg += "\".  Expected: ";
+			msg += stringify((size_t)tricount);
+			msg += ", Read:";
+			msg += stringify(meshy.triangleCount());
+			msg += ", faced:";
+			msg += stringify(facecount);
+			std::cout << msg;
+			MeshyException problem(msg.c_str());
+			throw (problem);
+		}
+
+
 	} else {
 		// ASCII STL file
 		// Gobble remainder of solid name line.
-		fgets((char*) buf, sizeof(buf), f);
-		while (!feof(f)) {
-			fscanf(f, "%80s", buf);
+		fgets((char*) buf, sizeof(buf), fHandle);
+		while (!feof(fHandle)) {
+			fscanf(fHandle, "%80s", buf);
 			if (!strcasecmp((char*) buf, "endsolid")) {
 				break;
 			}
 			vertexes_t &v = tridata.vertexes;
 			bool success = true;
-			if (fscanf(f, "%*s %lf %lf %lf", &v.nx, &v.ny, &v.nz) < 3)
+			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.nx, &v.ny, &v.nz) < 3)
 				success = false;
-			if (fscanf(f, "%*s %*s") < 0)
+			if (fscanf(fHandle, "%*s %*s") < 0)
 				success = false;
-			if (fscanf(f, "%*s %lf %lf %lf", &v.x1, &v.y1, &v.z1) < 3)
+			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.x1, &v.y1, &v.z1) < 3)
 				success = false;
-			if (fscanf(f, "%*s %lf %lf %lf", &v.x2, &v.y2, &v.z2) < 3)
+			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.x2, &v.y2, &v.z2) < 3)
 				success = false;
-			if (fscanf(f, "%*s %lf %lf %lf", &v.x3, &v.y3, &v.z3) < 3)
+			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.x3, &v.y3, &v.z3) < 3)
 				success = false;
-			if (fscanf(f, "%*s")< 0)
+			if (fscanf(fHandle, "%*s")< 0)
 				success = false;
-			if (fscanf(f, "%*s")< 0)
+			if (fscanf(fHandle, "%*s")< 0)
 				success = false;
 			if(!success)
 			{
@@ -301,8 +335,8 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 
 			facecount++;
 		}
-		fclose(f);
 	}
+	fclose(fHandle);
 	return facecount;
 }
 
