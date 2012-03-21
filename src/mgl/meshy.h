@@ -162,11 +162,14 @@ public:
 	//
 	void addTriangle(Triangle3 &t)
 	{
-		std::cout << "add triangle" << std::endl;
+
 		Vector3 a, b, c;
 		t.zSort(a,b,c);
 
 		unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(a.z);
+		if(minSliceIndex > 0)
+			minSliceIndex --;
+
 		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(c.z);
 		if (maxSliceIndex - minSliceIndex > 1)
 			maxSliceIndex --;

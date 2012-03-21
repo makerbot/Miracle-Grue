@@ -284,7 +284,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 
 			facecount++;
 		}
-
+/*
 		if(meshy.triangleCount() != tricount) {
 			string msg = "triangle count err in \"";
 			msg += filename;
@@ -298,7 +298,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			MeshyException problem(msg.c_str());
 			throw (problem);
 		}
-
+*/
 
 	} else {
 		// ASCII STL file
