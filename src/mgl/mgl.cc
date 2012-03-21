@@ -263,7 +263,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		}
 		convertFromLittleEndian32(intdata.bytes);
 		uint32_t tricount = intdata.intval;
-		uint32_t countdown = countdown;
+		int countdown = (int)tricount;
 		while (!feof(fHandle) && countdown-- > 0) {
 			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
 				std::cout << __FUNCTION__ << "BREAKING" << endl;
@@ -284,7 +284,11 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 
 			facecount++;
 		}
-/*
+//		std::cout <<  "facecount " << facecount << std::endl;
+//		std::cout <<  "countdown " << countdown << std::endl;
+//		std::cout <<  "tricount " << tricount << std::endl;
+//		std::cout <<  "meshy.triangleCount() " << meshy.triangleCount() << std::endl;
+
 		if(meshy.triangleCount() != tricount) {
 			string msg = "triangle count err in \"";
 			msg += filename;
@@ -298,7 +302,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			MeshyException problem(msg.c_str());
 			throw (problem);
 		}
-*/
+
 
 	} else {
 		// ASCII STL file

@@ -201,16 +201,15 @@ void MglCoreTestCase::testMeshyLoads()
 	Scalar layer0Z = 0.4, layerZ = 0.2;
 	Meshy mesh(layer0Z,layerZ);
 	size_t loadSize = loadMeshyFromStl(mesh, binaryStl.c_str());
-	cout << "load size:" << loadSize << endl;
-	CPPUNIT_ASSERT( loadSize > 32000);
+	cout << binaryStl << " : face count=" << loadSize << endl;
+	CPPUNIT_ASSERT_EQUAL((size_t) 32816, loadSize);
 
 	string asciiStl = testCaseInputsDir +"3D_Knot.stl";
-	size_t expectedSize = 2892; //expected triangle count of 3D_Knot.stl
 	cout << "Test: " << __FUNCTION__ << endl;
 	Meshy mesh2(layer0Z,layerZ);
 	loadSize = loadMeshyFromStl(mesh2, asciiStl.c_str());
-	cout << "load size:" << loadSize << endl;
-	CPPUNIT_ASSERT( expectedSize == loadSize);
+	cout << asciiStl <<" : face count=" << loadSize << endl;
+	CPPUNIT_ASSERT_EQUAL((size_t)2892, loadSize);
 
 }
 
