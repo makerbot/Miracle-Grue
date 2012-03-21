@@ -39,11 +39,11 @@ class Shrinky
 	unsigned int counter;
 
     void writeScadBisectors(const std::vector<Vector2> & bisectors,
-    						const std::vector<LineSegment2d> & originalSegments);
+    						const std::vector<LineSegment2> & originalSegments);
 
     void writeScadSegments(	const char* segNames,
 							const char* prefix,
-							const std::vector<LineSegment2d> & segments);
+							const std::vector<LineSegment2> & segments);
 
     void openScadFile(const char *scadFileName);
     void closeScadFile();
@@ -53,25 +53,25 @@ public:
 public:
 	Shrinky( const char *scadFileName=NULL);
 
-//	void insetClassic(const std::vector<TriangleSegment2> & segments,
+//	void insetClassic(const std::vector<LineSegment2d> & segments,
 //							Scalar insetDist,
 //								Scalar cutoffLength,
-//									std::vector<TriangleSegment2> & finalInsets);
+//									std::vector<LineSegment2d> & finalInsets);
 
 
 
-	void inset(const std::vector<LineSegment2d> & segments,
+	void inset(const std::vector<LineSegment2> & segments,
 								Scalar insetDist,
-									std::vector<LineSegment2d> & finalInsets);
+									std::vector<LineSegment2> & finalInsets);
 
 	~Shrinky();
 
 private:
-	Scalar insetStep(const std::vector<LineSegment2d> & segments,
+	Scalar insetStep(const std::vector<LineSegment2> & segments,
 							Scalar insetDist,
 								Scalar cutoffLength,
 								bool writeThisStep,
-									std::vector<LineSegment2d> & finalInsets);
+									std::vector<LineSegment2> & finalInsets);
 };
 
 }

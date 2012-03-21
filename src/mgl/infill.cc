@@ -54,10 +54,10 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 		// go through all the segments in every loop
 		for(unsigned int j=0; j< outlineLoops.size(); j++)
 		{
-			std::vector<LineSegment2d> &outlineLineSegment2s = outlineLoops[j];
-			for(std::vector<LineSegment2d>::iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
+			std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
+			for(std::vector<LineSegment2>::iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
 			{
-				LineSegment2d &segment = *it;
+				LineSegment2 &segment = *it;
 				Scalar intersectionX, intersectionY;
 				if (segmentSegmentIntersection(limits.xMin, y,
 												limits.xMax, y,

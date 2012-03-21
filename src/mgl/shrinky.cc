@@ -34,17 +34,17 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
 	return AreaSign(i,j,k) < 0;
 }
 
-std::ostream& mgl::operator << (std::ostream &os, const LineSegment2d &s)
+std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
 {
 	os << "[ " << s.a << ", " << s.b << "]";
 	return os;
 }
 
-void lengthCheck(const std::vector<LineSegment2d> &segments, const char *msg)
+void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
 {
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
-		const LineSegment2d &seg = segments[i];
+		const LineSegment2 &seg = segments[i];
 		Scalar l = seg.length();
 		// cout << msg << " seg[" << i << "] = " << seg << " l=" << l << endl;
 		if(!( l > 0 ) )
@@ -59,22 +59,22 @@ void lengthCheck(const std::vector<LineSegment2d> &segments, const char *msg)
 }
 
 
-void connectivityFix(const std::vector<LineSegment2d> &segments,
+void connectivityFix(const std::vector<LineSegment2> &segments,
 		Scalar tol,
-		std::vector<LineSegment2d> &outs)
+		std::vector<LineSegment2> &outs)
 {
 
 }
 
-void connectivityCheck( const std::vector<LineSegment2d> &segments,
+void connectivityCheck( const std::vector<LineSegment2> &segments,
 						Scalar tol)
 {
 
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
-		const LineSegment2d &prevSeg = segments[prevId];
-		LineSegment2d seg = segments[i];
+		const LineSegment2 &prevSeg = segments[prevId];
+		LineSegment2 seg = segments[i];
 
 		if(!prevSeg.b.tequals(seg.a, tol) )
 		{
@@ -91,15 +91,11 @@ void connectivityCheck( const std::vector<LineSegment2d> &segments,
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 
-			// assert(0);
-			// TriangleSegment2 newSeg(prevSeg.b, seg.a);
-			// outs.push_back(newSeg);
-			// seg.a = prevSeg.b;
 		}
 	}
 }
 
-void createConvexList(const std::vector<LineSegment2d> &segments, std::vector<bool> &convex)
+void createConvexList(const std::vector<LineSegment2> &segments, std::vector<bool> &convex)
 {
 	Scalar tol=0.3;
 
@@ -107,8 +103,8 @@ void createConvexList(const std::vector<LineSegment2d> &segments, std::vector<bo
     {
         size_t prevId = id==0 ? segments.size()-1 : id-1;
 
-        const LineSegment2d &seg = segments[id];
-        const LineSegment2d &prevSeg = segments[prevId];
+        const LineSegment2 &seg = segments[id];
+        const LineSegment2 &prevSeg = segments[prevId];
 
         const Vector2 & i = prevSeg.a;
         const Vector2 & j = seg.a;
@@ -139,7 +135,7 @@ void createConvexList(const std::vector<LineSegment2d> &segments, std::vector<bo
 }
 
 
-void segmentsDiagnostic(const char* title , const std::vector<LineSegment2d> &segments)
+void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &segments)
 {
 
 	cout << endl << title << endl;
@@ -148,10 +144,10 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2d> &se
     for(size_t id = 0; id < segments.size(); id++)
     {
 
-        const LineSegment2d &seg = segments[id];
+        const LineSegment2 &seg = segments[id];
         size_t prevId = id==0 ? segments.size()-1 : id-1;
 
-        const LineSegment2d &prevSeg = segments[prevId];
+        const LineSegment2 &prevSeg = segments[prevId];
 
         const Vector2 & i = prevSeg.a;
         const Vector2 & j = seg.a;
@@ -169,7 +165,7 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2d> &se
 }
 
 
-Vector2 getInsetDirection(const LineSegment2d &seg)
+Vector2 getInsetDirection(const LineSegment2 &seg)
 {
 	Vector3 v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
 	Vector3 up(0,0,1);
@@ -179,9 +175,9 @@ Vector2 getInsetDirection(const LineSegment2d &seg)
 	return inset2;
 }
 
-LineSegment2d elongate(const LineSegment2d &s, Scalar dist)
+LineSegment2 elongate(const LineSegment2 &s, Scalar dist)
 {
-	LineSegment2d segment(s);
+	LineSegment2 segment(s);
 	Vector2 l = segment.b - segment.a;
 	l.normalise();
 	l *= dist;
@@ -191,9 +187,9 @@ LineSegment2d elongate(const LineSegment2d &s, Scalar dist)
 
 
 
-LineSegment2d prelongate(const LineSegment2d &s, Scalar dist)
+LineSegment2 prelongate(const LineSegment2 &s, Scalar dist)
 {
-	LineSegment2d segment(s);
+	LineSegment2 segment(s);
 	Vector2 l = segment.a - segment.b;
 	l.normalise();
 	l *= dist;
@@ -202,9 +198,9 @@ LineSegment2d prelongate(const LineSegment2d &s, Scalar dist)
 }
 
 
-LineSegment2d elongateAndPrelongate(const LineSegment2d &s, Scalar dist)
+LineSegment2 elongateAndPrelongate(const LineSegment2 &s, Scalar dist)
 {
-	LineSegment2d segment(s);
+	LineSegment2 segment(s);
 	Vector2 l = segment.b - segment.a;
 	l.normalise();
 	l *= dist;
@@ -214,13 +210,13 @@ LineSegment2d elongateAndPrelongate(const LineSegment2d &s, Scalar dist)
 
 }
 
-void insetSegments(const std::vector<LineSegment2d> &segments, Scalar d,
-					std::vector<LineSegment2d> &insets)
+void insetSegments(const std::vector<LineSegment2> &segments, Scalar d,
+					std::vector<LineSegment2> &insets)
 {
 	assert(insets.size() == 0);
 	for(size_t i=0; i<segments.size(); i++)
 	{
-		LineSegment2d seg = segments[i];
+		LineSegment2 seg = segments[i];
 		Vector2 inset = getInsetDirection(seg);
 		inset *= d;
 		seg.a += inset;
@@ -230,7 +226,7 @@ void insetSegments(const std::vector<LineSegment2d> &segments, Scalar d,
 	assert(insets.size() == segments.size());
 }
 
-string segment3(const LineSegment2d &s, Scalar z)
+string segment3(const LineSegment2 &s, Scalar z)
 {
 	stringstream ss;
 	ss << "[[" << s.a[0] << ", " << s.a[1] << ", " << z << "], [" <<  s.b[0] << ", " << s.b[1] << ", " << z << "]]";
@@ -238,9 +234,9 @@ string segment3(const LineSegment2d &s, Scalar z)
 }
 
 
-void trimConvexSegments(const std::vector<LineSegment2d> & rawInsets,
+void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
 						const std::vector<bool> &convex,
-						std::vector<LineSegment2d> & segments)
+						std::vector<LineSegment2> & segments)
 {
 	assert(segments.size() == 0);
 	segments = rawInsets;
@@ -249,8 +245,8 @@ void trimConvexSegments(const std::vector<LineSegment2d> & rawInsets,
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 
-		LineSegment2d &currentSegment = segments[i];
-		LineSegment2d &previousSegment = segments[prevId];
+		LineSegment2 &currentSegment = segments[i];
+		LineSegment2 &previousSegment = segments[prevId];
 
 		if (convex[i])
 		{
@@ -275,10 +271,10 @@ void trimConvexSegments(const std::vector<LineSegment2d> & rawInsets,
 	}
 }
 
-void AddReflexSegments(	const std::vector<LineSegment2d> &segments,
-						const std::vector<LineSegment2d> &trimmedInsets,
+void AddReflexSegments(	const std::vector<LineSegment2> &segments,
+						const std::vector<LineSegment2> &trimmedInsets,
 						const std::vector<bool> &convexVertices,
-						std::vector<LineSegment2d> &newSegments)
+						std::vector<LineSegment2> &newSegments)
 {
 	assert(newSegments.size() == 0 );
 	newSegments.reserve(segments.size() * 2);
@@ -292,7 +288,7 @@ void AddReflexSegments(	const std::vector<LineSegment2d> &segments,
 			Vector2 center = segments[i].a;
 			Vector2 start  = trimmedInsets[prevId].b;
 			Vector2 end    = trimmedInsets[i].a;
-			LineSegment2d straight(start, end);
+			LineSegment2 straight(start, end);
 			newSegments.push_back(straight);
 		}
 		newSegments.push_back(trimmedInsets[i] );
@@ -300,9 +296,9 @@ void AddReflexSegments(	const std::vector<LineSegment2d> &segments,
 
 }
 
-void removeShortSegments(const std::vector<LineSegment2d> &segments,
+void removeShortSegments(const std::vector<LineSegment2> &segments,
 						 Scalar cutoffLength,
-						 std::vector<LineSegment2d> &shorts)
+						 std::vector<LineSegment2> &shorts)
 {
 
 	shorts.reserve(segments.size()); // worst case
@@ -311,7 +307,7 @@ void removeShortSegments(const std::vector<LineSegment2d> &segments,
 
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
-		const LineSegment2d &seg = segments[i];
+		const LineSegment2 &seg = segments[i];
 		Scalar length2 = seg.squaredLength();
 		if(length2 > cutoffLength2)
 		{
@@ -345,10 +341,10 @@ Shrinky::Shrinky( const char *scadFileName)
 }
 
 
-bool attachSegments(LineSegment2d &first, LineSegment2d &second, Scalar elongation)
+bool attachSegments(LineSegment2 &first, LineSegment2 &second, Scalar elongation)
 {
-	LineSegment2d s0 = elongateAndPrelongate(first, elongation); // elongate(first, elongation);
-	LineSegment2d s1 = elongateAndPrelongate(second, elongation); //prelongate(second, elongation);
+	LineSegment2 s0 = elongateAndPrelongate(first, elongation); // elongate(first, elongation);
+	LineSegment2 s1 = elongateAndPrelongate(second, elongation); //prelongate(second, elongation);
 	Vector2 intersection;
 	bool trimmed = segmentSegmentIntersection(s0, s1, intersection);
 	if(trimmed)
@@ -374,7 +370,7 @@ Scalar triangleAltitude(Scalar a, Scalar b, Scalar c)
 
 // an edged has collapsed when its 2 bisectors intersect
 // at an altitude that is lower than the inset distance
-bool edgeCollapse(const LineSegment2d& segment,
+bool edgeCollapse(const LineSegment2& segment,
 					const Vector2& bisector0,
 					const Vector2& bisector1,
 					Scalar elongation,
@@ -383,16 +379,16 @@ bool edgeCollapse(const LineSegment2d& segment,
 	// segment is the base of the triangle
 	// from which we want the altitude
 
-	LineSegment2d bisectorSegment0;
+	LineSegment2 bisectorSegment0;
 	bisectorSegment0.a = segment.a;
 	bisectorSegment0.b = segment.a + bisector0;
 
-	LineSegment2d bisectorSegment1;
+	LineSegment2 bisectorSegment1;
 	bisectorSegment1.a = segment.b + bisector1;
 	bisectorSegment1.b = segment.b;
 
-	LineSegment2d s0 = elongate(bisectorSegment0, elongation);
-	LineSegment2d s1 = prelongate(bisectorSegment1, elongation);
+	LineSegment2 s0 = elongate(bisectorSegment0, elongation);
+	LineSegment2 s1 = prelongate(bisectorSegment1, elongation);
 	Vector2 intersection;
 	bool attached = segmentSegmentIntersection(s0, s1, intersection);
 	if(attached)
@@ -427,23 +423,12 @@ void outMap(const std::multimap<Scalar, unsigned int> &collapsingSegments)
 	}
 }
 
-int popFirstElem(std::multimap<Scalar, unsigned int> &collapsingSegments)
-{
-	if(collapsingSegments.empty())
-		return -1;
-
-	std::multimap<Scalar, unsigned int>::iterator b = collapsingSegments.begin();
-	unsigned int result =  (*b).second;
-	collapsingSegments.erase(b);
-	return result;
-}
 
 
-
-Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2d> &originalSegments,
+Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSegments,
 									const std::vector<Vector2> &bisectors,
 									Scalar insetDist,
-									std::vector<LineSegment2d> &relevantSegments)
+									std::vector<LineSegment2> &relevantSegments)
 {
 	Scalar elongation = 100;
 	assert(relevantSegments.size()==0);
@@ -454,15 +439,15 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2d> &originalS
 	multimap<Scalar, unsigned int> collapsingSegments;
 
 	// cout << endl << "removeFirstCollapsedSegments:: looking for collapses" << endl;
-	std::vector<LineSegment2d> segments =  originalSegments;
+	std::vector<LineSegment2> segments =  originalSegments;
 	for (unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int nextId = i==segments.size()-1 ? 0 : i+1;
 
-		const LineSegment2d &nextSeg = segments[nextId];
+		const LineSegment2 &nextSeg = segments[nextId];
 		const Vector2 &nextBisector = bisectors[nextId];
 
-		const LineSegment2d &currentSegment =  segments[i];
+		const LineSegment2 &currentSegment =  segments[i];
 		const Vector2 &currentBisector = bisectors[i];
 
 		Scalar collapseDistance;
@@ -534,7 +519,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2d> &originalS
 }
 
 
-bool collinear(const LineSegment2d &prev, const LineSegment2d &current, Scalar tol, Vector2 &mid)
+bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid)
 {
 
 	Scalar x1 = prev.a[0];
@@ -549,19 +534,17 @@ bool collinear(const LineSegment2d &prev, const LineSegment2d &current, Scalar t
 	return r;
 }
 
-void elongateAndTrimSegments(const std::vector<LineSegment2d> & longSegments,
+void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 					Scalar elongation,
-					std::vector<LineSegment2d> &segments)
+					std::vector<LineSegment2> &segments)
 {
 	Scalar tol = 1e-6;
 	assert(longSegments.size() > 0);
 
-//	std::vector<TriangleSegment2> segments =longSegments;
-//	segments.reserve(longSegments.size());
-//	cout<< "****" << endl;
+
 
 	// deep copy
-	std::vector<LineSegment2d>* p =  &segments;
+	std::vector<LineSegment2>* p =  &segments;
 	(*p) = longSegments;
 
 
@@ -571,8 +554,8 @@ void elongateAndTrimSegments(const std::vector<LineSegment2d> & longSegments,
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 
-		LineSegment2d &previousSegment = segments[prevId];
-		LineSegment2d &currentSegment =  segments[i];
+		LineSegment2 &previousSegment = segments[prevId];
+		LineSegment2 &currentSegment =  segments[i];
 
 		if(previousSegment.length()==0)
 			continue;
@@ -599,8 +582,8 @@ void elongateAndTrimSegments(const std::vector<LineSegment2d> & longSegments,
 			cout << "	prev_length= " << previousSegment.length() <<";" <<  endl;
 			cout << "	currentSegment = " << currentSegment << ";" << endl;
 			cout << "	curr_length= " << currentSegment.length() << ";" << endl;
-			TriangleSegment2 s0 = elongateAndPrelongate(previousSegment, elong );
-			TriangleSegment2 s1 = elongateAndPrelongate(currentSegment, elong );
+			LineSegment2d s0 = elongateAndPrelongate(previousSegment, elong );
+			LineSegment2d s1 = elongateAndPrelongate(currentSegment, elong );
 			cout << "	s0 = " << s0 << ";" << endl;
 			cout << "	s1 = " << s1 << ";" << endl;
 			cout << "	elongation = " << elongation << ";" << endl;
@@ -628,18 +611,16 @@ void elongateAndTrimSegments(const std::vector<LineSegment2d> & longSegments,
 }
 
 
-void createBisectors(const std::vector<LineSegment2d>& segments,
+void createBisectors(const std::vector<LineSegment2>& segments,
 						Scalar tol,
 						std::vector<Vector2>  &motorCycles)
 {
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
-		// unsigned int nextId = i==segments.size()-1 ? 0 : i+1;
 
-		const LineSegment2d &prevSeg = segments[prevId];
-		const LineSegment2d &seg = segments[i];
-		// const TriangleSegment2 &nextSeg = segments[nextId];
+		const LineSegment2 &prevSeg = segments[prevId];
+		const LineSegment2 &seg = segments[i];
 
 		Vector2 prevInset = getInsetDirection(prevSeg);
 		Vector2 inset = getInsetDirection(seg);
@@ -681,16 +662,16 @@ void createBisectors(const std::vector<LineSegment2d>& segments,
 	}
 }
 
-void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<LineSegment2d> & originalSegments)
+void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<LineSegment2> & originalSegments)
 {
     if(scadFileName){
-        std::vector<LineSegment2d> motorCycleTraces;
+        std::vector<LineSegment2> motorCycleTraces;
         for(size_t i = 0;i < bisectors.size();i++){
             Vector2 a = originalSegments[i].a;
             Vector2 dir = bisectors[i];
             dir *= 2;
             Vector2 b = a + dir;
-            LineSegment2d s(a, b);
+            LineSegment2 s(a, b);
             motorCycleTraces.push_back(s);
         }
         scadZ = fscad.writeSegments3("bisectors_", "color([0.75,0.5,0.2,1])loop_segments3", motorCycleTraces, scadZ, dz, this->counter);
@@ -700,7 +681,7 @@ void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const s
 
 void Shrinky::writeScadSegments(const char* segNames,
 								const char* prefix,
-								const std::vector<LineSegment2d> & segments)
+								const std::vector<LineSegment2> & segments)
 {
 	if(scadFileName)
 	{
@@ -710,9 +691,9 @@ void Shrinky::writeScadSegments(const char* segNames,
 	}
 }
 
-void Shrinky::inset(const std::vector<LineSegment2d>& originalSegments,
+void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 								Scalar insetDist,
-								std::vector<LineSegment2d> &finalInsets)
+								std::vector<LineSegment2> &finalInsets)
 {
 	bool writePartialSteps = true;
 
@@ -726,7 +707,7 @@ void Shrinky::inset(const std::vector<LineSegment2d>& originalSegments,
 	Scalar tol = 1e-6; // for continuity testing and distance to go
 	Scalar distanceToGo = insetDist;
 
-	std::vector<LineSegment2d> initialSegs = originalSegments;
+	std::vector<LineSegment2> initialSegs = originalSegments;
 
 	bool done = false;
 	//cout << "INSET " << endl;
@@ -759,11 +740,11 @@ void Shrinky::inset(const std::vector<LineSegment2d>& originalSegments,
 	//cout << "Thank you:  " << finalInsets.size() << endl;
 }
 
-Scalar Shrinky::insetStep(const std::vector<LineSegment2d>& originalSegments,
+Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 								Scalar insetDist,
 								Scalar continuityTolerance,
 								bool writePartialStep,
-								std::vector<LineSegment2d> &finalInsets)
+								std::vector<LineSegment2> &finalInsets)
 {
 	// magic numbers
 	Scalar elongation = insetDist * 100; // continuityTolerance * 5;
@@ -804,7 +785,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2d>& originalSegments,
 	        scadZ = dzBefore;
 	    }
 
-	    std::vector<LineSegment2d> relevantSegments;
+	    std::vector<LineSegment2> relevantSegments;
 	    if(originalSegments.size()>2)
 	    {
 	    	//cout << "...BISECTING..." << endl;
@@ -818,7 +799,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2d>& originalSegments,
 	    	writeScadSegments("relevants_", "color([0.5,0.5,0,1])", relevantSegments);
 	    }
 
-	    std::vector<LineSegment2d> insets;
+	    std::vector<LineSegment2> insets;
 		unsigned int relevantCount = relevantSegments.size();
 		if( relevantCount > 2)
 		{
@@ -830,7 +811,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2d>& originalSegments,
 		}
 
 
-		std::vector<LineSegment2d> trims;
+		std::vector<LineSegment2> trims;
 		if(insets.size()>2)
 		{
 			//cout << "...ATTACHING..." << endl;

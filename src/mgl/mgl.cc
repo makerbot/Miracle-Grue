@@ -88,12 +88,12 @@ void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
 }
 
 
-void dumpSegments(const char* prefix, const std::vector<LineSegment2d> &segments)
+void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
 {
 	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
     for(size_t id = 0; id < segments.size(); id++)
     {
-    	LineSegment2d seg = segments[id];
+    	LineSegment2 seg = segments[id];
     	cout << prefix << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
     }
     cout << prefix << "]" << endl;
@@ -109,7 +109,7 @@ void dumpInsets(const std::vector<SegmentTable> &insetsForLoops)
 
 		for (unsigned int i=0; i <insetTable.size(); i++)
 		{
-			const std::vector<LineSegment2d >  &loop = insetTable[i];
+			const std::vector<LineSegment2 >  &loop = insetTable[i];
 			cout << "   inset " << i << ") " << loop.size() << " segments" << endl;
 			dumpSegments("        ",loop);
 		}
