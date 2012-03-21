@@ -9,6 +9,9 @@
 import os
 import commands
 import datetime
+import multiprocessing
+
+jcore_count = multiprocessing.cpu_count() * 1.5 
 
 
 unitTestOutputDir = './test_cases'
@@ -107,8 +110,10 @@ if operating_system == "Darwin":
     env.Append(CPPPATH = ['/opt/local/include'])
     env.Append(LIBPATH = ['/opt/local/lib'])
 
-#if debug:
-env.Append(CCFLAGS = '-g')
+if debug:
+    env.Append(CCFLAGS = '-g')
+
+env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
 
 if  multi_thread:  
     env.Append(CCFLAGS = '-fopenmp')      
