@@ -199,7 +199,7 @@ void MglCoreTestCase::testMeshyLoads()
 	string binaryStl = testCaseInputsDir +"linkCup.stl";
 	size_t expectedSize = 32816; //expected triangle count of linkCup.stl
 	cout << "Test: " << __FUNCTION__ << endl;
-	size_t layer0Z = 0.4, layerZ = 0.2;
+	Scalar layer0Z = 0.4, layerZ = 0.2;
 	Meshy mesh(layer0Z,layerZ);
 	size_t loadSize = loadMeshyFromStl(mesh, binaryStl.c_str());
 	cout << "load size:" << loadSize << endl;

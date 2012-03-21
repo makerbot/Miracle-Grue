@@ -197,11 +197,13 @@ inline std::string mgl::stringify(size_t x)
 size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 {
 
+	// NOTE: for stl legacy read-in reasons, we are using floats here,
+	// instead of our own Scalar type
 	struct vertexes_t {
-		double nx, ny, nz;
-		double x1, y1, z1;
-		double x2, y2, z2;
-		double x3, y3, z3;
+		float nx, ny, nz;
+		float x1, y1, z1;
+		float x2, y2, z2;
+		float x3, y3, z3;
 		uint16_t attrBytes;
 	};
 
@@ -264,6 +266,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		uint32_t countdown = countdown;
 		while (!feof(fHandle) && countdown-- > 0) {
 			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
+				std::cout << __FUNCTION__ << "BREAKING" << endl;
 				break;
 			}
 			for (int i = 0; i < 3 * 4; i++) {
@@ -281,6 +284,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 
 			facecount++;
 		}
+
 		if(meshy.triangleCount() != tricount) {
 			string msg = "triangle count err in \"";
 			msg += filename;
@@ -307,15 +311,15 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 			}
 			vertexes_t &v = tridata.vertexes;
 			bool success = true;
-			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.nx, &v.ny, &v.nz) < 3)
+			if (fscanf(fHandle, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
 				success = false;
 			if (fscanf(fHandle, "%*s %*s") < 0)
 				success = false;
-			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.x1, &v.y1, &v.z1) < 3)
+			if (fscanf(fHandle, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
 				success = false;
-			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.x2, &v.y2, &v.z2) < 3)
+			if (fscanf(fHandle, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
 				success = false;
-			if (fscanf(fHandle, "%*s %lf %lf %lf", &v.x3, &v.y3, &v.z3) < 3)
+			if (fscanf(fHandle, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
 				success = false;
 			if (fscanf(fHandle, "%*s")< 0)
 				success = false;
@@ -337,7 +341,7 @@ size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
 		}
 	}
 	fclose(fHandle);
-	return facecount;
+	return meshy.triangleCount();
 }
 
 

@@ -162,6 +162,7 @@ public:
 	//
 	void addTriangle(Triangle3 &t)
 	{
+		std::cout << "add triangle" << std::endl;
 		Vector3 a, b, c;
 		t.zSort(a,b,c);
 
@@ -170,26 +171,26 @@ public:
 		if (maxSliceIndex - minSliceIndex > 1)
 			maxSliceIndex --;
 
-		// cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
-		// cout << "Max index =" <<  maxSliceIndex << std::endl;
+//		std::cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
+//		std::cout << "Max index =" <<  maxSliceIndex << std::endl;
 		unsigned int currentSliceCount = sliceTable.size();
 		if (maxSliceIndex >= currentSliceCount)
 		{
 			unsigned int newSize = maxSliceIndex+1;
 			sliceTable.resize(newSize); // make room for potentially new slices
-//			cout << "- new slice count: " << sliceTable.size() << std::endl;
+//			std::cout << "- new slice count: " << sliceTable.size() << std::endl;
 		}
 
 		allTriangles.push_back(t);
 
 		size_t newTriangleId = allTriangles.size() -1;
 
-		// cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
+//		 std::cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
 		for (size_t i= minSliceIndex; i<= maxSliceIndex; i++)
 		{
 			TriangleIndices &trianglesForSlice = sliceTable[i];
 			trianglesForSlice.push_back(newTriangleId);
-//			cout << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
+//			std::cout << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
 		}
 
 		limits.grow(t[0]);
