@@ -19,7 +19,13 @@ using namespace std;
 using namespace mgl;
 
 
+string outputDir("outputs/test_cases/SlicerSplitTestCase/");
 
+void SlicerSplitTestCase::setUp()
+{
+	MyComputer computer;
+	computer.fileSystem.mkpath(outputDir.c_str());
+}
 
 void SlicerSplitTestCase::test_m()
 {
@@ -433,7 +439,9 @@ void SlicerSplitTestCase::test_ultimate_59()
 	std::vector<LineSegment2> segs2;
 	clip(segs, 1, 10, segs2);
 
-	Shrinky shrinky("test_ultimate_59.scad");
+	string output = outputDir + "test_ultimate_59.scad";
+
+	Shrinky shrinky(output.c_str());
 	Scalar insetDistance = 0.9 * 0.4 * 2;
 
 	std::vector<LineSegment2> finalInsets;

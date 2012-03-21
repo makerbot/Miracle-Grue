@@ -508,10 +508,14 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 		LineSegment2 &previousSegment = segments[prevId];
 		LineSegment2 &currentSegment =  segments[i];
 
+		//cout << "prev: seg[" << prevId << "] = " << previousSegment << endl;
+		//cout << "cur:  seg[" << i << "] = " << currentSegment << endl;
+
 		if (previousSegment.b.tequals(currentSegment.a, tol))
 		{
 			// the job is already done.. segments are attached,
 			// nothing to see
+			// cout << "already attached" << endl;
 			continue;
 		}
 
@@ -528,7 +532,7 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 		}
 
 
-
+/*
 		if(collinear(previousSegment.a, currentSegment.a, currentSegment.b, tol ))
 		{
 			Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
@@ -536,7 +540,7 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 			currentSegment.a = m;
 			continue;
 		}
-
+*/
 		bool attached = attachSegments(previousSegment, currentSegment, elongation);
 		if(!attached)
 		{
@@ -544,7 +548,10 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 			Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
 			previousSegment.b = m;
 			currentSegment.a = m;
+
 		}
+		// cout << "attach point " << currentSegment.a << endl;
+		//cout << endl;
 	}
 
 }
