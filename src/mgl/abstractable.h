@@ -140,7 +140,7 @@ public:
 		std::cout << pathname << std::endl;
 		//TODO: move to abstractable someday
 		struct stat st;
-		if(stat(pathname,&st) == 0){
+		if(stat(pathname,&st) != 0){
 			mode_t process_mask = umask(0);
 			int result_code = mkdir(pathname, mode);
 			umask(process_mask);
