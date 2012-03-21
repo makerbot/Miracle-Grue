@@ -171,25 +171,6 @@ public:
 	}
 };
 
-
-//
-////
-//// The Slice is a series of tubes
-////
-//// tubes are plastic extrusions
-//class TubesInSlice
-//{
-//public:
-//	TubesInSlice(Scalar z)
-//		:z(z)
-//	{
-//	}
-//
-//	Scalar z;
-//	std::vector<LineSegment2d> infill;
-//	std::vector< std::vector<LineSegment2d> > outlines;
-//};
-
 /// A polygon is an arbitarty collection of 2d points
 typedef std::vector<Vector2> Polygon;
 

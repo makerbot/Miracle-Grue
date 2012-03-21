@@ -25,7 +25,10 @@
 #include <iostream>
 #include <sstream>
 
+#include <sys/stat.h>
+#include <string.h>
 
+#include "mgl.h"
 namespace mgl {
 
 
@@ -127,6 +130,71 @@ public:
 				+ filenameStr.substr(0, filenameStr.find_last_of('.'));
 	}
 
+	/**
+	 * Creates a directory if it doesn't already exist
+	 * @return true if directory exists at the end of call, false otherwise
+	 */
+	int verifyDir(const char *pathname, mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO) const
+	{
+		int status = 0;
+		std::cout << pathname << std::endl;
+		//TODO: move to abstractable someday
+		struct stat st;
+		if(stat(pathname,&st) == 0){
+			mode_t process_mask = umask(0);
+			int result_code = mkdir(pathname, mode);
+			umask(process_mask);
+			if(result_code != 0)
+				status = -1 ; //creation fail
+
+		}
+		else if (!S_ISDIR(st.st_mode))
+			status = -1;
+		return status;
+	}
+
+
+
+	typedef struct stat Stat;
+
+	/**
+	** mkpath - ensure all directories in path exist
+	** Algorithm takes the pessimistic view and works top-down to ensure
+	** each directory in path exists, rather than optimistically creating
+	** the last element and working backwards.
+	*/
+	int mkpath(const char *path, mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO)
+	{
+	    char           *pp;
+	    char           *sp;
+	    int             status;
+	    char           copypath[128];
+		strncpy(copypath, path,128);
+
+	    status = 0;
+	    pp = copypath;
+	    while (status == 0 && (sp = strchr(pp, '/')) != 0)
+	    {
+	        if (sp != pp)
+	        {
+	            /* Neither root nor double slash in path */
+	            *sp = '\0';
+	            status = verifyDir((const char*)copypath, mode);
+	            *sp = '/';
+	        }
+	        pp = sp + 1;
+	    }
+	    if (status == 0)
+	        status = verifyDir(path, mode);
+	    //FREE(copypath);
+	    return (status);
+	}
+
+
+
+
+
+
 };
 
 
@@ -135,6 +203,7 @@ class MyComputer
 public:
 	ClockAbstractor clock;
 	FileSystemAbstractor fileSystem;
+
 };
 
 }

@@ -1,6 +1,9 @@
 #include <list>
 #include <limits>
 
+#include <sys/stat.h>
+
+
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerTestCase.h"
 
@@ -39,6 +42,15 @@ using namespace mgl;
 // vertices of degree higher than three, introduced by si-
 // multaneous events at the same location.
 
+string outputDir("outputs/test_cases/slicerTestCase/");
+
+void SlicerTestCase::setUp()
+{
+	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
+	MyComputer computer;
+	computer.fileSystem.mkpath(outputDir.c_str());
+	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
+}
 
 
 void SlicerTestCase::testNormals()
@@ -441,13 +453,13 @@ void SlicerTestCase::testInset()
 	std::vector< std::vector<LineSegment2 > > insetTable;
 	std::vector<LineSegment2> &segments = square;
 
-	string targetFile = "./test_cases/slicerTestCase/output/testInsetSquare.scad";
+	string outputFile = outputDir + "testInsetSquare.scad";
 	Shrinky shrinky;
 	try {
-		shrinky.openScadFile(targetFile.c_str());
+		shrinky.openScadFile(outputFile.c_str());
 	}
 	catch(...){
-		cout << "File read fail for: " << targetFile.c_str() << endl;
+		cout << "File read fail for: " << outputFile.c_str() << endl;
 		CPPUNIT_FAIL("File read fail" );
 	}
 
@@ -501,7 +513,17 @@ void SlicerTestCase::testInset2()
 
 
 	std::vector<LineSegment2> &segments = segs;
-	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset2.scad");
+
+	string outputFile = outputDir +"testInset2.scad";
+	Shrinky shrinky;
+	try {
+		shrinky.openScadFile(outputFile.c_str());
+	}
+	catch(...){
+		cout << "File read fail for: " << outputFile.c_str() << endl;
+		CPPUNIT_FAIL("File read fail" );
+	}
+
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
@@ -534,7 +556,15 @@ void SlicerTestCase::testInset3()
 	insetTable.push_back(segs);
 
 	std::vector<LineSegment2> &segments = segs;
-	Shrinky shrinky("./test_cases/slicerTestCase/output/testInset3.scad");
+	string outputFile = outputDir +"testInset3.scad";
+	Shrinky shrinky;
+	try {
+		shrinky.openScadFile(outputFile.c_str());
+	}
+	catch(...){
+		cout << "File read fail for: " << outputFile.c_str() << endl;
+		CPPUNIT_FAIL("File read fail" );
+	}
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
@@ -609,15 +639,15 @@ void SlicerTestCase::testInset4()
 	SegmentTable insetTable;
 	insetTable.push_back(segs);
 
-	string targetFile = "./test_cases/slicerTestCase/output/testInset4.scad";
+	string outputFile = outputDir + "testInset4.scad";
 
 	Shrinky shrinky;
 	std::vector<LineSegment2> &segments = segs;
 	try {
-		shrinky.openScadFile(targetFile.c_str());
+		shrinky.openScadFile(outputFile.c_str());
 	}
 	catch(...){
-		cout << "File read fail for: " << targetFile.c_str() << endl;
+		cout << "File read fail for: " << outputFile.c_str() << endl;
 		CPPUNIT_FAIL("File read fail" );
 	}
 	shrinky.dz = 0.05;
@@ -658,7 +688,15 @@ void SlicerTestCase::testHexagon()
 	insetTable.push_back(segs);
 
 	std::vector<LineSegment2> &segments = segs;
-	Shrinky shrinky("./test_cases/slicerTestCase/output/hexagon.scad");
+	string outputFile = outputDir +"hexagon.scad";
+	Shrinky shrinky;
+	try {
+		shrinky.openScadFile(outputFile.c_str());
+	}
+	catch(...){
+		cout << "File read fail for: " << outputFile.c_str() << endl;
+		CPPUNIT_FAIL("File read fail" );
+	}
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
@@ -926,7 +964,15 @@ void inset2scad(std::vector<LineSegment2> &segs,
     SegmentTable insetTable;
     insetTable.push_back(segs);
     std::vector<LineSegment2> *p = &segs;
-    Shrinky shrinky(filename);
+	Shrinky shrinky;
+	try {
+		shrinky.openScadFile(filename);
+	}
+	catch(...){
+		cout << "File read fail for: " << filename << endl;
+		CPPUNIT_FAIL("File read fail" );
+	}
+
     shrinky.dz = 0.05;
 
     cout << "inset2scad: segments =  "  << segs.size() << endl;
@@ -988,8 +1034,8 @@ void SlicerTestCase::testOpenPoly()
 	segs.push_back(LineSegment2(Vector2(-5.61223, -0.229557), Vector2(-5.060251, 1.127976)));
 	segs.push_back(LineSegment2(Vector2(-5.060251, 1.127976), Vector2(-4.565341, 2.34464)));
 
-
-	inset2scad(segs, "./test_cases/slicerTestCase/output/testOpen.scad", 1, 0.35);
+	string output = outputDir + "testOpen.scad";
+	inset2scad(segs,output.c_str() , 1, 0.35);
 
 }
 
@@ -1005,7 +1051,8 @@ void SlicerTestCase::testSquareBug()
 	segs.push_back(LineSegment2(Vector2(-2.5, 2.5), Vector2(-2.5, 2.475)));
 	segs.push_back(LineSegment2(Vector2(-2.5, 2.475), Vector2(-2.5, -2.5)));
 
-	inset2scad(segs, "./test_cases/slicerTestCase/output/testSquareBug.scad",5, 0.35);
+	string output = outputDir + "testSquareBug.scad";
+	inset2scad(segs, output.c_str(),5, 0.35);
 
 }
 
@@ -1030,7 +1077,8 @@ void SlicerTestCase::testHexaBug()
 	segs.push_back(LineSegment2(Vector2(10.0, 5.658034), Vector2(10.0, -5.773501)));
 
 	unsigned int shells = 5;
-    inset2scad(segs, "./test_cases/slicerTestCase/output/testHexaBug.scad", shells, 0.35);
+	string output = outputDir + "testHexaBug.scad";
+	inset2scad(segs, output.c_str(), shells, 0.35);
 
 }
 
@@ -1075,7 +1123,8 @@ void SlicerTestCase::testKnotBug()
 	segs.push_back(LineSegment2(Vector2(-2.749868, 7.055984), Vector2(-1.787018, 5.843316)));
 	segs.push_back(LineSegment2(Vector2(-1.787018, 5.843316), Vector2(-0.936271, 4.771724)));
 
-	inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot_a.scad", 5, 0.35);
+	string outputFile = outputDir +"testKnot_a.scad";
+	inset2scad(segs, outputFile.c_str(), 5, 0.35);
 
 	segs.clear();
 	segs.push_back(LineSegment2(Vector2(1.707056, -4.472806), Vector2(4.151384, -6.128421)));
@@ -1149,7 +1198,8 @@ void SlicerTestCase::testKnotBug()
 	segs.push_back(LineSegment2(Vector2(0.720399, -4.398875), Vector2(1.210134, -4.419774)));
 	segs.push_back(LineSegment2(Vector2(1.210134, -4.419774), Vector2(1.707056, -4.472806)));
 
-    inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot_b.scad", 5, 0.35);
+	outputFile = outputDir +"testKnot_b.scad";
+    inset2scad(segs, outputFile.c_str(), 5, 0.35);
 }
 
 void SlicerTestCase::testKnot89()
@@ -1190,7 +1240,8 @@ void SlicerTestCase::testKnot89()
 	segs.push_back(LineSegment2(Vector2(-9.791112+x, 6.617759+y), Vector2(-10.055766+x, 5.852983+y)));
 	segs.push_back(LineSegment2(Vector2(-10.055766+x, 5.852983+y), Vector2(-10.139224+x, 5.317391+y)));
 	segs.push_back(LineSegment2(Vector2(-10.139224+x, 5.317391+y), Vector2(-10.216373+x, 4.813872+y)));
-    inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_0.scad", 5, 0.35);
+	string outputFile = outputDir + "testKnot89_0.scad";
+    inset2scad(segs, outputFile.c_str(), 5, 0.35);
 
     segs.clear();
     x = 0;
@@ -1241,7 +1292,8 @@ void SlicerTestCase::testKnot89()
     segs.push_back(LineSegment2(Vector2(6.5515+x, 10.157591+y), Vector2(7.134971+x, 8.653125+y)));
     segs.push_back(LineSegment2(Vector2(7.134971+x, 8.653125+y), Vector2(7.361654+x, 8.084142+y)));
 
-    inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_1.scad", 5, 0.35);
+    outputFile = outputDir + "testKnot89_1.scad";
+    inset2scad(segs, outputFile.c_str(), 5, 0.35);
 
     segs.clear();
     x = -6;
@@ -1275,7 +1327,8 @@ void SlicerTestCase::testKnot89()
     segs.push_back(LineSegment2(Vector2(11.083053+x, 2.525394+y), Vector2(12.290309+x, 2.943339+y)));
     segs.push_back(LineSegment2(Vector2(12.290309+x, 2.943339+y), Vector2(12.352334+x, 2.973561+y)));
 
-    inset2scad(segs, "./test_cases/slicerTestCase/output/testKnot89_2.scad", 5, 0.35);
+    outputFile = outputDir +"testKnot89_2.scad";
+    inset2scad(segs, outputFile.c_str(), 5, 0.35);
 }
 
 
@@ -1313,7 +1366,8 @@ void SlicerTestCase::test_slice_0_loop_0()
 	segs.push_back(LineSegment2(Vector2(-25.567, -22.5025), Vector2(-25.567, 19.9422)));
 	segs.push_back(LineSegment2(Vector2(-25.567, 19.9422), Vector2(-25.567, 20.4295)));
 
-	inset2scad(segs, "./test_cases/slicerTestCase/output/test_slice_0_loop_0.scad", 5, 0.35);
+	string outputFile = outputDir + "test_slice_0_loop_0.scad";
+	inset2scad(segs,  outputFile.c_str(), 5, 0.35);
 	segs.clear();
 
 	segs.push_back(LineSegment2(Vector2(15.4327, 4.01493), Vector2(15.3874, 3.95251)));
@@ -1321,7 +1375,8 @@ void SlicerTestCase::test_slice_0_loop_0()
 	segs.push_back(LineSegment2(Vector2(15.3761, 3.9335), Vector2(15.2193, 4.09319)));
 	segs.push_back(LineSegment2(Vector2(15.2193, 4.09319), Vector2(15.4386, 4.11746)));
 	segs.push_back(LineSegment2(Vector2(15.4386, 4.11746), Vector2(15.4327, 4.01493)));
-	inset2scad(segs, "./test_cases/slicerTestCase/output/null_bisector.scad", 5, 0.35);
+	outputFile = outputDir + "null_bisector.scad";
+	inset2scad(segs, outputFile.c_str(), 5, 0.35);
 }
 
 
@@ -1404,7 +1459,8 @@ void SlicerTestCase::test_slice_60_loop_5()
 	clip(segs, 5, 20, segments);
 
 	Scalar insetDist = 0.9 * 0.6;
-	inset2scad(segments, "./test_cases/slicerTestCase/output/test_slice_60_loop_5.scad", 4, insetDist);
+	string outputFile = outputDir + "test_slice_60_loop_5.scad";
+	inset2scad(segments, outputFile.c_str(), 4, insetDist);
 }
 
 void SlicerTestCase::test_slice_34_loop_0()
@@ -1436,7 +1492,8 @@ void SlicerTestCase::test_slice_34_loop_0()
 	segs.push_back(LineSegment2(Vector2(-2.914685+x, 14.967844+y), Vector2(-2.292475+x, 5.35237+y)));
 	Scalar insetDist = 0.6;
 
-	inset2scad(segs, "./test_cases/slicerTestCase/output/test_slice_34_loop_0.scad", 1, insetDist);
+	string outputFile = outputDir + "test_slice_34_loop_0.scad";
+	inset2scad(segs, outputFile.c_str(), 1, insetDist);
 
 
 }
@@ -1500,7 +1557,8 @@ void SlicerTestCase::test_slice_56_loop_3_short()
 	segs.push_back(LineSegment2(Vector2(0.951433+x, -3.273723+y), Vector2(1.85544+x, -3.009228+y)));
 
 	Scalar insetDist = 0.35;
-	inset2scad(segs, "./test_cases/slicerTestCase/output/test_slice_56_loop_3_short.scad", 1, insetDist);
+	string outputFile = outputDir + "test_slice_56_loop_3_short.scad";
+	inset2scad(segs, outputFile.c_str(), 1, insetDist);
 }
 
 void inshelligence( const SegmentTable & outlinesSegments,
@@ -1566,8 +1624,9 @@ void SlicerTestCase::test_hollow_pyramid_1_loop_0()
 	Scalar layerW = 0.5;
 	unsigned int nbOfShells = 3;
 
+	string outputFile = outputDir + "test_hollow_pyramid_1_loop_0.scad";
 	inset2scad(segs,
-			"./test_cases/slicerTestCase/output/test_hollow_pyramid_1_loop_0.scad",
+			outputFile.c_str(),
 			nbOfShells,
 			layerW);
 
@@ -1601,8 +1660,9 @@ void SlicerTestCase::test_hollow_pyramid_90_loop_0()
 	Scalar layerW = 0.8;
 	unsigned int nbOfShells = 3;
 
+	string outputFile= outputDir + "test_hollow_pyramid_90_loop_0.scad";
 	inset2scad(segs,
-			"./test_cases/slicerTestCase/output/test_hollow_pyramid_90_loop_0.scad",
+			outputFile.c_str(),
 			nbOfShells,
 			layerW);
 }
@@ -1645,8 +1705,9 @@ void SlicerTestCase::test_hexagon_0_1()
 	Scalar layerW = 0.8;
 	unsigned int nbOfShells = 3;
 
+	string outputFile = outputDir + "test_hexagon_0_1.scad";
 	inset2scad(segs,
-			"./test_cases/slicerTestCase/output/test_hexagon_0_1.scad",
+			outputFile.c_str(),
 			nbOfShells,
 			layerW);
 
@@ -1718,8 +1779,9 @@ void SlicerTestCase::test_knot_26_0_3()
 	segs = clipped;
 	Scalar layerW =0.4; // 0.8399;
 	unsigned int nbOfShells = 3;
+	string outputFile = outputDir + "test_knot_26_0_3.scad";
 	inset2scad(segs,
-			"./test_cases/slicerTestCase/output/test_knot_26_0_3.scad",
+			outputFile.c_str(),
 			nbOfShells,
 			layerW);
 }
@@ -1787,8 +1849,9 @@ void SlicerTestCase::test_3d_knot_57_3()
 */
 	Scalar layerW = 0.27;
 	unsigned int nbOfShells = 8;
+	string outputFile = outputDir + "test_3d_knot_57_3.scad";
 	inset2scad(clipb,
-			"./test_cases/slicerTestCase/output/test_3d_knot_57_3.scad",
+			outputFile.c_str(),
 			nbOfShells,
 			layerW);
 }

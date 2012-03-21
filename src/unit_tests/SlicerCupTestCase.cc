@@ -15,6 +15,16 @@ using namespace mgl;
 
 MyComputer computer;
 
+string outputDir ("outputs/test_cases/slicerCupTestCase/");
+string outputDir2("outputs/test_cases/specific_issues/");
+
+void SlicerCupTestCase::setUp()
+{
+	MyComputer computer;
+	computer.fileSystem.mkpath(outputDir.c_str());
+	computer.fileSystem.mkpath(outputDir2.c_str());
+}
+
 
 
 void SlicerCupTestCase::testIndividuals()
@@ -30,7 +40,6 @@ void SlicerCupTestCase::testIndividuals()
 	models.push_back(stlDir + "ultimate_calibration_test.stl");
 	models.push_back(stlDir + "Cathedral_Crossing_fixed.stl");
 
-	string outputDirectory ("./test_cases/slicerCupTestCase/output/");
 
 	string configFileName("miracle.config");
 	Configuration config;
@@ -39,9 +48,9 @@ void SlicerCupTestCase::testIndividuals()
 	for(int i=0; i< models.size(); i++)
 	{
 		string modelFile = models[i];
-		string scadFile(outputDirectory);
+		string scadFile(outputDir);
 		scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad");
-		string gcodeFile(outputDirectory);
+		string gcodeFile(outputDir);
 		gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode");
 
 		cout << endl;
@@ -93,8 +102,8 @@ void SlicerCupTestCase::testAllTogeter()
 	std::vector<mgl::SliceData> slices;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/slicerCupTestCase/stls/all_together.stl",
-				"./test_cases/slicerCupTestCase/output/all_together.scad",
-				"./test_cases/slicerCupTestCase/output/all_together.gcode",
+				"./outputs/test_cases/slicerCupTestCase/all_together.scad",
+				"./outputs/test_cases/slicerCupTestCase/all_together.gcode",
 				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
@@ -117,8 +126,8 @@ void SlicerCupTestCase::testCathedral_Crossing_bad()
 	std::vector<mgl::SliceData> slices;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl",
-				"./test_cases/slicerCupTestCase/output/Cathedral_Crossing.scad",
-				"./test_cases/slicerCupTestCase/output/Cathedral_Crossing.gcode",
+				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.scad",
+				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.gcode",
 				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
@@ -140,8 +149,8 @@ void SlicerCupTestCase::testCathedral_Crossing_fixed()
 	std::vector<mgl::SliceData> slices;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl",
-				"./test_cases/slicerCupTestCase/output/Cathedral_Crossing_fixed.scad",
-				"./test_cases/slicerCupTestCase/output/Cathedral_Crossing_fixed.gcode",
+				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.scad",
+				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.gcode",
 				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
@@ -164,23 +173,23 @@ void SlicerCupTestCase::testSpecificIssues()
 	std::vector<mgl::SliceData> slices_full;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/specific_issues/slumping/full head.stl",
-				"./test_cases/specific_issues/output/full head.scad",
-				"./test_cases/specific_issues/output/full head.gcode",slices_full);
+				"./outputs/test_cases/specific_issues/full head.scad",
+				"./outputs/test_cases/specific_issues/full head.gcode",slices_full);
 
 	cout << "Slumping: half head.stl" << endl;
 
 	std::vector<mgl::SliceData> slices_half;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/specific_issues/slumping/half head.stl",
-				"./test_cases/specific_issues/output/half head.scad",
-				"./test_cases/specific_issues/output/half head.gcode",slices_half);
+				"./outputs/test_cases/specific_issues/half head.scad",
+				"./outputs/test_cases/specific_issues/half head.gcode",slices_half);
 
 	cout << "Insetting: holy_cube.stl" << endl;
 	std::vector<mgl::SliceData> slices_cube;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/specific_issues/insetting/holy_cube.stl",
-				"./test_cases/specific_issues/output/holy_cube.scad",
-				"./test_cases/specific_issues/output/holy_cube.gcode", slices_cube);
+				"./outputs/test_cases/specific_issues/holy_cube.scad",
+				"./outputs/test_cases/specific_issues/holy_cube.gcode", slices_cube);
 }
 
 

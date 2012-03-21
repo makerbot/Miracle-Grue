@@ -20,14 +20,15 @@ using namespace mgl;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
-#define SINGLE_EXTRUDER_CONFIG "test_cases/GCoderTestCase/output/single_xtruder.config"
-#define SINGLE_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/single_xtruder_warmup.gcode"
-#define DUAL_EXTRUDER_FILE_NAME "test_cases/GCoderTestCase/output/dual_xtruder_warmup.gcode"
-#define SINGLE_EXTRUDER_WITH_PATH "test_cases/GCoderTestCase/output/single_xtruder_with_path.gcode"
-#define SINGLE_EXTRUDER_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_grid_path.gcode"
-#define SINGLE_EXTRUDER_MULTI_GRID_PATH "test_cases/GCoderTestCase/output/single_xtruder_multigrid_path.gcode"
-#define SINGLE_EXTRUDER_KNOT "test_cases/GCoderTestCase/output/knot.gcode"
+#define SINGLE_EXTRUDER_CONFIG "outputs/test_cases/GCoderTestCase/single_xtruder.config"
+#define SINGLE_EXTRUDER_FILE_NAME "outputs/test_cases/GCoderTestCase/single_xtruder_warmup.gcode"
+#define DUAL_EXTRUDER_FILE_NAME "outputs/test_cases/GCoderTestCase/dual_xtruder_warmup.gcode"
+#define SINGLE_EXTRUDER_WITH_PATH "outputs/test_cases/GCoderTestCase/single_xtruder_with_path.gcode"
+#define SINGLE_EXTRUDER_GRID_PATH "outputs/test_cases/GCoderTestCase/single_xtruder_grid_path.gcode"
+#define SINGLE_EXTRUDER_MULTI_GRID_PATH "outputs/test_cases/GCoderTestCase/single_xtruder_multigrid_path.gcode"
+#define SINGLE_EXTRUDER_KNOT "outputs/test_cases/GCoderTestCase/knot.gcode"
 
+string outputDir("outputs/test_cases/GCoderTestCase/");
 
 
 void configurePlatform(Configuration& config, bool automaticBuildPlatform, double platformTemp )
@@ -98,14 +99,8 @@ void configureDualExtruder(Configuration& config)
 void GCoderTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
-	struct stat st;
-	if(stat("outputs",&st) == 0)
-	        printf("outputs is present\n");
-	else {
-		int n=mkdir("outputs",0666);
-		if(n==0) // mkdir succeeded
-			std::cout<< " Starting:" <<__FUNCTION__ << endl;
-	}
+	MyComputer computer;
+	computer.fileSystem.mkpath(outputDir.c_str());
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

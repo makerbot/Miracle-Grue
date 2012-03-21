@@ -25,6 +25,9 @@ using namespace std;
 using namespace mgl;
 
 
+string outputsDir("outputs/test_cases/modelReaderTestCase/");
+string inputsDir("test_cases/modelReaderTestCase/");
+
 /*
 CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
 CPPUNIT_ASSERT_EQUAL( 12, 12 );
@@ -33,16 +36,8 @@ CPPUNIT_ASSERT( 12L == 12L );
 
 void ModelReaderTestCase::setUp()
 {
-	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
-	struct stat st;
-	if(stat("outputs",&st) == 0)
-	        printf("outputs is present\n");
-	else {
-		int n=mkdir("outputs",0777);
-		if(n==0) // mkdir succeeded
-			std::cout<< " Starting:" <<__FUNCTION__ << endl;
-	}
-	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
+	MyComputer computer;
+	computer.fileSystem.mkpath(outputsDir.c_str());
 }
 
 
@@ -144,8 +139,6 @@ void ModelReaderTestCase::testMeshySimple()
 
 
 
-
-
 void ModelReaderTestCase::testLayerSplit()
 {
 	cout << endl;
@@ -154,7 +147,9 @@ void ModelReaderTestCase::testLayerSplit()
 	unsigned int t0, t1;
 	t0 = clock();
 
-	loadMeshyFromStl(mesh, "inputs/Water.stl");
+	Meshy mesh3(0.35, 0.35);
+	string inputFile = inputsDir + "Water.stl";
+	loadMeshyFromStl(mesh, inputFile.c_str() );
 	t1=clock()-t0;
 	mesh.dump(cout);
 
@@ -162,7 +157,7 @@ void ModelReaderTestCase::testLayerSplit()
 	for(int i=0; i != mesh.readSliceTable().size(); i++)
 	{
 		stringstream ss;
-		ss << "test_cases/modelReaderTestCase/output/water_" << i << ".stl";
+		ss << outputsDir << "water_" << i << ".stl";
 		mesh.writeStlFileForLayer(i, ss.str().c_str());
 		cout << ss.str().c_str() << endl;
 	}
@@ -172,11 +167,12 @@ void ModelReaderTestCase::testLargeMeshy()
 {
 	unsigned int t0,t1;
 	cout << "Light saber" << endl;
-	Meshy mesh3(0.35, 0.35);
+	Meshy mesh(0.35, 0.35);
 	t0=clock();
-	loadMeshyFromStl(mesh3, "inputs/lightsaber.stl");
+	string inputFile = inputsDir + "lightsaber.stl";
+	loadMeshyFromStl(mesh, inputFile.c_str() );
 	t1=clock()-t0;
-	mesh3.dump(cout);
+	mesh.dump(cout);
 	cout << "lightsaber read in " << t1 << endl;
 
 }
@@ -187,7 +183,8 @@ void ModelReaderTestCase::testMeshyLoad()
 	cout << "Water" << endl;
 	Meshy mesh(0.35, 0.35);
 	t0=clock();
-	loadMeshyFromStl(mesh, "inputs/Water.stl");
+	string inputFile = inputsDir + "Water.stl";
+	loadMeshyFromStl(mesh, inputFile.c_str() );
 	t1=clock()-t0;
 	mesh.dump(cout);
 	cout << "time: " << t1 << endl;
@@ -197,7 +194,8 @@ void ModelReaderTestCase::testMeshyLoad()
 	Meshy mesh2(0.35, 0.35);
 
 	t0=clock();
-	loadMeshyFromStl(mesh2, "inputs/Land.stl");
+	string inputFile2 = inputsDir + "Land.stl";
+	loadMeshyFromStl(mesh2, inputFile2.c_str() );
 	t1=clock()-t0;
 	cout << "time: " << t1 << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh2.readSliceTable().size());
@@ -207,9 +205,9 @@ void ModelReaderTestCase::testMeshyLoad()
 void ModelReaderTestCase::testMeshyCycle()
 {
 	unsigned int t0,t1;
-	string target = "inputs/3D_Knot.stl";
-	string drop = "outputs/3D_Knot.stl";
-	string drop2 = "outputs/3D_Knot_v2.stl";
+	string target = inputsDir + "3D_Knot.stl";
+	string drop = outputsDir + "3D_Knot.stl";
+	string drop2 = outputsDir + "3D_Knot_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
 	Meshy mesh3(0.35, 0.35);
@@ -240,9 +238,9 @@ void ModelReaderTestCase::testMeshyCycle()
 void ModelReaderTestCase::testMeshyCycleNull()
 {
 	unsigned int t0,t1;
-	string target = "inputs/Null.stl";
-	string drop = "outputs/Null.stl";
-	string drop2 = "outputs/Null_v2.stl";
+	string target = inputsDir + "Null.stl";
+	string drop = outputsDir + "Null.stl";
+	string drop2 = outputsDir + "Null_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
 	Meshy mesh3(0.35, 0.35);
@@ -272,9 +270,9 @@ void ModelReaderTestCase::testMeshyCycleNull()
 void ModelReaderTestCase::testMeshyCycleMin()
 {
 	unsigned int t0,t1;
-	string target = "inputs/OneTriangle.stl";
-	string drop = "outputs/OneTriangl.stl";
-	string drop2 = "outputs/OneTriangl_v2.stl";
+	string target = inputsDir + "OneTriangle.stl";
+	string drop = outputsDir + "OneTriangle.stl";
+	string drop2 = outputsDir + "OneTriangle_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
 	Meshy mesh3(0.35, 0.35);
@@ -306,7 +304,8 @@ void ModelReaderTestCase::testMeshyCycleMin()
 void ModelReaderTestCase::testSlicyWater()
 {
 	Meshy mesh(0.35, 0.35);
-	loadMeshyFromStl(mesh, "inputs/Water.stl");
+	string target = inputsDir + "Water.stl";
+	loadMeshyFromStl(mesh, target.c_str());
 
 	const SliceTable& table = mesh.readSliceTable();
 
@@ -553,7 +552,6 @@ void ModelReaderTestCase::testMyStls()
 	Scalar layerW = 0.5833333;
 	Scalar tubeSpacing = 1.0;
 
-	std::string outDir = "test_cases/modelReaderTestCase/output";
 	std::vector<std::string> models;
 
 	models.push_back("inputs/3D_Knot.stl");
@@ -577,7 +575,7 @@ void ModelReaderTestCase::testMyStls()
 	//models.push_back("part2");
 
 	batchProcess(firstLayerZ, layerH, layerW, tubeSpacing, infillShrinking,
-							insetDistanceFactor, outDir.c_str(), models);
+							insetDistanceFactor, outputsDir.c_str(), models);
 }
 
 void ModelReaderTestCase::testKnot()
@@ -590,11 +588,10 @@ void ModelReaderTestCase::testKnot()
 	Scalar infillShrinking = 0.35;
 	Scalar insetDistanceFactor = 0.8;
 
-	std::string outDir = "test_cases/modelReaderTestCase/output";
 	std::vector<std::string> models;
 	models.push_back("inputs/3D_Knot.stl");
 	batchProcess(firstZ, layerH, layerW, tubeSpacing, infillShrinking,
-			insetDistanceFactor, outDir.c_str(), models);
+			insetDistanceFactor, outputsDir.c_str(), models);
 }
 
 void ModelReaderTestCase::testInputStls()

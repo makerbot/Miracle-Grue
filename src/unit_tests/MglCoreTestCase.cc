@@ -19,13 +19,15 @@ string testCaseInputsDir("test_cases/mglCoreTestCase/inputs/");
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( MglCoreTestCase );
-
 #include <float.h>
+
+string outputDir("outputs/test_cases/mglCoreTestCase/");
 
 void MglCoreTestCase::setUp()
 {
 	std::cout<< " Starting:" <<__FUNCTION__ << endl;
-	std::cout<< " Exiting:" <<__FUNCTION__ << endl;
+	MyComputer computer;
+	computer.fileSystem.mkpath(outputDir.c_str());
 }
 
 void throwsException(){
