@@ -339,3 +339,46 @@ std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
 	return os;
 }
 
+/**
+ * @returns true if the passed line segments are colinear within the tolerance tol
+ */
+bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid)
+{
+
+	Scalar x1 = prev.a[0];
+	Scalar y1 = prev.a[1];
+	mid.x = 0.5 * (prev.b[0] + current.a[0]);
+	mid.y = 0.5 * (prev.b[1] + current.a[1]);
+	Scalar x3 = current.b[0];
+	Scalar y3 = current.b[1];
+
+	Scalar c = ((mid.x - x1) * (y3 - y1) - (x3 - x1) * (mid.y - y1));
+	bool r = tequals(c, 0, tol);
+	return r;
+}
+
+/**
+ * @returns a new LineSegment2, elongated to be normalized to a unit vector
+ */
+LineSegment2 mgl::elongate(const LineSegment2 &s, Scalar dist)
+{
+	LineSegment2 segment(s);
+	Vector2 l = segment.b - segment.a;
+	l.normalise();
+	l *= dist;
+	segment.b += l;
+	return segment;
+}
+
+/**
+ * @returns a new line segment. Of what, I don't know. Wasn't documented.
+ */
+LineSegment2 mgl::prelongate(const LineSegment2 &s, Scalar dist)
+{
+	LineSegment2 segment(s);
+	Vector2 l = segment.a - segment.b;
+	l.normalise();
+	l *= dist;
+	segment.a += l;
+	return segment;
+}

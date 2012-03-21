@@ -41,12 +41,12 @@ void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
 }
 
 
-void connectivityFix(const std::vector<LineSegment2> &segments,
-		Scalar tol,
-		std::vector<LineSegment2> &outs)
-{
-
-}
+//void connectivityFix(const std::vector<LineSegment2> &segments,
+//		Scalar tol,
+//		std::vector<LineSegment2> &outs)
+//{
+//
+//}
 
 void connectivityCheck( const std::vector<LineSegment2> &segments,
 						Scalar tol)
@@ -155,28 +155,6 @@ Vector2 getInsetDirection(const LineSegment2 &seg)
 	inset.normalise();
 	Vector2 inset2(inset.x, inset.y);
 	return inset2;
-}
-
-LineSegment2 elongate(const LineSegment2 &s, Scalar dist)
-{
-	LineSegment2 segment(s);
-	Vector2 l = segment.b - segment.a;
-	l.normalise();
-	l *= dist;
-	segment.b += l;
-	return segment;
-}
-
-
-
-LineSegment2 prelongate(const LineSegment2 &s, Scalar dist)
-{
-	LineSegment2 segment(s);
-	Vector2 l = segment.a - segment.b;
-	l.normalise();
-	l *= dist;
-	segment.a += l;
-	return segment;
 }
 
 
@@ -502,21 +480,6 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 }
 
 
-bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid)
-{
-
-	Scalar x1 = prev.a[0];
-	Scalar y1 = prev.a[1];
-	mid.x = 0.5 * (prev.b[0] + current.a[0]);
-	mid.y = 0.5 * (prev.b[1] + current.a[1]);
-	Scalar x3 = current.b[0];
-	Scalar y3 = current.b[1];
-
-	Scalar c = ((mid.x - x1) * (y3 - y1) - (x3 - x1) * (mid.y - y1));
-	bool r = tequals(c, 0, tol);
-	return r;
-}
-
 void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 					Scalar elongation,
 					std::vector<LineSegment2> &segments)
@@ -644,6 +607,7 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 		motorCycles.push_back(bisector);
 	}
 }
+
 
 void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<LineSegment2> & originalSegments)
 {

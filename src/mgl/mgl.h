@@ -99,12 +99,18 @@ std::ostream& operator << (std::ostream &os,const Vector2 &pt);
 
 std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
 
+
 /// List of Lists of line segments. Used to lookup
 /// A SegmentTable may contain, for example, a perimeter
 /// and hole(s) in that perimeter of a slice.
 typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
 
 std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
+
+bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid);
+
+LineSegment2 elongate(const LineSegment2 &s, Scalar dist);
+LineSegment2 prelongate(const LineSegment2 &s, Scalar dist);
 
 
 #include "Vector3.cc"

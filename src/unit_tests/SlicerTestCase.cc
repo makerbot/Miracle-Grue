@@ -1441,9 +1441,6 @@ void SlicerTestCase::test_slice_34_loop_0()
 
 }
 
-LineSegment2 elongate(const LineSegment2 &s, Scalar dist);
-LineSegment2 prelongate(const LineSegment2 &s, Scalar dist);
-
 void SlicerTestCase::testCollapse()
 {
 	Vector2 bisector0(-0.336, -0.942);
@@ -1610,7 +1607,7 @@ void SlicerTestCase::test_hollow_pyramid_90_loop_0()
 			layerW);
 }
 
-bool collinear(const LineSegment2 &a, const LineSegment2 &b, Scalar tol, Vector2 &mid );
+//bool collinear(const LineSegment2 &a, const LineSegment2 &b, Scalar tol, Vector2 &mid );
 
 void SlicerTestCase::test_collinear()
 {
