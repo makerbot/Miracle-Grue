@@ -4,6 +4,8 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "SlicerSplitTestCase.h"
 
+#include "insetTests.h"
+
 #include "mgl/mgl.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
@@ -399,3 +401,59 @@ void SlicerSplitTestCase::test_cath()
 	}
 }
 
+void SlicerSplitTestCase::test_ultimate_59()
+{
+	cout << endl;
+	std::vector<LineSegment2> segs;
+	Scalar x = 0;
+	Scalar y = 0;
+
+	segs.push_back(LineSegment2(Vector2(22.0, 18.86667), Vector2(22.0, 21.65)));
+	segs.push_back(LineSegment2(Vector2(22.0, 21.65), Vector2(22.0, 30.0)));
+	segs.push_back(LineSegment2(Vector2(22.0, 30.0), Vector2(23.503, 30.0)));
+	segs.push_back(LineSegment2(Vector2(23.503, 30.0), Vector2(25.0, 30.0)));
+	segs.push_back(LineSegment2(Vector2(25.0, 30.0), Vector2(25.0, 22.24355)));
+	segs.push_back(LineSegment2(Vector2(25.0, 22.24355), Vector2(25.0, 21.4125)));
+	segs.push_back(LineSegment2(Vector2(25.0, 21.4125), Vector2(25.0, 18.55)));
+	segs.push_back(LineSegment2(Vector2(25.0, 18.55), Vector2(25.0, 17.176)));
+	segs.push_back(LineSegment2(Vector2(25.0, 17.176), Vector2(25.0, 11.78409)));
+	segs.push_back(LineSegment2(Vector2(25.0, 11.78409), Vector2(25.0, 8.14091)));
+	segs.push_back(LineSegment2(Vector2(25.0, 8.14091), Vector2(25.0, 4.68947)));
+	segs.push_back(LineSegment2(Vector2(25.0, 4.68947), Vector2(25.0, 0.47105)));
+	segs.push_back(LineSegment2(Vector2(25.0, 0.47105), Vector2(25.0, -5.0)));
+	segs.push_back(LineSegment2(Vector2(25.0, -5.0), Vector2(24.97, -5.0)));
+	segs.push_back(LineSegment2(Vector2(24.97, -5.0), Vector2(22.0, -5.0)));
+	segs.push_back(LineSegment2(Vector2(22.0, -5.0), Vector2(22.0, 0.775)));
+	segs.push_back(LineSegment2(Vector2(22.0, 0.775), Vector2(22.0, 4.95)));
+	segs.push_back(LineSegment2(Vector2(22.0, 4.95), Vector2(22.0, 12.10714)));
+	segs.push_back(LineSegment2(Vector2(22.0, 12.10714), Vector2(22.0, 14.34375)));
+	segs.push_back(LineSegment2(Vector2(22.0, 14.34375), Vector2(22.0, 17.475)));
+	segs.push_back(LineSegment2(Vector2(22.0, 17.475), Vector2(22.0, 18.86667)));
+
+	std::vector<LineSegment2> segs2;
+	clip(segs, 1, 10, segs2);
+
+	Shrinky shrinky("test_ultimate_59.scad");
+	Scalar insetDistance = 0.9 * 0.4 * 2;
+
+	std::vector<LineSegment2> finalInsets;
+
+	try
+	{
+		shrinky.inset(segs2, insetDistance , finalInsets);
+	}
+	catch(mgl::Exception &e)
+	{
+		cout << "ERROR" << endl;
+		cout << e.error << endl;
+	}
+	cout << "TEST done... verifying" << endl;
+	for (unsigned int i=0; i < finalInsets.size(); i++)
+	{
+		const LineSegment2 &seg = finalInsets[i];
+		Scalar l = seg.length();
+		cout << "seg[" << i << "] = " << seg << " l = " << l << endl;
+		CPPUNIT_ASSERT(l > 0);
+	}
+
+}

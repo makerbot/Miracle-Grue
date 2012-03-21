@@ -21,7 +21,7 @@ void clip(const std::vector<mgl::LineSegment2> &in,
 		const mgl::LineSegment2 s = in[i];
 		if(i == min-1)
 		{
-			i = max+1;
+			i = max+1; // advance the cursor
 			mgl::LineSegment2 s1 = in[i];
 			s1.a = s.b;
 			out.push_back(s);

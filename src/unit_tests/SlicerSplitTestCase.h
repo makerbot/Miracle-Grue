@@ -12,8 +12,9 @@ private:
 
 	CPPUNIT_TEST_SUITE( SlicerSplitTestCase );
 	//	CPPUNIT_TEST(test_m);
-		CPPUNIT_TEST(test_calibration_slice_70);
-		CPPUNIT_TEST(test_cath);
+	//	CPPUNIT_TEST(test_calibration_slice_70);
+	//	CPPUNIT_TEST(test_cath);
+		CPPUNIT_TEST(test_ultimate_59);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -26,6 +27,8 @@ protected:
   void test_calibration_slice_70();
 
   void test_cath();
+
+  void test_ultimate_59();
 
 };
 

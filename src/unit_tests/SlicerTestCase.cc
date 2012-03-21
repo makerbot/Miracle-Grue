@@ -469,12 +469,15 @@ void SlicerTestCase::testInset()
 
 	for (int i=0; i < shells; i++)
 	{
-		cout << "\n" << insetTable.size() << " ----- "<< endl;
-		//dumpSegments(segments);
-		insetTable.push_back(std::vector<LineSegment2 >());
-		std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist, finalInsets);
-		segments = finalInsets;
+		cout << "\n shell " << i << " - " << insetTable.size() <<  endl;
+		if(segments.size() > 2)
+		{
+			//dumpSegments(segments);
+			insetTable.push_back(std::vector<LineSegment2 >());
+			std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1];
+			shrinky.inset(segments, insetDist, finalInsets);
+			segments = finalInsets;
+		}
 	}
 }
 
