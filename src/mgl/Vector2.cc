@@ -1,17 +1,16 @@
 
 
-/// Standard X/Y Vector value
+/*
+ * Standard X/Y Vector value for 2d vectors
+ */
 class Vector2
 {
 public:
-	Scalar x;
-	Scalar y;
+	Scalar x,y;
 
+	/// Default Constructor
 	Vector2():x(0),y(0){}
-
-	Vector2(Scalar x, Scalar y)
-		:x(x), y(y)
-	{}
+	Vector2(Scalar x, Scalar y):x(x), y(y) {}
 
     Scalar operator[](unsigned i) const
     {
@@ -74,13 +73,18 @@ public:
         return sqrt(squaredMagnitude());
     }
 
-    // Gets the squared length of this vector.
+    /**
+     * Gets the squared length of this vector.
+     */
     Scalar squaredMagnitude() const
     {
         return x*x+y*y;
     }
 
-    // makes you normal. Normal is the perfect size (1)
+    /**
+     * Normalizes this Vector2
+     * makes you normal. Normal is the perfect size (1=unit)
+     */
     void normalise()
     {
         Scalar l = magnitude();
@@ -94,6 +98,9 @@ public:
         }
     }
 
+    /**
+     * @returns a new Vector2 which is the unit-vector of this vector
+     */
     Vector2 unit() const
     {
         Vector2 result = *this;
@@ -101,6 +108,9 @@ public:
         return result;
     }
 
+    /**
+     * @returns the dotProduct of this Vector2
+     */
     Scalar dotProduct(const Vector2 &vector) const
     {
     	return x*vector.x + y*vector.y;
