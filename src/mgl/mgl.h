@@ -246,21 +246,21 @@ std::ostream& operator <<(std::ostream &os,const Vector2 &pt);
 
 
 /// a line segment between 2 points.
-class LineSegment2d
+class LineSegment2
 {
 public:
 	Vector2 a,b; // the 2 points
 
 
-	LineSegment2d(){}
+	LineSegment2(){}
 
-	LineSegment2d(const LineSegment2d& other)
+	LineSegment2(const LineSegment2& other)
 	:a(other.a), b(other.b){}
 
-	LineSegment2d(const Vector2 &a, const Vector2 &b)
+	LineSegment2(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
-	LineSegment2d & operator= (const LineSegment2d & other)
+	LineSegment2 & operator= (const LineSegment2 & other)
 	{
 		if (this != &other)
 		{
@@ -288,9 +288,9 @@ public:
 /// List of Lists of line segments. Used to lookup
 /// A SegmentTable may contain, for example, a perimeter
 /// and hole(s) in that perimeter of a slice.
-typedef std::vector< std::vector<LineSegment2d > > SegmentTable;
+typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
 
-std::ostream& operator << (std::ostream &os, const LineSegment2d &s);
+std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
 
 
 /// your basic XYZ vector table

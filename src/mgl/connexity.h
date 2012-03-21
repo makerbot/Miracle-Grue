@@ -356,7 +356,7 @@ public:
 	index_t cutNextFace(const std::list<index_t> &facesLeft,
 							Scalar z,
 							index_t startFaceIndex,
-							LineSegment2d& cut) const
+							LineSegment2& cut) const
 	{
 		std::set<index_t> allNeighbors;
 		getAllNeighbors(startFaceIndex, allNeighbors);
@@ -381,7 +381,7 @@ public:
 	}
 
 
-	bool cutFace(Scalar z, const Face &face, LineSegment2d& cut) const
+	bool cutFace(Scalar z, const Face &face, LineSegment2& cut) const
 	{
 
 
@@ -404,13 +404,13 @@ public:
 		return success;
 	}
 
-	void splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<LineSegment2d> &loop) const
+	void splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<LineSegment2> &loop) const
 	{
 		assert(loop.size() == 0);
 		assert(facesLeft.size() > 0);
 
 		bool firstCutFound = false;
-		LineSegment2d cut;
+		LineSegment2 cut;
 
 		index_t faceIndex;
 		while (!firstCutFound)

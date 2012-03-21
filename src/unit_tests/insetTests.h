@@ -5,10 +5,10 @@
 #include "mgl/shrinky.h"
 
 
-void clip(const std::vector<mgl::LineSegment2d> &in,
+void clip(const std::vector<mgl::LineSegment2> &in,
 			unsigned int min,
 			unsigned int max,
-			std::vector<mgl::LineSegment2d> &out)
+			std::vector<mgl::LineSegment2> &out)
 {
 	int newSize = in.size() - (max -min);
 	std::cout << "NEW SIZE " << newSize << std::endl;
@@ -18,11 +18,11 @@ void clip(const std::vector<mgl::LineSegment2d> &in,
 
 	for(unsigned int i =0; i <in.size(); i++)
 	{
-		const mgl::LineSegment2d s = in[i];
+		const mgl::LineSegment2 s = in[i];
 		if(i == min-1)
 		{
 			i = max+1;
-			mgl::LineSegment2d s1 = in[i];
+			mgl::LineSegment2 s1 = in[i];
 			s1.a = s.b;
 			out.push_back(s);
 			out.push_back(s1);
