@@ -1,3 +1,5 @@
+#include "Vector2.h"
+
 /// a line segment between 2 points.
 class LineSegment2
 {
