@@ -142,7 +142,8 @@ mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/connexity.cc',
 			'src/mgl/segment.cc',
 			'src/mgl/miracle.cc',
-			'src/mgl/infill.cc',]
+			'src/mgl/infill.cc',
+			'src/mgl/abstractable.cc',]
 
 json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_value.cpp',

@@ -100,7 +100,8 @@ void GCoderTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputDir.c_str());
+
+	computer.fileSystem.mkpath(outputDir.c_str() );
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

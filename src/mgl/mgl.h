@@ -45,8 +45,6 @@ namespace mgl
 {
 
 
-
-
 // Type used for indexes of triangles/etc for unique indexing
 typedef unsigned int index_t;
 
@@ -65,24 +63,7 @@ Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c);
 bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k);
 
 std::ostream& operator << (std::ostream &os,const Vector2 &pt);
-
-
-std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
-
-
-/// List of Lists of line segments. Used to lookup
-/// A SegmentTable may contain, for example, a perimeter
-/// and hole(s) in that perimeter of a slice.
-typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
-
-std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
-
-bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid);
-
-LineSegment2 elongate(const LineSegment2 &s, Scalar dist);
-LineSegment2 prelongate(const LineSegment2 &s, Scalar dist);
-
-std::ostream& operator<<(std::ostream& os, const Vector3& v);
+std::ostream& operator << (std::ostream& os, const Vector3& v);
 
 
 

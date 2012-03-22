@@ -10,6 +10,8 @@
 */
 #include "abstractable.h"
 
+
+
 #ifdef WIN32
 #include <Shlobj.h>
 #include <direct.h>
@@ -46,9 +48,16 @@ int FileSystemAbstractor::mkpath(const char *path)
 
 #else
 
+#include <sys/stat.h>
+#include <iostream>
+#include <cstring>
+
+using namespace mgl;
+using namespace std;
+
 /// Creates a directory if it doesn't already exist
 /// @return true if directory exists at the end of call, false otherwise
-int verifyDir(const char *pathname) const
+int verifyDir(const char *pathname)
 {
 
 	mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
@@ -62,7 +71,6 @@ int verifyDir(const char *pathname) const
 		umask(process_mask);
 		if(result_code != 0)
 			status = -1 ; //creation fail
-
 	}
 	else if (!S_ISDIR(st.st_mode))
 		status = -1;
