@@ -21,7 +21,7 @@ using namespace std;
 
 
 // segments are OK, but polys are better for paths (no repeat point)
-void segments2polygon(const std::vector<LineSegment2> & segments, Polygon &loop)
+void segments2polygon(const std::vector<LineSegment2> & segments, mgl::Polygon &loop)
 {
 
     loop.reserve(segments.size());

@@ -404,7 +404,7 @@ void GCoderTestCase::testGridPath()
 
 	SliceData path = SliceData(0.15,0);
 
-	srand( time(NULL) );
+	srand((unsigned int) time(NULL) );
 	int lineCount = 20;
 	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
 	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
@@ -453,7 +453,7 @@ void GCoderTestCase::testMultiGrid()
 //	configureSingleExtruder(config);
 
 	vector<SliceData> slices;
-	srand( time(NULL) );
+	srand( (unsigned int)time(NULL) );
 
 	int lineCount = 20;
 	double lowerX = -35 + random(-10, 20);

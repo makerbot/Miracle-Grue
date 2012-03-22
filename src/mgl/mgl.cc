@@ -169,7 +169,7 @@ static inline void convertFromLittleEndian16(uint8_t* bytes)
 #endif
 
 
-size_t mgl::writeMeshyToStl(mgl::Meshy &meshy, const char* filename)
+void mgl::writeMeshyToStl(mgl::Meshy &meshy, const char* filename)
 {
 	meshy.writeStlFile(filename);
 }
@@ -190,6 +190,10 @@ inline std::string mgl::stringify(size_t x)
     throw Exception("stringify(double)");
   return o.str();
 }
+
+#ifdef WIN32
+#pragma warning(disable:4996)
+#endif
 
 /**
  * Loads an STL file into a mesh object, from a binary or ASCII stl file.

@@ -162,7 +162,7 @@ struct Outline
 {
 	Outline() :enabled(false), distance(3.0){}
 	bool enabled;   // when true, a rectangular ouline of the part will be performed
-	float distance; // the distance in mm  between the model and the rectangular outline
+	double distance; // the distance in mm  between the model and the rectangular outline
 };
 
 

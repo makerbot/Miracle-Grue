@@ -1,7 +1,11 @@
 #include <fstream>
 #include <cmath>
 
+#ifdef WIN32
+
+#else
 #include <omp.h>
+#endif
 
 #include <cppunit/config/SourcePrefix.h>
 #include "RegionerTestCase.h"

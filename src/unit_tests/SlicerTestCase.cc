@@ -48,7 +48,8 @@ void SlicerTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputDir.c_str());
+	int r = computer.fileSystem.mkpath(outputDir.c_str());
+	CPPUNIT_ASSERT(r==0);
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

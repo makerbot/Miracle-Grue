@@ -26,6 +26,7 @@
     <ClInclude Include="..\..\src\mgl\infill.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\mgl\abstractable.cc" />
     <ClCompile Include="..\..\src\mgl\configuration.cc" />
     <ClCompile Include="..\..\src\mgl\connexity.cc" />
     <ClCompile Include="..\..\src\mgl\gcoder.cc" />

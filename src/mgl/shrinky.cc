@@ -800,6 +800,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	}
 	catch(ShrinkyException &mixup)
 	{
+		mixup;
 		cout << " ^ "; //  << mixup.error << endl;
 
 		// cout << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;

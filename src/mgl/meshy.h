@@ -263,7 +263,7 @@ public:
 };
 
 
-size_t writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
+void writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
 
 size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
 
