@@ -553,7 +553,6 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 		// cout << "attach point " << currentSegment.a << endl;
 		//cout << endl;
 	}
-
 }
 
 

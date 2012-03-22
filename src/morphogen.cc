@@ -85,6 +85,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 		cout << argv[0]<< endl;
 		cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
 		cout << "Find the light: try " << argv[0] << " [FILE]" << endl;
+
 		return (-1);
 	}
 	return 0;

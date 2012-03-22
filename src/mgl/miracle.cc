@@ -61,8 +61,7 @@ void mgl::miracleGrue(	GCoder &gcoder,
 		}
 		else
 		{
-	    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
-//			slices.pop_back();
+//	    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
 		}
 	}
 
