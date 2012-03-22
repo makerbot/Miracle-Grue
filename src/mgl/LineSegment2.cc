@@ -1,41 +1,38 @@
 #include "Vector2.h"
+#include "LineSegment2.h"
 
-/// a line segment between 2 points.
-class LineSegment2
-{
-public:
-	Vector2 a,b; // the 2 points
+#include "Exception.h"
 
+using namespace mgl;
 
-	LineSegment2(){}
+LineSegment2::LineSegment2(){}
 
-	LineSegment2(const LineSegment2& other)
+LineSegment2::LineSegment2(const LineSegment2& other)
 	:a(other.a), b(other.b){}
 
-	LineSegment2(const Vector2 &a, const Vector2 &b)
+LineSegment2::LineSegment2(const Vector2 &a, const Vector2 &b)
 	:a(a), b(b){}
 
-	LineSegment2 & operator= (const LineSegment2 & other)
+LineSegment2 & LineSegment2::operator= (const LineSegment2 & other)
+{
+	if (this != &other)
 	{
-		if (this != &other)
-		{
-			a = other.a;
-			b = other.b;
+		a = other.a;
+		b = other.b;
 
-		}
-		return *this;
 	}
+	return *this;
+}
 
-	Scalar squaredLength() const
-	{
-		Vector2 l = b-a;
-		return l.squaredMagnitude();
-	}
+Scalar LineSegment2::squaredLength() const
+{
+	Vector2 l = b-a;
+	return l.squaredMagnitude();
+}
 
-	Scalar length() const
-	{
-		Scalar l = squaredLength();
-		l = sqrt(l);
-		return l;
-	}
-};
+Scalar LineSegment2::length() const
+{
+	Scalar l = squaredLength();
+	l = sqrt(l);
+	return l;
+}

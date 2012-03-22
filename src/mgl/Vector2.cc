@@ -3,6 +3,7 @@
 #include "Vector2.h"
 
 using namespace mgl;
+using namespace std;
 /*
 * Standard X/Y Vector value for 2d vectors
 */

@@ -21,6 +21,9 @@
 
 #include "Exception.h"
 #include "Vector2.h"
+#include "Vector3.h"
+#include "LineSegment2.h"
+#include "Triangle3.h"
 
 
 // WIN32 compatibility stuff
@@ -40,9 +43,6 @@
 
 namespace mgl
 {
-#include "LineSegment2.cc"
-#include "Vector3.cc"
-#include "Triangle3.cc"
 
 
 

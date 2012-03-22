@@ -158,12 +158,12 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 //		in preparation for future representations of triangles
 //
 //}
+
+
 bool mgl::sliceTriangle(const Vector3& vertex1,
-					 const Vector3& vertex2,
-						const Vector3& vertex3,
-						   Scalar Z,
-						   Vector3 &a,
-						   	   Vector3 &b)
+		const Vector3& vertex2,
+		const Vector3& vertex3,
+		Scalar Z, Vector3 &a, Vector3 &b)
 {
 	Scalar tol = 1e-6;
 
@@ -328,23 +328,6 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 	return false;
 }
 
-bool mgl::Triangle3::cut(Scalar z, Vector3 &a, Vector3 &b) const
-{
-
-	Vector3 dir = cutDirection();
-
-
-	bool success = sliceTriangle(v0,v1,v2, z, a, b );
-
-	Vector3 segmentDir = b - a;
-	if(dir.dotProduct(segmentDir) < 0 )
-	{
-		Vector3 p(a);
-		a = b;
-		b = p;
-	}
-	return success;
-}
 
 // given a point, finds the LineSegment2 that starts the closest from that point
 // and return the distance. Also, the iterator to the closest LineSegment2 is "returned"

@@ -128,13 +128,13 @@ if qt:
 	print "QT modules", qtModules
 	env.EnableQt4Modules(qtModules)
 
-#			'src/mg/LineSegment2.cc',
-#			'src/mg/Triangle3.cc',
-#			'src/mg/Vector3.cc',
 
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
 			'src/mgl/Vector2.cc',
+			'src/mgl/Vector3.cc',
+			'src/mgl/Triangle3.cc',
+			'src/mgl/LineSegment2.cc',
 			'src/mgl/Scalar.cc',
 			'src/mgl/gcoder.cc',
 			'src/mgl/shrinky.cc',
