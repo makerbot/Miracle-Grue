@@ -6,17 +6,17 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
-
+=======
 */
 #ifndef LINE_SEGMENT2_H_
 #define LINE_SEGMENT2_H_
 
 #include "mgl.h"
 
-namespace mgl
-{
+namespace mgl {
 
-/// a line segment between 2 points.
+
+/// A line segment of 2 point 2d points.
 class LineSegment2
 {
 
@@ -36,8 +36,6 @@ public:
 	Scalar length() const;
 };
 
-std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
-
 /// List of Lists of line segments. Used to lookup
 /// A SegmentTable may contain, for example, a perimeter
 /// and hole(s) in that perimeter of a slice.
@@ -50,6 +48,7 @@ bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol
 LineSegment2 elongate(const LineSegment2 &s, Scalar dist);
 LineSegment2 prelongate(const LineSegment2 &s, Scalar dist);
 
-}
+}//end namespace mgl
 
-#endif
+#endif //LINESEGMENT_H_
+

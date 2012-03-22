@@ -36,3 +36,4 @@ Scalar LineSegment2::length() const
 	l = sqrt(l);
 	return l;
 }
+
