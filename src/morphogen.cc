@@ -75,17 +75,36 @@ void parseArgs(Configuration &config,
     }
 }
 
+string getVersionStr()
+{
+	return  "v 0.01 alpha" ;
+}
 
 int preConditionsOrShowUsage(int argc, char *argv[])
 {
 	if (argc < 2)
 	{
 		cout << endl;
-		cout << "*-------------------------------------*" << endl;
-		cout << argv[0]<< endl;
+		cout << endl;
+		cout << "Miracle-Grue" << endl;
+		cout << "Makerbot Industries 2012" << endl;
+		cout << endl;
+		cout << getVersionStr().c_str() << endl;
+		cout << endl;
+		cout << "This program translates a 3d model file in STL format to GCODE toolpath for a 3D printer "<< endl;
+		cout << "It also generates an OpenScad file for visualization"<< endl;
+		cout << endl;
+		cout << "usage: miracle-grue [OPTIONS] STL FILE" << endl;
+		cout << "options: " << endl;
+		cout << "  c=file.config : set the configuration file (default is local miracle.config)" << endl;
+		cout << "  f=height : override the first layer height" << endl;
+		cout << "  l=height : override the layer height" << endl;
+		cout << "  w=height : override layer width" << endl;
+		cout << "  t=width : override the infill grid width" << endl;
+		cout << "  a=angle : override the infill grid inter slice angle (radians)" << endl;
+		cout << "  -d : debug mode (creates scad files for each inset error)" << endl;
+		cout << endl;
 		cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
-		cout << "Find the light: try " << argv[0] << " [FILE]" << endl;
-
 		return (-1);
 	}
 	return 0;

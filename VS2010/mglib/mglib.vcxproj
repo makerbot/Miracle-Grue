@@ -17,6 +17,7 @@
     <ClInclude Include="..\..\src\mgl\core.h" />
     <ClInclude Include="..\..\src\mgl\gcoder.h" />
     <ClInclude Include="..\..\src\mgl\limits.h" />
+    <ClInclude Include="..\..\src\mgl\LineSegment2.h" />
     <ClInclude Include="..\..\src\mgl\meshy.h" />
     <ClInclude Include="..\..\src\mgl\miracle.h" />
     <ClInclude Include="..\..\src\mgl\scadtubefile.h" />
@@ -30,12 +31,17 @@
     <ClCompile Include="..\..\src\mgl\configuration.cc" />
     <ClCompile Include="..\..\src\mgl\connexity.cc" />
     <ClCompile Include="..\..\src\mgl\gcoder.cc" />
+    <ClCompile Include="..\..\src\mgl\LineSegment2.cc" />
     <ClCompile Include="..\..\src\mgl\mgl.cc" />
     <ClCompile Include="..\..\src\mgl\miracle.cc" />
+    <ClCompile Include="..\..\src\mgl\Scalar.cc" />
     <ClCompile Include="..\..\src\mgl\segment.cc" />
     <ClCompile Include="..\..\src\mgl\shrinky.cc" />
     <ClCompile Include="..\..\src\mgl\slicy.cc" />
     <ClCompile Include="..\..\src\mgl\infill.cc" />
+    <ClCompile Include="..\..\src\mgl\Triangle3.cc" />
+    <ClCompile Include="..\..\src\mgl\Vector2.cc" />
+    <ClCompile Include="..\..\src\mgl\Vector3.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FD00A04C-B884-4FDB-8171-F66F9F762B9A}</ProjectGuid>
