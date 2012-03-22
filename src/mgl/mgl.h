@@ -18,6 +18,14 @@
 #include <iostream>
 #include <cassert>
 
+
+#include "Exception.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "LineSegment2.h"
+#include "Triangle3.h"
+
+
 // WIN32 compatibility stuff
 #ifdef WIN32
 
@@ -36,43 +44,8 @@
 namespace mgl
 {
 
-/**
- * base class for all MGL Exceptions
- */
-class Exception
-{
 
-public:
-	std::string error;
-	Exception(const char *msg) :error(msg)
-	{
-		//	std::cerr << std::endl << msg << std::endl;
-		// fprintf(stderr, "%s", msg);
-	}
 
-};
-
-//////////
-// Scalar: Our basic numerical type. double for now;
-///////////
-typedef double Scalar;
-#define SCALAR_SQRT(s) sqrt(s)
-#define SCALAR_ABS(s) abs(s)
-#define SCALAR_ACOS(s) acos(s)
-#define SCALAR_SIN(s) sin(s)
-#define SCALAR_COS(s) cos(s)
-
-// See float.h for details on these
-#define SCALAR_EPSILON DBL_EPSILON
-
-/** (t)olerance (equals)
- * @returns true if two Scalar values are approximately the same using tolerance
- */
-bool tequals(Scalar a, Scalar b, Scalar tol); // = 1e-8
-
-//////////
-// Scalar: End numeric type info
-///////////
 
 // Type used for indexes of triangles/etc for unique indexing
 typedef unsigned int index_t;
@@ -86,7 +59,6 @@ typedef std::vector<index_t> TriangleIndices;
 /// that specified slice.
 typedef std::vector<TriangleIndices> SliceTable;
 
-#include "Vector2.cc"
 
 // Bring over from mgl.cc
 Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c);
@@ -94,8 +66,6 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k);
 
 std::ostream& operator << (std::ostream &os,const Vector2 &pt);
 
-
-#include "LineSegment2.cc"
 
 std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
 
@@ -112,13 +82,9 @@ bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol
 LineSegment2 elongate(const LineSegment2 &s, Scalar dist);
 LineSegment2 prelongate(const LineSegment2 &s, Scalar dist);
 
-
-#include "Vector3.cc"
-
 std::ostream& operator<<(std::ostream& os, const Vector3& v);
 
 
-#include "Triangle3.cc"
 
 
 class LayerException : public Exception {

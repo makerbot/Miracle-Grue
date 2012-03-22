@@ -11,7 +11,7 @@
 
 
 #ifndef SEGMENT_H_
-#define SEGMENT_H_
+#define SEGMENT_H_ (1)
 
 
 #include "mgl.h"
@@ -58,11 +58,8 @@ bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
 
 bool sliceTriangle(const Vector3& vertex1,
-					 const Vector3& vertex2,
-						const Vector3& vertex3,
-						   Scalar Z,
-						   Vector3 &a,
-						   	   Vector3 &b);
+		const Vector3& vertex2, const Vector3& vertex3,
+		Scalar Z, Vector3 &a,Vector3 &b);
 }
 
 #endif

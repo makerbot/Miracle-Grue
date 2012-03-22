@@ -27,11 +27,6 @@ using namespace mgl;
 using namespace std;
 
 
-bool mgl::tequals(Scalar a, Scalar b, Scalar tol)
-{
-	return SCALAR_ABS(a-b) < tol;
-}
-
 //
 //// returns the angle between 3 points
 //Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k)

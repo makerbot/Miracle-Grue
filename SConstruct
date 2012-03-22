@@ -131,6 +131,11 @@ if qt:
 
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
+			'src/mgl/Vector2.cc',
+			'src/mgl/Vector3.cc',
+			'src/mgl/Triangle3.cc',
+			'src/mgl/LineSegment2.cc',
+			'src/mgl/Scalar.cc',
 			'src/mgl/gcoder.cc',
 			'src/mgl/shrinky.cc',
 			'src/mgl/slicy.cc',
