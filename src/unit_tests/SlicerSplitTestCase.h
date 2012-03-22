@@ -18,16 +18,14 @@ private:
     CPPUNIT_TEST_SUITE_END();
 
 
-
+public:
+  void setUp();
 
 protected:
 
   void test_m();
-
   void test_calibration_slice_70();
-
   void test_cath();
-
   void test_ultimate_59();
 
 };
