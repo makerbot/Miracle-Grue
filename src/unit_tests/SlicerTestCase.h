@@ -16,14 +16,14 @@ private:
         //        CPPUNIT_TEST(testFutureSlice);
 	    // CPPUNIT_TEST( test_hexagon_0_1); // false alarm?
 
-/*
+
         CPPUNIT_TEST( testSlicyKnot_44 );
         CPPUNIT_TEST( testNormals );
         CPPUNIT_TEST( testCut );
         CPPUNIT_TEST( testAngles );
         CPPUNIT_TEST( testInset2 );
         CPPUNIT_TEST( testInset3 );
-        CPPUNIT_TEST(testHexagon);
+        CPPUNIT_TEST( testHexagon);
         CPPUNIT_TEST( testSliceTriangle );
 
 		CPPUNIT_TEST( testOpenPoly );
@@ -32,7 +32,7 @@ private:
         CPPUNIT_TEST( testKnotBug );
 		CPPUNIT_TEST( testKnot89 );
 		CPPUNIT_TEST( scratch );
-		CPPUNIT_TEST( test_slice_0_loop_0 );
+
 		CPPUNIT_TEST( test_slice_60_loop_5 );
 		CPPUNIT_TEST( testAttach);
 
@@ -47,10 +47,13 @@ private:
 
 		CPPUNIT_TEST( test_knot_26_0_3);
 		CPPUNIT_TEST(test_3d_knot_57_3);
-*/
-		CPPUNIT_TEST( testInset4 );
+
 		CPPUNIT_TEST( testInset );
-    CPPUNIT_TEST_SUITE_END();
+
+//		CPPUNIT_TEST( testInset4 );
+//		CPPUNIT_TEST( test_slice_0_loop_0 );
+
+	CPPUNIT_TEST_SUITE_END();
 
 
 public:

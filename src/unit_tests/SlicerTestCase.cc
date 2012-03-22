@@ -647,13 +647,7 @@ void SlicerTestCase::testInset4()
 
 	Shrinky shrinky;
 	std::vector<LineSegment2> &segments = segs;
-	try {
-		shrinky.openScadFile(outputFile.c_str());
-	}
-	catch(...){
-		cout << "File read fail for: " << outputFile.c_str() << endl;
-		CPPUNIT_FAIL("File read fail" );
-	}
+	shrinky.openScadFile(outputFile.c_str());
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
@@ -664,12 +658,17 @@ void SlicerTestCase::testInset4()
 		cout << "\n" << insetTable.size() << " ----- " << endl;
 		//dumpSegments(segments);
 		insetTable.push_back(std::vector<LineSegment2 >());
-
-		std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
-		shrinky.inset(segments, insetDist,  finalInsets);
-	    segments = finalInsets;
+		if(segments.size()>2)
+		{
+			std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
+			shrinky.inset(segments, insetDist,  finalInsets);
+			segments = finalInsets;
+		}
+		else
+		{
+			cout << "shrunk" << endl;
+		}
 	}
-
 }
 
 void SlicerTestCase::testHexagon()
@@ -693,14 +692,10 @@ void SlicerTestCase::testHexagon()
 
 	std::vector<LineSegment2> &segments = segs;
 	string outputFile = outputDir +"hexagon.scad";
+
 	Shrinky shrinky;
-	try {
-		shrinky.openScadFile(outputFile.c_str());
-	}
-	catch(...){
-		cout << "File read fail for: " << outputFile.c_str() << endl;
-		CPPUNIT_FAIL("File read fail" );
-	}
+	shrinky.openScadFile(outputFile.c_str());
+
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
