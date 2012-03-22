@@ -143,7 +143,9 @@ mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/segment.cc',
 			'src/mgl/miracle.cc',
 			'src/mgl/infill.cc',
-			'src/mgl/abstractable.cc',]
+			'src/mgl/abstractable.cc',
+			'src/mgl/JsonConverter.cc',]
+
 
 json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_value.cpp',
@@ -172,6 +174,15 @@ p = env.Program('./bin/miracle_grue',
 		LIBS = ['mgl', '_json'],
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
+
+
+p = env.Program(  	'./bin/unit_tests/jsonConverterUnitTest',   
+				mix(['src/unit_tests/JsonConverterTestCase.cc'], unit_test), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= [".."])
+runThisTest(p, run_unit_tests)	
+
 
 p = env.Program(  	'./bin/unit_tests/mglCoreUnitTest',   
 				mix(['src/unit_tests/MglCoreTestCase.cc'], unit_test), 
