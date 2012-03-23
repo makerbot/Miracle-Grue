@@ -61,13 +61,18 @@ class ExtruderSlice
 {
 public:
 
-	Polygons loops;  // outer perimeter loop
-	Polygons infills;
-	std::vector<Polygons> insets;
-//	Polygons roofing;
+	Polygons boundary;  // boundary loops for areas of this slice of a print.
+	Polygons infills; // list of all lines that create infill for this layer
+
+	PolygonsGroup  insetLoopsList;  /// a list, each entry of which is a Polygons
+							/// object. Each inset[i] is all shell polygons
+							/// for the matching loops[i] boundary for this layer
+
 };
 
 ::std::ostream& operator<<(::std::ostream& os, const ExtruderSlice& x);
+
+typedef std::vector<ExtruderSlice > ExtruderSlices;
 
 //
 // The Slice data is contains polygons
@@ -76,8 +81,7 @@ public:
 class SliceData
 {
 public:
-	// TubesInSlice tubes;
-	std::vector<ExtruderSlice > extruderSlices;
+	ExtruderSlices extruderSlices;
 
 	double z;
 	index_t sliceIndex;

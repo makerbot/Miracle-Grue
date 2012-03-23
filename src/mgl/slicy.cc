@@ -369,7 +369,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	SegmentTable outlinesSegments;
 	loopsAndHoleOgy(segments, tol, outlinesSegments);
 	unsigned int outlineSegmentCount = outlinesSegments.size();
-	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].loops);
+	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].boundary);
 
 	std::vector<SegmentTable> insetsForLoops;
 
@@ -389,7 +389,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 
 		//	dumpInsets(insetsForLoops)
 		// create a vector of polygons for each shell.
-		std::vector<Polygons> &insetsPolys = slice.extruderSlices[extruderId].insets;
+		std::vector<Polygons> &insetsPolys = slice.extruderSlices[extruderId].insetLoopsList;
 
 		// we fill the structure "backwards" so that the inner shells come first
 		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
@@ -449,9 +449,9 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	// write the scad file
 	// only one thread at a time in here
 	writeScadSlice( trianglesForSlice,
-					slice.extruderSlices[extruderId].loops,
+					slice.extruderSlices[extruderId].boundary,
 					slice.extruderSlices[extruderId].infills,
-					slice.extruderSlices[extruderId].insets,
+					slice.extruderSlices[extruderId].insetLoopsList,
 					z,
 					sliceId);
 	// cout << "</sliceId"  << sliceId <<  ">" << endl;
@@ -461,16 +461,16 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 std::ostream& mgl::operator<<(::std::ostream& os, const ExtruderSlice& x)
 {
 	os << " infill polygons: " << x.infills.size() << endl;
-	os << " perimeter loop count: " << x.loops.size() << endl;
-	for(unsigned int i =0; i < x.loops.size(); i++)
+	os << " perimeter loop count: " << x.boundary.size() << endl;
+	for(unsigned int i =0; i < x.boundary.size(); i++)
 	{
-		const Polygon &poly = x.loops[i];
+		const Polygon &poly = x.boundary[i];
 		os << "    " << i << " polygon: " << poly.size() << " points" << endl;
 	}
-	os << " nb of shells: " << x.insets.size() << endl;
-	for(unsigned int i =0; i < x.insets.size(); i++)
+	os << " nb of shells: " << x.insetLoopsList.size() << endl;
+	for(unsigned int i =0; i < x.insetLoopsList.size(); i++)
 	{
-		const Polygons &polys = x.insets[i];
+		const Polygons &polys = x.insetLoopsList[i];
 		os << "  shell " << i << endl;
 		for(unsigned i=0; i < polys.size(); i++)
 		{

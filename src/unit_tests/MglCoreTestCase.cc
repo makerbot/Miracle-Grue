@@ -195,6 +195,57 @@ void MglCoreTestCase::testTriangle3Maths() {
 
 
 
+void MglCoreTestCase::testTequalsPolygon()
+{
+	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
+	Vector2 v4(0,0.04);
+
+	Polygon p1,p2,p3;
+	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
+	p2.push_back(v0);	p2.push_back(v1);	p2.push_back(v2);
+	p3.push_back(v0);
+	// sizes mismatch
+	bool same = tequalsPolygonCompare(p1,p3, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == false);
+	// same exact poly
+	same = tequalsPolygonCompare(p1,p1, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == true);
+	same = tequalsPolygonCompare(p1,p2, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == true);
+
+	Vector2 v5(0,0),v6(0,1),v7(1,0), v8(SCALAR_EPSILON*2,1);
+	Polygon p4;
+	p4.push_back(v5);	p4.push_back(v6);	p2.push_back(v7);
+	same = tequalsPolygonCompare(p1,p4, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == false);
+
+}
+void MglCoreTestCase::testTequalsPolygons()
+{
+	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
+	Vector2 v4(0,0.04);
+
+	Polygon p1,p2,p3;
+	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
+	p2.push_back(v0);	p2.push_back(v1);	p2.push_back(v2);
+
+	Polygons polys1,polys2, polys3;
+	polys1.push_back(p1);
+	polys1.push_back(p2);
+	polys2.push_back(p2);
+	polys2.push_back(p1);
+	polys3.push_back(p1);
+
+	bool same = tequalsPolygonsCompare(polys1,polys3, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == false);
+	same = tequalsPolygonsCompare(polys1,polys1, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == true);
+	same = tequalsPolygonsCompare(polys1,polys2, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == false);
+}
+
+
+
 void MglCoreTestCase::testMeshyLoads()
 {
 

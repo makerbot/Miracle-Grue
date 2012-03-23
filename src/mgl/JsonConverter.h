@@ -12,8 +12,9 @@
 #ifndef JSON_CONVERTER_H_
 #define JSON_CONVERTER_H_ (1)
 
-#include "/home/farmckon/dev_makerbot/Miracle-Grue/src/json-cpp/include/json/value.h"
+#include "json-cpp/include/json/value.h"
 
+#include "slicy.h"
 #include "mgl.h"
 
 namespace mgl {
@@ -28,6 +29,20 @@ public:
 	bool loadJsonFromScalar(Json::Value& val, Scalar& s);
 	bool loadJsonFromVector2(Json::Value& val, Vector2& input);
 	bool loadJsonFromVector3(Json::Value& val, Vector3& input);
+	bool loadJsonFromPolygon(Json::Value& val, Polygon& input);
+	bool loadJsonFromPolygons(Json::Value& val, Polygons& input);
+
+	bool loadJsonFromPolygonsGroup(Json::Value& val, PolygonsGroup& input);
+	bool loadJsonFromExtruderSlice(Json::Value& val, ExtruderSlice& input);
+	bool loadJsonFromSliceData(Json::Value& val, SliceData& input);
+
+	bool loadScalarFromJson(Scalar& s, Json::Value& input);
+	bool loadVector2FromJson(Vector2& vector,Json::Value& input);
+	bool loadPolygonFromJson(Polygon& poly,Json::Value& input);
+	bool loadPolygonsFromJson(Polygons& polys,Json::Value& input);
+	bool loadPolygonsGroupFromJson(PolygonsGroup& pg, Json::Value& input);
+	bool loadExtruderSliceFromJson(ExtruderSlice& input,Json::Value& val);
+
 };
 
 }

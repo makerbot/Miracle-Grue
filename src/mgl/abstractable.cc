@@ -62,7 +62,7 @@ int verifyDir(const char *pathname)
 
 	mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
 	int status = 0;
-	std::cout << pathname << std::endl;
+	//std::cout << pathname << std::endl;
 	//TODO: move to abstractable someday
 	struct stat st;
 	if(stat(pathname,&st) != 0){

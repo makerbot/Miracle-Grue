@@ -426,3 +426,39 @@ LineSegment2 mgl::prelongate(const LineSegment2 &s, Scalar dist)
 	segment.a += l;
 	return segment;
 }
+
+
+
+/// Verifies each Vector2 in the passed Polygon are in tolerance
+// tol
+bool mgl::tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
+{
+	if( poly1.size() != poly2.size())
+		return false;
+	if( (void*)&poly1 == (void*)&poly2 )
+		return true;
+	size_t size =  poly1.size();
+	for(size_t i = 0; i < size; i++ ) {
+		if (false == poly1[i].tequals(poly2[i],tol) )
+			return false;
+	}
+	return true;
+}
+/// Verifies each Polygon in the passed Polygons are in tolerance
+bool mgl::tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
+{
+	if( polys1.size() != polys2.size())
+		return false;
+	if( (void*)&polys1 == (void*)&polys2 )
+		return true;
+	size_t size =  polys1.size();
+	for(size_t i = 0; i < size; i++ ) {
+		Polygon p0 = polys1[i];
+		Polygon p1 = polys2[i];
+
+		bool same = tequalsPolygonCompare(p0,p1,tol);
+		if ( !same  )
+			return false;
+	}
+	return true;
+}

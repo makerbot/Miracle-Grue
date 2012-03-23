@@ -377,9 +377,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		unsigned int dualtrickId =  extruderId;
 
 	  	ss << "(   Extruder " <<  extruderId << ")" << endl;
-		const Polygons &loops = sliceData.extruderSlices[extruderId].loops;
+		const Polygons &loops = sliceData.extruderSlices[extruderId].boundary;
 		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
-		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insets;
+		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insetLoopsList;
 
 		//cout << endl <<  "Slice " << sliceData.sliceIndex << endl;
 

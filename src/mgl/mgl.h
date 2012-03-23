@@ -18,7 +18,6 @@
 #include <iostream>
 #include <cassert>
 
-
 #include "Exception.h"
 #include "Vector2.h"
 #include "Vector3.h"
@@ -121,8 +120,19 @@ public:
 /// A polygon is an arbitarty collection of 2d points
 typedef std::vector<Vector2> Polygon;
 
-/// A vector of polygon objects
+/// Verifies each Vector2 in the passed Polygon are in tolerance
+// tol
+bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol);
+
 typedef std::vector<Polygon> Polygons;
+
+/// Verifies each Polygon in the passed Polygons are in tolerance
+bool tequalsPolygonsCompare(Polygons& poly1, Polygons& poly2, Scalar tol);
+
+
+/// A vector of Polygons objects is a PolygonsGroup
+typedef std::vector<Polygons> PolygonsGroup;
+
 
 std::ostream& operator<<(std::ostream& os, const Polygon& v);
 
