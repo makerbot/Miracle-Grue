@@ -9,6 +9,8 @@ void mgl::miracleGrue(	GCoder &gcoder,
 					const char *modelFile,
 					const char *scadFile,
 					const char *gcodeFile,
+					int firstSlice,
+					int lastSlice,
 					std::vector< SliceData >  &slices)
 {
 	assert(slices.size() ==0);
@@ -26,44 +28,57 @@ void mgl::miracleGrue(	GCoder &gcoder,
 
 	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
 
-	ProgressBar progress(sliceCount);
+	ProgressBar progressSlice(sliceCount);
 	cout << "Slicing" << endl;
 
     std::ofstream gout(gcodeFile);
     gcoder.writeStartOfFile(gout, modelFile);
 
+    if(firstSlice == -1) firstSlice = 0;
+    if(lastSlice  == -1) lastSlice = sliceCount-1;
+
+
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
-		progress.tick();
-        cout.flush();
+		progressSlice.tick();
+
 		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 		Scalar sliceAngle = sliceId * slicer.angle;
 		slices.push_back( SliceData(z,sliceId));
 		SliceData &slice = slices[sliceId];
 
-		bool hazNewPaths = slicy.slice( trianglesForSlice,
-										z,
-										sliceId,
-										extruderId,
-										slicer.tubeSpacing,
-										sliceAngle,
-										slicer.nbOfShells,
-										cuttOffLength,
-										slicer.infillShrinkingMultiplier,
-										slicer.insetDistanceMultiplier,
-										slicer.writeDebugScadFiles,
-										slice);
-		// cout << slice;
-		if(hazNewPaths)
-		{
-			gcoder.writeSlice(gout, slice);
-		}
-		else
-		{
-//	    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
-		}
+		if(sliceId <  firstSlice) continue;
+		if(sliceId > lastSlice) continue;
+
+		slicy.slice(	trianglesForSlice,
+						z,
+						sliceId,
+						extruderId,
+						slicer.tubeSpacing,
+						sliceAngle,
+						slicer.nbOfShells,
+						cuttOffLength,
+						slicer.infillShrinkingMultiplier,
+						slicer.insetDistanceMultiplier,
+						slicer.writeDebugScadFiles,
+						slice);
 	}
 
+	ProgressBar progressGcode(sliceCount);
+	unsigned int adjustedSliceId = 0;
+	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+	{
+		progressGcode.tick();
+		SliceData &slice = slices[sliceId];
+
+		if(sliceId <  firstSlice) continue;
+		if(sliceId > lastSlice) continue;
+
+		slice.sliceIndex = adjustedSliceId;
+		slice.z = mesh.readLayerMeasure().sliceIndexToHeight(adjustedSliceId);
+		gcoder.writeSlice(gout, slice);
+		adjustedSliceId ++;
+	}
     gout.close();
 }

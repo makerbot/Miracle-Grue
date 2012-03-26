@@ -27,16 +27,12 @@ using namespace mgl;
 using namespace std;
 
 
-//
-//// returns the angle between 3 points
-//Scalar mgl::angleFromPoint2s(const Vector2 &i, const Vector2 &j, const Vector2 &k)
-//{
-//	Vector2 a = i - j;
-//	Vector2 b = j - k;
-//	Scalar theta = angleFromVector2s(a,b);
-//	return theta;
-//}
 
+
+std::string mgl::getMiracleGrueVersionStr()
+{
+    return  "v 0.01 alpha";
+}
 
 std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
 {

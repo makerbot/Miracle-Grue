@@ -26,9 +26,16 @@ using namespace std;
 using namespace mgl;
 
 
-double numberFromCharEqualsStr(const std::string& str)
+int intFromCharEqualsStr(const std::string& str)
 {
-	string nb = str.substr(3, str.length()-3);
+	string nb = str.substr(2, str.length()-2);
+	int val = atoi(nb.c_str());
+	return val;
+}
+
+double doubleFromCharEqualsStr(const std::string& str)
+{
+	string nb = str.substr(2, str.length()-2);
 	double val = atof(nb.c_str());
 	return val;
 }
@@ -37,48 +44,69 @@ void parseArgs(Configuration &config,
 				int argc,
 				char *argv[],
 				string &modelFile,
-				string &configFileName)
+				string &configFileName,
+				int &firstSlice,
+				int &lastSlice)
 {
+	firstSlice = -1;
+	lastSlice = -1;
+
 	modelFile = argv[argc-1];
     for(int i = 1;i < argc - 1;i++){
         string str = argv[i];
         cout << i << " " << str << endl;
         if(str.find("f=") != string::npos)
         {
-        	config["slicer"]["firstLayerZ"]  = numberFromCharEqualsStr(str);
+        	config["slicer"]["firstLayerZ"]  = doubleFromCharEqualsStr(str);
+        	cout << "sliceer.firstLayerZ = " << config["slicer"]["firstLayerZ"].asDouble() << endl;
         }
 
         if(str.find("l=") != string::npos)
         {
-        	config["slicer"]["layerH"] = numberFromCharEqualsStr(str);
+        	config["slicer"]["layerH"] = doubleFromCharEqualsStr(str);
+        	cout << "sliceer.layerH = " << config["slicer"]["layerH"].asDouble() << endl;
         }
 
         if(str.find("w=") != string::npos)
         {
-        	config["slicer"]["layerW"] = numberFromCharEqualsStr(str);
+        	config["slicer"]["layerW"] = doubleFromCharEqualsStr(str);
+        	cout << "sliceer.layerW = " << config["slicer"]["layerW"].asDouble() << endl;
         }
 
         if(str.find("t=") != string::npos)
         {
-        	config["slicer"]["tubeSpacing"] = numberFromCharEqualsStr(str);
+        	config["slicer"]["tubeSpacing"] = doubleFromCharEqualsStr(str);
+        	cout << "sliceer.tubeSpacing = " << config["slicer"]["tubeSpacing"].asDouble() << endl;
         }
 
         if(str.find("a=") != string::npos)
         {
-        	config["slicer"]["angle"] = numberFromCharEqualsStr(str);
+        	config["slicer"]["angle"] = doubleFromCharEqualsStr(str);
+        	cout << "slicer.angle = " << config["slicer"]["angle"].asDouble() << endl;
+
         }
 
         if(str.find("-d") != string::npos)
         {
         	config["slicer"]["writeDebugScadFiles"] = true;
+        	cout << "slicer.writeDebugScadFiles = " << config["slicer"]["angle"].asBool() << endl;
+        }
+
+        if(str.find("n=") != string::npos)
+        {
+        	firstSlice = intFromCharEqualsStr(str);
+        	cout << "firstSlice = " << firstSlice << endl;
+        }
+
+        if(str.find("m=") != string::npos)
+        {
+        	lastSlice = intFromCharEqualsStr(str);
+        	cout << "laastSlice = " << lastSlice << endl;
         }
     }
 }
 
-string getVersionStr()
-{
-	return  "v 0.01 alpha" ;
-}
+
 
 int preConditionsOrShowUsage(int argc, char *argv[])
 {
@@ -89,7 +117,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 		cout << "Miracle-Grue" << endl;
 		cout << "Makerbot Industries 2012" << endl;
 		cout << endl;
-		cout << getVersionStr().c_str() << endl;
+		cout << getMiracleGrueVersionStr() << endl;
 		cout << endl;
 		cout << "This program translates a 3d model file in STL format to GCODE toolpath for a 3D printer "<< endl;
 		cout << "It also generates an OpenScad file for visualization"<< endl;
@@ -102,6 +130,9 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 		cout << "  w=height : override layer width" << endl;
 		cout << "  t=width : override the infill grid width" << endl;
 		cout << "  a=angle : override the infill grid inter slice angle (radians)" << endl;
+		cout << "  s=shells : override the number of shells" << endl;
+		cout << "  n=first slice nb : slice from a specific slice" << endl;
+		cout << "  m=last slice nb : stop slicing at specific slice" << endl;
 		cout << "  -d : debug mode (creates scad files for each inset error)" << endl;
 		cout << endl;
 		cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
@@ -141,8 +172,9 @@ int main(int argc, char *argv[], char *envp[])
 		cout << "Configuration file: " << configFileName << endl;
 		config.readFromFile(configFileName.c_str());
 
-		parseArgs(config, argc, argv, modelFile, configFileName);
-		cout << config.asJson() << endl;
+		int firstSlice, lastSlice;
+		parseArgs(config, argc, argv, modelFile, configFileName, firstSlice, lastSlice);
+		// cout << config.asJson() << endl;
 
 		MyComputer computer;
 		cout << endl;
@@ -168,7 +200,7 @@ int main(int argc, char *argv[], char *envp[])
 		loadSlicerData(config, slicer);
 
 		std::vector<mgl::SliceData> slices;
-		miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), slices);
+		miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), firstSlice, lastSlice, slices);
 	    cout << endl << computer.clock.now() << endl;
 	    cout << "Done!" << endl;
 
@@ -178,6 +210,4 @@ int main(int argc, char *argv[], char *envp[])
     	cout << "ERROR: "<< mixup.error << endl;
     	return -1;
     }
-
-
 }

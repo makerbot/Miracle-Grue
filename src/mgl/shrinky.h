@@ -75,6 +75,23 @@ private:
 									std::vector<LineSegment2> & finalInsets);
 };
 
+/// uses a Straight Skeleton algorithm to 'shrink' the outlines to create
+/// shells
+/// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
+/// and counter clockwise for holes)
+/// b) creates insets for distance in insetDistances (expressed relative distances)
+/// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
+/// and nbOffShels insets)
+///
+void createShellsForSliceUsingShrinky(const SegmentTable & 	outlinesSegments,
+									  const std::vector<Scalar> &insetDistances,
+									  unsigned int sliceId,
+									  const char *scadFile,
+									  bool writeDebugScadFiles,
+									  std::vector<SegmentTable> & insetsForLoops);
+
+
+
 }
 
 #endif

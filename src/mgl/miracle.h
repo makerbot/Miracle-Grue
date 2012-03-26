@@ -20,6 +20,8 @@ void miracleGrue(	GCoder &gcoder,
 					const char *modelFile,
 					const char *scadFile,
 					const char *gcodeFile,
+					int firstSlice,
+					int lastSlice,
 					std::vector< SliceData >  &slices);
 
 }

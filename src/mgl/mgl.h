@@ -43,6 +43,7 @@
 namespace mgl
 {
 
+std::string getMiracleGrueVersionStr();
 
 // Type used for indexes of triangles/etc for unique indexing
 typedef unsigned int index_t;

@@ -1,6 +1,8 @@
 #include <list>
 #include <limits>
 
+#include <algorithm>
+
 #include <cppunit/config/SourcePrefix.h>
 #include "ClipperTestCase.h"
 
@@ -19,79 +21,13 @@ using namespace mgl;
 
 string outputDir("outputs/test_cases/ClipperTestCase/");
 
-#define DBLTOINT 1000
-bool useClipper = true;
 
 
 
-
-void clipperToMgl(const ClipperLib::Polygons &polys, mgl::SegmentTable & outlinesSegments)
-{
-	size_t loopCount = polys.size();
-	for(size_t i=0; i < loopCount; i++)
-	{
-		const ClipperLib::Polygon &loop = polys[i];
-		outlinesSegments.push_back(std::vector<mgl::LineSegment2 > ());
-		std::vector<mgl::LineSegment2 > &segments = *outlinesSegments.rbegin();
-		for(size_t j=0; j < loop.size(); j++)
-		{
-			size_t next = j==loop.size()-1?0:j+1;
-			const ClipperLib::IntPoint &point = loop[j];
-			const ClipperLib::IntPoint &nextPoint = loop[next];
-
-			mgl::LineSegment2 s;
-			s.a[0] = point.X / (Scalar)DBLTOINT;
-			s.a[1] = point.Y / (Scalar)DBLTOINT;
-			s.b[0] = nextPoint.X / (Scalar)DBLTOINT;
-			s.b[1] = nextPoint.Y / (Scalar)DBLTOINT;
-			segments.push_back(s);
-		}
-	}
-}
-
-void mglToClipper(const mgl::SegmentTable &segmentTable, ClipperLib::Polygons &out_polys )
-{
-	for(size_t i=0; i < segmentTable.size(); i++)
-	{
-		out_polys.push_back(vector<ClipperLib::IntPoint>());
-		vector<ClipperLib::IntPoint>& poly = *out_polys.rbegin();
-
-		const vector<mgl::LineSegment2> &loop = segmentTable[i];
-		for(size_t j=0; j < loop.size(); j++)
-		{
-			const mgl::LineSegment2 &seg = loop[j];
-			ClipperLib::IntPoint p;
-			p.X = seg.a[0] * DBLTOINT;
-			p.Y = seg.a[1] * DBLTOINT;
-			poly.push_back(p);
-		}
-	}
-}
-
-void dumpSegmentTable(const char* name, const SegmentTable & outTable)
-{
-    for(int i = 0;i < outTable.size();i++){
-        const vector<LineSegment2> & segs = outTable[i];
-        stringstream ss;
-        ss << name << "_" << i;
-        ScadTubeFile::segment3(cout, "", ss.str().c_str(), segs, 0, 0);
-    }
-}
-
-void dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
-{
-	for(size_t i=0; i < polys.size(); i++)
-	{
-		const ClipperLib::Polygon &poly = polys[i];
-		cout <<  name <<"_" << i << "= [";
-		for(size_t j=0; j < poly.size(); j++)
-		{
-			const ClipperLib::IntPoint &p = poly[j];
-			cout << "[" << p.X << ", "<< p.Y << "]," << endl;
-		}
-		cout<< "];" << endl;
-	}
-}
+void clipperToMgl(const ClipperLib::Polygons &polys, mgl::SegmentTable & outlinesSegments);
+void mglToClipper(const mgl::SegmentTable &segmentTable, ClipperLib::Polygons &out_polys );
+void dumpSegmentTable(const char* name, const SegmentTable & outTable);
+void dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys);
 
 class ClipperInsetter
 {
@@ -99,25 +35,8 @@ class ClipperInsetter
 public:
 	void inset( const mgl::SegmentTable & inputPolys,
 				Scalar insetDist,
-				mgl::SegmentTable & outputPolys)
-	{
-
-		ClipperLib::Polygons in_polys, out_polys;
-		ClipperLib::JoinType jointype = ClipperLib::jtMiter;
-		double miterLimit = 3.0;
-
-		double delta = -insetDist * DBLTOINT;
-
-		mglToClipper  (inputPolys, in_polys);
-		//dumpClipperPolys(in_polys);
-		OffsetPolygons(in_polys, out_polys, delta, jointype, miterLimit);
-		//dumpClipperPolys(out_polys);
-		clipperToMgl(out_polys, outputPolys);
-	}
-
-
+				mgl::SegmentTable & outputPolys);
 };
-
 
 void ClipperTestCase::setUp()
 {
@@ -181,7 +100,7 @@ void ClipperTestCase::testSimpleClipper()
 	ClipperLib::Polygons in_polys;
 
 	vector<ClipperLib::IntPoint> points;
-	/*
+
 	points.push_back(ClipperLib::IntPoint(-25867,  20729) );
 	points.push_back(ClipperLib::IntPoint(-22404,  20729) );
 	points.push_back(ClipperLib::IntPoint( 25867,  20729) );
@@ -191,16 +110,13 @@ void ClipperTestCase::testSimpleClipper()
 	points.push_back(ClipperLib::IntPoint(-25867, -22802) );
 	points.push_back(ClipperLib::IntPoint(-25867,  17816) );
 	points.push_back(ClipperLib::IntPoint(-25867,  20729) );
-	*/
-	points.push_back(ClipperLib::IntPoint(-25867,  20729) );
-	points.push_back(ClipperLib::IntPoint(-25867,  17816) );
-	points.push_back(ClipperLib::IntPoint(-25867, -22802) );
-	points.push_back(ClipperLib::IntPoint( 22404, -22802) );
-	points.push_back(ClipperLib::IntPoint( 25867, -22802) );
-	points.push_back(ClipperLib::IntPoint( 25867, -19889) );
-	points.push_back(ClipperLib::IntPoint( 25867,  20729) );
-	points.push_back(ClipperLib::IntPoint(-22404,  20729) );
-	points.push_back(ClipperLib::IntPoint(-25867,  20729) );
+
+
+	if(!Orientation(points))
+	{
+	      cout << "Wrong orientation" << endl;
+	      ReversePoints(points);
+	}
 
 	in_polys.push_back(points);
 
@@ -212,32 +128,7 @@ void ClipperTestCase::testSimpleClipper()
 
 	dumpClipperPolys("out_polys",out_polys);
 
-/*
 
- Program output:
-
- out_polys_0= [[24867, 20729],
-[24867, 19729],
-[25867, 19729],
-[25867, 20729],
-];
-out_polys_1= [[-25867, 20729],
-[-25867, 19729],
-[-24867, 19729],
-[-24867, 20729],
-];
-out_polys_2= [[-25867, -21802],
-[-25867, -22802],
-[-24867, -22802],
-[-24867, -21802],
-];
-out_polys_3= [[24867, -21802],
-[24867, -22802],
-[25867, -22802],
-[25867, -21802],
-];
-
- */
 }
 
 
@@ -258,6 +149,7 @@ void ClipperTestCase::testSimpleInset()
 	segs.push_back(LineSegment2(Vector2(-25.867, -22.80249), Vector2(-25.867, 19.94217)));
 	segs.push_back(LineSegment2(Vector2(-25.867, 19.94217), Vector2(-25.867, 20.72951)));
 
+	// std::reverse(segs.begin(), segs.end());
 
 	ScadTubeFile::segment3(cout, "", "in_segments", segs, 0, 0);
 

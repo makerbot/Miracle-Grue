@@ -128,7 +128,6 @@ if qt:
 	print "QT modules", qtModules
 	env.EnableQt4Modules(qtModules)
 
-
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
 			'src/mgl/Vector2.cc',
@@ -144,8 +143,9 @@ mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/miracle.cc',
 			'src/mgl/infill.cc',
 			'src/mgl/abstractable.cc',
-			'src/mgl/JsonConverter.cc',]
-
+			'src/mgl/JsonConverter.cc',
+			'src/mgl/insets.cc',
+			'src/clipper/clipper.cc']
 
 json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_value.cpp',
@@ -175,6 +175,13 @@ p = env.Program('./bin/miracle_grue',
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
 
+p = env.Program(  	'./bin/unit_tests/clipperUnitTest',   
+				mix(['src/unit_tests/ClipperTestCase.cc',
+					 'src/clipper/clipper.cc'], unit_test), 
+    			LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				 )
+runThisTest(p, run_unit_tests)	
 
 p = env.Program(  	'./bin/unit_tests/jsonConverterUnitTest',   
 				mix(['src/unit_tests/JsonConverterTestCase.cc'], unit_test), 

@@ -74,6 +74,7 @@ void SlicerCupTestCase::testIndividuals()
 						modelFile.c_str(),
 						scadFile.c_str(),
 						gcodeFile.c_str(),
+						-1,-1,
 						slices);
 
 		cout << computer.clock.now() << endl;
@@ -104,6 +105,7 @@ void SlicerCupTestCase::testAllTogeter()
 				"./test_cases/slicerCupTestCase/stls/all_together.stl",
 				"./outputs/test_cases/slicerCupTestCase/all_together.scad",
 				"./outputs/test_cases/slicerCupTestCase/all_together.gcode",
+				-1,-1,
 				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
@@ -128,6 +130,7 @@ void SlicerCupTestCase::testCathedral_Crossing_bad()
 				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl",
 				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.scad",
 				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.gcode",
+				-1,-1,
 				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
@@ -151,6 +154,7 @@ void SlicerCupTestCase::testCathedral_Crossing_fixed()
 				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl",
 				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.scad",
 				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.gcode",
+				-1,-1,
 				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
@@ -174,7 +178,9 @@ void SlicerCupTestCase::testSpecificIssues()
 	miracleGrue(gcoder, slicer,
 				"./test_cases/specific_issues/slumping/full head.stl",
 				"./outputs/test_cases/specific_issues/full head.scad",
-				"./outputs/test_cases/specific_issues/full head.gcode",slices_full);
+				"./outputs/test_cases/specific_issues/full head.gcode",
+				-1,-1,
+				slices_full);
 
 	cout << "Slumping: half head.stl" << endl;
 
@@ -182,14 +188,18 @@ void SlicerCupTestCase::testSpecificIssues()
 	miracleGrue(gcoder, slicer,
 				"./test_cases/specific_issues/slumping/half head.stl",
 				"./outputs/test_cases/specific_issues/half head.scad",
-				"./outputs/test_cases/specific_issues/half head.gcode",slices_half);
+				"./outputs/test_cases/specific_issues/half head.gcode",
+				-1,-1,
+				slices_half);
 
 	cout << "Insetting: holy_cube.stl" << endl;
 	std::vector<mgl::SliceData> slices_cube;
 	miracleGrue(gcoder, slicer,
 				"./test_cases/specific_issues/insetting/holy_cube.stl",
 				"./outputs/test_cases/specific_issues/holy_cube.scad",
-				"./outputs/test_cases/specific_issues/holy_cube.gcode", slices_cube);
+				"./outputs/test_cases/specific_issues/holy_cube.gcode",
+				-1,-1,
+				slices_cube);
 }
 
 
