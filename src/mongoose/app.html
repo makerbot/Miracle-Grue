@@ -1,0 +1,40 @@
+<header>
+
+<script>
+
+function start()
+{
+var evtSrc = new EventSource( "/stream" );
+
+// Listen for messages/events on the EventSource
+evtSrc.onmessage = function ( e ) {
+	addMessage( "status", JSON.parse(e.data) );
+}
+evtSrc.addEventListener("update", function( e ) 
+{
+	var j = JSON.parse(e.data);
+	addMessage( "update", j );
+}, false);
+
+
+//   document.getElementById('boldStuff').innerHTML = 'Fred Flinstone';
+}
+
+function addMessage( className, data ) {
+   var out_div = document.getElementById("output");
+   out_div.innerHTML += "<p>" + className + ":" + data.msg;
+
+}
+
+</script>
+
+</header>
+<html>
+Hello
+
+<div id="output">
+</div>
+
+<button type="button" onclick="start();">Start</button>
+
+</html>
