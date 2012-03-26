@@ -37,7 +37,6 @@ void mgl::miracleGrue(	GCoder &gcoder,
     if(firstSlice == -1) firstSlice = 0;
     if(lastSlice  == -1) lastSlice = sliceCount-1;
 
-
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
 		progressSlice.tick();
@@ -64,7 +63,7 @@ void mgl::miracleGrue(	GCoder &gcoder,
 						slicer.writeDebugScadFiles,
 						slice);
 	}
-
+	cout << "Writing gcode" << endl;
 	ProgressBar progressGcode(sliceCount);
 	unsigned int adjustedSliceId = 0;
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)

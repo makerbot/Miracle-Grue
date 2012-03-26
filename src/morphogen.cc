@@ -86,6 +86,13 @@ void parseArgs(Configuration &config,
 
         }
 
+        if(str.find("s=") != string::npos)
+        {
+        	config["slicer"]["nbOfShells"] = doubleFromCharEqualsStr(str);
+        	cout << "slicer.nbOfShells = " << config["slicer"]["nbOfShells"].asDouble() << endl;
+
+        }
+
         if(str.find("-d") != string::npos)
         {
         	config["slicer"]["writeDebugScadFiles"] = true;

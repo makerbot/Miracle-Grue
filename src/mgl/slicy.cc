@@ -222,6 +222,8 @@ void Slicy::closeScadFile()
 
 }
 
+
+
 bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					Scalar z,
 					unsigned int sliceId,
@@ -280,14 +282,33 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 		{
 			insetsPolys.push_back(Polygons());
 		}
-		unsigned int loopCount = insetsForLoops.size();
+
+		unsigned int shellCount = insetsForLoops.size();
+		for(unsigned int shellId=0; shellId < shellCount; shellId++)
+		{
+			const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
+			unsigned int loopCount = loopsForCurrentShell.size();
+			Polygons &polygons = insetsPolys[shellId];
+			for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
+			{
+				const std::vector<LineSegment2>& segments = loopsForCurrentShell[outlineId];
+				if(segments.size() >2)
+				{
+					polygons.push_back(Polygon());
+					Polygon &polygon = *polygons.rbegin();
+					segments2polygon(segments, polygon);
+				}
+			}
+		}
+
+/*
 		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 		{
 			Polygons &polygons = insetsPolys[shellId];
 			for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
 			{
 				unsigned int inverseShellIndex = nbOfShells -1 - shellId;
-				const std::vector<LineSegment2>& segmentLoop = insetsForLoops[outlineId][inverseShellIndex];
+				const std::vector<LineSegment2>& segmentLoop = insetsForLoops[inverseShellIndex][outlineId];
 				if(segmentLoop.size() >2)
 				{
 					polygons.push_back(Polygon());
@@ -297,6 +318,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 				}
 			}
 		}
+*/
 	}
 
 	// deep copy the the infill boundaries
@@ -305,10 +327,30 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	SegmentTable rotatedSegments; // = outlinesSegments; // insetsForLoops[0];
 	if(insetsForLoops.size() > 0)
 	{
-		for (unsigned int i = 0; i < outlineSegmentCount; ++i)
+		for (unsigned int loop = 0; loop < outlineSegmentCount; loop++)
 		{
-			const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
-			rotatedSegments.push_back(deppestInset);
+			// const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
+
+			int lastKnownShell = -1;
+			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+			{
+				const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
+				const vector<LineSegment2> &segmentsForLoop = loopsForCurrentShell[loop];
+				if(segmentsForLoop.size() > 2)
+				{
+					lastKnownShell = shellId;
+				}
+			}
+			if(lastKnownShell >= 0)
+			{
+				const vector<LineSegment2> &deppestInset = insetsForLoops[lastKnownShell][loop];
+				rotatedSegments.push_back(deppestInset);
+			}
+			else
+			{
+				const vector<LineSegment2> &deppestInset = outlinesSegments[loop];
+				rotatedSegments.push_back(deppestInset);
+			}
 		}
 	}
 	else

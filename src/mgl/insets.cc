@@ -171,34 +171,6 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 				insetter.inset(insetsForLoops[i-1], dist, outputs);
 			}
 		}
-	/*
-		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-		{
-			cout << "CLIPPER" << endl;
-			ClipperLib::Polygons in_polys;
-			if(shellId==0)
-			{
-				mglToClipper(outlinesSegments, in_polys);
-			}
-			else
-			{
-				SegmentTable &table = insetsForLoops[shellId - 1];
-				mglToClipper(table, in_polys);
-			}
-
-			ClipperLib::Polygons out_polys;
-			double delta = insetDistances[shellId];
-			ClipperLib::JoinType jointype = ClipperLib::jtMiter;
-			double miterLimit = 3.0;
-
-			OffsetPolygons(in_polys, out_polys, delta, jointype, miterLimit);
-
-			insetsForLoops.push_back(mgl::SegmentTable());
-			SegmentTable& insetSegments = *insetsForLoops.rbegin();
-			clipperToMgl(out_polys, insetSegments);
-		}
-		// void OffsetPolygons(const Polygons &in_polys, Polygons &out_polys, double delta, JoinType jointype, double MiterLimit)
-	*/
 
 	}
 }

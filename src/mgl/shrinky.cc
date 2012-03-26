@@ -845,8 +845,7 @@ Shrinky::~Shrinky()
 }
 
 
-
-void mgl::createShellsForSliceUsingShrinky( const SegmentTable & outlinesSegments,
+void createShells( const SegmentTable & outlinesSegments,
 									   const std::vector<Scalar> &insetDistances,
 									   unsigned int sliceId,
 									   const char *scadFile,
@@ -942,6 +941,97 @@ void mgl::createShellsForSliceUsingShrinky( const SegmentTable & outlinesSegment
 				}
 				cout << "--- --- ERROR " << counter << " END --- ----" << endl;
 				counter ++;
+			}
+		}
+	}
+}
+
+void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments,
+										   const std::vector<Scalar> &insetDistances,
+										   unsigned int sliceId,
+										   const char *scadFile,
+										   bool writeDebugScadFiles,
+										   std::vector<SegmentTable> & insetsForLoops)
+
+{
+	assert(insetsForLoops.size() ==0);
+	unsigned int nbOfShells = insetDistances.size();
+
+	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+	{
+		insetsForLoops.push_back(SegmentTable());
+		SegmentTable &currentShellTable = *insetsForLoops.rbegin();
+		for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
+		{
+			try
+			{
+				Shrinky shrinky;
+				currentShellTable.push_back(std::vector<LineSegment2>());
+				std::vector<LineSegment2> &outlineShell = *currentShellTable.rbegin();
+				Scalar dist = insetDistances[shellId];
+				const SegmentTable *pInputs = NULL;
+				if(shellId == 0)
+				{
+					pInputs = &outlinesSegments;
+				}
+				else
+				{
+					pInputs = &insetsForLoops[shellId-1];
+				}
+				const SegmentTable &inputTable = *pInputs;
+				const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
+
+				if(inputSegments.size()>2)
+				{
+					shrinky.inset(inputSegments, dist, outlineShell);
+				}
+
+			}
+			catch(ShrinkyException &messup)
+			{
+				if(writeDebugScadFiles)
+				{
+					static int counter =0;
+					cout << endl;
+					cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
+					cout << "sliceId: " <<  sliceId   << endl;
+					cout << "loopId : " <<  outlineId << endl;
+					cout << "shellId: " <<  shellId   << endl;
+
+					stringstream ss;
+					ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
+
+					MyComputer myComputer;
+					string loopScadFile = myComputer.fileSystem.ChangeExtension(scadFile, ss.str().c_str());
+					Shrinky shriker(loopScadFile.c_str());
+					shriker.dz=0.1;
+					try
+					{
+						Shrinky shrinky;
+						currentShellTable.push_back(std::vector<LineSegment2>());
+						std::vector<LineSegment2> &outlineShell = *currentShellTable.rbegin();
+						Scalar dist = insetDistances[shellId];
+						if(shellId == 0)
+						{
+							const SegmentTable &inputTable = outlinesSegments;
+							const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
+							shrinky.inset(inputSegments, dist, outlineShell);
+						}
+						else
+						{
+							const SegmentTable &inputTable = insetsForLoops[shellId-1];
+							const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
+							shrinky.inset(inputSegments, dist, outlineShell);
+						}
+					}
+					catch(ShrinkyException &messup2) // the same excpetion is thrown again
+					{
+						messup2; //ignore
+						cout << "saving " << endl;
+					}
+					cout << "--- --- ERROR " << counter << " END --- ----" << endl;
+					counter ++;
+				}
 			}
 		}
 	}
