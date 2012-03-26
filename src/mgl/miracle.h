@@ -24,4 +24,30 @@ void miracleGrue(	GCoder &gcoder,
 					int lastSlice,
 					std::vector< SliceData >  &slices);
 
+void miracleGrue_split(	GCoder &gcoder,
+					Slicer &slicer,
+					const char *modelFile,
+					const char *scadFile,
+					const char *gcodeFile,
+					int firstSlice,
+					int lastSlice,
+					std::vector< SliceData >  &slices);
+
+bool slicesFromSlicerAndParams(
+		std::vector< SliceData >  &slices,
+		std::vector<Scalar>& zIndicies,
+		Slicer &slicer,
+		int firstSliceIdx,
+		int lastSliceIdx,
+		const char *modelFile,
+		const char *scadFile );
+
+
+bool writeGcodeFromSlicesAndParams(
+		const char *gcodeFile, GCoder &gcoder,
+		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
+		const char *modelSource );
+
 }
+
+

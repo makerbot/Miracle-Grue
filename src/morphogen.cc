@@ -45,11 +45,11 @@ void parseArgs(Configuration &config,
 				char *argv[],
 				string &modelFile,
 				string &configFileName,
-				int &firstSlice,
-				int &lastSlice)
+				int &firstSliceIdx,
+				int &lastSliceIdx)
 {
-	firstSlice = -1;
-	lastSlice = -1;
+	firstSliceIdx = -1;
+	lastSliceIdx = -1;
 
 	modelFile = argv[argc-1];
     for(int i = 1;i < argc - 1;i++){
@@ -101,14 +101,14 @@ void parseArgs(Configuration &config,
 
         if(str.find("n=") != string::npos)
         {
-        	firstSlice = intFromCharEqualsStr(str);
-        	cout << "firstSlice = " << firstSlice << endl;
+        	firstSliceIdx = intFromCharEqualsStr(str);
+        	cout << "firstSliceIdx = " << firstSliceIdx << endl;
         }
 
         if(str.find("m=") != string::npos)
         {
-        	lastSlice = intFromCharEqualsStr(str);
-        	cout << "laastSlice = " << lastSlice << endl;
+        	lastSliceIdx = intFromCharEqualsStr(str);
+        	cout << "laastSlice = " << lastSliceIdx << endl;
         }
     }
 }
@@ -179,8 +179,8 @@ int main(int argc, char *argv[], char *envp[])
 		cout << "Configuration file: " << configFileName << endl;
 		config.readFromFile(configFileName.c_str());
 
-		int firstSlice, lastSlice;
-		parseArgs(config, argc, argv, modelFile, configFileName, firstSlice, lastSlice);
+		int firstSliceIdx, lastSliceIdx;
+		parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
 		// cout << config.asJson() << endl;
 
 		MyComputer computer;
@@ -207,9 +207,26 @@ int main(int argc, char *argv[], char *envp[])
 		loadSlicerData(config, slicer);
 
 		std::vector<mgl::SliceData> slices;
-		miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), firstSlice, lastSlice, slices);
-	    cout << endl << computer.clock.now() << endl;
-	    cout << "Done!" << endl;
+		std::vector<Scalar> zIndicies;
+
+		//OLD Monolithic CALL has been outdated
+		//miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), firstSliceIdx, lastSliceIdx, slices);
+
+		bool success = slicesFromSlicerAndParams(slices, zIndicies, slicer,firstSliceIdx, lastSliceIdx, modelFile.c_str(), scadFile.c_str());
+
+		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+		if(success) {
+			success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+			cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+			if( !success )
+				cout << endl << "Write failed! " << endl;
+		}
+		else {
+			cout << endl << "Slicing failed! " << endl;
+		}
+
+	    cout << "Miracle-Grue Done at:" << computer.clock.now() << endl;
 
     }
     catch(mgl::Exception &mixup)

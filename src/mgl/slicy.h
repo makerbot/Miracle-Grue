@@ -83,10 +83,10 @@ class SliceData
 public:
 	ExtruderSlices extruderSlices;
 
-	double z;
+	Scalar z;
 	index_t sliceIndex;
 
-	SliceData (double z, index_t sliceIndex)
+	SliceData (Scalar z, index_t sliceIndex)
 		:z(z), sliceIndex(sliceIndex)//, tubes(z)
 	{
 
@@ -100,7 +100,7 @@ public:
 class Slicy
 {
 	// config info
-	double layerW;
+	Scalar layerW;
 	const char* scadFile;
 	unsigned int sliceCount;
 	// Tolerance for assembling LineSegment2s into a loop

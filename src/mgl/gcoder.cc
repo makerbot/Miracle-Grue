@@ -186,12 +186,17 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
 	ss << endl;
 }
 
-void GCoder::writeStartOfFile(std::ostream &gout, const char* filename)
+/**
+ * Writes intial gcode data to start of the gcode file, including setup & startup info
+ * @param gout - output stream for the gcode text
+ * @param sourceName - source of this gcode (usually the origional stl file)
+ */
+void GCoder::writeStartOfFile(std::ostream &gout, const char* sourceName)
 {
 	gout.precision(3);
 	gout.setf(ios::fixed);
 
-	writeGCodeConfig(gout, filename);
+	writeGCodeConfig(gout, sourceName);
 	writeMachineInitialization(gout);
 	writeExtrudersInitialization(gout);
 	writePlatformInitialization(gout);
@@ -574,7 +579,12 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 
 }
 
-void GCoder::writeGCodeConfig(std::ostream &ss, const char* filename) const
+/**
+ * Writes config header metadata into a gcode file
+ * @param ss Stream to write config data to
+ * @param sourceName - Name of source of this model. Usually the original .stl filename
+ */
+void GCoder::writeGCodeConfig(std::ostream &ss, const char* sourceName="unknown source") const
 {
 	std::string indent = "* ";
 	ss << endl;
@@ -589,7 +599,7 @@ void GCoder::writeGCodeConfig(std::ostream &ss, const char* filename) const
 	ss << "(" << indent << hal9000.clock.now() <<  ")" << endl;
 	ss << "(" << indent << "machine name: " << machineName << ")"<< endl;
 	ss << "(" << indent << "firmware revision:" << firmware << ")" << endl;
-	ss << "(" << indent << "3D model filename: " << filename << ")" << endl;
+	ss << "(" << indent << "3D model filename: " << sourceName << ")" << endl;
 
 	std::string plurial = extruders.size()? "":"s";
 	ss << "(" << indent << extruders.size() << " extruder" << plurial << ")" << endl;
