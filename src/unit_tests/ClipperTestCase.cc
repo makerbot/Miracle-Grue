@@ -7,10 +7,7 @@
 #include "ClipperTestCase.h"
 
 #include "insetTests.h"
-
-
-#include "clipper/clipper.h"
-
+#include "mgl/clipper.h"
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ClipperTestCase );
@@ -87,7 +84,7 @@ void ClipperTestCase::test_conversion()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( table[0][0].a[0], outTable[0][0].a[0], tol );
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( table[0][0].a[1], outTable[0][0].a[1], tol );
 	// first point y
-//	CPPUNIT_ASSERT(table[0][0].a[1] == outTable[0][0].a[1]);
+	// CPPUNIT_ASSERT(table[0][0].a[1] == outTable[0][0].a[1]);
 
 }
 

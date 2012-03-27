@@ -662,7 +662,6 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 	std::vector<LineSegment2> initialSegs = originalSegments;
 
 	bool done = false;
-	//cout << "INSET " << endl;
 	while (!done)
 	{
 		connectivityCheck(initialSegs, tol);
@@ -675,7 +674,6 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 		distanceToGo -= distanceGone;
 		if( tequals(distanceToGo, 0, tol))
 		{
-		//	cout << " ** INSET Done!" << endl;
 			done = true;
 			return;
 		}
@@ -685,11 +683,10 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 		}
 		else
 		{
-		//	cout << " ** INSET stopped." << endl;
 			return;
 		}
 	}
-	//cout << "Thank you:  " << finalInsets.size() << endl;
+
 }
 
 void removeZeroLengthSegments(const std::vector<LineSegment2> &inputSegments, std::vector<LineSegment2> &segments, Scalar tol)

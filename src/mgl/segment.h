@@ -25,6 +25,15 @@
 namespace mgl
 {
 
+//
+// Converts vectors of segments into polygons.
+// The ordering is reversed... the last vector of segments is the first polygon
+// This function fills a a list of poygon (table of Vector2) from a table of segments
+void createPolysFromloopSegments(const SegmentTable &segmentTable, Polygons& loops);
+
+// segments are OK, but polys are better for paths (no repeat point)
+void segments2polygon(const std::vector<LineSegment2> & segments, mgl::Polygon &loop);
+
 // turns triangles into lines
 void segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 		const std::vector<Triangle3> &allTriangles,

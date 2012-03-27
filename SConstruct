@@ -145,7 +145,7 @@ mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/abstractable.cc',
 			'src/mgl/JsonConverter.cc',
 			'src/mgl/insets.cc',
-			'src/clipper/clipper.cc']
+			'src/mgl/clipper.cc']
 
 json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_value.cpp',
@@ -170,14 +170,13 @@ debug_libs_path = ["", ]
 
 
 p = env.Program('./bin/miracle_grue', 
-		mix(['src/morphogen.cc'] ),
+		mix(['src/miracle_grue.cc'] ),
 		LIBS = ['mgl', '_json'],
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
 
 p = env.Program(  	'./bin/unit_tests/clipperUnitTest',   
-				mix(['src/unit_tests/ClipperTestCase.cc',
-					 'src/clipper/clipper.cc'], unit_test), 
+				mix(['src/unit_tests/ClipperTestCase.cc',], unit_test), 
     			LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				 )

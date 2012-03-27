@@ -22,6 +22,38 @@ using namespace std;
 
 
 
+
+void mgl::segments2polygon(const std::vector<LineSegment2> & segments, mgl::Polygon &loop)
+{
+
+    loop.reserve(segments.size());
+    for(size_t j = 0;j < segments.size();j++){
+        const LineSegment2 & line = segments[j];
+        Vector2 p(line.a);
+        loop.push_back(p);
+        if(j == segments.size() - 1){
+            Vector2 p(line.b);
+            loop.push_back(p);
+        }
+    }
+
+}
+
+
+void mgl::createPolysFromloopSegments(const SegmentTable &segmentTable,
+										Polygons& loops)
+{
+	// outline loops
+	size_t count = segmentTable.size();
+	for(size_t i=0; i < count; i++)
+	{
+		const std::vector<LineSegment2> &segments = segmentTable[count-1 - i];
+		loops.push_back(Polygon());
+		Polygon &loop = loops[loops.size()-1];
+	    segments2polygon(segments, loop);
+	}
+}
+
 void mgl::rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar angle)
 {
 	for(size_t i=0; i < loops.size(); i++)

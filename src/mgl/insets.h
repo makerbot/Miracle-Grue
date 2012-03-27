@@ -33,7 +33,9 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
 					bool writeDebugScadFiles,
-					std::vector<SegmentTable> &insetsForLoops);
+					std::vector<Polygons> & insetPolys,
+					SegmentTable& innerOutlinesSegments);
+
 
 }
 

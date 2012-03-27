@@ -12,7 +12,7 @@
 
 #include "insets.h"
 #include "shrinky.h"
-#include "clipper/clipper.h"
+#include "clipper.h"
 
 using namespace std;
 using namespace mgl;
@@ -20,7 +20,7 @@ using namespace mgl;
 #define DBLTOINT 1000
 
 
-void  clipperToMgl(const ClipperLib::Polygons &polys, mgl::SegmentTable & outlinesSegments)
+ void  clipperToMgl(const ClipperLib::Polygons &polys, mgl::SegmentTable & outlinesSegments)
 {
 	size_t loopCount = polys.size();
 	for(size_t i=0; i < loopCount; i++)
@@ -28,21 +28,26 @@ void  clipperToMgl(const ClipperLib::Polygons &polys, mgl::SegmentTable & outlin
 		const ClipperLib::Polygon &loop = polys[i];
 		outlinesSegments.push_back(std::vector<mgl::LineSegment2 > ());
 		std::vector<mgl::LineSegment2 > &segments = *outlinesSegments.rbegin();
-		for(size_t j=0; j < loop.size(); j++)
+		unsigned int loopCount = loop.size();
+		segments.resize(loopCount);
+		for(size_t j=0; j < loopCount; j++)
 		{
 			size_t next = j==loop.size()-1?0:j+1;
 			const ClipperLib::IntPoint &point = loop[j];
 			const ClipperLib::IntPoint &nextPoint = loop[next];
 
 			mgl::LineSegment2 s;
-			s.a[0] = point.X / (Scalar)DBLTOINT;
-			s.a[1] = point.Y / (Scalar)DBLTOINT;
-			s.b[0] = nextPoint.X / (Scalar)DBLTOINT;
-			s.b[1] = nextPoint.Y / (Scalar)DBLTOINT;
-			segments.push_back(s);
+			s.b[0] = point.X / (Scalar)DBLTOINT;
+			s.b[1] = point.Y / (Scalar)DBLTOINT;
+			s.a[0] = nextPoint.X / (Scalar)DBLTOINT;
+			s.a[1] = nextPoint.Y / (Scalar)DBLTOINT;
+
+			unsigned int reverseId = loopCount -1 -j;
+			segments[reverseId] = s;
 		}
 	}
 }
+
 
 void  mglToClipper(const mgl::SegmentTable &segmentTable, ClipperLib::Polygons &out_polys )
 {
@@ -90,6 +95,7 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 }
 
 
+
 class ClipperInsetter
 {
 
@@ -133,9 +139,12 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
 					bool writeDebugScadFiles,
-					std::vector<SegmentTable> &insetsForLoops)
+					std::vector<Polygons> &insetsPolys,
+					SegmentTable& innerOutlinesSegments)
 {
-	assert(insetsForLoops.size() ==0);
+	assert(innerOutlinesSegments.size() == 0);
+
+
 	std::vector<Scalar> insetDistances;
 	insetDistances.reserve(nbOfShells);
 	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
@@ -144,21 +153,13 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 		insetDistances.push_back(insetDistance);
 	}
 
-	if(useShrinky)
-	{
-		createShellsForSliceUsingShrinky(	outlinesSegments,
-											insetDistances,
-											sliceId,
-											scadFile,
-											writeDebugScadFiles,
-											insetsForLoops);
-	}
-	else
+	std::vector<SegmentTable> insetsForLoops;
+	if(!useShrinky)
 	{
 		ClipperInsetter insetter;
 		for(size_t i=0; i < insetDistances.size(); i++)
 		{
-			outlinesSegments:insetsForLoops[i-1];
+
 			Scalar dist = insetDistances[i];
 			insetsForLoops.push_back(SegmentTable());
 			SegmentTable & outputs = *insetsForLoops.rbegin();
@@ -168,9 +169,72 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 			}
 			else
 			{
-				insetter.inset(insetsForLoops[i-1], dist, outputs);
+				SegmentTable &inputs = insetsForLoops[i-1];
+				insetter.inset(inputs, dist, outputs);
 			}
 		}
-
+		innerOutlinesSegments = *insetsForLoops.rbegin();
 	}
+	else
+	{
+		createShellsForSliceUsingShrinky(	outlinesSegments,
+											insetDistances,
+											sliceId,
+											scadFile,
+											writeDebugScadFiles,
+											insetsForLoops);
+
+		unsigned int loopCount = outlinesSegments.size();
+		for (unsigned int loop = 0; loop < loopCount; loop++)
+		{
+			// const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
+
+			int lastKnownShell = -1;
+			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+			{
+				const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
+				const vector<LineSegment2> &segmentsForLoop = loopsForCurrentShell[loop];
+				if(segmentsForLoop.size() > 2)
+				{
+					lastKnownShell = shellId;
+				}
+			}
+			if(lastKnownShell >= 0)
+			{
+				const vector<LineSegment2> &deppestInset = insetsForLoops[lastKnownShell][loop];
+				innerOutlinesSegments.push_back(deppestInset);
+			}
+			else
+			{
+				const vector<LineSegment2> &deppestInset = outlinesSegments[loop];
+				innerOutlinesSegments.push_back(deppestInset);
+			}
+		}
+	}
+
+	// assert(insetsForLoops.size() == outlineSegmentCount);
+	// we fill the structure "backwards" so that the inner shells come first
+	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+	{
+		insetsPolys.push_back(Polygons());
+	}
+
+	unsigned int shellCount = insetsForLoops.size();
+	for(unsigned int shellId=0; shellId < shellCount; shellId++)
+	{
+		const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
+		unsigned int loopCount = loopsForCurrentShell.size();
+		Polygons &polygons = insetsPolys[shellId];
+		for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
+		{
+			const std::vector<LineSegment2>& segments = loopsForCurrentShell[outlineId];
+			if(segments.size() >2)
+			{
+				polygons.push_back(Polygon());
+				Polygon &polygon = *polygons.rbegin();
+				segments2polygon(segments, polygon);
+			}
+		}
+	}
+
 }

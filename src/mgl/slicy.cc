@@ -20,43 +20,6 @@ using namespace std;
 
 
 
-// segments are OK, but polys are better for paths (no repeat point)
-void segments2polygon(const std::vector<LineSegment2> & segments, mgl::Polygon &loop)
-{
-
-    loop.reserve(segments.size());
-    for(size_t j = 0;j < segments.size();j++){
-        const LineSegment2 & line = segments[j];
-        Vector2 p(line.a);
-        loop.push_back(p);
-        if(j == segments.size() - 1){
-            Vector2 p(line.b);
-            loop.push_back(p);
-        }
-    }
-
-}
-
-//
-// Converts vectors of segments into polygons.
-// The ordering is reversed... the last vector of segments is the first polygon
-// This function fills a a list of poygon (table of Vector2) from a table of segments
-void createPolysFromloopSegments(const SegmentTable &segmentTable,
-										Polygons& loops)
-{
-	// outline loops
-	size_t count = segmentTable.size();
-	for(size_t i=0; i < count; i++)
-	{
-		const std::vector<LineSegment2> &segments = segmentTable[count-1 - i];
-		loops.push_back(Polygon());
-		Polygon &loop = loops[loops.size()-1];
-	    segments2polygon(segments, loop);
-	}
-}
-
-
-
 Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
 			const Limits& limits,
 			Scalar layerW,
@@ -257,10 +220,23 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	unsigned int outlineSegmentCount = outlinesSegments.size();
 	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].boundary);
 
-	std::vector<SegmentTable> insetsForLoops;
 
-	if(nbOfShells > 0)
+	//	dumpInsets(insetsForLoops)
+	// create a vector of polygons for each shell.
+	std::vector<Polygons> &insetsPolys = slice.extruderSlices[extruderId].insetLoopsList;
+
+	// deep copy the the infill boundaries
+	// because we are going to rotate them
+	// We pick the innermost succesful inset for each loop
+	SegmentTable innerOutlinesSegments;
+
+	if(nbOfShells == 0)
 	{
+		innerOutlinesSegments = outlinesSegments;
+	}
+	else
+	{
+		std::vector<SegmentTable> insetsForLoops;
 		// create shells inside the outlines (and around holes)
 		inshelligence(outlinesSegments,
 					  nbOfShells,
@@ -269,101 +245,20 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					  insetDistanceFactor,
 					  scadFile,
 					  writeDebugScadFiles,
-					  insetsForLoops);
+					  insetsPolys,
+					  innerOutlinesSegments);
 
-		//assert(insetsForLoops.size() == outlineSegmentCount);
-
-		//	dumpInsets(insetsForLoops)
-		// create a vector of polygons for each shell.
-		std::vector<Polygons> &insetsPolys = slice.extruderSlices[extruderId].insetLoopsList;
-
-		// we fill the structure "backwards" so that the inner shells come first
-		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-		{
-			insetsPolys.push_back(Polygons());
-		}
-
-		unsigned int shellCount = insetsForLoops.size();
-		for(unsigned int shellId=0; shellId < shellCount; shellId++)
-		{
-			const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
-			unsigned int loopCount = loopsForCurrentShell.size();
-			Polygons &polygons = insetsPolys[shellId];
-			for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
-			{
-				const std::vector<LineSegment2>& segments = loopsForCurrentShell[outlineId];
-				if(segments.size() >2)
-				{
-					polygons.push_back(Polygon());
-					Polygon &polygon = *polygons.rbegin();
-					segments2polygon(segments, polygon);
-				}
-			}
-		}
-
-/*
-		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-		{
-			Polygons &polygons = insetsPolys[shellId];
-			for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
-			{
-				unsigned int inverseShellIndex = nbOfShells -1 - shellId;
-				const std::vector<LineSegment2>& segmentLoop = insetsForLoops[inverseShellIndex][outlineId];
-				if(segmentLoop.size() >2)
-				{
-					polygons.push_back(Polygon());
-					Polygon &polygon = *polygons.rbegin();
-
-					segments2polygon(segmentLoop, polygon);
-				}
-			}
-		}
-*/
 	}
 
-	// deep copy the the infill boundaries
-	// because we are going to rotate them
-	// We pick the innermost succesful inset for each loop
-	SegmentTable rotatedSegments; // = outlinesSegments; // insetsForLoops[0];
-	if(insetsForLoops.size() > 0)
-	{
-		for (unsigned int loop = 0; loop < outlineSegmentCount; loop++)
-		{
-			// const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
 
-			int lastKnownShell = -1;
-			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-			{
-				const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
-				const vector<LineSegment2> &segmentsForLoop = loopsForCurrentShell[loop];
-				if(segmentsForLoop.size() > 2)
-				{
-					lastKnownShell = shellId;
-				}
-			}
-			if(lastKnownShell >= 0)
-			{
-				const vector<LineSegment2> &deppestInset = insetsForLoops[lastKnownShell][loop];
-				rotatedSegments.push_back(deppestInset);
-			}
-			else
-			{
-				const vector<LineSegment2> &deppestInset = outlinesSegments[loop];
-				rotatedSegments.push_back(deppestInset);
-			}
-		}
-	}
-	else
-	{
-		rotatedSegments= outlinesSegments;
-	}
 
-	translateLoops(rotatedSegments, toRotationCenter);
+
+	translateLoops(innerOutlinesSegments, toRotationCenter);
 	// rotate the outlines before generating the tubes...
-	rotateLoops(rotatedSegments, sliceAngle);
+	rotateLoops(innerOutlinesSegments, sliceAngle);
 
 	Polygons& infills = slice.extruderSlices[extruderId].infills;
-	infillPathology(rotatedSegments,
+	infillPathology(innerOutlinesSegments,
 					tubularLimits,
 					slice.z,
 					tubeSpacing,
