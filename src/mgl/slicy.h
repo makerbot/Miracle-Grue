@@ -18,6 +18,10 @@
 #include <list>
 #include <set>
 
+#ifdef OMPFF
+#include <omp.h>
+#endif
+
 #include "mgl.h"
 #include "meshy.h"
 #include "segment.h"
@@ -81,8 +85,7 @@ public:
 	Scalar z;
 	index_t sliceIndex;
 
-	SliceData (Scalar z, index_t sliceIndex)
-		:z(z), sliceIndex(sliceIndex)//, tubes(z)
+	SliceData(Scalar z=0, index_t sliceIndex=0) :z(z), sliceIndex(sliceIndex)
 	{
 
 	}

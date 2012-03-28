@@ -9,7 +9,6 @@
 
 */
 
-//#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
 
 
 #include <iostream>
@@ -54,7 +53,7 @@ void parseArgs(Configuration &config,
 	modelFile = argv[argc-1];
     for(int i = 1;i < argc - 1;i++){
         string str = argv[i];
-        cout << i << " " << str << endl;
+        // cout << i << " " << str << endl;
         if(str.find("f=") != string::npos)
         {
         	config["slicer"]["firstLayerZ"]  = doubleFromCharEqualsStr(str);
@@ -70,7 +69,7 @@ void parseArgs(Configuration &config,
         if(str.find("w=") != string::npos)
         {
         	config["slicer"]["layerW"] = doubleFromCharEqualsStr(str);
-        	cout << "sliceer.layerW = " << config["slicer"]["layerW"].asDouble() << endl;
+        	cout << "slicer.layerW = " << config["slicer"]["layerW"].asDouble() << endl;
         }
 
         if(str.find("t=") != string::npos)
@@ -102,13 +101,13 @@ void parseArgs(Configuration &config,
         if(str.find("n=") != string::npos)
         {
         	firstSliceIdx = intFromCharEqualsStr(str);
-        	cout << "firstSliceIdx = " << firstSliceIdx << endl;
+        	cout << "first slice = " << firstSliceIdx << endl;
         }
 
         if(str.find("m=") != string::npos)
         {
         	lastSliceIdx = intFromCharEqualsStr(str);
-        	cout << "laastSlice = " << lastSliceIdx << endl;
+        	cout << "last slice = " << lastSliceIdx << endl;
         }
     }
 }
@@ -205,14 +204,18 @@ int main(int argc, char *argv[], char *envp[])
 
 		Slicer slicer;
 		loadSlicerData(config, slicer);
-
 		std::vector<mgl::SliceData> slices;
 		std::vector<Scalar> zIndicies;
+
+		const char* scadF = NULL;
+		if (scadFile.size() > 0 )
+			scadF = scadFile.c_str();
+
 
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
 		loadMeshyFromStl(mesh, modelFile.c_str());
 
-		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str(), firstSliceIdx, lastSliceIdx);
+		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadF, firstSliceIdx, lastSliceIdx);
 
 		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
 
@@ -225,8 +228,6 @@ int main(int argc, char *argv[], char *envp[])
 		else {
 			cout << endl << "Slicing failed! " << endl;
 		}
-
-	    cout << "Miracle-Grue Done at:" << computer.clock.now() << endl;
 
     }
     catch(mgl::Exception &mixup)

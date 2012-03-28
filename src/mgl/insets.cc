@@ -125,7 +125,7 @@ void ClipperInsetter::inset( const mgl::SegmentTable &inputPolys,
 	clipperToMgl(out_polys, outputPolys);
 }
 
-bool useShrinky = true;
+bool useShrinky = false;
 // a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
 // and counter clockwise for holes)
 // b) creates nbOfShells insets for each

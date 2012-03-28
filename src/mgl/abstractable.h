@@ -34,46 +34,6 @@ namespace mgl {
 
 
 
-//
-// ASCII art
-//
-class ProgressBar
-{
-	unsigned int total;
-	unsigned int delta;
-	unsigned int progress;
-	unsigned int ticks;
-public:
-	ProgressBar(unsigned int count)
-	{
-		reset(count);
-		::std::cout << ":";
-	}
-
-	void reset(unsigned int count)
-	{
-		total = count;
-		progress = 0;
-		delta = count /10;
-	}
-
-	void tick()
-	{
-		total --;
-		ticks ++;
-		if (ticks >= delta)
-		{
-			ticks = 0;
-			::std::cout << " [" << progress * 10<< "%] ";
-			::std::cout.flush();
-			progress ++;
-		}
-		if (total ==0)
-		{
-			// ::std::cout << "" << ::std::endl;
-		}
-	}
-};
 
 class ClockAbstractor
 {
@@ -142,6 +102,51 @@ public:
 	ClockAbstractor clock;
 	FileSystemAbstractor fileSystem;
 
+};
+
+
+//
+// ASCII art
+//
+class ProgressBar
+{
+	unsigned int total;
+	unsigned int delta;
+	unsigned int progress;
+	unsigned int ticks;
+	MyComputer myPc;
+
+public:
+	ProgressBar(unsigned int count)
+	{
+		reset(count);
+		::std::cout << ":";
+	}
+
+	void reset(unsigned int count)
+	{
+		total = count;
+		progress = 0;
+		delta = count /10;
+	}
+
+	void tick()
+	{
+		total --;
+		ticks ++;
+		if (ticks >= delta)
+		{
+			ticks = 0;
+			::std::cout << " [" << progress * 10<< "%] ";
+			::std::cout.flush();
+			progress ++;
+		}
+		if (total ==0)
+		{
+			// ::std::cout << "" << ::std::endl;
+			std::cout << myPc.clock.now() << std::endl;
+		}
+	}
 };
 
 }

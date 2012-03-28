@@ -260,7 +260,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	Polygons& infills = slice.extruderSlices[extruderId].infills;
 	infillPathology(innerOutlinesSegments,
 					tubularLimits,
-					slice.z,
+					z,
 					tubeSpacing,
 					infillShrinking,
 					infills);
@@ -309,7 +309,7 @@ std::ostream& mgl::operator<<(::std::ostream& os, const ExtruderSlice& x)
 
 std::ostream& mgl::operator<<(::std::ostream& os, const SliceData& x)
 {
-	os << "Slice " << x.sliceIndex << ", z=" << x.z << ", " << x.extruderSlices.size() << " extruders" << endl;
+	os << "Slice " /*<< x.sliceIndex << ", z=" << x.z */ << ", " << x.extruderSlices.size() << " extruders" << endl;
 	for (unsigned int i=0; i< x.extruderSlices.size(); i++)
 	{
 		os << "Extruder " << i << endl;

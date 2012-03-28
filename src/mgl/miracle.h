@@ -29,6 +29,6 @@ bool writeGcodeFromSlicesAndParams(
 		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
 		const char *modelSource );
 
-}
+};
 
 

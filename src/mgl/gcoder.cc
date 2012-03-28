@@ -355,13 +355,15 @@ void GCoder::calcInSetExtrusion (	unsigned int extruderId,
 }
 
 
-void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
+void GCoder::writeSlice(ostream& ss, const SliceData& sliceData /*, double layerZ, unsigned int sliceIndex*/)
 {
 
-	double layerZ = sliceData.z;
+	Scalar layerZ = sliceData.z;
+	index_t sliceIndex = sliceData.sliceIndex;
+
 	unsigned int extruderCount = sliceData.extruderSlices.size();
 
-	ss << "(Slice " << sliceData.sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
+	ss << "(Slice " << sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
 	// to each extruder its speed
 	double zFeedrate = gantry.scalingFactor * extruders[0].zFeedRate;
 	// moving all up. This is the first move for every new layer
@@ -376,7 +378,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		}
 		catch(GcoderException &mixup)
 		{
-			cout << "ERROR writing Z move in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			cout << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		unsigned int dualtrickId =  extruderId;
@@ -397,21 +399,21 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 			if(gcoding.infills && gcoding.infillFirst)
 			{
 				Extrusion extrusion;
-				calcInfillExtrusion(extruderId, sliceData.sliceIndex, extrusion);
+				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				ss << "(infills: "  << infills.size() << ")"<< endl;
 				writePolygons(ss, z, extrusion, infills);
 			}
 		}
 		catch(GcoderException &mixup)
 		{
-			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			cout << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 		try
 		{
 			if(gcoding.outline)
 			{
 				Extrusion extrusion;
-				calcInfillExtrusion(extruderId, sliceData.sliceIndex, extrusion);
+				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				//cout << "   Write OUTLINE" << endl;
 				ss << "(outlines: " << loops.size() << " )"<< endl;
 				writePolygons(ss, z, extrusion, loops);
@@ -419,7 +421,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		}
 		catch(GcoderException &mixup)
 		{
-			cout << "ERROR writing loops in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			cout << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		try
@@ -431,7 +433,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 				for(unsigned int i=0; i < insetCount; i++)
 				{
 					Extrusion extrusion;
-					calcInSetExtrusion(extruderId, sliceData.sliceIndex, i, insetCount, extrusion);
+					calcInSetExtrusion(extruderId, sliceIndex, i, insetCount, extrusion);
 					const Polygons &inset = insets[i];
 					// cout << "   Write INSETS " << i << endl;
 					ss << "(inset " << i << "/"<<  insetCount<< " )"<< endl;
@@ -442,7 +444,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 		}
 		catch(GcoderException &mixup)
 		{
-			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			cout << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		try
@@ -451,13 +453,13 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData)
 			{
 				//cout << "   Write INFILLS" << endl;
 				Extrusion extrusion;
-				calcInfillExtrusion(extruderId, sliceData.sliceIndex, extrusion);
+				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				writePolygons(ss, z, extrusion, infills);
 			}
 		}
 		catch(GcoderException &mixup)
 		{
-			cout << "ERROR writing infills in slice " << sliceData.sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			cout << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		if (extruderCount > 0)

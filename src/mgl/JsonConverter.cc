@@ -199,8 +199,8 @@ bool JsonConverter::loadJsonFromExtruderSlice(Value& val, ExtruderSlice& input)
 
 bool JsonConverter::loadJsonFromSliceData(Value& val, SliceData& input)
 {
-	val["z"] = input.z;
-	val["index"] = input.sliceIndex;
+	//val["z"] = input.z;
+	//val["index"] = input.sliceIndex;
 	Value sliceList;
 	for(ExtruderSlices::iterator i = input.extruderSlices.begin(); i < input.extruderSlices.end(); i++)
 	{

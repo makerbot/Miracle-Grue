@@ -116,7 +116,7 @@ if debug:
 #env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
 
 if  multi_thread:  
-    env.Append(CCFLAGS = '-fopenmp')      
+    env.Append(CCFLAGS = '-fopenmp -DOMPFF')      
     env.Append(LINKFLAGS = '-fopenmp')    
        
 
