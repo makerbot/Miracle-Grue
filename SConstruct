@@ -95,6 +95,7 @@ if operating_system == "Darwin":
     print " ** CPPUNIT version checK:", commands.getoutput("port info --line cppunit | grep ^cppunit")
 
 debug = get_environment_flag('MG_DEBUG',False)
+debug = True;
 multi_thread = get_environment_flag('MG_MT', False)
 qt =  get_environment_flag('MG_QT',False)
         

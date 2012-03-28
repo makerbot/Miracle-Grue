@@ -117,7 +117,7 @@ class ProgressBar
 	MyComputer myPc;
 
 public:
-	ProgressBar(unsigned int count)
+	ProgressBar(unsigned int count): total(0),delta(0),progress(0),ticks(0)
 	{
 		reset(count);
 		::std::cout << ":";
