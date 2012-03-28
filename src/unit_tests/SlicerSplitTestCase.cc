@@ -153,7 +153,6 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 
 	// unsigned int
 	slicy.slice(trianglesForSlice,
-			z,
 			sliceId,
 			unsigned int extruderId,
 			Scalar tubeSpacing,

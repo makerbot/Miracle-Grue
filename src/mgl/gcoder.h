@@ -229,7 +229,7 @@ public:
         return extruders;
     }
 
-    void writeSlice(std::ostream & ss, const mgl::SliceData & pathData, double layerZ, unsigned int sliceIndex);
+    void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
 
 private:
 

@@ -132,3 +132,9 @@ void SlicerCupTestCase::testSpecificIssuesC()
 
 
 
+void SlicerCupTestCase::testSliceShifting()
+{
+	testModel(inputDir2 + "insetting/holy_cube.stl", "miracle.config");
+}
+
+

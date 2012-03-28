@@ -490,7 +490,6 @@ void batchProcess(	Scalar firstLayerZ,
 			SliceData &slice = slices[sliceId];
 
 			bool hazNewPaths = slicy.slice( trianglesForSlice,
-											z,
 											sliceId,
 											extruderId,
 											tubeSpacing,

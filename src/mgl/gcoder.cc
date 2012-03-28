@@ -355,10 +355,11 @@ void GCoder::calcInSetExtrusion (	unsigned int extruderId,
 }
 
 
-void GCoder::writeSlice(ostream& ss, const SliceData& sliceData, double layerZ, unsigned int sliceIndex)
+void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 {
 
-
+	double layerZ = sliceData.getZHeight();
+	unsigned int sliceIndex = sliceData.getIndex();
 	unsigned int extruderCount = sliceData.extruderSlices.size();
 
 	ss << "(Slice " << sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;

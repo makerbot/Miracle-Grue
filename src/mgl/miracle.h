@@ -26,23 +26,29 @@ void miracleGrue(GCoder &gcoder,
                       int lastSliceIdx,
                       std::vector< SliceData >  &slices);
 
-/*
-bool slicesFromSlicerAndMesh(
+
+void slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
-		std::vector<Scalar>& zIndicies,
-		Slicer &slicer,
+		const Slicer &slicer,
 		Meshy& mesh,
 		const char *scadFile,
 		int firstSliceIdx  = -1,
 		int lastSliceIdx  = -1);
 
 
-bool writeGcodeFromSlicesAndParams(
-		const char *gcodeFile, GCoder &gcoder,
-		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
-		const char *modelSource );
 
-*/
+void adjustSlicesToPlate(
+		std::vector<SliceData>& slices,
+		const LayerMeasure& layerMeasure,
+		size_t firstSliceIdx,
+		size_t lastSliceIdx);
+
+void writeGcodeFromSlicesAndParams(
+		const char *gcodeFile,
+		GCoder &gcoder,
+		std::vector<SliceData >& slices,
+		const char *modelSource ="unknown source");
+
 };
 
 
