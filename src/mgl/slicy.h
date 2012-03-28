@@ -82,10 +82,7 @@ class SliceData
 public:
 	ExtruderSlices extruderSlices;
 
-	Scalar z;
-	index_t sliceIndex;
-
-	SliceData(Scalar z=0, index_t sliceIndex=0) :z(z), sliceIndex(sliceIndex)
+	SliceData()
 	{
 
 	}

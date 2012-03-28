@@ -254,10 +254,16 @@ void gcodeModel::loadGcodeLine(const char* lineStr)
 void gcodeModel::loadGCode(QString q)
 {
     string filename = q.toStdString();
-    string lower = filename;
-    std::transform(filename.begin(), filename.end(), lower.begin(), ::tolower);
 
-    if(lower.find(".stl") > 0)
+
+    cout << "loadGCode: " << filename << endl;
+
+    string extension = filename.substr(0, filename.find_last_of('.'));
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+    int r = extension.find("stl");
+    cout << extension  << endl;
+    cout << r << endl;
+    if(r > 0)
     {
         MyComputer computer;
         string gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(filename.c_str()).c_str(), ".gcode" );
@@ -274,10 +280,10 @@ void gcodeModel::loadGCode(QString q)
         miracleGrue(gcoder, slicer, filename.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices);
 
         filename =  gcodeFile;
-        std::transform(filename.begin(), filename.end(), lower.begin(), ::tolower);
+        extension = "gcode";
     }
 
-    if(lower.find(".gcode") > 0)
+    if(extension.find("gcode") > 0)
     {
         ifstream file;
         file.open(filename.c_str());

@@ -15,7 +15,7 @@ void mgl::miracleGrue(GCoder &gcoder,
 {
     assert(slices.size() ==0);
     Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-    loadMeshyFromStl(mesh, modelFile);
+    mesh.readStlFile(modelFile);
 
     unsigned int sliceCount = mesh.readSliceTable().size();
     unsigned int extruderId = 0;
@@ -277,3 +277,4 @@ bool mgl::writeGcodeFromSlicesAndParams( const char *gcodeFile, GCoder &gcoder,
     gout.close();
     return true;
 }
+*/

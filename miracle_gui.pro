@@ -27,6 +27,7 @@ SOURCES +=  src/json-cpp/src/lib_json/json_reader.cpp\
     src/mgl/JsonConverter.cc\
     src/mgl/LineSegment2.cc\
     src/mgl/mgl.cc\
+    src/mgl/meshy.cc\
     src/mgl/miracle.cc\
     src/mgl/Scalar.cc\
     src/mgl/segment.cc\

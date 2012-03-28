@@ -8,12 +8,25 @@
    License, or (at your option) any later version.
 
 */
+#ifndef MIRACLE_H_
+#define MIRACLE_H_
 
 #include "gcoder.h"
+
 
 namespace mgl
 {
 
+void miracleGrue(GCoder &gcoder,
+                      const Slicer &slicer,
+                      const char *modelFile,
+                      const char *scadFile,
+                      const char *gcodeFile,
+                      int firstSliceIdx,
+                      int lastSliceIdx,
+                      std::vector< SliceData >  &slices);
+
+/*
 bool slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
@@ -29,6 +42,8 @@ bool writeGcodeFromSlicesAndParams(
 		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
 		const char *modelSource );
 
+*/
 };
 
 
+#endif
