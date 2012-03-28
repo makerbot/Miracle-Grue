@@ -206,7 +206,7 @@ int main(int argc, char *argv[], char *envp[])
 		loadSlicerData(config, slicer);
 		std::vector<mgl::SliceData> slices;
 
-		//OLD Monolithic CALL has been outdated
+
 		const char* scad = NULL;
 		if (scadFile.size() > 0 )
 		{
