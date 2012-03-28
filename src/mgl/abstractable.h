@@ -140,9 +140,10 @@ public:
 		if (ticks >= delta)
 		{
 			ticks = 0;
+			progress ++;
 			::std::cout << " [" << progress * 10<< "%] ";
 			::std::cout.flush();
-			progress ++;
+
 		}
 		if (total ==0)
 		{
