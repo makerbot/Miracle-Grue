@@ -178,7 +178,6 @@ void mgl::slicesFromSlicerAndMesh(
 }
 
 
-
 ///
 /// Does an inplcae update to the passed slices to adjust/move them
 /// so the lowest layer is a z height zero
@@ -194,15 +193,15 @@ void mgl::adjustSlicesToPlate(
 {
 
 	/// remove unwanted slices at the end of the vector
-	slices.erase(slices.begin()+ lastSliceIdx, slices.end());
+//	slices.erase(slices.begin()+ lastSliceIdx, slices.end());
 //	/// remove unwanted slices at the start of the vector
 //	slices.erase(slices.begin(),slices.begin() + firstSliceIdx-1);
-
-	for(size_t sliceId = 0; sliceId < slices.size(); sliceId++)
+	size_t sliceCounter = 0;
+	for(size_t sliceId = firstSliceIdx; sliceId < lastSliceIdx; sliceId++, sliceCounter++)
 	{
 		Scalar adjustedZ = layerMeasure.sliceIndexToHeight(sliceId);
 		cout << " slice info: " << slices[sliceId].getIndex() << " " << slices[sliceId].getZHeight() << endl;
-		slices[sliceId].updatePosition(adjustedZ,sliceId);
+		slices[sliceId].updatePosition(adjustedZ, sliceCounter );
 	}
 }
 

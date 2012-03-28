@@ -207,18 +207,17 @@ int main(int argc, char *argv[], char *envp[])
 		std::vector<mgl::SliceData> slices;
 		std::vector<Scalar> zIndicies;
 
-
-
 		const char* scad = NULL;
 
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
-
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
 		mesh.readStlFile(modelFile.c_str());
 
-		miracleGrue(gcoder, slicer, modelFile.c_str(), scad, gcodeFile.c_str(), firstSliceIdx, lastSliceIdx, slices);
+		miracleGrue(gcoder, slicer, modelFile.c_str(),
+					scad, gcodeFile.c_str(),
+					firstSliceIdx, lastSliceIdx, slices);
 
     }
     catch(mgl::Exception &mixup)
