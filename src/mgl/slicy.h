@@ -32,16 +32,11 @@ namespace mgl // Miracle-Grue's geometry library
 struct Slicer
 {
 	Slicer()
-	:layerH(0.27),
-	 firstLayerZ(0.1),
-	 tubeSpacing(1),
-	 angle(1.570796326794897),
-	 nbOfShells(2),
-	 layerW(0.4),
-	 infillShrinkingMultiplier(0.25),
-	 insetDistanceMultiplier(0.9),
-	 insetCuttOffMultiplier(0.01),
-	 writeDebugScadFiles(false)
+	:layerH(0.27), firstLayerZ(0.1),
+	 tubeSpacing(1), angle(1.570796326794897),
+	 nbOfShells(2), layerW(0.4),
+	 infillShrinkingMultiplier(0.25), insetDistanceMultiplier(0.9),
+	 insetCuttOffMultiplier(0.01), writeDebugScadFiles(false)
 	{}
 
 	Scalar layerH;

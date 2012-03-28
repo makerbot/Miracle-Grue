@@ -4,166 +4,6 @@ using namespace std;
 using namespace mgl;
 
 
-void mgl::miracleGrue(	GCoder &gcoder,
-					Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSliceIdx,
-					int lastSliceIdx,
-					std::vector< SliceData >  &slices)
-{
-	assert(slices.size() ==0);
-
-	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile);
-
-	unsigned int sliceCount = mesh.readSliceTable().size();
-	unsigned int extruderId = 0;
-
-	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
-
-
-	slices.reserve( mesh.readSliceTable().size());
-
-	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
-
-	ProgressBar progressSlice(sliceCount);
-	cout << "Slicing" << endl;
-
-    std::ofstream gout(gcodeFile);
-    gcoder.writeStartOfFile(gout, modelFile);
-
-    if(firstSliceIdx == -1) firstSliceIdx = 0;
-    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
-
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progressSlice.tick();
-
-		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
-		Scalar sliceAngle = sliceId * slicer.angle;
-		slices.push_back( SliceData(z,sliceId));
-		SliceData &slice = slices[sliceId];
-
-		if(sliceId <  firstSliceIdx) continue;
-		if(sliceId > lastSliceIdx) continue;
-
-		slicy.slice(	trianglesForSlice,
-						z,
-						sliceId,
-						extruderId,
-						slicer.tubeSpacing,
-						sliceAngle,
-						slicer.nbOfShells,
-						cuttOffLength,
-						slicer.infillShrinkingMultiplier,
-						slicer.insetDistanceMultiplier,
-						slicer.writeDebugScadFiles,
-						slice);
-	}
-	cout << "Writing gcode" << endl;
-	ProgressBar progressGcode(sliceCount);
-	unsigned int adjustedSliceId = 0;
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progressGcode.tick();
-		SliceData &slice = slices[sliceId];
-
-		if(sliceId <  firstSliceIdx) continue;
-		if(sliceId > lastSliceIdx) continue;
-
-		slice.sliceIndex = adjustedSliceId;
-		slice.z = mesh.readLayerMeasure().sliceIndexToHeight(adjustedSliceId);
-		gcoder.writeSlice(gout, slice);
-		adjustedSliceId ++;
-	}
-    gout.close();
-}
-
-
-void mgl::miracleGrue_split(	GCoder &gcoder,
-					Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSliceIdx,
-					int lastSliceIdx,
-					std::vector< SliceData >  &slices)
-{
-	assert(slices.size() ==0);
-
-	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile);
-
-	unsigned int sliceCount = mesh.readSliceTable().size();
-	unsigned int extruderId = 0;
-
-	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
-
-
-	slices.reserve( mesh.readSliceTable().size());
-
-	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
-
-	ProgressBar progressSlice(sliceCount);
-	cout << "Slicing" << endl;
-
-    if(firstSliceIdx == -1) firstSliceIdx = 0;
-    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
-
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progressSlice.tick();
-
-		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
-		Scalar sliceAngle = sliceId * slicer.angle;
-		slices.push_back( SliceData(z,sliceId));
-		SliceData &slice = slices[sliceId];
-
-		if(sliceId <  firstSliceIdx) continue;
-		if(sliceId > lastSliceIdx) continue;
-
-		slicy.slice(	trianglesForSlice,
-						z,
-						sliceId,
-						extruderId,
-						slicer.tubeSpacing,
-						sliceAngle,
-						slicer.nbOfShells,
-						cuttOffLength,
-						slicer.infillShrinkingMultiplier,
-						slicer.insetDistanceMultiplier,
-						slicer.writeDebugScadFiles,
-						slice);
-	}
-	cout << "Writing gcode" << endl;
-	ProgressBar progressGcode(sliceCount);
-	unsigned int adjustedSliceId = 0;
-
-    std::ofstream gout(gcodeFile);
-    gcoder.writeStartOfFile(gout, modelFile);
-
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progressGcode.tick();
-		SliceData &slice = slices[sliceId];
-
-		if(sliceId <  firstSliceIdx) continue;
-		if(sliceId > lastSliceIdx) continue;
-
-		slice.sliceIndex = adjustedSliceId;
-		slice.z = mesh.readLayerMeasure().sliceIndexToHeight(adjustedSliceId);
-		gcoder.writeSlice(gout, slice);
-		adjustedSliceId ++;
-	}
-    gout.close();
-}
-
-
-
 /**
  * Creates slices from the specified model file, and saves them
  * into the slices object
@@ -173,25 +13,21 @@ void mgl::miracleGrue_split(	GCoder &gcoder,
  * @param slicer - instance of a slicer object
  * @param firstSliceIdx - for debugging, first slice to store into slices.
  * @param lastSliceIdx - for debugging, last slice to store into slices.
- * @param modelSource - source .stl filename
+ * @param mesh - Mesh object
  * @param scadFile - debugging SCAD filename for debugging to scad file
  *
  */
-bool mgl::slicesFromSlicerAndParams(
+bool mgl::slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
 		Slicer &slicer,
+		Meshy& mesh,
+		const char *scadFile,
 		int firstSliceIdx,
-		int lastSliceIdx,
-		const char *modelFile,
-		const char *scadFile)
+		int lastSliceIdx )
 
 		{
 	assert(slices.size() ==0);
-
-	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile);
-
 
 	unsigned int sliceCount = mesh.readSliceTable().size();
 	unsigned int extruderId = 0;
@@ -200,7 +36,6 @@ bool mgl::slicesFromSlicerAndParams(
     if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
 	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
-
 
 	slices.reserve( mesh.readSliceTable().size());
 

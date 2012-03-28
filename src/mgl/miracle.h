@@ -14,33 +14,14 @@
 namespace mgl
 {
 
-
-void miracleGrue(	GCoder &gcoder,
-					Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSlice,
-					int lastSlice,
-					std::vector< SliceData >  &slices);
-
-void miracleGrue_split(	GCoder &gcoder,
-					Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSlice,
-					int lastSlice,
-					std::vector< SliceData >  &slices);
-
-bool slicesFromSlicerAndParams(
+bool slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
 		Slicer &slicer,
-		int firstSliceIdx,
-		int lastSliceIdx,
-		const char *modelFile,
-		const char *scadFile );
+		Meshy& mesh,
+		const char *scadFile,
+		int firstSliceIdx  = -1,
+		int lastSliceIdx  = -1);
 
 
 bool writeGcodeFromSlicesAndParams(

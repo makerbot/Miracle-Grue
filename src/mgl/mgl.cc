@@ -440,6 +440,8 @@ bool mgl::tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
 	}
 	return true;
 }
+
+
 /// Verifies each Polygon in the passed Polygons are in tolerance
 bool mgl::tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
 {

@@ -209,10 +209,10 @@ int main(int argc, char *argv[], char *envp[])
 		std::vector<mgl::SliceData> slices;
 		std::vector<Scalar> zIndicies;
 
-		//OLD Monolithic CALL has been outdated
-		//miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), firstSliceIdx, lastSliceIdx, slices);
+		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+		loadMeshyFromStl(mesh, modelFile.c_str());
 
-		bool success = slicesFromSlicerAndParams(slices, zIndicies, slicer,firstSliceIdx, lastSliceIdx, modelFile.c_str(), scadFile.c_str());
+		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str(), firstSliceIdx, lastSliceIdx);
 
 		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
 

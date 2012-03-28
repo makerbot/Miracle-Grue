@@ -17,6 +17,7 @@ MyComputer computer;
 
 string outputDir ("outputs/test_cases/slicerCupTestCase/");
 string outputDir2("outputs/test_cases/specific_issues/");
+string inputDir("./test_cases/slicerCupTestCase/stls/");
 
 void SlicerCupTestCase::setUp()
 {
@@ -69,13 +70,32 @@ void SlicerCupTestCase::testIndividuals()
 		loadSlicerData(config, slicer);
 
 		std::vector< SliceData >  slices;
-		miracleGrue(	gcoder,
-						slicer,
-						modelFile.c_str(),
-						scadFile.c_str(),
-						gcodeFile.c_str(),
-						-1,-1,
-						slices);
+		std::vector<Scalar> zIndicies;
+
+		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+		loadMeshyFromStl(mesh, modelFile.c_str());
+
+		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+		if(success) {
+			success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+			cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+			if( !success )
+				cout << endl << "Write failed! " << endl;
+		}
+		else {
+			cout << endl << "Slicing failed! " << endl;
+		}
+
+//		miracleGrue(	gcoder,
+//						slicer,
+//						modelFile.c_str(),
+//						scadFile.c_str(),
+//						gcodeFile.c_str(),
+//						-1,-1,
+//						slices);
 
 		cout << computer.clock.now() << endl;
 		cout << "DONE!" << endl;
@@ -100,13 +120,38 @@ void SlicerCupTestCase::testAllTogeter()
 
 	cout << endl;
 	cout << computer.clock.now() << endl;
-	std::vector<mgl::SliceData> slices;
-	miracleGrue(gcoder, slicer,
-				"./test_cases/slicerCupTestCase/stls/all_together.stl",
-				"./outputs/test_cases/slicerCupTestCase/all_together.scad",
-				"./outputs/test_cases/slicerCupTestCase/all_together.gcode",
-				-1,-1,
-				slices);
+//	miracleGrue(gcoder, slicer,
+//				"./outputs/test_cases/slicerCupTestCase/all_together.scad",
+//				"./outputs/test_cases/slicerCupTestCase/all_together.gcode",
+//				-1,-1,
+//				slices);
+	string modelFile = inputDir + "all_together.stl";
+	string scadFile = outputDir + "all_together.scad";
+	string gcodeFile = outputDir + "all_together.gcode";
+
+	std::vector< SliceData >  slices;
+	std::vector<Scalar> zIndicies;
+
+	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+	cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+	if(success) {
+		success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+		cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+		if( !success )
+			cout << endl << "Write failed! " << endl;
+	}
+	else {
+		cout << endl << "Slicing failed! " << endl;
+	}
+
+
+
+
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
@@ -125,13 +170,35 @@ void SlicerCupTestCase::testCathedral_Crossing_bad()
 	cout << endl;
 	cout << computer.clock.now() << endl;
 
-	std::vector<mgl::SliceData> slices;
-	miracleGrue(gcoder, slicer,
-				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl",
-				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.scad",
-				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.gcode",
-				-1,-1,
-				slices);
+	string modelFile = inputDir + "Cathedral_Crossing.stl";
+	string scadFile = outputDir + "Cathedral_Crossing.scad";
+	string gcodeFile = outputDir + "Cathedral_Crossing.gcode";
+
+	std::vector< SliceData >  slices;
+	std::vector<Scalar> zIndicies;
+
+	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+	cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+	if(success) {
+		success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+		cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+		if( !success )
+			cout << endl << "Write failed! " << endl;
+	}
+	else {
+		cout << endl << "Slicing failed! " << endl;
+	}
+//	miracleGrue(gcoder, slicer,
+//				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing.stl",
+//				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.scad",
+//				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing.gcode",
+//				-1,-1,
+//				slices);
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
@@ -149,13 +216,38 @@ void SlicerCupTestCase::testCathedral_Crossing_fixed()
 
 	cout << endl;
 	cout << computer.clock.now() << endl;
-	std::vector<mgl::SliceData> slices;
-	miracleGrue(gcoder, slicer,
-				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl",
-				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.scad",
-				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.gcode",
-				-1,-1,
-				slices);
+//	miracleGrue(gcoder, slicer,
+//				"./test_cases/slicerCupTestCase/stls/Cathedral_Crossing_fixed.stl",
+//				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.scad",
+//				"./outputs/test_cases/slicerCupTestCase/Cathedral_Crossing_fixed.gcode",
+//				-1,-1,
+//				slices);
+
+	string modelFile = inputDir + "Cathedral_Crossing_fixed.stl";
+	string scadFile = outputDir + "Cathedral_Crossing_fixed.scad";
+	string gcodeFile = outputDir + "Cathedral_Crossing_fixed.gcode";
+
+
+	std::vector< SliceData >  slices;
+	std::vector<Scalar> zIndicies;
+
+	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+	cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+	if(success) {
+		success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+		cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+		if( !success )
+			cout << endl << "Write failed! " << endl;
+	}
+	else {
+		cout << endl << "Slicing failed! " << endl;
+	}
+
 	cout << computer.clock.now() << endl;
 	cout << "DONE!" << endl;
 
@@ -174,32 +266,55 @@ void SlicerCupTestCase::testSpecificIssues()
 	loadSlicerData(config, slicer);
 
 	cout << "Slumping: full head.stl" << endl;
-	std::vector<mgl::SliceData> slices_full;
-	miracleGrue(gcoder, slicer,
-				"./test_cases/specific_issues/slumping/full head.stl",
-				"./outputs/test_cases/specific_issues/full head.scad",
-				"./outputs/test_cases/specific_issues/full head.gcode",
-				-1,-1,
-				slices_full);
+//	miracleGrue(gcoder, slicer,
+//				"./test_cases/specific_issues/slumping/full head.stl",
+//				"./outputs/test_cases/specific_issues/full head.scad",
+//				"./outputs/test_cases/specific_issues/full head.gcode",
+//				-1,-1,
+//				slices_full);
 
+	string modelFile = inputDir + "full head.stl";
+	string scadFile = outputDir + "full head.scad";
+	string gcodeFile = outputDir + "full head.gcode";
+
+
+	std::vector< SliceData >  slices;
+	std::vector<Scalar> zIndicies;
+
+	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+	cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+	if(success) {
+		success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+		cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+		if( !success )
+			cout << endl << "Write failed! " << endl;
+	}
+	else {
+		cout << endl << "Slicing failed! " << endl;
+	}
 	cout << "Slumping: half head.stl" << endl;
 
-	std::vector<mgl::SliceData> slices_half;
-	miracleGrue(gcoder, slicer,
-				"./test_cases/specific_issues/slumping/half head.stl",
-				"./outputs/test_cases/specific_issues/half head.scad",
-				"./outputs/test_cases/specific_issues/half head.gcode",
-				-1,-1,
-				slices_half);
-
-	cout << "Insetting: holy_cube.stl" << endl;
-	std::vector<mgl::SliceData> slices_cube;
-	miracleGrue(gcoder, slicer,
-				"./test_cases/specific_issues/insetting/holy_cube.stl",
-				"./outputs/test_cases/specific_issues/holy_cube.scad",
-				"./outputs/test_cases/specific_issues/holy_cube.gcode",
-				-1,-1,
-				slices_cube);
+//	std::vector<mgl::SliceData> slices_half;
+////	miracleGrue(gcoder, slicer,
+////				"./test_cases/specific_issues/slumping/half head.stl",
+////				"./outputs/test_cases/specific_issues/half head.scad",
+////				"./outputs/test_cases/specific_issues/half head.gcode",
+////				-1,-1,
+////				slices_half);
+//
+//	cout << "Insetting: holy_cube.stl" << endl;
+//	std::vector<mgl::SliceData> slices_cube;
+//	miracleGrue(gcoder, slicer,
+//				"./test_cases/specific_issues/insetting/holy_cube.stl",
+//				"./outputs/test_cases/specific_issues/holy_cube.scad",
+//				"./outputs/test_cases/specific_issues/holy_cube.gcode",
+//				-1,-1,
+//				slices_cube);
 }
 
 

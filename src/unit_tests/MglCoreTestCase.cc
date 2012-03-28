@@ -218,8 +218,9 @@ void MglCoreTestCase::testTequalsPolygon()
 	p4.push_back(v5);	p4.push_back(v6);	p2.push_back(v7);
 	same = tequalsPolygonCompare(p1,p4, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == false);
-
 }
+
+/// Test tequals for polygons function
 void MglCoreTestCase::testTequalsPolygons()
 {
 	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
@@ -256,7 +257,7 @@ void MglCoreTestCase::testTequalsPolygons()
 
 	//polys with different data
 	same = tequalsPolygonsCompare(polys1,polys4, SCALAR_EPSILON);
-	CPPUNIT_ASSERT(same == false);
+	CPPUNIT_ASSERT(same == false );
 }
 
 
