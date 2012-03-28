@@ -155,7 +155,7 @@ void SlicerTestCase::testSlicyKnot_44()
     Configuration config;
     initConfig(config);
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile( modelFile.c_str());
 
 	cout << "file " << modelFile << endl;
 	const SliceTable &sliceTable = mesh.readSliceTable();
@@ -1517,8 +1517,8 @@ void SlicerTestCase::testCollapse()
 	bisectorSegment1.b = segment.b;
 
 
-	LineSegment2 s0 = elongate(bisectorSegment0, elongation);
-	LineSegment2 s1 = prelongate(bisectorSegment1, elongation);
+	LineSegment2 s0 = bisectorSegment0.elongate(elongation);
+	LineSegment2 s1 = bisectorSegment1.prelongate(elongation);
 	Vector2 intersection;
 	bool attached = segmentSegmentIntersection(s0, s1, intersection);
 

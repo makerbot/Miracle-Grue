@@ -218,8 +218,9 @@ void MglCoreTestCase::testTequalsPolygon()
 	p4.push_back(v5);	p4.push_back(v6);	p2.push_back(v7);
 	same = tequalsPolygonCompare(p1,p4, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == false);
-
 }
+
+/// Test tequals for polygons function
 void MglCoreTestCase::testTequalsPolygons()
 {
 	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
@@ -227,21 +228,36 @@ void MglCoreTestCase::testTequalsPolygons()
 
 	Polygon p1,p2,p3;
 	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
-	p2.push_back(v0);	p2.push_back(v1);	p2.push_back(v2);
+	p2.push_back(v1);	p2.push_back(v1);	p2.push_back(v2);
 
-	Polygons polys1,polys2, polys3;
+	Polygons polys1,polys2, polys3,polys4;
 	polys1.push_back(p1);
 	polys1.push_back(p2);
-	polys2.push_back(p2);
+
 	polys2.push_back(p1);
+	polys2.push_back(p2);
+
 	polys3.push_back(p1);
 
-	bool same = tequalsPolygonsCompare(polys1,polys3, SCALAR_EPSILON);
-	CPPUNIT_ASSERT(same == false);
+	polys4.push_back(p2);
+	polys4.push_back(p1);
+
+	bool same = false;
+	//exactly the same poly
 	same = tequalsPolygonsCompare(polys1,polys1, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == true);
-	same = tequalsPolygonsCompare(polys1,polys2, SCALAR_EPSILON);
+
+	//different size polys
+	same = tequalsPolygonsCompare(polys1,polys3, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == false);
+
+	// polys with same data
+	same = tequalsPolygonsCompare(polys1,polys2, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == true);
+
+	//polys with different data
+	same = tequalsPolygonsCompare(polys1,polys4, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == false );
 }
 
 
@@ -253,14 +269,14 @@ void MglCoreTestCase::testMeshyLoads()
 	cout << "Test: " << __FUNCTION__ << endl;
 	Scalar layer0Z = 0.4, layerZ = 0.2;
 	Meshy mesh(layer0Z,layerZ);
-	size_t loadSize = loadMeshyFromStl(mesh, binaryStl.c_str());
+	size_t loadSize = mesh.readStlFile(binaryStl.c_str());
 	cout << binaryStl << " : face count=" << loadSize << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t) 32816, loadSize);
 
 	string asciiStl = testCaseInputsDir +"3D_Knot.stl";
 	cout << "Test: " << __FUNCTION__ << endl;
 	Meshy mesh2(layer0Z,layerZ);
-	loadSize = loadMeshyFromStl(mesh2, asciiStl.c_str());
+	loadSize = mesh2.readStlFile(asciiStl.c_str());
 	cout << asciiStl <<" : face count=" << loadSize << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t)2892, loadSize);
 

@@ -205,16 +205,34 @@ int main(int argc, char *argv[], char *envp[])
 		Slicer slicer;
 		loadSlicerData(config, slicer);
 		std::vector<mgl::SliceData> slices;
+		std::vector<Scalar> zIndicies;
 
+<<<<<<< HEAD
 
 		const char* scad = NULL;
+=======
+		const char* scadF = NULL;
+>>>>>>> 8d9db6977c4131a1589cf0aae3cff22cf1a6c81e
 		if (scadFile.size() > 0 )
-		{
-			scad = scadFile.c_str();
-		}
+			scadF = scadFile.c_str();
 
-		miracleGrue(gcoder, slicer, modelFile.c_str(), scad, gcodeFile.c_str(), firstSliceIdx, lastSliceIdx, slices);
-	    cout << "Miracle-Grue Done at:" << computer.clock.now() << endl;
+
+		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+		mesh.readStlFile(modelFile.c_str());
+
+		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadF, firstSliceIdx, lastSliceIdx);
+
+		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+		if(success) {
+			success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+			cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+			if( !success )
+				cout << endl << "Write failed! " << endl;
+		}
+		else {
+			cout << endl << "Slicing failed! " << endl;
+		}
 
     }
     catch(mgl::Exception &mixup)

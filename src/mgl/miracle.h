@@ -14,57 +14,21 @@
 namespace mgl
 {
 
-// this is the entry point for slicing a model and writing a gcode /scad file
-// it is used by the application and the high level tests
-//
-void miracleGrue(	GCoder &gcoder,
-					const Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSlice,
-					int lastSlice,
-					std::vector< SliceData >  &slices);
-
-void slicesFromSlicerAndParams(const char *modelFile,
-								int firstSliceIdx,
-								int lastSliceIdx,
-								const Slicer &slicer,
-								const char *scadFile,
-								std::vector< SliceData >  &slices);
-
-
-
-/*
-
-void miracleGrue_split(	GCoder &gcoder,
-					Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSlice,
-					int lastSlice,
-					std::vector< SliceData >  &slices);
-
-
-
-
-void slicesFromSlicerAndParams(
+bool slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
 		Slicer &slicer,
-		int firstSliceIdx,
-		int lastSliceIdx,
-		const char *modelFile,
-		const char *scadFile );
+		Meshy& mesh,
+		const char *scadFile,
+		int firstSliceIdx  = -1,
+		int lastSliceIdx  = -1);
 
 
-void writeGcodeFromSlicesAndParams(
+bool writeGcodeFromSlicesAndParams(
 		const char *gcodeFile, GCoder &gcoder,
 		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
 		const char *modelSource );
 
-*/
-}
+};
 
 

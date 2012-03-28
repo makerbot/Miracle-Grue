@@ -24,7 +24,7 @@
 #include "segment.h"
 #include "limits.h"
 #include "abstractable.h"
-
+#include "mgl.h"
 
 
 
@@ -134,140 +134,33 @@ public:
 
 
 	/// requires firstLayerSlice height, and general layer height
-	Meshy(Scalar firstSliceZ, Scalar layerH)
-		:zTapeMeasure(firstSliceZ, layerH)
-	{ 	}
-
-	const std::vector<Triangle3> &readAllTriangles() const
-	{
-		return allTriangles;
-	}
-
-	const Limits& readLimits() const
-	{
-		return limits;
-	}
-
-	const LayerMeasure& readLayerMeasure() const
-	{
-		return zTapeMeasure;
-	}
-
-	const SliceTable &readSliceTable() const
-	{
-		return sliceTable;
-	}
-
+	Meshy(Scalar firstSliceZ, Scalar layerH);
+	const std::vector<Triangle3> &readAllTriangles() const;
+	const Limits& readLimits() const;
+	const LayerMeasure& readLayerMeasure() const;
+	const SliceTable &readSliceTable() const;
 
 	//
 	// Adds a triangle to the global array and for each slice of interest
 	//
-	void addTriangle(Triangle3 &t)
-	{
-
-		Vector3 a, b, c;
-		t.zSort(a,b,c);
-
-		unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(a.z);
-		if(minSliceIndex > 0)
-			minSliceIndex --;
-
-		unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(c.z);
-		if (maxSliceIndex - minSliceIndex > 1)
-			maxSliceIndex --;
-
-//		std::cout << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
-//		std::cout << "Max index =" <<  maxSliceIndex << std::endl;
-		unsigned int currentSliceCount = sliceTable.size();
-		if (maxSliceIndex >= currentSliceCount)
-		{
-			unsigned int newSize = maxSliceIndex+1;
-			sliceTable.resize(newSize); // make room for potentially new slices
-//			std::cout << "- new slice count: " << sliceTable.size() << std::endl;
-		}
-
-		allTriangles.push_back(t);
-
-		size_t newTriangleId = allTriangles.size() -1;
-
-//		 std::cout << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
-		for (size_t i= minSliceIndex; i<= maxSliceIndex; i++)
-		{
-			TriangleIndices &trianglesForSlice = sliceTable[i];
-			trianglesForSlice.push_back(newTriangleId);
-//			std::cout << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
-		}
-
-		limits.grow(t[0]);
-		limits.grow(t[1]);
-		limits.grow(t[2]);
+	void addTriangle(Triangle3 &t);
 
 
-	}
-
-
-	void dump(std::ostream &out)
-	{
-		out << "dumping " << this << std::endl;
-		out << "Nb of triangles: " << allTriangles.size() << std::endl;
-		size_t sliceCount = sliceTable.size();
-
-		out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
-		for (size_t i= 0; i< sliceCount; i++)
-		{
-			TriangleIndices &trianglesForSlice = sliceTable[i];
-			//trianglesForSlice.push_back(newTriangleId);
-			out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
-			//cout << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
-		}
-	}
-
+	void dump(std::ostream &out);
 
 public:
 
-	size_t triangleCount() {
-		return allTriangles.size();
-		std::cout << "all triangle count" << allTriangles.size();
-	}
+	size_t triangleCount();
+	void writeStlFile(const char* fileName) const;
+	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const;
 
-	void writeStlFile(const char* fileName) const
-	{
-		StlWriter out;
-		out.open(fileName);
-		size_t triCount = allTriangles.size();
-		for (size_t i= 0; i < triCount; i++)
-		{
-			const Triangle3 &t = allTriangles[i];
-			out.writeTriangle(t);
-		}
-		out.close();
-		// cout << fileName << " written!"<< std::endl;
-
-	}
-
-	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const
-	{
-
-		StlWriter out;
-		out.open(fileName);
-
-		const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
-		for(std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i!= trianglesForSlice.end(); i++)
-		{
-			index_t index = *i;
-			const Triangle3 &t = allTriangles[index];
-			out.writeTriangle(t);
-		}
-		out.close();
-		// cout << fileName << " written!"<< std::endl;
-	}
-
+	size_t readStlFile(const char* stlFilename);
 };
 
 
-void writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
+//void writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
 
-size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
+size_t readStlFile(mgl::Meshy &meshy, const char* filename);
 
 
 

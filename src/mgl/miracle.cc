@@ -4,8 +4,6 @@ using namespace std;
 using namespace mgl;
 
 
-
-
 void mgl::miracleGrue(GCoder &gcoder,
                       const Slicer &slicer,
                       const char *modelFile,
@@ -94,8 +92,6 @@ void mgl::miracleGrue(GCoder &gcoder,
 /*
 
 
-inputs that are invariant
-
 
 void mgl::miracleGrue_split(	GCoder &gcoder,
 					Slicer &slicer,
@@ -178,6 +174,7 @@ void mgl::miracleGrue_split(	GCoder &gcoder,
 
 
 
+ 
 ///
 /// Creates slices from the specified model file, and saves them
 /// into the slices object
@@ -189,21 +186,17 @@ void mgl::miracleGrue_split(	GCoder &gcoder,
 /// @param lastSliceIdx - for debugging, last slice to store into slices.
 /// @param modelSource - source .stl filename
 /// @param scadFile - debugging SCAD filename for debugging to scad file
-bool mgl::slicesFromSlicerAndParams(
+bool mgl::slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
 		Slicer &slicer,
+		Meshy& mesh,
+		const char *scadFile,
 		int firstSliceIdx,
-		int lastSliceIdx,
-		const char *modelFile,
-		const char *scadFile)
+		int lastSliceIdx )
 
 		{
 	assert(slices.size() ==0);
-
-	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile);
-
 
 	unsigned int sliceCount = mesh.readSliceTable().size();
 	unsigned int extruderId = 0;
@@ -212,7 +205,6 @@ bool mgl::slicesFromSlicerAndParams(
     if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
 	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
-
 
 	slices.reserve( mesh.readSliceTable().size());
 
@@ -231,7 +223,7 @@ bool mgl::slicesFromSlicerAndParams(
 		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
 		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 		Scalar sliceAngle = sliceId * slicer.angle;
-		slices.push_back( SliceData(z,sliceId));
+		slices.push_back( SliceData(z,sliceId) );
 		zIndicies.push_back(Scalar(z));
 		SliceData &slice = slices[sliceId];
 
@@ -285,4 +277,3 @@ bool mgl::writeGcodeFromSlicesAndParams( const char *gcodeFile, GCoder &gcoder,
     gout.close();
     return true;
 }
-*/

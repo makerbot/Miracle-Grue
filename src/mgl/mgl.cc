@@ -49,16 +49,7 @@ std::ostream& operator<<(std::ostream& os, const Polygon& polygon)
 	return os;
 }
 
-//Vector2 mgl::rotate2d(const Vector2 &p, Scalar angle)
-//{
-//	// rotate point
-//	Scalar s = SCALAR_SIN(angle); // radians
-//	Scalar c = SCALAR_COS(angle);
-//	Vector2 rotated;
-//	rotated.x = p.x * c - p.y * s;
-//	rotated.y = p.x * s + p.y * c;
-//	return rotated;
-//}
+
 
 void mgl::rotatePolygon(Polygon& polygon, Scalar angle)
 {
@@ -122,51 +113,14 @@ ostream& mgl::operator <<(ostream &os,const Vector2 &pt)
 }
 
 
-#ifdef __BYTE_ORDER
-# if __BYTE_ORDER == __LITTLE_ENDIAN
-#  define I_AM_LITTLE_ENDIAN
-# else
-#  if __BYTE_ORDER == __BIG_ENDIAN
-#   define I_AM_BIG_ENDIAN
-#  else
-#error "Unknown byte order!"
-#  endif
-# endif
-#endif /* __BYTE_ORDER */
 
-#ifdef I_AM_BIG_ENDIAN
-static inline void convertFromLittleEndian32(uint8_t* bytes)
-{
-    uint8_t tmp = bytes[0];
-    bytes[0] = bytes[3];
-    bytes[3] = tmp;
-    tmp = bytes[1];
-    bytes[1] = bytes[2];
-    bytes[2] = tmp;
-}
-static inline void convertFromLittleEndian16(uint8_t* bytes)
-{
-    uint8_t tmp = bytes[0];
-    bytes[0] = bytes[1];
-    bytes[1] = tmp;
-}
-#else
-static inline void convertFromLittleEndian32(uint8_t* bytes)
-{
-}
-static inline void convertFromLittleEndian16(uint8_t* bytes)
-{
-}
-#endif
+//void mgl::writeMeshyToStl(mgl::Meshy &meshy, const char* filename)
+//{
+//	meshy.writeStlFile(filename);
+//}
 
 
-void mgl::writeMeshyToStl(mgl::Meshy &meshy, const char* filename)
-{
-	meshy.writeStlFile(filename);
-}
-
-
-inline std::string mgl::stringify(double x)
+std::string mgl::stringify(double x)
 {
   std::ostringstream o;
   if (!(o << x))
@@ -174,7 +128,7 @@ inline std::string mgl::stringify(double x)
   return o.str();
 }
 
-inline std::string mgl::stringify(size_t x)
+std::string mgl::stringify(size_t x)
 {
   std::ostringstream o;
   if (!(o << x))
@@ -194,157 +148,157 @@ inline std::string mgl::stringify(size_t x)
  *
  * @returns count of triangles loaded into meshy by this call
  */
-size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
-{
-
-	// NOTE: for stl legacy read-in reasons, we are using floats here,
-	// instead of our own Scalar type
-	struct vertexes_t {
-		float nx, ny, nz;
-		float x1, y1, z1;
-		float x2, y2, z2;
-		float x3, y3, z3;
-		uint16_t attrBytes;
-	};
-
-	union {
-		struct vertexes_t vertexes;
-		uint8_t bytes[sizeof(vertexes_t)];
-	} tridata;
-
-	union
-	{
-		uint32_t intval;
-		uint16_t shortval;
-		uint8_t bytes[4];
-	} intdata;
-
-	size_t facecount = 0;
-
-	uint8_t buf[512];
-	FILE *fHandle = fopen(filename, "rb");
-	if (!fHandle)
-	{
-		string msg = "Can't open \"";
-		msg += filename;
-		msg += "\". Check that the file name is correct and that you have sufficient privileges to open it.";
-		MeshyException problem(msg.c_str());
-		throw (problem);
-	}
-
-	if (fread(buf, 1, 5, fHandle) < 5) {
-		string msg = "\"";
-		msg += filename;
-		msg += "\" is empty!";
-		MeshyException problem(msg.c_str());
-		throw (problem);
-	}
-	bool isBinary = true;
-	if (!strncasecmp((const char*) buf, "solid", 5)) {
-		isBinary = false;
-	}
-	if (isBinary) {
-		// Binary STL file
-		// Skip remainder of 80 character comment field
-		if (fread(buf, 1, 75, fHandle) < 75) {
-			string msg = "\"";
-			msg += filename;
-			msg += "\" is not a valid stl file";
-			MeshyException problem(msg.c_str());
-			throw (problem);
-		}
-		// Read in triangle count
-		if (fread(intdata.bytes, 1, 4, fHandle) < 4) {
-			string msg = "\"";
-			msg += filename;
-			msg += "\" is not a valid stl file";
-			MeshyException problem(msg.c_str());
-			throw (problem);
-		}
-		convertFromLittleEndian32(intdata.bytes);
-		uint32_t tricount = intdata.intval;
-		int countdown = (int)tricount;
-		while (!feof(fHandle) && countdown-- > 0) {
-			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
-				std::cout << __FUNCTION__ << "BREAKING" << endl;
-				break;
-			}
-			for (int i = 0; i < 3 * 4; i++) {
-				convertFromLittleEndian32(tridata.bytes + i * 4);
-			}
-			convertFromLittleEndian16((uint8_t*) &tridata.vertexes.attrBytes);
-
-			vertexes_t &v = tridata.vertexes;
-			Vector3 pt1(v.x1, v.y1, v.z1);
-			Vector3 pt2(v.x2, v.y2, v.z2);
-			Vector3 pt3(v.x3, v.y3, v.z3);
-
-			Triangle3 triangle(pt1, pt2, pt3);
-			meshy.addTriangle(triangle);
-
-			facecount++;
-		}
-
-		/// Throw removed to continue coding progress. We may not expect all
-		/// triangles to load, depending on situation. Needs debugging/revision
-		if(meshy.triangleCount() != tricount) {
-			string msg = "Warning: triangle count err in \"";
-			msg += filename;
-			msg += "\".  Expected: ";
-			msg += stringify((size_t)tricount);
-			msg += ", Read:";
-			msg += stringify(meshy.triangleCount());
-			msg += ", faced:";
-			msg += stringify(facecount);
-			std::cout << msg;
+//size_t mgl::loadMeshyFromStl(mgl::Meshy &meshy, const char* filename)
+//{
+//
+//	// NOTE: for stl legacy read-in reasons, we are using floats here,
+//	// instead of our own Scalar type
+//	struct vertexes_t {
+//		float nx, ny, nz;
+//		float x1, y1, z1;
+//		float x2, y2, z2;
+//		float x3, y3, z3;
+//		uint16_t attrBytes;
+//	};
+//
+//	union {
+//		struct vertexes_t vertexes;
+//		uint8_t bytes[sizeof(vertexes_t)];
+//	} tridata;
+//
+//	union
+//	{
+//		uint32_t intval;
+//		uint16_t shortval;
+//		uint8_t bytes[4];
+//	} intdata;
+//
+//	size_t facecount = 0;
+//
+//	uint8_t buf[512];
+//	FILE *fHandle = fopen(filename, "rb");
+//	if (!fHandle)
+//	{
+//		string msg = "Can't open \"";
+//		msg += filename;
+//		msg += "\". Check that the file name is correct and that you have sufficient privileges to open it.";
+//		MeshyException problem(msg.c_str());
+//		throw (problem);
+//	}
+//
+//	if (fread(buf, 1, 5, fHandle) < 5) {
+//		string msg = "\"";
+//		msg += filename;
+//		msg += "\" is empty!";
+//		MeshyException problem(msg.c_str());
+//		throw (problem);
+//	}
+//	bool isBinary = true;
+//	if (!strncasecmp((const char*) buf, "solid", 5)) {
+//		isBinary = false;
+//	}
+//	if (isBinary) {
+//		// Binary STL file
+//		// Skip remainder of 80 character comment field
+//		if (fread(buf, 1, 75, fHandle) < 75) {
+//			string msg = "\"";
+//			msg += filename;
+//			msg += "\" is not a valid stl file";
 //			MeshyException problem(msg.c_str());
 //			throw (problem);
-		}
-
-
-	} else {
-		// ASCII STL file
-		// Gobble remainder of solid name line.
-		fgets((char*) buf, sizeof(buf), fHandle);
-		while (!feof(fHandle)) {
-			fscanf(fHandle, "%80s", buf);
-			if (!strcasecmp((char*) buf, "endsolid")) {
-				break;
-			}
-			vertexes_t &v = tridata.vertexes;
-			bool success = true;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s %*s") < 0)
-				success = false;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s")< 0)
-				success = false;
-			if (fscanf(fHandle, "%*s")< 0)
-				success = false;
-			if(!success)
-			{
-				stringstream msg;
-				msg << "Error reading face " << facecount << " in file \"" << filename << "\"";
-				MeshyException problem(msg.str().c_str());
-				cout << msg.str().c_str()<< endl;
-				cout << buf << endl;
-				throw(problem);
-			}
-			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));
-			meshy.addTriangle(triangle);
-
-			facecount++;
-		}
-	}
-	fclose(fHandle);
-	return meshy.triangleCount();
-}
+//		}
+//		// Read in triangle count
+//		if (fread(intdata.bytes, 1, 4, fHandle) < 4) {
+//			string msg = "\"";
+//			msg += filename;
+//			msg += "\" is not a valid stl file";
+//			MeshyException problem(msg.c_str());
+//			throw (problem);
+//		}
+//		convertFromLittleEndian32(intdata.bytes);
+//		uint32_t tricount = intdata.intval;
+//		int countdown = (int)tricount;
+//		while (!feof(fHandle) && countdown-- > 0) {
+//			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
+//				std::cout << __FUNCTION__ << "BREAKING" << endl;
+//				break;
+//			}
+//			for (int i = 0; i < 3 * 4; i++) {
+//				convertFromLittleEndian32(tridata.bytes + i * 4);
+//			}
+//			convertFromLittleEndian16((uint8_t*) &tridata.vertexes.attrBytes);
+//
+//			vertexes_t &v = tridata.vertexes;
+//			Vector3 pt1(v.x1, v.y1, v.z1);
+//			Vector3 pt2(v.x2, v.y2, v.z2);
+//			Vector3 pt3(v.x3, v.y3, v.z3);
+//
+//			Triangle3 triangle(pt1, pt2, pt3);
+//			meshy.addTriangle(triangle);
+//
+//			facecount++;
+//		}
+//
+//		/// Throw removed to continue coding progress. We may not expect all
+//		/// triangles to load, depending on situation. Needs debugging/revision
+//		if(meshy.triangleCount() != tricount) {
+//			string msg = "Warning: triangle count err in \"";
+//			msg += filename;
+//			msg += "\".  Expected: ";
+//			msg += stringify((size_t)tricount);
+//			msg += ", Read:";
+//			msg += stringify(meshy.triangleCount());
+//			msg += ", faced:";
+//			msg += stringify(facecount);
+//			std::cout << msg;
+////			MeshyException problem(msg.c_str());
+////			throw (problem);
+//		}
+//
+//
+//	} else {
+//		// ASCII STL file
+//		// Gobble remainder of solid name line.
+//		fgets((char*) buf, sizeof(buf), fHandle);
+//		while (!feof(fHandle)) {
+//			fscanf(fHandle, "%80s", buf);
+//			if (!strcasecmp((char*) buf, "endsolid")) {
+//				break;
+//			}
+//			vertexes_t &v = tridata.vertexes;
+//			bool success = true;
+//			if (fscanf(fHandle, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
+//				success = false;
+//			if (fscanf(fHandle, "%*s %*s") < 0)
+//				success = false;
+//			if (fscanf(fHandle, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
+//				success = false;
+//			if (fscanf(fHandle, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
+//				success = false;
+//			if (fscanf(fHandle, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
+//				success = false;
+//			if (fscanf(fHandle, "%*s")< 0)
+//				success = false;
+//			if (fscanf(fHandle, "%*s")< 0)
+//				success = false;
+//			if(!success)
+//			{
+//				stringstream msg;
+//				msg << "Error reading face " << facecount << " in file \"" << filename << "\"";
+//				MeshyException problem(msg.str().c_str());
+//				cout << msg.str().c_str()<< endl;
+//				cout << buf << endl;
+//				throw(problem);
+//			}
+//			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));
+//			meshy.addTriangle(triangle);
+//
+//			facecount++;
+//		}
+//	}
+//	fclose(fHandle);
+//	return meshy.triangleCount();
+//}
 
 
 /**
@@ -397,32 +351,6 @@ bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current, Scala
 	return r;
 }
 
-/**
- * @returns a new LineSegment2, elongated to be normalized to a unit vector
- */
-LineSegment2 mgl::elongate(const LineSegment2 &s, Scalar dist)
-{
-	LineSegment2 segment(s);
-	Vector2 l = segment.b - segment.a;
-	l.normalise();
-	l *= dist;
-	segment.b += l;
-	return segment;
-}
-
-/**
- * @returns a new line segment. Of what, I don't know. Wasn't documented.
- */
-LineSegment2 mgl::prelongate(const LineSegment2 &s, Scalar dist)
-{
-	LineSegment2 segment(s);
-	Vector2 l = segment.a - segment.b;
-	l.normalise();
-	l *= dist;
-	segment.a += l;
-	return segment;
-}
-
 
 
 /// Verifies each Vector2 in the passed Polygon are in tolerance
@@ -440,6 +368,8 @@ bool mgl::tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
 	}
 	return true;
 }
+
+
 /// Verifies each Polygon in the passed Polygons are in tolerance
 bool mgl::tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
 {

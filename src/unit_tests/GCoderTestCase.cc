@@ -242,8 +242,9 @@ void GCoderTestCase::testSimplePath()
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
-		const SliceData &slice = slices[i];
-		gcoder.writeSlice(gout, slice, 0.27 *i, i );
+		SliceData &slice = slices[i];
+		slice.z = 0.27 *i; slice.sliceIndex = i;
+		gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeGcodeEndOfFile(gout);
@@ -426,8 +427,9 @@ void GCoderTestCase::testGridPath()
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
-		const SliceData &slice = slices[i];
-		gcoder.writeSlice(gout, slice, 0.27*i, i);
+		SliceData &slice = slices[i];
+		slice.z = 0.27 *i; slice.sliceIndex = i;
+		gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeGcodeEndOfFile(gout);
@@ -485,9 +487,10 @@ void GCoderTestCase::testMultiGrid()
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
-		const SliceData &slice = slices[i];
+		SliceData &slice = slices[i];
 		Scalar z = i * layerH + firstLayerH;
-		gcoder.writeSlice(gout, slice, z, i);
+		slice.z = z; slice.sliceIndex = i;
+		gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeGcodeEndOfFile(gout);

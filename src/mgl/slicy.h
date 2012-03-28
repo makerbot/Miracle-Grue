@@ -36,16 +36,11 @@ namespace mgl // Miracle-Grue's geometry library
 struct Slicer
 {
 	Slicer()
-	:layerH(0.27),
-	 firstLayerZ(0.1),
-	 tubeSpacing(1),
-	 angle(1.570796326794897),
-	 nbOfShells(2),
-	 layerW(0.4),
-	 infillShrinkingMultiplier(0.25),
-	 insetDistanceMultiplier(0.9),
-	 insetCuttOffMultiplier(0.01),
-	 writeDebugScadFiles(false)
+	:layerH(0.27), firstLayerZ(0.1),
+	 tubeSpacing(1), angle(1.570796326794897),
+	 nbOfShells(2), layerW(0.4),
+	 infillShrinkingMultiplier(0.25), insetDistanceMultiplier(0.9),
+	 insetCuttOffMultiplier(0.01), writeDebugScadFiles(false)
 	{}
 
 	Scalar layerH;
@@ -87,12 +82,10 @@ class SliceData
 public:
 	ExtruderSlices extruderSlices;
 
-//	Scalar z;
-//	index_t sliceIndex;
+	Scalar z;
+	index_t sliceIndex;
 
-	SliceData()
-		//(Scalar z, index_t sliceIndex)
-		//:z(z), sliceIndex(sliceIndex)//, tubes(z)
+	SliceData(Scalar z=0, index_t sliceIndex=0) :z(z), sliceIndex(sliceIndex)
 	{
 
 	}

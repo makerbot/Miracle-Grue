@@ -34,6 +34,10 @@ public:
 
 	Scalar squaredLength() const;
 	Scalar length() const;
+
+	LineSegment2 elongate(Scalar dist) const;
+	LineSegment2 prelongate(Scalar dist) const;
+
 };
 
 /// List of Lists of line segments. Used to lookup
@@ -45,8 +49,6 @@ std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
 
 bool collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid);
 
-LineSegment2 elongate(const LineSegment2 &s, Scalar dist);
-LineSegment2 prelongate(const LineSegment2 &s, Scalar dist);
 
 }//end namespace mgl
 
