@@ -155,7 +155,7 @@ void SlicerTestCase::testSlicyKnot_44()
     Configuration config;
     initConfig(config);
 	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile( modelFile.c_str());
 
 	cout << "file " << modelFile << endl;
 	const SliceTable &sliceTable = mesh.readSliceTable();

@@ -138,8 +138,8 @@ typedef std::vector<Polygons> PolygonsGroup;
 std::ostream& operator<<(std::ostream& os, const Polygon& v);
 
 
-inline std::string stringify(double x);
-inline std::string stringify(size_t x);
+std::string stringify(double x);
+std::string stringify(size_t x);
 
 
 } // namespace

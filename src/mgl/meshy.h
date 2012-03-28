@@ -24,7 +24,7 @@
 #include "segment.h"
 #include "limits.h"
 #include "abstractable.h"
-
+#include "mgl.h"
 
 
 
@@ -153,12 +153,14 @@ public:
 	size_t triangleCount();
 	void writeStlFile(const char* fileName) const;
 	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const;
+
+	size_t readStlFile(const char* stlFilename);
 };
 
 
-void writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
+//void writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
 
-size_t loadMeshyFromStl(mgl::Meshy &meshy, const char* filename);
+size_t readStlFile(mgl::Meshy &meshy, const char* filename);
 
 
 

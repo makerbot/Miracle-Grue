@@ -75,7 +75,7 @@ void SlicerCupTestCase::testIndividuals()
 		std::vector<Scalar> zIndicies;
 
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-		loadMeshyFromStl(mesh, modelFile.c_str());
+		mesh.readStlFile( modelFile.c_str());
 
 		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 
@@ -135,7 +135,7 @@ void SlicerCupTestCase::testAllTogeter()
 	std::vector<Scalar> zIndicies;
 
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile(modelFile.c_str());
 
 	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 
@@ -180,7 +180,7 @@ void SlicerCupTestCase::testCathedral_Crossing_bad()
 	std::vector<Scalar> zIndicies;
 
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile( modelFile.c_str());
 
 	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 
@@ -234,7 +234,7 @@ void SlicerCupTestCase::testCathedral_Crossing_fixed()
 	std::vector<Scalar> zIndicies;
 
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile( modelFile.c_str());
 
 	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 
@@ -278,7 +278,7 @@ void SlicerCupTestCase::testSpecificIssues()
 	std::vector<Scalar> zIndicies;
 
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile(modelFile.c_str());
 
 	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 
@@ -320,7 +320,7 @@ void SlicerCupTestCase::testSpecificIssuesB()
 	std::vector<Scalar> zIndicies;
 
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile( modelFile.c_str());
 
 	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 
@@ -366,7 +366,7 @@ void SlicerCupTestCase::testSpecificIssuesC()
 	std::vector<Scalar> zIndicies;
 
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-	loadMeshyFromStl(mesh, modelFile.c_str());
+	mesh.readStlFile(modelFile.c_str());
 
 	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
 

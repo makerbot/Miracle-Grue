@@ -269,14 +269,14 @@ void MglCoreTestCase::testMeshyLoads()
 	cout << "Test: " << __FUNCTION__ << endl;
 	Scalar layer0Z = 0.4, layerZ = 0.2;
 	Meshy mesh(layer0Z,layerZ);
-	size_t loadSize = loadMeshyFromStl(mesh, binaryStl.c_str());
+	size_t loadSize = mesh.readStlFile(binaryStl.c_str());
 	cout << binaryStl << " : face count=" << loadSize << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t) 32816, loadSize);
 
 	string asciiStl = testCaseInputsDir +"3D_Knot.stl";
 	cout << "Test: " << __FUNCTION__ << endl;
 	Meshy mesh2(layer0Z,layerZ);
-	loadSize = loadMeshyFromStl(mesh2, asciiStl.c_str());
+	loadSize = mesh2.readStlFile(asciiStl.c_str());
 	cout << asciiStl <<" : face count=" << loadSize << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t)2892, loadSize);
 

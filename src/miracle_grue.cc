@@ -213,7 +213,7 @@ int main(int argc, char *argv[], char *envp[])
 
 
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-		loadMeshyFromStl(mesh, modelFile.c_str());
+		mesh.readStlFile(modelFile.c_str());
 
 		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadF, firstSliceIdx, lastSliceIdx);
 
