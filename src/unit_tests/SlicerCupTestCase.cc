@@ -100,18 +100,18 @@ void SlicerCupTestCase::testIndividuals()
 
 void SlicerCupTestCase::testAllTogeter()
 {
-	testModel("all_together.stl", "miracle.config");
+	testModel(inputDir + "all_together.stl", "miracle.config");
 
 }
 
 void SlicerCupTestCase::testCathedral_Crossing_bad()
 {
-	testModel("Cathedral_Crossing.stl", "miracle.config");
+	testModel(inputDir + "Cathedral_Crossing.stl", "miracle.config");
 }
 
 void SlicerCupTestCase::testCathedral_Crossing_fixed()
 {
-	testModel("Cathedral_Crossing_fixed.stl", "miracle.config");
+	testModel(inputDir + "Cathedral_Crossing_fixed.stl", "miracle.config");
 }
 
 void SlicerCupTestCase::testSpecificIssues()

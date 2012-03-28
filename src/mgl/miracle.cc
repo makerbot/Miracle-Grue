@@ -24,82 +24,26 @@ void mgl::miracleGrue(GCoder &gcoder,
     mesh.readStlFile(modelFile);
 
     slicesFromSlicerAndMesh(slices,slicer,mesh,scadFile,firstSliceIdx,lastSliceIdx);
-    //    unsigned int sliceCount = mesh.readSliceTable().size();
-//    unsigned int extruderId = 0;
-//
-//    Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
-//    Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
-//
-//    ProgressBar progressSlice(sliceCount);
-//    cout << "Slicing" << endl;
-//    if(firstSliceIdx == -1) firstSliceIdx = 0;
-//    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
-//
-//
-//    slices.reserve( mesh.readSliceTable().size());
-//    for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-//    {
-//        slices.push_back( SliceData() );
-//    }
-//
-//    for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-//    {
-//        SliceData &slice = slices[sliceId];
-//
-//        progressSlice.tick();
-//
-//        const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-//        Scalar sliceAngle = sliceId * slicer.angle;
-//
-//        if(sliceId <  firstSliceIdx) continue;
-//        if(sliceId > lastSliceIdx) continue;
-//        Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
-//
-//
-//        slicy.slice(	trianglesForSlice,
-//                                        sliceId,
-//                                        extruderId,
-//                                        slicer.tubeSpacing,
-//                                        sliceAngle,
-//                                        slicer.nbOfShells,
-//                                        cuttOffLength,
-//                                        slicer.infillShrinkingMultiplier,
-//                                        slicer.insetDistanceMultiplier,
-//                                        slicer.writeDebugScadFiles,
-//                                        slice);
-//    }
-
-//
 
 
 	LayerMeasure zMeasure = mesh.readLayerMeasure();
-//	std::vector<SliceData> slicesToWrite;
 
-	adjustSlicesToPlate(slices, zMeasure, firstSliceIdx, lastSliceIdx);
+	size_t first = 0,last= 0;
+	if(firstSliceIdx > 0 ) {
+		first  = firstSliceIdx;
+	}
+
+	if(lastSliceIdx == -1 || lastSliceIdx <= slices.size() ){
+		last = slices.size()-1;
+	}
+	else{
+		last = lastSliceIdx;
+	}
+
+	adjustSlicesToPlate(slices, zMeasure, first, last);
 
 	writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile);
 
-
-//    cout << "Writing gcode" << endl;
-//    std::ofstream gout(gcodeFile);
-//    gcoder.writeStartOfFile(gout, modelFile);
-//
-//    ProgressBar progressCode(sliceCount);
-//    unsigned int adjustedSliceId = 0;
-//    for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-//    {
-//        progressCode.tick();
-//        SliceData &slice = slices[sliceId];
-//
-//        if(sliceId <  firstSliceIdx) continue;
-//        if(sliceId > lastSliceIdx) continue;
-//
-//        // slice.sliceIndex = adjustedSliceId;
-//        Scalar z = zMeasure.sliceIndexToHeight(adjustedSliceId);
-//        gcoder.writeSlice(gout, slice, z, adjustedSliceId);
-//        adjustedSliceId ++;
-//    }
-//    gout.close();
 
 
 }
@@ -199,9 +143,10 @@ void mgl::adjustSlicesToPlate(
 	size_t sliceCounter = 0;
 	for(size_t sliceId = firstSliceIdx; sliceId < lastSliceIdx; sliceId++, sliceCounter++)
 	{
-		Scalar adjustedZ = layerMeasure.sliceIndexToHeight(sliceId);
-		cout << " slice info: " << slices[sliceId].getIndex() << " " << slices[sliceId].getZHeight() << endl;
-		slices[sliceId].updatePosition(adjustedZ, sliceCounter );
+		Scalar adjustedZ = layerMeasure.sliceIndexToHeight(sliceCounter);
+		// cout << " slice info: " << slices[sliceId].getIndex() << " " << slices[sliceId].getZHeight() << endl;
+		slices[sliceId].updatePosition(adjustedZ, sliceId );
+		sliceCounter ++;
 	}
 }
 
