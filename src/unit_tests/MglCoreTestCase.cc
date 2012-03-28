@@ -227,22 +227,35 @@ void MglCoreTestCase::testTequalsPolygons()
 
 	Polygon p1,p2,p3;
 	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
-	p2.push_back(v1);	p2.push_back(v2);	p2.push_back(v3);
+	p2.push_back(v1);	p2.push_back(v1);	p2.push_back(v2);
 
-	Polygons polys1,polys2, polys3;
+	Polygons polys1,polys2, polys3,polys4;
 	polys1.push_back(p1);
 	polys1.push_back(p2);
 
-	polys2.push_back(p2);
 	polys2.push_back(p1);
+	polys2.push_back(p2);
 
 	polys3.push_back(p1);
 
-	bool same = tequalsPolygonsCompare(polys1,polys3, SCALAR_EPSILON);
-	CPPUNIT_ASSERT(same == false);
+	polys4.push_back(p2);
+	polys4.push_back(p1);
+
+	bool same = false;
+	//exactly the same poly
 	same = tequalsPolygonsCompare(polys1,polys1, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == true);
+
+	//different size polys
+	same = tequalsPolygonsCompare(polys1,polys3, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == false);
+
+	// polys with same data
 	same = tequalsPolygonsCompare(polys1,polys2, SCALAR_EPSILON);
+	CPPUNIT_ASSERT(same == true);
+
+	//polys with different data
+	same = tequalsPolygonsCompare(polys1,polys4, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == false);
 }
 
