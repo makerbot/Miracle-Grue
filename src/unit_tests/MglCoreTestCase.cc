@@ -227,13 +227,15 @@ void MglCoreTestCase::testTequalsPolygons()
 
 	Polygon p1,p2,p3;
 	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
-	p2.push_back(v0);	p2.push_back(v1);	p2.push_back(v2);
+	p2.push_back(v1);	p2.push_back(v2);	p2.push_back(v3);
 
 	Polygons polys1,polys2, polys3;
 	polys1.push_back(p1);
 	polys1.push_back(p2);
+
 	polys2.push_back(p2);
 	polys2.push_back(p1);
+
 	polys3.push_back(p1);
 
 	bool same = tequalsPolygonsCompare(polys1,polys3, SCALAR_EPSILON);
