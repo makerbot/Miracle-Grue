@@ -18,6 +18,8 @@ MyComputer computer;
 string outputDir ("outputs/test_cases/slicerCupTestCase/");
 string outputDir2("outputs/test_cases/specific_issues/");
 string inputDir("./test_cases/slicerCupTestCase/stls/");
+string inputDir2("./test_cases/specific_issues/");
+
 
 void SlicerCupTestCase::setUp()
 {
@@ -266,16 +268,10 @@ void SlicerCupTestCase::testSpecificIssues()
 	loadSlicerData(config, slicer);
 
 	cout << "Slumping: full head.stl" << endl;
-//	miracleGrue(gcoder, slicer,
-//				"./test_cases/specific_issues/slumping/full head.stl",
-//				"./outputs/test_cases/specific_issues/full head.scad",
-//				"./outputs/test_cases/specific_issues/full head.gcode",
-//				-1,-1,
-//				slices_full);
 
-	string modelFile = inputDir + "full head.stl";
-	string scadFile = outputDir + "full head.scad";
-	string gcodeFile = outputDir + "full head.gcode";
+	string modelFile = inputDir2 + "slumping/full head.stl";
+	string scadFile = outputDir2 + "full head.scad";
+	string gcodeFile = outputDir2 + "full head.gcode";
 
 
 	std::vector< SliceData >  slices;
@@ -298,23 +294,94 @@ void SlicerCupTestCase::testSpecificIssues()
 		cout << endl << "Slicing failed! " << endl;
 	}
 	cout << "Slumping: half head.stl" << endl;
+}
 
-//	std::vector<mgl::SliceData> slices_half;
-////	miracleGrue(gcoder, slicer,
-////				"./test_cases/specific_issues/slumping/half head.stl",
-////				"./outputs/test_cases/specific_issues/half head.scad",
-////				"./outputs/test_cases/specific_issues/half head.gcode",
-////				-1,-1,
-////				slices_half);
-//
-//	cout << "Insetting: holy_cube.stl" << endl;
-//	std::vector<mgl::SliceData> slices_cube;
+
+
+void SlicerCupTestCase::testSpecificIssuesB()
+{
+	cout << endl;
+	string configFileName("miracle.config");
+	Configuration config;
+	config.readFromFile(configFileName.c_str());
+	GCoder gcoder;
+	loadGCoderData(config, gcoder);
+	Slicer slicer;
+	loadSlicerData(config, slicer);
+
+	cout << "Slumping: full head.stl" << endl;
+
+	string modelFile = inputDir2 + "/slumping/full head.stl";
+	string scadFile = outputDir2 + "full head.scad";
+	string gcodeFile = outputDir2 + "full head.gcode";
+
+
+	std::vector< SliceData >  slices;
+	std::vector<Scalar> zIndicies;
+
+	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+	cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+	if(success) {
+		success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+		cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+		if( !success )
+			cout << endl << "Write failed! " << endl;
+	}
+	else {
+		cout << endl << "Slicing failed! " << endl;
+	}
+	cout << "Slumping: half head.stl" << endl;
+}
+
+
+void SlicerCupTestCase::testSpecificIssuesC()
+{
+	cout << endl;
+	string configFileName("miracle.config");
+	Configuration config;
+	config.readFromFile(configFileName.c_str());
+	GCoder gcoder;
+	loadGCoderData(config, gcoder);
+	Slicer slicer;
+	loadSlicerData(config, slicer);
+
+	cout << "Slumping: full head.stl" << endl;
 //	miracleGrue(gcoder, slicer,
-//				"./test_cases/specific_issues/insetting/holy_cube.stl",
-//				"./outputs/test_cases/specific_issues/holy_cube.scad",
-//				"./outputs/test_cases/specific_issues/holy_cube.gcode",
+//				"./test_cases/specific_issues/slumping/full head.stl",
+//				"./outputs/test_cases/specific_issues/full head.scad",
+//				"./outputs/test_cases/specific_issues/full head.gcode",
 //				-1,-1,
-//				slices_cube);
+//				slices_full);
+
+	string modelFile = inputDir2 + "insetting/holy_cube.stl";
+	string scadFile = outputDir2 + "holy_cube.scad";
+	string gcodeFile = outputDir2 + "holy_cube.gcode";
+
+	std::vector< SliceData >  slices;
+	std::vector<Scalar> zIndicies;
+
+	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
+	loadMeshyFromStl(mesh, modelFile.c_str());
+
+	bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadFile.c_str());
+
+	cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
+
+	if(success) {
+		success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
+		cout << endl << "Write Done at: "<< computer.clock.now() << endl;
+		if( !success )
+			cout << endl << "Write failed! " << endl;
+	}
+	else {
+		cout << endl << "Slicing failed! " << endl;
+	}
+
 }
 
 
