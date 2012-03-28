@@ -135,20 +135,22 @@ void mgl::adjustSlicesToPlate(
 		const LayerMeasure& layerMeasure,
 		size_t firstSliceIdx, size_t lastSliceIdx)
 {
-	/// remove unwanted slices at the end of the vector
-
-//	slices.erase(slices.begin()+ lastSliceIdx, slices.end());
-//	/// remove unwanted slices at the start of the vector
-//	slices.erase(slices.begin(),slices.begin() + firstSliceIdx-1);
+	assert(slices.size() > 0);
 	size_t sliceCounter = 0;
 
-	for(size_t sliceId = firstSliceIdx; sliceId < lastSliceIdx; sliceId++, sliceCounter++)
+	//adjust slices we are keeping in-place
+	for(size_t sliceId = firstSliceIdx; sliceId <= lastSliceIdx; sliceId++, sliceCounter++)
 	{
 		Scalar adjustedZ = layerMeasure.sliceIndexToHeight(sliceCounter);
-		// cout << " slice info: " << slices[sliceId].getIndex() << " " << slices[sliceId].getZHeight() << endl;
-		slices[sliceId].updatePosition(adjustedZ, sliceId );
-		sliceCounter ++;
+		slices[sliceId].updatePosition(adjustedZ, sliceCounter);
 	}
+
+
+	//remove 'end' items from slices
+	slices.erase(slices.begin() + lastSliceIdx+1, slices.end());
+
+	//remove 'front' items from slices
+	slices.erase(slices.begin(), slices.begin() + firstSliceIdx);
 }
 
 
