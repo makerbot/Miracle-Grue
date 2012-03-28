@@ -309,8 +309,8 @@ bool attachSegments(LineSegment2 &first, LineSegment2 &second, Scalar elongation
 //	LineSegment2 s0 = elongateAndPrelongate(first, elongation); // elongate(first, elongation);
 //	LineSegment2 s1 = elongateAndPrelongate(second, elongation); //prelongate(second, elongation);
 
-	LineSegment2 s0 = elongate(first, elongation);
-	LineSegment2 s1 = prelongate(second, elongation);
+	LineSegment2 s0 = first.elongate(elongation);
+	LineSegment2 s1 = second.prelongate(elongation);
 
 	Vector2 intersection;
 	bool trimmed = segmentSegmentIntersection(s0, s1, intersection);
@@ -355,8 +355,8 @@ bool edgeCollapse(const LineSegment2& segment,
 	bisectorSegment1.a = segment.b + bisector1;
 	bisectorSegment1.b = segment.b;
 
-	LineSegment2 s0 = elongate(bisectorSegment0, elongation);
-	LineSegment2 s1 = prelongate(bisectorSegment1, elongation);
+	LineSegment2 s0 = bisectorSegment0.elongate(elongation);
+	LineSegment2 s1 = bisectorSegment1.prelongate(elongation);
 	Vector2 intersection;
 	bool attached = segmentSegmentIntersection(s0, s1, intersection);
 	if(attached)

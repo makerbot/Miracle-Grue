@@ -351,32 +351,6 @@ bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current, Scala
 	return r;
 }
 
-/**
- * @returns a new LineSegment2, elongated to be normalized to a unit vector
- */
-LineSegment2 mgl::elongate(const LineSegment2 &s, Scalar dist)
-{
-	LineSegment2 segment(s);
-	Vector2 l = segment.b - segment.a;
-	l.normalise();
-	l *= dist;
-	segment.b += l;
-	return segment;
-}
-
-/**
- * @returns a new line segment. Of what, I don't know. Wasn't documented.
- */
-LineSegment2 mgl::prelongate(const LineSegment2 &s, Scalar dist)
-{
-	LineSegment2 segment(s);
-	Vector2 l = segment.a - segment.b;
-	l.normalise();
-	l *= dist;
-	segment.a += l;
-	return segment;
-}
-
 
 
 /// Verifies each Vector2 in the passed Polygon are in tolerance

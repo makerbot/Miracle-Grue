@@ -37,3 +37,31 @@ Scalar LineSegment2::length() const
 	return l;
 }
 
+
+/**
+ * @returns a new LineSegment2, elongated to be normalized to a unit vector
+ */
+LineSegment2 LineSegment2::elongate(Scalar dist)  const
+{
+	LineSegment2 segment(*this);
+	Vector2 l = segment.b - segment.a;
+	l.normalise();
+	l *= dist;
+	segment.b += l;
+	return segment;
+}
+
+/**
+ * @returns a new line segment. Of what, I don't know. Wasn't documented.
+ */
+LineSegment2 LineSegment2::prelongate( Scalar dist)  const
+{
+	LineSegment2 segment(*this);
+	Vector2 l = segment.a - segment.b;
+	l.normalise();
+	l *= dist;
+	segment.a += l;
+	return segment;
+}
+
+
