@@ -439,26 +439,6 @@ void ModelReaderTestCase::testRotate()
 
 
 
-/*
-class Cuts
-{
-	index_t triangle;
-	Vector3 vertices[2]; // the second one is redundent
-};
-
-class Loopy
-{
-	std::list<index_t> triangleIndices;
-	std::list<Cuts> segments;
-};
-
-class LoopPole
-{
-	std::list<index_t> EdgeIndices;
-	// std::list<Point> points;
-};
-
-*/
 
 
 void batchProcess(	Scalar firstLayerZ,
@@ -506,7 +486,7 @@ void batchProcess(	Scalar firstLayerZ,
 			const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
 			Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 			Scalar sliceAngle = sliceId * angle;
-			slices.push_back( SliceData(z,sliceId));
+			slices.push_back( SliceData());
 			SliceData &slice = slices[sliceId];
 
 			bool hazNewPaths = slicy.slice( trianglesForSlice,
@@ -527,7 +507,6 @@ void batchProcess(	Scalar firstLayerZ,
 				slices.pop_back();
 			}
 		}
-
 
 		t1=clock()-t0;
 		double t = t1 / 1000000.0;

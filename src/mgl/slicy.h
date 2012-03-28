@@ -18,6 +18,10 @@
 #include <list>
 #include <set>
 
+#ifdef OMPFF
+#include <omp.h>
+#endif
+
 #include "mgl.h"
 #include "meshy.h"
 #include "segment.h"
@@ -83,11 +87,12 @@ class SliceData
 public:
 	ExtruderSlices extruderSlices;
 
-	Scalar z;
-	index_t sliceIndex;
+//	Scalar z;
+//	index_t sliceIndex;
 
-	SliceData (Scalar z, index_t sliceIndex)
-		:z(z), sliceIndex(sliceIndex)//, tubes(z)
+	SliceData()
+		//(Scalar z, index_t sliceIndex)
+		//:z(z), sliceIndex(sliceIndex)//, tubes(z)
 	{
 
 	}

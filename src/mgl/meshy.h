@@ -17,14 +17,16 @@
 #include <set>
 #include <fstream>
 
+#ifdef OMPFF
+#include <omp.h>
+#endif
+
 #include "segment.h"
 #include "limits.h"
 #include "abstractable.h"
 
 
-#ifdef OMPFF
-#include <omp.h>
-#endif
+
 
 ///
 /// Meshy-ness: that property that links all these triangles together

@@ -9,7 +9,6 @@
 
 */
 
-//#define OMPFF // openMP mulitithreading extensions This Fu packs a ompff!
 
 
 #include <iostream>
@@ -54,7 +53,7 @@ void parseArgs(Configuration &config,
 	modelFile = argv[argc-1];
     for(int i = 1;i < argc - 1;i++){
         string str = argv[i];
-        cout << i << " " << str << endl;
+        // cout << i << " " << str << endl;
         if(str.find("f=") != string::npos)
         {
         	config["slicer"]["firstLayerZ"]  = doubleFromCharEqualsStr(str);
@@ -70,7 +69,7 @@ void parseArgs(Configuration &config,
         if(str.find("w=") != string::npos)
         {
         	config["slicer"]["layerW"] = doubleFromCharEqualsStr(str);
-        	cout << "sliceer.layerW = " << config["slicer"]["layerW"].asDouble() << endl;
+        	cout << "slicer.layerW = " << config["slicer"]["layerW"].asDouble() << endl;
         }
 
         if(str.find("t=") != string::npos)
@@ -102,13 +101,13 @@ void parseArgs(Configuration &config,
         if(str.find("n=") != string::npos)
         {
         	firstSliceIdx = intFromCharEqualsStr(str);
-        	cout << "firstSliceIdx = " << firstSliceIdx << endl;
+        	cout << "first slice = " << firstSliceIdx << endl;
         }
 
         if(str.find("m=") != string::npos)
         {
         	lastSliceIdx = intFromCharEqualsStr(str);
-        	cout << "laastSlice = " << lastSliceIdx << endl;
+        	cout << "last slice = " << lastSliceIdx << endl;
         }
     }
 }
@@ -205,27 +204,16 @@ int main(int argc, char *argv[], char *envp[])
 
 		Slicer slicer;
 		loadSlicerData(config, slicer);
-
 		std::vector<mgl::SliceData> slices;
-		std::vector<Scalar> zIndicies;
 
 		//OLD Monolithic CALL has been outdated
-		//miracleGrue(gcoder, slicer, modelFile.c_str(), scadFile.c_str(), gcodeFile.c_str(), firstSliceIdx, lastSliceIdx, slices);
-
-		bool success = slicesFromSlicerAndParams(slices, zIndicies, slicer,firstSliceIdx, lastSliceIdx, modelFile.c_str(), scadFile.c_str());
-
-		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
-
-		if(success) {
-			success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
-			cout << endl << "Write Done at: "<< computer.clock.now() << endl;
-			if( !success )
-				cout << endl << "Write failed! " << endl;
-		}
-		else {
-			cout << endl << "Slicing failed! " << endl;
+		const char* scad = NULL;
+		if (scadFile.size() > 0 )
+		{
+			scad = scadFile.c_str();
 		}
 
+		miracleGrue(gcoder, slicer, modelFile.c_str(), scad, gcodeFile.c_str(), firstSliceIdx, lastSliceIdx, slices);
 	    cout << "Miracle-Grue Done at:" << computer.clock.now() << endl;
 
     }

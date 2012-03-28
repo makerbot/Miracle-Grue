@@ -14,15 +14,28 @@
 namespace mgl
 {
 
-
+// this is the entry point for slicing a model and writing a gcode /scad file
+// it is used by the application and the high level tests
+//
 void miracleGrue(	GCoder &gcoder,
-					Slicer &slicer,
+					const Slicer &slicer,
 					const char *modelFile,
 					const char *scadFile,
 					const char *gcodeFile,
 					int firstSlice,
 					int lastSlice,
 					std::vector< SliceData >  &slices);
+
+void slicesFromSlicerAndParams(const char *modelFile,
+								int firstSliceIdx,
+								int lastSliceIdx,
+								const Slicer &slicer,
+								const char *scadFile,
+								std::vector< SliceData >  &slices);
+
+
+
+/*
 
 void miracleGrue_split(	GCoder &gcoder,
 					Slicer &slicer,
@@ -33,7 +46,10 @@ void miracleGrue_split(	GCoder &gcoder,
 					int lastSlice,
 					std::vector< SliceData >  &slices);
 
-bool slicesFromSlicerAndParams(
+
+
+
+void slicesFromSlicerAndParams(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
 		Slicer &slicer,
@@ -43,11 +59,12 @@ bool slicesFromSlicerAndParams(
 		const char *scadFile );
 
 
-bool writeGcodeFromSlicesAndParams(
+void writeGcodeFromSlicesAndParams(
 		const char *gcodeFile, GCoder &gcoder,
 		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
 		const char *modelSource );
 
+*/
 }
 
 

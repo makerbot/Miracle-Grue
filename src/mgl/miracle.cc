@@ -4,17 +4,18 @@ using namespace std;
 using namespace mgl;
 
 
-void mgl::miracleGrue(	GCoder &gcoder,
-					Slicer &slicer,
-					const char *modelFile,
-					const char *scadFile,
-					const char *gcodeFile,
-					int firstSliceIdx,
-					int lastSliceIdx,
-					std::vector< SliceData >  &slices)
+
+
+void mgl::miracleGrue(GCoder &gcoder,
+					  const Slicer &slicer,
+					  const char *modelFile,
+					  const char *scadFile,
+					  const char *gcodeFile,
+					  int firstSliceIdx,
+					  int lastSliceIdx,
+					  std::vector< SliceData >  &slices)
 {
 	assert(slices.size() ==0);
-
 	Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
 	loadMeshyFromStl(mesh, modelFile);
 
@@ -22,33 +23,32 @@ void mgl::miracleGrue(	GCoder &gcoder,
 	unsigned int extruderId = 0;
 
 	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), slicer.layerW, slicer.layerH, sliceCount, scadFile);
-
-
-	slices.reserve( mesh.readSliceTable().size());
-
 	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
 
 	ProgressBar progressSlice(sliceCount);
 	cout << "Slicing" << endl;
+	if(firstSliceIdx == -1) firstSliceIdx = 0;
+	if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
-    std::ofstream gout(gcodeFile);
-    gcoder.writeStartOfFile(gout, modelFile);
 
-    if(firstSliceIdx == -1) firstSliceIdx = 0;
-    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
+	slices.reserve( mesh.readSliceTable().size());
+	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+	{
+		slices.push_back( SliceData() );
+	}
 
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
+		SliceData &slice = slices[sliceId];
+
 		progressSlice.tick();
 
 		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 		Scalar sliceAngle = sliceId * slicer.angle;
-		slices.push_back( SliceData(z,sliceId));
-		SliceData &slice = slices[sliceId];
 
 		if(sliceId <  firstSliceIdx) continue;
 		if(sliceId > lastSliceIdx) continue;
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
 
 		slicy.slice(	trianglesForSlice,
 						z,
@@ -63,24 +63,36 @@ void mgl::miracleGrue(	GCoder &gcoder,
 						slicer.writeDebugScadFiles,
 						slice);
 	}
+
 	cout << "Writing gcode" << endl;
-	ProgressBar progressGcode(sliceCount);
+    std::ofstream gout(gcodeFile);
+    gcoder.writeStartOfFile(gout, modelFile);
+
+	ProgressBar progressCode(sliceCount);
 	unsigned int adjustedSliceId = 0;
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
-		progressGcode.tick();
+		progressCode.tick();
 		SliceData &slice = slices[sliceId];
 
 		if(sliceId <  firstSliceIdx) continue;
 		if(sliceId > lastSliceIdx) continue;
 
-		slice.sliceIndex = adjustedSliceId;
-		slice.z = mesh.readLayerMeasure().sliceIndexToHeight(adjustedSliceId);
-		gcoder.writeSlice(gout, slice);
+		// slice.sliceIndex = adjustedSliceId;
+		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(adjustedSliceId);
+		gcoder.writeSlice(gout, slice, z, adjustedSliceId);
 		adjustedSliceId ++;
 	}
     gout.close();
+
 }
+
+
+
+/*
+ *
+
+ inputs that are invariant
 
 
 void mgl::miracleGrue_split(	GCoder &gcoder,
@@ -164,19 +176,17 @@ void mgl::miracleGrue_split(	GCoder &gcoder,
 
 
 
-/**
- * Creates slices from the specified model file, and saves them
- * into the slices object
- *
- * @param slices - List of slices to write
- * @param zIndicides - list of zHeight of each slice in slices, indexed by position
- * @param slicer - instance of a slicer object
- * @param firstSliceIdx - for debugging, first slice to store into slices.
- * @param lastSliceIdx - for debugging, last slice to store into slices.
- * @param modelSource - source .stl filename
- * @param scadFile - debugging SCAD filename for debugging to scad file
- *
- */
+///
+/// Creates slices from the specified model file, and saves them
+/// into the slices object
+///
+/// @param slices - List of slices to write
+/// @param zIndicides - list of zHeight of each slice in slices, indexed by position
+/// @param slicer - instance of a slicer object
+/// @param firstSliceIdx - for debugging, first slice to store into slices.
+/// @param lastSliceIdx - for debugging, last slice to store into slices.
+/// @param modelSource - source .stl filename
+/// @param scadFile - debugging SCAD filename for debugging to scad file
 bool mgl::slicesFromSlicerAndParams(
 		std::vector< SliceData >  &slices,
 		std::vector<Scalar>& zIndicies,
@@ -240,14 +250,12 @@ bool mgl::slicesFromSlicerAndParams(
 }
 
 
-/**
- * Writes to gcodeFile via gcoder the slices and data specified by slices
- * @param gcodeFile - name out output gcode file
- * @param gcoder  - instance of a gcode object
- * @param slices - List of slices to write
- * @param zIndicides - list of zHeight of each slice in slices, indexed by position
- * @param modelSource - source of model data, usually the source .stl filename
- */
+ /// Writes to gcodeFile via gcoder the slices and data specified by slices
+ /// @param gcodeFile - name out output gcode file
+ /// @param gcoder  - instance of a gcode object
+ /// @param slices - List of slices to write
+ /// @param zIndicides - list of zHeight of each slice in slices, indexed by position
+ /// @param modelSource - source of model data, usually the source .stl filename
 bool mgl::writeGcodeFromSlicesAndParams( const char *gcodeFile, GCoder &gcoder,
 		std::vector<SliceData >& slices, std::vector<Scalar>& zIndicies,
 		const char *modelSource )
@@ -275,3 +283,4 @@ bool mgl::writeGcodeFromSlicesAndParams( const char *gcodeFile, GCoder &gcoder,
     gout.close();
     return true;
 }
+*/
