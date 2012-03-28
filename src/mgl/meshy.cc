@@ -1,5 +1,5 @@
 
-#include "Meshy.h"
+#include "meshy.h"
 
 using namespace mgl;
 using namespace std;
