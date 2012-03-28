@@ -282,3 +282,8 @@ void MglCoreTestCase::testMeshyLoads()
 
 }
 
+
+void MglCoreTestCase::testSliceDataConstructorDestructor()
+{
+
+}
