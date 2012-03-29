@@ -73,22 +73,35 @@ public:
 
 typedef std::vector<ExtruderSlice > ExtruderSlices;
 
-//
-// The Slice data is contains polygons
-// for each extruder, for a slice.
-// there are multiple polygons for each extruder
+/// The Slice data is contains polygons
+/// for each extruder, for a slice.
+/// there are multiple polygons for each extruder
 class SliceData
 {
+private:
+	Scalar zHeight;
+	size_t index;
+
 public:
 	ExtruderSlices extruderSlices;
 
-	Scalar z;
-	index_t sliceIndex;
-
-	SliceData(Scalar z=0, index_t sliceIndex=0) :z(z), sliceIndex(sliceIndex)
+	/// @param inHeight: z height of this layer. Middle of the specified layer
+	/// @param inIndex: layer number in this  model, positive in the 'up' direction
+	SliceData(Scalar inHeight=0, size_t inIndex=0):zHeight(inHeight), index(inIndex)
 	{
-
 	}
+
+	/// Updates position of slice in a model
+	/// @param inHeight: z height of this layer. Middle of the specified layer
+	/// @param inIndex: layer number in this  model, positive in the 'up' direction
+	void updatePosition(Scalar inHeight,size_t inIndex){
+		zHeight = inHeight;
+		index = inIndex ;
+	}
+
+	Scalar getZHeight() const { return zHeight;}
+	size_t getIndex()const  { return index;}
+
 
 };
 
@@ -144,7 +157,6 @@ public:
 
 
 	bool slice( const TriangleIndices & trianglesForSlice,
-				Scalar z,
 				unsigned int sliceId,
 				unsigned int extruderId,
 				Scalar tubeSpacing,

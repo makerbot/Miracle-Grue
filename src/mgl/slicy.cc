@@ -188,7 +188,6 @@ void Slicy::closeScadFile()
 
 
 bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
-					Scalar z,
 					unsigned int sliceId,
 					unsigned int extruderId,
 					Scalar tubeSpacing,
@@ -200,8 +199,8 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					bool writeDebugScadFiles,
 					SliceData &slice)
 {
-
-    std::vector<LineSegment2> segments;
+	Scalar z = slice.getZHeight();
+	std::vector<LineSegment2> segments;
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 

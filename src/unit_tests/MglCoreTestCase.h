@@ -33,6 +33,8 @@ class MglCoreTestCase : public CPPUNIT_NS::TestFixture
 
   CPPUNIT_TEST( testMeshyLoads );
 
+  CPPUNIT_TEST( testSliceDataConstructorDestructor);
+
 
   CPPUNIT_TEST_SUITE_END();
 
@@ -62,6 +64,7 @@ protected:
 
  void testMeshyLoads();
 
+ void testSliceDataConstructorDestructor();
 
 };
 

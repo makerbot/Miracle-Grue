@@ -29,7 +29,7 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 //	  /// //	  CPPUNIT_TEST( testRotate);
 //	  CPPUNIT_TEST( testInputStls );
 //// //	  CPPUNIT_TEST( fixContourProblem );
-//	  CPPUNIT_TEST( testLayerMeasure );
+	  CPPUNIT_TEST( testLayerMeasure );
 //// //	  CPPUNIT_TEST( testMyStls );
 //
 //	  CPPUNIT_TEST( testMeshySimple );

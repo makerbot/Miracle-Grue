@@ -117,7 +117,9 @@ class ProgressBar
 	MyComputer myPc;
 
 public:
+
 	ProgressBar(unsigned int count)
+	:total(0), delta(0), progress(0), ticks(0)
 	{
 		reset(count);
 		::std::cout << ":";
@@ -125,6 +127,7 @@ public:
 
 	void reset(unsigned int count)
 	{
+		ticks=0;
 		total = count;
 		progress = 0;
 		delta = count /10;
@@ -137,9 +140,10 @@ public:
 		if (ticks >= delta)
 		{
 			ticks = 0;
+			progress ++;
 			::std::cout << " [" << progress * 10<< "%] ";
 			::std::cout.flush();
-			progress ++;
+
 		}
 		if (total ==0)
 		{

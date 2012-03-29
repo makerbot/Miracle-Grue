@@ -1,5 +1,10 @@
 
-#include "Meshy.h"
+#include "meshy.h"
+#include "mgl.h"
+
+#include<iostream>
+#include<stdint.h>
+#include<cstring>
 
 using namespace mgl;
 using namespace std;
@@ -38,6 +43,7 @@ static inline void convertFromLittleEndian16(uint8_t* bytes)
 static inline void convertFromLittleEndian32(uint8_t* bytes)
 {
 }
+
 static inline void convertFromLittleEndian16(uint8_t* bytes)
 {
 }

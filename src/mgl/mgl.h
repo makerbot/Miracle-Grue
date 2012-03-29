@@ -10,8 +10,8 @@
 */
 
 
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef MGL_H_
+#define MGL_H_
 
 #include <cmath>
 #include <vector>

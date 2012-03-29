@@ -490,7 +490,6 @@ void batchProcess(	Scalar firstLayerZ,
 			SliceData &slice = slices[sliceId];
 
 			bool hazNewPaths = slicy.slice( trianglesForSlice,
-											z,
 											sliceId,
 											extruderId,
 											tubeSpacing,
@@ -695,42 +694,42 @@ void ModelReaderTestCase::testLayerMeasure()
 
 	Scalar z = 0;
 	unsigned int abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 0, abode);
 
 	z = 0.1;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 0, abode);
 
 	z = 0.11;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1, abode);
 
 	z = 0.12;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1, abode);
 
 	z = 0.45;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1, abode);
 
 	z = 0.46;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 2, abode);
 
 	z = 0.47;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 2, abode);
 
 	z = 1.15999;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 3, abode);
 
 	z = 1.1600001;
@@ -741,7 +740,7 @@ void ModelReaderTestCase::testLayerMeasure()
 	// one million! mouhahahahahaahahahaaha :-)
 	z = 350000.11;
 	abode = n.zToLayerAbove(z);
-	cout << "h=" << z << " layer=" << abode << endl;
+	//cout << "h=" << z << " layer=" << abode << endl;
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1000001, abode);
 }
 

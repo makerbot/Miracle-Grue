@@ -207,27 +207,17 @@ int main(int argc, char *argv[], char *envp[])
 		std::vector<mgl::SliceData> slices;
 		std::vector<Scalar> zIndicies;
 
-		const char* scadF = NULL;
-		if (scadFile.size() > 0 )
-			scadF = scadFile.c_str();
+		const char* scad = NULL;
 
+		if (scadFile.size() > 0 )
+			scad = scadFile.c_str();
 
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
 		mesh.readStlFile(modelFile.c_str());
 
-		bool success = slicesFromSlicerAndMesh(slices, zIndicies, slicer, mesh, scadF, firstSliceIdx, lastSliceIdx);
-
-		cout << endl << "Slice Done at: "<< computer.clock.now() << endl;
-
-		if(success) {
-			success = writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices, zIndicies, modelFile.c_str());
-			cout << endl << "Write Done at: "<< computer.clock.now() << endl;
-			if( !success )
-				cout << endl << "Write failed! " << endl;
-		}
-		else {
-			cout << endl << "Slicing failed! " << endl;
-		}
+		miracleGrue(gcoder, slicer, modelFile.c_str(),
+					scad, gcodeFile.c_str(),
+					firstSliceIdx, lastSliceIdx, slices);
 
     }
     catch(mgl::Exception &mixup)
