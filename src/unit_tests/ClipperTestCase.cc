@@ -148,7 +148,7 @@ void ClipperTestCase::testSimpleInset()
 
 	// std::reverse(segs.begin(), segs.end());
 
-	ScadTubeFile::segment3(cout, "", "in_segments", segs, 0, 0);
+	ScadDebugFile::segment3(cout, "", "in_segments", segs, 0, 0);
 
 	SegmentTable outTable;
 

@@ -14,6 +14,8 @@
 using namespace mgl;
 using namespace std;
 
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger_headers.hpp"
 
 
 
@@ -55,7 +57,7 @@ ProgressBar::ProgressBar(unsigned int count)
 :total(0), delta(0), progress(0), ticks(0)
 {
 	reset(count);
-	cout << ":";
+	EZLOGGERVLSTREAM(axter::log_often) << ":";
 }
 
 
@@ -76,14 +78,14 @@ void ProgressBar::tick()
 	{
 		ticks = 0;
 		progress ++;
-		cout << " [" << progress * 10<< "%] ";
-		cout.flush();
+		EZLOGGERVLSTREAM(axter::log_often) << " [" << progress * 10<< "%] ";
 
 	}
 	if (total ==0)
 	{
 		// ::std::cout << "" << ::std::endl;
-		std::cout << myPc.clock.now() << std::endl;
+		string now = myPc.clock.now();
+		EZLOGGERVLSTREAM(axter::log_often) << now;
 	}
 }
 

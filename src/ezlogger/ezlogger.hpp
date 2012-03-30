@@ -62,7 +62,7 @@ inserted into the logging.
 #include <string>
 #include <stdio.h>
 #include <stdarg.h>
-
+#include <stdlib.h>
 #ifdef WIN32
 #else
 #define _vsnprintf vsnprintf
@@ -124,6 +124,9 @@ namespace axter
 			}
 			return *this;
 		}
+
+
+
 		inline ezlogger& operator<<(std::ostream& (*func)(std::ostream&))
 		{
 			if (m_verbosity_level <= this->get_verbosity_level_tolerance())
@@ -135,6 +138,21 @@ namespace axter
 			}
 			return *this;
 		}
+
+
+		inline ezlogger& operator<<(int data)
+		{
+			if (m_verbosity_level <= this->get_verbosity_level_tolerance())
+			{
+				if (m_alternate_output)
+					(*m_alternate_output) << data;
+				else
+					this->get_log_stream() << data;
+			}
+			return *this;
+		}
+
+
 
 		template<class T> void operator()(const T&Data) const{
 			if (m_verbosity_level <= this->get_verbosity_level_tolerance())

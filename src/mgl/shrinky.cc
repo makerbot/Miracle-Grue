@@ -15,11 +15,13 @@
 #include "shrinky.h"
 #include <map>
 #include <set>
+
 using namespace std;
 using namespace mgl;
 
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger_headers.hpp"
 
-#define SHOUT(c) cout << c;
 
 
 void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
@@ -28,13 +30,13 @@ void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
 	{
 		const LineSegment2 &seg = segments[i];
 		Scalar l = seg.length();
-		// cout << msg << " seg[" << i << "] = " << seg << " l=" << l << endl;
+		// EZLOGGERVLSTREAM(axter::log_often) << msg << " seg[" << i << "] = " << seg << " l=" << l << endl;
 		if(!( l > 0 ) )
 		{
-			SHOUT("Z")
+			EZLOGGERVLSTREAM(axter::log_often) << "Z";
 			stringstream ss;
 			ss << msg << " Zero length: segment[" << i << "] = " << seg << endl;
-			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
+			ScadDebugFile::segment3(ss,"","segments", segments, 0, 0.1);
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 		}
@@ -70,9 +72,9 @@ void connectivityCheck( const std::vector<LineSegment2> &segments,
 			ss << " Distance between segments " << dist.magnitude();
 
 			ss << endl;
-			SHOUT("C")
-			// cout << "|" << dist.magnitude() << "|" << prevSeg.length() << "|" << seg.length() << "|";
-			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
+			EZLOGGERVLSTREAM(axter::log_often) << "C";
+			// EZLOGGERVLSTREAM(axter::log_often) << "|" << dist.magnitude() << "|" << prevSeg.length() << "|" << seg.length() << "|";
+			ScadDebugFile::segment3(ss,"","segments", segments, 0, 0.1);
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 
@@ -110,7 +112,7 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
         	Scalar distance = d.magnitude();
         	ss << "distance " << distance << endl;
         	ss << "SameSame " << isSameSame << endl;
-        	SHOUT("_C_")
+        	EZLOGGERVLSTREAM(axter::log_often) << "_C_";
         	ShrinkyException mixup(ss.str().c_str());
         	throw mixup;
 
@@ -124,8 +126,8 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
 void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &segments)
 {
 
-	cout << endl << title << endl;
-	cout << "id\tconvex\tlength\tdistance\tangle\ta, b" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << endl << title << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "id\tconvex\tlength\tdistance\tangle\ta, b" << endl;
 
     for(size_t id = 0; id < segments.size(); id++)
     {
@@ -146,7 +148,7 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &seg
         Scalar angle = d.angleFromPoint2s(i, j, k);
         bool vertex = convexVertex(i,j,k);
 
-        cout << id << "\t" << vertex << "\t" << length << ",\t" << distance << ",\t" <<  angle << "\t" << seg.a << ", " << seg.b <<"\t" << endl;
+        EZLOGGERVLSTREAM(axter::log_often) << id << "\t" << vertex << "\t" << length << ",\t" << distance << ",\t" <<  angle << "\t" << seg.a << ", " << seg.b <<"\t" << endl;
     }
 }
 
@@ -380,13 +382,13 @@ bool edgeCollapse(const LineSegment2& segment,
 
 void outMap(const std::multimap<Scalar, unsigned int> &collapsingSegments)
 {
-	cout << "collapse distance\tsegment id" << endl;
-	cout << "--------------------------------" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "collapse distance\tsegment id" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "--------------------------------" << endl;
 	for(std::multimap<Scalar, unsigned int>::const_iterator it= collapsingSegments.begin();
 			it != collapsingSegments.end(); it++)
 	{
 		const std::pair<Scalar, unsigned int>& seg = *it;
-		cout << "\t" <<seg.first<< ",\t" << seg.second << endl;
+		EZLOGGERVLSTREAM(axter::log_often) << "\t" <<seg.first<< ",\t" << seg.second << endl;
 	}
 }
 
@@ -401,11 +403,11 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 	assert(relevantSegments.size()==0);
 
 	relevantSegments.reserve(originalSegments.size());
-	//cout << "NB of segments:" << originalSegments.size() << endl;
+	//EZLOGGERVLSTREAM(axter::log_often) << "NB of segments:" << originalSegments.size() << endl;
 
 	multimap<Scalar, unsigned int> collapsingSegments;
 
-	// cout << endl << "removeFirstCollapsedSegments:: looking for collapses" << endl;
+	// EZLOGGERVLSTREAM(axter::log_often) << endl << "removeFirstCollapsedSegments:: looking for collapses" << endl;
 	std::vector<LineSegment2> segments =  originalSegments;
 	for (unsigned int i=0; i < segments.size(); i++)
 	{
@@ -419,7 +421,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 
 		Scalar collapseDistance;
 		// check
-		//cout << "segment[" << i << "] = " << currentSegment << endl;
+		//EZLOGGERVLSTREAM(axter::log_often) << "segment[" << i << "] = " << currentSegment << endl;
 		bool collapsed = edgeCollapse(	currentSegment,
 										currentBisector,
 										nextBisector,
@@ -427,7 +429,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 										collapseDistance);
 		if(collapsed)
 		{
-			//cout << " **  segment " << i << " ,collapse distance " <<  collapseDistance << endl;
+			//EZLOGGERVLSTREAM(axter::log_often) << " **  segment " << i << " ,collapse distance " <<  collapseDistance << endl;
 			if(collapseDistance < insetDist)
 			{
 				// shortestCollapseDistance = collapseDistance;
@@ -450,16 +452,16 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 
 	std::multimap<Scalar, unsigned int>::iterator collapserator = collapsingSegments.begin();
 	Scalar collapseDistance = (*collapserator).first;
-	//cout << "COLLAPSED ID " << firstCollapse << endl;
+	//EZLOGGERVLSTREAM(axter::log_often) << "COLLAPSED ID " << firstCollapse << endl;
 	std::set<unsigned int> toRemove;
 
-	// cout << "removeFirstCollapsedSegments:: who to remove" << endl;
+	// EZLOGGERVLSTREAM(axter::log_often) << "removeFirstCollapsedSegments:: who to remove" << endl;
 	bool done = false;
 	do
 	{
 		Scalar d = (*collapserator).first;
 		unsigned int segmentId = (*collapserator).second;
-		//cout << "  " << d << ": Removing collapsed segment[" << segmentId <<"]=" << segments[segmentId] << endl;
+		//EZLOGGERVLSTREAM(axter::log_often) << "  " << d << ": Removing collapsed segment[" << segmentId <<"]=" << segments[segmentId] << endl;
 		toRemove.insert(segmentId);
 		collapserator++;
 		if(collapserator == collapsingSegments.end() )
@@ -468,13 +470,13 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 		}
 		if(d > collapseDistance )
 		{
-		//	cout << "d(" << d << ") > collapseDistance (" << collapseDistance << endl;
+		//	EZLOGGERVLSTREAM(axter::log_often) << "d(" << d << ") > collapseDistance (" << collapseDistance << endl;
 			done = true;
 		}
 	}
 	while(!done);
 
-	//cout << "removeFirstCollapsedSegments:: making new list" << endl;
+	//EZLOGGERVLSTREAM(axter::log_often) << "removeFirstCollapsedSegments:: making new list" << endl;
 	for (unsigned int i=0; i < segments.size(); i++)
 	{
 		if(toRemove.find(i) ==  toRemove.end() )
@@ -508,26 +510,26 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 		LineSegment2 &previousSegment = segments[prevId];
 		LineSegment2 &currentSegment =  segments[i];
 
-		//cout << "prev: seg[" << prevId << "] = " << previousSegment << endl;
-		//cout << "cur:  seg[" << i << "] = " << currentSegment << endl;
+		//EZLOGGERVLSTREAM(axter::log_often) << "prev: seg[" << prevId << "] = " << previousSegment << endl;
+		//EZLOGGERVLSTREAM(axter::log_often) << "cur:  seg[" << i << "] = " << currentSegment << endl;
 
 		if (previousSegment.b.tequals(currentSegment.a, tol))
 		{
 			// the job is already done.. segments are attached,
 			// nothing to see
-			// cout << "already attached" << endl;
+			// EZLOGGERVLSTREAM(axter::log_often) << "already attached" << endl;
 			continue;
 		}
 
 		if(previousSegment.length()==0)
 		{
-			cout << "X";
+			EZLOGGERVLSTREAM(axter::log_often) << "X";
 			continue;
 		}
 
 		if(currentSegment.length()==0)
 		{
-			cout << "Y";
+			EZLOGGERVLSTREAM(axter::log_often) << "Y";
 			continue;
 		}
 
@@ -544,14 +546,14 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 		bool attached = attachSegments(previousSegment, currentSegment, elongation);
 		if(!attached)
 		{
-			cout << "!";
+			EZLOGGERVLSTREAM(axter::log_often) << "!";
 			Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
 			previousSegment.b = m;
 			currentSegment.a = m;
 
 		}
-		// cout << "attach point " << currentSegment.a << endl;
-		//cout << endl;
+		// EZLOGGERVLSTREAM(axter::log_often) << "attach point " << currentSegment.a << endl;
+		//EZLOGGERVLSTREAM(axter::log_often) << endl;
 	}
 }
 
@@ -589,8 +591,8 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 			ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b ;
 			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
 			ss << endl;
-			ScadTubeFile::segment3(ss,"","segments", segments, 0, 0.1);
-			SHOUT("O")
+			ScadDebugFile::segment3(ss,"","segments", segments, 0, 0.1);
+			EZLOGGERVLSTREAM(axter::log_often) << "O";
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 			// assert(0);
@@ -600,7 +602,7 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 			stringstream ss;
 			ss << "Null bisector at segment [" << i << "] position=" << seg.a << endl;
 			ss << " previous_inset=" << prevInset << " inset=" << inset;
-			SHOUT("N")
+			EZLOGGERVLSTREAM(axter::log_often) << "N";
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 		}
@@ -666,7 +668,7 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 	{
 		connectivityCheck(initialSegs, tol);
 
-		//cout << " ** distance to go: " <<  distanceToGo << endl;
+		//EZLOGGERVLSTREAM(axter::log_often) << " ** distance to go: " <<  distanceToGo << endl;
 		finalInsets.clear();
 
 		Scalar distanceGone = insetStep(initialSegs, distanceToGo, tol, writePartialSteps, finalInsets);
@@ -755,12 +757,12 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	    std::vector<LineSegment2> relevantSegments;
 	    if(originalSegments.size()>2)
 	    {
-	    	//cout << "...BISECTING..." << endl;
+	    	//EZLOGGERVLSTREAM(axter::log_often) << "...BISECTING..." << endl;
 	    	std::vector<Vector2> bisectors;
 	    	createBisectors(originalSegments, continuityTolerance, bisectors);
 	    	writeScadBisectors(bisectors, originalSegments);
 
-	    	//cout << "...COLLAPSING..." << endl;
+	    	//EZLOGGERVLSTREAM(axter::log_often) << "...COLLAPSING..." << endl;
 	    	insetStepDistance =  removeFirstCollapsedSegments(originalSegments, bisectors, insetDist, relevantSegments);
 	    	if(dumpSteps) segmentsDiagnostic("relevantSegments",relevantSegments);
 	    	writeScadSegments("relevants_", "color([0.5,0.5,0,1])", relevantSegments);
@@ -770,7 +772,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 		unsigned int relevantCount = relevantSegments.size();
 		if( relevantCount > 2)
 		{
-			//cout << "...INSETTING..." << endl;
+			//EZLOGGERVLSTREAM(axter::log_often) << "...INSETTING..." << endl;
 			insetSegments(relevantSegments, insetStepDistance, insets);
 			if(dumpSteps) segmentsDiagnostic("Insets", insets);
 			writeScadSegments("raw_insets_", "color([1,0,0.4,1])", insets);
@@ -781,7 +783,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 		std::vector<LineSegment2> connected;
 		if(insets.size()>2)
 		{
-			//cout << "...ATTACHING..." << endl;
+			//EZLOGGERVLSTREAM(axter::log_often) << "...ATTACHING..." << endl;
 			elongateAndTrimSegments(insets, elongation, connected);
 			writeScadSegments("connected_", "color([0.25,0.25,0.25,1])", connected);
 			// lengthCheck(finalInsets, "finalInsets");
@@ -797,9 +799,9 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	catch(ShrinkyException &mixup)
 	{
 		mixup;
-		cout << " ^ "; //  << mixup.error << endl;
+		EZLOGGERVLSTREAM(axter::log_often) << " ^ "; //  << mixup.error << endl;
 
-		// cout << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
+		// EZLOGGERVLSTREAM(axter::log_often) << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
 		// this is a lie...  but we want to break the loop
 		insetStepDistance = insetDist;
 		throw;
@@ -897,11 +899,11 @@ void createShells( const SegmentTable & outlinesSegments,
 			if(writeDebugScadFiles)
 			{
 				static int counter =0;
-				cout << endl;
-				cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
-				cout << "sliceId: " <<  sliceId   << endl;
-				cout << "loopId : " <<  outlineId << endl;
-				cout << "shellId: " <<  currentShellIdForErrorReporting   << endl;
+				EZLOGGERVLSTREAM(axter::log_often) << endl;
+				EZLOGGERVLSTREAM(axter::log_often) << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
+				EZLOGGERVLSTREAM(axter::log_often) << "sliceId: " <<  sliceId   << endl;
+				EZLOGGERVLSTREAM(axter::log_often) << "loopId : " <<  outlineId << endl;
+				EZLOGGERVLSTREAM(axter::log_often) << "shellId: " <<  currentShellIdForErrorReporting   << endl;
 
 				stringstream ss;
 				ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
@@ -919,9 +921,9 @@ void createShells( const SegmentTable & outlinesSegments,
 
 
 					vector<LineSegment2> previousInsets  = outlineLoop;
-					cout << "Creating file: " << loopScadFile << endl;
-					cout << "	Number of points " << previousInsets.size() << endl;
-					ScadTubeFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
+					EZLOGGERVLSTREAM(axter::log_often) << "Creating file: " << loopScadFile << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "	Number of points " << (int)previousInsets.size() << endl;
+					ScadDebugFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
 					std::vector<LineSegment2> insets;
 					for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 					{
@@ -934,9 +936,9 @@ void createShells( const SegmentTable & outlinesSegments,
 				catch(ShrinkyException &messup2) // the same excpetion is thrown again
 				{
 					messup2; //ignore
-					cout << "saving " << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "saving " << endl;
 				}
-				cout << "--- --- ERROR " << counter << " END --- ----" << endl;
+				EZLOGGERVLSTREAM(axter::log_often) << "--- --- ERROR " << counter << " END --- ----" << endl;
 				counter ++;
 			}
 		}
@@ -989,11 +991,11 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments
 				if(writeDebugScadFiles)
 				{
 					static int counter =0;
-					cout << endl;
-					cout << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
-					cout << "sliceId: " <<  sliceId   << endl;
-					cout << "loopId : " <<  outlineId << endl;
-					cout << "shellId: " <<  shellId   << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "sliceId: " <<  sliceId   << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "loopId : " <<  outlineId << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "shellId: " <<  shellId   << endl;
 
 					stringstream ss;
 					ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
@@ -1024,9 +1026,9 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments
 					catch(ShrinkyException &messup2) // the same excpetion is thrown again
 					{
 						messup2; //ignore
-						cout << "saving " << endl;
+						EZLOGGERVLSTREAM(axter::log_often) << "saving " << endl;
 					}
-					cout << "--- --- ERROR " << counter << " END --- ----" << endl;
+					EZLOGGERVLSTREAM(axter::log_often) << "--- --- ERROR " << counter << " END --- ----" << endl;
 					counter ++;
 				}
 			}

@@ -17,6 +17,9 @@
 using namespace std;
 using namespace mgl;
 
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger_headers.hpp"
+
 #define DBLTOINT 1000
 
 
@@ -75,7 +78,7 @@ void  dumpSegmentTable(const char* name, const SegmentTable & outTable)
         const vector<LineSegment2> & segs = outTable[i];
         stringstream ss;
         ss << name << "_" << i;
-        ScadTubeFile::segment3(cout, "", ss.str().c_str(), segs, 0, 0);
+        ScadDebugFile::segment3(cout, "", ss.str().c_str(), segs, 0, 0);
     }
 }
 
@@ -84,13 +87,13 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	for(size_t i=0; i < polys.size(); i++)
 	{
 		const ClipperLib::Polygon &poly = polys[i];
-		cout <<  name <<"_" << i << "= [";
+		EZLOGGERVLSTREAM(axter::log_often) <<  name <<"_" << i << "= [";
 		for(size_t j=0; j < poly.size(); j++)
 		{
 			const ClipperLib::IntPoint &p = poly[j];
-			cout << "[" << p.X << ", "<< p.Y << "]," << endl;
+			EZLOGGERVLSTREAM(axter::log_often) << "[" << p.X << ", "<< p.Y << "]," << endl;
 		}
-		cout<< "];" << endl;
+		EZLOGGERVLSTREAM(axter::log_often) << "];" << endl;
 	}
 }
 

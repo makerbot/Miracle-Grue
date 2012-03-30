@@ -5,6 +5,10 @@ using namespace mgl;
 using namespace Json;
 using namespace std;
 
+
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger_headers.hpp"
+
 bool JsonConverter::loadJsonFromScalar(Value& val,Scalar& s) {
 	val = Value(s);
 	return true;
@@ -66,7 +70,7 @@ bool JsonConverter::loadPolygonFromJson(Polygon& poly,Value& input)
 				poly.push_back(vec);
 			}
 			else {
-				std::cout << "fail in loadPolygonFromJson" << endl;
+				cerr << "fail in loadPolygonFromJson" << endl;
 				throw Exception("polygon miscount");
 			}
 		}
@@ -81,9 +85,8 @@ bool JsonConverter::loadPolygonsFromJson(Polygons& polys,Value& input)
 		Polygon poly;
 		Value tmp = input[index];
 		bool ok = loadPolygonFromJson(poly,tmp);
-		//cout << tmp.toStyledString() << endl;
 		if (ok == false){
-			cout << "Vector2 miscount" << endl;
+			cerr << "Vector2 miscount" << endl;
 			throw Exception( "Vector2 miscount");
 		}
 		polys.push_back( poly );
@@ -151,7 +154,7 @@ bool JsonConverter::loadExtruderSliceFromJson(ExtruderSlice& input,Value& val)
 		insetLoopsListValue= val["insetLoopsList"];
 	}
 	catch (...){
-			std::cout << "loadExtruderSliceFromJson fail:" << endl;
+			cerr << "loadExtruderSliceFromJson fail:" << endl;
 			return false;
 	}
 	bool loaded =false;
@@ -162,20 +165,20 @@ bool JsonConverter::loadExtruderSliceFromJson(ExtruderSlice& input,Value& val)
 	if(loaded)
 		input.insetLoopsList = insetLoopsList;
 	else
-		cout << "loadExtruderSliceFromJson fail a" <<endl;
+		EZLOGGERVLSTREAM(axter::log_rarely) << "loadExtruderSliceFromJson fail a" <<endl;
 
 	loaded = loadPolygonsFromJson(infills,infillsValue );
 	if(loaded)
 		input.infills= infills;
 	else
-		cout << "loadExtruderSliceFromJson fail b" <<endl;
+		EZLOGGERVLSTREAM(axter::log_rarely) << "loadExtruderSliceFromJson fail b" <<endl;
 
 
 	loaded = loadPolygonsFromJson(boundary,boundaryValue );
 	if(loaded)
 		input.boundary = boundary;
 	else
-		cout << "loadExtruderSliceFromJson fail c" <<endl;
+		EZLOGGERVLSTREAM(axter::log_rarely) << "loadExtruderSliceFromJson fail c" <<endl;
 
 	return false;
 }

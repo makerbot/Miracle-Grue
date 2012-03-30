@@ -25,7 +25,6 @@
 #include "mgl.h"
 #include "meshy.h"
 #include "segment.h"
-#include "scadtubefile.h"
 #include "shrinky.h"
 #include "infill.h"
 
@@ -118,7 +117,7 @@ class Slicy
 	Scalar tol;
 
 	// we'll record that in a scad file for you
-	ScadTubeFile fscad;
+	ScadDebugFile fscad;
 
 	//Mesh info
 	const std::vector<Triangle3> &allTriangles;

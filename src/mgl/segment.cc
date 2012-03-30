@@ -20,6 +20,9 @@
 using namespace mgl;
 using namespace std;
 
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger_headers.hpp"
+
 
 
 
@@ -475,7 +478,7 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
     	const std::vector<LineSegment2 > &loop = loops[i];
     	if (loop.size() < 2)
     	{
-    		cout << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
+    		EZLOGGERVLSTREAM(axter::log_often) << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
     	}
     }
 }

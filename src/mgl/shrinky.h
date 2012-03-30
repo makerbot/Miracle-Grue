@@ -17,7 +17,7 @@
 
 #include "mgl.h"
 #include "segment.h"
-#include "scadtubefile.h"
+#include "ScadDebugFile.h"
 
 namespace mgl
 {
@@ -48,7 +48,7 @@ class Shrinky
     void closeScadFile();
 public:
     Scalar dz;
-	ScadTubeFile fscad;
+	ScadDebugFile fscad;
 public:
 	Shrinky( const char *scadFileName=NULL);
 

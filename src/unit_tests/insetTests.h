@@ -35,7 +35,7 @@ void clip(const std::vector<mgl::LineSegment2> &in,
 	}
 
 	std::cout << "clipped segments" << std::endl;
-	mgl::ScadTubeFile::segment3(std::cout,"","segments", out, 0, 0.1);
+	mgl::ScadDebugFile::segment3(std::cout,"","segments", out, 0, 0.1);
 
 }
 

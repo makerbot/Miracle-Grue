@@ -24,7 +24,6 @@ if ( GetOption('unit_test') != None):
 	run_unit_tests = True;
 
 #AddOption('--valgrind')
-#run_valgrind = False
 #if ( GetOption('valgrind') != None):
 #	print "run valgrind"
 #	run_valgrind = True;
@@ -147,7 +146,9 @@ mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/abstractable.cc',
 			'src/mgl/JsonConverter.cc',
 			'src/mgl/insets.cc',
-			'src/mgl/clipper.cc']
+			'src/mgl/clipper.cc',
+			'src/mgl/ScadDebugFile.cc',
+            'src/mgl/Edge.cc']
 
 json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_value.cpp',
