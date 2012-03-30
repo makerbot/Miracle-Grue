@@ -35,8 +35,8 @@ public:
 	Scalar squaredLength() const;
 	Scalar length() const;
 
-	LineSegment2 elongate(Scalar dist) const;
-	LineSegment2 prelongate(Scalar dist) const;
+	LineSegment2 elongate(const Scalar& dist) const;
+	LineSegment2 prelongate(const Scalar& dist) const;
 
 };
 

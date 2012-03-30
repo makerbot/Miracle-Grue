@@ -41,7 +41,7 @@ Scalar LineSegment2::length() const
 /**
  * @returns a new LineSegment2, elongated to be normalized to a unit vector
  */
-LineSegment2 LineSegment2::elongate(Scalar dist)  const
+LineSegment2 LineSegment2::elongate(const Scalar& dist)  const
 {
 	LineSegment2 segment(*this);
 	Vector2 l = segment.b - segment.a;
@@ -54,7 +54,7 @@ LineSegment2 LineSegment2::elongate(Scalar dist)  const
 /**
  * @returns a new line segment. Of what, I don't know. Wasn't documented.
  */
-LineSegment2 LineSegment2::prelongate( Scalar dist)  const
+LineSegment2 LineSegment2::prelongate(const Scalar& dist)  const
 {
 	LineSegment2 segment(*this);
 	Vector2 l = segment.a - segment.b;
@@ -65,3 +65,30 @@ LineSegment2 LineSegment2::prelongate( Scalar dist)  const
 }
 
 
+//void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
+//{
+//	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
+//    for(size_t id = 0; id < segments.size(); id++)
+//    {
+//    	LineSegment2 seg = segments[id];
+//    	cout << prefix << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
+//    }
+//    cout << prefix << "]" << endl;
+//    cout << "// color([1,0,0.4,1])loop_segments(segments,0.050000);" << endl;
+//}
+
+//void dumpInsets(const std::vector<SegmentTable> &insetsForLoops)
+//{
+//	for (unsigned int i=0; i < insetsForLoops.size(); i++)
+//	{
+//		const SegmentTable &insetTable =  insetsForLoops[i];
+//		cout << "Loop " << i << ") " << insetTable.size() << " insets"<<endl;
+//
+//		for (unsigned int i=0; i <insetTable.size(); i++)
+//		{
+//			const std::vector<LineSegment2 >  &loop = insetTable[i];
+//			cout << "   inset " << i << ") " << loop.size() << " segments" << endl;
+//			dumpSegments("        ",loop);
+//		}
+//	}
+//}

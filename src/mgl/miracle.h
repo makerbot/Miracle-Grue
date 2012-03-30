@@ -8,6 +8,7 @@
    License, or (at your option) any later version.
 
 */
+
 #ifndef MIRACLE_H_
 #define MIRACLE_H_
 
@@ -40,8 +41,8 @@ void slicesFromSlicerAndMesh(
 void adjustSlicesToPlate(
 		std::vector<SliceData>& slices,
 		const LayerMeasure& layerMeasure,
-		size_t firstSliceIdx,
-		size_t lastSliceIdx);
+		int firstSliceIdx = -1,
+		int lastSliceIdx = -1);
 
 void writeGcodeFromSlicesAndParams(
 		const char *gcodeFile,

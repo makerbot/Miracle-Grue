@@ -3,6 +3,8 @@
 using namespace std;
 using namespace mgl;
 
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger_headers.hpp"
 
 //// @param input
 //// @param input
@@ -18,32 +20,32 @@ void mgl::miracleGrue(GCoder &gcoder,
                       int lastSliceIdx,
                       std::vector< SliceData >  &slices)
 {
-//
+
+	EZLOGGERVLSTREAM(axter::log_often) << "running " << __FUNCTION__ << endl;
 	assert(slices.size() ==0);
     Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
     mesh.readStlFile(modelFile);
 
+    EZLOGGERVLSTREAM(axter::log_often) << "mesh loaded" << endl;
+
     slicesFromSlicerAndMesh(slices,slicer,mesh,scadFile,firstSliceIdx,lastSliceIdx);
 
+    EZLOGGERVLSTREAM(axter::log_often) << "slices created" << endl;
 
-	LayerMeasure zMeasure = mesh.readLayerMeasure();
+    LayerMeasure zMeasure = mesh.readLayerMeasure();
 
 	size_t first = 0,last= 0;
-	if(firstSliceIdx > 0 ) {
-		first  = firstSliceIdx;
-	}
 
-	if(lastSliceIdx == -1 || lastSliceIdx <= slices.size() ){
-		last = slices.size()-1;
-	}
-	else{
-		last = lastSliceIdx;
-	}
+//	slicesLogToDir("pretShift");
 
 	adjustSlicesToPlate(slices, zMeasure, first, last);
+    EZLOGGERVLSTREAM(axter::log_often) << "slices levels adjusted" << endl;
+
+//    slicesLogToDir("postShift");
 
 	writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile);
 
+    EZLOGGERVLSTREAM(axter::log_often) << "gcode written adjusted" << endl;
 
 
 }
@@ -94,7 +96,7 @@ void mgl::slicesFromSlicerAndMesh(
 	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
 
 	ProgressBar progressSlice(sliceCount);
-	cout << "Slicing" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "Slicing" << endl;
 
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
@@ -127,16 +129,28 @@ void mgl::slicesFromSlicerAndMesh(
 /// so the lowest layer is a z height zero
 /// @param slices slices to adjust
 /// @param layerMeasure class for layer measurements in Z plane
-/// @param firstSliceIdx - 'bottom' of slice section to transport down
-/// @param lastSliceIdx - 'top' of slice section to transport down
+/// @param firstSliceIdx - 'bottom' of slice section to transport down. -1 indicates auto-detect
+/// @param lastSliceIdx - 'top' of slice section to transport down . -1 indicates auto-detect
 ///
 void mgl::adjustSlicesToPlate(
 		std::vector<SliceData>& slices,
 		const LayerMeasure& layerMeasure,
-		size_t firstSliceIdx, size_t lastSliceIdx)
+		int firstSliceIdx, int lastSliceIdx)
 {
 	assert(slices.size() > 0);
 	size_t sliceCounter = 0;
+	size_t first = 0, last = 0;
+
+	if(firstSliceIdx > 0 ) {
+		first  = firstSliceIdx;
+	}
+
+	if(lastSliceIdx == -1 || lastSliceIdx <= slices.size() ){
+		last = slices.size()-1;
+	}
+	else{
+		last = lastSliceIdx;
+	}
 
 	//adjust slices we are keeping in-place
 	for(size_t sliceId = firstSliceIdx; sliceId <= lastSliceIdx; sliceId++, sliceCounter++)
@@ -172,7 +186,7 @@ void mgl::writeGcodeFromSlicesAndParams(
 	assert(modelSource != 0x00);
 	size_t sliceCount = slices.size();
 
-	cout << "Writing gcode" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "Writing gcode" << endl;
 	ProgressBar progressGcode(sliceCount);
 
     std::ofstream gout(gcodeFile);
@@ -185,5 +199,16 @@ void mgl::writeGcodeFromSlicesAndParams(
 		gcoder.writeSlice(gout, slice);
 	}
     gout.close();
+}
+
+/// Logs a stack of slices to a logging directory for debugging
+void slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName)
+{
+	// check if the dir exists, create if needed
+
+	//for each slice, dump to a json file of 'slice_idx_NUM'
+
+	//return
+
 }
 
