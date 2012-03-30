@@ -2,6 +2,9 @@
 #include <cstdlib>
 
 #include <cppunit/config/SourcePrefix.h>
+
+#include "UnitTestUtils.h"
+
 #include "JsonConverterTestCase.h"
 
 
@@ -30,7 +33,7 @@ void JsonConverterTestCase::setUp()
 {
 	std::cout<< " Starting:" <<__FUNCTION__ << endl;
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputDir.c_str());
+	makeMyPath(outputDir.c_str());
 }
 
 

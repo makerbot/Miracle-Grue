@@ -5,7 +5,7 @@
 
 #include <cppunit/config/SourcePrefix.h>
 #include "ClipperTestCase.h"
-
+#include "UnitTestUtils.h"
 #include "insetTests.h"
 #include "mgl/clipper.h"
 
@@ -38,7 +38,7 @@ public:
 void ClipperTestCase::setUp()
 {
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputDir.c_str());
+	makeMyPath(outputDir.c_str());
 }
 
 void ClipperTestCase::test_conversion()

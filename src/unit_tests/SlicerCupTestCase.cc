@@ -1,8 +1,7 @@
 
 #include <cppunit/config/SourcePrefix.h>
+#include "UnitTestUtils.h"
 #include "SlicerCupTestCase.h"
-
-//
 #include "mgl/configuration.h"
 //#include "mgl/slicy.h"
 #include "mgl/miracle.h"
@@ -25,8 +24,8 @@ string inputDir2("./test_cases/specific_issues/");
 void SlicerCupTestCase::setUp()
 {
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputDir.c_str());
-	computer.fileSystem.mkpath(outputDir2.c_str());
+	makeMyPath(outputDir.c_str());
+	makeMyPath(outputDir2.c_str());
 }
 
 

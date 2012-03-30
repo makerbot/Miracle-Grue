@@ -2,6 +2,8 @@
 #include <limits>
 
 #include <cppunit/config/SourcePrefix.h>
+
+#include "UnitTestUtils.h"
 #include "SlicerSplitTestCase.h"
 
 #include "insetTests.h"
@@ -24,7 +26,7 @@ string outputDir("outputs/test_cases/SlicerSplitTestCase/");
 void SlicerSplitTestCase::setUp()
 {
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputDir.c_str());
+	makeMyPath(outputDir.c_str());
 }
 
 void SlicerSplitTestCase::test_m()

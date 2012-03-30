@@ -1,8 +1,9 @@
 #include <fstream>
-
 #include <cstdlib>
-
 #include <cppunit/config/SourcePrefix.h>
+
+#include "UnitTestUtils.h"
+
 #include "GCoderTestCase.h"
 
 
@@ -101,7 +102,7 @@ void GCoderTestCase::setUp()
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
 
-	computer.fileSystem.mkpath(outputDir.c_str() );
+	makeMyPath(outputDir.c_str() );
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

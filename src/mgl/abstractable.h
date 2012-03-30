@@ -90,7 +90,6 @@ public:
 				+ filenameStr.substr(0, filenameStr.find_last_of('.'));
 	}
 
-	int mkpath(const char *path);
 
 };
 

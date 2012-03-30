@@ -5,10 +5,10 @@
 
 
 #include <cppunit/config/SourcePrefix.h>
+
+#include "UnitTestUtils.h"
 #include "SlicerTestCase.h"
-
 #include "insetTests.h"
-
 #include "mgl/mgl.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
@@ -48,8 +48,7 @@ void SlicerTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
-	int r = computer.fileSystem.mkpath(outputDir.c_str());
-	CPPUNIT_ASSERT(r==0);
+	makeMyPath(outputDir.c_str());
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

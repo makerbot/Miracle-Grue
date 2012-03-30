@@ -15,6 +15,8 @@
 
 #include <sys/stat.h>
 
+#include "UnitTestUtils.h"
+
 #include "mgl/connexity.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
@@ -37,7 +39,7 @@ CPPUNIT_ASSERT( 12L == 12L );
 void ModelReaderTestCase::setUp()
 {
 	MyComputer computer;
-	computer.fileSystem.mkpath(outputsDir.c_str());
+	makeMyPath(outputsDir.c_str());
 }
 
 
