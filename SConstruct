@@ -154,16 +154,15 @@ json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_writer.cpp' ]
 
 
-env.Library('./bin/lib/mgl', mgl_cc )  
-
-env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include'])
+env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/ezlogger'] )  
+env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include',])
 
 
 unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 
 
-default_includes = ['..','src/json-cpp/include', 'src', 'src/BGL', 'src/mgl']
+default_includes = ['..','src/json-cpp/include', 'src', 'src/mgl']
 default_libs = [ 'mgl', '_json',] 
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
 
