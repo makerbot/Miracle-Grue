@@ -395,7 +395,7 @@
      <x>0</x>
      <y>0</y>
      <width>953</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuPathMonger">
@@ -408,6 +408,7 @@
      </property>
      <addaction name="separator"/>
     </widget>
+    <addaction name="actionSlice_3D_model"/>
     <addaction name="actionLoad_GCode"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
@@ -428,7 +429,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad_GCode">
    <property name="text">
-    <string>Open File...</string>
+    <string>Open gcode file...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -457,10 +458,15 @@
   </action>
   <action name="actionExport_Gcode_File">
    <property name="text">
-    <string>Export Gcode File</string>
+    <string>Slice 3D model...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+E</string>
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSlice_3D_model">
+   <property name="text">
+    <string>FAKE</string>
    </property>
   </action>
  </widget>

@@ -7,11 +7,9 @@
 #include <iostream>
 #include <QMessageBox>
 
-#include "mgl/configuration.h"
-#include "mgl/miracle.h"
 
 using namespace std;
-using namespace mgl;
+
 
 char gcode::codes[] =  "ABDEFGHIJKLMPQRSTXYZ";
 
@@ -267,71 +265,7 @@ void gcodeModel::loadGCode(QString q)
     if(r >= 0)
     {
         cout << "STL file" << endl;
-        try
-        {
-            cout << "Output file: ";
-            MyComputer computer;
-            string gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(filename.c_str()).c_str(), ".gcode" );
-            cout << gcodeFile << endl;
-            string scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(filename.c_str()).c_str(), ".scad" );
-            cout << gcodeFile << endl;
-
-            string configFileName = QDir::currentPath().toStdString();
-            configFileName += "/miracle.config";
-            mgl::Configuration config;
-            cout << "loading config: " << configFileName << endl;
-            config.readFromFile(configFileName.c_str());
-
-            GCoder gcoder;
-            loadGCoderData(config, gcoder);
-            Slicer slicer;
-            loadSlicerData(config, slicer);
-
-            cout << "slicing" << endl;
-            std::vector<mgl::SliceData> slices;
-
-            // miracleGrue(gcoder, slicer, filename.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices);
-            assert(slices.size() ==0);
-            Meshy mesh(slicer.firstLayerZ, slicer.layerH);
-            mesh.readStlFile(filename.c_str());
-
-            int firstSliceIdx = -1;
-            int lastSliceIdx = -1;
-            slicesFromSlicerAndMesh(slices, slicer, mesh, scadFile.c_str(),firstSliceIdx, lastSliceIdx);
-
-
-            LayerMeasure zMeasure = mesh.readLayerMeasure();
-
-            size_t first = 0,last= 0;
-            if(firstSliceIdx > 0 ) {
-                first  = firstSliceIdx;
-            }
-
-            if(lastSliceIdx == -1 || lastSliceIdx <= (int)slices.size() ){
-                last = slices.size()-1;
-            }
-            else{
-                last = lastSliceIdx;
-            }
-
-            adjustSlicesToPlate(slices, zMeasure, first, last);
-
-            writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices,  filename.c_str());
-
-
-
-            filename =  gcodeFile;
-            cout << "Output file: " << filename << endl;
-            extension = "gcode";
-        }
-        catch(mgl::Exception &mixup)
-        {
-            cout << "ERROR: " << mixup.error << endl;
-            QMessageBox box;
-            box.setText(mixup.error.c_str());
-            box.show();
-
-        }
+        return;
     }
 
     if(extension.find("gcode") >= 0)

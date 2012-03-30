@@ -1,14 +1,16 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "gcodeview.h"
-#include "gcodeviewapplication.h"
-
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <QFileDialog>
 #include <QSettings>
 
 #include <iostream>
+
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "gcodeview.h"
+#include "gcodeviewapplication.h"
+#include "slicingdialog.h"
 
 
 
@@ -48,11 +50,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionLoad_GCode_triggered()
 {
+
     QString fileName;
     {
         fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                 "",//"/home",
-                                                    tr("3D Models (*.stl);;GCode (*.gcode)")// tr("GCode (*.gcode)")
+                                                   tr("GCode (*.gcode)") //  tr("3D Models (*.stl);;GCode (*.gcode)")
                                                     );
     }
     GCodeViewApplication::LoadFile(fileName);
@@ -184,9 +187,20 @@ void MainWindow::on_actionClose_triggered()
 
 void MainWindow::on_actionExport_Gcode_File_triggered()
 {
-    QString filename = QFileDialog::getSaveFileName(this, tr("Export GCode"), QDir::currentPath(),  tr("GCode File (*.gcode)"));
-    ui->graphicsView->exportModel(filename);
+    static std::string configFile;
+    if(configFile.size()==0)
+    {
+        configFile = QDir::currentPath().toStdString();
+        configFile += "/miracle.config";
+    }
+    static std::string modelFile;
 
+    // QString filename = QFileDialog::getSaveFileName(this, tr("Export GCode"), QDir::currentPath(),  tr("GCode File (*.gcode)"));
+    // ui->graphicsView->exportModel(filename);
+    SlicingDialog *dlg = new SlicingDialog;
+    dlg->show();
+
+    // dlg->init("miracle.config", "3D_Knot.stl");
 }
 
 

@@ -12,7 +12,8 @@ TEMPLATE = app
 
 INCLUDEPATH += src \
             src/json-cpp/include \
-            src/gui
+            src/gui \
+            src/ezlogger
 
 SOURCES +=  src/json-cpp/src/lib_json/json_reader.cpp\
     src/json-cpp/src/lib_json/json_value.cpp\
@@ -20,7 +21,6 @@ SOURCES +=  src/json-cpp/src/lib_json/json_reader.cpp\
     src/mgl/abstractable.cc \
     src/mgl/clipper.cc\
     src/mgl/configuration.cc\
-    src/mgl/connexity.cc\
     src/mgl/gcoder.cc\
     src/mgl/infill.cc\
     src/mgl/insets.cc\
@@ -43,7 +43,9 @@ SOURCES +=  src/json-cpp/src/lib_json/json_reader.cpp\
     src/gui/gcodeviewapplication.cpp \
     src/gui/arcball.cpp \
     src/gui/quaternion.cpp \
-    src/gui/algebra3.cpp
+    src/gui/algebra3.cpp \
+    src/gui/slicingdialog.cpp \
+    src/mgl/ScadDebugFile.cc
 
 
 HEADERS  +=src/json-cpp/include/json/assertions.h \
@@ -82,6 +84,9 @@ HEADERS  +=src/json-cpp/include/json/assertions.h \
     src/gui/arcball.h \
     src/gui/algebra3.h \
     src/gui/quaternion.h \
-    src/gui/glui_internal.h
+    src/gui/glui_internal.h \
+    src/gui/slicingdialog.h \
+    src/mgl/ScadDebugFile.h
 
-FORMS    += src/gui/mainwindow.ui
+FORMS    += src/gui/mainwindow.ui \
+    src/gui/slicingdialog.ui

@@ -12,8 +12,16 @@ class SlicingDialog : public QDialog
     Q_OBJECT
 
 public:
+
     explicit SlicingDialog(QWidget *parent = 0);
     ~SlicingDialog();
+
+    // void init(const char* config, const char* model);
+
+private slots:
+    void on_pushButtonModelFile_2_clicked();
+    void on_pushButtonModelFile_clicked();
+    void on_pushButtonGo_clicked();
 
 private:
     Ui::SlicingDialog *ui;
