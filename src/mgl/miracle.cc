@@ -142,10 +142,15 @@ void mgl::adjustSlicesToPlate(
 		int firstSliceIdx, int lastSliceIdx)
 {
 	assert(slices.size() > 0);
+
 	size_t sliceCounter = 0;
 	size_t first = 0, last = 0;
 
-	if(firstSliceIdx > 0 ) {
+	if(firstSliceIdx == -1  ) {
+		first  = slices.size();
+	}
+
+	else if(firstSliceIdx > 0 ) {
 		first  = firstSliceIdx;
 	}
 
@@ -155,6 +160,10 @@ void mgl::adjustSlicesToPlate(
 	else{
 		last = lastSliceIdx;
 	}
+	EZLOGGERVLSTREAM(axter::log_often) << "range start: " << first << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "range end : " << last << endl;
+
+
 
 	//adjust slices we are keeping in-place
 	for(size_t sliceId = firstSliceIdx; sliceId <= lastSliceIdx; sliceId++, sliceCounter++)
@@ -165,10 +174,10 @@ void mgl::adjustSlicesToPlate(
 
 
 	//remove 'end' items from slices
-	slices.erase(slices.begin() + lastSliceIdx+1, slices.end());
+	slices.erase(slices.begin() + last+1, slices.end());
 
 	//remove 'front' items from slices
-	slices.erase(slices.begin(), slices.begin() + firstSliceIdx);
+	slices.erase(slices.begin(), slices.begin() + first);
 }
 
 
