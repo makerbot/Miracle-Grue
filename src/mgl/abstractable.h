@@ -64,7 +64,7 @@ public:
 
 	int guarenteeDirectoryExists(const char* dirPath,
 				mode_t mode =
-						(__S_IREAD|__S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH) );
+						(S_IREAD|S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH) );
 };
 
 

@@ -1,0 +1,6 @@
+[submodule "EzCppLog"]
+	path = EzCppLog
+	url = git@github.com:makerbot/EzCppLog.git
+[submodule "src/EzCppLog"]
+	path = src/EzCppLog
+	url = git@github.com:makerbot/EzCppLog.git

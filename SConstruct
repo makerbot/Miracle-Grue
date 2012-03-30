@@ -155,7 +155,7 @@ json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_writer.cpp' ]
 
 
-env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/ezlogger'] )  
+env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog'] )  
 env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include',])
 
 
