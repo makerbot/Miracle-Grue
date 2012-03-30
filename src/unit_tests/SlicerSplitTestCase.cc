@@ -26,7 +26,7 @@ string outputDir("outputs/test_cases/SlicerSplitTestCase/");
 void SlicerSplitTestCase::setUp()
 {
 	MyComputer computer;
-	makeMyPath(outputDir.c_str());
+	mkDebugPath(outputDir.c_str());
 }
 
 void SlicerSplitTestCase::test_m()

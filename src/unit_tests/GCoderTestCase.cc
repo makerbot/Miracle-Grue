@@ -102,7 +102,7 @@ void GCoderTestCase::setUp()
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
 
-	makeMyPath(outputDir.c_str() );
+	mkDebugPath(outputDir.c_str() );
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

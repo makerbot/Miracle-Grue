@@ -38,7 +38,7 @@ public:
 void ClipperTestCase::setUp()
 {
 	MyComputer computer;
-	makeMyPath(outputDir.c_str());
+	mkDebugPath(outputDir.c_str());
 }
 
 void ClipperTestCase::test_conversion()

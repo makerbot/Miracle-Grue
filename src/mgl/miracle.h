@@ -50,6 +50,12 @@ void writeGcodeFromSlicesAndParams(
 		std::vector<SliceData >& slices,
 		const char *modelSource ="unknown source");
 
+
+/// log the passed vector of slices to a directory
+void slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName);
+
+
+
 };
 
 

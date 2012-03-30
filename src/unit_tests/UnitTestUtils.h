@@ -4,7 +4,7 @@
 
 
 
-void  makeMyPath(const char *path);
+void  mkDebugPath(const char *path);
 
 
 #endif

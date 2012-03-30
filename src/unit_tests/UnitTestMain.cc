@@ -28,7 +28,7 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 }
 
 
-void makeMyPath(const char *path)
+void mkDebugPath(const char *path)
 {
 	 char cCurrentPath[FILENAME_MAX];
 	_getcwd( cCurrentPath, sizeof(cCurrentPath) / sizeof(TCHAR) );
@@ -76,12 +76,16 @@ int verifyDir(const char *pathname)
 	return status;
 }
 
-//	typedef struct stat Stat;
-/// mkpath - ensure all directories in path exist
+//
+/// mkDebugPath - builds a directory patk for debugging
+/// and unit testing data. The directory has extremely premissive
+/// permissions in order to show up in the UI.
+
 /// Algorithm takes the pessimistic view and works top-down to ensure
 /// each directory in path exists, rather than optimistically creating
 /// the last element and working backwards.
-void makeMyPath(const char *path)
+/// @param path: desired path for directory creation
+void mkDebugPath(const char *path)
 {
 	char           *pp;
 	char           *sp;

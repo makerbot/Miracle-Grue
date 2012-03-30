@@ -39,7 +39,7 @@ CPPUNIT_ASSERT( 12L == 12L );
 void ModelReaderTestCase::setUp()
 {
 	MyComputer computer;
-	makeMyPath(outputsDir.c_str());
+	mkDebugPath(outputsDir.c_str());
 }
 
 

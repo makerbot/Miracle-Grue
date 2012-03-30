@@ -1,8 +1,12 @@
 #include "miracle.h"
 
+#include "abstractable.h"
+#include "JsonConverter.h"
+#include "json-cpp/include/json/writer.h"
+
 using namespace std;
 using namespace mgl;
-
+using namespace Json;
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "ezlogger_headers.hpp"
 
@@ -36,12 +40,12 @@ void mgl::miracleGrue(GCoder &gcoder,
 
 	size_t first = 0,last= 0;
 
-//	slicesLogToDir("pretShift");
+	slicesLogToDir(slices,"pretShift");
 
 	adjustSlicesToPlate(slices, zMeasure, first, last);
     EZLOGGERVLSTREAM(axter::log_often) << "slices levels adjusted" << endl;
 
-//    slicesLogToDir("postShift");
+    slicesLogToDir(slices,"postShift");
 
 	writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile);
 
@@ -202,13 +206,31 @@ void mgl::writeGcodeFromSlicesAndParams(
 }
 
 /// Logs a stack of slices to a logging directory for debugging
-void slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName)
+/// creates the log directory if needed.
+///
+void mgl::slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName)
 {
-	// check if the dir exists, create if needed
+	FileSystemAbstractor fs;
+	JsonConverter converter;
+	StyledStreamWriter streamWriter;
 
-	//for each slice, dump to a json file of 'slice_idx_NUM'
+	/// check if the dir exists, create if needed
+	fs.guarenteeDirectoryExists(logDirName, (S_IRWXU|S_IRWXO| S_IRWXG) );
 
-	//return
+	EZLOGGERVLSTREAM(axter::log_often) << "logging slices to dir" << endl;
 
+	///for each slice, dump to a json file of 'slice_idx_NUM'
+	for(size_t i = 0; i < slices.size(); i++){
+		EZLOGGERVLSTREAM(axter::log_often) << "Writing slice " << endl;
+		SliceData& d = slices[i];
+		Value val;
+		stringstream ss;
+		converter.loadJsonFromSliceData(val, d);
+		ss << "slice_" << i << ".json";
+		string outFile = fs.pathJoin(string(logDirName), ss.str());
+		ofstream dumper(outFile.c_str());
+		streamWriter.write(dumper,val);
+		dumper.close();
+	}
 }
 

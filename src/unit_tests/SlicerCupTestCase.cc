@@ -24,8 +24,8 @@ string inputDir2("./test_cases/specific_issues/");
 void SlicerCupTestCase::setUp()
 {
 	MyComputer computer;
-	makeMyPath(outputDir.c_str());
-	makeMyPath(outputDir2.c_str());
+	mkDebugPath(outputDir.c_str());
+	mkDebugPath(outputDir2.c_str());
 }
 
 

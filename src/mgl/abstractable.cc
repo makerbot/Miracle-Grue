@@ -18,37 +18,67 @@ using namespace std;
 #include "ezlogger_headers.hpp"
 
 
+int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname, mode_t mode )
+{
+#ifdef WIN32
+	EZLOGGERVLSTREAM(axter::log_often) << "not supported on windows QT"
+#else
+		int status = 0;
+
+		struct stat st;
+		if(stat(pathname,&st) != 0){
+			mode_t process_mask = umask(0);
+			int result_code = mkdir(pathname, mode);
+			umask(process_mask);
+			if(result_code != 0)
+				status = -1 ; //creation fail
+		}
+		else if (!S_ISDIR(st.st_mode))
+			status = -1;
+		return status;
+#endif
+
+}
+
+string FileSystemAbstractor::pathJoin(string path, string filename) const
+{
+#ifdef WIN32
+	return path  + "\" + filename;"
+#else
+	return path  + "/" + filename;
+#endif
+}
 
 char FileSystemAbstractor::getPathSeparatorCharacter() const
 {
 	return '/'; // Linux & Mac, works on Windows most times
 }
 
-::std::string FileSystemAbstractor::ExtractDirectory(const char *directoryPath) const
+string FileSystemAbstractor::ExtractDirectory(const char *directoryPath) const
 {
-	const ::std::string path(directoryPath);
+	const string path(directoryPath);
 	return path.substr(0, path.find_last_of(getPathSeparatorCharacter()) + 1);
 }
 
-::std::string FileSystemAbstractor::ExtractFilename(const char* filename) const
+string FileSystemAbstractor::ExtractFilename(const char* filename) const
 {
 	std::string path(filename);
 	return path.substr(path.find_last_of(getPathSeparatorCharacter()) + 1);
 }
 
-::std::string FileSystemAbstractor::ChangeExtension(const char* filename, const char* extension) const
+string FileSystemAbstractor::ChangeExtension(const char* filename, const char* extension) const
 {
-	const ::std::string path(filename);
-	const ::std::string ext(extension);
+	const string path(filename);
+	const string ext(extension);
 	std::string filenameStr = ExtractFilename(path.c_str());
 	return ExtractDirectory(path.c_str())
 			+ filenameStr.substr(0, filenameStr.find_last_of('.')) + ext;
 }
 
-::std::string FileSystemAbstractor::removeExtension(const char *filename) const
+string FileSystemAbstractor::removeExtension(const char *filename) const
 {
-	const ::std::string path(filename);
-	::std::string filenameStr = ExtractFilename(path.c_str());
+	const string path(filename);
+	string filenameStr = ExtractFilename(path.c_str());
 	return ExtractDirectory(path.c_str())
 			+ filenameStr.substr(0, filenameStr.find_last_of('.'));
 }
@@ -83,7 +113,7 @@ void ProgressBar::tick()
 	}
 	if (total ==0)
 	{
-		// ::std::cout << "" << ::std::endl;
+		// cout << "" << endl;
 		string now = myPc.clock.now();
 		EZLOGGERVLSTREAM(axter::log_often) << now;
 	}

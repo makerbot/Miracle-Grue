@@ -25,6 +25,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 
 namespace mgl {
 
@@ -59,6 +60,11 @@ public:
 	::std::string ChangeExtension(const char* filename, const char* extension) const;
 	::std::string removeExtension(const char *filename) const;
 
+	::std::string pathJoin(std::string path, std::string filename) const;
+
+	int guarenteeDirectoryExists(const char* dirPath,
+				mode_t mode =
+						(__S_IREAD|__S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH) );
 };
 
 
