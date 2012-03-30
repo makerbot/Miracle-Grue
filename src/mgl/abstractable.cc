@@ -11,6 +11,9 @@
 #include "abstractable.h"
 
 
+using namespace mgl;
+using namespace std;
+
 
 
 #ifdef QT_VERSION
@@ -20,14 +23,12 @@ int FileSystemAbstractor::mkpath(const char *path)
 }
 #endif
 
+
 #ifdef TOTO
 
 #include <Shlobj.h>
 #include <direct.h>
 #include <stdio.h>
-
-using namespace mgl;
-using namespace std;
 
 void replaceAll(std::string& str, const std::string& from, const std::string& to) {
     size_t start_pos = 0;
@@ -57,7 +58,8 @@ int FileSystemAbstractor::mkpath(const char *path)
 
 #endif
 
-#ifdef UNIX
+#ifdef WIN32
+#else
 
 #include <sys/stat.h>
 #include <iostream>
@@ -73,7 +75,7 @@ int verifyDir(const char *pathname)
 
 	mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
 	int status = 0;
-	//std::cout << pathname << std::endl;
+	//EZLOGGERVLSTREAM(axter::log_often) << pathname << std::endl;
 	//TODO: move to abstractable someday
 	struct stat st;
 	if(stat(pathname,&st) != 0){
@@ -122,10 +124,85 @@ int FileSystemAbstractor::mkpath(const char *path)
 	return (status);
 }
 
-#endif
+
+
+#endif /* !WIN32 */
+
+
+
+char FileSystemAbstractor::getPathSeparatorCharacter() const
+{
+	return '/'; // Linux & Mac, works on Windows most times
+}
+
+string FileSystemAbstractor::ExtractDirectory(const char *directoryPath) const
+{
+	const string path(directoryPath);
+	return path.substr(0, path.find_last_of(getPathSeparatorCharacter()) + 1);
+}
+
+string FileSystemAbstractor::ExtractFilename(const char* filename) const
+{
+	std::string path(filename);
+	return path.substr(path.find_last_of(getPathSeparatorCharacter()) + 1);
+}
+
+string FileSystemAbstractor::ChangeExtension(const char* filename, const char* extension) const
+{
+	const string path(filename);
+	const string ext(extension);
+	std::string filenameStr = ExtractFilename(path.c_str());
+	return ExtractDirectory(path.c_str())
+			+ filenameStr.substr(0, filenameStr.find_last_of('.')) + ext;
+}
+
+string FileSystemAbstractor::removeExtension(const char *filename) const
+{
+	const string path(filename);
+	string filenameStr = ExtractFilename(path.c_str());
+	return ExtractDirectory(path.c_str())
+			+ filenameStr.substr(0, filenameStr.find_last_of('.'));
+}
+
 
 	
 
+
+ProgressBar::ProgressBar(unsigned int count)
+:total(0), delta(0), progress(0), ticks(0)
+{
+	reset(count);
+	cout << ":";
+}
+
+
+void ProgressBar::reset(unsigned int count)
+{
+	ticks=0;
+	total = count;
+	progress = 0;
+	delta = count /10;
+}
+
+
+void ProgressBar::tick()
+{
+	total --;
+	ticks ++;
+	if (ticks >= delta)
+	{
+		ticks = 0;
+		progress ++;
+		cout << " [" << progress * 10<< "%] ";
+		cout.flush();
+
+	}
+	if (total ==0)
+	{
+		// ::std::cout << "" << ::std::endl;
+		std::cout << myPc.clock.now() << std::endl;
+	}
+}
 
 
 

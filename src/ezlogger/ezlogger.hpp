@@ -61,8 +61,9 @@ inserted into the logging.
 #include <sstream>
 #include <string>
 #include <stdio.h>
+#include <stdarg.h>
 
-#ifdef _WIN32
+#ifdef WIN32
 #else
 #define _vsnprintf vsnprintf
 #endif

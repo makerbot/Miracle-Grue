@@ -36,12 +36,12 @@ void mgl::miracleGrue(GCoder &gcoder,
 
 	size_t first = 0,last= 0;
 
-	slicesLogToDir("pretShift");
+//	slicesLogToDir("pretShift");
 
 	adjustSlicesToPlate(slices, zMeasure, first, last);
     EZLOGGERVLSTREAM(axter::log_often) << "slices levels adjusted" << endl;
 
-    slicesLogToDir("postShift");
+//    slicesLogToDir("postShift");
 
 	writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile);
 
@@ -96,7 +96,7 @@ void mgl::slicesFromSlicerAndMesh(
 	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
 
 	ProgressBar progressSlice(sliceCount);
-	cout << "Slicing" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "Slicing" << endl;
 
 	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 	{
@@ -186,7 +186,7 @@ void mgl::writeGcodeFromSlicesAndParams(
 	assert(modelSource != 0x00);
 	size_t sliceCount = slices.size();
 
-	cout << "Writing gcode" << endl;
+	EZLOGGERVLSTREAM(axter::log_often) << "Writing gcode" << endl;
 	ProgressBar progressGcode(sliceCount);
 
     std::ofstream gout(gcodeFile);
