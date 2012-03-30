@@ -3,8 +3,9 @@
 #include <float.h>
 #include <QFile>
 #include <QTextStream>
-
+#include <QDir>
 #include <iostream>
+#include <QMessageBox>
 
 #include "mgl/configuration.h"
 #include "mgl/miracle.h"
@@ -258,33 +259,84 @@ void gcodeModel::loadGCode(QString q)
 
     cout << "loadGCode: " << filename << endl;
 
-    string extension = filename.substr(0, filename.find_last_of('.'));
+    string extension = filename.substr(filename.find_last_of('.'), filename.size());
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+    cout << "extension "<< extension << endl;
     int r = extension.find("stl");
-    cout << extension  << endl;
-    cout << r << endl;
-    if(r > 0)
+
+    if(r >= 0)
     {
-        MyComputer computer;
-        string gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(filename.c_str()).c_str(), ".gcode" );
+        cout << "STL file" << endl;
+        try
+        {
+            cout << "Output file: ";
+            MyComputer computer;
+            string gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(filename.c_str()).c_str(), ".gcode" );
+            cout << gcodeFile << endl;
+            string scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(filename.c_str()).c_str(), ".scad" );
+            cout << gcodeFile << endl;
 
-        string configFileName = "miracle.config";
-        mgl::Configuration config;
-        config.readFromFile(configFileName.c_str());
+            string configFileName = QDir::currentPath().toStdString();
+            configFileName += "/miracle.config";
+            mgl::Configuration config;
+            cout << "loading config: " << configFileName << endl;
+            config.readFromFile(configFileName.c_str());
 
-        GCoder gcoder;
-        loadGCoderData(config, gcoder);
-        Slicer slicer;
-        loadSlicerData(config, slicer);
-        std::vector<mgl::SliceData> slices;
-        miracleGrue(gcoder, slicer, filename.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices);
+            GCoder gcoder;
+            loadGCoderData(config, gcoder);
+            Slicer slicer;
+            loadSlicerData(config, slicer);
 
-        filename =  gcodeFile;
-        extension = "gcode";
+            cout << "slicing" << endl;
+            std::vector<mgl::SliceData> slices;
+
+            // miracleGrue(gcoder, slicer, filename.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices);
+            assert(slices.size() ==0);
+            Meshy mesh(slicer.firstLayerZ, slicer.layerH);
+            mesh.readStlFile(filename.c_str());
+
+            int firstSliceIdx = -1;
+            int lastSliceIdx = -1;
+            slicesFromSlicerAndMesh(slices, slicer, mesh, scadFile.c_str(),firstSliceIdx, lastSliceIdx);
+
+
+            LayerMeasure zMeasure = mesh.readLayerMeasure();
+
+            size_t first = 0,last= 0;
+            if(firstSliceIdx > 0 ) {
+                first  = firstSliceIdx;
+            }
+
+            if(lastSliceIdx == -1 || lastSliceIdx <= (int)slices.size() ){
+                last = slices.size()-1;
+            }
+            else{
+                last = lastSliceIdx;
+            }
+
+            adjustSlicesToPlate(slices, zMeasure, first, last);
+
+            writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices,  filename.c_str());
+
+
+
+            filename =  gcodeFile;
+            cout << "Output file: " << filename << endl;
+            extension = "gcode";
+        }
+        catch(mgl::Exception &mixup)
+        {
+            cout << "ERROR: " << mixup.error << endl;
+            QMessageBox box;
+            box.setText(mixup.error.c_str());
+            box.show();
+
+        }
     }
 
-    if(extension.find("gcode") > 0)
+    if(extension.find("gcode") >= 0)
     {
+        cout << "loading gcode: " << filename << endl;
         ifstream file;
         file.open(filename.c_str());
         points.clear();

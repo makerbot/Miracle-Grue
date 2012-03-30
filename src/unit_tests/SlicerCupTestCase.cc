@@ -208,10 +208,10 @@ void testStackCreation(	std::vector<SliceData>& slices)
 	ExtruderSlice eSlice2 = eSlice;
 
 	/// Either
-//	SliceData& sliceData= *slices.begin();
-//	sliceData.extruderSlices.push_back(eSlice);
+	SliceData& sliceData= *slices.begin();
+	sliceData.extruderSlices.push_back(eSlice);
 	/// Or
-	(*slices.begin()).extruderSlices.push_back(eSlice);
+//	(*slices.begin()).extruderSlices.push_back(eSlice);
 
 	CPPUNIT_FAIL("this throws failsauce when run with valgrind");
 
@@ -241,13 +241,7 @@ void testStackCreation(	std::vector<SliceData>& slices)
 }
 
 
-
-void SlicerCupTestCase::testSliceShifting()
-{
-	std::vector<SliceData> slices;
-	LayerMeasure lm(0.1, 0.5);
-
-	testStackCreation(slices);
+//testStackCreation(slices);
 
 ////	for(size_t c = 0; c < slices.size(); c++)
 ////	{
@@ -256,29 +250,39 @@ void SlicerCupTestCase::testSliceShifting()
 //	}
 
 
+
+void SlicerCupTestCase::testSliceShifting()
+{
+	std::vector<SliceData> slices;
+	LayerMeasure lm(0.1, 0.5);
+	slices.push_back(SliceData(lm.sliceIndexToHeight(0),0));
+	slices.push_back(SliceData(lm.sliceIndexToHeight(1),1));
+	slices.push_back(SliceData(lm.sliceIndexToHeight(2),2));
+
+
 	//
-//	// remove none
-//	adjustSlicesToPlate(slices,lm,0,2);
-//	CPPUNIT_ASSERT_EQUAL((size_t)3, slices.size() );
-//	CPPUNIT_ASSERT_EQUAL((size_t)0, slices[0].getIndex());
-//	CPPUNIT_ASSERT_EQUAL((size_t)1, slices[1].getIndex());
-//	CPPUNIT_ASSERT_EQUAL((size_t)2, slices[2].getIndex());
-//
-//
-//	// remove from top
-//	adjustSlicesToPlate(slices,lm,0,1);
-//	CPPUNIT_ASSERT_EQUAL((size_t)2, slices.size() );
-//	CPPUNIT_ASSERT_EQUAL((size_t)0, slices[0].getIndex());
-//	CPPUNIT_ASSERT_EQUAL((Scalar)0.1, slices[0].getZHeight());
-//	CPPUNIT_ASSERT_EQUAL((size_t)1, slices[1].getIndex());
-//	CPPUNIT_ASSERT_EQUAL((Scalar)0.6, slices[1].getZHeight());
-//
-//	// remove from bottom
-//	slices.push_back(SliceData(1.1,3));
-//	adjustSlicesToPlate(slices,lm,1,2);
-//	CPPUNIT_ASSERT_EQUAL((size_t)2, slices.size() );
-//	CPPUNIT_ASSERT_EQUAL((size_t)0, slices[0].getIndex());
-//	CPPUNIT_ASSERT_EQUAL((size_t)1, slices[1].getIndex());
+	// remove none
+	adjustSlicesToPlate(slices,lm,0,2);
+	CPPUNIT_ASSERT_EQUAL((size_t)3, slices.size() );
+	CPPUNIT_ASSERT_EQUAL((size_t)0, slices[0].getIndex());
+	CPPUNIT_ASSERT_EQUAL((size_t)1, slices[1].getIndex());
+	CPPUNIT_ASSERT_EQUAL((size_t)2, slices[2].getIndex());
+
+
+	// remove from top
+	adjustSlicesToPlate(slices,lm,0,1);
+	CPPUNIT_ASSERT_EQUAL((size_t)2, slices.size() );
+	CPPUNIT_ASSERT_EQUAL((size_t)0, slices[0].getIndex());
+	CPPUNIT_ASSERT_EQUAL((Scalar)0.1, slices[0].getZHeight());
+	CPPUNIT_ASSERT_EQUAL((size_t)1, slices[1].getIndex());
+	CPPUNIT_ASSERT_EQUAL((Scalar)0.6, slices[1].getZHeight());
+
+	// remove from bottom
+	slices.push_back(SliceData(1.1,3));
+	adjustSlicesToPlate(slices,lm,1,2);
+	CPPUNIT_ASSERT_EQUAL((size_t)2, slices.size() );
+	CPPUNIT_ASSERT_EQUAL((size_t)0, slices[0].getIndex());
+	CPPUNIT_ASSERT_EQUAL((size_t)1, slices[1].getIndex());
 
 
 //	testModel(inputDir2 + "insetting/holy_cube.stl", "miracle.config");

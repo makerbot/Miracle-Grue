@@ -48,11 +48,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionLoad_GCode_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+    QString fileName;
+    {
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                 "",//"/home",
                                                     tr("3D Models (*.stl);;GCode (*.gcode)")// tr("GCode (*.gcode)")
                                                     );
-
+    }
     GCodeViewApplication::LoadFile(fileName);
     setCurrentFile(fileName);
 }

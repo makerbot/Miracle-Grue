@@ -76,9 +76,20 @@ Configuration::Configuration()
 void Configuration::readFromFile(const char* filename)
 {
 	this->filename = filename;
-	std::ifstream file(filename, std::ifstream::binary);
-	Json::Reader reader;
-	reader.parse(file , root);
+    std::ifstream file(filename);
+    if (file) {
+        Json::Reader reader;
+        reader.parse(file , root);
+    }
+    else
+    {
+        string msg = "Config file: \"";
+        msg += filename;
+        msg += "\" can't be found";
+        ConfigException mixup(msg.c_str());
+        throw mixup;
+    }
+
 }
 
 Configuration::~Configuration()
@@ -150,6 +161,7 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 		ss << "No extruder defined in the configuration file";
 		ConfigException mixup(ss.str().c_str());
 		throw mixup;
+        return;
 	}
 
 	int x = conf.root["extruders"].size();

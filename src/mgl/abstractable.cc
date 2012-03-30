@@ -12,7 +12,16 @@
 
 
 
-#ifdef WIN32
+
+#ifdef QT_VERSION
+int FileSystemAbstractor::mkpath(const char *path)
+{
+    return -1;
+}
+#endif
+
+#ifdef TOTO
+
 #include <Shlobj.h>
 #include <direct.h>
 #include <stdio.h>
@@ -46,7 +55,9 @@ int FileSystemAbstractor::mkpath(const char *path)
 	return r;
 }
 
-#else
+#endif
+
+#ifdef UNIX
 
 #include <sys/stat.h>
 #include <iostream>
