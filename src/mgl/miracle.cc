@@ -40,12 +40,12 @@ void mgl::miracleGrue(GCoder &gcoder,
 
 	size_t first = 0,last= 0;
 
-	slicesLogToDir(slices,"pretShift");
+	//slicesLogToDir(slices,"pretShift");
 
 	adjustSlicesToPlate(slices, zMeasure, first, last);
     EZLOGGERVLSTREAM(axter::log_often) << "slices levels adjusted" << endl;
 
-    slicesLogToDir(slices,"postShift");
+    //slicesLogToDir(slices,"postShift");
 
 	writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile);
 
