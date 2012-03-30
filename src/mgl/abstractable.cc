@@ -17,6 +17,40 @@ using namespace std;
 
 
 
+char FileSystemAbstractor::getPathSeparatorCharacter() const
+{
+	return '/'; // Linux & Mac, works on Windows most times
+}
+
+::std::string FileSystemAbstractor::ExtractDirectory(const char *directoryPath) const
+{
+	const ::std::string path(directoryPath);
+	return path.substr(0, path.find_last_of(getPathSeparatorCharacter()) + 1);
+}
+
+::std::string FileSystemAbstractor::ExtractFilename(const char* filename) const
+{
+	std::string path(filename);
+	return path.substr(path.find_last_of(getPathSeparatorCharacter()) + 1);
+}
+
+::std::string FileSystemAbstractor::ChangeExtension(const char* filename, const char* extension) const
+{
+	const ::std::string path(filename);
+	const ::std::string ext(extension);
+	std::string filenameStr = ExtractFilename(path.c_str());
+	return ExtractDirectory(path.c_str())
+			+ filenameStr.substr(0, filenameStr.find_last_of('.')) + ext;
+}
+
+::std::string FileSystemAbstractor::removeExtension(const char *filename) const
+{
+	const ::std::string path(filename);
+	::std::string filenameStr = ExtractFilename(path.c_str());
+	return ExtractDirectory(path.c_str())
+			+ filenameStr.substr(0, filenameStr.find_last_of('.'));
+}
+
 ProgressBar::ProgressBar(unsigned int count)
 :total(0), delta(0), progress(0), ticks(0)
 {

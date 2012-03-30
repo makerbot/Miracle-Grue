@@ -53,14 +53,13 @@ class FileSystemAbstractor
 public:
 
 	char getPathSeparatorCharacter() const;
-	::std::string ExtractDirectory(const char *directoryPath) const ;
+
+	::std::string ExtractDirectory(const char *directoryPath) const;
 	::std::string ExtractFilename(const char* filename) const;
-	::std::string ChangeExtension(const char* filename, const char* extension) const ;
+	::std::string ChangeExtension(const char* filename, const char* extension) const;
 	::std::string removeExtension(const char *filename) const;
 
-
 };
-
 
 
 class MyComputer
