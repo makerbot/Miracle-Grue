@@ -8,7 +8,7 @@ using namespace std;
 using namespace mgl;
 using namespace Json;
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger_headers.hpp"
+#include "ezlogger/ezlogger_headers.hpp"
 
 //// @param input
 //// @param input

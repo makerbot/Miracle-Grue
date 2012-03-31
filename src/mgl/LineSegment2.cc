@@ -6,7 +6,7 @@
 using namespace mgl;
 using namespace std;
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger_headers.hpp"
+#include "ezlogger/ezlogger_headers.hpp"
 
 LineSegment2::LineSegment2(){}
 

@@ -15,7 +15,7 @@ using namespace mgl;
 using namespace std;
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger_headers.hpp"
+#include "ezlogger/ezlogger_headers.hpp"
 
 
 // function that adds an s to a noun if count is more than 1

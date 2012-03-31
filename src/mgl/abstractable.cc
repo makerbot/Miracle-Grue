@@ -15,7 +15,7 @@ using namespace mgl;
 using namespace std;
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger_headers.hpp"
+#include "ezlogger/ezlogger_headers.hpp"
 
 
 int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname, mode_t mode )

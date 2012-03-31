@@ -18,7 +18,7 @@
 #include "ScadDebugFile.h"
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger_headers.hpp"
+#include "ezlogger/ezlogger_headers.hpp"
 
 
 using namespace mgl;
