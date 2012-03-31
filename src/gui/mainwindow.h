@@ -43,6 +43,12 @@ private slots:
 
     void on_panDown_clicked();
 
+    void on_buttonConfigBrowse_clicked();
+
+    void on_button3dModelBrowse_clicked();
+
+    void on_buttonSlice_clicked();
+
 private:
     Ui::MainWindow *ui;
 

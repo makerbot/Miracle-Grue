@@ -18,6 +18,8 @@
 namespace mgl
 {
 
+
+
 void miracleGrue(GCoder &gcoder,
                       const Slicer &slicer,
                       const char *modelFile,
@@ -25,7 +27,8 @@ void miracleGrue(GCoder &gcoder,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
-                      std::vector< SliceData >  &slices);
+                      std::vector< SliceData >  &slices,
+                      ProgressBar* progress = NULL);
 
 
 void slicesFromSlicerAndMesh(
@@ -34,7 +37,8 @@ void slicesFromSlicerAndMesh(
 		Meshy& mesh,
 		const char *scadFile,
 		int firstSliceIdx  = -1,
-		int lastSliceIdx  = -1);
+                int lastSliceIdx  = -1,
+                ProgressBar* progress = NULL);
 
 
 
@@ -48,8 +52,8 @@ void writeGcodeFromSlicesAndParams(
 		const char *gcodeFile,
 		GCoder &gcoder,
 		std::vector<SliceData >& slices,
-		const char *modelSource ="unknown source");
-
+                const char *modelSource ="unknown source",
+                ProgressBar* progress = NULL );
 
 /// log the passed vector of slices to a directory
 void slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName);

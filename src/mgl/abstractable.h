@@ -76,24 +76,56 @@ public:
 };
 
 
+
+
 //
 // ASCII art
 //
+
 class ProgressBar
 {
-	unsigned int total;
-	unsigned int delta;
-	unsigned int progress;
-	unsigned int ticks;
+
+    unsigned int count;
+    unsigned int ticks;
+
+protected:
+    std::string task;
+ public:
+    ProgressBar(unsigned int count=0, const char* taskName="")
+    {
+        reset(count, taskName);
+    }
+
+    virtual ~ProgressBar(){};
+
+    void reset(unsigned int count, const char* taskName = "")
+    {
+        ticks = 0;
+        this->count = count;
+        task = taskName;
+    }
+
+    void tick()
+    {
+        onTick(task.c_str(), count, ticks);
+        ticks++;
+    }
+
+    virtual void onTick(const char* taskName, unsigned int size, unsigned int it)=0;
+
+};
+
+
+class ProgressLog : public ProgressBar
+{
 	MyComputer myPc;
-
+        unsigned int delta;
+        unsigned int deltaTicks;
+        unsigned int deltaProgress;
 public:
+        ProgressLog(unsigned int count=0);
+        void onTick(const char* taskName, unsigned int count, unsigned int tick);
 
-	ProgressBar(unsigned int count);
-
-	void reset(unsigned int count);
-
-	void tick();
 };
 
 }

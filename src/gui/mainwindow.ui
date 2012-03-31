@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>953</width>
-    <height>561</height>
+    <width>931</width>
+    <height>589</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
+    <property name="horizontalSpacing">
+     <number>8</number>
+    </property>
     <item row="0" column="0">
      <widget class="GcodeView" name="graphicsView"/>
     </item>
@@ -30,88 +33,29 @@
      </layout>
     </item>
     <item row="1" column="0">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="1">
+     <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,0,0,0" columnstretch="0,0,0,3,0,0,0,0,0,0">
+      <item row="2" column="1">
        <widget class="QPushButton" name="panUp">
         <property name="text">
          <string>Pan Up</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="5" column="0">
        <widget class="QPushButton" name="panLeft">
         <property name="text">
          <string>Pan Left</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="panRight">
-        <property name="text">
-         <string>Pan Right</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="2" column="1">
+      <item row="7" column="1">
        <widget class="QPushButton" name="panDown">
         <property name="text">
          <string>Pan Down</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <spacer name="horizontalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="2" column="2">
-       <spacer name="horizontalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="6">
+      <item row="2" column="6">
        <spacer name="horizontalSpacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -124,7 +68,7 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="6">
+      <item row="5" column="6">
        <spacer name="horizontalSpacer_7">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -137,7 +81,7 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="6">
+      <item row="7" column="6">
        <spacer name="horizontalSpacer_8">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -150,34 +94,7 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="7">
-       <widget class="QPushButton" name="zoomIn">
-        <property name="text">
-         <string>Zoom In</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="7">
-       <widget class="QPushButton" name="zoomOut">
-        <property name="text">
-         <string>Zoom Out</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="9">
+      <item row="2" column="9">
        <spacer name="horizontalSpacer_9">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -190,7 +107,7 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="9">
+      <item row="5" column="9">
        <spacer name="horizontalSpacer_10">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -203,7 +120,7 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="9">
+      <item row="7" column="9">
        <spacer name="horizontalSpacer_11">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -216,7 +133,7 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="7">
+      <item row="7" column="7">
        <spacer name="horizontalSpacer_12">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -229,46 +146,7 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="4">
-       <spacer name="horizontalSpacer_13">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="4">
-       <spacer name="horizontalSpacer_14">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="2" column="4">
-       <spacer name="horizontalSpacer_15">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="5">
+      <item row="2" column="5">
        <spacer name="horizontalSpacer_16">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -281,7 +159,7 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="5">
+      <item row="5" column="5">
        <spacer name="horizontalSpacer_17">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -294,7 +172,7 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="5">
+      <item row="7" column="5">
        <spacer name="horizontalSpacer_18">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -307,46 +185,7 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="3">
-       <spacer name="horizontalSpacer_19">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="3">
-       <spacer name="horizontalSpacer_20">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="2" column="3">
-       <spacer name="horizontalSpacer_21">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="8">
+      <item row="2" column="8">
        <spacer name="horizontalSpacer_22">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -359,7 +198,7 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="8">
+      <item row="5" column="8">
        <spacer name="horizontalSpacer_23">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -372,7 +211,7 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="8">
+      <item row="7" column="8">
        <spacer name="horizontalSpacer_24">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -385,6 +224,108 @@
         </property>
        </spacer>
       </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="zoomIn">
+        <property name="text">
+         <string>Zoom In</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QPushButton" name="zoomOut">
+        <property name="text">
+         <string>Zoom Out</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="panRight">
+        <property name="text">
+         <string>Pan Right</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="7">
+       <spacer name="horizontalSpacer_19">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="5" column="7">
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="lineEditConfigFile"/>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Config file:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QPushButton" name="buttonConfigBrowse">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>3D model:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="3">
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QLineEdit" name="lineEdit3dModelFile"/>
+      </item>
+      <item row="5" column="4">
+       <widget class="QPushButton" name="button3dModelBrowse">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="4">
+       <widget class="QPushButton" name="buttonSlice">
+        <property name="text">
+         <string>slice!</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2">
+       <widget class="QLabel" name="label_task">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -394,7 +335,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>953</width>
+     <width>931</width>
      <height>25</height>
     </rect>
    </property>
@@ -408,15 +349,14 @@
      </property>
      <addaction name="separator"/>
     </widget>
-    <addaction name="actionSlice_3D_model"/>
     <addaction name="actionLoad_GCode"/>
+    <addaction name="actionExport_Gcode_File"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
     <addaction name="actionClose_All_Except"/>
     <addaction name="separator"/>
-    <addaction name="actionExport_Gcode_File"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">

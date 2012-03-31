@@ -95,8 +95,8 @@ public:
 	{
 		if(z < 0)
 		{
-			LayerException mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
-			throw mixup;
+                        LayerException mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
+                        throw mixup;
 		}
 
 		if (z < firstLayerZ)

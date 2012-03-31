@@ -22,33 +22,27 @@ void mgl::miracleGrue(GCoder &gcoder,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
-                      std::vector< SliceData >  &slices)
+                      std::vector< SliceData >  &slices,
+                      ProgressBar *progress) // = NULL
 {
 
-	EZLOGGERVLSTREAM(axter::log_often) << "running " << __FUNCTION__ << endl;
-	assert(slices.size() ==0);
+
+    EZLOGGERVLSTREAM(axter::log_often) << "running " << __FUNCTION__ << endl;
+    assert(slices.size() ==0);
     Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
     mesh.readStlFile(modelFile);
-
     EZLOGGERVLSTREAM(axter::log_often) << "mesh loaded" << endl;
 
-    slicesFromSlicerAndMesh(slices,slicer,mesh,scadFile,firstSliceIdx,lastSliceIdx);
-
+    slicesFromSlicerAndMesh(slices,slicer,mesh,scadFile,firstSliceIdx,lastSliceIdx, progress);
     EZLOGGERVLSTREAM(axter::log_often) << "slices created" << endl;
 
     LayerMeasure zMeasure = mesh.readLayerMeasure();
 
-	size_t first = 0,last= 0;
-
-	//slicesLogToDir(slices,"pretShift");
-
-	adjustSlicesToPlate(slices, zMeasure, first, last);
+    size_t first = 0,last= 0;
+    adjustSlicesToPlate(slices, zMeasure, first, last);
     EZLOGGERVLSTREAM(axter::log_often) << "slices levels adjusted" << endl;
 
-    //slicesLogToDir(slices,"postShift");
-
-	writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile);
-
+    writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile, progress);
     EZLOGGERVLSTREAM(axter::log_often) << "gcode written adjusted" << endl;
 
 
@@ -73,58 +67,61 @@ void mgl::slicesFromSlicerAndMesh(
 		Meshy& mesh,
 		const char *scadFile,
 		int firstSliceIdx,
-		int lastSliceIdx )
+                int lastSliceIdx,
+                ProgressBar *progressPtr)
+{
+    assert(slices.size() ==0);
 
-		{
-	assert(slices.size() ==0);
+    unsigned int sliceCount = mesh.readSliceTable().size();
+    unsigned int extruderId = 0;
 
-	unsigned int sliceCount = mesh.readSliceTable().size();
-	unsigned int extruderId = 0;
-
-	if(firstSliceIdx == -1) firstSliceIdx = 0;
+    if(firstSliceIdx == -1) firstSliceIdx = 0;
     if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
-	Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(),
-			slicer.layerW, slicer.layerH, sliceCount, scadFile);
+    Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(),
+                slicer.layerW, slicer.layerH, sliceCount, scadFile);
 
-	/// for future use of multithreading, we need to create slices to not lock
-	/// the structure in the loop
+    /// for future use of multithreading, we need to create slices to not lock
+    /// the structure in the loop
     slices.reserve( mesh.readSliceTable().size());
     for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
     {
-		Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
-		slices.push_back( SliceData(z,sliceId) );
-
+        Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
+        slices.push_back( SliceData(z,sliceId) );
     }
 
-	Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
+    Scalar cuttOffLength = slicer.insetCuttOffMultiplier * slicer.layerW;
 
-	ProgressBar progressSlice(sliceCount);
-	EZLOGGERVLSTREAM(axter::log_often) << "Slicing" << endl;
+    ProgressLog progressSlice;
+    progressPtr = progressPtr?progressPtr:&progressSlice;
+    ProgressBar &progress = *progressPtr;
 
-	for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progressSlice.tick();
+    progress.reset(sliceCount, "Slicing");
+    EZLOGGERVLSTREAM(axter::log_often) << "Slicing" << endl;
 
-		if(sliceId <  firstSliceIdx) continue;
-		if(sliceId > lastSliceIdx) break;
+    for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
+    {
+            progress.tick();
 
-		const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-		Scalar sliceAngle = sliceId * slicer.angle;
-		SliceData &slice = slices[sliceId];
+            if(sliceId <  firstSliceIdx) continue;
+            if(sliceId > lastSliceIdx) break;
 
-		slicy.slice(	trianglesForSlice,
-						sliceId,
-						extruderId,
-						slicer.tubeSpacing,
-						sliceAngle,
-						slicer.nbOfShells,
-						cuttOffLength,
-						slicer.infillShrinkingMultiplier,
-						slicer.insetDistanceMultiplier,
-						slicer.writeDebugScadFiles,
-						slice);
-	}
+            const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+            Scalar sliceAngle = sliceId * slicer.angle;
+            SliceData &slice = slices[sliceId];
+
+            slicy.slice(	trianglesForSlice,
+                                            sliceId,
+                                            extruderId,
+                                            slicer.tubeSpacing,
+                                            sliceAngle,
+                                            slicer.nbOfShells,
+                                            cuttOffLength,
+                                            slicer.infillShrinkingMultiplier,
+                                            slicer.insetDistanceMultiplier,
+                                            slicer.writeDebugScadFiles,
+                                            slice);
+    }
 }
 
 
@@ -139,7 +136,8 @@ void mgl::slicesFromSlicerAndMesh(
 void mgl::adjustSlicesToPlate(
 		std::vector<SliceData>& slices,
 		const LayerMeasure& layerMeasure,
-		int firstSliceIdx, int lastSliceIdx)
+                int firstSliceIdx,
+                int lastSliceIdx)
 {
 	assert(slices.size() > 0);
 
@@ -191,26 +189,29 @@ void mgl::writeGcodeFromSlicesAndParams(
 		const char *gcodeFile,
 		GCoder &gcoder,
 		std::vector<SliceData >& slices,
-		const char *modelSource  )
+                const char *modelSource, // = "N/A"
+                ProgressBar *progressPtr  ) // = NULL
 {
 
-	assert(slices.size() != 0);
-	assert(gcodeFile != 0x00);
-	assert(modelSource != 0x00);
-	size_t sliceCount = slices.size();
+    assert(slices.size() != 0);
+    assert(gcodeFile != 0x00);
+    assert(modelSource != 0x00);
+    size_t sliceCount = slices.size();
 
-	EZLOGGERVLSTREAM(axter::log_often) << "Writing gcode" << endl;
-	ProgressBar progressGcode(sliceCount);
+    EZLOGGERVLSTREAM(axter::log_often) << "Writing gcode" << endl;
+    ProgressLog progressGcode(sliceCount);
+    progressPtr = progressPtr?progressPtr:&progressGcode;
+    ProgressBar &progress = *progressPtr;
 
     std::ofstream gout(gcodeFile);
     gcoder.writeStartOfFile(gout, modelSource);
-
-	for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		progressGcode.tick();
-		SliceData &slice = slices[sliceId];
-		gcoder.writeSlice(gout, slice);
-	}
+    progress.reset(sliceCount, "Gcoding");
+    for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
+    {
+        progress.tick();
+        SliceData &slice = slices[sliceId];
+        gcoder.writeSlice(gout, slice);
+    }
     gout.close();
 }
 

@@ -83,40 +83,38 @@ string FileSystemAbstractor::removeExtension(const char *filename) const
 			+ filenameStr.substr(0, filenameStr.find_last_of('.'));
 }
 
-ProgressBar::ProgressBar(unsigned int count)
-:total(0), delta(0), progress(0), ticks(0)
+ProgressLog::ProgressLog(unsigned int count)
+    :ProgressBar(count,"")
 {
-	reset(count);
+        reset(count);
 	EZLOGGERVLSTREAM(axter::log_often) << ":";
+
+
 }
 
 
-void ProgressBar::reset(unsigned int count)
+void ProgressLog::onTick(const char* taskName, unsigned int count, unsigned int ticks)
 {
-	ticks=0;
-	total = count;
-	progress = 0;
-	delta = count /10;
-}
+        if(ticks = 0)
+        {
+            deltaTicks = 0;
+            deltaProgress = 0;
+            this->delta = count / 10;
+        }
 
-
-void ProgressBar::tick()
-{
-	total --;
-	ticks ++;
-	if (ticks >= delta)
+        if (deltaTicks >= this->delta)
 	{
-		ticks = 0;
-		progress ++;
-		EZLOGGERVLSTREAM(axter::log_often) << " [" << progress * 10<< "%] ";
-
+            EZLOGGERVLSTREAM(axter::log_often) << " [" << deltaProgress * 10<< "%] ";
+            deltaTicks = 0;
+            deltaProgress ++;
 	}
-	if (total ==0)
+        if (count - ticks <= 1)
 	{
 		// cout << "" << endl;
 		string now = myPc.clock.now();
 		EZLOGGERVLSTREAM(axter::log_often) << now;
 	}
+        deltaTicks ++;
 }
 
 

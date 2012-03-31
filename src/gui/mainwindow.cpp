@@ -2,9 +2,9 @@
 #include <QtCore/QTextStream>
 #include <QFileDialog>
 #include <QSettings>
-
+#include <QMessageBox>
 #include <iostream>
-
+#include <QDir>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -12,7 +12,11 @@
 #include "gcodeviewapplication.h"
 #include "slicingdialog.h"
 
+#include "mgl/miracle.h"
+#include "mgl/configuration.h"
 
+using namespace mgl;
+using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -41,6 +45,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Reload the 'windows' menu
     updateWindowMenu();
+
+    ui->progressBar->setValue(0);
+    QString config = QDir::currentPath()+"/miracle.config";
+    QFile f(config);
+    if(f.exists(config))
+    {
+        ui->lineEditConfigFile->setText(config);
+    }
+    string title = "Miracle-Grue ";
+    title += mgl::getMiracleGrueVersionStr().c_str();
+    this->setWindowTitle(title.c_str());
+
 }
 
 MainWindow::~MainWindow()
@@ -223,4 +239,92 @@ void MainWindow::on_panUp_clicked()
 void MainWindow::on_panDown_clicked()
 {
     ui->graphicsView->panY(1.0);
+}
+
+void MainWindow::on_buttonConfigBrowse_clicked()
+{
+    QString fileName;
+    fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("Miracle-Grue configurations (*.config)") );
+    ui->lineEditConfigFile->setText(fileName);
+
+}
+
+void MainWindow::on_button3dModelBrowse_clicked()
+{
+    QString fileName;
+    fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("3D models (*.stl)") );
+    ui->lineEdit3dModelFile->setText(fileName);
+}
+
+void MainWindow::on_buttonSlice_clicked()
+{
+    class Progress : public ProgressBar
+    {
+        QLabel &taskLabel; QProgressBar& progress;
+    public:
+        Progress(QLabel *taskLabelp, QProgressBar* progressp)
+            :taskLabel(*taskLabelp), progress(*progressp)
+        {
+
+        }
+
+        void onTick(const char* taskName, unsigned int count, unsigned int tick)
+        {
+            if(tick==0)
+            {
+                taskLabel.setText(taskName);
+                progress.setMinimum(0);
+                progress.setMaximum(count);
+
+            }
+            progress.setValue(tick+1);
+            // cout << taskName << " tick: " << tick << "/" << count << endl;
+        }
+    };
+
+    try
+    {
+        cout << "Output file: ";
+        MyComputer computer;
+
+        string configFileName = ui->lineEditConfigFile->text().toStdString();
+        string model3dfileName = ui->lineEdit3dModelFile->text().toStdString();
+
+        string gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(model3dfileName.c_str()).c_str(), ".gcode" );
+        cout << gcodeFile << endl;
+        string scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(model3dfileName.c_str()).c_str(), ".scad" );
+        cout << scadFile << endl;
+
+
+
+        //configFileName += "/miracle.config";
+        mgl::Configuration config;
+        cout << "loading config: " << configFileName << endl;
+        config.readFromFile(configFileName.c_str());
+
+        GCoder gcoder;
+        loadGCoderData(config, gcoder);
+        Slicer slicerCfg;
+        loadSlicerData(config, slicerCfg);
+
+        std::vector<mgl::SliceData> slices;
+
+        Progress progress(ui->label_task, ui->progressBar);
+        miracleGrue(gcoder, slicerCfg, model3dfileName.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices, &progress);
+
+        loadFile(gcodeFile.c_str());
+
+    }
+    catch(mgl::Exception &mixup)
+    {
+        cout << "ERROR: " << mixup.error << endl;
+        QMessageBox &box = *new QMessageBox();
+        box.setText(mixup.error.c_str());
+        box.show();
+
+    }
+    catch(...)
+    {
+         cout << "ERROR" << endl;
+    }
 }

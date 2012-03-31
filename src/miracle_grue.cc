@@ -168,7 +168,6 @@ int main(int argc, char *argv[], char *envp[])
         if(str.find("c=") != string::npos)
         {
         	configFileName = str.substr(2, str.length()-2);
-
         }
     }
 

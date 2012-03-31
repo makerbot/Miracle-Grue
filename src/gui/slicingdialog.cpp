@@ -50,7 +50,31 @@ void SlicingDialog::on_pushButtonModelFile_clicked()
 
 void SlicingDialog::on_pushButtonGo_clicked()
 {
-    // ui->progressBar->set
+
+    class Progress : public ProgressBar
+    {
+        QLabel &taskLabel; QProgressBar& progress;
+    public:
+        Progress(QLabel *taskLabelp, QProgressBar* progressp)
+            :taskLabel(*taskLabelp), progress(*progressp)
+        {
+
+        }
+
+        void onTick(const char* taskName, unsigned int count, unsigned int tick)
+        {
+            if(tick==0)
+            {
+                taskLabel.setText(taskName);
+                progress.setMinimum(0);
+                progress.setMaximum(count);
+
+            }
+            progress.setValue(tick+1);
+            // cout << taskName << " tick: " << tick << "/" << count << endl;
+        }
+    };
+
     try
     {
         cout << "Output file: ";
@@ -65,6 +89,7 @@ void SlicingDialog::on_pushButtonGo_clicked()
         cout << scadFile << endl;
 
 
+
         //configFileName += "/miracle.config";
         mgl::Configuration config;
         cout << "loading config: " << configFileName << endl;
@@ -72,45 +97,15 @@ void SlicingDialog::on_pushButtonGo_clicked()
 
         GCoder gcoder;
         loadGCoderData(config, gcoder);
-        Slicer slicer;
-        loadSlicerData(config, slicer);
+        Slicer slicerCfg;
+        loadSlicerData(config, slicerCfg);
 
         cout << "slicing" << endl;
         std::vector<mgl::SliceData> slices;
 
-        // miracleGrue(gcoder, slicer, filename.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices);
-        assert(slices.size() ==0);
-        Meshy mesh(slicer.firstLayerZ, slicer.layerH);
-        mesh.readStlFile(filename.c_str());
+        Progress progress(ui->label_task, ui->progressBar);
+        miracleGrue(gcoder, slicerCfg, filename.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices, &progress);
 
-        int firstSliceIdx = -1;
-        int lastSliceIdx = -1;
-
-        slicesFromSlicerAndMesh(slices, slicer, mesh, scadFile.c_str(),firstSliceIdx, lastSliceIdx);
-
-
-        LayerMeasure zMeasure = mesh.readLayerMeasure();
-
-        size_t first = 0,last= 0;
-        if(firstSliceIdx > 0 ) {
-            first  = firstSliceIdx;
-        }
-
-        if(lastSliceIdx == -1 || lastSliceIdx <= (int)slices.size() ){
-            last = slices.size()-1;
-        }
-        else{
-            last = lastSliceIdx;
-        }
-
-        adjustSlicesToPlate(slices, zMeasure, first, last);
-
-        writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, slices,  filename.c_str());
-
-
-
-        filename =  gcodeFile;
-        cout << "Output file: " << filename << endl;
 
     }
     catch(mgl::Exception &mixup)
