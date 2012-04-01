@@ -9,8 +9,7 @@
 using namespace mgl;
 using namespace std;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "log.h"
 
 
 
@@ -97,26 +96,26 @@ void Meshy::addTriangle(Triangle3 &t)
 	if (maxSliceIndex - minSliceIndex > 1)
 		maxSliceIndex --;
 
-//		EZLOGGERVLSTREAM(axter::log_often) << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
-//		EZLOGGERVLSTREAM(axter::log_often) << "Max index =" <<  maxSliceIndex << std::endl;
+//		Log::often() << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
+//		Log::often() << "Max index =" <<  maxSliceIndex << std::endl;
 	unsigned int currentSliceCount = sliceTable.size();
 	if (maxSliceIndex >= currentSliceCount)
 	{
 		unsigned int newSize = maxSliceIndex+1;
 		sliceTable.resize(newSize); // make room for potentially new slices
-//			EZLOGGERVLSTREAM(axter::log_often) << "- new slice count: " << sliceTable.size() << std::endl;
+//			Log::often() << "- new slice count: " << sliceTable.size() << std::endl;
 	}
 
 	allTriangles.push_back(t);
 
 	size_t newTriangleId = allTriangles.size() -1;
 
-//		 EZLOGGERVLSTREAM(axter::log_often) << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
+//		 Log::often() << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
 	for (size_t i= minSliceIndex; i<= maxSliceIndex; i++)
 	{
 		TriangleIndices &trianglesForSlice = sliceTable[i];
 		trianglesForSlice.push_back(newTriangleId);
-//			EZLOGGERVLSTREAM(axter::log_often) << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
+//			Log::often() << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
 	}
 
 	limits.grow(t[0]);
@@ -139,7 +138,7 @@ void Meshy::dump(std::ostream &out)
 		TriangleIndices &trianglesForSlice = sliceTable[i];
 		//trianglesForSlice.push_back(newTriangleId);
 		out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
-		//EZLOGGERVLSTREAM(axter::log_often) << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
+        //Log::often() << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
 	}
 }
 
@@ -147,7 +146,7 @@ void Meshy::dump(std::ostream &out)
 
 size_t Meshy::triangleCount() {
 	return allTriangles.size();
-	EZLOGGERVLSTREAM(axter::log_often) << "all triangle count" << allTriangles.size();
+    Log::often() << "all triangle count" << allTriangles.size();
 }
 
 void Meshy::writeStlFile(const char* fileName) const
@@ -161,7 +160,7 @@ void Meshy::writeStlFile(const char* fileName) const
 		out.writeTriangle(t);
 	}
 	out.close();
-	// EZLOGGERVLSTREAM(axter::log_often) << fileName << " written!"<< std::endl;
+    // Log::often() << fileName << " written!"<< std::endl;
 
 }
 
@@ -179,7 +178,7 @@ void Meshy::writeStlFileForLayer(unsigned int layerIndex, const char* fileName) 
 		out.writeTriangle(t);
 	}
 	out.close();
-	// EZLOGGERVLSTREAM(axter::log_often) << fileName << " written!"<< std::endl;
+    // Log::often() << fileName << " written!"<< std::endl;
 }
 
 /// Loads an STL file into a mesh object, from a binary or ASCII stl file.
@@ -258,7 +257,7 @@ size_t Meshy::readStlFile(const char* stlFilename)
 		int countdown = (int)tricount;
 		while (!feof(fHandle) && countdown-- > 0) {
 			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
-				EZLOGGERVLSTREAM(axter::log_often) << __FUNCTION__ << "BREAKING" << endl;
+                Log::often() << __FUNCTION__ << "BREAKING" << endl;
 				break;
 			}
 			for (int i = 0; i < 3 * 4; i++) {
@@ -288,7 +287,7 @@ size_t Meshy::readStlFile(const char* stlFilename)
 			msg += stringify(this->triangleCount());
 			msg += ", faced:";
 			msg += stringify(facecount);
-			EZLOGGERVLSTREAM(axter::log_often) << msg;
+            Log::often() << msg;
 //			MeshyException problem(msg.c_str());
 //			throw (problem);
 		}
@@ -324,8 +323,8 @@ size_t Meshy::readStlFile(const char* stlFilename)
 				stringstream msg;
 				msg << "Error reading face " << facecount << " in file \"" << stlFilename << "\"";
 				MeshyException problem(msg.str().c_str());
-				EZLOGGERVLSTREAM(axter::log_often) << msg << endl;
-				EZLOGGERVLSTREAM(axter::log_often) << buf << endl;
+                Log::often() << msg << endl;
+                Log::often() << buf << endl;
 				throw(problem);
 			}
 			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));

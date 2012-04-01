@@ -1,4 +1,4 @@
-
+#include "log.h"
 #include "JsonConverter.h"
 
 using namespace mgl;
@@ -6,8 +6,7 @@ using namespace Json;
 using namespace std;
 
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+
 
 bool JsonConverter::loadJsonFromScalar(Value& val,Scalar& s) {
 	val = Value(s);
@@ -165,20 +164,20 @@ bool JsonConverter::loadExtruderSliceFromJson(ExtruderSlice& input,Value& val)
 	if(loaded)
 		input.insetLoopsList = insetLoopsList;
 	else
-		EZLOGGERVLSTREAM(axter::log_rarely) << "loadExtruderSliceFromJson fail a" <<endl;
+        Log::rarely() << "loadExtruderSliceFromJson fail a" <<endl;
 
 	loaded = loadPolygonsFromJson(infills,infillsValue );
 	if(loaded)
 		input.infills= infills;
 	else
-		EZLOGGERVLSTREAM(axter::log_rarely) << "loadExtruderSliceFromJson fail b" <<endl;
+        Log::rarely() << "loadExtruderSliceFromJson fail b" <<endl;
 
 
 	loaded = loadPolygonsFromJson(boundary,boundaryValue );
 	if(loaded)
 		input.boundary = boundary;
 	else
-		EZLOGGERVLSTREAM(axter::log_rarely) << "loadExtruderSliceFromJson fail c" <<endl;
+        Log::rarely() << "loadExtruderSliceFromJson fail c" <<endl;
 
 	return false;
 }

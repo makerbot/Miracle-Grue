@@ -36,16 +36,15 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 							Scalar infillShrinking,
 							Polygons& infills)
 {
-	assert(tubeSpacing != 0);
-
-	assert(infills.size() == 0);
-
+    assert(tubeSpacing > 0);
+    assert(infills.size() == 0);
 	Scalar deltaY = limits.yMax - limits.yMin;
 
 	unsigned int tubeCount = (unsigned int)((deltaY) / tubeSpacing);
 	std::vector< std::set<Scalar> > intersects;
 	// allocate
 	intersects.resize(tubeCount);
+
 	for (unsigned int i=0; i < tubeCount; i++)
 	{
 		Scalar y = -0.5 * deltaY + i * tubeSpacing;

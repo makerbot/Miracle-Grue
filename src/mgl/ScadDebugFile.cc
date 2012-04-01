@@ -3,8 +3,7 @@
 using namespace std;
 using namespace mgl;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "log.h"
 
 ScadDebugFile::ScadDebugFile() :filename("")
 	{}
@@ -19,7 +18,7 @@ void ScadDebugFile::open(const char* path)
 		stringstream ss;
 		ss << "Can't open \"" << filename.c_str() << "\"";
 		string tmp = ss.str();
-		EZLOGGERVLSTREAM(axter::log_often) << "ERROR: " << tmp << endl;
+        Log::often() << "ERROR: " << tmp << endl;
 		ScadException problem(ss.str().c_str());
 		throw (problem);
 	}

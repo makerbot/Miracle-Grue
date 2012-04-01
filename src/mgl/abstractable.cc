@@ -14,15 +14,24 @@
 using namespace mgl;
 using namespace std;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "log.h"
 
 
-int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname, mode_t mode )
+std::ostream &MyComputer::log()
 {
-#ifdef WIN32
-	EZLOGGERVLSTREAM(axter::log_often) << "not supported on windows QT"
+    return cout;
+}
+
+
+int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname  )
+{
+
+#ifdef QT_CORE_LIB
+    Log::often() << "not supported on QT" << endl;
+    return -1;
 #else
+        // mode_t does not work under QT
+        mode_t mode =  (S_IREAD|S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH)
 		int status = 0;
 
 		struct stat st;
@@ -43,7 +52,7 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname, mode_t 
 string FileSystemAbstractor::pathJoin(string path, string filename) const
 {
 #ifdef WIN32
-	return path  + "\" + filename;"
+    return path  + "\\" + filename;
 #else
 	return path  + "/" + filename;
 #endif
@@ -87,7 +96,7 @@ ProgressLog::ProgressLog(unsigned int count)
     :ProgressBar(count,"")
 {
         reset(count);
-	EZLOGGERVLSTREAM(axter::log_often) << ":";
+    Log::often() << ":";
 
 
 }
@@ -107,14 +116,14 @@ void ProgressLog::onTick(const char* taskName, unsigned int count, unsigned int 
 		deltaProgress++;
 		cout << " [" << deltaProgress * 10 << "%] ";
 		cout.flush();
-		EZLOGGERVLSTREAM(axter::log_often) << " [" << deltaProgress * 10 << "%] ";
+        Log::often() << " [" << deltaProgress * 10 << "%] ";
 		this->deltaTicks = 0;
 
 	}
 	if ( ticks >= count -1  ) {
 
 		string now = myPc.clock.now();
-		EZLOGGERVLSTREAM(axter::log_often) << now;
+        Log::often() << now;
 		cout << now << endl;
 	}
 	deltaTicks++;

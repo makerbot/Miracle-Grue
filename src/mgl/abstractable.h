@@ -62,9 +62,8 @@ public:
 
 	::std::string pathJoin(std::string path, std::string filename) const;
 
-	int guarenteeDirectoryExists(const char* dirPath,
-				mode_t mode =
-						(S_IREAD|S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH) );
+    int guarenteeDirectoryExists(const char* dirPath);
+
 };
 
 
@@ -73,6 +72,9 @@ class MyComputer
 public:
 	ClockAbstractor clock;
 	FileSystemAbstractor fileSystem;
+
+    static std::ostream &log();
+
 };
 
 

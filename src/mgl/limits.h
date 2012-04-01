@@ -30,11 +30,17 @@ public:
 
 	Limits()
 	{
-		xMax = std::numeric_limits<Scalar>::min();
+        // Help: these don't not work under QT Windows.
+        // xMax = std::numeric_limits<Scalar>::min();
+        // xMin = std::numeric_limits<Scalar>::max();
+
+        Scalar large = 1e20; // using this instead. That's a few kilometers larger than the build platform in 2012
+
+        xMax = -large;
 		yMax = xMax;
 		zMax = xMax;
 
-		xMin = std::numeric_limits<Scalar>::max();
+        xMin = large;
 		yMin = xMin;
 		zMin = xMin;
 
@@ -126,9 +132,6 @@ public:
 		out.zMax = zMax;
 		return out;
 	}
-
-
-
 };
 
 ::std::ostream& operator<<(::std::ostream& os, const Limits& l);

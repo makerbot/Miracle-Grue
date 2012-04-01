@@ -7,8 +7,9 @@
 using namespace std;
 using namespace mgl;
 using namespace Json;
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+
+#include "log.h"
+
 
 //// @param input
 //// @param input
@@ -27,23 +28,23 @@ void mgl::miracleGrue(GCoder &gcoder,
 {
 
 
-    EZLOGGERVLSTREAM(axter::log_often) << "running " << __FUNCTION__ << endl;
+    Log::often() << "running " << __FUNCTION__ << endl;
     assert(slices.size() ==0);
     Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
     mesh.readStlFile(modelFile);
-    EZLOGGERVLSTREAM(axter::log_often) << "mesh loaded" << endl;
+    Log::often() << "mesh loaded" << endl;
 
     slicesFromSlicerAndMesh(slices,slicer,mesh,scadFile,firstSliceIdx,lastSliceIdx, progress);
-    EZLOGGERVLSTREAM(axter::log_often) << "slices created" << endl;
+    Log::often() << "slices created" << endl;
 
     LayerMeasure zMeasure = mesh.readLayerMeasure();
 
     size_t first = 0,last= 0;
     adjustSlicesToPlate(slices, zMeasure, first, last);
-    EZLOGGERVLSTREAM(axter::log_often) << "slices levels adjusted" << endl;
+    Log::often() << "slices levels adjusted" << endl;
 
     writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile, progress);
-    EZLOGGERVLSTREAM(axter::log_often) << "gcode written adjusted" << endl;
+    Log::often() << "gcode written adjusted" << endl;
 
 
 }
@@ -97,7 +98,7 @@ void mgl::slicesFromSlicerAndMesh(
     ProgressBar &progress = *progressPtr;
 
     progress.reset(sliceCount, "Slicing");
-    EZLOGGERVLSTREAM(axter::log_often) << "Slicing" << endl;
+    Log::often() << "Slicing" << endl;
 
     for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
     {
@@ -158,8 +159,8 @@ void mgl::adjustSlicesToPlate(
 	else{
 		last = lastSliceIdx;
 	}
-	EZLOGGERVLSTREAM(axter::log_often) << "range start: " << first << endl;
-	EZLOGGERVLSTREAM(axter::log_often) << "range end : " << last << endl;
+    Log::often() << "range start: " << first << endl;
+    Log::often() << "range end : " << last << endl;
 
 
 
@@ -198,7 +199,7 @@ void mgl::writeGcodeFromSlicesAndParams(
     assert(modelSource != 0x00);
     size_t sliceCount = slices.size();
 
-    EZLOGGERVLSTREAM(axter::log_often) << "Writing gcode" << endl;
+    Log::often() << "Writing gcode" << endl;
     ProgressLog progressGcode(sliceCount);
     progressPtr = progressPtr?progressPtr:&progressGcode;
     ProgressBar &progress = *progressPtr;
@@ -225,13 +226,13 @@ void mgl::slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName)
 	StyledStreamWriter streamWriter;
 
 	/// check if the dir exists, create if needed
-	fs.guarenteeDirectoryExists(logDirName, (S_IRWXU|S_IRWXO| S_IRWXG) );
+    fs.guarenteeDirectoryExists(logDirName );
 
-	EZLOGGERVLSTREAM(axter::log_often) << "logging slices to dir" << endl;
+    Log::often() << "logging slices to dir" << endl;
 
 	///for each slice, dump to a json file of 'slice_idx_NUM'
 	for(size_t i = 0; i < slices.size(); i++){
-		EZLOGGERVLSTREAM(axter::log_often) << "Writing slice " << endl;
+        Log::often() << "Writing slice " << endl;
 		SliceData& d = slices[i];
 		Value val;
 		stringstream ss;

@@ -14,8 +14,7 @@
 using namespace mgl;
 using namespace std;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "log.h"
 
 
 // function that adds an s to a noun if count is more than 1
@@ -380,7 +379,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-			EZLOGGERVLSTREAM(axter::log_often) << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::often() << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		unsigned int dualtrickId =  extruderId;
@@ -390,7 +389,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
 		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insetLoopsList;
 
-		//EZLOGGERVLSTREAM(axter::log_often) << endl <<  "Slice " << sliceData.sliceIndex << endl;
+        //Log::often() << endl <<  "Slice " << sliceData.sliceIndex << endl;
 
 		try
 		{
@@ -408,8 +407,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-			EZLOGGERVLSTREAM(axter::log_often) << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::error() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 		try
 		{
@@ -417,15 +416,15 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
-				//EZLOGGERVLSTREAM(axter::log_often)  << "   Write OUTLINE" << endl;
+                //Log::often()  << "   Write OUTLINE" << endl;
 				ss << "(outlines: " << loops.size() << " )"<< endl;
 				writePolygons(ss, z, extrusion, loops);
 			}
 		}
 		catch(GcoderException &mixup)
 		{
-			EZLOGGERVLSTREAM(axter::log_often)  << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-			cerr << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::often()  << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::error() << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 		try
@@ -439,7 +438,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 					Extrusion extrusion;
 					calcInSetExtrusion(extruderId, sliceIndex, i, insetCount, extrusion);
 					const Polygons &inset = insets[i];
-					// EZLOGGERVLSTREAM(axter::log_often) << "   Write INSETS " << i << endl;
+                    // Log::often() << "   Write INSETS " << i << endl;
 					ss << "(inset " << i << "/"<<  insetCount<< " )"<< endl;
 					writePolygons(ss, z, extrusion, inset);
 
@@ -448,7 +447,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-			EZLOGGERVLSTREAM(axter::log_often) << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
@@ -456,7 +455,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		{
 			if(gcoding.infills && !gcoding.infillFirst)
 			{
-				//EZLOGGERVLSTREAM(axter::log_often) << "   Write INFILLS" << endl;
+                //Log::often() << "   Write INFILLS" << endl;
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				writePolygons(ss, z, extrusion, infills);
@@ -464,7 +463,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-			EZLOGGERVLSTREAM(axter::log_often) << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+            Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 

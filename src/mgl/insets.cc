@@ -13,12 +13,12 @@
 #include "insets.h"
 #include "shrinky.h"
 #include "clipper.h"
+#include "log.h"
 
 using namespace std;
 using namespace mgl;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+
 
 #define DBLTOINT 1000
 
@@ -87,13 +87,13 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	for(size_t i=0; i < polys.size(); i++)
 	{
 		const ClipperLib::Polygon &poly = polys[i];
-		EZLOGGERVLSTREAM(axter::log_often) <<  name <<"_" << i << "= [";
+        Log::often() <<  name <<"_" << i << "= [";
 		for(size_t j=0; j < poly.size(); j++)
 		{
 			const ClipperLib::IntPoint &p = poly[j];
-			EZLOGGERVLSTREAM(axter::log_often) << "[" << p.X << ", "<< p.Y << "]," << endl;
+            Log::often() << "[" << p.X << ", "<< p.Y << "]," << endl;
 		}
-		EZLOGGERVLSTREAM(axter::log_often) << "];" << endl;
+        Log::often() << "];" << endl;
 	}
 }
 

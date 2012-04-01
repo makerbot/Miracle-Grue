@@ -13,7 +13,7 @@ TEMPLATE = app
 INCLUDEPATH += src \
             src/json-cpp/include \
             src/gui \
-            src/ezlogger
+
 
 SOURCES +=  src/json-cpp/src/lib_json/json_reader.cpp\
     src/json-cpp/src/lib_json/json_value.cpp\
@@ -45,7 +45,8 @@ SOURCES +=  src/json-cpp/src/lib_json/json_reader.cpp\
     src/gui/quaternion.cpp \
     src/gui/algebra3.cpp \
     src/gui/slicingdialog.cpp \
-    src/mgl/ScadDebugFile.cc
+    src/mgl/ScadDebugFile.cc \
+    src/mgl/log.cc
 
 
 HEADERS  +=src/json-cpp/include/json/assertions.h \
@@ -86,7 +87,8 @@ HEADERS  +=src/json-cpp/include/json/assertions.h \
     src/gui/quaternion.h \
     src/gui/glui_internal.h \
     src/gui/slicingdialog.h \
-    src/mgl/ScadDebugFile.h
+    src/mgl/ScadDebugFile.h \
+    src/mgl/log.h
 
 FORMS    += src/gui/mainwindow.ui \
     src/gui/slicingdialog.ui

@@ -12,13 +12,11 @@
 #include <stdint.h>
 #include <cstring>
 
+#include "log.h"
 #include "slicy.h"
 #include "insets.h"
-
 #include "ScadDebugFile.h"
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
 
 
 using namespace mgl;
@@ -139,7 +137,7 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 		{
 			#ifdef OMPFF
 			OmpGuard lock (my_lock);
-			EZLOGGERVLSTREAM(axter::log_often) << "slice "<< sliceId << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
+            Log::often() << "slice "<< sliceId << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
 			#endif
 
 			fscad.writeTrianglesModule("tri_", allTriangles, trianglesForSlice, sliceId);
@@ -166,7 +164,7 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 				string insetsForSlice = ss.str();
 				ss << "_";
 				fscad.writeMinMax(insetsForSlice.c_str(), ss.str().c_str(), insetCount);
-				//EZLOGGERVLSTREAM(axter::log_often) << " SCAD: " << insetsForSlice.c_str() << endl;
+                //Log::often() << " SCAD: " << insetsForSlice.c_str() << endl;
 			}
 		}
 }
@@ -186,7 +184,7 @@ void Slicy::closeScadFile()
 		out << "// segments = [[ points[i], points[i+1]] for i in range(len(points)-1 ) ]" << endl;
         out << "// s = [\"segs.push_back(LineSegment2(Vector2(%s, %s), Vector2(%s, %s)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
         const char* scadfn = fscad.getScadFileName().c_str();
-        EZLOGGERVLSTREAM(axter::log_often) << "closing OpenSCad file: " << scadfn ;
+        Log::often() << "closing OpenSCad file: " << scadfn ;
 		fscad.close();
 	}
 
@@ -283,7 +281,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					slice.extruderSlices[extruderId].insetLoopsList,
 					z,
 					sliceId);
-	// EZLOGGERVLSTREAM(axter::log_often) << "</sliceId"  << sliceId <<  ">" << endl;
+    // Log::often() << "</sliceId"  << sliceId <<  ">" << endl;
 	return true;
 }
 

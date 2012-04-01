@@ -5,8 +5,8 @@
 
 using namespace mgl;
 using namespace std;
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+
+#include "log.h"
 
 LineSegment2::LineSegment2(){}
 
@@ -70,14 +70,14 @@ LineSegment2 LineSegment2::prelongate(const Scalar& dist)  const
 
 //void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
 //{
-//	EZLOGGERVLSTREAM(axter::log_often) << prefix << "segments = [ // " << segments.size() << " segments" << endl;
+//	Log::often() << prefix << "segments = [ // " << segments.size() << " segments" << endl;
 //    for(size_t id = 0; id < segments.size(); id++)
 //    {
 //    	LineSegment2 seg = segments[id];
 //    	cout << prefix << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
 //    }
-//    EZLOGGERVLSTREAM(axter::log_often) << prefix << "]" << endl;
-//    EZLOGGERVLSTREAM(axter::log_often) << "// color([1,0,0.4,1])loop_segments(segments,0.050000);" << endl;
+//    Log::often() << prefix << "]" << endl;
+//    Log::often() << "// color([1,0,0.4,1])loop_segments(segments,0.050000);" << endl;
 //}
 
 //void dumpInsets(const std::vector<SegmentTable> &insetsForLoops)
@@ -85,12 +85,12 @@ LineSegment2 LineSegment2::prelongate(const Scalar& dist)  const
 //	for (unsigned int i=0; i < insetsForLoops.size(); i++)
 //	{
 //		const SegmentTable &insetTable =  insetsForLoops[i];
-//		EZLOGGERVLSTREAM(axter::log_often) << "Loop " << i << ") " << insetTable.size() << " insets"<<endl;
+//		Log::often() << "Loop " << i << ") " << insetTable.size() << " insets"<<endl;
 //
 //		for (unsigned int i=0; i <insetTable.size(); i++)
 //		{
 //			const std::vector<LineSegment2 >  &loop = insetTable[i];
-//			EZLOGGERVLSTREAM(axter::log_often) << "   inset " << i << ") " << loop.size() << " segments" << endl;
+//			Log::often() << "   inset " << i << ") " << loop.size() << " segments" << endl;
 //			dumpSegments("        ",loop);
 //		}
 //	}
