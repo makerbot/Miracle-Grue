@@ -26,12 +26,14 @@ public:
     void zoom(float amount);
     void panX(float amount);
     void panY(float amount);
-    void setCurrentLayer(int layer);
-
+    void setMaximumVisibleLayer(int layer);
+    void setMinimumVisibleLayer(int layer);
 protected:
     void initializeGL();
     void resizeGL(int w, int h);
     void paintGL();
+
+    void paintGLgcode();
 
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -51,7 +53,9 @@ private:
     float scale;
     float pan_x;
     float pan_y;
-    int currentLayer;
+
+    int maxVisibleLayer;
+    int minVisibleLayer;
 };
 
 #endif // GCODEVIEW_H

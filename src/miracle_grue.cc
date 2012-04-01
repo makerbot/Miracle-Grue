@@ -116,14 +116,16 @@ void parseArgs(Configuration &config,
 
 int preConditionsOrShowUsage(int argc, char *argv[])
 {
+	cout << endl;
+	cout << "Miracle-Grue "<< getMiracleGrueVersionStr() << endl;
+	cout << "Makerbot Industries 2012"  << endl;
+	cout << endl;
+
+	cout << endl;
+
 	if (argc < 2)
 	{
 		cout << endl;
-		cout << endl;
-		cout << "Miracle-Grue" << endl;
-		cout << "Makerbot Industries 2012" << endl;
-		cout << endl;
-		cout << getMiracleGrueVersionStr() << endl;
 		cout << endl;
 		cout << "This program translates a 3d model file in STL format to GCODE toolpath for a 3D printer "<< endl;
 		cout << "It also generates an OpenScad file for visualization"<< endl;

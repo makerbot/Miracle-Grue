@@ -46,8 +46,8 @@ void GcodeView::resetView() {
     scale = .1;
     pan_x = 0.0;
     pan_y = 0.0;
-    currentLayer = 0;
-
+    maxVisibleLayer = 0;
+    minVisibleLayer = 0;
     // TODO: reset arcball
 }
 
@@ -77,6 +77,12 @@ void GcodeView::resizeGL(int width, int height)
 }
 
 void GcodeView::paintGL()
+{
+    paintGLgcode();
+}
+
+
+void GcodeView::paintGLgcode()
 {
     static int frameCount = 0;
     cout << frameCount << endl;
@@ -110,33 +116,83 @@ void GcodeView::paintGL()
     glBegin(GL_LINE_STRIP);
 
 
+    float red=0;
+    float green=0;
+    float blue=0;
+    float alpha=0;
+
+
+
+
     for (unsigned int i = 1; i < model.getPointCount(); i++) {
-            point a = model.points[i-1];
-            point b = model.points[i];
+           point a = model.points[i-1];
+           point b = model.points[i];
 
-            float alpha = 0;
+            //red=0;
+            //blue =0;
+            //green=1;
+            alpha = 0.5;
 
-            if (model.map.heightLessThanLayer(currentLayer, b.z)) {
+            if(b.kind == travel)
+            {
+                red = 0;
+                blue = 1;
+                green = 0;
+            }
+
+            if(b.kind == unknown)
+            {
+                green = 1;
+                blue =0;
+                red = 0;
+            }
+
+            if (model.map.heightLessThanLayer(minVisibleLayer, b.z))
+            {
+                // cout << "minlayer " << minVisibleLayer << endl;
+                alpha = 0.01;
+                if(b.kind == travel)
+                {
+                    alpha = 0.05;
+                }
+            }
+
+            if (model.map.heightGreaterThanLayer(maxVisibleLayer, b.z))
+            {
+                // cout << "minlayer " << minVisibleLayer << endl;
+                alpha = 0.01;
+                if(b.kind == travel)
+                {
+                    alpha = 0.05;
+
+                }
+            }
+
+
+
+            if (model.map.heightInLayer(maxVisibleLayer, b.z)) alpha = 1;
+
+
+/*
+            if (model.map.heightLessThanLayer(maxVisibleLayer, b.z)) {
                 alpha = .20;
             }
-            else if (model.map.heightInLayer(currentLayer, b.z)) {
+            else if (model.map.heightInLayer(maxVisibleLayer, b.z)) {
                 alpha = 1;
             }
             else {
                 alpha = .02;
             }
 
-
-            // scale the feedrate to the bounds of what this job contains;
-//            float val = (b.feedrate - model.feedrateBounds.getMin())/(model.feedrateBounds.getMax() - model.feedrateBounds.getMin());
             float val = (b.flowrate - model.flowrateBounds.getMin())/(model.flowrateBounds.getMax() - model.flowrateBounds.getMin());
-
             glColor4f(val,1-val,0,alpha);
 
-            if (!b.toolEnabled) {
+            if (b.kind==travel) {
                 glColor4f(0,0,255,alpha);
             }
+*/
 
+            glColor4f(red,green,blue,alpha);
             glVertex3f(a.x, a.y, a.z); // origin of the line
             glVertex3f(b.x, b.y, b.z); // ending point of the line
     }
@@ -215,10 +271,19 @@ void GcodeView::mouseDoubleClickEvent(QMouseEvent event) {
     updateGL();
 }
 
-void GcodeView::setCurrentLayer(int layer) {
+void GcodeView::setMinimumVisibleLayer(int layer)
+{
+    if (layer >=0 && layer < model.map.size()) {
+        minVisibleLayer = layer;
+        std::cout << "Minimum visible layer: " << layer << ", height: " << model.map.getLayerHeight(layer) << std::endl;
+        updateGL();
+    }
+}
+
+void GcodeView::setMaximumVisibleLayer(int layer) {
     if (layer < model.map.size()) {
-        currentLayer = layer;
-        std::cout << "Current layer: " << layer << ", height: " << model.map.getLayerHeight(layer) << std::endl;
+        maxVisibleLayer = layer;
+        std::cout << "Maximum visible layer: " << layer << ", height: " << model.map.getLayerHeight(layer) << std::endl;
         updateGL();
     }
 }

@@ -95,26 +95,29 @@ ProgressLog::ProgressLog(unsigned int count)
 
 void ProgressLog::onTick(const char* taskName, unsigned int count, unsigned int ticks)
 {
-        if(ticks = 0)
-        {
-            deltaTicks = 0;
-            deltaProgress = 0;
-            this->delta = count / 10;
-        }
-
-        if (deltaTicks >= this->delta)
-	{
-            EZLOGGERVLSTREAM(axter::log_often) << " [" << deltaProgress * 10<< "%] ";
-            deltaTicks = 0;
-            deltaProgress ++;
+	if (ticks == 0) {
+		this->deltaTicks = 0;
+		this->deltaProgress = 0;
+		this->delta = count / 10;
+		cout << taskName;
 	}
-        if (count - ticks <= 1)
+
+	if (deltaTicks >= this->delta)
 	{
-		// cout << "" << endl;
+		deltaProgress++;
+		cout << " [" << deltaProgress * 10 << "%] ";
+		cout.flush();
+		EZLOGGERVLSTREAM(axter::log_often) << " [" << deltaProgress * 10 << "%] ";
+		this->deltaTicks = 0;
+
+	}
+	if ( ticks >= count -1  ) {
+
 		string now = myPc.clock.now();
 		EZLOGGERVLSTREAM(axter::log_often) << now;
+		cout << now << endl;
 	}
-        deltaTicks ++;
+	deltaTicks++;
 }
 
 

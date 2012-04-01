@@ -131,6 +131,7 @@ void layerMap::clear() {
 
 
 gcodeModel::gcodeModel() {
+    toolEnabled = false;
 }
 
 float gcodeModel::getModelZCenter() {
@@ -196,7 +197,8 @@ void gcodeModel::loadGcodeLine(const char* lineStr)
         float yPos = FLT_MIN;
         float zPos = FLT_MIN;
 
-        bool toolEnabled = true;
+        PointKind kind = unknown;
+        int nb = 0;
 
         // cout << " hascodeG:" << code.hasCode('G') << std::endl;
 
@@ -206,10 +208,11 @@ void gcodeModel::loadGcodeLine(const char* lineStr)
         }
         else if (code.hasCode('M') && (int)code.getCodeValue('M') == 102) {
             toolEnabled = true;
+            // reversal!
         }
         else if (code.hasCode('M') && (int)code.getCodeValue('M') == 103) {
-            toolEnabled = false;
 
+            toolEnabled = false;
         }
         else if (code.hasCode('M') && (int)code.getCodeValue('M') == 108) {
           if (code.hasCode('S')) {
@@ -244,8 +247,14 @@ void gcodeModel::loadGcodeLine(const char* lineStr)
                 feedrateBounds.evaluate(feedrate);
             }
 
+            if(!toolEnabled)
+            {
+                kind = travel;
+            }
             // let's add it to our list.
-            points.push_back(point(xPos, yPos, zPos, feedrate, toolEnabled, flowrate));
+            points.push_back(point(kind, nb,  xPos, yPos, zPos, feedrate, flowrate));
+
+
         }
 
 }
@@ -261,12 +270,6 @@ void gcodeModel::loadGCode(QString q)
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
     cout << "extension "<< extension << endl;
     int r = extension.find("stl");
-
-    if(r >= 0)
-    {
-        cout << "STL file" << endl;
-        return;
-    }
 
     if(extension.find("gcode") >= 0)
     {

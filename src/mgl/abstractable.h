@@ -118,11 +118,12 @@ protected:
 
 class ProgressLog : public ProgressBar
 {
-	MyComputer myPc;
-        unsigned int delta;
-        unsigned int deltaTicks;
-        unsigned int deltaProgress;
 public:
+	MyComputer myPc;
+    unsigned int delta;
+    unsigned int deltaTicks;
+    unsigned int deltaProgress;
+
         ProgressLog(unsigned int count=0);
         void onTick(const char* taskName, unsigned int count, unsigned int tick);
 

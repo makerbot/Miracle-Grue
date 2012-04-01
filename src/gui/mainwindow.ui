@@ -30,6 +30,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QSlider" name="LayerMin">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="1" column="0">
@@ -312,19 +319,25 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="4">
-       <widget class="QPushButton" name="buttonSlice">
-        <property name="text">
-         <string>slice!</string>
-        </property>
-       </widget>
-      </item>
       <item row="7" column="2">
        <widget class="QLabel" name="label_task">
         <property name="text">
-         <string>TextLabel</string>
+         <string/>
         </property>
        </widget>
+      </item>
+      <item row="7" column="4">
+       <spacer name="horizontalSpacer_20">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>
@@ -350,7 +363,6 @@
      <addaction name="separator"/>
     </widget>
     <addaction name="actionLoad_GCode"/>
-    <addaction name="actionExport_Gcode_File"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
@@ -394,14 +406,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+W</string>
-   </property>
-  </action>
-  <action name="actionExport_Gcode_File">
-   <property name="text">
-    <string>Slice 3D model...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionSlice_3D_model">

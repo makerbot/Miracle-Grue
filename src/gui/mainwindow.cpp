@@ -161,7 +161,7 @@ void MainWindow::loadFile(const QString &fileName) {
         closeMenu->setText("Close \"" + fileName + "\"");
     }
     else {
-        std::cout << "no menu?" << std::endl;
+        //std::cout << "no menu?" << std::endl;
     }
 
     // TODO: How to back off here if model load failed? Should we close the window, etc?
@@ -177,11 +177,16 @@ bool MainWindow::hasFile() {
 void MainWindow::on_LayerHeight_sliderMoved(int position)
 {
     // TODO: where /should/ this signal go?
-    ui->graphicsView->setCurrentLayer(position);
+    ui->graphicsView->setMaximumVisibleLayer(position);
+    ui->LayerMin->setMaximum(ui->graphicsView->model.getMapSize() );
 
     // display the current layer height.
 }
 
+void MainWindow::on_LayerMin_valueChanged(int value)
+{
+    ui->graphicsView->setMinimumVisibleLayer(value);
+}
 
 void MainWindow::on_zoomIn_clicked()
 {
@@ -254,9 +259,16 @@ void MainWindow::on_button3dModelBrowse_clicked()
     QString fileName;
     fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("3D models (*.stl)") );
     ui->lineEdit3dModelFile->setText(fileName);
+    sliceModelAndCreateToolPaths();
 }
 
 void MainWindow::on_buttonSlice_clicked()
+{
+
+}
+
+
+void MainWindow::sliceModelAndCreateToolPaths()
 {
     class Progress : public ProgressBar
     {
@@ -295,8 +307,6 @@ void MainWindow::on_buttonSlice_clicked()
         string scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(model3dfileName.c_str()).c_str(), ".scad" );
         cout << scadFile << endl;
 
-
-
         //configFileName += "/miracle.config";
         mgl::Configuration config;
         cout << "loading config: " << configFileName << endl;
@@ -328,3 +338,10 @@ void MainWindow::on_buttonSlice_clicked()
          cout << "ERROR" << endl;
     }
 }
+
+void MainWindow::on_LayerMin_destroyed(QObject *arg1)
+{
+
+}
+
+
