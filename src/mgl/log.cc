@@ -1,5 +1,10 @@
 #include "log.h"
 
+#ifndef QT_CORE_LIB
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
+#include "ezlogger/ezlogger_headers.hpp"
+#endif
+
 using namespace mgl;
 using namespace std;
 
@@ -19,18 +24,18 @@ ostream & Log::rarely()
 
 #else
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 
-ostream & Log::often()
+
+ostream &Log::often()
 {
-    return EZLOGGERVLSTREAM(axter::log_often);
+    return EZLOGGERVLSTREAM(axter::log_often).get_log_stream();
 
 }
 
 
-ostream & Log::rarely()
+ostream &Log::rarely()
 {
-    return EZLOGGERVLSTREAM(axter::log_rarely);
+    return EZLOGGERVLSTREAM(axter::log_rarely).get_log_stream();
 }
 
 #endif

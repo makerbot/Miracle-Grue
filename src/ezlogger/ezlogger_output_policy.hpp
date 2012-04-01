@@ -37,7 +37,7 @@ namespace axter
 
 
 #ifndef EZLOGGER_OUTPUT_FILENAME
-#define "ezlogger_output.txt"
+#define EZLOGGER_OUTPUT_FILENAME "ezlogger_output.txt"
 #endif
 	
 	public:
