@@ -51,7 +51,7 @@
 	If you are using an IDE (ex: Eclipse), you may find that your environment variables are different than the ones in the Terminal. You can learn how to set your global environment here: http://stackoverflow.com/questions/7501678/set-environment-variables-on-mac-os-x-lion
 
 
-** OSX deployment
+***OSX deployment***
 
 ### Build Miracle-gui
 Update the code if necessary, cd to the directory containing  the tree, and then:
