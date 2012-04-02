@@ -7,6 +7,8 @@
 #include <gcode.h>
 #include <arcball.h>
 
+#include "mgl/slicy.h"
+
 class GcodeView : public QGLWidget
 {
     Q_OBJECT        // must include this if you use Qt signals/slots
@@ -16,6 +18,8 @@ public slots:
 
 public:
     GcodeView(QWidget *parent);
+
+    void loadSliceData(const std::vector<mgl::SliceData> &sliceData);
 
     void loadModel(QString filename);
     void exportModel (QString filename);

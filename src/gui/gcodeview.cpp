@@ -84,9 +84,9 @@ void GcodeView::paintGL()
 
 void GcodeView::paintGLgcode()
 {
-    static int frameCount = 0;
-    cout << frameCount << endl;
-    frameCount ++;
+   // static int frameCount = 0;
+   // cout << frameCount << endl;
+   // frameCount ++;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -116,90 +116,98 @@ void GcodeView::paintGLgcode()
     glBegin(GL_LINE_STRIP);
 
 
-    float red=0;
-    float green=0;
-    float blue=0;
-    float alpha=0;
+
 
 
 
 
     for (unsigned int i = 1; i < model.getPointCount(); i++) {
-           point a = model.points[i-1];
-           point b = model.points[i];
 
-            //red=0;
-            //blue =0;
-            //green=1;
-            alpha = 0.5;
+        float red=0;
+        float green=0;
+        float blue=0;
 
-            if(b.kind == travel)
+        point a = model.points[i-1];
+        point b = model.points[i];
+
+        float dark = 0.025;
+        float clear = 0.4;
+
+        float alpha= clear;
+
+        if (model.map.heightLessThanLayer(minVisibleLayer, b.z))
+        {
+            // cout << "minlayer " << minVisibleLayer << endl;
+            alpha = dark;
+        }
+
+        if (model.map.heightInLayer(maxVisibleLayer, b.z))
+        {
+            alpha = 1;
+        }
+
+
+        if (model.map.heightGreaterThanLayer(maxVisibleLayer, b.z))
+        {
+                // cout << "minlayer " << minVisibleLayer << endl;
+                alpha = dark;
+
+         }
+
+
+
+
+        switch (b.kind) {
+          case travel:
+            blue = 0.5;
+            break;
+          case infill:
+            red = 1;
+            green = 1;
+            blue = 0;
+            break;
+          case shell:
+            if(b.nb ==0)
             {
-                red = 0;
-                blue = 1;
-                green = 0;
+                red = 1;
             }
-
-            if(b.kind == unknown)
+            else
             {
                 green = 1;
-                blue =0;
-                red = 0;
+                blue = 1 ;
             }
+            break;
+          case perimeter:
+            blue = 0.5;
+            red = 0.5;
+            green = 0.5;
+            break;
+          default:
+            green = 1;
 
-            if (model.map.heightLessThanLayer(minVisibleLayer, b.z))
-            {
-                // cout << "minlayer " << minVisibleLayer << endl;
-                alpha = 0.01;
-                if(b.kind == travel)
-                {
-                    alpha = 0.05;
-                }
-            }
+         }
 
-            if (model.map.heightGreaterThanLayer(maxVisibleLayer, b.z))
-            {
-                // cout << "minlayer " << minVisibleLayer << endl;
-                alpha = 0.01;
-                if(b.kind == travel)
-                {
-                    alpha = 0.05;
+        if(b.kind == travel)
+        {
+            alpha *= 0.25;
+        }
 
-                }
-            }
-
-
-
-            if (model.map.heightInLayer(maxVisibleLayer, b.z)) alpha = 1;
-
-
-/*
-            if (model.map.heightLessThanLayer(maxVisibleLayer, b.z)) {
-                alpha = .20;
-            }
-            else if (model.map.heightInLayer(maxVisibleLayer, b.z)) {
-                alpha = 1;
-            }
-            else {
-                alpha = .02;
-            }
-
-            float val = (b.flowrate - model.flowrateBounds.getMin())/(model.flowrateBounds.getMax() - model.flowrateBounds.getMin());
-            glColor4f(val,1-val,0,alpha);
-
-            if (b.kind==travel) {
-                glColor4f(0,0,255,alpha);
-            }
-*/
-
-            glColor4f(red,green,blue,alpha);
-            glVertex3f(a.x, a.y, a.z); // origin of the line
-            glVertex3f(b.x, b.y, b.z); // ending point of the line
+        glColor4f(red,green,blue,alpha);
+        glVertex3f(a.x, a.y, a.z); // origin of the line
+        glVertex3f(b.x, b.y, b.z); // ending point of the line
     }
 
     glEnd( );
 
     glPopMatrix();
+}
+
+void GcodeView::loadSliceData(const std::vector<mgl::SliceData>&sliceData)
+{
+    model.loadSliceData(sliceData);
+    resetView();
+
+    updateGL();
 }
 
 void GcodeView::loadModel(QString filename) {

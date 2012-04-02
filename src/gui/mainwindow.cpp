@@ -153,22 +153,7 @@ void MainWindow::openRecentFile()
         GCodeViewApplication::LoadFile(action->data().toString());
 }
 
-void MainWindow::loadFile(const QString &fileName) {
-    setWindowTitle(strippedName(fileName));
 
-    QAction* closeMenu = ui->menuBar->findChild<QAction *>("actionClose");
-    if (closeMenu) {
-        closeMenu->setText("Close \"" + fileName + "\"");
-    }
-    else {
-        //std::cout << "no menu?" << std::endl;
-    }
-
-    // TODO: How to back off here if model load failed? Should we close the window, etc?
-    // TODO: Do loading in background task...
-    ui->graphicsView->loadModel(fileName);
-    ui->LayerHeight->setMaximum(ui->graphicsView->model.getMapSize() );
-}
 
 bool MainWindow::hasFile() {
     return ui->graphicsView->hasModel();
@@ -322,7 +307,13 @@ void MainWindow::sliceModelAndCreateToolPaths()
         Progress progress(ui->label_task, ui->progressBar);
         miracleGrue(gcoder, slicerCfg, model3dfileName.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices, &progress);
 
-        loadFile(gcodeFile.c_str());
+        ui->graphicsView->loadSliceData(slices);
+
+        ui->LayerHeight->setMaximum(ui->graphicsView->model.getMapSize() );
+        ui->LayerMin->setMaximum(ui->graphicsView->model.getMapSize() );
+        ui->LayerMin->setValue(0 );
+        ui->LayerHeight->setValue(0 );
+
 
     }
     catch(mgl::Exception &mixup)
@@ -337,6 +328,29 @@ void MainWindow::sliceModelAndCreateToolPaths()
     {
          cout << "ERROR" << endl;
     }
+}
+
+void MainWindow::loadFile(const QString &fileName) {
+    setWindowTitle(strippedName(fileName));
+
+    QAction* closeMenu = ui->menuBar->findChild<QAction *>("actionClose");
+    if (closeMenu) {
+        closeMenu->setText("Close \"" + fileName + "\"");
+    }
+    else {
+        //std::cout << "no menu?" << std::endl;
+    }
+
+    // TODO: How to back off here if model load failed? Should we close the window, etc?
+    // TODO: Do loading in background task...
+
+    ui->graphicsView->loadModel(fileName);
+
+    ui->LayerHeight->setMaximum(ui->graphicsView->model.getMapSize() );
+    ui->LayerMin->setMaximum(ui->graphicsView->model.getMapSize() );
+    ui->LayerMin->setValue(0 );
+    ui->LayerHeight->setValue(0 );
+
 }
 
 void MainWindow::on_LayerMin_destroyed(QObject *arg1)

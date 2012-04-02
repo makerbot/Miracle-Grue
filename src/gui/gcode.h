@@ -8,6 +8,8 @@
 #include <QString>
 #include <iostream>
 
+#include "mgl/slicy.h"
+
 using namespace std;
 
 // Object that represents a single parsed line of GCode.
@@ -158,7 +160,7 @@ public:
 public:
     gcodeModel();
 
-
+    void loadSliceData(const std::vector<mgl::SliceData> &sliceData);
 
     void loadGCode(QString filename);
     void exportGCode(QString filename);

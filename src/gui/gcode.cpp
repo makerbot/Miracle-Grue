@@ -9,7 +9,7 @@
 
 
 using namespace std;
-
+using namespace mgl;
 
 char gcode::codes[] =  "ABDEFGHIJKLMPQRSTXYZ";
 
@@ -256,6 +256,73 @@ void gcodeModel::loadGcodeLine(const char* lineStr)
 
 
         }
+
+}
+
+
+
+void addPointsFromPolygon(const Polygon &poly, float z, PointKind kind,  int nb, float feedrate, float flowrate, vector<point> &points, layerMap& map)
+{
+    for(unsigned int i=0; i < poly.size(); i++)
+    {
+        Vector2 p = poly[i];
+        points.push_back(point(kind, nb,  p[0], p[1], z, feedrate, flowrate));
+        map.recordHeight(z);
+
+    }
+}
+
+void addPointsFromPolygons(const Polygons& polys, float z, PointKind kind, int nb,  float feedrate, float flowrate, vector<point> &points, layerMap& map)
+{
+
+    for(unsigned int i=0; i < polys.size(); i++)
+    {
+       const Polygon &poly = polys[i];
+       if(!poly.size()) continue;
+       // move to
+       const Vector2 p = poly[0];
+       points.push_back(point(travel, 0,  p[0], p[1], z, feedrate, flowrate));
+       // polygon
+       addPointsFromPolygon(poly, z, kind, nb, feedrate , flowrate, points, map);
+
+    }
+}
+
+void gcodeModel::loadSliceData(const std::vector<mgl::SliceData> &slices)
+{
+
+    points.clear();
+    map.clear();
+
+    float feedrate = 2400;
+    float flowrate = 4;
+    feedrateBounds.evaluate(feedrate);
+    flowrateBounds.evaluate(flowrate);
+
+    for (unsigned int i = 0; i < slices.size(); i++)
+    {
+        const SliceData &sliceData = slices[i];
+        for(unsigned int extruderId = 0; extruderId < sliceData.extruderSlices.size(); extruderId++)
+        {
+            const ExtruderSlice &slice = sliceData.extruderSlices[extruderId];
+            float z = (float) sliceData.getZHeight();
+
+            //cout << "sazz "  <<endl;
+            const Polygons &boundaries = slice.boundary;
+            const Polygons &infills = slice.infills;
+            //cout << "slice " << slice.insetLoopsList.size() << endl;
+            //cout << "BOUNDARY COUNT " << boundary.size() << endl;
+
+            addPointsFromPolygons(boundaries, z,  perimeter, 0, feedrate, flowrate, points, map);
+            addPointsFromPolygons(infills, z, infill, 0, feedrate, flowrate,  points, map);
+
+            for(unsigned int j=0; j< slice.insetLoopsList.size(); j++)
+            {
+                const Polygons& insetLoops = slice.insetLoopsList[j];
+                addPointsFromPolygons(insetLoops, z, shell, j, feedrate, flowrate,  points, map);
+            }
+        }
+    }
 
 }
 
