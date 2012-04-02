@@ -50,6 +50,20 @@
 
 	If you are using an IDE (ex: Eclipse), you may find that your environment variables are different than the ones in the Terminal. You can learn how to set your global environment here: http://stackoverflow.com/questions/7501678/set-environment-variables-on-mac-os-x-lion
 
+
+*** OSX Miracle-gui
+
+### Build Miracle-gui
+Update the code if necessary, cd to the directory containing  the tree, and then:
+    mkdir -p build
+    cd build
+    qmake -spec macx-g++ ../Miracle-Grue/miracle_gui.pro
+    make
+
+To create a deployable .dmg file:
+    macdeployqt miracle_gui.app -dmg -verbose=2
+
+
 # Compiling the code
 
 	Miracle-Grue does not rely on Makefiles, but instead uses scons (http://www.scons.org/) as the build tool (python required).  Once installed, you can use the following command in a terminal window to build the project from the Miracle-Grue directory:
