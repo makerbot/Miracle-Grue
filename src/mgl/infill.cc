@@ -29,7 +29,37 @@ bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
 	return false;
 }
 
-void mgl::infillPathology( SegmentTable &outlineLoops,
+
+void rayCast(const SegmentTable &outlineLoops, Scalar y, Scalar xMin, Scalar xMax, std::vector<LineSegment2> &gridSegments)
+{
+    std::set<Scalar> lineCuts;
+
+    // go through all the segments in every loop
+    for(unsigned int j=0; j< outlineLoops.size(); j++)
+    {
+        const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
+        for(std::vector<LineSegment2>::const_iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
+        {
+            const LineSegment2 &segment = *it;
+            Scalar intersectionX, intersectionY;
+            if (segmentSegmentIntersection( xMin,
+                                            y,
+                                            xMax,
+                                            y,
+                                            segment.a.x,
+                                            segment.a.y,
+                                            segment.b.x,
+                                            segment.b.y,
+                                            intersectionX,
+                                            intersectionY))
+            {
+                lineCuts.insert(intersectionX);
+            }
+        }
+    }
+}
+
+void mgl::infillPathology(const  SegmentTable &outlineLoops,
 							const Limits& limits,
 							double z,
 							double tubeSpacing,
@@ -40,12 +70,12 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
     assert(infills.size() == 0);
 	Scalar deltaY = limits.yMax - limits.yMin;
 
-	unsigned int tubeCount = (unsigned int)((deltaY) / tubeSpacing);
+        unsigned int gridSize = (unsigned int)((deltaY) / tubeSpacing);
 	std::vector< std::set<Scalar> > intersects;
 	// allocate
-	intersects.resize(tubeCount);
+        intersects.resize(gridSize);
 
-	for (unsigned int i=0; i < tubeCount; i++)
+        for (unsigned int i=0; i < gridSize; i++)
 	{
 		Scalar y = -0.5 * deltaY + i * tubeSpacing;
 		std::set<Scalar> &lineCuts = intersects[i];
@@ -53,18 +83,22 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 		// go through all the segments in every loop
 		for(unsigned int j=0; j< outlineLoops.size(); j++)
 		{
-			std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
-			for(std::vector<LineSegment2>::iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
+                        const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
+                        for(std::vector<LineSegment2>::const_iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
 			{
-				LineSegment2 &segment = *it;
+                                const LineSegment2 &segment = *it;
 				Scalar intersectionX, intersectionY;
-				if (segmentSegmentIntersection(limits.xMin, y,
-												limits.xMax, y,
-												segment.a.x, segment.a.y,
-												segment.b.x, segment.b.y,
-												intersectionX,  intersectionY))
+                                if (segmentSegmentIntersection( limits.xMin,
+                                                                y,
+                                                                limits.xMax, y,
+                                                                segment.a.x,
+                                                                segment.a.y,
+                                                                segment.b.x,
+                                                                segment.b.y,
+                                                                intersectionX,
+                                                                intersectionY))
 				{
-					lineCuts.insert(intersectionX);
+                                    lineCuts.insert(intersectionX);
 				}
 			}
 		}
@@ -74,7 +108,7 @@ void mgl::infillPathology( SegmentTable &outlineLoops,
 
 	bool backAndForth = true;
 	Scalar bottom = -0.5 * deltaY;
-	for (unsigned int i=0; i < tubeCount; i++)
+        for (unsigned int i=0; i < gridSize; i++)
 	{
 
 		Scalar y = bottom + i * tubeSpacing;

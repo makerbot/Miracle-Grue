@@ -22,7 +22,7 @@ namespace mgl
 //
 // Pathology: the operation that generate paths from polygons
 //
-void infillPathology( SegmentTable &outlineSegments,
+void infillPathology(const  SegmentTable &outlineSegments,
 				const Limits& limits,
 				double z,
 				double tubeSpacing ,
