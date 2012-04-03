@@ -240,6 +240,12 @@ p = env.Program( 	'./bin/unit_tests/slicerSplitUnitTest',
 				CPPPATH= ['..'])
 runThisTest(p, run_unit_tests)
 
+p = env.Program( 	'./bin/unit_tests/roofingUnitTest', 
+				mix(['src/unit_tests/RoofingTestCase.cc'], unit_test), 
+				LIBS = default_libs + debug_libs,
+				LIBPATH = default_libs_path + debug_libs_path, 
+				CPPPATH= ['..'])
+runThisTest(p, run_unit_tests)
 #p = env.Program(  	'./bin/unit_tests/regionerUnitTest',   
 #				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
 #				LIBS = default_libs + debug_libs,

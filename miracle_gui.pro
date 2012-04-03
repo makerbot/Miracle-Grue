@@ -70,7 +70,6 @@ HEADERS  +=src/json-cpp/include/json/assertions.h \
     src/mgl/meshy.h\
     src/mgl/mgl.h\
     src/mgl/miracle.h\
-    src/mgl/scadtubefile.h\
     src/mgl/Scalar.h\
     src/mgl/segment.h\
     src/mgl/shrinky.h\
