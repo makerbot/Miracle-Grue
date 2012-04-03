@@ -9,6 +9,13 @@
 	QT4 is not used yet, so you can get away without installing it, if you are willing to manually edit the SConstruct file. 
 
 
+## Import Submodules
+ EzLogger and json-cpp are used as submodules. On your first checkout before you
+ build, you should run 
+ 'git submodule init' to setup the submodules
+ 'git submodule update' to do an initial fetch 
+
+
 **Ubuntu Requirements**
 
 	apt-get install libqt4-dev scons libcppunit-dev libcppunit-doc
