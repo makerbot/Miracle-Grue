@@ -45,12 +45,7 @@ void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
 }
 
 
-//void connectivityFix(const std::vector<LineSegment2> &segments,
-//		Scalar tol,
-//		std::vector<LineSegment2> &outs)
-//{
-//
-//}
+
 
 void connectivityCheck( const std::vector<LineSegment2> &segments,
 						Scalar tol)
@@ -534,16 +529,6 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 			continue;
 		}
 
-
-/*
-		if(collinear(previousSegment.a, currentSegment.a, currentSegment.b, tol ))
-		{
-			Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
-			previousSegment.b = m;
-			currentSegment.a = m;
-			continue;
-		}
-*/
 		bool attached = attachSegments(previousSegment, currentSegment, elongation);
 		if(!attached)
 		{

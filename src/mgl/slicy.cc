@@ -251,11 +251,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					  writeDebugScadFiles,
 					  insetsPolys,
 					  innerOutlinesSegments);
-
 	}
-
-
-
 
 	translateLoops(innerOutlinesSegments, toRotationCenter);
 	// rotate the outlines before generating the tubes...

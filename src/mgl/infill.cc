@@ -30,34 +30,6 @@ bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
 }
 
 
-void rayCast(const SegmentTable &outlineLoops, Scalar y, Scalar xMin, Scalar xMax, std::vector<LineSegment2> &gridSegments)
-{
-    std::set<Scalar> lineCuts;
-
-    // go through all the segments in every loop
-    for(unsigned int j=0; j< outlineLoops.size(); j++)
-    {
-        const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
-        for(std::vector<LineSegment2>::const_iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
-        {
-            const LineSegment2 &segment = *it;
-            Scalar intersectionX, intersectionY;
-            if (segmentSegmentIntersection( xMin,
-                                            y,
-                                            xMax,
-                                            y,
-                                            segment.a.x,
-                                            segment.a.y,
-                                            segment.b.x,
-                                            segment.b.y,
-                                            intersectionX,
-                                            intersectionY))
-            {
-                lineCuts.insert(intersectionX);
-            }
-        }
-    }
-}
 
 void mgl::infillPathology(const  SegmentTable &outlineLoops,
 							const Limits& limits,
