@@ -13,8 +13,8 @@ private:
 	CPPUNIT_TEST_SUITE( RoofingTestCase );
 		CPPUNIT_TEST(testSimple);
 		CPPUNIT_TEST(testHoly);
-
-
+		CPPUNIT_TEST(testBoolean);
+		CPPUNIT_TEST(testGrid);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -26,6 +26,10 @@ protected:
   void testSimple();
 
   void testHoly();
+
+  void testGrid();
+
+  void testBoolean();
 };
 
 #endif
