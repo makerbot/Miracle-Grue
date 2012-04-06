@@ -23,6 +23,45 @@ class RayException : public mgl::Exception {	public: RayException(const char *ms
 
 
 
+bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scalar &end)
+{
+	assert(b>=a);
+	assert(d>=c);
+
+	if (c >= b)
+		return false;
+
+	if ( (b>=c) &&  (a<=d) )
+	{
+		begin = a;
+		end = b;
+		return true;
+	}
+
+	if( (d<=b) && (c>=a) )
+	{
+		begin = c;
+		end = d;
+		return true;
+	}
+
+	if((a>=c) && (d<= b) )
+	{
+		begin = a;
+		end = d;
+	}
+
+	if(a >=d)
+	{
+		return false;
+	}
+
+	assert(0);
+	return false;
+
+}
+
+
 void rayCast(const SegmentTable &outlineLoops,
 				Scalar y,
 				Scalar xMin,
@@ -119,6 +158,56 @@ void gridCast(	const SegmentTable &loops,
 	multiRayCast(rotatedLoops, xValues, yMin, yMax, yRays);
 	rotateLoops(yRays, -angle);
 }
+
+
+
+void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values)
+{
+	Scalar value = min;
+	while(value <= max)
+	{
+		values.push_back(value);
+		value += delta;
+	}
+
+}
+
+void lineTersect(const vector<LineSegment2> &oneLine,
+					const vector<LineSegment2> &twoLine,
+						vector<LineSegment2> &boolLine )
+{
+
+	size_t idTwo = 0;
+	size_t idOne = 0;
+
+	bool done = false;
+	while (!done)
+	{
+		const LineSegment2 *pOne = &oneLine[idOne];
+		const LineSegment2 *pTwo = &oneLine[idTwo];
+
+		done = true;
+	}
+}
+
+void intersection(	const SegmentTable& one,
+					const SegmentTable& two,
+					SegmentTable &intersection)
+{
+	size_t count = one.size();
+	assert(count == two.size() );
+
+	intersection.reserve(count);
+	for (size_t i=0; i < count ; i++)
+	{
+		intersection.push_back(std::vector<LineSegment2>());
+		const vector<LineSegment2> &oneLine = one[i];
+		const vector<LineSegment2> &twoLine = two[i];
+		vector<LineSegment2> &result = intersection[i];
+		lineTersect(oneLine, twoLine, result);
+	}
+}
+
 
 void RoofingTestCase::setUp()
 {
@@ -243,16 +332,6 @@ void addOuterHexLoop(std::vector<LineSegment2>& segs)
 	segs.push_back(LineSegment2(Vector2(10.0, 	 5.646487), Vector2(10.0, -5.773501)));
 }
 
-void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values)
-{
-	Scalar value = min;
-	while(value <= max)
-	{
-		values.push_back(value);
-		value += delta;
-	}
-
-}
 
 void addLinea(ScadDebugFile &fscad)
 {
@@ -287,7 +366,6 @@ void writeScanLines(ScadDebugFile& fscad,
 	string minMaxName = name;
 	minMaxName += "all";
 	fscad.writeMinMax(minMaxName.c_str(), name, rayTable.size());
-
 }
 
 void RoofingTestCase::testHoly()
@@ -329,10 +407,7 @@ void RoofingTestCase::testHoly()
 	Scalar z = 0;
 	Scalar dz = 0;
     writeScanLines(fscad, "draw_x_", "scan_line_x_", z, dz, rayTable );
-
 	fscad.close();
-
-
 }
 
 
@@ -399,18 +474,47 @@ void RoofingTestCase::testGrid()
     fscad.close();
 }
 
-void intersection(const SegmentTable& one, const SegmentTable& two, SegmentTable &intersection)
+void checkSegment(const LineSegment2& s, Scalar x0, Scalar x1, Scalar y0, Scalar y1)
 {
-
+	Scalar tol= 1e-6;
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(x0, s.a[0], tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(y0, s.a[1], tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(x1, s.b[0], tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(y1, s.b[1], tol);
 }
 
-void RoofingTestCase::testBoolean()
+
+void RoofingTestCase::testSimpleLineTersect()
 {
+	LineSegment2 s0(Vector2(  0, 0), Vector2(0.25,  0   ));
+	LineSegment2 s1(Vector2(0.1, 0), Vector2(0.00,  0.35));
+
+	LineSegment2 intersegment;
+
+	std::vector<LineSegment2> segs0;
+	segs0.push_back(s0);
+
+	std::vector<LineSegment2> segs1;
+	segs1.push_back(s1);
+
+	std::vector<LineSegment2> interSegs;
+
+	lineTersect(segs0, segs1, interSegs);
+
+	// intersectRange();
+
+	checkSegment(interSegs[0], 0, 0.1, 0, 0.25);
+}
+
+void RoofingTestCase::testBooleanIntersect()
+{
+	cout << endl;
+
 	SegmentTable slice0;
 	slice0.push_back(std::vector<LineSegment2>());
 
 	SegmentTable slice1;
-	slice0.push_back(std::vector<LineSegment2>());
+	slice1.push_back(std::vector<LineSegment2>());
 
 	Scalar xMin = -3;
 	Scalar xMax = 8;
@@ -435,7 +539,10 @@ void RoofingTestCase::testBoolean()
 	SegmentTable botTop;
 	intersection(top, bottom, botTop);
 
-	string filename = outputDir + "bot_top.scad";
+	string filename = outputDir + "intersect.scad";
+
+	cout << filename << endl;
+
 	ScadDebugFile fscad;
 	fscad.open(filename.c_str());
 	addLinea(fscad);
@@ -446,8 +553,8 @@ void RoofingTestCase::testBoolean()
 	Scalar dz = 0;
 
 	writeScanLines(fscad, "intersection_", "linea", -1, -0.1, botTop );
-    writeScanLines(fscad, "top", "linea", z, dz, top );
-    writeScanLines(fscad, "bottom", "linea", 0.5, dz, bottom );
+    writeScanLines(fscad, "top_", "linea", z, dz, top );
+    writeScanLines(fscad, "bottom_", "linea", 0.5, dz, bottom );
 
     std::ostream & out = fscad.getOut();
 

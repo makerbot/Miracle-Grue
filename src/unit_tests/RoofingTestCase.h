@@ -13,8 +13,10 @@ private:
 	CPPUNIT_TEST_SUITE( RoofingTestCase );
 		CPPUNIT_TEST(testSimple);
 		CPPUNIT_TEST(testHoly);
-		CPPUNIT_TEST(testBoolean);
 		CPPUNIT_TEST(testGrid);
+		CPPUNIT_TEST(testSimpleLineTersect);
+		CPPUNIT_TEST(testBooleanIntersect);
+
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -29,7 +31,11 @@ protected:
 
   void testGrid();
 
-  void testBoolean();
+  void testSimpleLineTersect();
+
+  void testBooleanIntersect();
+
+
 };
 
 #endif
