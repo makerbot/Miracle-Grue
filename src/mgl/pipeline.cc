@@ -1,0 +1,68 @@
+/**
+   MiracleGrue - Model Generator for toolpathing. <http://www.grue.makerbot.com>
+   Copyright (C) 2011 Far McKon <Far@makerbot.com>, Hugo Boyer (hugo@makerbot.com)
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+*/
+
+#include "pipeline.h"
+#include "log.h"
+
+namespace mgl {
+
+void Pipeline::addStage(Stage &newstage) {
+	if (stages.empty() && (!newstage.isSource()))
+		throw Exception("First stage in a pipeline needs to be a source");
+
+	stages.push_back(newstage);
+}
+//
+void Pipeline::run() {
+
+	bool allgood = true;
+	Source *last = NULL;
+
+	for (StageList::iterator i = stages.begin();
+		 allgood && i != stages.end(); i++) {
+		try {
+			if (i->isSource() && !i->isSink())
+				i->work(); //Sources don't have an input queue to exhaust
+			else {
+				Sink *cur = (Sink*)&*i;
+				if (last) {
+					while (last->hasFinishedData()) {
+						DataBlock* finished = last->getFinishedData();
+						finished->dump(dump_path);
+
+						cur->addNewData(last->getFinishedData());
+					}
+				}
+
+				while (cur->hasNewData()) {
+					cur->work();
+				}
+			}
+		}
+		catch (PipeAbortException &abort) {
+			allgood = false;
+			 Log::error() << "Pipeline aborted at stage: " << i->getName();
+			Log::error() << ": " << abort.error << std::endl;
+		}
+		catch (PipeSkipException &skip) {
+			Log::error() << "Pipeline skipped work unit at stage: " << i->getName();
+			Log::error() << ": " << skip.error << std::endl;
+		}
+		catch (...) {
+			allgood = false;
+			Log::error() << "Unknown exception at stage: " << i->getName();
+		}
+
+		last = (Source*)&*i;
+	}
+}
+
+}
