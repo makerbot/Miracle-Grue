@@ -18,7 +18,7 @@
 
 namespace mgl {
 
-typedef std::vector<Stage> StageList;
+typedef std::vector<Stage*> StageList;
 
 /**
  * Simple array based execution pipeline
@@ -29,7 +29,7 @@ public:
 	Pipeline(const std::string &path) : dump_path(path) {};
 	Pipeline() : dump_path("") {};
 
-	void addStage(Stage &newstage);
+	void addStage(Stage *newstage);
 	void run();
 
 	~Pipeline();

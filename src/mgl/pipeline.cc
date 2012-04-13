@@ -14,8 +14,8 @@
 
 namespace mgl {
 
-void Pipeline::addStage(Stage &newstage) {
-	if (stages.empty() && (!newstage.isSource()))
+void Pipeline::addStage(Stage *newstage) {
+	if (stages.empty() && (!newstage->isSource()))
 		throw Exception("First stage in a pipeline needs to be a source");
 
 	stages.push_back(newstage);
@@ -28,11 +28,12 @@ void Pipeline::run() {
 
 	for (StageList::iterator i = stages.begin();
 		 allgood && i != stages.end(); i++) {
+		Stage *stage = *i;
 		try {
-			if (i->isSource() && !i->isSink())
-				i->work(); //Sources don't have an input queue to exhaust
+			if (stage->isSource() && !stage->isSink())
+				stage->work(); //Sources don't have an input queue to exhaust
 			else {
-				Sink *cur = (Sink*)&*i;
+				Sink *cur = (Sink*)*i;
 				if (last) {
 					while (last->hasFinishedData()) {
 						DataBlock* finished = last->getFinishedData();
@@ -49,19 +50,25 @@ void Pipeline::run() {
 		}
 		catch (PipeAbortException &abort) {
 			allgood = false;
-			 Log::error() << "Pipeline aborted at stage: " << i->getName();
+			 Log::error() << "Pipeline aborted at stage: " << stage->getName();
 			Log::error() << ": " << abort.error << std::endl;
 		}
 		catch (PipeSkipException &skip) {
-			Log::error() << "Pipeline skipped work unit at stage: " << i->getName();
+			Log::error() << "Pipeline skipped work unit at stage: " << stage->getName();
 			Log::error() << ": " << skip.error << std::endl;
 		}
 		catch (...) {
 			allgood = false;
-			Log::error() << "Unknown exception at stage: " << i->getName();
+			Log::error() << "Unknown exception at stage: " << stage->getName();
 		}
 
-		last = (Source*)&*i;
+		last = (Source*)*i;
+	}
+}
+
+Pipeline::~Pipeline() {
+	for(StageList::const_iterator i = stages.begin(); i!= stages.end(); i++) {
+		delete *i;
 	}
 }
 

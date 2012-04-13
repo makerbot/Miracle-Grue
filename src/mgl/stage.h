@@ -71,6 +71,7 @@ typedef std::vector<DataBlock*> DataList;
 
 class Sink : public Stage {
 public:
+	Sink(const std::string &newname) : Stage(newname) {};
 	virtual bool isSink() { return true; }
 	void addNewData(DataBlock *input);
 	bool hasNewData() { return !in.empty(); };
@@ -87,6 +88,7 @@ private:
 
 class Source : public Stage {
 public:
+	Source(const std::string &newname) : Stage(newname) {};
 	DataBlock* getFinishedData();
 	bool hasFinishedData() { return !out.empty(); };
 
