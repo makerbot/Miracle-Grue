@@ -9,7 +9,7 @@ using namespace mgl;
 using namespace Json;
 
 #include "log.h"
-
+#include "pipeline.h"
 
 //// @param input
 //// @param input
@@ -49,8 +49,43 @@ void mgl::miracleGrue(GCoder &gcoder,
 
 }
 
+typedef SimpleDataBlock<Meshy*> MeshData;
 
- 
+class MeshStage : public Source {
+public:
+	MeshStage(Scalar lz, Scalar lh, const char *mf) :
+		firstLayerZ(lz), layerH(lh), modelFile(mf), Source("mesh"){};
+	void work() {
+		Meshy *mesh = new Meshy(firstLayerZ, layerH); // 0.35
+		mesh->readStlFile(modelFile);
+
+		produce(new MeshData(mesh));
+	}
+private:
+	Scalar firstLayerZ;
+	Scalar layerH;
+	const char *modelFile;
+};
+
+class SliceStage : public Transform {
+	SliceStage(Slicer myslicer, Meshy)
+};
+
+void mgl::miracleEngine(GCoder &gcoder,
+                      	  const Slicer &slicer,
+                      	  const char *modelFile,
+                      	  const char *scadFile,
+                      	  const char *gcodeFile,
+                      	  int firstSliceIdx,
+                      	  int lastSliceIdx,
+                      	  std::vector< SliceData >  &slices,
+                      	  ProgressBar *progress) // = NULL
+{
+	Pipeline pipe("/tmp/slicedata");
+	pipe.addStage(new MeshStage(slicer.firstLayerZ, slicer.layerH, modelFile));
+
+}
+
 ///
 /// Creates slices from the specified model file, and saves them
 /// into the slices object
