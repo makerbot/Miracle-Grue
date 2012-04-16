@@ -28,39 +28,105 @@ bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scala
 	assert(b>=a);
 	assert(d>=c);
 
-	if (c >= b)
-		return false;
+	cout << "[" << a << ", " << b << "] inter ";
+    cout << "[" << c << ", " << d << "]";
 
-	if ( (b>=c) &&  (a<=d) )
+	if(a >= d)
 	{
-		begin = a;
-		end = b;
-		return true;
+		cout << " = 0" << endl;
+		return false;
 	}
 
-	if( (d<=b) && (c>=a) )
+	if (c >=b )
+	{
+		cout << " = 0" << endl;
+		return false;
+	}
+
+	if(a >= c)
+	{
+		begin = a;
+	}
+	else
 	{
 		begin = c;
-		end = d;
-		return true;
 	}
 
-	if((a>=c) && (d<= b) )
+	if( b >= d)
 	{
-		begin = a;
 		end = d;
 	}
-
-	if(a >=d)
+	else
 	{
-		return false;
+		end = b;
 	}
-
-	assert(0);
-	return false;
-
+	cout << " = [" << begin << ", " << end << "]" << endl;
+	return true;
 }
 
+struct ScalarRange
+{
+	Scalar min;
+	Scalar max;
+	ScalarRange()
+	:min(0), max(0)
+	{
+
+	}
+
+	ScalarRange(Scalar a, Scalar b)
+	:min(a), max(b)
+	{
+		assert(b>a);
+	}
+
+	ScalarRange(const ScalarRange& original)
+	{
+		this->min = original.min;
+		this->max = original.max;
+	}
+
+	// default assignment operator (min and max are copied)
+	void operator = (const ScalarRange& next)
+	{
+		if( &next != this)
+		{
+			this->min = next.min;
+			this->max = next.max;
+		}
+	}
+};
+
+
+void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector<ScalarRange> &ranges)
+{
+    bool inside = false;
+    Scalar xBegin = 0; // initial value is not used
+    Scalar xEnd = 0;   // initial value is not used
+    for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
+	{
+    	Scalar intersection = *it;
+    	if(inside)
+    	{
+    		xEnd = intersection;
+    		// gridSegments.push_back(LineSegment2(Vector2(xBegin,y), Vector2(xEnd,y)));
+    		ranges.push_back(ScalarRange(xBegin, xEnd));
+    	}
+    	else
+    	{
+    		xBegin = intersection;
+    	}
+    	inside = !inside;
+	}
+
+    if(inside)
+    {
+    	// this is not good. xMax should be outside the object
+    	RayException messup("Ray has been cast outside the model mesh.");
+
+    }
+
+}
 
 void rayCast(const SegmentTable &outlineLoops,
 				Scalar y,
@@ -114,7 +180,7 @@ void rayCast(const SegmentTable &outlineLoops,
     if(inside)
     {
     	// this is not good. xMax should be outside the object
-    	RayException messup();
+    	RayException messup("Ray has been cast outside the model mesh.");
 
     }
 }
@@ -159,8 +225,6 @@ void gridCast(	const SegmentTable &loops,
 	rotateLoops(yRays, -angle);
 }
 
-
-
 void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values)
 {
 	Scalar value = min;
@@ -169,45 +233,11 @@ void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values
 		values.push_back(value);
 		value += delta;
 	}
-
 }
 
-void lineTersect(const vector<LineSegment2> &oneLine,
-					const vector<LineSegment2> &twoLine,
-						vector<LineSegment2> &boolLine )
-{
 
-	size_t idTwo = 0;
-	size_t idOne = 0;
 
-	bool done = false;
-	while (!done)
-	{
-		const LineSegment2 *pOne = &oneLine[idOne];
-		const LineSegment2 *pTwo = &oneLine[idTwo];
-
-		done = true;
-	}
-}
-
-void intersection(	const SegmentTable& one,
-					const SegmentTable& two,
-					SegmentTable &intersection)
-{
-	size_t count = one.size();
-	assert(count == two.size() );
-
-	intersection.reserve(count);
-	for (size_t i=0; i < count ; i++)
-	{
-		intersection.push_back(std::vector<LineSegment2>());
-		const vector<LineSegment2> &oneLine = one[i];
-		const vector<LineSegment2> &twoLine = two[i];
-		vector<LineSegment2> &result = intersection[i];
-		lineTersect(oneLine, twoLine, result);
-	}
-}
-
+double tol = 1e-6;
 
 void RoofingTestCase::setUp()
 {
@@ -224,8 +254,7 @@ void RoofingTestCase::testSimple()
 
 	LineSegment2 s= LineSegment2(Vector2(0,0), Vector2(0,1));
 	loops[0].push_back(s);
-	loops[0].push_back(LineSegment2(Vector2(1,1), Vector2(1,0)) );
-
+	loops[0].push_back(LineSegment2(Vector2(1,0), Vector2(1,1)) );
 	std::vector<LineSegment2> intersects;
 	rayCast(loops, 0.5, -1, 2, intersects);
 
@@ -477,33 +506,148 @@ void RoofingTestCase::testGrid()
 void checkSegment(const LineSegment2& s, Scalar x0, Scalar x1, Scalar y0, Scalar y1)
 {
 	Scalar tol= 1e-6;
+	cout << "Check a" << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(x0, s.a[0], tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(y0, s.a[1], tol);
+	cout << "Check b" << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(x1, s.b[0], tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(y1, s.b[1], tol);
 }
 
-
-void RoofingTestCase::testSimpleLineTersect()
+void RoofingTestCase::testIntersectRange()
 {
-	LineSegment2 s0(Vector2(  0, 0), Vector2(0.25,  0   ));
-	LineSegment2 s1(Vector2(0.1, 0), Vector2(0.00,  0.35));
+	cout << endl;
 
-	LineSegment2 intersegment;
+	Scalar tol = 1e-6;
 
-	std::vector<LineSegment2> segs0;
-	segs0.push_back(s0);
+	Scalar a,b;
+	bool r;
 
-	std::vector<LineSegment2> segs1;
-	segs1.push_back(s1);
+	r = intersectRange(0,1,2,3, a,b); // disconnected (ab before cd)
+	CPPUNIT_ASSERT (r == false);
 
-	std::vector<LineSegment2> interSegs;
+	r = intersectRange(2,3,0,1, a,b); // disconnected (cd before ab)
+	CPPUNIT_ASSERT (r == false);
 
-	lineTersect(segs0, segs1, interSegs);
+	r = intersectRange(0, 1, 0.5, 2, a, b);
 
-	// intersectRange();
+	CPPUNIT_ASSERT(r);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, a, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  1, b, tol);
 
-	checkSegment(interSegs[0], 0, 0.1, 0, 0.25);
+	r = intersectRange(0, 1, 0, 1, a, b);
+	CPPUNIT_ASSERT(r);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0, a, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  1, b, tol);
+
+	r = intersectRange(0, 1, -1, 0.5, a, b);
+	CPPUNIT_ASSERT(r);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0, a, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(  0.5, b, tol);
+
+}
+
+
+std::ostream& operator << (std::ostream &os,const ScalarRange &pt);
+
+std::ostream& operator << (std::ostream &os,const ScalarRange &p)
+{
+	cout << "[" << p.min << ", " << p.max << "]";
+	return os;
+}
+
+
+
+
+
+
+/*
+void rangeTersection(const vector< ScalarRange > &oneLine,
+					 const vector< ScalarRange > &twoLine,
+						vector< ScalarRange > &boolLine )
+{
+	vector< ScalarRange >::const_iterator itOne = oneLine.begin();
+	vector< ScalarRange >::const_iterator itTwo = twoLine.begin();
+	unsigned int test = 0;
+	while ( (itOne != oneLine.end())  && (itTwo != twoLine.end()) )
+	{
+		while(itOne->max >= itTwo->min && itTwo != twoLine.end())
+		{
+			ScalarRange range;
+			cout << test << " test1) "  << *itOne  << " and " << *itTwo << endl;
+			if( intersectRange(itOne->min, itOne->max, itTwo->min, itTwo->max, range.min, range.max) )
+			{
+				cout << " Intersect: [" << range.min << ", " << range.max << "]"<< endl;
+				boolLine.push_back(range);
+			}
+			else
+			{
+				cout  << " no intersection" << endl;
+			}
+			test ++;
+			cout << " Advancing two" << endl;
+			itTwo++;
+		}
+		while(itTwo->max >= itOne->min && itOne != oneLine.end())
+		{
+			ScalarRange range;
+			cout << test << " test2) "  << *itOne  << " and " << *itTwo << endl;
+			if( intersectRange(itOne->min, itOne->max, itTwo->min, itTwo->max, range.min, range.max) )
+			{
+				cout << " Intersect: [" << range.min << ", " << range.max << "]"<< endl;
+				boolLine.push_back(range);
+			}
+			else
+			{
+				cout  << " no intersection" << endl;
+			}
+			test ++;
+			cout << " Advancing one" << endl;
+			itOne++;
+		}
+	}
+	cout << "Done" << endl;
+}
+*/
+
+
+
+
+void lineTersect(const vector<LineSegment2> &oneLine,
+					const vector<LineSegment2> &twoLine,
+						vector<LineSegment2> &boolLine )
+{
+
+	cout << "lineTersect is UNDER CONSTRUCTION!!" << endl;
+	size_t idTwo = 0;
+	size_t idOne = 0;
+
+	bool done = false;
+	while (!done)
+	{
+		const LineSegment2 *pOne = &oneLine[idOne];
+		const LineSegment2 *pTwo = &oneLine[idTwo];
+
+		done = true;
+	}
+}
+
+void intersectionWithSegmentTables(	const SegmentTable& one,
+					const SegmentTable& two,
+					SegmentTable &intersection)
+{
+	size_t count = one.size();
+	assert(count == two.size());
+
+	intersection.reserve(count);
+	for (size_t i=0; i < count ; i++)
+	{
+		intersection.push_back(std::vector<LineSegment2>());
+		const vector<LineSegment2> &oneLine = one[i];
+		const vector<LineSegment2> &twoLine = two[i];
+		vector<LineSegment2> &result = intersection[i];
+		lineTersect(oneLine, twoLine, result);
+	}
 }
 
 void RoofingTestCase::testBooleanIntersect()
@@ -537,7 +681,7 @@ void RoofingTestCase::testBooleanIntersect()
 	multiRayCast(slice1, yValues, xMin, xMax, bottom);
 
 	SegmentTable botTop;
-	intersection(top, bottom, botTop);
+	intersectionWithSegmentTables(top, bottom, botTop);
 
 	string filename = outputDir + "intersect.scad";
 
@@ -564,5 +708,368 @@ void RoofingTestCase::testBooleanIntersect()
     fscad.close();
 }
 
+vector< ScalarRange >::const_iterator  subRangeTersect(	const ScalarRange &range,
+		 	 	 	 	vector< ScalarRange >::const_iterator it,
+		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
+						vector< ScalarRange > &result )
+{
 
+	while(it != itEnd)
+	{
+		const ScalarRange &currentRange = *it;
+		if( (it->min >= range.max)  )
+		{
+			// cout << " subrange done" << endl; // << currentRange << endl;
+			return it;
+		}
+
+		ScalarRange intersection;
+		// cout << " second="<< currentRange << endl;
+		if( intersectRange(range.min, range.max, currentRange.min, currentRange.max, intersection.min, intersection.max) )
+		{
+			// cout << " Intersect: [" << range.min << ", " << range.max << "]"<< endl;
+			result.push_back(intersection);
+		}
+		it ++;
+	}
+	return it;
+}
+
+
+
+void rangeTersection(const vector< ScalarRange > &oneLine,
+					 const vector< ScalarRange > &twoLine,
+						vector< ScalarRange > &boolLine )
+{
+	vector< ScalarRange >::const_iterator itOne = oneLine.begin();
+	vector< ScalarRange >::const_iterator itTwo = twoLine.begin();
+	while(itOne != oneLine.end())
+	{
+		const ScalarRange &range = *itOne;
+		cout << "range=" << range << endl;
+		itTwo = subRangeTersect(range, itTwo, twoLine.end(), boolLine);
+		if(itTwo == twoLine.end())
+		{
+			itOne++;
+			if(itOne != oneLine.end())
+			{
+				const ScalarRange &lastRange = *twoLine.rbegin();
+				cout << "lastRange=" << lastRange << endl;
+				subRangeTersect(lastRange, itOne, oneLine.end(), boolLine);
+			}
+			return;
+		}
+		itOne++;
+	}
+}
+
+void RoofingTestCase::testSimpleLineTersect()
+{
+	cout << endl;
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back(ScalarRange(0, 1));
+	first.push_back(ScalarRange(2, 3));
+	first.push_back(ScalarRange(4, 5));
+
+	second.push_back(ScalarRange(2.5, 3.5));
+
+	vector<ScalarRange> intersection;
+	cout << "rangeTersection" << endl;
+	rangeTersection(first, second, intersection);
+
+//	cout << "INTERSECTIONS" << endl;
+//	for(unsigned int i=0; i < intersection.size(); i++)
+//	{
+//		cout << " "<< i << ") " << intersection[i] << endl;
+//	}
+
+	CPPUNIT_ASSERT_EQUAL((size_t)1, intersection.size());
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2.5, intersection[0].min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, intersection[0].max, tol);
+
+	vector<ScalarRange> intersection2;
+	rangeTersection(second, first, intersection2);
+
+//	cout << "INTERSECTIONS 2" << endl;
+//	for(unsigned int i=0; i < intersection.size(); i++)
+//	{
+//		cout << " "<< i << ") " << intersection[i] << endl;
+//	}
+
+	CPPUNIT_ASSERT_EQUAL((size_t)1, intersection2.size());
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2.5, intersection2[0].min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, intersection2[0].max, tol);
+
+
+}
+
+void RoofingTestCase::testLineTersect2()
+{
+	//	1      ******      ********    ******   **   **
+	//  2  **     *****   ****  *    ***   *******
+	//  3         ---      ---  -      -   --   --
+	//     012345678901234567890123456789012345678901234
+	//               1         2         3         4
+	//  7-10 16-19 21-22 28-29 32-34
+	cout << endl;
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back( ScalarRange( 4, 10));
+	first.push_back( ScalarRange(16, 24));
+	first.push_back( ScalarRange(28, 34));
+	first.push_back( ScalarRange(37, 39));
+	first.push_back( ScalarRange(42, 44));
+
+	second.push_back(ScalarRange( 0,  2));
+	second.push_back(ScalarRange( 7, 12));
+	second.push_back(ScalarRange(15, 19));
+	second.push_back(ScalarRange(21, 22));
+	second.push_back(ScalarRange(25, 29));
+	second.push_back(ScalarRange(32, 39));
+
+	vector<ScalarRange> intersection;
+	cout << "rangeTersection" << endl;
+	rangeTersection(first, second, intersection);
+
+	cout << "INTERSECTIONS" << endl;
+	for(unsigned int i=0; i < intersection.size(); i++)
+	{
+		cout << " "<< i << ") " << intersection[i] << endl;
+	}
+	CPPUNIT_ASSERT(intersection.size() == 6);
+}
+
+// removes diffRange from srcRange. The result is put in resultRange, and srcRange is updated
+// returns false if there is no resultRange
+bool rangeDiff(const ScalarRange& diffRange, ScalarRange& srcRange, ScalarRange &resultRange)
+{
+
+	cout << srcRange << " - " << diffRange << " = ";
+	// the diffRange is left of srcRange ... no result
+	if(diffRange.max <= srcRange.min)
+	{
+		cout << "0 (before)" << endl;
+		return false;
+	}
+
+	// the diff covers the src
+	// the src is (partially) occluded
+	if(diffRange.min <= srcRange.min)
+	{
+		if(diffRange.max >= srcRange.max )
+		{
+			srcRange.min = srcRange.max;
+			cout << "0 (occlusion)" << endl;
+			return false;
+		}
+		// else... adjust the srcRange and make it smaller
+		srcRange.min = diffRange.max;
+		cout << "0 partial occlusion, leftover = " << srcRange << endl;
+		return false;
+
+	}
+
+	// intersection of the ranges
+	if( (diffRange.min >= srcRange.min)  )
+	{
+		resultRange.min = srcRange.min;
+		resultRange.max = diffRange.min;
+
+		// left over on the right side
+		if(diffRange.max <= srcRange.max)
+		{
+			srcRange.min = diffRange.max;
+		}
+		else
+		{
+			srcRange.min = srcRange.max;
+		}
+		cout << resultRange << " (intersection!) leftover " <<  srcRange << endl;
+		return true;
+	}
+
+	// srcRange is not occluded by diffRange which
+	// is right of scrRange
+	// there is nothing to remove: the result is the range
+	if(diffRange.min >= srcRange.max)
+	{
+		resultRange = srcRange;
+
+		// remove srcRange so it is
+		// not used twice
+		srcRange.min = srcRange.max;
+		cout << resultRange << " (all in!) leftover " <<  srcRange << endl;
+		return true;
+	}
+
+	cout << "PROBLEM!" << endl;
+	assert(0);
+	return false;
+}
+
+void RoofingTestCase::testSimpleDifference()
+{
+	ScalarRange src(1,5);
+	ScalarRange diff(2,4);
+	ScalarRange res;
+	bool b;
+
+	b = rangeDiff(diff, src, res);
+
+	CPPUNIT_ASSERT(b);
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, res.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, res.max, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(4, src.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(5, src.max, tol);
+
+	src = ScalarRange(2,4);
+	diff = ScalarRange(1,5);
+	b = rangeDiff(diff, src, res);
+	CPPUNIT_ASSERT(!b);
+
+	src = ScalarRange(1,5);
+	diff = ScalarRange(3,6);
+	b = rangeDiff(diff, src, res);
+	CPPUNIT_ASSERT(b);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, res.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, res.max, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(5, src.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(5, src.max, tol);
+
+	src = ScalarRange(3,5);
+	diff = ScalarRange(1,4);
+	b = rangeDiff(diff, src, res);
+	CPPUNIT_ASSERT(!b);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(4, src.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(5, src.max, tol);
+
+	src = ScalarRange(1,3);
+	diff = ScalarRange(2,4);
+	b = rangeDiff(diff, src, res);
+	CPPUNIT_ASSERT(b);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, res.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, res.max, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, src.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, src.max, tol);
+}
+
+vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &initialRange,
+		 	 	 	 	vector< ScalarRange >::const_iterator it,
+		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
+						vector< ScalarRange > &result )
+{
+	ScalarRange range(initialRange);
+	while(it != itEnd)
+	{
+		const ScalarRange &itRange = *it;
+		if( (it->min >= range.max)  )
+		{
+			cout << " subrange done" << endl; // << currentRange << endl;
+			return it;
+		}
+
+		ScalarRange difference;
+		if (rangeDiff(itRange, range, difference))
+		{
+			result.push_back(difference);
+		}
+		if(range.min >= range.max) // the leftover range has no length
+		{
+			cout << "no left over" << endl;
+			return it;
+		}
+
+		it ++;
+	}
+	// add the left over (if any)
+	if(range.max > range.min)
+	{
+		result.push_back(range);
+	}
+	return it;
+}
+
+
+void RoofingTestCase::testSubRangeDifference()
+{
+	ScalarRange initialRange(1,8);
+	vector< ScalarRange > diffRanges;
+	vector< ScalarRange > results;
+
+	diffRanges.push_back( ScalarRange(2,3) );
+	diffRanges.push_back( ScalarRange(4,5) );
+	diffRanges.push_back( ScalarRange(6,7) );
+	subRangeDifference(initialRange, diffRanges.begin(), diffRanges.end(), results );
+	CPPUNIT_ASSERT_EQUAL((size_t)4, results.size());
+}
+
+void rangeDifference(const vector< ScalarRange > &oneLine,
+		 	 	 	  const vector< ScalarRange > &twoLine,
+		 	 	 	  vector< ScalarRange > &boolLine )
+{
+	vector< ScalarRange >::const_iterator itOne = oneLine.begin();
+	vector< ScalarRange >::const_iterator itTwo = twoLine.begin();
+	while(itOne != oneLine.end())
+	{
+		const ScalarRange &range = *itOne;
+		cout << "range=" << range << endl;
+		itTwo = subRangeDifference(range, itTwo, twoLine.end(), boolLine);
+		if(itTwo == twoLine.end())
+		{
+			return;
+		}
+		itOne++;
+	}
+}
+
+void RoofingTestCase::testRangeDifference()
+{
+	//	1      ******      ********    ******   **   **
+	//  2  **     *****   ****  *    ***   *******
+	//  3      +++            ++        +++          ++
+	//     012345678901234567890123456789012345678901234
+	//               1         2         3         4
+	//  4-7 19-21 29-32 42-44
+	cout << endl;
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back( ScalarRange( 4, 10));
+	first.push_back( ScalarRange(16, 24));
+	first.push_back( ScalarRange(28, 34));
+	first.push_back( ScalarRange(37, 39));
+	first.push_back( ScalarRange(42, 44));
+
+	second.push_back(ScalarRange( 0,  2));
+	second.push_back(ScalarRange( 7, 12));
+	second.push_back(ScalarRange(15, 19));
+	second.push_back(ScalarRange(21, 22));
+	second.push_back(ScalarRange(25, 29));
+	second.push_back(ScalarRange(32, 39));
+
+	vector<ScalarRange> difference;
+	cout << "rangeDiff" << endl;
+	rangeDifference(first, second, difference);
+
+	cout << "DIFFERENCES" << endl;
+	for(unsigned int i=0; i < difference.size(); i++)
+	{
+		cout << " "<< i << ") " << difference[i] << endl;
+	}
+	CPPUNIT_ASSERT_EQUAL((size_t)4, difference.size());
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 4, difference[0].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 7, difference[0].max, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(19, difference[1].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(21, difference[1].max, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(29, difference[2].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(32, difference[2].max, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(42, difference[3].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(44, difference[3].max, tol );
+
+}
 

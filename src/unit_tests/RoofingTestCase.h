@@ -14,9 +14,13 @@ private:
 		CPPUNIT_TEST(testSimple);
 		CPPUNIT_TEST(testHoly);
 		CPPUNIT_TEST(testGrid);
+		CPPUNIT_TEST(testIntersectRange);
 		CPPUNIT_TEST(testSimpleLineTersect);
+		CPPUNIT_TEST(testLineTersect2);
 		CPPUNIT_TEST(testBooleanIntersect);
-
+		CPPUNIT_TEST(testSimpleDifference);
+		CPPUNIT_TEST(testSubRangeDifference);
+		CPPUNIT_TEST(testRangeDifference);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -31,10 +35,19 @@ protected:
 
   void testGrid();
 
+  void testIntersectRange();
+
   void testSimpleLineTersect();
 
   void testBooleanIntersect();
 
+  void testLineTersect2();
+
+  void testSimpleDifference();
+
+  void testSubRangeDifference();
+
+  void testRangeDifference();
 
 };
 
