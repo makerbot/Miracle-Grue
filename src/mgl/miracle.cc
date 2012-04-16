@@ -49,41 +49,91 @@ void mgl::miracleGrue(GCoder &gcoder,
 
 }
 
-typedef SimpleDataBlock<Meshy*> MeshData;
+typedef PtrDataBlock<Meshy> MeshData;
 
 class MeshStage : public Source {
 public:
-	MeshStage(Scalar lz, Scalar lh, const char *mf) :
+	MeshStage(Scalar lz, Scalar lh, std::string &mf) :
 		firstLayerZ(lz), layerH(lh), modelFile(mf), Source("mesh"){};
-	void work() {
+
+protected:
+	void doWork() {
 		Meshy *mesh = new Meshy(firstLayerZ, layerH); // 0.35
-		mesh->readStlFile(modelFile);
+		mesh->readStlFile(modelFile.c_str());
 
 		produce(new MeshData(mesh));
 	}
+
 private:
 	Scalar firstLayerZ;
 	Scalar layerH;
-	const char *modelFile;
+	std::string &modelFile;
 };
+
+typedef PtrDataBlock<std::vector<SliceData> > SlicesBlock;
 
 class SliceStage : public Transform {
-	SliceStage(Slicer myslicer, Meshy)
+public:
+	SliceStage(Slicer &sl, std::string &sf,
+			   int fsi, int lsi, ProgressBar *p) :
+		slicer(sl), scadFile(sf), firstSliceIdx(fsi), lastSliceIdx(lsi),
+		progress(p), Transform("slice") { };
+protected:
+	void doWork() {
+		Meshy *mesh = ((MeshData*)consume())->getVal();
+
+		std::vector<SliceData> *slices = new std::vector<SliceData>();
+		slicesFromSlicerAndMesh(*slices, slicer, *mesh, scadFile.c_str(),
+					            firstSliceIdx, lastSliceIdx, progress);
+
+		produce(new SlicesBlock(slices));
+	}
+
+private:
+	Slicer &slicer;
+	std::string &scadFile;
+	int firstSliceIdx;
+	int lastSliceIdx;
+	ProgressBar *progress;
 };
 
+class GcodeStage : public Sink {
+public:
+	GcodeStage(std::string &gf, GCoder &gc,
+                std::string &mf, ProgressBar *p) :
+        gcodeFile(gf), gcoder(gc), modelFile(mf), progress(p), Sink("gcode") {};
+
+protected:
+	void doWork() {
+		std::vector<SliceData> *slices =
+				((SlicesBlock*)consume())->getVal();
+
+		writeGcodeFromSlicesAndParams(gcodeFile.c_str(), gcoder, *slices,
+					                  modelFile.c_str(), progress);
+	}
+private:
+	std::string &gcodeFile;
+	GCoder &gcoder;
+	std::string &modelFile;
+	ProgressBar *progress;
+};
 void mgl::miracleEngine(GCoder &gcoder,
-                      	  const Slicer &slicer,
-                      	  const char *modelFile,
-                      	  const char *scadFile,
-                      	  const char *gcodeFile,
-                      	  int firstSliceIdx,
-                      	  int lastSliceIdx,
-                      	  std::vector< SliceData >  &slices,
-                      	  ProgressBar *progress) // = NULL
+                      	   Slicer &slicer,
+                       	   std::string &modelFile,
+                      	   std::string &scadFile,
+                      	   std::string &gcodeFile,
+                      	   int firstSliceIdx,
+                      	   int lastSliceIdx,
+                      	   ProgressBar *progress) // = NULL
 {
 	Pipeline pipe("/tmp/slicedata");
-	pipe.addStage(new MeshStage(slicer.firstLayerZ, slicer.layerH, modelFile));
 
+	pipe.addStage(new MeshStage(slicer.firstLayerZ, slicer.layerH, modelFile));
+	pipe.addStage(new SliceStage(slicer, scadFile, firstSliceIdx, lastSliceIdx,
+				                 progress));
+	pipe.addStage(new GcodeStage(gcodeFile, gcoder, modelFile, progress));
+
+	pipe.run();
 }
 
 ///
@@ -119,6 +169,7 @@ void mgl::slicesFromSlicerAndMesh(
 
     /// for future use of multithreading, we need to create slices to not lock
     /// the structure in the loop
+    int reserve = mesh.readSliceTable().size();
     slices.reserve( mesh.readSliceTable().size());
     for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
     {

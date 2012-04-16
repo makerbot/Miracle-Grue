@@ -31,13 +31,12 @@ void miracleGrue(GCoder &gcoder,
                       ProgressBar* progress = NULL);
 
 void miracleEngine(GCoder &gcoder,
-                      const Slicer &slicer,
-                      const char *modelFile,
-                      const char *scadFile,
-                      const char *gcodeFile,
+			          Slicer &slicer,
+                      std::string &modelFile,
+                      std::string &scadFile,
+                      std::string &gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
-                      std::vector< SliceData >  &slices,
                       ProgressBar* progress = NULL);
 
 
