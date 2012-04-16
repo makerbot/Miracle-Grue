@@ -24,6 +24,7 @@
 using namespace std;
 using namespace mgl;
 
+//#define EXP_ENGINE
 
 int intFromCharEqualsStr(const std::string& str)
 {
@@ -215,10 +216,14 @@ int main(int argc, char *argv[], char *envp[])
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH);  
 		mesh.readStlFile(modelFile.c_str());
 
+#ifndef EXP_ENGINE
 		miracleGrue(gcoder, slicer, modelFile.c_str(),
 					scad, gcodeFile.c_str(),
 					firstSliceIdx, lastSliceIdx, slices);
-
+#else
+		mgl::miracleEngine(gcoder, slicer, modelFile, scadFile, gcodeFile,
+						   firstSliceIdx, lastSliceIdx);
+#endif
     }
     catch(mgl::Exception &mixup)
     {
