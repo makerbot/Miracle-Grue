@@ -23,7 +23,7 @@ namespace mgl {
  */
 class DataBlock {
 public:
-	DataBlock();
+	DataBlock() {};
 
 	virtual void dump(const std::string &path) {};
 	virtual ~DataBlock() {};
@@ -38,10 +38,18 @@ public:
 	SimpleDataBlock(T newval): val(newval) {};
 	T getVal() {return val;};
 
+	virtual ~SimpleDataBlock() {};
 private:
 	T val;
 };
 
+template <class T>
+class PtrDataBlock : public SimpleDataBlock<T*> {
+public:
+	PtrDataBlock(T* newval): SimpleDataBlock<T*>(newval) {};
+	T* getVal() { return SimpleDataBlock<T*>::getVal(); }
+	virtual ~PtrDataBlock() { delete getVal(); }
+};
 
 /**
  * One stage of a data pipeline
@@ -61,7 +69,7 @@ public:
 	virtual ~Stage() {};
 
 protected:
-	virtual void doWork();
+	virtual void doWork() = 0;
 	std::string name;
 };
 
@@ -69,13 +77,12 @@ typedef std::deque<DataBlock*> DataQueue;
 
 typedef std::vector<DataBlock*> DataList;
 
-class Sink : public Stage {
+// implementation class to avoid diamond inheritance
+class SinkImpl {
 public:
-	Sink(const std::string &newname) : Stage(newname) {};
-	virtual bool isSink() { return true; }
 	void addNewData(DataBlock *input);
 	bool hasNewData() { return !in.empty(); };
-	virtual void work();
+	virtual void workImpl();
 
 protected:
 	DataBlock* consume();
@@ -86,13 +93,19 @@ private:
 };
 
 
-class Source : public Stage {
+
+class Sink : public Stage, public SinkImpl {
 public:
-	Source(const std::string &newname) : Stage(newname) {};
+	Sink(const std::string &newname) : Stage(newname) {};
+	virtual bool isSink() { return true; }
+	virtual void work() { Stage::work(); SinkImpl::workImpl(); }
+
+};
+
+class SourceImpl {
+public:
 	DataBlock* getFinishedData();
 	bool hasFinishedData() { return !out.empty(); };
-
-	virtual bool isSource() { return true; }
 
 protected:
 	void produce(DataBlock *made);
@@ -101,8 +114,17 @@ private:
 	DataQueue out;
 };
 
-class Transform : public Sink, public Source {
-	//nothing here, just make it so we don't have to multiply inherit everywhere
+class Source : public Stage, public SourceImpl {
+public:
+	Source(const std::string &newname) : Stage(newname) {};
+	virtual bool isSource() { return true; }
+
+};
+
+class Transform : public Stage, public SourceImpl, public SinkImpl {
+public:
+	Transform(const std::string &newname) : Stage(newname) {};
+	virtual void work() { Stage::work(); SinkImpl::workImpl(); }
 };
 
 }
