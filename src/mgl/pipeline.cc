@@ -39,7 +39,7 @@ void Pipeline::run() {
 						DataBlock* finished = last->getFinishedData();
 						finished->dump(dump_path);
 
-						cur->addNewData(last->getFinishedData());
+						cur->addNewData(finished);
 					}
 				}
 
@@ -56,6 +56,10 @@ void Pipeline::run() {
 		catch (PipeSkipException &skip) {
 			Log::error() << "Pipeline skipped work unit at stage: " << stage->getName();
 			Log::error() << ": " << skip.error << std::endl;
+		}
+		catch (std::exception &stdexp) {
+			Log::error() << "Pipeline threw STL exception at stage: " << stage->getName();
+			Log::error() << ": " << stdexp.what() << std::endl;
 		}
 		catch (...) {
 			allgood = false;
