@@ -51,6 +51,9 @@ public:
 	virtual ~PtrDataBlock() { delete getVal(); }
 };
 
+typedef std::deque<DataBlock*> DataQueue;
+typedef std::vector<DataBlock*> DataList;
+
 /**
  * One stage of a data pipeline
  */
@@ -66,65 +69,50 @@ public:
 	virtual bool isSink() { return false; };
 	std::string& getName() { return name; };
 
+	void addNewData(DataBlock *input);
+	bool hasNewData() { return !in.empty(); };
+	virtual void sinkworkImpl();
+
+	DataBlock* getFinishedData();
+	bool hasFinishedData() { return !out.empty(); };
+
 	virtual ~Stage() {};
 
 protected:
+	void produce(DataBlock *made);
+	DataBlock* consume();
 	virtual void doWork() = 0;
 	std::string name;
-};
-
-typedef std::deque<DataBlock*> DataQueue;
-
-typedef std::vector<DataBlock*> DataList;
-
-// implementation class to avoid diamond inheritance
-class SinkImpl {
-public:
-	void addNewData(DataBlock *input);
-	bool hasNewData() { return !in.empty(); };
-	virtual void workImpl();
-
-protected:
-	DataBlock* consume();
 
 private:
 	DataQueue in;
 	DataList working;
-};
-
-
-
-class Sink : public Stage, public SinkImpl {
-public:
-	Sink(const std::string &newname) : Stage(newname) {};
-	virtual bool isSink() { return true; }
-	virtual void work() { Stage::work(); SinkImpl::workImpl(); }
-
-};
-
-class SourceImpl {
-public:
-	DataBlock* getFinishedData();
-	bool hasFinishedData() { return !out.empty(); };
-
-protected:
-	void produce(DataBlock *made);
-
-private:
 	DataQueue out;
 };
 
-class Source : public Stage, public SourceImpl {
+
+
+
+class Sink : public Stage {
+public:
+	Sink(const std::string &newname) : Stage(newname) {};
+	virtual bool isSink() { return true; }
+	virtual void work() { Stage::work(); Stage::sinkworkImpl(); }
+
+};
+
+
+class Source : public Stage {
 public:
 	Source(const std::string &newname) : Stage(newname) {};
 	virtual bool isSource() { return true; }
 
 };
 
-class Transform : public Stage, public SourceImpl, public SinkImpl {
+class Transform : public Stage {
 public:
 	Transform(const std::string &newname) : Stage(newname) {};
-	virtual void work() { Stage::work(); SinkImpl::workImpl(); }
+	virtual void work() { Stage::work(); Stage::sinkworkImpl(); }
 };
 
 }

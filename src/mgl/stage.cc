@@ -18,25 +18,25 @@ Stage::Stage(const std::string &newname) : name(newname){
 	//placeholder, not sure what goes here yet
 }
 
-void SinkImpl::addNewData(DataBlock *input) {
+void Stage::addNewData(DataBlock *input) {
 	in.push_back(input);
 }
 
-DataBlock* SourceImpl::getFinishedData() {
+DataBlock* Stage::getFinishedData() {
 	DataBlock *output = out.front();
 	out.pop_front();
 
 	return output;
 }
 
-DataBlock* SinkImpl::consume() {
+DataBlock* Stage::consume() {
 	DataBlock *block = in.front();
 	in.pop_front();
 	working.push_back(block);
 	return block;
 }
 
-void SourceImpl::produce(DataBlock *made) {
+void Stage::produce(DataBlock *made) {
 	out.push_back(made);
 }
 
@@ -44,7 +44,7 @@ void Stage::work() {
 	doWork();
 }
 
-void SinkImpl::workImpl() {
+void Stage::sinkworkImpl() {
 		for (DataList::const_iterator i = working.begin();
 		 i != working.end();
 		 i++) {
