@@ -31,7 +31,7 @@ bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
 
 
 
-void mgl::infillPathology(const  SegmentTable &outlineLoops,
+void  infill(const  SegmentTable &outlineLoops,
 							const Limits& limits,
 							double z,
 							double tubeSpacing,
@@ -148,3 +148,14 @@ void mgl::infillPathology(const  SegmentTable &outlineLoops,
 	}
 
 }
+
+void mgl::infillPathology(const  SegmentTable &outlineLoops,
+							const Limits& limits,
+							double z,
+							double tubeSpacing,
+							Scalar infillShrinking,
+							Polygons& infills)
+{
+	infill(outlineLoops, limits, z, tubeSpacing, infillShrinking, infills);
+}
+

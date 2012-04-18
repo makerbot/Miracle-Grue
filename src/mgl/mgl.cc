@@ -31,7 +31,7 @@ using namespace std;
 
 std::string mgl::getMiracleGrueVersionStr()
 {
-    return  "v 0.02 alpha";
+    return  "v 0.03 alpha";
 }
 
 std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
