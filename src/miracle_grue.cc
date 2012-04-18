@@ -24,7 +24,7 @@
 using namespace std;
 using namespace mgl;
 
-//#define EXP_ENGINE
+#define EXP_ENGINE
 
 int intFromCharEqualsStr(const std::string& str)
 {
