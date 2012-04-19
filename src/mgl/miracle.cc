@@ -124,6 +124,7 @@ private:
 	std::string &modelFile;
 	ProgressBar *progress;
 };
+
 void mgl::miracleEngine(GCoder &gcoder,
                       	   Slicer &slicer,
                        	   std::string &modelFile,
@@ -333,6 +334,10 @@ void mgl::slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName)
 		ss << "slice_" << i << ".json";
 		string outFile = fs.pathJoin(string(logDirName), ss.str());
 		ofstream dumper(outFile.c_str());
+
+		if (dumper.fail())
+			throw Exception(("Failed to open stream for slice dump file " + outFile).c_str());
+
 		streamWriter.write(dumper,val);
 		dumper.close();
 	}
