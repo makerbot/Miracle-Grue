@@ -577,12 +577,28 @@ std::ostream& operator << (std::ostream &os,const ScalarRange &p)
 	return os;
 }
 
+// return false if the ranges don't intersect
+//
+bool rangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange)
+{
+	cout << " union( " << range0 << ", " << range1 << ")=";
+	if( (range1.min > range0.max) || (range0.min > range1.max) )
+	{
+		cout << "0" << endl;
+		return false;
+	}
+
+	resultRange.min = range0.min < range1.min?range0.min:range1.min;
+	resultRange.max = range0.max > range1.max?range0.max:range1.max;
+
+	cout << resultRange<<endl;
+	return true;
+}
 
 // removes diffRange from srcRange. The result is put in resultRange, and srcRange is updated
 // returns false if there is no resultRange
 bool rangeDiff(const ScalarRange& diffRange, ScalarRange& srcRange, ScalarRange &resultRange)
 {
-
 	// cout << srcRange << " - " << diffRange << " = ";
 	// the diffRange is left of srcRange ... no result
 	if(diffRange.max <= srcRange.min)
@@ -646,6 +662,80 @@ bool rangeDiff(const ScalarRange& diffRange, ScalarRange& srcRange, ScalarRange 
 	return false;
 }
 
+vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialRange,
+		 	 	 	 	vector< ScalarRange >::const_iterator it,
+		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
+						vector< ScalarRange > &result )
+{
+
+	ScalarRange range(initialRange);
+	cout << endl <<"-- subRangeUnion --" << endl;
+	while(it != itEnd)
+	{
+		const ScalarRange &itRange = *it;
+		if( (itRange.min > range.max)  )
+		{
+			cout << " -PUSH" << range << endl;
+			result.push_back(range);
+			return it;
+		}
+		ScalarRange newRange;
+		bool u = rangeUnion(range, itRange, newRange);
+		if(u)
+		{
+			cout << " -RANGE=" << range << endl;
+			range = newRange;
+		}
+		else
+		{
+			cout << " -PUSH" << range << endl;
+			result.push_back(itRange);
+		}
+		it++;
+	}
+	cout << " -done!" <<endl;
+	result.push_back(range);
+}
+
+
+void rangeUnion( const vector< ScalarRange > &firstLine,
+		 	 	 	  const vector< ScalarRange > &secondLine,
+		 	 	 	  vector< ScalarRange > &unionLine )
+{
+	vector< ScalarRange >::const_iterator itOne = firstLine.begin();
+	vector< ScalarRange >::const_iterator itTwo = secondLine.begin();
+
+	while(itOne != firstLine.end())
+	{
+		const ScalarRange &range = *itOne;
+		// cout << "range=" << range << endl;
+
+		// check that the last range has not advanced beyond the firstLine
+		if(unionLine.size() >0)
+		{
+			ScalarRange &lastUnion = *unionLine.rbegin();
+			// cout << "LAST RANGE UPDATE COMPARE: last=" << lastUnion << " range=" << range;
+			if(range.min <= lastUnion.max && lastUnion.max >= range.max)
+			{
+				// cout << " !UPDATE ONLY" << endl;
+				lastUnion.max = range.max;
+				itOne++;
+				continue;
+			}
+		}
+		// cout << " !no update" << endl;
+		if(itTwo == secondLine.end())
+		{
+			unionLine.push_back(range);
+		}
+		else
+		{
+			itTwo = subRangeUnion(range, itTwo, secondLine.end(), unionLine);
+		}
+		itOne++;
+	}
+}
+
 vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &initialRange,
 		 	 	 	 	vector< ScalarRange >::const_iterator it,
 		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
@@ -655,9 +745,8 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 	while(it != itEnd)
 	{
 		const ScalarRange &itRange = *it;
-		if( (it->min >= range.max)  )
+		if( (itRange.min >= range.max)  )
 		{
-			// cout << " subrange done" << endl; // << currentRange << endl;
 			return it;
 		}
 
@@ -681,7 +770,6 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 	}
 	return it;
 }
-
 
 void rangeDifference(const vector< ScalarRange > &srcLine,
 		 	 	 	  const vector< ScalarRange > &delLine,
@@ -877,8 +965,6 @@ void RoofingTestCase::testSimpleLineTersect()
 	CPPUNIT_ASSERT_EQUAL((size_t)1, intersection2.size());
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2.5, intersection2[0].min, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, intersection2[0].max, tol);
-
-
 }
 
 void RoofingTestCase::testLineTersect2()
@@ -1029,3 +1115,143 @@ void RoofingTestCase::testRangeDifference()
 
 }
 
+void RoofingTestCase::testSimpleUnion()
+{
+
+	//  *****
+	//  		  *****
+	//  0123456789012345678901234567890
+	//            1         2         3
+
+	ScalarRange range;
+	bool r;
+
+	r = rangeUnion(ScalarRange(0,5),  ScalarRange(10,15), range );
+	CPPUNIT_ASSERT(!r);
+
+	r = rangeUnion(ScalarRange(10,15),  ScalarRange(0,5), range );
+	CPPUNIT_ASSERT(!r);
+
+	//    *******
+	//  	********
+	//  0123456789012345678901234567890
+	//            1         2         3
+	r = rangeUnion(ScalarRange(2,9),  ScalarRange(4,12), range );
+	CPPUNIT_ASSERT(r);
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, range.min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(12, range.max, tol);
+
+}
+
+void RoofingTestCase::testSubRangeUnion()
+{
+	cout << endl;
+
+	//              		   **********
+	//	1      ******      ********    ******   **   **
+	//     012345678901234567890123456789012345678901234
+	//               1         2         3         4
+	//  7-10 16-19 21-22 28-29 32-34
+	vector<ScalarRange> first;
+
+	first.push_back( ScalarRange( 4, 10));
+	first.push_back( ScalarRange(16, 24));
+	first.push_back( ScalarRange(28, 34));
+	first.push_back( ScalarRange(37, 39));
+	first.push_back( ScalarRange(42, 44));
+
+	ScalarRange range(20, 30);
+
+	vector<ScalarRange> result;
+	vector<ScalarRange>::const_iterator it;
+	it = subRangeUnion(range, first.begin(), first.end(), result);
+
+	cout << "Result size " << result.size() << endl;
+
+	for(unsigned int i=0; i < result.size(); i++)
+	{
+		const ScalarRange &range = result[i];
+		cout << i << ") " << range << endl;
+	}
+
+	CPPUNIT_ASSERT_EQUAL((size_t)2,  result.size());
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(4,  result[0].min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(10, result[0].max, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(16, result[1].min, tol);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(34, result[1].max, tol);
+
+}
+
+
+void RoofingTestCase::testRangeUnion()
+{
+	cout<< endl;
+	//	1      ******      ********    ******   **   **
+	//  2  **     *****   ****  *    ***   *******
+	//  3  ++  ++++++++   +++++++++  +++++++++++++   ++
+	//     012345678901234567890123456789012345678901234
+	//               1         2         3         4
+
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back( ScalarRange( 4, 10));
+	first.push_back( ScalarRange(16, 24));
+	first.push_back( ScalarRange(28, 34));
+	first.push_back( ScalarRange(37, 39));
+	first.push_back( ScalarRange(42, 44));
+
+	second.push_back(ScalarRange( 0,  2));
+	second.push_back(ScalarRange( 7, 12));
+	second.push_back(ScalarRange(15, 19));
+	second.push_back(ScalarRange(21, 22));
+	second.push_back(ScalarRange(25, 29));
+	second.push_back(ScalarRange(32, 39));
+
+	vector<ScalarRange> result;
+	cout << "rangeDiff" << endl;
+	rangeUnion(first, second, result);
+
+	for(unsigned int i=0; i < result.size(); i++)
+	{
+		const ScalarRange &range = result[i];
+		cout << i << ") " << range << endl;
+	}
+	CPPUNIT_ASSERT_EQUAL((size_t)5,  result.size());
+}
+
+/*
+class Grid
+{
+    vector<Scalar> yValues;
+    Scalar xMin, xMax;
+
+    vector<Scalar> xValues;
+    Scalar yMin, yMax;
+};
+
+class FlatSurface
+{
+    ScalarRangeTable xRays;
+    ScalarRangeTable yRays;
+};
+
+void createFlatsurface (const SegmentTable &loops, const Grid &grid, FlatSurface &surface)
+{
+
+}
+
+// create roof
+void SurfaceDifference(const FlatSurface& surface, const FlatSurface &removedSurface, FlatSurface &difference)
+{
+
+}
+
+
+void AddSurface(const FlatSurface& surface, const FlatSurface &)
+{
+
+}
+
+*/
