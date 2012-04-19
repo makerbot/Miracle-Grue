@@ -70,7 +70,14 @@ private:
 	std::string &modelFile;
 };
 
-typedef PtrDataBlock<std::vector<SliceData> > SlicesBlock;
+class SlicesBlock : public PtrDataBlock<std::vector<SliceData> > {
+public:
+	SlicesBlock(std::vector<SliceData> *v) :
+		PtrDataBlock<std::vector<SliceData> >(v) {};
+	void dump(const std::string &path) {
+		slicesLogToDir(*getVal(), path.c_str());
+	}
+};
 
 class SliceStage : public Transform {
 public:
