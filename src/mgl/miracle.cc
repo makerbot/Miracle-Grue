@@ -320,7 +320,7 @@ void mgl::slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName)
 	StyledStreamWriter streamWriter;
 
 	/// check if the dir exists, create if needed
-    fs.guarenteeDirectoryExists(logDirName );
+    fs.guaranteeDirectoryExists(logDirName );
 
     Log::often() << "logging slices to dir" << endl;
 

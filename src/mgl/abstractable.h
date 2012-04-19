@@ -62,7 +62,7 @@ public:
 
 	::std::string pathJoin(std::string path, std::string filename) const;
 
-    int guarenteeDirectoryExists(const char* dirPath);
+    int guaranteeDirectoryExists(const char* dirPath);
 
 };
 

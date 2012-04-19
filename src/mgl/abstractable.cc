@@ -23,7 +23,7 @@ std::ostream &MyComputer::log()
 }
 
 
-int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname  )
+int FileSystemAbstractor::guaranteeDirectoryExists(const char* pathname  )
 {
 
 #ifdef QT_CORE_LIB
@@ -31,7 +31,7 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname  )
     return -1;
 #else
         // mode_t does not work under QT
-        mode_t mode =  (S_IREAD|S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH);
+        mode_t mode =  (S_IREAD|S_IWRITE|S_IEXEC|S_IRGRP|S_IWGRP|S_IROTH);
 		int status = 0;
 
 		struct stat st;
