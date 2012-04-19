@@ -10,6 +10,7 @@
 */
 
 #include "pipeline.h"
+#include "Exception.h"
 #include "log.h"
 
 namespace mgl {
@@ -60,6 +61,10 @@ void Pipeline::run() {
 		catch (std::exception &stdexp) {
 			Log::error() << "Pipeline threw STL exception at stage: " << stage->getName();
 			Log::error() << ": " << stdexp.what() << std::endl;
+		}
+		catch (Exception &exp) {
+			Log::error() << "Pipeline threw mgl Exception at stage: " << stage->getName();
+			Log::error() << ": " << exp.error << std::endl;
 		}
 		catch (...) {
 			allgood = false;
