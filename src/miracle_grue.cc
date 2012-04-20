@@ -15,11 +15,14 @@
 #include <string>
 
 #include <stdlib.h>
+#include <boost/filesystem.hpp>
+
 #include "mgl/abstractable.h"
 #include "mgl/configuration.h"
 #include "mgl/miracle.h"
 
 #include "mgl/Vector2.h"
+#include <clpp/parser.hpp>
 
 using namespace std;
 using namespace mgl;
@@ -39,6 +42,86 @@ double doubleFromCharEqualsStr(const std::string& str)
 	return val;
 }
 
+class ConfigSetter {
+	typedef enum {NONE, INT, STR, DBL, BOOL} configtype;
+public:
+	ConfigSetter(Configuration &c, const string &s, const string &n):
+		config(c), section(s), name(n), set(NONE) {};
+	void set_s(const string val) {
+		sval = val;
+		set = STR;
+	};
+	void set_d(const double val) {
+		dval = val;
+		set = DBL;
+	};
+	void set_i(const int val) {
+		ival = val;
+		set = INT;
+	};
+	void set_b() {
+		set = BOOL;
+	};
+	~ConfigSetter() {
+		if (set == NONE)
+			return;
+
+		cout << section + "." + name + " = ";
+
+		if (set == INT) {
+			config[section.c_str()][name.c_str()] = ival;
+			cout << ival << endl;
+		}
+		else if (set == DBL) {
+			config[section.c_str()][name.c_str()] = dval;
+			cout << dval << endl;
+		}
+		else if (set == STR) {
+			config[section.c_str()][name.c_str()] = sval;
+			cout << sval << endl;
+		}
+		else if (set == BOOL) {
+			config[section.c_str()][name.c_str()] = true;
+			cout << "true"<< endl;
+		}
+	};
+private:
+	Configuration &config;
+	const string &section;
+	const string &name;
+	configtype set;
+	string sval;
+	double dval;
+	int ival;
+};
+
+void usage() {
+	cout << endl;
+	cout << endl;
+	cout << "This program translates a 3d model file in STL format to GCODE toolpath for a 3D printer "<< endl;
+	cout << "It also generates an OpenScad file for visualization"<< endl;
+	cout << endl;
+	cout << "usage: miracle-grue [OPTIONS] STL FILE" << endl;
+	cout << "options: " << endl;
+	cout << "  -c --config        : set the configuration file (default is local miracle.config)" << endl;
+	cout << "  -f --firstLayerZ   : override the first layer height" << endl;
+	cout << "  -l --layerH        : override the layer height" << endl;
+	cout << "  -w --layerW        : override layer width" << endl;
+	cout << "  -t --tubeSpacing   : override the infill grid width" << endl;
+	cout << "  -a --angle         : override the infill grid inter slice angle (radians)" << endl;
+	cout << "  -s --nbOfShells    : override the number of shells" << endl;
+	cout << "  -n --firstSliceIdx : slice from a specific slice" << endl;
+	cout << "  -m --lastSliceIdx  : stop slicing at specific slice" << endl;
+	cout << "  -d --writeDebug    : debug mode (creates scad files for each inset error)" << endl;
+	cout << endl;
+	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
+}
+
+void exitUsage() {
+	usage();
+	exit(0);
+}
+
 void parseArgs(Configuration &config,
 				int argc,
 				char *argv[],
@@ -50,66 +133,64 @@ void parseArgs(Configuration &config,
 	firstSliceIdx = -1;
 	lastSliceIdx = -1;
 
-	modelFile = argv[argc-1];
-    for(int i = 1;i < argc - 1;i++){
-        string str = argv[i];
-        // cout << i << " " << str << endl;
-        if(str.find("f=") != string::npos)
-        {
-        	config["slicer"]["firstLayerZ"]  = doubleFromCharEqualsStr(str);
-        	cout << "sliceer.firstLayerZ = " << config["slicer"]["firstLayerZ"].asDouble() << endl;
-        }
+	//first get the config parameter and parse the file so that other params can override the
+	//config
+	clpp::command_line_parameters_parser parser;
 
-        if(str.find("l=") != string::npos)
-        {
-        	config["slicer"]["layerH"] = doubleFromCharEqualsStr(str);
-        	cout << "sliceer.layerH = " << config["slicer"]["layerH"].asDouble() << endl;
-        }
+	parser.add_parameter("-h", "--help", &exitUsage);
 
-        if(str.find("w=") != string::npos)
-        {
-        	config["slicer"]["layerW"] = doubleFromCharEqualsStr(str);
-        	cout << "slicer.layerW = " << config["slicer"]["layerW"].asDouble() << endl;
-        }
+	parser.add_parameter("-c", "--config", &config, &Configuration::readFromFile)
+	    .default_value("miracle.config");
 
-        if(str.find("t=") != string::npos)
-        {
-        	config["slicer"]["tubeSpacing"] = doubleFromCharEqualsStr(str);
-        	cout << "sliceer.tubeSpacing = " << config["slicer"]["tubeSpacing"].asDouble() << endl;
-        }
+	ConfigSetter f(config, "slicer", "firstLayerZ");
+	parser.add_parameter("-f", "--firstLayerZ", &f, &ConfigSetter::set_d);
 
-        if(str.find("a=") != string::npos)
-        {
-        	config["slicer"]["angle"] = doubleFromCharEqualsStr(str);
-        	cout << "slicer.angle = " << config["slicer"]["angle"].asDouble() << endl;
+	ConfigSetter l(config, "slicer", "layerH");
+	parser.add_parameter("-l", "--layerH", &l, &ConfigSetter::set_d);
 
-        }
+	ConfigSetter w(config, "slicer", "layerW");
+	parser.add_parameter("-w", "--layerW", &w, &ConfigSetter::set_d);
 
-        if(str.find("s=") != string::npos)
-        {
-        	config["slicer"]["nbOfShells"] = doubleFromCharEqualsStr(str);
-        	cout << "slicer.nbOfShells = " << config["slicer"]["nbOfShells"].asDouble() << endl;
+	ConfigSetter t(config, "slicer", "tubeSpacing");
+	parser.add_parameter("-t", "--tubeSpacing", &t, &ConfigSetter::set_d);
 
-        }
+	ConfigSetter a(config, "slicer", "angle");
+	parser.add_parameter("-a", "--angle", &a, &ConfigSetter::set_d);
 
-        if(str.find("-d") != string::npos)
-        {
-        	config["slicer"]["writeDebugScadFiles"] = true;
-        	cout << "slicer.writeDebugScadFiles = " << config["slicer"]["angle"].asBool() << endl;
-        }
+	ConfigSetter s(config, "slicer", "nbOfShells");
+	parser.add_parameter("-s", "--nbOfShells", &s, &ConfigSetter::set_d);
 
-        if(str.find("n=") != string::npos)
-        {
-        	firstSliceIdx = intFromCharEqualsStr(str);
-        	cout << "first slice = " << firstSliceIdx << endl;
-        }
+	ConfigSetter d(config, "slicer", "writeDebugScadFiles");
+	parser.add_parameter("-d", "--writeDebug", &d, &ConfigSetter::set_b);
 
-        if(str.find("m=") != string::npos)
-        {
-        	lastSliceIdx = intFromCharEqualsStr(str);
-        	cout << "last slice = " << lastSliceIdx << endl;
-        }
-    }
+	ConfigSetter n(config, "slicer", "firstSliceIdx");
+	parser.add_parameter("-n", "--firstSliceIdx", &n, &ConfigSetter::set_i);
+
+	firstSliceIdx = config["slicer"]["firstSliceIdx"].asInt();
+
+	ConfigSetter m(config, "slicer", "lastSliceIdx");
+	parser.add_parameter("-m", "--lastSliceIdx", &m, &ConfigSetter::set_i);
+
+	lastSliceIdx = config["slicer"]["lastSliceIdx"].asInt();
+
+	try {
+		parser.parse(argc - 1, argv);
+	}
+	catch (std::exception &exp) {
+		usage();
+		throw mgl::Exception(exp.what());
+	}
+	catch (mgl::Exception &exp) {
+		usage();
+		throw exp;
+	}
+
+	//handle the unnamed parameter separately
+	modelFile = argv[argc  - 1];
+	if (!boost::filesystem::is_regular_file(modelFile)) {
+		usage();
+		throw mgl::Exception(("Invalid model file [" + modelFile + "]").c_str());
+	}
 }
 
 
@@ -125,25 +206,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		cout << endl;
-		cout << endl;
-		cout << "This program translates a 3d model file in STL format to GCODE toolpath for a 3D printer "<< endl;
-		cout << "It also generates an OpenScad file for visualization"<< endl;
-		cout << endl;
-		cout << "usage: miracle-grue [OPTIONS] STL FILE" << endl;
-		cout << "options: " << endl;
-		cout << "  c=file.config : set the configuration file (default is local miracle.config)" << endl;
-		cout << "  f=height : override the first layer height" << endl;
-		cout << "  l=height : override the layer height" << endl;
-		cout << "  w=height : override layer width" << endl;
-		cout << "  t=width : override the infill grid width" << endl;
-		cout << "  a=angle : override the infill grid inter slice angle (radians)" << endl;
-		cout << "  s=shells : override the number of shells" << endl;
-		cout << "  n=first slice nb : slice from a specific slice" << endl;
-		cout << "  m=last slice nb : stop slicing at specific slice" << endl;
-		cout << "  -d : debug mode (creates scad files for each inset error)" << endl;
-		cout << endl;
-		cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
+		usage();
 		return (-1);
 	}
 	return 0;
@@ -164,19 +227,10 @@ int main(int argc, char *argv[], char *envp[])
 	string modelFile;
 	string configFileName = "miracle.config";
 
-	for(int i = 1;i < argc - 1;i++)
-    {
-        string str = argv[i];
-        if(str.find("c=") != string::npos)
-        {
-        	configFileName = str.substr(2, str.length()-2);
-        }
-    }
-
     Configuration config;
     try
     {
-		cout << "Configuration file: " << configFileName << endl;
+
 		config.readFromFile(configFileName.c_str());
 
 		int firstSliceIdx, lastSliceIdx;
