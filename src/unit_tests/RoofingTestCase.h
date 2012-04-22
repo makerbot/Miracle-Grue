@@ -14,7 +14,7 @@ private:
 
 //		CPPUNIT_TEST(testSimple);
 //		CPPUNIT_TEST(testHoly);
-//		CPPUNIT_TEST(testGrid);
+        CPPUNIT_TEST(testGrid);
 //		CPPUNIT_TEST(testIntersectRange);
 //		CPPUNIT_TEST(testSimpleLineTersect);
 //		CPPUNIT_TEST(testLineTersect2);
@@ -26,6 +26,10 @@ private:
 //		CPPUNIT_TEST(testSimpleUnion);
 		CPPUNIT_TEST(testSubRangeUnion);
 		CPPUNIT_TEST(testRangeUnion);
+        CPPUNIT_TEST(testGridStruct);
+
+        CPPUNIT_TEST(testFlatsurface);
+
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -59,6 +63,10 @@ protected:
   void testSubRangeUnion();
 
   void testRangeUnion();
+
+  void testGridStruct();
+
+  void testFlatsurface();
 };
 
 #endif

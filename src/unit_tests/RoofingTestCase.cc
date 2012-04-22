@@ -77,7 +77,7 @@ struct ScalarRange
 	ScalarRange(Scalar a, Scalar b)
 	:min(a), max(b)
 	{
-		assert(b>a);
+		// assert(b>a);
 	}
 
 	ScalarRange(const ScalarRange& original)
@@ -115,7 +115,37 @@ void lineSegmentsFromScalarRanges(const std::vector<ScalarRange> &ranges,
 	}
 }
 
-void scalarRangesFromSegmentLoops(	const SegmentTable &outlineLoops,
+void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector<ScalarRange> &ranges)
+{
+	ranges.reserve(lineCuts.size());
+    bool inside = false;
+    Scalar xBegin = 0; // initial value is not used
+    Scalar xEnd = 0;   // initial value is not used
+    for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
+	{
+    	Scalar intersection = *it;
+    	if(inside)
+    	{
+    		xEnd = intersection;
+    		// gridSegments.push_back(LineSegment2(Vector2(xBegin,y), Vector2(xEnd,y)));
+    		ranges.push_back(ScalarRange(xBegin, xEnd));
+    	}
+    	else
+    	{
+    		xBegin = intersection;
+    	}
+    	inside = !inside;
+	}
+
+    if(inside)
+    {
+    	// this is not good. xMax should be outside the object
+    	RayException messup("Ray has been cast outside the model mesh.");
+
+    }
+}
+
+void rayCastAlongX(	const SegmentTable &outlineLoops,
 									Scalar y,
 									Scalar xMin,
 									Scalar xMax,
@@ -146,35 +176,45 @@ void scalarRangesFromSegmentLoops(	const SegmentTable &outlineLoops,
             }
         }
     }
-	ranges.reserve(lineCuts.size());
-    bool inside = false;
-    Scalar xBegin = 0; // initial value is not used
-    Scalar xEnd = 0;   // initial value is not used
-    for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
-	{
-    	Scalar intersection = *it;
-    	if(inside)
-    	{
-    		xEnd = intersection;
-    		// gridSegments.push_back(LineSegment2(Vector2(xBegin,y), Vector2(xEnd,y)));
-    		ranges.push_back(ScalarRange(xBegin, xEnd));
-    	}
-    	else
-    	{
-    		xBegin = intersection;
-    	}
-    	inside = !inside;
-	}
 
-    if(inside)
-    {
-    	// this is not good. xMax should be outside the object
-    	RayException messup("Ray has been cast outside the model mesh.");
-
-    }
+    scalarRangesFromIntersections(lineCuts, ranges);
 
 }
 
+void rayCastAlongY(	const SegmentTable &outlineLoops,
+						Scalar x,
+						Scalar yMin,
+						Scalar yMax,
+						std::vector<ScalarRange> &ranges)
+{
+    std::set<Scalar> lineCuts;
+
+    // go through all the segments in every loop
+    for(unsigned int j=0; j< outlineLoops.size(); j++)
+    {
+        const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
+        for(std::vector<LineSegment2>::const_iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
+        {
+            const LineSegment2 &segment = *it;
+            Scalar intersectionX, intersectionY;
+            if (segmentSegmentIntersection( x,
+                                            yMin,
+                                            x,
+                                            yMax,
+                                            segment.a.x,
+                                            segment.a.y,
+                                            segment.b.x,
+                                            segment.b.y,
+                                            intersectionX,
+                                            intersectionY))
+            {
+                lineCuts.insert(intersectionY);
+            }
+        }
+    }
+    scalarRangesFromIntersections(lineCuts, ranges);
+
+}
 
 void segmentTableFromRangeTable(const ScalarRangeTable &rangeTable,
 								const vector<Scalar> &yValues,
@@ -191,7 +231,7 @@ void segmentTableFromRangeTable(const ScalarRangeTable &rangeTable,
 	}
 }
 
-void castRaysOnSlice(const SegmentTable &outlineLoops,
+void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
 					const std::vector<Scalar> &yValues,
 					Scalar xMin,
 					Scalar xMax,
@@ -203,39 +243,27 @@ void castRaysOnSlice(const SegmentTable &outlineLoops,
 	{
 		Scalar y = yValues[i];
 		std::vector<ScalarRange> &ranges = rangeTable[i];
-	    scalarRangesFromSegmentLoops(outlineLoops, y, xMin, xMax, ranges);
+	    rayCastAlongX(outlineLoops, y, xMin, xMax, ranges);
 	}
 }
 
-void gridCast(	const SegmentTable &loops,
-				const std::vector<Scalar> &xValues,
-				Scalar yMin,
-				Scalar yMax,
-				const std::vector<Scalar> &yValues,
-				Scalar xMin,
-				Scalar xMax,
-				Scalar angle,
-				SegmentTable &xRays,
-				SegmentTable &yRays,
-				SegmentTable &rotatedLoops)
+void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
+					const std::vector<Scalar> &values, // x
+					Scalar min,
+					Scalar max,
+					ScalarRangeTable &rangeTable)
 {
-	assert(xRays.size() == 0);
-	assert(yRays.size() == 0);
-	assert(rotatedLoops.size() == 0);
-
-	rotatedLoops = loops;
-	rotateLoops(rotatedLoops, angle);
-
-	ScalarRangeTable xRangeTable;
-	castRaysOnSlice(loops, yValues, xMin, xMax, xRangeTable);
-	segmentTableFromRangeTable(xRangeTable, yValues, xRays);
-
-	ScalarRangeTable yRangeTable;
-	castRaysOnSlice(rotatedLoops, yValues, xMin, xMax, yRangeTable);
-	segmentTableFromRangeTable(xRangeTable, yValues, yRays);
-
-	rotateLoops(yRays, -angle);
+	assert(rangeTable.size() == 0);
+	rangeTable.resize(values.size());
+	for(size_t i=0; i < rangeTable.size(); i++)
+	{
+		Scalar value = values[i];
+		std::vector<ScalarRange> &ranges = rangeTable[i];
+	    rayCastAlongY(outlineLoops, value, min, max, ranges);
+	}
 }
+
+
 
 void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values)
 {
@@ -272,7 +300,7 @@ void RoofingTestCase::testSimple()
 	Scalar y= 0.5;
 	Scalar xMin = -1;
 	Scalar xMax = 2;
-	scalarRangesFromSegmentLoops(outlineLoops, y, xMin, xMax, ranges);
+	rayCastAlongX(outlineLoops, y, xMin, xMax, ranges);
 
 	double tol = 1e-6;
 
@@ -361,26 +389,29 @@ void addInnerHexLoop(std::vector<LineSegment2>& segs, Scalar dx=0, Scalar dy=0)
 
 }
 
-void addOuterHexLoop(std::vector<LineSegment2>& segs)
+void addOuterHexLoop(std::vector<LineSegment2>& segs, Scalar dx=0, Scalar dy=0)
 {
-	segs.push_back(LineSegment2(Vector2(10.0,  -5.773501), Vector2(9.89, -5.83701)));
-	segs.push_back(LineSegment2(Vector2(9.89,  -5.83701), Vector2(0.0, -11.54701)));
-	segs.push_back(LineSegment2(Vector2(0.0,   -11.54701), Vector2(-0.11, -11.483502)));
-	segs.push_back(LineSegment2(Vector2(-0.11, -11.483502), Vector2(-10.0, -5.773501)));
-	segs.push_back(LineSegment2(Vector2(-10.0,  -5.773501), Vector2(-10.0, -5.646484)));
-	segs.push_back(LineSegment2(Vector2(-10.0,  -5.646484), Vector2(-10.0, 5.773504)));
-	segs.push_back(LineSegment2(Vector2(-10.0, 	 5.773504), Vector2(-9.89, 5.837012)));
-	segs.push_back(LineSegment2(Vector2(-9.89,	 5.837012), Vector2(0.0, 11.54701)));
-	segs.push_back(LineSegment2(Vector2(0.0, 	11.54701), Vector2(0.11, 11.483502)));
-	segs.push_back(LineSegment2(Vector2(0.11, 	11.483502), Vector2(10.0, 5.773504)));
-	segs.push_back(LineSegment2(Vector2(10.0, 	 5.773504), Vector2(10.0, 5.646487)));
-	segs.push_back(LineSegment2(Vector2(10.0, 	 5.646487), Vector2(10.0, -5.773501)));
+	segs.push_back(LineSegment2(Vector2( dx+ 10.0,   -5.773501+dy ), Vector2( dx +   9.89, -5.83701+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ 9.89,   -5.83701+dy ),  Vector2( dx +   0.0, -11.54701+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ 0.0,   -11.54701+dy ),  Vector2( dx +  -0.11, -11.483502+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ -0.11, -11.483502+dy ), Vector2( dx + -10.0, -5.773501+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ -10.0,  -5.773501+dy ), Vector2( dx + -10.0, -5.646484+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ -10.0,  -5.646484+dy ), Vector2( dx + -10.0, 5.773504+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ -10.0,   5.773504+dy ), Vector2( dx +  -9.89, 5.837012+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ -9.89,	  5.837012+dy ), Vector2( dx +   0.0, 11.54701+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ 0.0, 	 11.54701+dy ),  Vector2( dx +   0.11, 11.483502+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ 0.11, 	 11.483502+dy ), Vector2( dx +  10.0, 5.773504+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ 10.0, 	  5.773504+dy ), Vector2( dx +  10.0, 5.646487+ dy )));
+	segs.push_back(LineSegment2(Vector2( dx+ 10.0, 	  5.646487+dy ), Vector2( dx +  10.0, -5.773501+ dy )));
 }
 
 
 void addLinea(ScadDebugFile &fscad)
 {
     std::ostream & out = fscad.getOut();
+
+    double layerH = 0.3;
+    double layerW = 0.4;
 
     out << "" << endl;
     out << "module linea(segments, ball=true)" << endl;
@@ -391,6 +422,26 @@ void addLinea(ScadDebugFile &fscad)
     out << "        tube(x1=seg[0][0], y1=seg[0][1], z1=seg[0][2], x2=seg[1][0], y2=seg[1][1], z2=seg[1][2] , diameter1=0.1, diameter2=0.05, faces=4, thickness_over_width=1);" << endl;
     out << "    }" << endl;
     out << "}" << endl;
+
+	out  << std::endl;
+	out << "module extrusion(x1, y1, z1, x2, y2, z2)" << std::endl;
+	out << "{" << std::endl;
+	out << "    d = " << layerH << ";" << std::endl;
+	out << "    f = 6;" << std::endl;
+	out << "    t =  "  << layerH / layerW << ";"<< std::endl;
+	out << "    corner(x1,y1,z1, diameter=d, faces=f, thickness_over_width =t );" << std::endl;
+	out << "    tube(x1, y1, z1, x2, y2, z2, diameter1=d, diameter2=d, faces=f, thickness_over_width=t);" << std::endl;
+	out << "}" << std::endl;
+
+	out << std::endl;
+	out << "module polys(points, paths)" << std::endl;
+	out << "{" << std::endl;
+	out << "     for (p= paths)" << std::endl;
+	out << "    {" << std::endl;
+	out << "        extrusion(points[p[0]][0],points[p[0]][1],points[p[0]][2], points[p[1]][0],points[p[1]][1],points[p[1]][2] );" << std::endl;
+	out << "    }" << std::endl;
+	out << "}" << std::endl;
+	out << std::endl;
 
 }
 
@@ -432,7 +483,7 @@ void RoofingTestCase::testHoly() // test with a hole in the slice
 
 	SegmentTable rayTable;
 	ScalarRangeTable rangeTable;
-	castRaysOnSlice(loops, yValues, xMin, xMax, rangeTable);
+	castRaysOnSliceAlongX(loops, yValues, xMin, xMax, rangeTable);
 	segmentTableFromRangeTable(rangeTable, yValues, rayTable);
 
 	for(size_t i=0; i < rayTable.size(); i++)
@@ -464,6 +515,7 @@ void RoofingTestCase::testHoly() // test with a hole in the slice
 
 void RoofingTestCase::testGrid()
 {
+    cout << endl;
 	SegmentTable loops;
 	loops.push_back(std::vector<LineSegment2>());
 
@@ -485,31 +537,41 @@ void RoofingTestCase::testGrid()
 	addValues(xMin, xMax, dy, yValues);
 	addValues(yMin, yMax, dx, xValues);
 
-	Vector2 rotationCenter(0,0);
+	Vector2 toRotationCenter(0,0);
+	Vector2 backToOrigin( toRotationCenter * -1);
+
 	Scalar angle = M_PI * 0.5;
 
 	SegmentTable xRays, yRays;
 	SegmentTable rotatedLoops;
 
-	gridCast(loops,
-			xValues,
-			yMin,
-			yMax,
-			yValues,
-			xMin,
-			xMax,
-			angle,
-			xRays,
-			yRays,
-			rotatedLoops);
+    assert(xRays.size() == 0);
+    assert(yRays.size() == 0);
+    assert(rotatedLoops.size() == 0);
+
+    rotatedLoops = loops;
+    translateLoops(rotatedLoops, toRotationCenter);
+    rotateLoops(rotatedLoops, angle);
+
+    ScalarRangeTable xRangeTable;
+    castRaysOnSliceAlongX(loops, yValues, xMin, xMax, xRangeTable);
+
+    ScalarRangeTable yRangeTable;
+    castRaysOnSliceAlongX(rotatedLoops, xValues, yMin, yMax, yRangeTable);
+
+    segmentTableFromRangeTable(xRangeTable, yValues, xRays);
+    segmentTableFromRangeTable(yRangeTable, xValues, yRays);
+    rotateLoops(yRays, -angle);
+    translateLoops(yRays, backToOrigin);
 
 	string filename = outputDir + "hexagon_grid.scad";
 	ScadDebugFile fscad;
+    cout << "writing " << filename << endl;
 	fscad.open(filename.c_str());
 	addLinea(fscad);
     fscad.writeHeader();
 
-	Scalar z = 0;
+	Scalar  z = 0;
 	Scalar dz = 0;
 
 	writeScanLines(fscad, "outlines_", "linea", -1, -0.1, loops);
@@ -581,17 +643,17 @@ std::ostream& operator << (std::ostream &os,const ScalarRange &p)
 //
 bool rangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange)
 {
-	cout << " union( " << range0 << ", " << range1 << ")=";
+	// cout << " union( " << range0 << ", " << range1 << ")=";
 	if( (range1.min > range0.max) || (range0.min > range1.max) )
 	{
-		cout << "0" << endl;
+		// cout << "0" << endl;
 		return false;
 	}
 
 	resultRange.min = range0.min < range1.min?range0.min:range1.min;
 	resultRange.max = range0.max > range1.max?range0.max:range1.max;
 
-	cout << resultRange<<endl;
+	// cout << resultRange<<endl;
 	return true;
 }
 
@@ -669,13 +731,13 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 {
 
 	ScalarRange range(initialRange);
-	cout << endl <<"-- subRangeUnion --" << endl;
+	// cout << endl <<"-- subRangeUnion --" << endl;
 	while(it != itEnd)
 	{
 		const ScalarRange &itRange = *it;
 		if( (itRange.min > range.max)  )
 		{
-			cout << " -PUSH" << range << endl;
+			// cout << " -PUSH" << range << endl;
 			result.push_back(range);
 			return it;
 		}
@@ -683,17 +745,17 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 		bool u = rangeUnion(range, itRange, newRange);
 		if(u)
 		{
-			cout << " -RANGE=" << range << endl;
+			// cout << " -RANGE=" << range << endl;
 			range = newRange;
 		}
 		else
 		{
-			cout << " -PUSH" << range << endl;
+			// cout << " -PUSH" << range << endl;
 			result.push_back(itRange);
 		}
 		it++;
 	}
-	cout << " -done!" <<endl;
+	// cout << " -done!" <<endl;
 	result.push_back(range);
 }
 
@@ -713,7 +775,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		// check that the last range has not advanced beyond the firstLine
 		if(unionLine.size() >0)
 		{
-			ScalarRange &lastUnion = *unionLine.rbegin();
+			ScalarRange &lastUnion = unionLine.back();
 			// cout << "LAST RANGE UPDATE COMPARE: last=" << lastUnion << " range=" << range;
 			if(range.min <= lastUnion.max && lastUnion.max >= range.max)
 			{
@@ -832,10 +894,10 @@ void RoofingTestCase::testBooleanIntersect()
 	Scalar angle = M_PI * 0.5;
 
 	ScalarRangeTable rangeTableBottom;
-	castRaysOnSlice(slice0, yValues, xMin, xMax, rangeTableBottom);
+	castRaysOnSliceAlongX(slice0, yValues, xMin, xMax, rangeTableBottom);
 
 	ScalarRangeTable rangeTableTop;
-	castRaysOnSlice(slice1, yValues, xMin, xMax, rangeTableTop);
+	castRaysOnSliceAlongX(slice1, yValues, xMin, xMax, rangeTableTop);
 
 	ScalarRangeTable rangeTableDiff;
 	rangeTableDifference(rangeTableBottom, rangeTableTop, rangeTableDiff);
@@ -917,7 +979,7 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 			itOne++;
 			if(itOne != oneLine.end())
 			{
-				const ScalarRange &lastRange = *twoLine.rbegin();
+				const ScalarRange &lastRange = twoLine.back();
 				cout << "lastRange=" << lastRange << endl;
 				subRangeTersect(lastRange, itOne, oneLine.end(), boolLine);
 			}
@@ -1221,37 +1283,291 @@ void RoofingTestCase::testRangeUnion()
 	CPPUNIT_ASSERT_EQUAL((size_t)5,  result.size());
 }
 
-/*
-class Grid
+
+
+struct Grid
 {
     vector<Scalar> yValues;
-    Scalar xMin, xMax;
-
     vector<Scalar> xValues;
-    Scalar yMin, yMax;
+    Vector2 gridCenter;
+
+
+    Grid(const Limits &limits, Scalar gridSpacing)
+    {
+        Scalar deltaY = limits.yMax - limits.yMin;
+        Scalar deltaX = limits.xMax - limits.xMin;
+
+        gridCenter[0] = limits.xMin + 0.5 * deltaX;
+        gridCenter[1] = limits.yMin + 0.5 * deltaY;
+
+        // round to nearest odd number
+        unsigned int yGridSize = (unsigned int)( deltaY / gridSpacing) + 1;
+        unsigned int xGridSize = (unsigned int)( deltaX / gridSpacing) + 1;
+
+        yValues.resize(yGridSize);
+        for (unsigned int i=0; i < yGridSize; i++)
+        {
+            Scalar v = gridCenter[1] -0.5 * deltaY + i * gridSpacing;
+            yValues[i] = v;
+        }
+
+        xValues.resize(xGridSize);
+        for (unsigned int i=0; i < xGridSize; i++)
+        {
+            Scalar v = gridCenter[0] -0.5 * deltaX + i * gridSpacing;
+            xValues[i] = v;
+        }
+    }
 };
 
-class FlatSurface
+void RoofingTestCase::testGridStruct()
+{
+    cout << endl;
+
+    Limits limits;
+    limits.grow(Vector3(5,5,0));
+    limits.grow(Vector3(10,10,10));
+
+    Grid grid(limits, 0.391);
+    cout << "center = " << grid.gridCenter << endl;
+    cout << "X values" << endl;
+    for(unsigned int i=0; i < grid.xValues.size(); i++)
+    {
+        cout << " " << grid.xValues[i] << endl;
+    }
+
+    cout << "Y values" << endl;
+    for(unsigned int i=0; i < grid.yValues.size(); i++)
+    {
+        cout << " " << grid.yValues[i] << endl;
+    }
+
+    CPPUNIT_ASSERT_EQUAL((size_t)12, grid.xValues.size());
+    CPPUNIT_ASSERT_EQUAL((size_t)12, grid.yValues.size());
+}
+
+
+struct GridRanges
 {
     ScalarRangeTable xRays;
     ScalarRangeTable yRays;
 };
 
-void createFlatsurface (const SegmentTable &loops, const Grid &grid, FlatSurface &surface)
+void gridCast (const SegmentTable &loops, const Grid &grid, GridRanges &surface)
 {
+	Vector2 toRotationCenter(grid.gridCenter * -1);
+
+	Scalar angle = M_PI_2;
+
+	SegmentTable xRays, yRays;
+
+    assert(xRays.size() == 0);
+    assert(yRays.size() == 0);
+
+    ScalarRangeTable xRangeTable;
+    Scalar xMin = grid.xValues[0];
+    Scalar xMax = grid.xValues.back();
+    castRaysOnSliceAlongX(loops, grid.yValues, xMin, xMax, surface.xRays);
+
+    ScalarRangeTable yRangeTable;
+    Scalar yMin = grid.yValues[0];
+    Scalar yMax = grid.yValues.back();
+    castRaysOnSliceAlongY(loops, grid.xValues, yMin, yMax, surface.yRays);
 
 }
 
-// create roof
-void SurfaceDifference(const FlatSurface& surface, const FlatSurface &removedSurface, FlatSurface &difference)
+
+
+void infillLines(const GridRanges &surface, unsigned int skipCount, GridRanges &result)
 {
 
+	result.xRays.resize(surface.xRays.size());
+	result.yRays.resize(surface.yRays.size());
+
+	for(size_t i=0; i < surface.xRays.size(); i++)
+	{
+		result.xRays[i] = surface.xRays[i]; // deep copy of the ranges for the selected lines
+		i += skipCount; // skip lines depending on selected infill density
+	}
+
+	for(size_t i=0; i < surface.yRays.size(); i++)
+	{
+		result.yRays[i] = surface.yRays[i]; // deep copy of the ranges for the selected lines
+		i += skipCount; // skip lines depending on selected infill density
+	}
+}
+
+void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
+								const std::vector<Scalar> &values, // the y values for each line
+								Polygons &polygons)				   // the output
+{
+	// change direction of extrusion
+	// for each line
+	bool forward = false;
+	assert(rays.size() == values.size());
+
+	for(size_t rayId =0; rayId < rays.size(); rayId++)
+	{
+		const vector<ScalarRange> &ray = rays[rayId];
+		if(ray.size() == 0)
+			continue;
+
+		forward = !forward;
+		Scalar value = values[rayId];
+
+		vector<ScalarRange> line;
+		line.reserve(ray.size());
+		if(forward)
+		{
+			line = ray;
+		}
+		else
+		{
+			// reverse the ranges in the ray
+			for(size_t i=0; i < ray.size(); i++)
+			{
+				ScalarRange range(ray[i].max, ray[i].min);
+				line.push_back(range);
+			}
+		}
+		for(size_t i= 0; i< line.size(); i++ )
+		{
+			const ScalarRange &range = line[i];
+			Vector2 begin(range.min, value);
+			Vector2 end(range.max, value);
+
+			// add a polygon
+			polygons.push_back(Polygon());
+			Polygon &poly = polygons.back();
+			poly.push_back(begin);
+			poly.push_back(end);
+		}
+	}
+}
+
+void polygonsFromScalarRangesAlongY( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
+								const std::vector<Scalar> &values, // the x values for each line
+								Polygons &polygons)				   // the output
+{
+	// change direction of extrusion
+	// for each line
+	bool forward = false;
+	assert(rays.size() == values.size());
+
+	for(size_t rayId =0; rayId < rays.size(); rayId++)
+	{
+		const vector<ScalarRange> &ray = rays[rayId];
+		if(ray.size() == 0)
+			continue;
+
+		forward = !forward;
+		Scalar value = values[rayId];
+
+		vector<ScalarRange> line;
+		line.reserve(ray.size());
+		if(forward)
+		{
+			line = ray;
+		}
+		else
+		{
+			// reverse the ranges in the ray
+			for(size_t i=0; i < ray.size(); i++)
+			{
+				ScalarRange range(ray[i].max, ray[i].min);
+				line.push_back(range);
+			}
+		}
+		for(size_t i= 0; i< line.size(); i++ )
+		{
+			const ScalarRange &range = line[i];
+			Vector2 begin(value, range.min);
+			Vector2 end(value, range.max);
+
+			// add a polygon
+			polygons.push_back(Polygon());
+			Polygon &poly = polygons.back();
+			poly.push_back(begin);
+			poly.push_back(end);
+		}
+	}
+}
+
+void RoofingTestCase::testFlatsurface()
+{
+	cout << endl;
+
+	Scalar centerX = 5;
+	Scalar centerY = 3;
+	Scalar gridSpacing = 0.39;
+	unsigned int skipCount = 0; // infill gaps between grid lines
+
+	SegmentTable loops;
+	loops.push_back(std::vector<LineSegment2>());
+
+	SegmentTable innerLoops;
+	loops.push_back(std::vector<LineSegment2>());
+
+	addOuterHexLoop(loops[0], centerX, centerY);
+	addInnerHexLoop(loops[1], centerX, centerY);
+
+	Vector3 min(-12.1 + centerX, -12.1 + centerY, 0);
+	Vector3 max( 12.1 + centerX,  12.1 + centerY, 1);
+	Limits limits;
+	limits.grow(min);
+	limits.grow(max);
+
+	Grid grid(limits, gridSpacing);
+	GridRanges surface;
+	gridCast(loops, grid, surface);
+
+	GridRanges infills;
+	infillLines(surface, skipCount, infills);
+
+	Polygons xPolys;
+	polygonsFromScalarRangesAlongX(infills.xRays, grid.yValues, xPolys);
+
+	Polygons yPolys;
+	polygonsFromScalarRangesAlongY(infills.yRays, grid.xValues, yPolys);
+
+
+	string filename = outputDir + "hexagon_surface.scad";
+	ScadDebugFile fscad;
+    cout << "writing " << filename << endl;
+	fscad.open(filename.c_str());
+	addLinea(fscad);
+    fscad.writeHeader();
+
+
+	Scalar z = 0;
+	Scalar dz = 0;
+
+	writeScanLines(fscad, "outlines_", "linea", -1, -0.1, loops);
+	fscad.writePolygons(  "draw_polys_x_","polys", xPolys, z, 0);
+	fscad.writePolygons(  "draw_polys_y_","polys", yPolys, z, 0);
+//    writeScanLines(fscad, "draw_x_", 	  "linea", z, dz, xSegs );
+//    writeScanLines(fscad, "draw_y_", 	  "linea", 0.5, dz, ySegs );
+
+    std::ostream & out = fscad.getOut();
+
+    out << "draw_polys_x_0();" << endl;
+    out << "draw_polys_y_0();" << endl;
+
+//    out << "draw_x_all();" << endl;
+//    out << "draw_y_all();" << endl;
+    out << "outlines_all();" << endl;
+    fscad.close();
 }
 
 
-void AddSurface(const FlatSurface& surface, const FlatSurface &)
+/*
+void SurfaceUnion(const FlatSurface& surface, const FlatSurface &)
 {
 
 }
-
 */
+
+
+
+
+
