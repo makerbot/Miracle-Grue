@@ -45,7 +45,7 @@ void loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 					Scalar tol,
 					std::vector< std::vector<LineSegment2> > &loops);
 
-// I have no idea what this does, (2D translation?)
+// 2D translation
 void translateLoops(SegmentTable &loops, Vector2 p);
 
 // moves Segments by a position

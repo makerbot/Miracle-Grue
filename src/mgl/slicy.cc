@@ -209,7 +209,6 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 
-    // keep all segments of insets for each loop
     unsigned int cuts = segments.size();
     if(cuts == 0)
     {

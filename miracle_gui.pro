@@ -10,7 +10,7 @@ TARGET = miracle_gui
 TEMPLATE = app
 
 
-GUI_SRC =  submodule/ToolPathViz
+GUI_SRC =  submodule/toolpathviz
 include($$GUI_SRC/toolpathviz.pro.inc)
 
 MGL_SRC = src/mgl
