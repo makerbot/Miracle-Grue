@@ -58,6 +58,7 @@ public:
          ~Configuration();
 
          void readFromFile(const char* filename);
+         void readFromFile(const std::string &filename) { readFromFile(filename.c_str()); };
 
     public:
 
