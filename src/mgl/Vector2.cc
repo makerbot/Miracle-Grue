@@ -11,6 +11,8 @@
 
 using namespace mgl;
 using namespace std;
+using namespace libthing;
+
 /*
 * Standard X/Y Vector value for 2d vectors
 */
@@ -70,7 +72,7 @@ bool Vector2::tequals(const Vector2 &p, const Scalar tol) const
 {
 	Scalar dx = p.x - x;
 	Scalar dy = p.y -y;
-	return mgl::tequals(0, dx*dx + dy*dy, tol);
+	return libthing::tequals(0, dx*dx + dy*dy, tol);
 }
 
 // the eucledian length

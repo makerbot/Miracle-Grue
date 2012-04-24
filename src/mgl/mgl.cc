@@ -28,7 +28,6 @@ using namespace std;
 
 
 
-
 std::string mgl::getMiracleGrueVersionStr()
 {
     return  "v 0.03 alpha";
@@ -158,7 +157,7 @@ bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current, Scala
 	Scalar y3 = current.b[1];
 
 	Scalar c = ((mid.x - x1) * (y3 - y1) - (x3 - x1) * (mid.y - y1));
-	bool r = tequals(c, 0, tol);
+	bool r = libthing::tequals(c, 0, tol);
 	return r;
 }
 

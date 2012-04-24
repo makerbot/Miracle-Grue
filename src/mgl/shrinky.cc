@@ -487,7 +487,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 bool collinear(const Vector2 &a, const Vector2 &b, const Vector2 &c, Scalar tol)
 {
 	Scalar dot = ((b[0]- a[0]) * (c[1] - a[1]) - (c[0] - c[0]) * (b[1] - a[1]));
-	bool r = tequals(dot, 0, tol);
+	bool r = libthing::tequals(dot, 0, tol);
 	return r;
 }
 
@@ -660,7 +660,7 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 		Scalar distanceGone = insetStep(initialSegs, distanceToGo, tol, writePartialSteps, finalInsets);
 
 		distanceToGo -= distanceGone;
-		if( tequals(distanceToGo, 0, tol))
+		if( libthing::tequals(distanceToGo, 0, tol))
 		{
 			done = true;
 			return;
@@ -686,7 +686,7 @@ void removeZeroLengthSegments(const std::vector<LineSegment2> &inputSegments, st
 	for(unsigned int i = 0; i < inputSegments.size(); i++)
 	{
 		const LineSegment2 &seg = inputSegments[i];
-  		if(tequals(seg.squaredLength(), 0, tol) )
+  		if( libthing::tequals(seg.squaredLength(), 0, tol) )
 		{
 			continue;
 		}

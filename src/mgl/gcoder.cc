@@ -14,6 +14,7 @@
 using namespace mgl;
 using namespace std;
 
+
 #include "log.h"
 
 
@@ -485,20 +486,20 @@ void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, con
 	bool doZ = true;
 	bool doFeed = true;
 
-	if(!mgl::tequals(this->x, x, SAMESAME_TOL))
+	if(!libthing::tequals(this->x, x, SAMESAME_TOL))
 	{
 		doX = true;
 	}
-	if(!mgl::tequals(this->y, y, SAMESAME_TOL))
+	if(!libthing::tequals(this->y, y, SAMESAME_TOL))
 	{
 		doY=true;
 	}
-	if(!mgl::tequals(this->z, z, SAMESAME_TOL))
+	if(!libthing::tequals(this->z, z, SAMESAME_TOL))
 	{
 		doZ=true;
 	}
 
-	if(!mgl::tequals(this->feed, feed, SAMESAME_TOL))
+	if(!libthing::tequals(this->feed, feed, SAMESAME_TOL))
 	{
 		doFeed=true;
 	}
