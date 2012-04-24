@@ -12,6 +12,7 @@
 
 #ifdef WIN32
 
+#include <Windows.h>
 #include <Shlobj.h>
 #include <direct.h>
 #include <stdio.h>
@@ -39,7 +40,7 @@ void mkDebugPath(const char *path)
 
 	spath += "\\";
 	spath += extended_path;
-	int r =  SHCreateDirectoryExA( NULL, spath.c_str() , NULL );
+	int r =  CreateDirectoryA( spath.c_str(), NULL );
 	if(r == ERROR_ALREADY_EXISTS)
 		r = 0;
 //	return r;
