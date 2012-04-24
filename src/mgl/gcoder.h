@@ -141,8 +141,8 @@ public:
 			bool doFeed);
 
 public:
-	void squirt(std::ostream &ss, const Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed);
-	void snort(std::ostream &ss, const Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed);
+	void squirt(std::ostream &ss, const libthing::Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed);
+	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed);
 
     void writeSwitchExtruder(std::ostream& ss, int extruderId);
 

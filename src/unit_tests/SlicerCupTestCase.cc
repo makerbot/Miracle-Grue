@@ -11,6 +11,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SlicerCupTestCase );
 
 using namespace std;
 using namespace mgl;
+using namespace libthing;
 
 MyComputer computer;
 

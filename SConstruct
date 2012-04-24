@@ -143,11 +143,15 @@ libthing_cc = [ LIBTHING_PATH+'Scalar.cc',
 
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
-			'src/mgl/Vector2.cc',
-			'src/mgl/Vector3.cc',
-			'src/mgl/Triangle3.cc',
-			'src/mgl/LineSegment2.cc',
+			#'src/mgl/Vector2.cc',
+			#'src/mgl/Vector3.cc',
+			#'src/mgl/Triangle3.cc',
+			#'src/mgl/LineSegment2.cc',
 			#'src/mgl/Scalar.cc',
+			LIBTHING_PATH+ 'Vector2.cc',
+			LIBTHING_PATH+ 'Vector3.cc',
+			LIBTHING_PATH+ 'Triangle3.cc',
+			LIBTHING_PATH+ 'LineSegment2.cc',
 			LIBTHING_PATH+'Scalar.cc',
 			'src/mgl/gcoder.cc',
 			'src/mgl/shrinky.cc',
@@ -189,7 +193,7 @@ env.Append(CPPPATH = default_includes)
 
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/miracle_grue.cc'] ),
-		LIBS = ['mgl', '_json'],
+		LIBS = ['mgl', '_json',],
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
 
@@ -224,7 +228,8 @@ runThisTest(p, run_unit_tests)
 
 
 p = env.Program( 	'./bin/unit_tests/slicerUnitTest', 
-				mix(['src/unit_tests/SlicerTestCase.cc'], unit_test), 
+				mix(['src/unit_tests/SlicerTestCase.cc',
+					'src/unit_tests/insetTests.cc' ], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
@@ -249,7 +254,8 @@ runThisTest(p, run_unit_tests)
 
 
 p = env.Program( 	'./bin/unit_tests/slicerSplitUnitTest', 
-				mix(['src/unit_tests/SlicerSplitTestCase.cc'], unit_test), 
+				mix(['src/unit_tests/SlicerSplitTestCase.cc',
+					'src/unit_tests/insetTests.cc' ], unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])

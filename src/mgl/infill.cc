@@ -16,6 +16,7 @@
 
 using namespace std;
 using namespace mgl;
+using namespace libthing;
 
 bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
 {
@@ -31,7 +32,7 @@ bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
 
 
 
-void  infill(const  SegmentTable &outlineLoops,
+void  infill(const  SegmentVector &outlineLoops,
 							const Limits& limits,
 							double z,
 							double tubeSpacing,
@@ -149,7 +150,7 @@ void  infill(const  SegmentTable &outlineLoops,
 
 }
 
-void mgl::infillPathology(const  SegmentTable &outlineLoops,
+void mgl::infillPathology(const  SegmentVector &outlineLoops,
 							const Limits& limits,
 							double z,
 							double tubeSpacing,

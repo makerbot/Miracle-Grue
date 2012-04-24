@@ -17,20 +17,20 @@
 
 using namespace std;
 using namespace mgl;
-
+using namespace libthing;
 
 
 #define DBLTOINT 1000
 
 
- void  clipperToMgl(const ClipperLib::Polygons &polys, mgl::SegmentTable & outlinesSegments)
+ void  clipperToMgl(const ClipperLib::Polygons &polys, SegmentVector & outlinesSegments)
 {
 	size_t loopCount = polys.size();
 	for(size_t i=0; i < loopCount; i++)
 	{
 		const ClipperLib::Polygon &loop = polys[i];
-		outlinesSegments.push_back(std::vector<mgl::LineSegment2 > ());
-		std::vector<mgl::LineSegment2 > &segments = *outlinesSegments.rbegin();
+		outlinesSegments.push_back(std::vector<LineSegment2 > ());
+		std::vector<LineSegment2 > &segments = *outlinesSegments.rbegin();
 		unsigned int loopCount = loop.size();
 		segments.resize(loopCount);
 		for(size_t j=0; j < loopCount; j++)
@@ -39,7 +39,7 @@ using namespace mgl;
 			const ClipperLib::IntPoint &point = loop[j];
 			const ClipperLib::IntPoint &nextPoint = loop[next];
 
-			mgl::LineSegment2 s;
+			LineSegment2 s;
 			s.b[0] = point.X / (Scalar)DBLTOINT;
 			s.b[1] = point.Y / (Scalar)DBLTOINT;
 			s.a[0] = nextPoint.X / (Scalar)DBLTOINT;
@@ -52,18 +52,18 @@ using namespace mgl;
 }
 
 
-void  mglToClipper(const mgl::SegmentTable &segmentTable, ClipperLib::Polygons &out_polys )
+void  mglToClipper(const SegmentVector &segmentTable, ClipperLib::Polygons &out_polys )
 {
 	for(size_t i=0; i < segmentTable.size(); i++)
 	{
 		out_polys.push_back(vector<ClipperLib::IntPoint>());
 		vector<ClipperLib::IntPoint>& poly = *out_polys.rbegin();
 
-		const vector<mgl::LineSegment2> &loop = segmentTable[i];
+		const vector<LineSegment2> &loop = segmentTable[i];
 		for(size_t j=0; j < loop.size(); j++)
 		{
 			size_t reverseIndex = loop.size()-1 -j;
-			const mgl::LineSegment2 &seg = loop[reverseIndex];
+			const LineSegment2 &seg = loop[reverseIndex];
 			ClipperLib::IntPoint p;
 			p.X = seg.a[0] * DBLTOINT;
 			p.Y = seg.a[1] * DBLTOINT;
@@ -105,14 +105,14 @@ class ClipperInsetter
 public:
 	ClipperInsetter(){}
 	virtual ~ClipperInsetter(){}
-	void inset( const mgl::SegmentTable & inputPolys,
+	void inset( const SegmentVector & inputPolys,
 				Scalar insetDist,
-				mgl::SegmentTable & outputPolys);
+				SegmentVector & outputPolys);
 };
 
-void ClipperInsetter::inset( const mgl::SegmentTable &inputPolys,
+void ClipperInsetter::inset( const SegmentVector &inputPolys,
 							 Scalar insetDist,
-							 mgl::SegmentTable& outputPolys)
+							 SegmentVector& outputPolys)
 {
 
 	ClipperLib::Polygons in_polys, out_polys;

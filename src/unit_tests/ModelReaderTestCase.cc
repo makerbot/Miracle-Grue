@@ -25,7 +25,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
 using namespace std;
 using namespace mgl;
-
+using namespace libthing;
 
 string outputsDir("outputs/test_cases/modelReaderTestCase/");
 string inputsDir("test_cases/modelReaderTestCase/");
@@ -50,7 +50,7 @@ void ModelReaderTestCase::setUp()
 void ModelReaderTestCase::testSlicySimple()
 {
 
-	mgl::Vector3 p0(0,0,0);
+	Vector3 p0(0,0,0);
 	Vector3 p1(0,1,0);
 	Vector3 p2(1,1,0);
 	Vector3 p3(1,0,0);

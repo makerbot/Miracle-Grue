@@ -20,6 +20,7 @@
 
 using namespace std;
 using namespace mgl;
+using namespace libthing;
 
 
 
@@ -830,12 +831,12 @@ Shrinky::~Shrinky()
 }
 
 
-void createShells( const SegmentTable & outlinesSegments,
+void createShells( const SegmentVector & outlinesSegments,
 									   const std::vector<Scalar> &insetDistances,
 									   unsigned int sliceId,
 									   const char *scadFile,
 									   bool writeDebugScadFiles,
-									   std::vector<SegmentTable> & insetsForLoops)
+									   std::vector<SegmentVector> & insetsForLoops)
 
 {
 	assert(insetsForLoops.size() ==0);
@@ -849,10 +850,10 @@ void createShells( const SegmentTable & outlinesSegments,
     	const std::vector<LineSegment2> &outlineLoop = outlinesSegments[outlineId];
     	assert(outlineLoop.size() > 0);
 
-		insetsForLoops.push_back(SegmentTable());
+		insetsForLoops.push_back(SegmentVector());
 		assert(insetsForLoops.size() == outlineId + 1);
 
-		SegmentTable &insetTable = *insetsForLoops.rbegin(); // inset curves for a single loop
+		SegmentVector &insetTable = *insetsForLoops.rbegin(); // inset curves for a single loop
 		insetTable.reserve(nbOfShells);
 		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 		{
@@ -931,12 +932,12 @@ void createShells( const SegmentTable & outlinesSegments,
 	}
 }
 
-void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments,
+void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
 										   const std::vector<Scalar> &insetDistances,
 										   unsigned int sliceId,
 										   const char *scadFile,
 										   bool writeDebugScadFiles,
-										   std::vector<SegmentTable> & insetsForLoops)
+										   std::vector<SegmentVector> & insetsForLoops)
 
 {
 	assert(insetsForLoops.size() ==0);
@@ -944,8 +945,8 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments
 
 	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 	{
-		insetsForLoops.push_back(SegmentTable());
-		SegmentTable &currentShellTable = *insetsForLoops.rbegin();
+		insetsForLoops.push_back(SegmentVector());
+		SegmentVector &currentShellTable = *insetsForLoops.rbegin();
 		for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 		{
 			try
@@ -954,7 +955,7 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments
 				currentShellTable.push_back(std::vector<LineSegment2>());
 				std::vector<LineSegment2> &outlineShell = *currentShellTable.rbegin();
 				Scalar dist = insetDistances[shellId];
-				const SegmentTable *pInputs = NULL;
+				const SegmentVector *pInputs = NULL;
 				if(shellId == 0)
 				{
 					pInputs = &outlinesSegments;
@@ -963,7 +964,7 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments
 				{
 					pInputs = &insetsForLoops[shellId-1];
 				}
-				const SegmentTable &inputTable = *pInputs;
+				const SegmentVector &inputTable = *pInputs;
 				const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
 
 				if(inputSegments.size()>2)
@@ -998,13 +999,13 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentTable & outlinesSegments
 						Scalar dist = insetDistances[shellId];
 						if(shellId == 0)
 						{
-							const SegmentTable &inputTable = outlinesSegments;
+							const SegmentVector &inputTable = outlinesSegments;
 							const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
 							shrinky.inset(inputSegments, dist, outlineShell);
 						}
 						else
 						{
-							const SegmentTable &inputTable = insetsForLoops[shellId-1];
+							const SegmentVector &inputTable = insetsForLoops[shellId-1];
 							const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
 							shrinky.inset(inputSegments, dist, outlineShell);
 						}
