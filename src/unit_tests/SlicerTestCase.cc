@@ -20,7 +20,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SlicerTestCase );
 
 using namespace std;
 using namespace mgl;
-
+using namespace libthing;
 
 // CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, 1.1, 0.05 );
 // CPPUNIT_ASSERT_EQUAL( 12, 12 );
@@ -1674,7 +1674,7 @@ void SlicerTestCase::test_collinear()
 
 	Scalar tol = 1e-6;
 	Vector2 mid;
-	bool test = collinear(prev, current, tol, mid);
+	bool test = mgl::collinear(prev, current, tol, mid);
 	CPPUNIT_ASSERT(test);
 
 

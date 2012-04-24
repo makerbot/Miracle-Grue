@@ -13,6 +13,7 @@
 
 using namespace mgl;
 using namespace std;
+using namespace libthing;
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "ezlogger/ezlogger_headers.hpp"

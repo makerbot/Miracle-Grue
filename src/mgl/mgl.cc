@@ -25,7 +25,7 @@
 
 using namespace mgl;
 using namespace std;
-
+using namespace libthing;
 
 
 std::string mgl::getMiracleGrueVersionStr()
@@ -33,7 +33,7 @@ std::string mgl::getMiracleGrueVersionStr()
     return  "v 0.03 alpha";
 }
 
-std::ostream& mgl::operator<<(ostream& os, const mgl::Vector3& v)
+std::ostream& mgl::operator<<(ostream& os, const Vector3& v)
 {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
@@ -137,16 +137,17 @@ bool mgl::convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
 	return AreaSign(i,j,k) < 0;
 }
 
-std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
-{
-	os << "[ " << s.a << ", " << s.b << "]";
-	return os;
-}
+//std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
+//{
+//	os << "[ " << s.a << ", " << s.b << "]";
+//	return os;
+//}
 
 /**
  * @returns true if the passed line segments are colinear within the tolerance tol
  */
-bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current, Scalar tol, Vector2 &mid)
+bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current,
+		Scalar tol, Vector2 &mid)
 {
 
 	Scalar x1 = prev.a[0];

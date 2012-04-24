@@ -19,6 +19,7 @@
 
 using namespace mgl;
 using namespace std;
+using namespace libthing;
 
 #include "log.h"
 
@@ -55,7 +56,7 @@ void mgl::createPolysFromloopSegments(const SegmentTable &segmentTable,
 	}
 }
 
-void mgl::rotateLoops(std::vector<std::vector<mgl::LineSegment2> > &loops, Scalar angle)
+void mgl::rotateLoops(std::vector<std::vector<LineSegment2> > &loops, Scalar angle)
 {
 	for(size_t i=0; i < loops.size(); i++)
 	{

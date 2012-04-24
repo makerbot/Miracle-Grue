@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace mgl;
+using namespace libthing;
 
 #include "log.h"
 

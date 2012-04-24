@@ -21,7 +21,7 @@
 
 using namespace mgl;
 using namespace std;
-
+using namespace libthing;
 
 
 Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
@@ -218,7 +218,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 
 	// get the "real" 2D paths for outline
 	// lets order the segment into loops.
-	SegmentTable outlinesSegments;
+	SegmentVector outlinesSegments;
 	loopsAndHoleOgy(segments, tol, outlinesSegments);
 	unsigned int outlineSegmentCount = outlinesSegments.size();
 	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].boundary);
@@ -231,7 +231,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	// deep copy the the infill boundaries
 	// because we are going to rotate them
 	// We pick the innermost succesful inset for each loop
-	SegmentTable innerOutlinesSegments;
+	SegmentVector innerOutlinesSegments;
 
 	if(nbOfShells == 0)
 	{
@@ -239,7 +239,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	}
 	else
 	{
-		std::vector<SegmentTable> insetsForLoops;
+		std::vector<SegmentVector> insetsForLoops;
 		// create shells inside the outlines (and around holes)
 		inshelligence(outlinesSegments,
 					  nbOfShells,

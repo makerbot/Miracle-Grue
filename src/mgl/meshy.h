@@ -90,12 +90,12 @@ public:
 
 	}
 
-	void writeTriangle(const Triangle3& t)
+	void writeTriangle(const libthing::Triangle3& t)
 	{
 		// normalize( (v1-v0) cross (v2 - v0) )
 		// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
 
-		Vector3 n = t.normal();
+		libthing::Vector3 n = t.normal();
 		out << " facet normal " << n[0] << " " << n[1] << " " << n[2] << std::endl;
 		out << "  outer loop"<< std::endl;
 		out << "    vertex " << t[0].x << " " << t[0].y << " " << t[0].z << std::endl;
@@ -122,7 +122,7 @@ class Meshy
 {
 
 	mgl::Limits limits; 	/// Bounding box for the model
-	std::vector<Triangle3>  allTriangles; /// every triangle in the model.
+	std::vector<libthing::Triangle3>  allTriangles; /// every triangle in the model.
 	/// for each slice, a list of indicies, each index is a lookup into vector
 	// allTriangles
 	SliceTable sliceTable;
@@ -135,7 +135,7 @@ public:
 
 	/// requires firstLayerSlice height, and general layer height
 	Meshy(Scalar firstSliceZ, Scalar layerH);
-	const std::vector<Triangle3> &readAllTriangles() const;
+	const std::vector<libthing::Triangle3> &readAllTriangles() const;
 	const Limits& readLimits() const;
 	const LayerMeasure& readLayerMeasure() const;
 	const SliceTable &readSliceTable() const;
@@ -143,7 +143,7 @@ public:
 	//
 	// Adds a triangle to the global array and for each slice of interest
 	//
-	void addTriangle(Triangle3 &t);
+	void addTriangle(libthing::Triangle3 &t);
 
 
 	void dump(std::ostream &out);

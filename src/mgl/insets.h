@@ -26,7 +26,7 @@ namespace mgl
 
 
 
-void inshelligence( const SegmentTable & outlinesSegments,
+void inshelligence( const libthing::SegmentVector & outlinesSegments,
 					unsigned int nbOfShells,
 					double layerW,
 					unsigned int sliceId,
@@ -34,7 +34,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					const char *scadFile,
 					bool writeDebugScadFiles,
 					std::vector<Polygons> & insetPolys,
-					SegmentTable& innerOutlinesSegments);
+					libthing::SegmentVector& innerOutlinesSegments);
 
 
 }

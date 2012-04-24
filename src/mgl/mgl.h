@@ -60,13 +60,15 @@ typedef std::vector<TriangleIndices> SliceTable;
 
 
 // Bring over from mgl.cc
-Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c);
-bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k);
+Scalar AreaSign(const libthing::Vector2&a, const libthing::Vector2&b, const libthing::Vector2&c);
+bool convexVertex(const libthing::Vector2&i, const libthing::Vector2&j, const libthing::Vector2&k);
 
-std::ostream& operator << (std::ostream &os,const Vector2 &pt);
-std::ostream& operator << (std::ostream& os, const Vector3& v);
+std::ostream& operator << (std::ostream &os,const libthing::Vector2&pt);
+std::ostream& operator << (std::ostream& os, const libthing::Vector3& v);
+//std::ostream& operator<<(std::ostream& os, libthing::LineSegment2 const& line);
 
-
+bool collinear(const libthing::LineSegment2 &prev, const libthing::LineSegment2 &current,
+		Scalar tol, libthing::Vector2 &mid);
 
 
 class LayerException : public Exception {
@@ -120,9 +122,9 @@ public:
 };
 
 /// A polygon is an arbitarty collection of 2d points
-typedef std::vector<Vector2> Polygon;
+typedef std::vector<libthing::Vector2> Polygon;
 
-/// Verifies each Vector2 in the passed Polygon are in tolerance
+/// Verifies each libthing::Vector2in the passed Polygon are in tolerance
 // tol
 bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol);
 

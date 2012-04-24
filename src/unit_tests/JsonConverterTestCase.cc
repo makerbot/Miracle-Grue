@@ -18,6 +18,7 @@
 using namespace std;
 using namespace mgl;
 using namespace Json;
+using namespace libthing;
 
 string testCaseInputsDir("test_cases/jsonConverterTestCase/");
 string testCaseOutputsDir("outputs/test_cases/jsonConverterTestCase/inputs/");
