@@ -3,6 +3,7 @@
 
 using namespace mgl;
 using namespace std;
+using namespace libthing;
 
 Vector3::Vector3():x(0),y(0),z(0){}
 
@@ -71,9 +72,9 @@ Vector3 Vector3::operator-(const Vector3& v) const
 // Vector3 other matches this vector within tolerance tol
 bool Vector3::tequals(const Vector3 &other, const Scalar tol) const
 {
-	return mgl::tequals(x, other.x,tol) &&
-			mgl::tequals(y, other.y, tol) &&
-			mgl::tequals(z, other.z, tol);
+	return libthing::tequals(x, other.x,tol) &&
+			libthing::tequals(y, other.y, tol) &&
+			libthing::tequals(z, other.z, tol);
 }
 
 Vector3 Vector3::crossProduct(const Vector3 &vector) const

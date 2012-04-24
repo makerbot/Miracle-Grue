@@ -128,13 +128,27 @@ if qt:
 	print "QT modules", qtModules
 	env.EnableQt4Modules(qtModules)
 
+LIBTHING_PATH = 'submodule/libthing/cpp/src/'
+
+libthing_cc = [ LIBTHING_PATH+'Scalar.cc',
+				LIBTHING_PATH+'Vector2.cc', 
+				LIBTHING_PATH+'Vector3.cc',
+				LIBTHING_PATH+'Triangle3.cc',
+				LIBTHING_PATH+"LineSegment2.cc",
+				LIBTHING_PATH+"Mesh.cc",
+				LIBTHING_PATH+'StlReader.cc',
+				LIBTHING_PATH+'StlWriter.cc']
+
+
+
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
 			'src/mgl/Vector2.cc',
 			'src/mgl/Vector3.cc',
 			'src/mgl/Triangle3.cc',
 			'src/mgl/LineSegment2.cc',
-			'src/mgl/Scalar.cc',
+			#'src/mgl/Scalar.cc',
+			LIBTHING_PATH+'Scalar.cc',
 			'src/mgl/gcoder.cc',
 			'src/mgl/shrinky.cc',
 			'src/mgl/slicy.cc',
@@ -156,7 +170,7 @@ json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
             'src/json-cpp/src/lib_json/json_writer.cpp' ]
 
 
-env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog'] )  
+env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog', LIBTHING_PATH] )  
 env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include',])
 
 
@@ -164,13 +178,14 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 
 
-default_includes = ['..','src/json-cpp/include', 'src', 'src/mgl']
+default_includes = ['..','src/json-cpp/include', 'src', 'src/mgl',LIBTHING_PATH]
 default_libs = [ 'mgl', '_json',] 
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
 
+env.Append(CPPPATH = default_includes)
 
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/miracle_grue.cc'] ),
@@ -193,12 +208,12 @@ p = env.Program(  	'./bin/unit_tests/jsonConverterUnitTest',
 runThisTest(p, run_unit_tests)	
 
 
-p = env.Program(  	'./bin/unit_tests/mglCoreUnitTest',   
-				mix(['src/unit_tests/MglCoreTestCase.cc'], unit_test), 
-    			LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= [".."])
-runThisTest(p, run_unit_tests)	
+#p = env.Program(  	'./bin/unit_tests/mglCoreUnitTest',   
+#				mix(['src/unit_tests/MglCoreTestCase.cc'], unit_test), 
+#    			LIBS = default_libs + debug_libs,
+#				LIBPATH = default_libs_path + debug_libs_path, 
+#				CPPPATH= [".."])
+#runThisTest(p, run_unit_tests)	
 
 p = env.Program(  	'./bin/unit_tests/slicerCupUnitTest',   
 				mix(['src/unit_tests/SlicerCupTestCase.cc'], unit_test), 

@@ -882,13 +882,13 @@ void SlicerTestCase::testSliceTriangle()
 	CPPUNIT_ASSERT(sliceTriangle(v1, v3, v2, Z, order2[0], order2[1]) == true);
 	CPPUNIT_ASSERT(sliceTriangle(v2, v1, v3, Z, order3[0], order3[1]) == true);
 
-	CPPUNIT_ASSERT(tequals(order1[0].x, order2[0].x, tol) || tequals(order1[0].x, order2[1].x, tol));
-	CPPUNIT_ASSERT(tequals(order1[0].y, order2[0].y, tol) || tequals(order1[0].y, order2[1].y, tol));
-	CPPUNIT_ASSERT(tequals(order1[0].z, order2[0].z, tol) || tequals(order1[0].z, order2[1].z, tol));
+	CPPUNIT_ASSERT(libthing::tequals(order1[0].x, order2[0].x, tol) || libthing::tequals(order1[0].x, order2[1].x, tol));
+	CPPUNIT_ASSERT(libthing::tequals(order1[0].y, order2[0].y, tol) || libthing::tequals(order1[0].y, order2[1].y, tol));
+	CPPUNIT_ASSERT(libthing::tequals(order1[0].z, order2[0].z, tol) || libthing::tequals(order1[0].z, order2[1].z, tol));
 
-	CPPUNIT_ASSERT(tequals(order1[0].x, order3[0].x, tol) || tequals(order1[0].x, order3[1].x, tol));
-	CPPUNIT_ASSERT(tequals(order1[0].y, order3[0].y, tol) || tequals(order1[0].y, order3[1].y, tol));
-	CPPUNIT_ASSERT(tequals(order1[0].z, order3[0].z, tol) || tequals(order1[0].z, order3[1].z, tol));
+	CPPUNIT_ASSERT(libthing::tequals(order1[0].x, order3[0].x, tol) || libthing::tequals(order1[0].x, order3[1].x, tol));
+	CPPUNIT_ASSERT(libthing::tequals(order1[0].y, order3[0].y, tol) || libthing::tequals(order1[0].y, order3[1].y, tol));
+	CPPUNIT_ASSERT(libthing::tequals(order1[0].z, order3[0].z, tol) || libthing::tequals(order1[0].z, order3[1].z, tol));
 
 	///Testing that z height outputs are equal
 	cout << endl << "\t testing == Z" << endl;

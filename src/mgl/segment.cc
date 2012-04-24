@@ -211,11 +211,11 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 		// Triangle is below Z level.
 		return false;
 	}
-	if (tequals(vertex1.z, Z, tol) )
+	if (libthing::tequals(vertex1.z, Z, tol) )
 	{
-		if (tequals(vertex2.z,Z, tol) )
+		if (libthing::tequals(vertex2.z,Z, tol) )
 		{
-			if (tequals(vertex3.z,Z, tol) )
+			if (libthing::tequals(vertex3.z,Z, tol) )
 			{
 				// flat face.  Ignore.
 				return false;
@@ -229,7 +229,7 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 			b.z = Z;
 			return true;
 		}
-		if (tequals(vertex3.z,Z, tol) )
+		if (libthing::tequals(vertex3.z,Z, tol) )
 		{
 			// lnref = Line(Point(vertex1), Point(vertex3));
 			a.x = vertex1.x;
@@ -258,9 +258,9 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 		b.z = Z;
 		return true;
 	}
-	else if (tequals(vertex2.z, Z, tol) )
+	else if (libthing::tequals(vertex2.z, Z, tol) )
 	{
-		if (tequals(vertex3.z,Z, tol) )
+		if (libthing::tequals(vertex3.z,Z, tol) )
 		{
 			// lnref = Line(Point(vertex2), Point(vertex3));
 			a.x = vertex2.x;
@@ -288,7 +288,7 @@ bool mgl::sliceTriangle(const Vector3& vertex1,
 		b.z = Z;
 		return true;
 	}
-	else if (tequals(vertex3.z, Z, tol) )
+	else if (libthing::tequals(vertex3.z, Z, tol) )
 	{
 		if ((vertex1.z > Z && vertex2.z > Z) || (vertex1.z < Z && vertex2.z < Z))
 		{
