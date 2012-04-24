@@ -16,6 +16,10 @@ using namespace std;
 
 #include "log.h"
 
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
 
 std::ostream &MyComputer::log()
 {
@@ -30,9 +34,22 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname  )
     Log::often() << "not supported on QT" << endl;
     return -1;
 #else
+    int status = 0;
+
+#ifdef WIN32
+        DWORD attrib = GetFileAttributes(pathname);
+
+        if (attrib == INVALID_FILE_ATTRIBUTES) {
+            BOOL result = CreateDirectoryA(pathname, NULL);
+            if (!result) 
+                status = -1; //creation fail
+        }
+        else if (!(attrib & FILE_ATTRIBUTE_DIRECTORY)) 
+            status = -1;
+
+#else //WIN32
         // mode_t does not work under QT
         mode_t mode =  (S_IREAD|S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH);
-		int status = 0;
 
 		struct stat st;
 		if(stat(pathname,&st) != 0){
@@ -45,7 +62,8 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname  )
 		else if (!S_ISDIR(st.st_mode))
 			status = -1;
 		return status;
-#endif
+#endif //!WIN32
+#endif //!QT_CORE_LIB
 
 }
 
