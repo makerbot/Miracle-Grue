@@ -164,7 +164,7 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 
 
-default_includes = ['submodule/json-cpp/include', 'submodule/EzCppLog', 'src', 'src/mgl']
+default_includes = ['submodule/json-cpp/include', 'submodule/EzCppLog']
 default_libs = [ 'mgl', '_json',] 
 default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
 
@@ -177,7 +177,7 @@ p = env.Program('./bin/miracle_grue',
 		mix(['src/miracle_grue.cc'] ),
 		LIBS = ['mgl', '_json'],
 		LIBPATH = default_libs_path,
-		CPPPATH=['src', 'submodule/json-cpp/include', 'submodule/EzCppLog'])
+		CPPPATH = default_includes)
 
 
 p = env.Program(  	'./bin/unit_tests/clipperUnitTest',   
