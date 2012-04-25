@@ -2,7 +2,7 @@
 
 #include "abstractable.h"
 #include "JsonConverter.h"
-#include "json-cpp/include/json/writer.h"
+#include <json/writer.h>
 
 using namespace std;
 using namespace mgl;

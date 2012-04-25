@@ -19,10 +19,10 @@
 #include <vector>
 #include <string>
 
-#include "json-cpp/include/json/reader.h"
-#include "json-cpp/include/json/writer.h"
-#include "json-cpp/include/json/value.h"
-#include "json-cpp/include/json/writer.h"
+#include <json/reader.h>
+#include <json/writer.h>
+#include <json/value.h>
+#include <json/writer.h>
 
 #include "mgl.h"
 #include "gcoder.h"
