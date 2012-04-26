@@ -86,7 +86,9 @@ uname = os.popen("uname")
 for line in uname.readlines():
     operating_system = operating_system + line
 
-print "Operating system: " + operating_system
+operating_system = operating_system.rstrip()
+
+print "Operating system: [" + operating_system + "]"
 
 default_libs = []
 default_includes = ['submodule/json-cpp/include', 'submodule/EzCppLog', 'submodule/clp-parser']
