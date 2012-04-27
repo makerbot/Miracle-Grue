@@ -14,7 +14,7 @@
 #define GCODER_H_
 
 #include <map>
-#include "mgl/slicy.h"
+#include "slicy.h"
 
 
 #define SAMESAME_TOL 1e-6

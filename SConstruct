@@ -81,17 +81,42 @@ print "Miracle-Grue build script"
 print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
 print
 
-operating_system = commands.getoutput("uname")
+operating_system = ""
+uname = os.popen("uname")
+for line in uname.readlines():
+    operating_system = operating_system + line
 
+operating_system = operating_system.rstrip()
+
+print "Operating system: [" + operating_system + "]"
+
+LIBTHING_PATH = 'submodule/libthing/cpp/src/'
+
+default_libs = []
+default_includes = ['submodule/json-cpp/include',
+				 'submodule/EzCppLog', 
+				 'submodule/clp-parser',
+				 LIBTHING_PATH]
 
 if operating_system == "Linux":
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
+    default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
+
+boost_lib_extension = ""
 
 if operating_system.find("_NT") > 0:
+    default_libs_path = ['c:\\Boost\\lib', '.\\bin\\lib']
+    default_libs = ['wsock32', 'ws2_32']
+    boost_lib_extension = '-mgw46-mt-1_49'
+    default_includes.append('c:\\Boost\\include\\boost-1_49')
     print " ** CPPUNIT version checK:", "N/A"#commands.getoutput("cygcheck -l cppunit")
 
 if operating_system == "Darwin":
     print " ** CPPUNIT version checK:", commands.getoutput("port info --line cppunit | grep ^cppunit")
+    default_libs_path =['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
+
+def boostlib(name):
+    return name + boost_lib_extension
 
 debug = get_environment_flag('MG_DEBUG',False)
 debug = True;
@@ -110,6 +135,9 @@ if operating_system == "Darwin":
     env.Append(CPPPATH = ['/opt/local/include'])
     env.Append(LIBPATH = ['/opt/local/lib'])
 
+if operating_system.find("_NT") > 0:
+   env.Append(LIBPATH = ['c:\Boost\lib'])
+
 if debug:
     env.Append(CCFLAGS = '-g')
 
@@ -127,8 +155,6 @@ if qt:
 	qtModules = ['QtCore', 'QtNetwork' ]
 	print "QT modules", qtModules
 	env.EnableQt4Modules(qtModules)
-
-LIBTHING_PATH = 'submodule/libthing/cpp/src/'
 
 libthing_cc = [ LIBTHING_PATH+'Scalar.cc',
 				LIBTHING_PATH+'Vector2.cc', 
@@ -164,22 +190,20 @@ mgl_cc = [	'src/mgl/mgl.cc',
             'src/mgl/Edge.cc',
             'src/mgl/log.cc']
 
-json_cc = [ 'src/json-cpp/src/lib_json/json_reader.cpp',
-            'src/json-cpp/src/lib_json/json_value.cpp',
-            'src/json-cpp/src/lib_json/json_writer.cpp' ]
+json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
+            'submodule/json-cpp/src/lib_json/json_value.cpp',
+            'submodule/json-cpp/src/lib_json/json_writer.cpp' ]
 
+JSON_CPP_BASE = 'submodule/json-cpp/include'
 
-env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog', LIBTHING_PATH] )  
-env.Library('./bin/lib/_json', json_cc, CPPPATH=['src/json-cpp/include',])
-
+env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog', LIBTHING_PATH, JSON_CPP_BASE] )  
+env.Library('./bin/lib/_json', json_cc, CPPPATH=[JSON_CPP_BASE,])
 
 unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 
 
-default_includes = ['..','src/json-cpp/include', 'src', 'src/mgl',LIBTHING_PATH]
-default_libs = [ 'mgl', '_json',] 
-default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
+default_libs.extend(['mgl', '_json', boostlib('boost_system'), boostlib('boost_filesystem'), boostlib('boost_regex')])
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
@@ -188,9 +212,10 @@ env.Append(CPPPATH = default_includes)
 
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/miracle_grue.cc'] ),
-		LIBS = ['mgl', '_json',],
+		LIBS = default_libs,
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
+
 
 p = env.Program(  	'./bin/unit_tests/clipperUnitTest',   
 				mix(['src/unit_tests/ClipperTestCase.cc',], unit_test), 
