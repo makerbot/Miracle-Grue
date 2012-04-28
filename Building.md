@@ -82,6 +82,11 @@ To create a deployable .dmg file:
 
 
 # Compiling the code
+	
+	Once you have the code from git, don't forget to update the code from the submodules:
+	
+	"git submodule init"
+	"git submodule update"
 
 	Miracle-Grue does not rely on Makefiles, but instead uses scons (http://www.scons.org/) as the build tool (python required).  Once installed, you can use the following command in a terminal window to build the project from the Miracle-Grue directory:
 
@@ -97,8 +102,3 @@ To create a deployable .dmg file:
 
     	"export MG_DEBUG=0"
 
-# Compiling without QT:
-
-	define MG_QT=0 in your environment:
-
-    	"export MG_QT=0"
