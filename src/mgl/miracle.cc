@@ -76,6 +76,9 @@ void mgl::slicesFromSlicerAndMesh(
     unsigned int sliceCount = mesh.readSliceTable().size();
     unsigned int extruderId = 0;
 
+    cout << "F " << firstSliceIdx << endl;
+    cout << "L " << lastSliceIdx << endl;
+
     if(firstSliceIdx == -1) firstSliceIdx = 0;
     if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
@@ -103,14 +106,15 @@ void mgl::slicesFromSlicerAndMesh(
     for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
     {
             progress.tick();
-
+cout << "F " << firstSliceIdx << endl;
+cout << "L " << lastSliceIdx << endl;
             if(sliceId <  firstSliceIdx) continue;
             if(sliceId > lastSliceIdx) break;
 
             const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
             Scalar sliceAngle = sliceId * slicer.angle;
             SliceData &slice = slices[sliceId];
-
+cout << endl << "Slice " << sliceId+1 <<  "/" << sliceCount << endl;
             slicy.slice(	trianglesForSlice,
                                             sliceId,
                                             extruderId,

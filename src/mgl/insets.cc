@@ -22,6 +22,31 @@ using namespace libthing;
 
 #define DBLTOINT 1000
 
+void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
+									const Insets & insetsForLoops,
+									std::vector<Polygons> & insetsPolys )
+{
+    // assert(insetsForLoops.size() == outlineSegmentCount);
+    // we fill the structure "backwards" so that the inner shells come first
+    for(unsigned int shellId = 0;shellId < nbOfShells;shellId++){
+        insetsPolys.push_back(Polygons());
+    }
+    unsigned int shellCount = insetsForLoops.size();
+    for(unsigned int shellId = 0;shellId < shellCount;shellId++){
+        const SegmentTable & loopsForCurrentShell = insetsForLoops[shellId];
+        unsigned int loopCount = loopsForCurrentShell.size();
+        Polygons & polygons = insetsPolys[shellId];
+        for(unsigned int outlineId = 0;outlineId < loopCount;outlineId++){
+            const std::vector<LineSegment2> & segments = loopsForCurrentShell[outlineId];
+            if(segments.size() > 2){
+                polygons.push_back(Polygon());
+                Polygon & polygon = *polygons.rbegin();
+                segments2polygon(segments, polygon);
+            }
+        }
+    }
+}
+
 
  void  clipperToMgl(const ClipperLib::Polygons &polys, SegmentVector & outlinesSegments)
 {
@@ -138,15 +163,13 @@ bool useShrinky = false;
 void mgl::inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
 					double layerW,
-					unsigned int sliceId,
+					//unsigned int sliceId,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
 					bool writeDebugScadFiles,
-					std::vector<Polygons> &insetsPolys,
-					SegmentTable& innerOutlinesSegments)
+					Insets &insetsForLoops)
 {
-	assert(innerOutlinesSegments.size() == 0);
-
+	//assert(innerOutlinesSegments.size() == 0);
 
 	std::vector<Scalar> insetDistances;
 	insetDistances.reserve(nbOfShells);
@@ -156,7 +179,6 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 		insetDistances.push_back(insetDistance);
 	}
 
-	std::vector<SegmentTable> insetsForLoops;
 	if(!useShrinky)
 	{
 		ClipperInsetter insetter;
@@ -176,13 +198,13 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 				insetter.inset(inputs, dist, outputs);
 			}
 		}
-		innerOutlinesSegments = *insetsForLoops.rbegin();
+		//innerOutlinesSegments = *insetsForLoops.rbegin();
 	}
 	else
 	{
 		createShellsForSliceUsingShrinky(	outlinesSegments,
 											insetDistances,
-											sliceId,
+											0,//sliceId,
 											scadFile,
 											writeDebugScadFiles,
 											insetsForLoops);
@@ -205,39 +227,13 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 			if(lastKnownShell >= 0)
 			{
 				const vector<LineSegment2> &deppestInset = insetsForLoops[lastKnownShell][loop];
-				innerOutlinesSegments.push_back(deppestInset);
+				//innerOutlinesSegments.push_back(deppestInset);
 			}
 			else
 			{
 				const vector<LineSegment2> &deppestInset = outlinesSegments[loop];
-				innerOutlinesSegments.push_back(deppestInset);
+				//innerOutlinesSegments.push_back(deppestInset);
 			}
 		}
 	}
-
-	// assert(insetsForLoops.size() == outlineSegmentCount);
-	// we fill the structure "backwards" so that the inner shells come first
-	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
-	{
-		insetsPolys.push_back(Polygons());
-	}
-
-	unsigned int shellCount = insetsForLoops.size();
-	for(unsigned int shellId=0; shellId < shellCount; shellId++)
-	{
-		const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
-		unsigned int loopCount = loopsForCurrentShell.size();
-		Polygons &polygons = insetsPolys[shellId];
-		for(unsigned int outlineId=0; outlineId <  loopCount; outlineId++)
-		{
-			const std::vector<LineSegment2>& segments = loopsForCurrentShell[outlineId];
-			if(segments.size() >2)
-			{
-				polygons.push_back(Polygon());
-				Polygon &polygon = *polygons.rbegin();
-				segments2polygon(segments, polygon);
-			}
-		}
-	}
-
 }

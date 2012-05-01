@@ -5,6 +5,11 @@
 
 #include "UnitTestUtils.h"
 #include "mgl/miracle.h"
+#include "mgl/grid.h"
+
+//
+#include "mgl/configuration.h"
+#include "mgl/insets.h"
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RoofingTestCase );
@@ -19,89 +24,82 @@ string outputDir ("outputs/test_cases/roofingTestCase/");
 
 string inputDir("./test_cases/roofingTestCase/stls/");
 
+void rangeTableDifference(	const ScalarRangeTable &src,
+							const ScalarRangeTable &del,
+							ScalarRangeTable &diff);
 
-class RayException : public mgl::Exception {	public: RayException(const char *msg) :Exception(msg){} };
+void rangeDifference(const vector< ScalarRange > &srcLine,
+		 	 	 	  const vector< ScalarRange > &delLine,
+		 	 	 	  vector< ScalarRange > &diffLine );
+
+bool scalarRangeDifference(const ScalarRange& diffRange,
+							ScalarRange& srcRange,
+							ScalarRange &resultRange);
+
+vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &initialRange,
+		 	 	 	 	vector< ScalarRange >::const_iterator it,
+		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
+						vector< ScalarRange > &result );
+
+void rangeUnion( const vector< ScalarRange > &firstLine,
+		 	 	 	  const vector< ScalarRange > &secondLine,
+		 	 	 	  vector< ScalarRange > &unionLine );
+
+vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialRange,
+		 	 	 	 	vector< ScalarRange >::const_iterator it,
+		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
+						vector< ScalarRange > &result );
+
+bool scalarRangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange);
+
+bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scalar &end);
+
+void rangeTersection(const vector< ScalarRange > &oneLine,
+					 const vector< ScalarRange > &twoLine,
+						vector< ScalarRange > &boolLine );
 
 
+//bool scalarRangeIntersection(const ScalarRange &a,
+//								const ScalarRange &b,
+//								ScalarRange &inter)
+//{
+//	return intersectRange(a.min, a.max, b.min, b.max, inter.min, inter.max);
+//}
 
-bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scalar &end)
+std::ostream& operator << (std::ostream &os,const ScalarRange &pt);
+
+std::ostream& operator << (std::ostream &os,const ScalarRange &p)
 {
-	assert(b>=a);
-	assert(d>=c);
-
-//	cout << "[" << a << ", " << b << "] inter ";
-//  cout << "[" << c << ", " << d << "]";
-
-	if(a >= d)
-	{
-		cout << " = 0" << endl;
-		return false;
-	}
-
-	if (c >=b )
-	{
-		cout << " = 0" << endl;
-		return false;
-	}
-
-	if(a >= c)
-	{
-		begin = a;
-	}
-	else
-	{
-		begin = c;
-	}
-
-	if( b >= d)
-	{
-		end = d;
-	}
-	else
-	{
-		end = b;
-	}
-//	cout << " = [" << begin << ", " << end << "]" << endl;
-	return true;
+	cout << "[" << p.min << ", " << p.max << "]";
+	return os;
 }
 
-struct ScalarRange
+void dumpRanges(const vector<ScalarRange> &ranges)
 {
-	Scalar min;
-	Scalar max;
-	ScalarRange()
-	:min(0), max(0)
+	for(size_t i=0; i < ranges.size(); i++)
 	{
-
+		const ScalarRange &range = ranges[i];
+		cout << range << endl;
 	}
+}
 
-	ScalarRange(Scalar a, Scalar b)
-	:min(a), max(b)
+void dumpRangeTable(const char *name, const ScalarRangeTable &rangeTable)
+{
+	cout << name << endl;
+	for(size_t i=0; i<rangeTable.size(); i++)
 	{
-		// assert(b>a);
+		cout << " " << i << endl;
+		const vector<ScalarRange> &ranges = rangeTable[i];
+		dumpRanges(ranges);
 	}
+}
 
-	ScalarRange(const ScalarRange& original)
-	{
-		this->min = original.min;
-		this->max = original.max;
-	}
+void dumpGridRanges(const GridRanges &ranges)
+{
+	dumpRangeTable("xRays", ranges.xRays);
+	dumpRangeTable("yRays", ranges.yRays);
 
-	// default assignment operator (min and max are copied)
-	void operator = (const ScalarRange& next)
-	{
-		if( &next != this)
-		{
-			this->min = next.min;
-			this->max = next.max;
-		}
-	}
-};
-
-
-typedef std::vector< std::vector<ScalarRange> > ScalarRangeTable;
-
-
+}
 
 void lineSegmentsFromScalarRanges(const std::vector<ScalarRange> &ranges,
 									Scalar y,
@@ -116,106 +114,8 @@ void lineSegmentsFromScalarRanges(const std::vector<ScalarRange> &ranges,
 	}
 }
 
-void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector<ScalarRange> &ranges)
-{
-	ranges.reserve(lineCuts.size());
-    bool inside = false;
-    Scalar xBegin = 0; // initial value is not used
-    Scalar xEnd = 0;   // initial value is not used
-    for(std::set<Scalar>::iterator it = lineCuts.begin(); it != lineCuts.end(); it++)
-	{
-    	Scalar intersection = *it;
-    	if(inside)
-    	{
-    		xEnd = intersection;
-    		// gridSegments.push_back(LineSegment2(Vector2(xBegin,y), Vector2(xEnd,y)));
-    		ranges.push_back(ScalarRange(xBegin, xEnd));
-    	}
-    	else
-    	{
-    		xBegin = intersection;
-    	}
-    	inside = !inside;
-	}
 
-    if(inside)
-    {
-    	// this is not good. xMax should be outside the object
-    	RayException messup("Ray has been cast outside the model mesh.");
 
-    }
-}
-
-void rayCastAlongX(	const SegmentTable &outlineLoops,
-									Scalar y,
-									Scalar xMin,
-									Scalar xMax,
-									std::vector<ScalarRange> &ranges)
-{
-    std::set<Scalar> lineCuts;
-
-    // go through all the segments in every loop
-    for(unsigned int j=0; j< outlineLoops.size(); j++)
-    {
-        const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
-        for(std::vector<LineSegment2>::const_iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
-        {
-            const LineSegment2 &segment = *it;
-            Scalar intersectionX, intersectionY;
-            if (segmentSegmentIntersection( xMin,
-                                            y,
-                                            xMax,
-                                            y,
-                                            segment.a.x,
-                                            segment.a.y,
-                                            segment.b.x,
-                                            segment.b.y,
-                                            intersectionX,
-                                            intersectionY))
-            {
-                lineCuts.insert(intersectionX);
-            }
-        }
-    }
-
-    scalarRangesFromIntersections(lineCuts, ranges);
-
-}
-
-void rayCastAlongY(	const SegmentTable &outlineLoops,
-						Scalar x,
-						Scalar yMin,
-						Scalar yMax,
-						std::vector<ScalarRange> &ranges)
-{
-    std::set<Scalar> lineCuts;
-
-    // go through all the segments in every loop
-    for(unsigned int j=0; j< outlineLoops.size(); j++)
-    {
-        const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
-        for(std::vector<LineSegment2>::const_iterator it= outlineLineSegment2s.begin(); it!= outlineLineSegment2s.end(); it++)
-        {
-            const LineSegment2 &segment = *it;
-            Scalar intersectionX, intersectionY;
-            if (segmentSegmentIntersection( x,
-                                            yMin,
-                                            x,
-                                            yMax,
-                                            segment.a.x,
-                                            segment.a.y,
-                                            segment.b.x,
-                                            segment.b.y,
-                                            intersectionX,
-                                            intersectionY))
-            {
-                lineCuts.insert(intersectionY);
-            }
-        }
-    }
-    scalarRangesFromIntersections(lineCuts, ranges);
-
-}
 
 void segmentTableFromRangeTable(const ScalarRangeTable &rangeTable,
 								const vector<Scalar> &yValues,
@@ -232,39 +132,6 @@ void segmentTableFromRangeTable(const ScalarRangeTable &rangeTable,
 	}
 }
 
-void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
-					const std::vector<Scalar> &yValues,
-					Scalar xMin,
-					Scalar xMax,
-					ScalarRangeTable &rangeTable)
-{
-	assert(rangeTable.size() == 0);
-	rangeTable.resize(yValues.size());
-	for(size_t i=0; i < rangeTable.size(); i++)
-	{
-		Scalar y = yValues[i];
-		std::vector<ScalarRange> &ranges = rangeTable[i];
-	    rayCastAlongX(outlineLoops, y, xMin, xMax, ranges);
-	}
-}
-
-void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
-					const std::vector<Scalar> &values, // x
-					Scalar min,
-					Scalar max,
-					ScalarRangeTable &rangeTable)
-{
-	assert(rangeTable.size() == 0);
-	rangeTable.resize(values.size());
-	for(size_t i=0; i < rangeTable.size(); i++)
-	{
-		Scalar value = values[i];
-		std::vector<ScalarRange> &ranges = rangeTable[i];
-	    rayCastAlongY(outlineLoops, value, min, max, ranges);
-	}
-}
-
-
 
 void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values)
 {
@@ -277,6 +144,17 @@ void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values
 }
 
 
+void rayCastAlongX(	const SegmentTable &outlineLoops,
+									Scalar y,
+									Scalar xMin,
+									Scalar xMax,
+									std::vector<ScalarRange> &ranges);
+
+void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
+					const std::vector<Scalar> &yValues,
+					Scalar xMin,
+					Scalar xMax,
+					ScalarRangeTable &rangeTable);
 
 double tol = 1e-6;
 
@@ -309,7 +187,7 @@ void RoofingTestCase::testSimple()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, ranges[0].min, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, ranges[0].max, tol);
 
-	cout << "HO!" << endl;
+//	cout << "HO!" << endl;
 }
 
 
@@ -451,12 +329,12 @@ Scalar writeScanLines(ScadDebugFile& fscad,
 					const char* implementation,
 					Scalar z,
 					Scalar dz,
-					SegmentTable &rayTable)
+					const SegmentTable &rayTable)
 {
 	Scalar h = z;
 	for(size_t i=0; i < rayTable.size(); i++)
 	{
-		std::vector<LineSegment2>& line = rayTable[i];
+		const std::vector<LineSegment2>& line = rayTable[i];
 		h = fscad.writeSegments3(name, implementation, line, h, dz, i);
 	}
 
@@ -487,15 +365,19 @@ void RoofingTestCase::testHoly() // test with a hole in the slice
 	castRaysOnSliceAlongX(loops, yValues, xMin, xMax, rangeTable);
 	segmentTableFromRangeTable(rangeTable, yValues, rayTable);
 
-	for(size_t i=0; i < rayTable.size(); i++)
+	bool printMe = false;
+	if(printMe)
 	{
-		std::vector<LineSegment2>& line = rayTable[i];
-		// cout << i << ": " << yValues[i] << ") " << line.size() << endl << "\t";
-		for(size_t j=0; j < line.size(); j++)
+		for(size_t i=0; i < rayTable.size(); i++)
 		{
-			cout <<  line[j] << "\t";
+			std::vector<LineSegment2>& line = rayTable[i];
+			// cout << i << ": " << yValues[i] << ") " << line.size() << endl << "\t";
+			for(size_t j=0; j < line.size(); j++)
+			{
+				cout <<  line[j] << "\t";
+			}
+			cout << endl;
 		}
-		cout << endl;
 	}
 
 	string filename = outputDir + "hexagon_lines.scad";
@@ -632,243 +514,11 @@ void RoofingTestCase::testIntersectRange()
 }
 
 
-std::ostream& operator << (std::ostream &os,const ScalarRange &pt);
-
-std::ostream& operator << (std::ostream &os,const ScalarRange &p)
-{
-	cout << "[" << p.min << ", " << p.max << "]";
-	return os;
-}
-
-// return false if the ranges don't intersect
-//
-bool rangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange)
-{
-	// cout << " union( " << range0 << ", " << range1 << ")=";
-	if( (range1.min > range0.max) || (range0.min > range1.max) )
-	{
-		// cout << "0" << endl;
-		return false;
-	}
-
-	resultRange.min = range0.min < range1.min?range0.min:range1.min;
-	resultRange.max = range0.max > range1.max?range0.max:range1.max;
-
-	// cout << resultRange<<endl;
-	return true;
-}
-
-// removes diffRange from srcRange. The result is put in resultRange, and srcRange is updated
-// returns false if there is no resultRange
-bool rangeDiff(const ScalarRange& diffRange, ScalarRange& srcRange, ScalarRange &resultRange)
-{
-	// cout << srcRange << " - " << diffRange << " = ";
-	// the diffRange is left of srcRange ... no result
-	if(diffRange.max <= srcRange.min)
-	{
-		// cout << "0 (before)" << endl;
-		return false;
-	}
-
-	// the diff covers the src
-	// the src is (partially) occluded
-	if(diffRange.min <= srcRange.min)
-	{
-		if(diffRange.max >= srcRange.max )
-		{
-			srcRange.min = srcRange.max;
-			// cout << "0 (occlusion)" << endl;
-			return false;
-		}
-		// else... adjust the srcRange and make it smaller
-		srcRange.min = diffRange.max;
-		// cout << "0 partial occlusion, leftover = " << srcRange << endl;
-		return false;
-
-	}
-
-	// intersection of the ranges
-	if( (diffRange.min >= srcRange.min)  )
-	{
-		resultRange.min = srcRange.min;
-		resultRange.max = diffRange.min;
-
-		// left over on the right side
-		if(diffRange.max <= srcRange.max)
-		{
-			srcRange.min = diffRange.max;
-		}
-		else
-		{
-			srcRange.min = srcRange.max;
-		}
-		// cout << resultRange << " (intersection!) leftover " <<  srcRange << endl;
-		return true;
-	}
-
-	// srcRange is not occluded by diffRange which
-	// is right of scrRange
-	// there is nothing to remove: the result is the range
-	if(diffRange.min >= srcRange.max)
-	{
-		resultRange = srcRange;
-
-		// remove srcRange so it is
-		// not used twice
-		srcRange.min = srcRange.max;
-		// cout << resultRange << " (all in!) leftover " <<  srcRange << endl;
-		return true;
-	}
-
-	cout << "PROBLEM!" << endl;
-	assert(0);
-	return false;
-}
-
-vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialRange,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result )
-{
-
-	ScalarRange range(initialRange);
-	// cout << endl <<"-- subRangeUnion --" << endl;
-	while(it != itEnd)
-	{
-		const ScalarRange &itRange = *it;
-		if( (itRange.min > range.max)  )
-		{
-			// cout << " -PUSH" << range << endl;
-			result.push_back(range);
-			return it;
-		}
-		ScalarRange newRange;
-		bool u = rangeUnion(range, itRange, newRange);
-		if(u)
-		{
-			// cout << " -RANGE=" << range << endl;
-			range = newRange;
-		}
-		else
-		{
-			// cout << " -PUSH" << range << endl;
-			result.push_back(itRange);
-		}
-		it++;
-	}
-	// cout << " -done!" <<endl;
-	result.push_back(range);
-}
 
 
-void rangeUnion( const vector< ScalarRange > &firstLine,
-		 	 	 	  const vector< ScalarRange > &secondLine,
-		 	 	 	  vector< ScalarRange > &unionLine )
-{
-	vector< ScalarRange >::const_iterator itOne = firstLine.begin();
-	vector< ScalarRange >::const_iterator itTwo = secondLine.begin();
 
-	while(itOne != firstLine.end())
-	{
-		const ScalarRange &range = *itOne;
-		// cout << "range=" << range << endl;
 
-		// check that the last range has not advanced beyond the firstLine
-		if(unionLine.size() >0)
-		{
-			ScalarRange &lastUnion = unionLine.back();
-			// cout << "LAST RANGE UPDATE COMPARE: last=" << lastUnion << " range=" << range;
-			if(range.min <= lastUnion.max && lastUnion.max >= range.max)
-			{
-				// cout << " !UPDATE ONLY" << endl;
-				lastUnion.max = range.max;
-				itOne++;
-				continue;
-			}
-		}
-		// cout << " !no update" << endl;
-		if(itTwo == secondLine.end())
-		{
-			unionLine.push_back(range);
-		}
-		else
-		{
-			itTwo = subRangeUnion(range, itTwo, secondLine.end(), unionLine);
-		}
-		itOne++;
-	}
-}
 
-vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &initialRange,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result )
-{
-	ScalarRange range(initialRange);
-	while(it != itEnd)
-	{
-		const ScalarRange &itRange = *it;
-		if( (itRange.min >= range.max)  )
-		{
-			return it;
-		}
-
-		ScalarRange difference;
-		if (rangeDiff(itRange, range, difference))
-		{
-			result.push_back(difference);
-		}
-		if(range.min >= range.max) // the leftover range has no length
-		{
-			// cout << "no left over" << endl;
-			return it;
-		}
-
-		it ++;
-	}
-	// add the left over (if any)
-	if(range.max > range.min)
-	{
-		result.push_back(range);
-	}
-	return it;
-}
-
-void rangeDifference(const vector< ScalarRange > &srcLine,
-		 	 	 	  const vector< ScalarRange > &delLine,
-		 	 	 	  vector< ScalarRange > &diffLine )
-{
-	vector< ScalarRange >::const_iterator itOne = srcLine.begin();
-	vector< ScalarRange >::const_iterator itTwo = delLine.begin();
-	while(itOne != srcLine.end())
-	{
-		const ScalarRange &range = *itOne;
-		// cout << "range=" << range << endl;
-		itTwo = subRangeDifference(range, itTwo, delLine.end(), diffLine);
-		if(itTwo == delLine.end())
-		{
-			return;
-		}
-		itOne++;
-	}
-}
-
-// computes the difference between the ranges of two layers
-void rangeTableDifference(const ScalarRangeTable &src, const ScalarRangeTable &del, ScalarRangeTable &diff)
-{
-	size_t lineCount = src.size();
-	assert(lineCount == del.size());
-	diff.resize(lineCount);
-
-	for(size_t i=0; i < src.size(); i++ )
-	{
-		const vector<ScalarRange> &lineRangeSrc = src[i];
-		const vector<ScalarRange> &lineRangeDel = del[i];
-		vector<ScalarRange> &lineRangeDiff = diff[i];
-
-		rangeDifference(lineRangeSrc, lineRangeDel, lineRangeDiff);
-	}
-}
 
 void RoofingTestCase::testBooleanIntersect()
 {
@@ -935,60 +585,7 @@ void RoofingTestCase::testBooleanIntersect()
     fscad.close();
 }
 
-vector< ScalarRange >::const_iterator  subRangeTersect(	const ScalarRange &range,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result )
-{
 
-	while(it != itEnd)
-	{
-		const ScalarRange &currentRange = *it;
-		if( (it->min >= range.max)  )
-		{
-			// cout << " subrange done" << endl; // << currentRange << endl;
-			return it;
-		}
-
-		ScalarRange intersection;
-		// cout << " second="<< currentRange << endl;
-		if( intersectRange(range.min, range.max, currentRange.min, currentRange.max, intersection.min, intersection.max) )
-		{
-			// cout << " Intersect: [" << range.min << ", " << range.max << "]"<< endl;
-			result.push_back(intersection);
-		}
-		it ++;
-	}
-	return it;
-}
-
-
-
-void rangeTersection(const vector< ScalarRange > &oneLine,
-					 const vector< ScalarRange > &twoLine,
-						vector< ScalarRange > &boolLine )
-{
-	vector< ScalarRange >::const_iterator itOne = oneLine.begin();
-	vector< ScalarRange >::const_iterator itTwo = twoLine.begin();
-	while(itOne != oneLine.end())
-	{
-		const ScalarRange &range = *itOne;
-		cout << "range=" << range << endl;
-		itTwo = subRangeTersect(range, itTwo, twoLine.end(), boolLine);
-		if(itTwo == twoLine.end())
-		{
-			itOne++;
-			if(itOne != oneLine.end())
-			{
-				const ScalarRange &lastRange = twoLine.back();
-				cout << "lastRange=" << lastRange << endl;
-				subRangeTersect(lastRange, itOne, oneLine.end(), boolLine);
-			}
-			return;
-		}
-		itOne++;
-	}
-}
 
 void RoofingTestCase::testSimpleLineTersect()
 {
@@ -1076,7 +673,7 @@ void RoofingTestCase::testSimpleDifference()
 	ScalarRange res;
 	bool b;
 
-	b = rangeDiff(diff, src, res);
+	b = scalarRangeDifference(diff, src, res);
 
 	CPPUNIT_ASSERT(b);
 
@@ -1087,12 +684,12 @@ void RoofingTestCase::testSimpleDifference()
 
 	src = ScalarRange(2,4);
 	diff = ScalarRange(1,5);
-	b = rangeDiff(diff, src, res);
+	b = scalarRangeDifference(diff, src, res);
 	CPPUNIT_ASSERT(!b);
 
 	src = ScalarRange(1,5);
 	diff = ScalarRange(3,6);
-	b = rangeDiff(diff, src, res);
+	b = scalarRangeDifference(diff, src, res);
 	CPPUNIT_ASSERT(b);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, res.min, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(3, res.max, tol);
@@ -1101,14 +698,14 @@ void RoofingTestCase::testSimpleDifference()
 
 	src = ScalarRange(3,5);
 	diff = ScalarRange(1,4);
-	b = rangeDiff(diff, src, res);
+	b = scalarRangeDifference(diff, src, res);
 	CPPUNIT_ASSERT(!b);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(4, src.min, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(5, src.max, tol);
 
 	src = ScalarRange(1,3);
 	diff = ScalarRange(2,4);
-	b = rangeDiff(diff, src, res);
+	b = scalarRangeDifference(diff, src, res);
 	CPPUNIT_ASSERT(b);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, res.min, tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, res.max, tol);
@@ -1157,7 +754,7 @@ void RoofingTestCase::testRangeDifference()
 	second.push_back(ScalarRange(32, 39));
 
 	vector<ScalarRange> difference;
-	cout << "rangeDiff" << endl;
+	cout << "scalarRangeDifference" << endl;
 	rangeDifference(first, second, difference);
 
 	cout << "DIFFERENCES" << endl;
@@ -1178,6 +775,38 @@ void RoofingTestCase::testRangeDifference()
 
 }
 
+void RoofingTestCase::testDifferenceRangeEmpty()
+{
+
+// src = [-24.907, -9.22883]
+// [-8.32378, -5.93331]
+// [-5.41545, 24.907]
+// del = (0 points )
+// diff = [-24.907, -9.22883]
+
+	cout << endl;
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back( ScalarRange( -24.907, -9.22883 ));
+	first.push_back( ScalarRange( -8.32378, -5.93331));
+	first.push_back( ScalarRange( -5.41545, 24.907));
+
+//	second.push_back(ScalarRange(  ));
+
+
+	vector<ScalarRange> difference;
+	cout << "scalarRangeDifference" << endl;
+	rangeDifference(first, second, difference);
+
+	cout << "DIFFERENCES" << endl;
+	dumpRanges(difference);
+
+//	CPPUNIT_ASSERT_EQUAL((size_t)3, difference.size());
+
+
+}
+
 void RoofingTestCase::testSimpleUnion()
 {
 
@@ -1189,17 +818,17 @@ void RoofingTestCase::testSimpleUnion()
 	ScalarRange range;
 	bool r;
 
-	r = rangeUnion(ScalarRange(0,5),  ScalarRange(10,15), range );
+	r = scalarRangeUnion(ScalarRange(0,5),  ScalarRange(10,15), range );
 	CPPUNIT_ASSERT(!r);
 
-	r = rangeUnion(ScalarRange(10,15),  ScalarRange(0,5), range );
+	r = scalarRangeUnion(ScalarRange(10,15),  ScalarRange(0,5), range );
 	CPPUNIT_ASSERT(!r);
 
 	//    *******
 	//  	********
 	//  0123456789012345678901234567890
 	//            1         2         3
-	r = rangeUnion(ScalarRange(2,9),  ScalarRange(4,12), range );
+	r = scalarRangeUnion(ScalarRange(2,9),  ScalarRange(4,12), range );
 	CPPUNIT_ASSERT(r);
 
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, range.min, tol);
@@ -1273,7 +902,7 @@ void RoofingTestCase::testRangeUnion()
 	second.push_back(ScalarRange(32, 39));
 
 	vector<ScalarRange> result;
-	cout << "rangeDiff" << endl;
+	cout << "scalarRangeDifference" << endl;
 	rangeUnion(first, second, result);
 
 	for(unsigned int i=0; i < result.size(); i++)
@@ -1285,42 +914,6 @@ void RoofingTestCase::testRangeUnion()
 }
 
 
-
-struct Grid
-{
-    vector<Scalar> yValues;
-    vector<Scalar> xValues;
-    Vector2 gridCenter;
-
-
-    Grid(const Limits &limits, Scalar gridSpacing)
-    {
-        Scalar deltaY = limits.yMax - limits.yMin;
-        Scalar deltaX = limits.xMax - limits.xMin;
-
-        gridCenter[0] = limits.xMin + 0.5 * deltaX;
-        gridCenter[1] = limits.yMin + 0.5 * deltaY;
-
-        // round to nearest odd number
-        unsigned int yGridSize = (unsigned int)( deltaY / gridSpacing) + 1;
-        unsigned int xGridSize = (unsigned int)( deltaX / gridSpacing) + 1;
-
-        yValues.resize(yGridSize);
-        for (unsigned int i=0; i < yGridSize; i++)
-        {
-            Scalar v = gridCenter[1] -0.5 * deltaY + i * gridSpacing;
-            yValues[i] = v;
-        }
-
-        xValues.resize(xGridSize);
-        for (unsigned int i=0; i < xGridSize; i++)
-        {
-            Scalar v = gridCenter[0] -0.5 * deltaX + i * gridSpacing;
-            xValues[i] = v;
-        }
-    }
-};
-
 void RoofingTestCase::testGridStruct()
 {
     cout << endl;
@@ -1330,169 +923,23 @@ void RoofingTestCase::testGridStruct()
     limits.grow(Vector3(10,10,10));
 
     Grid grid(limits, 0.391);
-    cout << "center = " << grid.gridCenter << endl;
-    cout << "X values" << endl;
-    for(unsigned int i=0; i < grid.xValues.size(); i++)
-    {
-        cout << " " << grid.xValues[i] << endl;
-    }
+    cout << "center = " << grid.readGridCenter() << endl;
+//    cout << "X values" << endl;
+//    for(unsigned int i=0; i < grid.readXvalues().size(); i++)
+//    {
+//        cout << " " << grid.readXvalues()[i] << endl;
+//    }
+//
+//    cout << "Y values" << endl;
+//    for(unsigned int i=0; i < grid.readYvalues().size(); i++)
+//    {
+//        cout << " " << grid.readYvalues()[i] << endl;
+//    }
 
-    cout << "Y values" << endl;
-    for(unsigned int i=0; i < grid.yValues.size(); i++)
-    {
-        cout << " " << grid.yValues[i] << endl;
-    }
-
-    CPPUNIT_ASSERT_EQUAL((size_t)12, grid.xValues.size());
-    CPPUNIT_ASSERT_EQUAL((size_t)12, grid.yValues.size());
+    CPPUNIT_ASSERT_EQUAL((size_t)13, grid.readXvalues().size());
+    CPPUNIT_ASSERT_EQUAL((size_t)13, grid.readYvalues().size());
 }
 
-
-struct GridRanges
-{
-    ScalarRangeTable xRays;
-    ScalarRangeTable yRays;
-};
-
-void gridCast (const SegmentTable &loops, const Grid &grid, GridRanges &surface)
-{
-	Vector2 toRotationCenter(grid.gridCenter * -1);
-
-	Scalar angle = M_PI_2;
-
-	SegmentTable xRays, yRays;
-
-    assert(xRays.size() == 0);
-    assert(yRays.size() == 0);
-
-    ScalarRangeTable xRangeTable;
-    Scalar xMin = grid.xValues[0];
-    Scalar xMax = grid.xValues.back();
-    castRaysOnSliceAlongX(loops, grid.yValues, xMin, xMax, surface.xRays);
-
-    ScalarRangeTable yRangeTable;
-    Scalar yMin = grid.yValues[0];
-    Scalar yMax = grid.yValues.back();
-    castRaysOnSliceAlongY(loops, grid.xValues, yMin, yMax, surface.yRays);
-
-}
-
-
-
-void infillLines(const GridRanges &surface, unsigned int skipCount, GridRanges &result)
-{
-
-	result.xRays.resize(surface.xRays.size());
-	result.yRays.resize(surface.yRays.size());
-
-	for(size_t i=0; i < surface.xRays.size(); i++)
-	{
-		result.xRays[i] = surface.xRays[i]; // deep copy of the ranges for the selected lines
-		i += skipCount; // skip lines depending on selected infill density
-	}
-
-	for(size_t i=0; i < surface.yRays.size(); i++)
-	{
-		result.yRays[i] = surface.yRays[i]; // deep copy of the ranges for the selected lines
-		i += skipCount; // skip lines depending on selected infill density
-	}
-}
-
-void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
-								const std::vector<Scalar> &values, // the y values for each line
-								Polygons &polygons)				   // the output
-{
-	// change direction of extrusion
-	// for each line
-	bool forward = false;
-	assert(rays.size() == values.size());
-
-	for(size_t rayId =0; rayId < rays.size(); rayId++)
-	{
-		const vector<ScalarRange> &ray = rays[rayId];
-		if(ray.size() == 0)
-			continue;
-
-		forward = !forward;
-		Scalar value = values[rayId];
-
-		vector<ScalarRange> line;
-		line.reserve(ray.size());
-		if(forward)
-		{
-			line = ray;
-		}
-		else
-		{
-			// reverse the ranges in the ray
-			for(size_t i=0; i < ray.size(); i++)
-			{
-				ScalarRange range(ray[i].max, ray[i].min);
-				line.push_back(range);
-			}
-		}
-		for(size_t i= 0; i< line.size(); i++ )
-		{
-			const ScalarRange &range = line[i];
-			Vector2 begin(range.min, value);
-			Vector2 end(range.max, value);
-
-			// add a polygon
-			polygons.push_back(Polygon());
-			Polygon &poly = polygons.back();
-			poly.push_back(begin);
-			poly.push_back(end);
-		}
-	}
-}
-
-void polygonsFromScalarRangesAlongY( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
-								const std::vector<Scalar> &values, // the x values for each line
-								Polygons &polygons)				   // the output
-{
-	// change direction of extrusion
-	// for each line
-	bool forward = false;
-	assert(rays.size() == values.size());
-
-	for(size_t rayId =0; rayId < rays.size(); rayId++)
-	{
-		const vector<ScalarRange> &ray = rays[rayId];
-		if(ray.size() == 0)
-			continue;
-
-		forward = !forward;
-		Scalar value = values[rayId];
-
-		vector<ScalarRange> line;
-		line.reserve(ray.size());
-		if(forward)
-		{
-			line = ray;
-		}
-		else
-		{
-			// reverse the ranges in the ray
-			for(size_t i=0; i < ray.size(); i++)
-			{
-				ScalarRange range(ray[i].max, ray[i].min);
-				line.push_back(range);
-			}
-		}
-		for(size_t i= 0; i< line.size(); i++ )
-		{
-			const ScalarRange &range = line[i];
-			Vector2 begin(value, range.min);
-			Vector2 end(value, range.max);
-
-			// add a polygon
-			polygons.push_back(Polygon());
-			Polygon &poly = polygons.back();
-			poly.push_back(begin);
-			poly.push_back(end);
-		}
-	}
-}
 
 void RoofingTestCase::testFlatsurface()
 {
@@ -1519,18 +966,18 @@ void RoofingTestCase::testFlatsurface()
 	limits.grow(max);
 
 	Grid grid(limits, gridSpacing);
+
 	GridRanges surface;
-	gridCast(loops, grid, surface);
+	grid.createGridRanges(loops, surface);
 
 	GridRanges infills;
-	infillLines(surface, skipCount, infills);
+	grid.subSample(surface, skipCount, infills);
 
 	Polygons xPolys;
-	polygonsFromScalarRangesAlongX(infills.xRays, grid.yValues, xPolys);
+	grid.polygonsFromRanges(infills, true, xPolys);
 
 	Polygons yPolys;
-	polygonsFromScalarRangesAlongY(infills.yRays, grid.xValues, yPolys);
-
+	grid.polygonsFromRanges(infills, false, yPolys);
 
 	string filename = outputDir + "hexagon_surface.scad";
 	ScadDebugFile fscad;
@@ -1539,15 +986,14 @@ void RoofingTestCase::testFlatsurface()
 	addLinea(fscad);
     fscad.writeHeader();
 
-
 	Scalar z = 0;
 	Scalar dz = 0;
 
 	writeScanLines(fscad, "outlines_", "linea", -1, -0.1, loops);
 	fscad.writePolygons(  "draw_polys_x_","polys", xPolys, z, 0);
 	fscad.writePolygons(  "draw_polys_y_","polys", yPolys, z, 0);
-//    writeScanLines(fscad, "draw_x_", 	  "linea", z, dz, xSegs );
-//    writeScanLines(fscad, "draw_y_", 	  "linea", 0.5, dz, ySegs );
+//  writeScanLines(fscad, "draw_x_", 	  "linea", z, dz, xSegs );
+//  writeScanLines(fscad, "draw_y_", 	  "linea", 0.5, dz, ySegs );
 
     std::ostream & out = fscad.getOut();
 
@@ -1568,7 +1014,586 @@ void SurfaceUnion(const FlatSurface& surface, const FlatSurface &)
 }
 */
 
+struct ModelSkeleton
+{
+	Grid grid;
+	LayerMeasure layerMeasure;
+
+	std::vector<SegmentTable>   outlines;
+
+    std::vector<Insets> 		insets;
+    std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
+
+    std::vector<GridRanges>     roofings;
+    std::vector<GridRanges>     floorings;
+
+    std::vector<GridRanges>     infills;
+
+    ModelSkeleton()
+    :layerMeasure(0,0)
+    {}
+};
+
+void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
+{
+	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
+    for(size_t id = 0; id < segments.size(); id++)
+    {
+    	LineSegment2 seg = segments[id];
+    	cout  << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
+    }
+    cout << prefix << "]" << endl;
+    cout << "// color([1,0,0.4,1])loop_segments(segments,0.050000);" << endl;
+}
+
+class Gcodor
+{
+public:
+	GCoder gcoder;
+
+	void init(const GCoder &gcoderCfg)
+	{
+		this->gcoder = gcoderCfg;
+	}
+
+	void outlines(const SegmentTable& outlinesSegments, Polygons &boundary)
+	{
+		createPolysFromloopSegments(outlinesSegments, boundary);
+	}
+
+	void insets(const Insets& insetsForSlice, std::vector<Polygons> &insetPolys)
+	{
+		size_t nbOfShells = insetsForSlice.size();
+		polygonsFromLoopSegmentTables(nbOfShells, insetsForSlice, insetPolys);
+	}
+
+	void infills(const GridRanges &infillRanges,
+					const Grid &grid,
+					bool direction,
+					Polygons &infills)
+	{
+		grid.polygonsFromRanges(infillRanges, direction, infills);
+	}
+
+	void writeGcode(const char *gcodeFile, const char* modelSource, const std::vector<SliceData> &slices)
+	{
+		std::ofstream gout(gcodeFile);
+		gcoder.writeStartOfFile(gout, modelSource);
+
+		size_t sliceCount = slices.size();
+
+		// progress.reset(sliceCount, "Gcoding");
+		for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
+		{
+			// progress.tick();
+			const SliceData &slice = slices[sliceId];
+			gcoder.writeSlice(gout, slice);
+		}
+		gout.close();
+	}
+
+};
+
+class Slicor
+{
+public:
+	Slicer slicerCfg;
+
+	size_t roofCount;
+	size_t floorCount;
+	Scalar gridSpacingMultiplier;
+	size_t skipCount;
+public:
+
+	void init(	const Slicer &slicerCfg,
+				Scalar gridSpacingMultiplier,
+				size_t roofCount,
+				size_t floorCount,
+				size_t  skipCount)
+	{
+
+		this->slicerCfg = slicerCfg;
+		this->roofCount = roofCount;
+		this->floorCount = floorCount;
+		this->gridSpacingMultiplier = gridSpacingMultiplier;
+		this->skipCount = skipCount;
+	}
+
+
+	void outlines( const char* modelFile, LayerMeasure &layerMeasure, Grid &grid, std::vector<SegmentTable> &outlines)
+	{
+		Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
+		mesh.readStlFile(modelFile);
+
+		// grid.init(mesh.limits, slicerCfg.layerW);
+		unsigned int sliceCount = mesh.readSliceTable().size();
+		outlines.resize(sliceCount);
+
+		for(size_t sliceId =0; sliceId < sliceCount; sliceId++)
+		{
+			//cout << sliceId << "/" << sliceCount << " outlines" << endl;
+			SegmentTable &segments = outlines[sliceId];
+			outlinesForSlice(mesh, sliceId, segments);
+		}
+
+		Scalar gridSpacing = slicerCfg.layerW * gridSpacingMultiplier;
+		Limits limits = mesh.readLimits();
+
+		grid.init(limits, gridSpacing);
+
+		layerMeasure = mesh.readLayerMeasure();
+	}
+
+
+
+    void insetsForSlice(const SegmentTable & sliceOutlines,
+    					Insets & sliceInsets,
+    					const char*scadFile=NULL)
+    {
+
+
+        bool writeDebugScadFiles = false;
+        inshelligence(sliceOutlines,
+        				slicerCfg.nbOfShells,
+        				slicerCfg.layerW,
+        				slicerCfg.insetDistanceMultiplier,
+        				scadFile,
+        				writeDebugScadFiles,
+        				sliceInsets);
+    }
+
+    void insets(const std::vector<SegmentTable> & outlinesSegments, std::vector<Insets> & insets)
+    {
+
+        unsigned int sliceCount = outlinesSegments.size();
+
+        insets.resize(sliceCount);
+        // slice id must be adjusted for
+        for(size_t i = 0;i < sliceCount;i++)
+        {
+        	const SegmentTable & sliceOutlines = outlinesSegments[i];
+        	Insets & sliceInsets = insets[i];
+
+            insetsForSlice(sliceOutlines, sliceInsets);
+            				//scadFile,
+            				//writeDebugScadFiles,
+            				//insetsForSlice);
+//            const char *scadFile = NULL;
+//            bool writeDebugScadFiles = false;
+//            inshelligence(sliceOutlines,
+//            				slicerCfg.nbOfShells,
+//            				slicerCfg.layerW,
+//            				slicerCfg.insetDistanceMultiplier,
+//            				scadFile,
+//            				writeDebugScadFiles,
+//            				insetsForSlice);
+		}
+	}
+
+
+    void flatSurfaces(	const std::vector<Insets> & insets,
+    					const Grid & grid,
+    					std::vector<GridRanges> & gridRanges)
+    {
+        assert(gridRanges.size() == 0);
+        unsigned int sliceCount = insets.size();
+        gridRanges.resize(sliceCount);
+        for(size_t i = 0;i < sliceCount;i++)
+        {
+        	const Insets & allInsetsForSlice = insets[i];
+        	GridRanges & surface = gridRanges[i];
+            gridRangesForSlice(allInsetsForSlice, grid, surface);
+		}
+	}
+
+    void roofForSlice( const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing)
+    {
+        grid.gridRangeDifference(currentSurface, surfaceAbove, roofing);
+    }
+
+    void roofing(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & roofings)
+    {
+        assert(flatSurfaces.size() > 0);
+        assert(roofings.size() == 0);
+        unsigned int sliceCount = flatSurfaces.size();
+        roofings.resize(sliceCount);
+        for(size_t i = 0;i < sliceCount - 1;i++){
+            const GridRanges & currentSurface = flatSurfaces[i];
+            const GridRanges & surfaceAbove = flatSurfaces[i + 1];
+            GridRanges & roofing = roofings[i];
+            roofForSlice(currentSurface, surfaceAbove, grid, roofing);
+    	}
+    	roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
+    }
+
+    void infills(const std::vector<GridRanges> &flatSurfaces,
+    			 const Grid &grid,
+    			 const std::vector<GridRanges> &roofings,
+    			 const std::vector<GridRanges> &floorings,
+    			 std::vector<GridRanges> &infills)
+    {
+    	assert(infills.size() == 0);
+    	assert(flatSurfaces.size() > 0);
+    	assert(roofings.size() > 0);
+
+        unsigned int sliceCount = flatSurfaces.size();
+        infills.resize(sliceCount);
+        for(size_t i=0; i< sliceCount; i++)
+        {
+        	const GridRanges &surface = flatSurfaces[i];
+        	const GridRanges &roofing = roofings[i];
+
+        	GridRanges sparseInfill;
+        	// cout << "subsample " << skipCount << endl;
+        	grid.subSample(surface, skipCount, sparseInfill);
+
+        	GridRanges &infill = infills[i];
+        	// cout << "union " << i << endl;
+
+        	grid.gridRangeUnion(sparseInfill, roofing, infill);
+        	infill = roofing;
+        }
+    }
+
+    void gridRangesForSlice(const Insets &allInsetsForSlice,
+    						const Grid &grid,
+    						GridRanges &surface)
+    {
+    	const SegmentTable & innerMostLoops = allInsetsForSlice.back();
+    	grid.createGridRanges(innerMostLoops, surface);
+    }
+
+
+
+private:
+//	void gridRangesForSlice(const std::vector<Insets> &insets,
+//							const Grid &grid,
+//							size_t sliceIndex,
+//							std::vector<GridRanges> &gridRanges)
+//    {
+//        const Insets & allInsetsForSlice = insets[sliceIndex];
+//        const SegmentTable & innerMostLoops = allInsetsForSlice.back();
+//        GridRanges & surface = gridRanges[sliceIndex];
+//        grid.createGridRanges(innerMostLoops, surface);
+//    }
+
+	void loopsFromLineSegments(const std::vector<LineSegment2>& unorderedSegments, Scalar tol, SegmentTable & segments)
+    {
+        // dumpSegments("unordered_", unorderedSegments);
+        // cout << segments << endl;
+        if(unorderedSegments.size() > 0){
+            //cout << " loopsAndHoleOgy " << endl;
+          	std::vector<LineSegment2> segs =  unorderedSegments;
+            loopsAndHoleOgy(segs, tol, segments);
+        }
+    }
+
+    void outlinesForSlice(const Meshy & mesh, size_t sliceId, SegmentTable & segments)
+    {
+        Scalar tol = 1e-6;
+        const LayerMeasure & layerMeasure = mesh.readLayerMeasure();
+        Scalar z = layerMeasure.sliceIndexToHeight(sliceId);
+        const std::vector<Triangle3> & allTriangles = mesh.readAllTriangles();
+        const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+        std::vector<LineSegment2> unorderedSegments;
+        segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
+        assert(segments.size() ==0);
+        // dumpSegments("unordered_", unorderedSegments);
+        // cout << segments << endl;
+        loopsFromLineSegments(unorderedSegments, tol, segments);
+		// cout << " done " << endl;
+	}
+
+
+
+};
 
 
 
 
+void RoofingTestCase::testSkeleton()
+{
+	cout << endl;
+	cout << "Skeleton" << endl;
+
+	string configFileName = "miracle.config";
+	unsigned int roofLayerCount = 3;
+	unsigned int floorLayerCount = 3;
+
+	cout << "read config" << endl;
+    Configuration config;
+   	config.readFromFile(configFileName.c_str());
+
+	GCoder gcoderCfg;
+	Slicer slicerCfg;
+
+	loadGCoderData(config, gcoderCfg);
+	loadSlicerData(config, slicerCfg);
+
+	string modelFile = "inputs/hexagon.stl"; // "inputs/3D_Knot.stl";
+	string gcodeFile = "outputs/hexagon.gcode";  // "outputs/3D_Knot.gcode";
+
+	cout << "read model " << modelFile << endl;
+
+	Slicor slicor;
+	slicor.init(slicerCfg, 0.95, 3, 3, 3);
+
+	ModelSkeleton skeleton;
+
+	cout << "outlines" << endl;
+	slicor.outlines(modelFile.c_str(),
+					skeleton.layerMeasure,
+					skeleton.grid,
+					skeleton.outlines);
+
+	cout << "insets" << endl;
+	slicor.insets(skeleton.outlines,
+				  skeleton.insets);
+
+	cout << "flat surfaces" << endl;
+	slicor.flatSurfaces(skeleton.insets,
+						skeleton.grid,
+						skeleton.flatSurfaces);
+
+	cout << "roofings" << endl;
+	slicor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+
+
+	cout << "infills" << endl;
+	slicor.infills( skeleton.flatSurfaces,
+					skeleton.grid,
+					skeleton.roofings,
+					skeleton.floorings,
+					skeleton.infills);
+
+
+	cout << "slice data" << endl;
+	std::vector<SliceData> slices;
+
+	Gcodor gcodor;
+	gcodor.init(gcoderCfg);
+
+	size_t sliceCount = skeleton.outlines.size();
+
+	slices.resize(sliceCount);
+	bool direction = false;
+	for(size_t i=0; i < sliceCount; i++)
+	{
+		direction = !direction;
+		SliceData& slice = slices[i];
+
+		Scalar z = skeleton.layerMeasure.sliceIndexToHeight(i);
+		slice.updatePosition(z, i);
+		slice.extruderSlices.resize(1);
+
+		ExtruderSlice &extruderSlice = slice.extruderSlices[0];
+
+		const Insets &insets = skeleton.insets[i];
+		const SegmentTable &outlineSegments = skeleton.outlines[i];
+
+		gcodor.outlines(outlineSegments, extruderSlice.boundary);
+		gcodor.insets(insets, extruderSlice.insetLoopsList);
+
+		const GridRanges &infillRanges = skeleton.infills[i];
+
+		Polygons &infills = extruderSlice.infills;
+		gcodor.infills(infillRanges, skeleton.grid, direction, infills);
+	}
+
+	cout << "gcode" << endl;
+	gcodor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
+	cout << "done" << endl;
+}
+
+
+void RoofingTestCase::test3dKnotPlatform()
+{
+	cout << endl;
+	string modelFile = "inputs/3D_Knot.stl";
+	cout << "model "  << modelFile << endl;
+
+	Slicer slicerCfg;
+	slicerCfg.firstLayerZ = 0.1;
+	slicerCfg.layerH = 0.3;
+	slicerCfg.layerW = 0.4;
+	slicerCfg.nbOfShells = 3;
+	slicerCfg.insetDistanceMultiplier = 0.95;
+
+	Slicor slicor;
+	slicor.init(slicerCfg, 0.95, 3, 3, 2);
+
+	vector<SegmentTable> outlines;
+	Grid grid;
+	LayerMeasure layerMeasure(0,0);
+	slicor.outlines(modelFile.c_str(), layerMeasure,
+			grid,
+			outlines);
+
+	size_t sliceId = 18; // 20;
+
+	const SegmentTable &sliceOutlines = outlines[sliceId];
+	const SegmentTable &sliceAboveOutlines = outlines[sliceId+1];
+
+	Insets insets;
+	slicor.insetsForSlice(sliceOutlines, insets);
+	Insets insetsAbove;
+	slicor.insetsForSlice(sliceAboveOutlines, insetsAbove);
+	GridRanges surface;
+	slicor.gridRangesForSlice(insets, grid, surface);
+	GridRanges surfaceAbove;
+	slicor.gridRangesForSlice(insetsAbove, grid, surfaceAbove);
+
+	GridRanges roofing;
+	slicor.roofForSlice(surface, surfaceAbove, grid, roofing);
+
+	// problems start at 23
+	size_t lineNb = 27;
+
+	vector<ScalarRange> srcLine= surface.xRays[lineNb];
+	vector<ScalarRange> diffLine= surfaceAbove.xRays[lineNb];
+	vector<ScalarRange> roofLine = roofing.xRays[lineNb];
+
+	cout << "src = ";
+	dumpRanges(srcLine);
+
+	cout << "del = ";
+	dumpRanges(diffLine);
+	cout << "(" << diffLine.size() << " points )" << endl;
+
+	cout << "diff = ";
+	dumpRanges(roofLine);
+
+	// todo: remove sliceId from call
+	// slicor.gridRangesForSlice(sliceOutlines, skeleton.grid );
+
+	string filename = outputDir + "knot_grid.scad";
+	ScadDebugFile fscad;
+	cout << "writing " << filename << endl;
+	fscad.open(filename.c_str());
+	addLinea(fscad);
+	fscad.writeHeader();
+
+	Scalar  z = 0;
+	Scalar dz = 0;
+
+	const SegmentTable &innerOutlines = *(insets.begin());
+
+	writeScanLines(fscad, "outlines_", "linea", -1, -0.1 , innerOutlines);
+
+	SegmentTable xRays;
+    segmentTableFromRangeTable(surface.xRays , grid.readYvalues(), xRays);
+
+	SegmentTable xRaysAbove;
+    segmentTableFromRangeTable(surfaceAbove.xRays , grid.readYvalues(), xRaysAbove);
+
+    SegmentTable xRaysRoof;
+    segmentTableFromRangeTable( roofing.xRays , grid.readYvalues(), xRaysRoof);
+
+
+	writeScanLines(fscad, "slice_x_", "linea",   z, dz, xRays);
+	writeScanLines(fscad, "slice_above_x_", "linea", 0.5, dz, xRaysAbove);
+	writeScanLines(fscad, "roof_x_", "linea", 0.5, dz, xRaysRoof);
+
+	std::ostream & out = fscad.getOut();
+
+	out << "slice_x_all();" << endl;
+	out << "slice_above_x_all();" << endl;
+	out << "outlines_all();" << endl;
+	out << "roof_x_all();" << endl;
+	fscad.close();
+
+
+//	slicor.insets();
+//	slicor.flatSurfaces()
+
+/*
+	Scalar firstLayerZ = 0.1;
+	Scalar layerH = 0.3;
+	string modelFile = "inputs/3D_Knot";
+
+	slicerCfg.nbOfShells,
+							  slicerCfg.layerW,
+							  i,
+							  slicerCfg.insetDistanceMultiplier,
+							  scadFile,
+							  writeDebugScadFiles,
+							  insetsForSlice);
+
+				polygonsFromLoopSegmentTables(slicerCfg.nbOfShells
+	*/
+
+}
+
+/*
+
+doit(modelFile, size_t floorThick, size_t ceilingThick)
+{
+
+	mesh(ModelFile);
+
+	addFloorThick empty layers to flatSurfaces
+
+	FUTURE
+	From top down:
+		support grid.
+
+
+	for each layer in mesh:
+		outlines segments
+		order loops
+		insets
+		flatSurface
+
+	add ceilingThick empty layers FlatSurfaces
+
+
+
+	for layer:
+		roofing  flat surface - loyer above's flat
+		flooring
+
+	for each layer:
+		infill = sum(next roofings, previous flooring, flatSurfaces)
+
+
+////////////////
+
+	addFloorThick empty layers to flatSurfaces
+
+	Priming:
+	for # of ceilThick (+1):
+		outlines
+		insets
+		flatSurface
+	for # of ceilThick (+1):
+		roofing
+		flooring
+
+
+	for slice 0:
+		infill (flat + sum floors + roofs)
+
+	for each slice:
+		outlines (*) done by support
+		insets
+		flatsurface
+		roofing
+		flooring
+
+
+
+/////////////////////
+
+	 ?? start with ceilThick empty slices
+
+	for slice len-1 down to 0:
+		unordered outlines
+		support region:
+			flat slice - flat slice below
+
+	box of 2 slices:
+		enter box, outline, surface
+		if box is full, support =
+}
+
+ */

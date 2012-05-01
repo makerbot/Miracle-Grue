@@ -204,6 +204,8 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 					bool writeDebugScadFiles,
 					SliceData &slice)
 {
+    size_t  skipCount = 1;
+
 	Scalar z = slice.getZHeight();
 	std::vector<LineSegment2> segments;
     segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
@@ -218,7 +220,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 
 	// get the "real" 2D paths for outline
 	// lets order the segment into loops.
-	SegmentVector outlinesSegments;
+	SegmentTable outlinesSegments;
 	loopsAndHoleOgy(segments, tol, outlinesSegments);
 	unsigned int outlineSegmentCount = outlinesSegments.size();
 	createPolysFromloopSegments(outlinesSegments, slice.extruderSlices[extruderId].boundary);
@@ -231,7 +233,7 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	// deep copy the the infill boundaries
 	// because we are going to rotate them
 	// We pick the innermost succesful inset for each loop
-	SegmentVector innerOutlinesSegments;
+	SegmentTable innerOutlinesSegments;
 
 	if(nbOfShells == 0)
 	{
@@ -239,34 +241,36 @@ bool Slicy::slice(  const TriangleIndices & trianglesForSlice,
 	}
 	else
 	{
-		std::vector<SegmentVector> insetsForLoops;
+		Insets insetsForSlice;
 		// create shells inside the outlines (and around holes)
 		inshelligence(outlinesSegments,
 					  nbOfShells,
 					  layerW,
-					  sliceId,
+					  // sliceId,
 					  insetDistanceFactor,
 					  scadFile,
 					  writeDebugScadFiles,
-					  insetsPolys,
-					  innerOutlinesSegments);
+					  insetsForSlice);
+					  // insetsPolys,
+					  // innerOutlinesSegments);
+		polygonsFromLoopSegmentTables(nbOfShells, insetsForSlice, insetsPolys);
+		innerOutlinesSegments =  insetsForSlice.back();
 	}
 
-	translateLoops(innerOutlinesSegments, toRotationCenter);
-	// rotate the outlines before generating the tubes...
-	rotateLoops(innerOutlinesSegments, sliceAngle);
 
-	Polygons& infills = slice.extruderSlices[extruderId].infills;
-	infillPathology(innerOutlinesSegments,
+
+    Polygons& infills = slice.extruderSlices[extruderId].infills;
+
+    bool infillDirection = sliceId % 2 == 0;
+
+    infillosophy(innerOutlinesSegments,
 					tubularLimits,
 					z,
-					tubeSpacing,
+                    layerW,
+                    skipCount,
+                    infillDirection,
 					infillShrinking,
 					infills);
-
-	// rotate and translate the TUBES so they fit with the ORIGINAL outlines
-	rotatePolygons(infills, -sliceAngle);
-	translatePolygons(infills, backToOrigin);
 
 	// write the scad file
 	// only one thread at a time in here

@@ -13,22 +13,25 @@
 #ifndef INFILL_H_
 #define INFILL_H_
 
-#include "mgl.h"
-#include "limits.h"
-#include "segment.h"
+
+
+#include "grid.h"
 
 namespace mgl
 {
 //
-// Pathology: the operation that generate paths from polygons
+// infillosophy: the operation that generate infill patterns from polygons
 //
-void infillPathology(const  libthing::SegmentVector &outlineSegments,
+void infillosophy(const  libthing::SegmentTable &outlineSegments,
 				const Limits& limits,
 				double z,
-				double tubeSpacing ,
+                double layerW,
+                size_t skipCount,
+                bool xDirection,  // y when false
 				Scalar infillShrinking,
 				Polygons &tubes);
 
 
 }
 #endif
+
