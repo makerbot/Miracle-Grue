@@ -46,8 +46,9 @@ double doubleFromCharEqualsStr(const std::string& str)
 class ConfigSetter {
 	typedef enum {NONE, INT, STR, DBL, BOOL} configtype;
 public:
-	ConfigSetter(Configuration &c, const string &s, const string &n):
-		config(c), section(s), name(n), set(NONE) {};
+	ConfigSetter(Configuration &c, const char *s, const char *n):
+		config(c), section(s), name(n), set(NONE) {
+	};
 	void set_s(const string val) {
 		sval = val;
 		set = STR;
@@ -67,33 +68,27 @@ public:
 		if (set == NONE)
 			return;
 
-		cout << section + "." + name + " = ";
-
 		if (set == INT) {
-			config[section.c_str()][name.c_str()] = ival;
-			cout << ival << endl;
+			config[section][name] = ival;
 		}
 		else if (set == DBL) {
-			config[section.c_str()][name.c_str()] = dval;
-			cout << dval << endl;
+			config[section][name] = dval;
 		}
 		else if (set == STR) {
-			config[section.c_str()][name.c_str()] = sval;
-			cout << sval << endl;
+			config[section][name] = sval;
 		}
 		else if (set == BOOL) {
-			config[section.c_str()][name.c_str()] = true;
-			cout << "true"<< endl;
+			config[section][name] = true;
 		}
 	};
 private:
 	Configuration &config;
-	const string &section;
-	const string &name;
 	configtype set;
 	string sval;
 	double dval;
 	int ival;
+	const char *section;
+	const char *name;
 };
 
 void usage() {
@@ -136,45 +131,42 @@ void parseArgs(Configuration &config,
 
 	//first get the config parameter and parse the file so that other params can override the
 	//config
-	clpp::command_line_parameters_parser parser;
-
-	parser.add_parameter("-h", "--help", &exitUsage);
-
-	parser.add_parameter("-c", "--config", &config, &Configuration::readFromFile)
-	    .default_value("miracle.config");
-
-	ConfigSetter f(config, "slicer", "firstLayerZ");
-	parser.add_parameter("-f", "--firstLayerZ", &f, &ConfigSetter::set_d);
-
-	ConfigSetter l(config, "slicer", "layerH");
-	parser.add_parameter("-l", "--layerH", &l, &ConfigSetter::set_d);
-
-	ConfigSetter w(config, "slicer", "layerW");
-	parser.add_parameter("-w", "--layerW", &w, &ConfigSetter::set_d);
-
-	ConfigSetter t(config, "slicer", "tubeSpacing");
-	parser.add_parameter("-t", "--tubeSpacing", &t, &ConfigSetter::set_d);
-
-	ConfigSetter a(config, "slicer", "angle");
-	parser.add_parameter("-a", "--angle", &a, &ConfigSetter::set_d);
-
-	ConfigSetter s(config, "slicer", "nbOfShells");
-	parser.add_parameter("-s", "--nbOfShells", &s, &ConfigSetter::set_d);
-
-	ConfigSetter d(config, "slicer", "writeDebugScadFiles");
-	parser.add_parameter("-d", "--writeDebug", &d, &ConfigSetter::set_b);
-
-	ConfigSetter n(config, "slicer", "firstSliceIdx");
-	parser.add_parameter("-n", "--firstSliceIdx", &n, &ConfigSetter::set_i);
-
-	firstSliceIdx = config["slicer"]["firstSliceIdx"].asInt();
-
-	ConfigSetter m(config, "slicer", "lastSliceIdx");
-	parser.add_parameter("-m", "--lastSliceIdx", &m, &ConfigSetter::set_i);
-
-	lastSliceIdx = config["slicer"]["lastSliceIdx"].asInt();
-
 	try {
+		clpp::command_line_parameters_parser parser;
+
+		parser.add_parameter("-h", "--help", &exitUsage);
+
+		parser.add_parameter("-c", "--config", &config, &Configuration::readFromFile)
+			.default_value("miracle.config");
+
+		ConfigSetter f(config, "slicer", "firstLayerZ");
+		parser.add_parameter("-f", "--firstLayerZ", &f, &ConfigSetter::set_d);
+
+		ConfigSetter l(config, "slicer", "layerH");
+		parser.add_parameter("-l", "--layerH", &l, &ConfigSetter::set_d);
+
+		ConfigSetter w(config, "slicer", "layerW");
+		parser.add_parameter("-w", "--layerW", &w, &ConfigSetter::set_d);
+
+		ConfigSetter t(config, "slicer", "tubeSpacing");
+		parser.add_parameter("-t", "--tubeSpacing", &t, &ConfigSetter::set_d);
+
+		ConfigSetter a(config, "slicer", "angle");
+		parser.add_parameter("-a", "--angle", &a, &ConfigSetter::set_d);
+
+		ConfigSetter s(config, "slicer", "nbOfShells");
+		parser.add_parameter("-s", "--nbOfShells", &s, &ConfigSetter::set_d);
+
+		ConfigSetter d(config, "slicer", "writeDebugScadFiles");
+		parser.add_parameter("-d", "--writeDebug", &d, &ConfigSetter::set_b);
+
+		ConfigSetter n(config, "slicer", "firstSliceIdx");
+		parser.add_parameter("-n", "--firstSliceIdx", &n, &ConfigSetter::set_i);
+
+		ConfigSetter m(config, "slicer", "lastSliceIdx");
+		parser.add_parameter("-m", "--lastSliceIdx", &m, &ConfigSetter::set_i)
+			.default_value(-1);
+
 		parser.parse(argc - 1, argv);
 	}
 	catch (std::exception &exp) {
@@ -185,6 +177,9 @@ void parseArgs(Configuration &config,
 		usage();
 		throw exp;
 	}
+
+	firstSliceIdx = config["slicer"]["firstSliceIdx"].asInt();
+	lastSliceIdx = config["slicer"]["lastSliceIdx"].asInt();
 
 	//handle the unnamed parameter separately
 	modelFile = argv[argc  - 1];
@@ -237,6 +232,8 @@ int main(int argc, char *argv[], char *envp[])
 		int firstSliceIdx, lastSliceIdx;
 		parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
 		// cout << config.asJson() << endl;
+
+		cout << "Tube spacing: " << config["slicer"]["tubeSpacing"] << endl;
 
 		MyComputer computer;
 		cout << endl;
