@@ -56,7 +56,7 @@ void testModels(vector<string>& models, const char* configFile)
 		GCoder gcoder;
 		loadGCoderData(config, gcoder);
 
-		Slicer slicer;
+		SlicerConfig slicer;
 		loadSlicerData(config, slicer);
 
 		std::vector< SliceData >  slices;

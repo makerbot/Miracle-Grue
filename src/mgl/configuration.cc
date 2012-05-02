@@ -194,7 +194,7 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 	gcoder.gcoding.dualtrick   = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
 }
 
-void mgl::loadSlicerData( const Configuration &config, Slicer &slicer)
+void mgl::loadSlicerData( const Configuration &config, SlicerConfig &slicer)
 {
 	slicer.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
 	slicer.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");

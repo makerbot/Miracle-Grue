@@ -66,13 +66,6 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 //	return intersectRange(a.min, a.max, b.min, b.max, inter.min, inter.max);
 //}
 
-std::ostream& operator << (std::ostream &os,const ScalarRange &pt);
-
-std::ostream& operator << (std::ostream &os,const ScalarRange &p)
-{
-	cout << "[" << p.min << ", " << p.max << "]";
-	return os;
-}
 
 void dumpRanges(const vector<ScalarRange> &ranges)
 {
@@ -902,7 +895,7 @@ void RoofingTestCase::testRangeUnion()
 	second.push_back(ScalarRange(32, 39));
 
 	vector<ScalarRange> result;
-	cout << "scalarRangeDifference" << endl;
+
 	rangeUnion(first, second, result);
 
 	for(unsigned int i=0; i < result.size(); i++)
@@ -1097,7 +1090,7 @@ public:
 class Slicor
 {
 public:
-	Slicer slicerCfg;
+	SlicerConfig slicerCfg;
 
 	size_t roofCount;
 	size_t floorCount;
@@ -1105,7 +1098,7 @@ public:
 	size_t skipCount;
 public:
 
-	void init(	const Slicer &slicerCfg,
+	void init(	const SlicerConfig &slicerCfg,
 				Scalar gridSpacingMultiplier,
 				size_t roofCount,
 				size_t floorCount,
@@ -1240,17 +1233,21 @@ public:
         infills.resize(sliceCount);
         for(size_t i=0; i< sliceCount; i++)
         {
+        	cout  << "INFILL " << i << "/" << sliceCount << endl;
         	const GridRanges &surface = flatSurfaces[i];
         	const GridRanges &roofing = roofings[i];
 
+        	/*
         	GridRanges sparseInfill;
-        	// cout << "subsample " << skipCount << endl;
+        	cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
         	grid.subSample(surface, skipCount, sparseInfill);
 
-        	GridRanges &infill = infills[i];
-        	// cout << "union " << i << endl;
+
+        	cout << " union " << i << endl;
 
         	grid.gridRangeUnion(sparseInfill, roofing, infill);
+        	*/
+        	GridRanges &infill = infills[i];
         	infill = roofing;
         }
     }
@@ -1325,7 +1322,7 @@ void RoofingTestCase::testSkeleton()
    	config.readFromFile(configFileName.c_str());
 
 	GCoder gcoderCfg;
-	Slicer slicerCfg;
+	SlicerConfig slicerCfg;
 
 	loadGCoderData(config, gcoderCfg);
 	loadSlicerData(config, slicerCfg);
@@ -1412,7 +1409,7 @@ void RoofingTestCase::test3dKnotPlatform()
 	string modelFile = "inputs/3D_Knot.stl";
 	cout << "model "  << modelFile << endl;
 
-	Slicer slicerCfg;
+	SlicerConfig slicerCfg;
 	slicerCfg.firstLayerZ = 0.1;
 	slicerCfg.layerH = 0.3;
 	slicerCfg.layerW = 0.4;
@@ -1501,7 +1498,6 @@ void RoofingTestCase::test3dKnotPlatform()
 	out << "outlines_all();" << endl;
 	out << "roof_x_all();" << endl;
 	fscad.close();
-
 
 //	slicor.insets();
 //	slicor.flatSurfaces()

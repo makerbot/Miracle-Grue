@@ -21,7 +21,7 @@ namespace mgl
 
 
 void miracleGrue(GCoder &gcoder,
-                      const Slicer &slicer,
+                      const SlicerConfig &slicer,
                       const char *modelFile,
                       const char *scadFile,
                       const char *gcodeFile,
@@ -33,7 +33,7 @@ void miracleGrue(GCoder &gcoder,
 
 void slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
-		const Slicer &slicer,
+		const SlicerConfig &slicer,
 		Meshy& mesh,
 		const char *scadFile,
 		int firstSliceIdx  = -1,

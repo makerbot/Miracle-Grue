@@ -92,7 +92,7 @@ public:
 };
 
 void loadGCoderData(const Configuration& conf, GCoder &gcoder);
-void loadSlicerData( const Configuration &config, Slicer &slicer);
+void loadSlicerData( const Configuration &config, SlicerConfig &slicer);
 
 }
 #endif /* CONFIGURATION_H_ */

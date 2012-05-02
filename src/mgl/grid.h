@@ -57,6 +57,8 @@ struct ScalarRange
 	}
 };
 
+std::ostream& operator << (std::ostream &os,const ScalarRange &pt);
+
 typedef std::vector< std::vector<ScalarRange> > ScalarRangeTable;
 
 

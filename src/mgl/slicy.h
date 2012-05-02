@@ -32,9 +32,9 @@ namespace mgl // Miracle-Grue's geometry library
 {
 
 // Slicer configuration data
-struct Slicer
+struct SlicerConfig
 {
-	Slicer()
+	SlicerConfig()
 	:layerH(0.27), firstLayerZ(0.1),
 	 tubeSpacing(1), angle(1.570796326794897),
 	 nbOfShells(2), layerW(0.4),

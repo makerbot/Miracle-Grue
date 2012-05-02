@@ -19,6 +19,15 @@ using namespace std;
 using namespace libthing;
 
 
+
+
+std::ostream& mgl::operator << (std::ostream &os,const ScalarRange &p)
+{
+	cout << "[" << p.min << ", " << p.max << "]";
+	return os;
+}
+
+
 // local types, methods and functions
 void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector<ScalarRange> &ranges)
 {
@@ -387,6 +396,7 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 		{
 			// cout << " -PUSH" << range << endl;
 			result.push_back(range);
+			cout << " = " << range;
 			return it;
 		}
 		ScalarRange newRange;
@@ -400,11 +410,14 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 		{
 			// cout << " -PUSH" << range << endl;
 			result.push_back(itRange);
+			cout << " ++ " << itRange;
+
 		}
 		it++;
 	}
 	// cout << " -done!" <<endl;
 	result.push_back(range);
+	cout << " +++ " << range;
 }
 
 
@@ -415,11 +428,12 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 	vector< ScalarRange >::const_iterator itOne = firstLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = secondLine.begin();
 
+	cout << "rangeUnion: ";
+
 	while(itOne != firstLine.end())
 	{
 		const ScalarRange &range = *itOne;
-		// cout << "range=" << range << endl;
-
+		cout << "first_range=" << range << endl;
 		// check that the last range has not advanced beyond the firstLine
 		if(unionLine.size() >0)
 		{
@@ -437,6 +451,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		if(itTwo == secondLine.end())
 		{
 			unionLine.push_back(range);
+			cout << " + " << range;
 		}
 		else
 		{
@@ -444,6 +459,8 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		}
 		itOne++;
 	}
+
+	cout << " rangeUnionDone" << endl;
 }
 
 

@@ -17,7 +17,7 @@ using namespace Json;
 //// @param input
 //// @param slices list of output slice (output )
 void mgl::miracleGrue(GCoder &gcoder,
-                      const Slicer &slicer,
+                      const SlicerConfig &slicer,
                       const char *modelFile,
                       const char *scadFile,
                       const char *gcodeFile,
@@ -64,7 +64,7 @@ void mgl::miracleGrue(GCoder &gcoder,
 /// @param scadFile - debugging SCAD filename for debugging to scad file
 void mgl::slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
-		const Slicer &slicer,
+		const SlicerConfig &slicer,
 		Meshy& mesh,
 		const char *scadFile,
 		int firstSliceIdx,

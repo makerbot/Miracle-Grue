@@ -255,7 +255,7 @@ int main(int argc, char *argv[], char *envp[])
 		GCoder gcoder;
 		loadGCoderData(config, gcoder);
 
-		Slicer slicer;
+		SlicerConfig slicer;
 		loadSlicerData(config, slicer);
 		std::vector<mgl::SliceData> slices;
 		std::vector<Scalar> zIndicies;
