@@ -16,9 +16,11 @@ include($$GUI_SRC/toolpathviz.pro.inc)
 MGL_SRC = src/mgl
 include($$MGL_SRC/mgl.pro.inc)
 
+LIBTHING_SRC = submodule/libthing/cpp/src
+include($$LIBTHING_SRC/libthing.pro.inc)
+
 JSON_CPP_SRC = submodule/json-cpp
 include($$JSON_CPP_SRC/json-cpp.pro.inc)
-
 
 
 
