@@ -26,12 +26,12 @@ private:
 //		CPPUNIT_TEST(testSimpleUnion);
 //		CPPUNIT_TEST(testSubRangeUnion);
 
-		CPPUNIT_TEST(testRangeUnion);
+//		CPPUNIT_TEST(testRangeUnion);
 
 //		CPPUNIT_TEST(testGridStruct);
 //      CPPUNIT_TEST(testFlatsurface);
 //      CPPUNIT_TEST(testSkeleton);
-//      CPPUNIT_TEST(test3dKnotPlatform);
+      CPPUNIT_TEST(test3dKnotPlatform);
 
     CPPUNIT_TEST_SUITE_END();
 

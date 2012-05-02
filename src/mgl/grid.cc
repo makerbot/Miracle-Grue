@@ -363,17 +363,17 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 //
 bool scalarRangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange)
 {
-	// cout << " union( " << range0 << ", " << range1 << ")=";
+	cout << " union( " << range0 << ", " << range1 << ")=";
 	if( (range1.min > range0.max) || (range0.min > range1.max) )
 	{
-		// cout << "0" << endl;
+		cout << "0" << endl;
 		return false;
 	}
 
 	resultRange.min = range0.min < range1.min?range0.min:range1.min;
 	resultRange.max = range0.max > range1.max?range0.max:range1.max;
 
-	// cout << resultRange<<endl;
+	cout << resultRange<<endl;
 	return true;
 }
 
@@ -388,7 +388,7 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 {
 
 	ScalarRange range(initialRange);
-	// cout << endl <<"-- subRangeUnion --" << endl;
+	cout << endl <<"-- [subRangeUnion] --" << endl;
 	while(it != itEnd)
 	{
 		const ScalarRange &itRange = *it;
@@ -396,28 +396,33 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 		{
 			// cout << " -PUSH" << range << endl;
 			result.push_back(range);
-			cout << " = " << range;
+			cout << " -PUSHx " << range << endl;
 			return it;
 		}
+
 		ScalarRange newRange;
 		bool u = scalarRangeUnion(range, itRange, newRange);
+		cout << u << endl;
 		if(u)
 		{
-			// cout << " -RANGE=" << range << endl;
 			range = newRange;
+			cout << " -RANGE_Extended =" << range << endl;
 		}
 		else
 		{
-			// cout << " -PUSH" << range << endl;
+			cout << " -PUSH" << itRange << endl;
 			result.push_back(itRange);
-			cout << " ++ " << itRange;
+			//cout << " ++ " << itRange;
 
 		}
 		it++;
 	}
 	// cout << " -done!" <<endl;
 	result.push_back(range);
-	cout << " +++ " << range;
+	cout << " +++ " << range << endl;
+
+	cout << "-- subRangeUnion end --" << endl;
+	return it;
 }
 
 
@@ -441,7 +446,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 			// cout << "LAST RANGE UPDATE COMPARE: last=" << lastUnion << " range=" << range;
 			if(range.min <= lastUnion.max && lastUnion.max >= range.max)
 			{
-				// cout << " !UPDATE ONLY" << endl;
+				cout << " !UPDATE ONLY" << endl;
 				lastUnion.max = range.max;
 				itOne++;
 				continue;
@@ -451,7 +456,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		if(itTwo == secondLine.end())
 		{
 			unionLine.push_back(range);
-			cout << " + " << range;
+			cout << " + " << range << endl;
 		}
 		else
 		{

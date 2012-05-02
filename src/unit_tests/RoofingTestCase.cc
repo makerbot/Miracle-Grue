@@ -1,15 +1,16 @@
 #include <cppunit/config/SourcePrefix.h>
+
+#include "mgl/skeletor.h"
+#include "mgl/slicor.h"
+
 #include "UnitTestUtils.h"
 
 #include "RoofingTestCase.h"
 
 #include "UnitTestUtils.h"
 #include "mgl/miracle.h"
-#include "mgl/grid.h"
 
-//
-#include "mgl/configuration.h"
-#include "mgl/insets.h"
+
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RoofingTestCase );
@@ -872,11 +873,13 @@ void RoofingTestCase::testSubRangeUnion()
 void RoofingTestCase::testRangeUnion()
 {
 	cout<< endl;
+
 	//	1      ******      ********    ******   **   **
 	//  2  **     *****   ****  *    ***   *******
 	//  3  ++  ++++++++   +++++++++  +++++++++++++   ++
 	//     012345678901234567890123456789012345678901234
 	//               1         2         3         4
+
 
 	vector<ScalarRange> first;
 	vector<ScalarRange> second;
@@ -1007,25 +1010,6 @@ void SurfaceUnion(const FlatSurface& surface, const FlatSurface &)
 }
 */
 
-struct ModelSkeleton
-{
-	Grid grid;
-	LayerMeasure layerMeasure;
-
-	std::vector<SegmentTable>   outlines;
-
-    std::vector<Insets> 		insets;
-    std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
-
-    std::vector<GridRanges>     roofings;
-    std::vector<GridRanges>     floorings;
-
-    std::vector<GridRanges>     infills;
-
-    ModelSkeleton()
-    :layerMeasure(0,0)
-    {}
-};
 
 void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
 {
@@ -1039,271 +1023,7 @@ void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
     cout << "// color([1,0,0.4,1])loop_segments(segments,0.050000);" << endl;
 }
 
-class Gcodor
-{
-public:
-	GCoder gcoder;
 
-	void init(const GCoder &gcoderCfg)
-	{
-		this->gcoder = gcoderCfg;
-	}
-
-	void outlines(const SegmentTable& outlinesSegments, Polygons &boundary)
-	{
-		createPolysFromloopSegments(outlinesSegments, boundary);
-	}
-
-	void insets(const Insets& insetsForSlice, std::vector<Polygons> &insetPolys)
-	{
-		size_t nbOfShells = insetsForSlice.size();
-		polygonsFromLoopSegmentTables(nbOfShells, insetsForSlice, insetPolys);
-	}
-
-	void infills(const GridRanges &infillRanges,
-					const Grid &grid,
-					bool direction,
-					Polygons &infills)
-	{
-		grid.polygonsFromRanges(infillRanges, direction, infills);
-	}
-
-	void writeGcode(const char *gcodeFile, const char* modelSource, const std::vector<SliceData> &slices)
-	{
-		std::ofstream gout(gcodeFile);
-		gcoder.writeStartOfFile(gout, modelSource);
-
-		size_t sliceCount = slices.size();
-
-		// progress.reset(sliceCount, "Gcoding");
-		for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
-		{
-			// progress.tick();
-			const SliceData &slice = slices[sliceId];
-			gcoder.writeSlice(gout, slice);
-		}
-		gout.close();
-	}
-
-};
-
-class Slicor
-{
-public:
-	SlicerConfig slicerCfg;
-
-	size_t roofCount;
-	size_t floorCount;
-	Scalar gridSpacingMultiplier;
-	size_t skipCount;
-public:
-
-	void init(	const SlicerConfig &slicerCfg,
-				Scalar gridSpacingMultiplier,
-				size_t roofCount,
-				size_t floorCount,
-				size_t  skipCount)
-	{
-
-		this->slicerCfg = slicerCfg;
-		this->roofCount = roofCount;
-		this->floorCount = floorCount;
-		this->gridSpacingMultiplier = gridSpacingMultiplier;
-		this->skipCount = skipCount;
-	}
-
-
-	void outlines( const char* modelFile, LayerMeasure &layerMeasure, Grid &grid, std::vector<SegmentTable> &outlines)
-	{
-		Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
-		mesh.readStlFile(modelFile);
-
-		// grid.init(mesh.limits, slicerCfg.layerW);
-		unsigned int sliceCount = mesh.readSliceTable().size();
-		outlines.resize(sliceCount);
-
-		for(size_t sliceId =0; sliceId < sliceCount; sliceId++)
-		{
-			//cout << sliceId << "/" << sliceCount << " outlines" << endl;
-			SegmentTable &segments = outlines[sliceId];
-			outlinesForSlice(mesh, sliceId, segments);
-		}
-
-		Scalar gridSpacing = slicerCfg.layerW * gridSpacingMultiplier;
-		Limits limits = mesh.readLimits();
-
-		grid.init(limits, gridSpacing);
-
-		layerMeasure = mesh.readLayerMeasure();
-	}
-
-
-
-    void insetsForSlice(const SegmentTable & sliceOutlines,
-    					Insets & sliceInsets,
-    					const char*scadFile=NULL)
-    {
-
-
-        bool writeDebugScadFiles = false;
-        inshelligence(sliceOutlines,
-        				slicerCfg.nbOfShells,
-        				slicerCfg.layerW,
-        				slicerCfg.insetDistanceMultiplier,
-        				scadFile,
-        				writeDebugScadFiles,
-        				sliceInsets);
-    }
-
-    void insets(const std::vector<SegmentTable> & outlinesSegments, std::vector<Insets> & insets)
-    {
-
-        unsigned int sliceCount = outlinesSegments.size();
-
-        insets.resize(sliceCount);
-        // slice id must be adjusted for
-        for(size_t i = 0;i < sliceCount;i++)
-        {
-        	const SegmentTable & sliceOutlines = outlinesSegments[i];
-        	Insets & sliceInsets = insets[i];
-
-            insetsForSlice(sliceOutlines, sliceInsets);
-            				//scadFile,
-            				//writeDebugScadFiles,
-            				//insetsForSlice);
-//            const char *scadFile = NULL;
-//            bool writeDebugScadFiles = false;
-//            inshelligence(sliceOutlines,
-//            				slicerCfg.nbOfShells,
-//            				slicerCfg.layerW,
-//            				slicerCfg.insetDistanceMultiplier,
-//            				scadFile,
-//            				writeDebugScadFiles,
-//            				insetsForSlice);
-		}
-	}
-
-
-    void flatSurfaces(	const std::vector<Insets> & insets,
-    					const Grid & grid,
-    					std::vector<GridRanges> & gridRanges)
-    {
-        assert(gridRanges.size() == 0);
-        unsigned int sliceCount = insets.size();
-        gridRanges.resize(sliceCount);
-        for(size_t i = 0;i < sliceCount;i++)
-        {
-        	const Insets & allInsetsForSlice = insets[i];
-        	GridRanges & surface = gridRanges[i];
-            gridRangesForSlice(allInsetsForSlice, grid, surface);
-		}
-	}
-
-    void roofForSlice( const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing)
-    {
-        grid.gridRangeDifference(currentSurface, surfaceAbove, roofing);
-    }
-
-    void roofing(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & roofings)
-    {
-        assert(flatSurfaces.size() > 0);
-        assert(roofings.size() == 0);
-        unsigned int sliceCount = flatSurfaces.size();
-        roofings.resize(sliceCount);
-        for(size_t i = 0;i < sliceCount - 1;i++){
-            const GridRanges & currentSurface = flatSurfaces[i];
-            const GridRanges & surfaceAbove = flatSurfaces[i + 1];
-            GridRanges & roofing = roofings[i];
-            roofForSlice(currentSurface, surfaceAbove, grid, roofing);
-    	}
-    	roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
-    }
-
-    void infills(const std::vector<GridRanges> &flatSurfaces,
-    			 const Grid &grid,
-    			 const std::vector<GridRanges> &roofings,
-    			 const std::vector<GridRanges> &floorings,
-    			 std::vector<GridRanges> &infills)
-    {
-    	assert(infills.size() == 0);
-    	assert(flatSurfaces.size() > 0);
-    	assert(roofings.size() > 0);
-
-        unsigned int sliceCount = flatSurfaces.size();
-        infills.resize(sliceCount);
-        for(size_t i=0; i< sliceCount; i++)
-        {
-        	cout  << "INFILL " << i << "/" << sliceCount << endl;
-        	const GridRanges &surface = flatSurfaces[i];
-        	const GridRanges &roofing = roofings[i];
-
-        	/*
-        	GridRanges sparseInfill;
-        	cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
-        	grid.subSample(surface, skipCount, sparseInfill);
-
-
-        	cout << " union " << i << endl;
-
-        	grid.gridRangeUnion(sparseInfill, roofing, infill);
-        	*/
-        	GridRanges &infill = infills[i];
-        	infill = roofing;
-        }
-    }
-
-    void gridRangesForSlice(const Insets &allInsetsForSlice,
-    						const Grid &grid,
-    						GridRanges &surface)
-    {
-    	const SegmentTable & innerMostLoops = allInsetsForSlice.back();
-    	grid.createGridRanges(innerMostLoops, surface);
-    }
-
-
-
-private:
-//	void gridRangesForSlice(const std::vector<Insets> &insets,
-//							const Grid &grid,
-//							size_t sliceIndex,
-//							std::vector<GridRanges> &gridRanges)
-//    {
-//        const Insets & allInsetsForSlice = insets[sliceIndex];
-//        const SegmentTable & innerMostLoops = allInsetsForSlice.back();
-//        GridRanges & surface = gridRanges[sliceIndex];
-//        grid.createGridRanges(innerMostLoops, surface);
-//    }
-
-	void loopsFromLineSegments(const std::vector<LineSegment2>& unorderedSegments, Scalar tol, SegmentTable & segments)
-    {
-        // dumpSegments("unordered_", unorderedSegments);
-        // cout << segments << endl;
-        if(unorderedSegments.size() > 0){
-            //cout << " loopsAndHoleOgy " << endl;
-          	std::vector<LineSegment2> segs =  unorderedSegments;
-            loopsAndHoleOgy(segs, tol, segments);
-        }
-    }
-
-    void outlinesForSlice(const Meshy & mesh, size_t sliceId, SegmentTable & segments)
-    {
-        Scalar tol = 1e-6;
-        const LayerMeasure & layerMeasure = mesh.readLayerMeasure();
-        Scalar z = layerMeasure.sliceIndexToHeight(sliceId);
-        const std::vector<Triangle3> & allTriangles = mesh.readAllTriangles();
-        const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-        std::vector<LineSegment2> unorderedSegments;
-        segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
-        assert(segments.size() ==0);
-        // dumpSegments("unordered_", unorderedSegments);
-        // cout << segments << endl;
-        loopsFromLineSegments(unorderedSegments, tol, segments);
-		// cout << " done " << endl;
-	}
-
-
-
-};
 
 
 
@@ -1332,32 +1052,32 @@ void RoofingTestCase::testSkeleton()
 
 	cout << "read model " << modelFile << endl;
 
-	Slicor slicor;
-	slicor.init(slicerCfg, 0.95, 3, 3, 3);
+	Skeletor skeletor;
+	skeletor.init(slicerCfg, 0.95, 3, 3, 3);
 
 	ModelSkeleton skeleton;
 
 	cout << "outlines" << endl;
-	slicor.outlines(modelFile.c_str(),
+	skeletor.outlines(modelFile.c_str(),
 					skeleton.layerMeasure,
 					skeleton.grid,
 					skeleton.outlines);
 
 	cout << "insets" << endl;
-	slicor.insets(skeleton.outlines,
+	skeletor.insets(skeleton.outlines,
 				  skeleton.insets);
 
 	cout << "flat surfaces" << endl;
-	slicor.flatSurfaces(skeleton.insets,
+	skeletor.flatSurfaces(skeleton.insets,
 						skeleton.grid,
 						skeleton.flatSurfaces);
 
 	cout << "roofings" << endl;
-	slicor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+	skeletor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
 
 
 	cout << "infills" << endl;
-	slicor.infills( skeleton.flatSurfaces,
+	skeletor.infills( skeleton.flatSurfaces,
 					skeleton.grid,
 					skeleton.roofings,
 					skeleton.floorings,
@@ -1367,8 +1087,8 @@ void RoofingTestCase::testSkeleton()
 	cout << "slice data" << endl;
 	std::vector<SliceData> slices;
 
-	Gcodor gcodor;
-	gcodor.init(gcoderCfg);
+	Slicor slicor;
+	slicor.init(gcoderCfg);
 
 	size_t sliceCount = skeleton.outlines.size();
 
@@ -1388,17 +1108,17 @@ void RoofingTestCase::testSkeleton()
 		const Insets &insets = skeleton.insets[i];
 		const SegmentTable &outlineSegments = skeleton.outlines[i];
 
-		gcodor.outlines(outlineSegments, extruderSlice.boundary);
-		gcodor.insets(insets, extruderSlice.insetLoopsList);
+		slicor.outlines(outlineSegments, extruderSlice.boundary);
+		slicor.insets(insets, extruderSlice.insetLoopsList);
 
 		const GridRanges &infillRanges = skeleton.infills[i];
 
 		Polygons &infills = extruderSlice.infills;
-		gcodor.infills(infillRanges, skeleton.grid, direction, infills);
+		slicor.infills(infillRanges, skeleton.grid, direction, infills);
 	}
 
 	cout << "gcode" << endl;
-	gcodor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
+	slicor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
 	cout << "done" << endl;
 }
 
@@ -1416,13 +1136,13 @@ void RoofingTestCase::test3dKnotPlatform()
 	slicerCfg.nbOfShells = 3;
 	slicerCfg.insetDistanceMultiplier = 0.95;
 
-	Slicor slicor;
-	slicor.init(slicerCfg, 0.95, 3, 3, 2);
+	Skeletor skeletor;
+	skeletor.init(slicerCfg, 0.95, 3, 3, 2);
 
 	vector<SegmentTable> outlines;
 	Grid grid;
 	LayerMeasure layerMeasure(0,0);
-	slicor.outlines(modelFile.c_str(), layerMeasure,
+	skeletor.outlines(modelFile.c_str(), layerMeasure,
 			grid,
 			outlines);
 
@@ -1432,18 +1152,18 @@ void RoofingTestCase::test3dKnotPlatform()
 	const SegmentTable &sliceAboveOutlines = outlines[sliceId+1];
 
 	Insets insets;
-	slicor.insetsForSlice(sliceOutlines, insets);
+	skeletor.insetsForSlice(sliceOutlines, insets);
 	Insets insetsAbove;
-	slicor.insetsForSlice(sliceAboveOutlines, insetsAbove);
+	skeletor.insetsForSlice(sliceAboveOutlines, insetsAbove);
 	GridRanges surface;
-	slicor.gridRangesForSlice(insets, grid, surface);
+	skeletor.gridRangesForSlice(insets, grid, surface);
 	GridRanges surfaceAbove;
-	slicor.gridRangesForSlice(insetsAbove, grid, surfaceAbove);
+	skeletor.gridRangesForSlice(insetsAbove, grid, surfaceAbove);
 
 	GridRanges roofing;
-	slicor.roofForSlice(surface, surfaceAbove, grid, roofing);
+	skeletor.roofForSlice(surface, surfaceAbove, grid, roofing);
 
-	// problems start at 23
+	// problems start at 23?
 	size_t lineNb = 27;
 
 	vector<ScalarRange> srcLine= surface.xRays[lineNb];
