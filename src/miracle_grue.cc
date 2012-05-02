@@ -21,7 +21,7 @@
 #include "mgl/configuration.h"
 #include "mgl/miracle.h"
 
-#include "Vector2.h"
+#include "libthing/Vector2.h"
 #include <clpp/parser.hpp>
 
 

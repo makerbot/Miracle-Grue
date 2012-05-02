@@ -90,13 +90,15 @@ operating_system = operating_system.rstrip()
 
 print "Operating system: [" + operating_system + "]"
 
-LIBTHING_PATH = 'submodule/libthing/cpp/src/'
+LIBTHING_PATH = 'submodule/libthing/src/main/cpp/'
+LIBTHING_INCLUDE = LIBTHING_PATH + 'include'
+LIBTHING_SRC = LIBTHING_PATH + 'src/'
 
 default_libs = []
 default_includes = ['submodule/json-cpp/include',
 				 'submodule/EzCppLog', 
 				 'submodule/clp-parser',
-				 LIBTHING_PATH]
+				 LIBTHING_INCLUDE]
 
 if operating_system == "Linux":
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
@@ -156,24 +158,24 @@ if qt:
 	print "QT modules", qtModules
 	env.EnableQt4Modules(qtModules)
 
-libthing_cc = [ LIBTHING_PATH+'Scalar.cc',
-				LIBTHING_PATH+'Vector2.cc', 
-				LIBTHING_PATH+'Vector3.cc',
-				LIBTHING_PATH+'Triangle3.cc',
-				LIBTHING_PATH+"LineSegment2.cc",
-				LIBTHING_PATH+"Mesh.cc",
-				LIBTHING_PATH+'StlReader.cc',
-				LIBTHING_PATH+'StlWriter.cc']
+libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
+				LIBTHING_SRC+'Vector2.cc', 
+				LIBTHING_SRC+'Vector3.cc',
+				LIBTHING_SRC+'Triangle3.cc',
+				LIBTHING_SRC+"LineSegment2.cc",
+				LIBTHING_SRC+"Mesh.cc",
+				LIBTHING_SRC+'StlReader.cc',
+				LIBTHING_SRC+'StlWriter.cc']
 
 
 
 mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/configuration.cc', 
-			LIBTHING_PATH+ 'Vector2.cc',
-			LIBTHING_PATH+ 'Vector3.cc',
-			LIBTHING_PATH+ 'Triangle3.cc',
-			LIBTHING_PATH+ 'LineSegment2.cc',
-			LIBTHING_PATH+'Scalar.cc',
+			LIBTHING_SRC+ 'Vector2.cc',
+			LIBTHING_SRC+ 'Vector3.cc',
+			LIBTHING_SRC+ 'Triangle3.cc',
+			LIBTHING_SRC+ 'LineSegment2.cc',
+			LIBTHING_SRC+'Scalar.cc',
 			'src/mgl/gcoder.cc',
 			'src/mgl/shrinky.cc',
 			'src/mgl/slicy.cc',
@@ -197,7 +199,7 @@ json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
 
 JSON_CPP_BASE = 'submodule/json-cpp/include'
 
-env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog', LIBTHING_PATH, JSON_CPP_BASE] )  
+env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog', LIBTHING_INCLUDE, JSON_CPP_BASE] )  
 env.Library('./bin/lib/_json', json_cc, CPPPATH=[JSON_CPP_BASE,])
 
 unit_test   = ['src/unit_tests/UnitTestMain.cc',]

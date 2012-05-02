@@ -19,10 +19,10 @@
 #include <cassert>
 
 #include "Exception.h"
-#include "Vector2.h"
-#include "Vector3.h"
-#include "LineSegment2.h"
-#include "Triangle3.h"
+#include "libthing/Vector2.h"
+#include "libthing/Vector3.h"
+#include "libthing/LineSegment2.h"
+#include "libthing/Triangle3.h"
 
 
 // WIN32 compatibility stuff

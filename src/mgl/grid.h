@@ -15,7 +15,7 @@
 
 #include "mgl.h"
 #include "limits.h"
-#include "LineSegment2.h"
+#include "libthing/LineSegment2.h"
 #include "segment.h"
 
 namespace mgl
