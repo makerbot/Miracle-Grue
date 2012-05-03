@@ -109,6 +109,7 @@ void usage() {
 	cout << "  -n --firstSliceIdx : slice from a specific slice" << endl;
 	cout << "  -m --lastSliceIdx  : stop slicing at specific slice" << endl;
 	cout << "  -d --writeDebug    : debug mode (creates scad files for each inset error)" << endl;
+	cout << "  -o --outputFilename: write gcode to specific filename (defaults to <model>.gcode" << endl;
 	cout << endl;
 	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
 }
@@ -166,6 +167,10 @@ void parseArgs(Configuration &config,
 		ConfigSetter m(config, "slicer", "lastSliceIdx");
 		parser.add_parameter("-m", "--lastSliceIdx", &m, &ConfigSetter::set_i)
 			.default_value(-1);
+
+		ConfigSetter o(config, "gcoder", "outputFilename");
+		parser.add_parameter("-o", "--outputFilename",
+							 &o, &ConfigSetter::set_s);
 
 		parser.parse(argc - 1, argv);
 	}
@@ -245,9 +250,14 @@ int main(int argc, char *argv[], char *envp[])
 		scadFile += computer.fileSystem.getPathSeparatorCharacter();
 		scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
 
-		std::string gcodeFile = ".";
-		gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
-		gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
+		
+		std::string gcodeFile = config["gcoder"]["outputFilename"].asString();
+
+		if (gcodeFile.empty()) {
+			gcodeFile = ".";
+			gcodeFile += computer.fileSystem.getPathSeparatorCharacter();
+			gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
+		}
 
 		cout << endl << endl;
 		cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
