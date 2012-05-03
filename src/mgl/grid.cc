@@ -271,13 +271,13 @@ bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scala
 
 	if(a >= d)
 	{
-		cout << " = 0" << endl;
+		//cout << " = 0" << endl;
 		return false;
 	}
 
 	if (c >=b )
 	{
-		cout << " = 0" << endl;
+		//cout << " = 0" << endl;
 		return false;
 	}
 
@@ -363,17 +363,17 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 //
 bool scalarRangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange)
 {
-	cout << " union( " << range0 << ", " << range1 << ")=";
+	//cout << " union( " << range0 << ", " << range1 << ")=";
 	if( (range1.min > range0.max) || (range0.min > range1.max) )
 	{
-		cout << "0" << endl;
+		// cout << "0" << endl;
 		return false;
 	}
 
 	resultRange.min = range0.min < range1.min?range0.min:range1.min;
 	resultRange.max = range0.max > range1.max?range0.max:range1.max;
 
-	cout << resultRange<<endl;
+	// cout << resultRange<<endl;
 	return true;
 }
 
@@ -388,7 +388,7 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 {
 
 	ScalarRange range(initialRange);
-	cout << endl <<"-- [subRangeUnion] --" << endl;
+	//cout << endl <<"-- [subRangeUnion] --" << endl;
 	while(it != itEnd)
 	{
 		const ScalarRange &itRange = *it;
@@ -396,21 +396,21 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 		{
 			// cout << " -PUSH" << range << endl;
 			result.push_back(range);
-			cout << " -PUSHx " << range << endl;
+			//cout << " -PUSHx " << range << endl;
 			return it;
 		}
 
 		ScalarRange newRange;
 		bool u = scalarRangeUnion(range, itRange, newRange);
-		cout << u << endl;
+		// cout << "scalarRangeUnion=" << u << endl;
 		if(u)
 		{
 			range = newRange;
-			cout << " -RANGE_Extended =" << range << endl;
+			//cout << " -RANGE_Extended =" << range << endl;
 		}
 		else
 		{
-			cout << " -PUSH" << itRange << endl;
+			//cout << " -PUSH" << itRange << endl;
 			result.push_back(itRange);
 			//cout << " ++ " << itRange;
 
@@ -419,9 +419,9 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 	}
 	// cout << " -done!" <<endl;
 	result.push_back(range);
-	cout << " +++ " << range << endl;
+	//cout << " +++ " << range << endl;
 
-	cout << "-- subRangeUnion end --" << endl;
+	//cout << "-- subRangeUnion end --" << endl;
 	return it;
 }
 
@@ -433,12 +433,12 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 	vector< ScalarRange >::const_iterator itOne = firstLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = secondLine.begin();
 
-	cout << "rangeUnion: ";
+	//cout << "rangeUnion: ";
 
 	while(itOne != firstLine.end())
 	{
 		const ScalarRange &range = *itOne;
-		cout << "first_range=" << range << endl;
+		// cout << "first_range=" << range << endl;
 		// check that the last range has not advanced beyond the firstLine
 		if(unionLine.size() >0)
 		{
@@ -446,7 +446,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 			// cout << "LAST RANGE UPDATE COMPARE: last=" << lastUnion << " range=" << range;
 			if(range.min <= lastUnion.max && lastUnion.max >= range.max)
 			{
-				cout << " !UPDATE ONLY" << endl;
+				//cout << " !UPDATE ONLY" << endl;
 				lastUnion.max = range.max;
 				itOne++;
 				continue;
@@ -456,7 +456,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		if(itTwo == secondLine.end())
 		{
 			unionLine.push_back(range);
-			cout << " + " << range << endl;
+			//cout << " + " << range << endl;
 		}
 		else
 		{
@@ -465,7 +465,7 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		itOne++;
 	}
 
-	cout << " rangeUnionDone" << endl;
+	//cout << " rangeUnionDone" << endl;
 }
 
 
@@ -475,11 +475,11 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 							ScalarRange& srcRange,
 							ScalarRange &resultRange)
 {
-	// cout << srcRange << " - " << diffRange << " = ";
+	//cout << srcRange << " - " << diffRange << " = ";
 	// the diffRange is left of srcRange ... no result
 	if(diffRange.max <= srcRange.min)
 	{
-		// cout << "0 (before)" << endl;
+		//cout << "0 (before)" << endl;
 		return false;
 	}
 
@@ -490,12 +490,12 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 		if(diffRange.max >= srcRange.max )
 		{
 			srcRange.min = srcRange.max;
-			// cout << "0 (occlusion)" << endl;
+			//cout << "0 (occlusion)" << endl;
 			return false;
 		}
 		// else... adjust the srcRange and make it smaller
 		srcRange.min = diffRange.max;
-		// cout << "0 partial occlusion, leftover = " << srcRange << endl;
+		//cout << "0 partial occlusion, leftover = " << srcRange << endl;
 		return false;
 
 	}
@@ -543,20 +543,23 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
 						vector< ScalarRange > &result )
 {
-
-
 	ScalarRange range(initialRange);
+	// cout << "subRangeDifference from " << range << endl;
 	while(it != itEnd)
 	{
 		const ScalarRange &itRange = *it;
+		// cout << " itRange=" << itRange << endl;
 		if( (itRange.min >= range.max)  )
 		{
+			result.push_back(range);
+			//cout << "subRangeDifference return" << endl;
 			return it;
 		}
 
 		ScalarRange difference;
 		if (scalarRangeDifference(itRange, range, difference))
 		{
+			// cout << " PUSHx " <<  difference << endl;
 			result.push_back(difference);
 		}
 		if(range.min >= range.max) // the leftover range has no length
@@ -570,6 +573,7 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 	// add the left over (if any)
 	if(range.max > range.min)
 	{
+		// cout << "add_left_over =" << range << endl;
 		result.push_back(range);
 	}
 	return it;
@@ -584,11 +588,19 @@ void rangeDifference(const vector< ScalarRange > &srcLine,
 	while(itOne != srcLine.end())
 	{
 		const ScalarRange &range = *itOne;
-		// cout << "range=" << range << endl;
-		itTwo = subRangeDifference(range, itTwo, delLine.end(), diffLine);
+		// cout << "src_range =" << range << endl;
+
 		if(itTwo == delLine.end())
 		{
-			return;
+			//cout << "delLine done" << endl;
+			// nothing to delete... copy source
+			// cout << " PUSH " << range << endl;
+			diffLine.push_back(range);
+
+		}
+		else
+		{
+			itTwo = subRangeDifference(range, itTwo, delLine.end(), diffLine);
 		}
 		itOne++;
 	}

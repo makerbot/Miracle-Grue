@@ -45,20 +45,28 @@ class Skeletor
 {
 public:
 	SlicerConfig slicerCfg;
-
 	size_t roofCount;
 	size_t floorCount;
 	Scalar gridSpacingMultiplier;
 	size_t skipCount;
+	ProgressBar *progress;
+
 public:
+
+	Skeletor()
+	:progress(NULL)
+	{
+	}
 
 	void init(	const SlicerConfig &slicerCfg,
 				Scalar gridSpacingMultiplier,
 				size_t roofCount,
 				size_t floorCount,
-				size_t  skipCount)
+				size_t  skipCount,
+				ProgressBar *progress = NULL)
 	{
-
+		this->progress = progress;
+		std::cout << "progress " << progress << std::endl;
 		this->slicerCfg = slicerCfg;
 		this->roofCount = roofCount;
 		this->floorCount = floorCount;
@@ -66,7 +74,27 @@ public:
 		this->skipCount = skipCount;
 	}
 
+private:
 
+	// allow progress callback
+	void initProgress(const char*task, size_t tickCount)
+	{
+		if(progress)
+		{
+			progress->reset(tickCount, task);
+		}
+	}
+
+	// update parent
+	void tick()
+	{
+		if(progress)
+		{
+			progress->tick();
+		}
+	}
+
+public:
 	void outlines( const char* modelFile, LayerMeasure &layerMeasure, Grid &grid, std::vector<libthing::SegmentTable> &outlines)
 	{
 		Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
@@ -76,8 +104,11 @@ public:
 		unsigned int sliceCount = mesh.readSliceTable().size();
 		outlines.resize(sliceCount);
 
+		initProgress("outlines", sliceCount);
+
 		for(size_t sliceId =0; sliceId < sliceCount; sliceId++)
 		{
+			tick();
 			//cout << sliceId << "/" << sliceCount << " outlines" << endl;
 			libthing::SegmentTable &segments = outlines[sliceId];
 			outlinesForSlice(mesh, sliceId, segments);
@@ -111,27 +142,16 @@ public:
     {
 
         unsigned int sliceCount = outlinesSegments.size();
-
+        initProgress("insets", sliceCount);
         insets.resize(sliceCount);
         // slice id must be adjusted for
         for(size_t i = 0;i < sliceCount;i++)
         {
+        	tick();
         	const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
         	libthing::Insets & sliceInsets = insets[i];
 
             insetsForSlice(sliceOutlines, sliceInsets);
-            				//scadFile,
-            				//writeDebugScadFiles,
-            				//insetsForSlice);
-//            const char *scadFile = NULL;
-//            bool writeDebugScadFiles = false;
-//            inshelligence(sliceOutlines,
-//            				slicerCfg.nbOfShells,
-//            				slicerCfg.layerW,
-//            				slicerCfg.insetDistanceMultiplier,
-//            				scadFile,
-//            				writeDebugScadFiles,
-//            				insetsForSlice);
 		}
 	}
 
@@ -142,9 +162,11 @@ public:
     {
         assert(gridRanges.size() == 0);
         unsigned int sliceCount = insets.size();
+        initProgress("flat surfaces", sliceCount);
         gridRanges.resize(sliceCount);
         for(size_t i = 0;i < sliceCount;i++)
         {
+        	tick();
         	const libthing::Insets & allInsetsForSlice = insets[i];
         	GridRanges & surface = gridRanges[i];
             gridRangesForSlice(allInsetsForSlice, grid, surface);
@@ -161,14 +183,19 @@ public:
         assert(flatSurfaces.size() > 0);
         assert(roofings.size() == 0);
         unsigned int sliceCount = flatSurfaces.size();
+        initProgress("roofing", sliceCount);
+
         roofings.resize(sliceCount);
-        for(size_t i = 0;i < sliceCount - 1;i++){
-            const GridRanges & currentSurface = flatSurfaces[i];
+        for(size_t i = 0;i < sliceCount-1; i++){
+            tick();
+        	const GridRanges & currentSurface = flatSurfaces[i];
             const GridRanges & surfaceAbove = flatSurfaces[i + 1];
             GridRanges & roofing = roofings[i];
             roofForSlice(currentSurface, surfaceAbove, grid, roofing);
     	}
-    	roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
+    	tick();
+        roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
+
     }
 
     void infills(const std::vector<GridRanges> &flatSurfaces,
@@ -177,31 +204,29 @@ public:
     			 const std::vector<GridRanges> &floorings,
     			 std::vector<GridRanges> &infills)
     {
+
     	assert(infills.size() == 0);
     	assert(flatSurfaces.size() > 0);
     	assert(roofings.size() > 0);
-
         unsigned int sliceCount = flatSurfaces.size();
+        initProgress("infills", sliceCount);
         infills.resize(sliceCount);
         for(size_t i=0; i< sliceCount; i++)
         {
-        	std::cout  << "INFILL " << i << "/" << sliceCount << std::endl;
+        	tick();
+        	// std::cout  << "INFILL " << i << "/" << sliceCount << std::endl;
         	const GridRanges &surface = flatSurfaces[i];
         	const GridRanges &roofing = roofings[i];
 
-        	/*
         	GridRanges sparseInfill;
-        	cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
+        	// cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
         	grid.subSample(surface, skipCount, sparseInfill);
 
-
-        	cout << " union " << i << endl;
-
-        	grid.gridRangeUnion(sparseInfill, roofing, infill);
-        	*/
+        	// cout << " union " << i << endl;
         	GridRanges &infill = infills[i];
-        	infill = roofing;
+        	grid.gridRangeUnion(sparseInfill, roofing, infill);
         }
+
     }
 
     void gridRangesForSlice(const libthing::Insets &allInsetsForSlice,
@@ -212,19 +237,6 @@ public:
     	grid.createGridRanges(innerMostLoops, surface);
     }
 
-
-
-private:
-//	void gridRangesForSlice(const std::vector<Insets> &insets,
-//							const Grid &grid,
-//							size_t sliceIndex,
-//							std::vector<GridRanges> &gridRanges)
-//    {
-//        const Insets & allInsetsForSlice = insets[sliceIndex];
-//        const SegmentTable & innerMostLoops = allInsetsForSlice.back();
-//        GridRanges & surface = gridRanges[sliceIndex];
-//        grid.createGridRanges(innerMostLoops, surface);
-//    }
 
 	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments, Scalar tol, libthing::SegmentTable & segments)
     {
@@ -252,8 +264,6 @@ private:
         loopsFromLineSegments(unorderedSegments, tol, segments);
 		// cout << " done " << endl;
 	}
-
-
 
 };
 

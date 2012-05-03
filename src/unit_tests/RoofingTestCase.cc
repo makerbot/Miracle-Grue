@@ -769,37 +769,7 @@ void RoofingTestCase::testRangeDifference()
 
 }
 
-void RoofingTestCase::testDifferenceRangeEmpty()
-{
 
-// src = [-24.907, -9.22883]
-// [-8.32378, -5.93331]
-// [-5.41545, 24.907]
-// del = (0 points )
-// diff = [-24.907, -9.22883]
-
-	cout << endl;
-	vector<ScalarRange> first;
-	vector<ScalarRange> second;
-
-	first.push_back( ScalarRange( -24.907, -9.22883 ));
-	first.push_back( ScalarRange( -8.32378, -5.93331));
-	first.push_back( ScalarRange( -5.41545, 24.907));
-
-//	second.push_back(ScalarRange(  ));
-
-
-	vector<ScalarRange> difference;
-	cout << "scalarRangeDifference" << endl;
-	rangeDifference(first, second, difference);
-
-	cout << "DIFFERENCES" << endl;
-	dumpRanges(difference);
-
-//	CPPUNIT_ASSERT_EQUAL((size_t)3, difference.size());
-
-
-}
 
 void RoofingTestCase::testSimpleUnion()
 {
@@ -1025,17 +995,24 @@ void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
 
 
 
-
-
-
 void RoofingTestCase::testSkeleton()
 {
 	cout << endl;
 	cout << "Skeleton" << endl;
 
+//	string modelFile = "inputs/hexagon.stl"; // "inputs/3D_Knot.stl";
+//	string gcodeFile = "outputs/hexagon.gcode";  // "outputs/3D_Knot.gcode";
+//	string modelFile = "inputs/3D_Knot.stl";
+//	string gcodeFile = "outputs/3D_Knot.gcode";
+
+	string modelFile = "test_cases/slicerCupTestCase/stls/ultimate_calibration_test.stl";
+	string gcodeFile = "outputs/ultimate_calibration_test.gcode";
+
 	string configFileName = "miracle.config";
+
 	unsigned int roofLayerCount = 3;
 	unsigned int floorLayerCount = 3;
+	unsigned int skipCount =5;
 
 	cout << "read config" << endl;
     Configuration config;
@@ -1047,13 +1024,10 @@ void RoofingTestCase::testSkeleton()
 	loadGCoderData(config, gcoderCfg);
 	loadSlicerData(config, slicerCfg);
 
-	string modelFile = "inputs/hexagon.stl"; // "inputs/3D_Knot.stl";
-	string gcodeFile = "outputs/hexagon.gcode";  // "outputs/3D_Knot.gcode";
-
 	cout << "read model " << modelFile << endl;
 
 	Skeletor skeletor;
-	skeletor.init(slicerCfg, 0.95, 3, 3, 3);
+	skeletor.init(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount);
 
 	ModelSkeleton skeleton;
 
@@ -1074,7 +1048,6 @@ void RoofingTestCase::testSkeleton()
 
 	cout << "roofings" << endl;
 	skeletor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
-
 
 	cout << "infills" << endl;
 	skeletor.infills( skeleton.flatSurfaces,
@@ -1163,8 +1136,9 @@ void RoofingTestCase::test3dKnotPlatform()
 	GridRanges roofing;
 	skeletor.roofForSlice(surface, surfaceAbove, grid, roofing);
 
-	// problems start at 23?
-	size_t lineNb = 27;
+	// problems start at 27?
+	// size_t lineNb = 27;
+	size_t lineNb = 35;
 
 	vector<ScalarRange> srcLine= surface.xRays[lineNb];
 	vector<ScalarRange> diffLine= surfaceAbove.xRays[lineNb];
@@ -1213,32 +1187,139 @@ void RoofingTestCase::test3dKnotPlatform()
 
 	std::ostream & out = fscad.getOut();
 
-	out << "slice_x_all();" << endl;
-	out << "slice_above_x_all();" << endl;
+	out << "color([0,0,1,1])slice_x_all();" << endl;
+	out << "color([0,1,0,1])slice_above_x_all();" << endl;
 	out << "outlines_all();" << endl;
-	out << "roof_x_all();" << endl;
+	out << "color([1,0,0,1])roof_x_all();" << endl;
 	fscad.close();
 
-//	slicor.insets();
-//	slicor.flatSurfaces()
 
-/*
-	Scalar firstLayerZ = 0.1;
-	Scalar layerH = 0.3;
-	string modelFile = "inputs/3D_Knot";
-
-	slicerCfg.nbOfShells,
-							  slicerCfg.layerW,
-							  i,
-							  slicerCfg.insetDistanceMultiplier,
-							  scadFile,
-							  writeDebugScadFiles,
-							  insetsForSlice);
-
-				polygonsFromLoopSegmentTables(slicerCfg.nbOfShells
-	*/
 
 }
+
+void RoofingTestCase::testDifferenceRangeEmpty()
+{
+
+// src = [-24.907, -9.22883]
+// [-8.32378, -5.93331]
+// [-5.41545, 24.907]
+// del = (0 points )
+// diff = [-24.907, -9.22883]
+
+	cout << endl;
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back( ScalarRange( -24.907, -9.22883 ));
+	first.push_back( ScalarRange( -8.32378, -5.93331));
+	first.push_back( ScalarRange( -5.41545, 24.907));
+
+//	second.push_back(ScalarRange(  ));
+
+
+	vector<ScalarRange> difference;
+	cout << "scalarRangeDifference" << endl;
+	rangeDifference(first, second, difference);
+
+	cout << "DIFFERENCES" << endl;
+	dumpRanges(difference);
+
+	CPPUNIT_ASSERT_EQUAL((size_t)3, difference.size());
+}
+
+
+void RoofingTestCase::testDiffBug1()
+{
+	cout << endl;
+
+//	src = [-24.907, -12.2174]
+//	[-12.1931, -11.9849]
+//	[-10.5607, -3.86109]
+//	[-3.62316, 13.5208]
+//	[13.552, 24.907]
+//	del = [-11.1454, -3.9275]
+//	(1 points )
+//	diff = [-3.9275, -3.86109]
+//	[-3.62316, 13.5208]
+//	[13.552, 24.907]
+
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	first.push_back( ScalarRange( -24.907, -12.3416  ));
+	first.push_back( ScalarRange( -12.1931, -11.9849 ));
+	first.push_back( ScalarRange( -10.5607, -3.86109 ));
+	first.push_back( ScalarRange( -3.62316, 13.5208 ));
+	first.push_back( ScalarRange(  13.552, 24.907 ));
+//	first.push_back( ScalarRange(   ));
+
+
+	second.push_back(ScalarRange(-11.1454, -3.9275 ));
+//	second.push_back(ScalarRange( ));
+
+	vector<ScalarRange> difference;
+	cout << endl;
+	cout << endl;
+	cout << "testDiffBug1" << endl;
+	rangeDifference(first, second, difference);
+
+//	cout << endl;
+//	cout << "SRC" << endl;
+//	dumpRanges(first);
+//	cout << "DEL" << endl;
+//	dumpRanges(second);
+//	cout << "DIFFERENCES" << endl;
+//	dumpRanges(difference);
+
+	CPPUNIT_ASSERT_EQUAL((size_t)5, difference.size());
+	//	second.push_back(ScalarRange( ));
+
+}
+
+
+
+/*
+void RoofingTestCase::testRangeDifferenceEmpty()
+{
+	//	1      ******      ********    ******   **   **
+	//  2  **     *****   ****  *    ***   *******
+	//  3      +++            ++        +++          ++
+	//     012345678901234567890123456789012345678901234
+	//               1         2         3         4
+	//  4-7 19-21 29-32 42-44
+	cout << endl;
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+
+//	first.push_back( ScalarRange( ));
+
+
+//	second.push_back(ScalarRange( ));
+
+
+	vector<ScalarRange> difference;
+	cout << "scalarRangeDifference" << endl;
+	rangeDifference(first, second, difference);
+
+	cout << "DIFFERENCES" << endl;
+	for(unsigned int i=0; i < difference.size(); i++)
+	{
+		cout << " "<< i << ") " << difference[i] << endl;
+	}
+	CPPUNIT_ASSERT_EQUAL((size_t)4, difference.size());
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 4, difference[0].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL( 7, difference[0].max, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(19, difference[1].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(21, difference[1].max, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(29, difference[2].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(32, difference[2].max, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(42, difference[3].min, tol );
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(44, difference[3].max, tol );
+
+}
+*/
 
 /*
 
@@ -1313,3 +1394,6 @@ doit(modelFile, size_t floorThick, size_t ceilingThick)
 }
 
  */
+
+
+

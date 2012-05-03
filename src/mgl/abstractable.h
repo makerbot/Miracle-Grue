@@ -92,6 +92,7 @@ class ProgressBar
 
 protected:
     std::string task;
+
  public:
     ProgressBar(unsigned int count=0, const char* taskName="")
     {

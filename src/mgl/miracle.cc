@@ -7,8 +7,8 @@
 using namespace std;
 using namespace mgl;
 using namespace Json;
+using namespace libthing;
 
-#include "log.h"
 
 
 //// @param input
@@ -16,36 +16,102 @@ using namespace Json;
 //// @param input
 //// @param input
 //// @param slices list of output slice (output )
-void mgl::miracleGrue(GCoder &gcoder,
-                      const SlicerConfig &slicer,
-                      const char *modelFile,
-                      const char *scadFile,
-                      const char *gcodeFile,
+void mgl::miracleGrue(GCoder &gcoderCfg,
+                      const SlicerConfig &slicerCfg,
+                      const char *modelFileStr,
+                      const char *scadFileStr,
+                      const char *gcodeFileStr,
                       int firstSliceIdx,
                       int lastSliceIdx,
                       std::vector< SliceData >  &slices,
                       ProgressBar *progress) // = NULL
 {
+	ProgressLog log;
+	if(progress == NULL)
+	{
+		progress = &log;
+	}
+	cout << "PROG: " << progress << endl;
+
+	string modelFile = modelFileStr;
+	string gcodeFile = gcodeFileStr;
+
+	unsigned int roofLayerCount = 3;
+	unsigned int floorLayerCount = 3;
+	unsigned int skipCount =5;
+
+	cout << "read model: " << modelFile << endl;
+
+	Skeletor skeletor;
+	skeletor.init(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount, progress);
+
+	ModelSkeleton skeleton;
+
+	skeletor.outlines(modelFile.c_str(),
+					skeleton.layerMeasure,
+					skeleton.grid,
+					skeleton.outlines);
+
+	skeletor.insets(skeleton.outlines,
+				  skeleton.insets);
+
+	skeletor.flatSurfaces(skeleton.insets,
+						skeleton.grid,
+						skeleton.flatSurfaces);
+
+	skeletor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+
+	skeletor.infills( skeleton.flatSurfaces,
+					skeleton.grid,
+					skeleton.roofings,
+					skeleton.floorings,
+					skeleton.infills);
 
 
-    Log::often() << "running " << __FUNCTION__ << endl;
-    assert(slices.size() ==0);
-    Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-    mesh.readStlFile(modelFile);
-    Log::often() << "mesh loaded" << endl;
 
-    slicesFromSlicerAndMesh(slices,slicer,mesh,scadFile,firstSliceIdx,lastSliceIdx, progress);
-    Log::often() << "slices created" << endl;
+	Slicor slicor;
+	slicor.init(gcoderCfg, progress);
 
-    LayerMeasure zMeasure = mesh.readLayerMeasure();
+	size_t sliceCount = skeleton.outlines.size();
 
-    size_t first = 0,last= 0;
-    adjustSlicesToPlate(slices, zMeasure, first, last);
-    Log::often() << "slices levels adjusted" << endl;
 
-    writeGcodeFromSlicesAndParams(gcodeFile, gcoder, slices,  modelFile, progress);
-    Log::often() << "gcode written adjusted" << endl;
+    if(firstSliceIdx == -1) firstSliceIdx = 0;
+    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
+	slices.resize(sliceCount);
+	bool direction = false;
+	unsigned int currentSlice = 0;
+	for(size_t i=0; i < sliceCount; i++)
+	{
+        if(i <  firstSliceIdx) continue;
+        if(i > lastSliceIdx) break;
+
+		direction = !direction;
+		SliceData& slice = slices[i];
+
+		Scalar z = skeleton.layerMeasure.sliceIndexToHeight(currentSlice);
+		currentSlice ++;
+
+		slice.updatePosition(z, i);
+		slice.extruderSlices.resize(1);
+
+		ExtruderSlice &extruderSlice = slice.extruderSlices[0];
+
+		const Insets &insets = skeleton.insets[i];
+		const SegmentTable &outlineSegments = skeleton.outlines[i];
+
+		slicor.outlines(outlineSegments, extruderSlice.boundary);
+		slicor.insets(insets, extruderSlice.insetLoopsList);
+
+		const GridRanges &infillRanges = skeleton.infills[i];
+
+		Polygons &infills = extruderSlice.infills;
+		slicor.infills(infillRanges, skeleton.grid, direction, infills);
+	}
+
+	cout << "gcode" << endl;
+	slicor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
+	cout << "done" << endl;
 
 }
 

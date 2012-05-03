@@ -12,8 +12,10 @@
 #ifndef MIRACLE_H_
 #define MIRACLE_H_
 
-#include "gcoder.h"
-
+//#include "gcoder.h"
+#include "skeletor.h"
+#include "slicor.h"
+#include "log.h"
 
 namespace mgl
 {

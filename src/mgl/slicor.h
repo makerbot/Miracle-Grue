@@ -21,10 +21,16 @@ namespace mgl
 
 class Slicor
 {
+	ProgressBar *progress;
 public:
 	GCoder gcoder;
 
-	void init(const GCoder &gcoderCfg)
+	Slicor()
+		:progress(NULL)
+	{
+	}
+
+	void init(const GCoder &gcoderCfg, ProgressBar *progress = NULL)
 	{
 		this->gcoder = gcoderCfg;
 	}
