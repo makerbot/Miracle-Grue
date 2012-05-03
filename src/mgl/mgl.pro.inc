@@ -5,8 +5,23 @@
 #
 #-------------------------------------------------
 
-INCLUDEPATH += $$MGL_SRC/..
 
+win32 {
+    BOOST_LIB_PATH=-Lc:\Boost\lib
+    BOOST_INCLUDE=-Ic:\Boost\include\boost-1_49
+    BOOST_LIBS=-lboost_system-mgw46-mt-1_49 \
+               -lboost_filesystem-mgw46-mt-1_49 \
+               -lboost_regex-mgw46-mt-1_49
+}
+
+!win32 {
+    BOOST_LIB_PATH=
+    BOOST_LIBS=-lboost_system -lboost_filesystem -lboost_regex
+    BOOST_INCLUDE=    
+}
+
+LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS
+INCLUDEPATH += $$MGL_SRC/.. $$BOOST_INCLUDE
 
 SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/clipper.cc\
