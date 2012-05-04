@@ -10,8 +10,11 @@
 */
 
 #include <set>
+#include <map>
 
 #include "grid.h"
+#include <limits.h>
+#include <list>
 
 using namespace mgl;
 using namespace std;
@@ -165,13 +168,92 @@ void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
 	}
 }
 
+typedef map<int, int> PointMap;
+typedef PointMap::iterator PointIter;
+
 void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
 								const std::vector<Scalar> &values, // the y values for each line
 								Polygons &polygons)				   // the output
 {
+
+	PointMap points_remaining;
+
+	//Convert ray ranges to segments and map endpoints
+	vector<Vector2> points;
+	for (size_t i = 0; i < rays.size(); i++) {
+		const vector<ScalarRange> &ray = rays[i];
+
+		if(ray.size() == 0)
+			continue;
+		
+		Scalar yval = values[i];
+
+		for (vector<ScalarRange>::const_iterator j = ray.begin();
+			 j != ray.end(); j++) {
+
+			assert(j->min != j->max);
+
+			points.push_back(Vector2(j->min, yval));
+			points.push_back(Vector2(j->max, yval));
+			
+			points_remaining[points.size() - 2] = points.size() - 1;
+			points_remaining[points.size() - 1] = points.size() - 2;
+		}
+	}
+
+	int endpoint = points_remaining.begin()->first;
+	while(!points_remaining.empty()) {
+		points_remaining.erase(endpoint);
+
+		//handle last point
+		if (points_remaining.empty()) break;
+
+		Scalar closest_dist = INT_MAX;
+		int closest;
+
+		//find the remaining point closest to this point
+		for (PointIter close_i = points_remaining.begin();
+			 close_i != points_remaining.end(); close_i++) {
+			
+			int close = close_i->first;
+
+			Scalar dist = LineSegment2(points[endpoint], points[close])
+				            .squaredLength();
+
+			if (dist == 0) {
+				cout << "close points" << endl << "endpoint" << endl;
+				cout << "\tp: " << endpoint << endl;
+				cout << "\tx: " << points[endpoint].x << endl;
+				cout << "\ty: " << points[endpoint].y << endl;
+				cout << "close" << endl;
+				cout << "\tp: " << close << endl;
+				cout << "\tx: " << points[close].x << endl;
+				cout << "\ty: " << points[close].y << endl;
+				
+				assert(0);
+			}
+
+			if (dist < closest_dist) {
+				closest = close;
+				closest_dist = dist;
+			}
+		}
+
+
+		polygons.push_back(Polygon());
+		Polygon &poly = polygons.back();
+
+		int connected = points_remaining[closest];
+		poly.push_back(points[closest]);
+		poly.push_back(points[connected]);
+		endpoint = points_remaining[closest];
+		points_remaining.erase(closest);
+	}
+
+
 	// change direction of extrusion
 	// for each line
-	bool forward = false;
+	/*	bool forward = false;
 	assert(rays.size() == values.size());
 
 	for(size_t rayId =0; rayId < rays.size(); rayId++)
@@ -210,7 +292,7 @@ void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ran
 			poly.push_back(begin);
 			poly.push_back(end);
 		}
-	}
+		}*/
 }
 
 void polygonsFromScalarRangesAlongY( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
