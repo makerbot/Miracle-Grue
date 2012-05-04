@@ -31,7 +31,6 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 	{
 		progress = &log;
 	}
-	cout << "PROG: " << progress << endl;
 
 	string modelFile = modelFileStr;
 	string gcodeFile = gcodeFileStr;
@@ -81,8 +80,13 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 	slices.resize(sliceCount);
 	bool direction = false;
 	unsigned int currentSlice = 0;
+
+	progress->reset(sliceCount, "Path generation");
+
 	for(size_t i=0; i < sliceCount; i++)
 	{
+		progress->tick();
+
         if(i <  firstSliceIdx) continue;
         if(i > lastSliceIdx) break;
 
@@ -109,7 +113,7 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 		slicor.infills(infillRanges, skeleton.grid, direction, infills);
 	}
 
-	cout << "gcode" << endl;
+
 	slicor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
 	cout << "done" << endl;
 

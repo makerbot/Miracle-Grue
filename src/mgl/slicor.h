@@ -32,7 +32,26 @@ public:
 
 	void init(const GCoder &gcoderCfg, ProgressBar *progress = NULL)
 	{
+		this->progress = progress;
 		this->gcoder = gcoderCfg;
+	}
+
+	// allow progress callback
+	void initProgress(const char*task, size_t tickCount)
+	{
+		if(progress)
+		{
+			progress->reset(tickCount, task);
+		}
+	}
+
+	// update parent
+	void tick()
+	{
+		if(progress)
+		{
+			progress->tick();
+		}
 	}
 
 	void outlines(const libthing::SegmentTable& outlinesSegments, Polygons &boundary)
@@ -58,13 +77,12 @@ public:
 	{
 		std::ofstream gout(gcodeFile);
 		gcoder.writeStartOfFile(gout, modelSource);
-
 		size_t sliceCount = slices.size();
 
-		// progress.reset(sliceCount, "Gcoding");
+		initProgress("gcode", sliceCount);
 		for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
 		{
-			// progress.tick();
+			tick();
 			const SliceData &slice = slices[sliceId];
 			gcoder.writeSlice(gout, slice);
 		}

@@ -66,7 +66,7 @@ public:
 				ProgressBar *progress = NULL)
 	{
 		this->progress = progress;
-		std::cout << "progress " << progress << std::endl;
+
 		this->slicerCfg = slicerCfg;
 		this->roofCount = roofCount;
 		this->floorCount = floorCount;
