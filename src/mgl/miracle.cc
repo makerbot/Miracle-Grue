@@ -1,8 +1,10 @@
-#include "miracle.h"
 
-#include "abstractable.h"
+
 #include "JsonConverter.h"
 #include <json/writer.h>
+
+// #include "abstractable.h"
+#include "miracle.h"
 
 using namespace std;
 using namespace mgl;
@@ -11,10 +13,6 @@ using namespace libthing;
 
 
 
-//// @param input
-//// @param input
-//// @param input
-//// @param input
 //// @param slices list of output slice (output )
 void mgl::miracleGrue(GCoder &gcoderCfg,
                       const SlicerConfig &slicerCfg,
@@ -23,30 +21,24 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
                       const char *gcodeFileStr,
                       int firstSliceIdx,
                       int lastSliceIdx,
+                      ModelSkeleton &skeleton,
                       std::vector< SliceData >  &slices,
-                      ProgressBar *progress) // = NULL
+                      ProgressBar *progress)
 {
-	ProgressLog log;
-	if(progress == NULL)
-	{
-		progress = &log;
-	}
 
-	string modelFile = modelFileStr;
-	string gcodeFile = gcodeFileStr;
 
 	unsigned int roofLayerCount = 3;
 	unsigned int floorLayerCount = 3;
-	unsigned int skipCount =5;
-
-	cout << "read model: " << modelFile << endl;
+	unsigned int skipCount = 1;
 
 	Skeletor skeletor;
-	skeletor.init(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount, progress);
+	skeletor.init(slicerCfg, 0.95,
+					roofLayerCount,
+					floorLayerCount,
+					skipCount,
+					progress);
 
-	ModelSkeleton skeleton;
-
-	skeletor.outlines(modelFile.c_str(),
+	skeletor.outlines(modelFileStr,
 					skeleton.layerMeasure,
 					skeleton.grid,
 					skeleton.outlines);
@@ -66,8 +58,6 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 					skeleton.floorings,
 					skeleton.infills);
 
-
-
 	Slicor slicor;
 	slicor.init(gcoderCfg, progress);
 
@@ -81,11 +71,11 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 	bool direction = false;
 	unsigned int currentSlice = 0;
 
-	progress->reset(sliceCount, "Path generation");
+	if(progress){progress->reset(sliceCount, "Path generation");}
 
 	for(size_t i=0; i < sliceCount; i++)
 	{
-		progress->tick();
+		if(progress){progress->tick();}
 
         if(i <  firstSliceIdx) continue;
         if(i > lastSliceIdx) break;
@@ -114,8 +104,7 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 	}
 
 
-	slicor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
-	cout << "done" << endl;
+	slicor.writeGcode(gcodeFileStr, modelFileStr, slices);
 
 }
 

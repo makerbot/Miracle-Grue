@@ -58,12 +58,15 @@ void testModels(vector<string>& models, const char* configFile)
 
 		SlicerConfig slicer;
 		loadSlicerData(config, slicer);
-
+		ModelSkeleton skeleton;
 		std::vector< SliceData >  slices;
 		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
 		mesh.readStlFile( modelFile.c_str());
 
-		miracleGrue(gcoder, slicer, modelFile.c_str(), NULL, gcodeFile.c_str(), -1, -1, slices);
+		miracleGrue(gcoder, slicer, modelFile.c_str(), NULL,
+					gcodeFile.c_str(), -1, -1,
+					skeleton,
+					slices);
 		cout << computer.clock.now() << endl;
 		cout << "DONE!" << endl;
 	}

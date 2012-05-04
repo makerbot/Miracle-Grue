@@ -78,7 +78,6 @@ public:
 		std::ofstream gout(gcodeFile);
 		gcoder.writeStartOfFile(gout, modelSource);
 		size_t sliceCount = slices.size();
-
 		initProgress("gcode", sliceCount);
 		for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
 		{

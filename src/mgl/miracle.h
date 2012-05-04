@@ -29,6 +29,7 @@ void miracleGrue(GCoder &gcoder,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
+                      ModelSkeleton &skeleton,
                       std::vector< SliceData >  &slices,
                       ProgressBar* progress = NULL);
 

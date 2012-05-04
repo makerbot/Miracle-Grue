@@ -34,9 +34,11 @@ private:
 
 //		CPPUNIT_TEST(testGridStruct);
 //      CPPUNIT_TEST(testFlatsurface);
-        CPPUNIT_TEST(testSkeleton);
+//        CPPUNIT_TEST(testSkeleton);
 //        CPPUNIT_TEST(test3dKnotPlatform);
 //        CPPUNIT_TEST(testDiffBug1);
+
+		CPPUNIT_TEST(testUnionSurfaces);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -82,6 +84,8 @@ protected:
   void test3dKnotPlatform();
 
   void testDiffBug1();
+
+  void testUnionSurfaces();
 };
 
 #endif

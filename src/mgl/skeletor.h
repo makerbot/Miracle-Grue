@@ -225,6 +225,7 @@ public:
         	// cout << " union " << i << endl;
         	GridRanges &infill = infills[i];
         	grid.gridRangeUnion(sparseInfill, roofing, infill);
+        	// infill = roofing;
         }
 
     }

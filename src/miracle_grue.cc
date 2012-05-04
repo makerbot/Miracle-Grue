@@ -267,9 +267,12 @@ int main(int argc, char *argv[], char *envp[])
 	//	Meshy mesh(slicer.firstLayerZ, slicer.layerH);
 	//	mesh.readStlFile(modelFile.c_str());
 
+		ModelSkeleton skeleton;
 		miracleGrue(gcoder, slicer, modelFile.c_str(),
 					scad, gcodeFile.c_str(),
-					firstSliceIdx, lastSliceIdx, slices);
+					firstSliceIdx, lastSliceIdx,
+					skeleton,
+					slices);
 
     }
     catch(mgl::Exception &mixup)

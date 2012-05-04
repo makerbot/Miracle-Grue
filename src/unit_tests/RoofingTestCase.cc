@@ -8,9 +8,10 @@
 #include "RoofingTestCase.h"
 
 #include "UnitTestUtils.h"
+
+
+// test union surfaces
 #include "mgl/miracle.h"
-
-
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RoofingTestCase );
@@ -379,6 +380,7 @@ void RoofingTestCase::testHoly() // test with a hole in the slice
 	fscad.open(filename.c_str());
 	std::ostream & out = fscad.getOut();
 	out << "draw_x_all();" << endl << endl;
+
 	addLinea(fscad);
     fscad.writeHeader();
 
@@ -445,6 +447,7 @@ void RoofingTestCase::testGrid()
 	ScadDebugFile fscad;
     cout << "writing " << filename << endl;
 	fscad.open(filename.c_str());
+
 	addLinea(fscad);
     fscad.writeHeader();
 
@@ -958,8 +961,6 @@ void RoofingTestCase::testFlatsurface()
 	writeScanLines(fscad, "outlines_", "linea", -1, -0.1, loops);
 	fscad.writePolygons(  "draw_polys_x_","polys", xPolys, z, 0);
 	fscad.writePolygons(  "draw_polys_y_","polys", yPolys, z, 0);
-//  writeScanLines(fscad, "draw_x_", 	  "linea", z, dz, xSegs );
-//  writeScanLines(fscad, "draw_y_", 	  "linea", 0.5, dz, ySegs );
 
     std::ostream & out = fscad.getOut();
 
@@ -1276,6 +1277,134 @@ void RoofingTestCase::testDiffBug1()
 
 }
 
+void surfaceToscad( const Grid &grid,
+					const GridRanges &surface,
+					const char * name,
+					double z,
+					ScadDebugFile& fscad)
+{
+
+
+	Scalar dz = 0;
+
+	string xname = name;
+	xname += "_x_";
+	string yname = name;
+	yname += "_y_";
+
+	Polygons xPolys;
+	grid.polygonsFromRanges(surface, true, xPolys);
+
+	Polygons yPolys;
+	grid.polygonsFromRanges(surface, false, yPolys);
+
+
+	fscad.writePolygons(  xname.c_str(), "polys", xPolys, z, 0);
+	fscad.writePolygons(  yname.c_str(), "polys", yPolys, z, 0);
+
+//    std::ostream & out = fscad.getOut();
+//    out << "color([1,0,0,1])"<< xname << "0();" << endl;
+//    out << "color([0,1,0,1])"<< yname << "0();" << endl;
+}
+
+void RoofingTestCase::testUnionSurfaces()
+{
+
+
+//	slicerCfg.firstLayerZ = 0.1;
+//	slicerCfg.layerH = 0.3;
+//	slicerCfg.layerW = 0.4;
+//	slicerCfg.nbOfShells = 3;
+//	slicerCfg.insetDistanceMultiplier = 0.95;
+	cout << endl;
+
+	Configuration conf;
+	GCoder gcoderCfg;
+	SlicerConfig slicerCfg;
+
+	conf.readFromFile("miracle.config");
+	loadGCoderData(conf, gcoderCfg);
+	loadSlicerData(conf, slicerCfg);
+
+	const char *modelFileStr = "inputs/hexagon.stl";
+	const char *scadFileStr = NULL;
+	const char *gcodeFileStr = "outputs/hexagon.stl";
+	int firstSliceIdx =0;
+	int lastSliceIdx =-1;
+
+	ModelSkeleton skeleton;
+	vector<SliceData> slices;
+
+//	cout << "GO!" << endl;
+	miracleGrue(gcoderCfg,
+				slicerCfg,
+				modelFileStr,
+				scadFileStr,
+				gcodeFileStr,
+				firstSliceIdx,
+				lastSliceIdx,
+				skeleton,
+				slices);
+
+//	GridRanges &roof =  skeleton.flatSurfaces[slices.size()-2];
+//	GridRanges &surface =  skeleton.roofings[slices.size()-2];
+//	GridRanges &inf =  skeleton.infills[slices.size()-2];
+//	GridRanges unionSurf;
+
+//	skeleton.grid.gridRangeUnion(roof, surface, unionSurf);
+
+	size_t i = slices.size()-2;
+	size_t skipCount = 1;
+
+	const Grid &grid = skeleton.grid;
+	const GridRanges &surface = skeleton.flatSurfaces[i];
+	const GridRanges &roofing = skeleton.roofings[i];
+	GridRanges &infill = skeleton.infills[i];
+
+
+	GridRanges sparseInfill;
+	grid.subSample(surface, skipCount, sparseInfill);
+	grid.gridRangeUnion(sparseInfill, roofing, infill);
+
+	string filename = outputDir + "hexagon_union.scad";
+	ScadDebugFile fscad;
+	fscad.open(filename.c_str());
+	addLinea(fscad);
+    fscad.writeHeader();
+
+	surfaceToscad(skeleton.grid, infill, "infill", -1, fscad);
+	surfaceToscad(skeleton.grid, surface, "surface", 0, fscad);
+	surfaceToscad(skeleton.grid, roofing, "roofing", 1, fscad);
+	surfaceToscad(skeleton.grid, sparseInfill, "sparseInfill", 2, fscad);
+
+    std::ostream & out = fscad.getOut();
+
+//    out <<  "color([1,0,0,1])infill_x_0();" << endl;
+    // hole is not there!
+
+
+//    out <<  "color([1,0,0,1])sparseInfill_x_0();" << endl;
+
+//      out <<  "color([1,0,0,1])surface_x_0();" << endl;
+
+    out <<  "color([1,0,0,1])roofing_x_0();" << endl;
+
+
+//    out << "color([1,0,0,1])"<< "_0();" << endl;
+//    out << "color([0,1,0,1])"<< yname << "0();" << endl;
+
+
+//    surfaceToscad(skeleton.grid, inf, "infill", -1, fscad);
+//    surfaceToscad(skeleton.grid, surface, "surface", 0, fscad);
+//    surfaceToscad(skeleton.grid, roof, "roof", 1, fscad);
+//	  surfaceToscad(skeleton.grid, unionSurf, "union", 2, fscad);
+
+	fscad.close();
+
+	cout << "slices =" << slices.size() << endl;
+	cout << "done" << endl;
+
+}
 
 
 /*
@@ -1319,9 +1448,7 @@ void RoofingTestCase::testRangeDifferenceEmpty()
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(44, difference[3].max, tol );
 
 }
-*/
 
-/*
 
 doit(modelFile, size_t floorThick, size_t ceilingThick)
 {
