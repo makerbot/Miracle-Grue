@@ -41,7 +41,7 @@ public:
 //// @param slices list of output slice (output )
 void mgl::miracleGrue(GCoder &gcoderCfg,
                       const SlicerConfig &slicerCfg,
-                      const char *modelFileStr,
+                      const char *modelFile,
                       const char *scadFileStr,
                       const char *gcodeFileStr,
                       int firstSliceIdx,
@@ -59,7 +59,7 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 
 	unsigned int roofLayerCount = 3;
 	unsigned int floorLayerCount = 3;
-	unsigned int skipCount = 1;
+	unsigned int skipCount = 2;
 
 	Skeletor skeletor;
 	skeletor.init(slicerCfg, 0.95,
@@ -68,75 +68,15 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 					skipCount,
 					progress);
 
-	skeletor.outlines(modelFileStr,
-					skeleton.layerMeasure,
-					skeleton.grid,
-					skeleton.outlines);
+	skeletor.generateSkeleton(modelFile, skeleton);
 
-	skeletor.insets(skeleton.outlines,
-				  skeleton.insets);
-
-	skeletor.flatSurfaces(skeleton.insets,
-						skeleton.grid,
-						skeleton.flatSurfaces);
-
-	skeletor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
-
-	skeletor.flooring(skeleton.flatSurfaces, skeleton.grid, skeleton.floorings);
-
-	skeletor.infills( skeleton.flatSurfaces,
-					skeleton.grid,
-					skeleton.roofings,
-					skeleton.floorings,
-					skeleton.infills);
 
 	Slicor slicor;
 	slicor.init(gcoderCfg, progress);
 
-	size_t sliceCount = skeleton.outlines.size();
+	slicor.generatePaths(skeleton, slices);
 
-
-    if(firstSliceIdx == -1) firstSliceIdx = 0;
-    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
-
-	slices.resize(sliceCount);
-	bool direction = false;
-	unsigned int currentSlice = 0;
-
-	if(progress){progress->reset(sliceCount, "Path generation");}
-
-	for(size_t i=0; i < sliceCount; i++)
-	{
-		if(progress){progress->tick();}
-
-        if(i <  firstSliceIdx) continue;
-        if(i > lastSliceIdx) break;
-
-		direction = !direction;
-		SliceData& slice = slices[i];
-
-		Scalar z = skeleton.layerMeasure.sliceIndexToHeight(currentSlice);
-		currentSlice ++;
-
-		slice.updatePosition(z, i);
-		slice.extruderSlices.resize(1);
-
-		ExtruderSlice &extruderSlice = slice.extruderSlices[0];
-
-		const Insets &insets = skeleton.insets[i];
-		const SegmentTable &outlineSegments = skeleton.outlines[i];
-
-		slicor.outlines(outlineSegments, extruderSlice.boundary);
-		slicor.insets(insets, extruderSlice.insetLoopsList);
-
-		const GridRanges &infillRanges = skeleton.infills[i];
-
-		Polygons &infills = extruderSlice.infills;
-		slicor.infills(infillRanges, skeleton.grid, direction, infills);
-	}
-
-
-	slicor.writeGcode(gcodeFileStr, modelFileStr, slices);
+	slicor.writeGcode(gcodeFileStr, modelFile, slices);
 
 }
 

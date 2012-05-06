@@ -54,12 +54,57 @@ public:
 		}
 	}
 
+	void generatePaths(const ModelSkeleton &skeleton, std::vector<SliceData> &slices, size_t firstSliceIdx=-1, size_t lastSliceIdx=-1)
+	{
+		size_t sliceCount = skeleton.outlines.size();
+	    if(firstSliceIdx == -1) firstSliceIdx = 0;
+	    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
+
+		slices.resize(sliceCount);
+		bool direction = false;
+		unsigned int currentSlice = 0;
+
+		if(progress){progress->reset(sliceCount, "Path generation");}
+
+		for(size_t i=0; i < sliceCount; i++)
+		{
+			if(progress){progress->tick();}
+
+	        if(i <  firstSliceIdx) continue;
+	        if(i > lastSliceIdx) break;
+
+			direction = !direction;
+			SliceData& slice = slices[i];
+
+			Scalar z = skeleton.layerMeasure.sliceIndexToHeight(currentSlice);
+			currentSlice ++;
+
+			slice.updatePosition(z, i);
+			slice.extruderSlices.resize(1);
+
+			ExtruderSlice &extruderSlice = slice.extruderSlices[0];
+
+			const libthing::Insets &insetsSegments = skeleton.insets[i];
+			const libthing::SegmentTable &outlineSegments = skeleton.outlines[i];
+
+			outlines(outlineSegments, extruderSlice.boundary);
+
+			PolygonsGroup &insetPolys = extruderSlice.insetLoopsList;
+			this->insets(insetsSegments, insetPolys );
+
+			const GridRanges &infillRanges = skeleton.infills[i];
+
+			Polygons &infillsPolygons = extruderSlice.infills;
+			this->infills(infillRanges, skeleton.grid, direction, infillsPolygons);
+		}
+	}
+
 	void outlines(const libthing::SegmentTable& outlinesSegments, Polygons &boundary)
 	{
 		createPolysFromloopSegments(outlinesSegments, boundary);
 	}
 
-	void insets(const libthing::Insets& insetsForSlice, std::vector<Polygons> &insetPolys)
+	void insets(const libthing::Insets& insetsForSlice, PolygonsGroup &insetPolys)
 	{
 		size_t nbOfShells = insetsForSlice.size();
 		polygonsFromLoopSegmentTables(nbOfShells, insetsForSlice, insetPolys);

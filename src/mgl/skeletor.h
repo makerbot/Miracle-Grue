@@ -27,10 +27,10 @@ struct ModelSkeleton
 {
 	Grid grid;
 	LayerMeasure layerMeasure;
-
 	std::vector<libthing::SegmentTable>   outlines;
-    std::vector<libthing::Insets> 		insets;
 
+
+    std::vector<libthing::Insets> 		insets;
     std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
     std::vector<GridRanges>     roofings;
     std::vector<GridRanges>     floorings;
@@ -66,7 +66,7 @@ public:
 				ProgressBar *progress = NULL)
 	{
 		this->progress = progress;
-		std::cout << "progress = " << progress << std::endl;
+		//std::cout << "progress = " << progress << std::endl;
 
 		this->slicerCfg = slicerCfg;
 		this->roofCount = roofCount;
@@ -96,6 +96,32 @@ private:
 	}
 
 public:
+
+	void generateSkeleton(const char* modelFile, ModelSkeleton &skeleton)
+	{
+		outlines(	modelFile,
+					skeleton.layerMeasure,
+					skeleton.grid,
+					skeleton.outlines);
+
+		insets(skeleton.outlines,
+					  skeleton.insets);
+
+		flatSurfaces(skeleton.insets,
+							skeleton.grid,
+							skeleton.flatSurfaces);
+
+		roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+
+		flooring(skeleton.flatSurfaces, skeleton.grid, skeleton.floorings);
+
+		infills( skeleton.flatSurfaces,
+						skeleton.grid,
+						skeleton.roofings,
+						skeleton.floorings,
+						skeleton.infills);
+	}
+
 	void outlines( const char* modelFile, LayerMeasure &layerMeasure, Grid &grid, std::vector<libthing::SegmentTable> &outlines)
 	{
 		Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);

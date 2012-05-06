@@ -9,7 +9,7 @@ class SlicerCupTestCase : public CPPUNIT_NS::TestFixture
 {
 	CPPUNIT_TEST_SUITE( SlicerCupTestCase );
 
-        CPPUNIT_TEST( testAllTogeter );
+
         CPPUNIT_TEST( testIndividuals );
         CPPUNIT_TEST( testSpecificIssues );
         CPPUNIT_TEST( testSpecificIssuesB );
@@ -17,7 +17,8 @@ class SlicerCupTestCase : public CPPUNIT_NS::TestFixture
         //CPPUNIT_TEST( testCathedral_Crossing_bad);
         // CPPUNIT_TEST( testCathedral_Crossing_fixed);
 
-        CPPUNIT_TEST( testSliceShifting );
+      //  CPPUNIT_TEST( testSliceShifting );
+        CPPUNIT_TEST( testAllTogeter );
     CPPUNIT_TEST_SUITE_END();
 
 public:

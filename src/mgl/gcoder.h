@@ -112,15 +112,15 @@ public:
 
 
 	Gantry()
-		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 rapidMoveFeedRateXY(5000),
-		 rapidMoveFeedRateZ(1400),
-		 xyMaxHoming(true),
-		 zMaxHoming(false),
-		 scalingFactor(1),
-		 homingFeedRateZ(100)
+            :x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             rapidMoveFeedRateXY(5000),
+             rapidMoveFeedRateZ(1400),
+             scalingFactor(1),
+             xyMaxHoming(true),
+             zMaxHoming(false),
+             homingFeedRateZ(100)
 	{
 
 	}

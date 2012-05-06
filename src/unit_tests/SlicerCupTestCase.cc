@@ -30,43 +30,53 @@ void SlicerCupTestCase::setUp()
 }
 
 
-void testModels(vector<string>& models, const char* configFile)
+
+void testModel(const char *model, const char* configFile)
 {
+//	vector<string> models;
+//	models.push_back(model);
+//	testModels(models, configFile);
+	string modelFile = model;
+	string scadFile(outputDir);
+	scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad");
+	string gcodeFile(outputDir);
+	gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode");
+
+	cout << endl;
+	cout << modelFile << endl;
+	cout << computer.clock.now() << endl;
 
 	Configuration config;
 	config.readFromFile(configFile);
 
+	GCoder gcoder;
+	loadGCoderData(config, gcoder);
+
+	SlicerConfig slicer;
+	loadSlicerData(config, slicer);
+	ModelSkeleton skeleton;
+	std::vector< SliceData >  slices;
+	miracleGrue(gcoder, slicer, modelFile.c_str(), NULL,
+				gcodeFile.c_str(), -1, -1,
+				skeleton,
+				slices);
+}
+
+void testModels(vector<string>& models, const char* configFile)
+{
+
+
+
 	for(int i=0; i< models.size(); i++)
 	{
-		string modelFile = models[i];
-		string scadFile(outputDir);
-		scadFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad");
-		string gcodeFile(outputDir);
-		gcodeFile += computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode");
-
 		cout << endl;
 		cout << endl;
 		cout << endl;
 		cout << "---------- " << (i+1) << "/"<<  models.size() << " -------------------" << endl;
+		string modelFile = models[i];
 
-		cout << endl;
-		cout << modelFile << endl;
-		cout << computer.clock.now() << endl;
+		testModel(modelFile.c_str(), configFile);
 
-		GCoder gcoder;
-		loadGCoderData(config, gcoder);
-
-		SlicerConfig slicer;
-		loadSlicerData(config, slicer);
-		ModelSkeleton skeleton;
-		std::vector< SliceData >  slices;
-		Meshy mesh(slicer.firstLayerZ, slicer.layerH); // 0.35
-		mesh.readStlFile( modelFile.c_str());
-
-		miracleGrue(gcoder, slicer, modelFile.c_str(), NULL,
-					gcodeFile.c_str(), -1, -1,
-					skeleton,
-					slices);
 		cout << computer.clock.now() << endl;
 		cout << "DONE!" << endl;
 	}
@@ -76,14 +86,7 @@ void testModels(vector<string>& models, const char* configFile)
 	cout << endl;
 }
 
-void testModel(const char *model, const char* configFile)
-{
-	vector<string> models;
-	models.push_back(model);
-	testModels(models, configFile);
-}
-
-void testModel(string model, const char* configFile)
+void testModel(const string &model, const char* configFile)
 {
 	testModel(model.c_str(), configFile);
 }
@@ -96,13 +99,25 @@ void SlicerCupTestCase::testIndividuals()
 	models.push_back(inputDir + "linkCup.stl");
 	models.push_back(inputDir + "ultimate_calibration_test.stl");
 	models.push_back(inputDir + "Cathedral_Crossing_fixed.stl");
-	testModels(models, "miracle.config");
+
+	try
+	{
+
+		testModels(models, "miracle.config");
+	}
+	catch(mgl::Exception &e)
+	{
+		cout << e.error << endl;
+	}
+	catch(...)
+	{
+		CPPUNIT_FAIL("unknown error during slicing");
+	}
 }
 
 void SlicerCupTestCase::testAllTogeter()
 {
 	testModel(inputDir + "all_together.stl", "miracle.config");
-
 }
 
 void SlicerCupTestCase::testCathedral_Crossing_bad()
