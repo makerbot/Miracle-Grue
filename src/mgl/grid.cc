@@ -433,7 +433,12 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 	vector< ScalarRange >::const_iterator itOne = firstLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = secondLine.begin();
 
-	//cout << "rangeUnion: ";
+	// the first line is empty... return the second one
+	if (itOne == firstLine.end())
+	{
+		unionLine = secondLine;
+		return;
+	}
 
 	while(itOne != firstLine.end())
 	{
@@ -612,7 +617,11 @@ void rangeTableDifference(	const ScalarRangeTable &src,
 							ScalarRangeTable &diff)
 {
 	size_t lineCount = src.size();
-	assert(lineCount == del.size());
+	if(lineCount != del.size())
+	{
+		size_t delSize = del.size();
+		assert(lineCount == delSize);
+	}
 	diff.resize(lineCount);
 
 	for(size_t i=0; i < src.size(); i++ )
@@ -661,7 +670,10 @@ void rangeTableUnion(const ScalarRangeTable &a,
 		const vector<ScalarRange> &lineRange0 = a[i];
 		const vector<ScalarRange> &lineRange1 = b[i];
 		vector<ScalarRange> &lineRangeRes = result[i];
-
+		if(lineRangeRes.size() > 0)
+		{
+			assert(0);
+		}
 		rangeUnion(lineRange0, lineRange1, lineRangeRes);
 	}
 }

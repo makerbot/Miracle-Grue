@@ -71,11 +71,13 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 
 void dumpRanges(const vector<ScalarRange> &ranges)
 {
+	cout << "[" << endl;
 	for(size_t i=0; i < ranges.size(); i++)
 	{
 		const ScalarRange &range = ranges[i];
-		cout << range << endl;
+		cout << " " << range << "," << endl;
 	}
+	cout << "]" << endl;
 }
 
 void dumpRangeTable(const char *name, const ScalarRangeTable &rangeTable)
@@ -882,6 +884,34 @@ void RoofingTestCase::testRangeUnion()
 	CPPUNIT_ASSERT_EQUAL((size_t)5,  result.size());
 }
 
+void RoofingTestCase::testRangeUnion2()
+{
+	cout<< endl;
+
+	vector<ScalarRange> first;
+	vector<ScalarRange> second;
+
+	// empty first line!
+
+	// first.push_back( ScalarRange( 4, 10));
+
+
+	second.push_back(ScalarRange( 0,  2));
+	second.push_back(ScalarRange( 7, 12));
+
+	vector<ScalarRange> result;
+
+	rangeUnion(first, second, result);
+
+	for(unsigned int i=0; i < result.size(); i++)
+	{
+		const ScalarRange &range = result[i];
+		cout << i << ") " << range << endl;
+	}
+	CPPUNIT_ASSERT_EQUAL((size_t)2,  result.size());
+}
+
+
 
 void RoofingTestCase::testGridStruct()
 {
@@ -1277,6 +1307,7 @@ void RoofingTestCase::testDiffBug1()
 
 }
 
+
 void surfaceToscad( const Grid &grid,
 					const GridRanges &surface,
 					const char * name,
@@ -1298,7 +1329,6 @@ void surfaceToscad( const Grid &grid,
 	Polygons yPolys;
 	grid.polygonsFromRanges(surface, false, yPolys);
 
-
 	fscad.writePolygons(  xname.c_str(), "polys", xPolys, z, 0);
 	fscad.writePolygons(  yname.c_str(), "polys", yPolys, z, 0);
 
@@ -1307,35 +1337,49 @@ void surfaceToscad( const Grid &grid,
 //    out << "color([0,1,0,1])"<< yname << "0();" << endl;
 }
 
+void extractLineX(const Grid &grid,
+					const GridRanges &surface, size_t lineId, GridRanges &result)
+{
+	result.xRays.resize(grid.readYvalues().size());
+	result.yRays.resize(grid.readXvalues().size());
+	result.xRays[lineId] = surface.xRays[lineId];
+
+	dumpRanges(surface.xRays[lineId]);
+}
+
 void RoofingTestCase::testUnionSurfaces()
 {
-
-
-//	slicerCfg.firstLayerZ = 0.1;
-//	slicerCfg.layerH = 0.3;
-//	slicerCfg.layerW = 0.4;
-//	slicerCfg.nbOfShells = 3;
-//	slicerCfg.insetDistanceMultiplier = 0.95;
 	cout << endl;
+
+	size_t sliceId = 36; //slices.size()-2;
+	size_t xRowId = 32; // 5;
+
+	cout << "sliceId="<< sliceId << endl;
+	const char *modelFileStr = "inputs/hexagon.stl";
+	const char *gcodeFileStr = "outputs/hexagon.stl";
+	const char *configFileStr = "miracle.config";
+
+	cout <<  modelFileStr << " to " << gcodeFileStr << endl;
+	cout <<  "slice " << sliceId  << endl;
+	cout <<  "row " << xRowId  << endl;
 
 	Configuration conf;
 	GCoder gcoderCfg;
 	SlicerConfig slicerCfg;
 
-	conf.readFromFile("miracle.config");
+	conf.readFromFile(configFileStr);
 	loadGCoderData(conf, gcoderCfg);
 	loadSlicerData(conf, slicerCfg);
 
-	const char *modelFileStr = "inputs/hexagon.stl";
+
 	const char *scadFileStr = NULL;
-	const char *gcodeFileStr = "outputs/hexagon.stl";
 	int firstSliceIdx =0;
 	int lastSliceIdx =-1;
 
 	ModelSkeleton skeleton;
 	vector<SliceData> slices;
 
-//	cout << "GO!" << endl;
+
 	miracleGrue(gcoderCfg,
 				slicerCfg,
 				modelFileStr,
@@ -1346,25 +1390,17 @@ void RoofingTestCase::testUnionSurfaces()
 				skeleton,
 				slices);
 
-//	GridRanges &roof =  skeleton.flatSurfaces[slices.size()-2];
-//	GridRanges &surface =  skeleton.roofings[slices.size()-2];
-//	GridRanges &inf =  skeleton.infills[slices.size()-2];
-//	GridRanges unionSurf;
-
-//	skeleton.grid.gridRangeUnion(roof, surface, unionSurf);
-
-	size_t i = slices.size()-2;
 	size_t skipCount = 1;
 
 	const Grid &grid = skeleton.grid;
-	const GridRanges &surface = skeleton.flatSurfaces[i];
-	const GridRanges &roofing = skeleton.roofings[i];
-	GridRanges &infill = skeleton.infills[i];
-
+	const GridRanges &surface = skeleton.flatSurfaces[sliceId];
+	const GridRanges &roofing = skeleton.roofings[sliceId];
+//	GridRanges &infill = skeleton.infills[sliceId];
 
 	GridRanges sparseInfill;
 	grid.subSample(surface, skipCount, sparseInfill);
-	grid.gridRangeUnion(sparseInfill, roofing, infill);
+	GridRanges myInfill;
+	grid.gridRangeUnion(sparseInfill, roofing, myInfill);
 
 	string filename = outputDir + "hexagon_union.scad";
 	ScadDebugFile fscad;
@@ -1372,83 +1408,112 @@ void RoofingTestCase::testUnionSurfaces()
 	addLinea(fscad);
     fscad.writeHeader();
 
-	surfaceToscad(skeleton.grid, infill, "infill", -1, fscad);
+
+    GridRanges sparseLine;
+    cout << "sparse_x_" << xRowId << "=";
+    extractLineX(skeleton.grid, sparseInfill, xRowId, sparseLine );
+    GridRanges roofingLine;
+    cout << "roof_x_" << xRowId << "=";
+    extractLineX(skeleton.grid, roofing, xRowId, roofingLine );
+    GridRanges infillLine;
+    cout << "infill_x_" << xRowId << "=";
+    extractLineX(skeleton.grid, myInfill, xRowId, infillLine );
+
+	surfaceToscad(skeleton.grid, sparseLine, "sparseLine", 0, fscad);
+	surfaceToscad(skeleton.grid, roofingLine, "roofingLine", 0, fscad);
+	surfaceToscad(skeleton.grid, infillLine, "infillLine", 0, fscad);
+
 	surfaceToscad(skeleton.grid, surface, "surface", 0, fscad);
-	surfaceToscad(skeleton.grid, roofing, "roofing", 1, fscad);
-	surfaceToscad(skeleton.grid, sparseInfill, "sparseInfill", 2, fscad);
+	surfaceToscad(skeleton.grid, sparseInfill, "sparseInfill", 0, fscad);
+	surfaceToscad(skeleton.grid, roofing, "roofing", 0, fscad);
+	surfaceToscad(skeleton.grid, myInfill, "infill", 0, fscad);
+
 
     std::ostream & out = fscad.getOut();
 
-//    out <<  "color([1,0,0,1])infill_x_0();" << endl;
-    // hole is not there!
-
-
-//    out <<  "color([1,0,0,1])sparseInfill_x_0();" << endl;
-
-//      out <<  "color([1,0,0,1])surface_x_0();" << endl;
-
+    out <<  "translate([-50,0,0])color([0,0,1,1])surface_x_0();" << endl;
+    out <<  "translate([-25,0,0])color([0,1,0,1])sparseInfill_x_0();" << endl;
     out <<  "color([1,0,0,1])roofing_x_0();" << endl;
+    out <<  "translate([25,0,0])infill_x_0();" << endl;
 
-
-//    out << "color([1,0,0,1])"<< "_0();" << endl;
-//    out << "color([0,1,0,1])"<< yname << "0();" << endl;
-
-
-//    surfaceToscad(skeleton.grid, inf, "infill", -1, fscad);
-//    surfaceToscad(skeleton.grid, surface, "surface", 0, fscad);
-//    surfaceToscad(skeleton.grid, roof, "roof", 1, fscad);
-//	  surfaceToscad(skeleton.grid, unionSurf, "union", 2, fscad);
+    out <<  "translate([-25,-12,0])color([0,1,0,1]) sparseLine_x_0();" << endl;
+    out <<  "translate([0,-12,0])color([1,0,0,1])roofingLine_x_0();" << endl;
+    out <<  "translate([25,-12,0])infillLine_x_0();" << endl;
 
 	fscad.close();
 
 	cout << "slices =" << slices.size() << endl;
-	cout << "done" << endl;
+
+	const vector<ScalarRange>& sparseLineRanges = sparseInfill.xRays[xRowId];
+	const vector<ScalarRange>& roofLineRanges   = roofing.xRays[xRowId];
+	vector<ScalarRange>infillLineRanges;
+
 
 }
 
 
-/*
-void RoofingTestCase::testRangeDifferenceEmpty()
+void RoofingTestCase::testRangeUnion3()
 {
-	//	1      ******      ********    ******   **   **
-	//  2  **     *****   ****  *    ***   *******
-	//  3      +++            ++        +++          ++
-	//     012345678901234567890123456789012345678901234
-	//               1         2         3         4
-	//  4-7 19-21 29-32 42-44
-	cout << endl;
+//	sparse_x_32=[
+//	 [-9.44, -2.99368],
+//	 [2.99363, 9.44],
+//	]
+//	roof_x_32=[
+//	 [-9.44, -2.99368],
+//	 [2.99363, 9.44],
+//	]
+//	infill_x_32=[
+//	 [-9.44, -2.99368],
+//	 [2.99363, -2.99368],
+//	 [-9.44, -2.99368],
+//	 [2.99363, 9.44],
+//	]
+
 	vector<ScalarRange> first;
 	vector<ScalarRange> second;
 
-
 //	first.push_back( ScalarRange( ));
+	first.push_back( ScalarRange(-9.44, -2.99368 ));
+	first.push_back( ScalarRange(2.99363, 9.44 ));
 
 
 //	second.push_back(ScalarRange( ));
+	second.push_back(ScalarRange(-9.44, -2.99368 ));
+	second.push_back(ScalarRange(2.99363, 9.44 ));
 
+	vector<ScalarRange> result;
 
-	vector<ScalarRange> difference;
-	cout << "scalarRangeDifference" << endl;
-	rangeDifference(first, second, difference);
+	rangeUnion(first, second, result);
 
-	cout << "DIFFERENCES" << endl;
-	for(unsigned int i=0; i < difference.size(); i++)
-	{
-		cout << " "<< i << ") " << difference[i] << endl;
-	}
-	CPPUNIT_ASSERT_EQUAL((size_t)4, difference.size());
+	cout << "first = ";
+	dumpRanges(first);
+	cout << "second = ";
+	dumpRanges(second);
+	cout << "result = ";
+	dumpRanges(result);
 
-	CPPUNIT_ASSERT_DOUBLES_EQUAL( 4, difference[0].min, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL( 7, difference[0].max, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(19, difference[1].min, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(21, difference[1].max, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(29, difference[2].min, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(32, difference[2].max, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(42, difference[3].min, tol );
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(44, difference[3].max, tol );
+	CPPUNIT_ASSERT_EQUAL((size_t)2,  result.size());
 
 }
 
+
+
+// module extrusion(x1, y1, z1, x2, y2, z2)
+//{
+//    dc = 0.60000;
+//    d1 = 0.3;
+//    d2 = 0;
+//
+//
+//    f = 6;
+//    t =  0.75000;
+//    corner(x1,y1,z1, diameter=dc, faces=f, thickness_over_width =t );
+//    tube(x1, y1, z1, x2, y2, z2, diameter1=d1, diameter2=d2, faces=f, thickness_over_width=t);
+//}
+
+
+
+/*
 
 doit(modelFile, size_t floorThick, size_t ceilingThick)
 {

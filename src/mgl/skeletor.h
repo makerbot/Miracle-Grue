@@ -66,6 +66,7 @@ public:
 				ProgressBar *progress = NULL)
 	{
 		this->progress = progress;
+		std::cout << "progress = " << progress << std::endl;
 
 		this->slicerCfg = slicerCfg;
 		this->roofCount = roofCount;
@@ -173,6 +174,11 @@ public:
 		}
 	}
 
+    void floorForSlice( const GridRanges & currentSurface, const GridRanges & surfaceBelow, const Grid & grid, GridRanges & flooring)
+    {
+    	grid.gridRangeDifference(currentSurface, surfaceBelow,  flooring);
+    }
+
     void roofForSlice( const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing)
     {
         grid.gridRangeDifference(currentSurface, surfaceAbove, roofing);
@@ -198,6 +204,26 @@ public:
 
     }
 
+    void flooring(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & floorings)
+    {
+        assert(flatSurfaces.size() > 0);
+        assert(floorings.size() == 0);
+        unsigned int sliceCount = flatSurfaces.size();
+        initProgress("flooring", sliceCount);
+
+        floorings.resize(sliceCount);
+        for(size_t i = 1; i < sliceCount; i++)
+        {
+            tick();
+        	const GridRanges & currentSurface = flatSurfaces[i];
+            const GridRanges & surfaceBelow = flatSurfaces[i - 1];
+            GridRanges & flooring = floorings[i];
+            floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+    	}
+    	tick();
+        floorings[0] = flatSurfaces[0];
+
+    }
     void infills(const std::vector<GridRanges> &flatSurfaces,
     			 const Grid &grid,
     			 const std::vector<GridRanges> &roofings,
@@ -217,15 +243,16 @@ public:
         	// std::cout  << "INFILL " << i << "/" << sliceCount << std::endl;
         	const GridRanges &surface = flatSurfaces[i];
         	const GridRanges &roofing = roofings[i];
-
+        	const GridRanges &flooring = floorings[i];
         	GridRanges sparseInfill;
         	// cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
         	grid.subSample(surface, skipCount, sparseInfill);
 
-        	// cout << " union " << i << endl;
+        	// std::cout << " infill = union roofing and surface " << i << "/" << sliceCount << std::endl;
+        	GridRanges roofed;
+        	grid.gridRangeUnion(sparseInfill, roofing, roofed);
         	GridRanges &infill = infills[i];
-        	grid.gridRangeUnion(sparseInfill, roofing, infill);
-        	// infill = roofing;
+        	grid.gridRangeUnion(roofed, flooring, infill);
         }
 
     }

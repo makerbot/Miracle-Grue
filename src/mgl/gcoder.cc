@@ -568,8 +568,9 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 	if(doZ) ss << " Z" << z;
 	if(doFeed) ss << " F" << feed;
 	if(g1Comment) ss << " (" << g1Comment << ")";
-
 	ss << endl;
+
+	// if(feed >= 5000) assert(0);
 
 	// update state machine
 	this->x = x;

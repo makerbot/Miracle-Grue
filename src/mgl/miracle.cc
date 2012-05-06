@@ -12,6 +12,31 @@ using namespace Json;
 using namespace libthing;
 
 
+class Slicinator
+{
+	Skeletor skeletor;
+	Slicor slicor;
+
+	ModelSkeleton skeleton;
+//	std::vector< SliceData >  slices;
+
+public:
+	Slicinator(	GCoder &gcoderCfg,
+            	const SlicerConfig &slicerCfg)
+	{
+	}
+
+	void slice(const char *modelFileStr, std::vector< SliceData >  &slices, ProgressBar &progress)
+	{
+
+	}
+
+	void writeGcode(ostream& output)
+	{
+
+	}
+
+};
 
 //// @param slices list of output slice (output )
 void mgl::miracleGrue(GCoder &gcoderCfg,
@@ -26,6 +51,11 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
                       ProgressBar *progress)
 {
 
+	ProgressLog log;
+	if(!progress)
+	{
+		progress = &log;
+	}
 
 	unsigned int roofLayerCount = 3;
 	unsigned int floorLayerCount = 3;
@@ -51,6 +81,8 @@ void mgl::miracleGrue(GCoder &gcoderCfg,
 						skeleton.flatSurfaces);
 
 	skeletor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+
+	skeletor.flooring(skeleton.flatSurfaces, skeleton.grid, skeleton.floorings);
 
 	skeletor.infills( skeleton.flatSurfaces,
 					skeleton.grid,

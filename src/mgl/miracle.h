@@ -33,7 +33,6 @@ void miracleGrue(GCoder &gcoder,
                       std::vector< SliceData >  &slices,
                       ProgressBar* progress = NULL);
 
-
 void slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
 		const SlicerConfig &slicer,
@@ -42,8 +41,6 @@ void slicesFromSlicerAndMesh(
 		int firstSliceIdx  = -1,
                 int lastSliceIdx  = -1,
                 ProgressBar* progress = NULL);
-
-
 
 void adjustSlicesToPlate(
 		std::vector<SliceData>& slices,

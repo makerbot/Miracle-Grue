@@ -264,9 +264,6 @@ int main(int argc, char *argv[], char *envp[])
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
-	//	Meshy mesh(slicer.firstLayerZ, slicer.layerH);
-	//	mesh.readStlFile(modelFile.c_str());
-
 		ModelSkeleton skeleton;
 		miracleGrue(gcoder, slicer, modelFile.c_str(),
 					scad, gcodeFile.c_str(),

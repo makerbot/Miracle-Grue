@@ -30,6 +30,9 @@ private:
 //		CPPUNIT_TEST(testSimpleUnion);
 //		CPPUNIT_TEST(testSubRangeUnion);
 
+//		CPPUNIT_TEST(testRangeUnion2);
+		CPPUNIT_TEST(testRangeUnion3);
+
 //		CPPUNIT_TEST(testRangeUnion);
 
 //		CPPUNIT_TEST(testGridStruct);
@@ -74,6 +77,10 @@ protected:
   void testSubRangeUnion();
 
   void testRangeUnion();
+
+  void testRangeUnion2();
+
+  void testRangeUnion3();
 
   void testGridStruct();
 
