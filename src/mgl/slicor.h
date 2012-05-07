@@ -19,21 +19,22 @@
 namespace mgl
 {
 
-class Slicor
+class Pather
 {
 	ProgressBar *progress;
 public:
-	GCoder gcoder;
+	// GCoder gcoder;
 
-	Slicor()
+	Pather()
 		:progress(NULL)
 	{
 	}
 
-	void init(const GCoder &gcoderCfg, ProgressBar *progress = NULL)
+//	void init(const GCoder &gcoderCfg, ProgressBar *progress = NULL)
+	void init(ProgressBar *progress = NULL)
 	{
 		this->progress = progress;
-		this->gcoder = gcoderCfg;
+		// this->gcoder = gcoderCfg;
 	}
 
 	// allow progress callback
@@ -118,6 +119,7 @@ public:
 		grid.polygonsFromRanges(infillRanges, direction, infills);
 	}
 
+	/*
 	void writeGcode(const char *gcodeFile, const char* modelSource, const std::vector<SliceData> &slices)
 	{
 		std::ofstream gout(gcodeFile);
@@ -132,6 +134,7 @@ public:
 		}
 		gout.close();
 	}
+	*/
 };
 
 

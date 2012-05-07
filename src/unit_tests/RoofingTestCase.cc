@@ -1057,7 +1057,7 @@ void RoofingTestCase::testSkeleton()
 
 	cout << "read model " << modelFile << endl;
 
-	Skeletor skeletor;
+	Regioner skeletor;
 	skeletor.init(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount);
 
 	ModelSkeleton skeleton;
@@ -1091,7 +1091,7 @@ void RoofingTestCase::testSkeleton()
 	cout << "slice data" << endl;
 	std::vector<SliceData> slices;
 
-	Slicor slicor;
+	Pather slicor;
 	slicor.init(gcoderCfg);
 
 	size_t sliceCount = skeleton.outlines.size();
@@ -1140,7 +1140,7 @@ void RoofingTestCase::test3dKnotPlatform()
 	slicerCfg.nbOfShells = 3;
 	slicerCfg.insetDistanceMultiplier = 0.95;
 
-	Skeletor skeletor;
+	Regioner skeletor;
 	skeletor.init(slicerCfg, 0.95, 3, 3, 2);
 
 	vector<SegmentTable> outlines;

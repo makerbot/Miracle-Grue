@@ -41,7 +41,7 @@ struct ModelSkeleton
     {}
 };
 
-class Skeletor
+class Regioner
 {
 public:
 	SlicerConfig slicerCfg;
@@ -53,7 +53,7 @@ public:
 
 public:
 
-	Skeletor()
+	Regioner()
 	:progress(NULL)
 	{
 	}
