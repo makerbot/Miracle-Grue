@@ -171,9 +171,12 @@ void GCoderTestCase::testSingleExtruder()
 	string confstr = w.write(config.root);
 	cout << confstr << endl;
 
-	GCoder gcoder;
-	gcoder.extruders.push_back(Extruder());
-//	loadGCoderData(config, gcoder);
+	GCoderConfig cfg;
+	cfg.extruders.push_back(Extruder());
+
+	GCoder gcoder(cfg);
+
+
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeGcodeEndOfFile(gout);
@@ -200,10 +203,12 @@ void GCoderTestCase::testDualExtruders()
 	// create a simple Gcode operation (no paths), initialize it and run it
 
 	std::ofstream gout(DUAL_EXTRUDER_FILE_NAME);
-	GCoder gcoder;
-	gcoder.extruders.push_back(Extruder());
-	gcoder.extruders.push_back(Extruder());
+
+	GCoderConfig gcoderCfg;
+	gcoderCfg.extruders.push_back(Extruder());
+	gcoderCfg.extruders.push_back(Extruder());
 //	loadGCoderData(config, gcoder);
+	GCoder gcoder(gcoderCfg);
 
 	gcoder.writeStartOfFile(gout, DUAL_EXTRUDER_FILE_NAME );
 	dbg__
@@ -236,9 +241,12 @@ void GCoderTestCase::testSimplePath()
 	// instaniate a gcoder and send it the path as an envelope.
 
 	std::ofstream gout(SINGLE_EXTRUDER_WITH_PATH);
-	GCoder gcoder;
-	gcoder.extruders.push_back(Extruder());
-//	loadGCoderData(config, gcoder);
+
+	GCoderConfig gcoderCfg;
+	gcoderCfg.extruders.push_back(Extruder());
+
+	GCoder gcoder(gcoderCfg);
+
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_WITH_PATH);
 	gcoder.writeGcodeEndOfFile(gout);
 	for(int i = 0; i < slices.size(); i++)
@@ -423,8 +431,11 @@ void GCoderTestCase::testGridPath()
 	slices.push_back(path);
 
 	std::ofstream gout(SINGLE_EXTRUDER_GRID_PATH);
-	GCoder gcoder;
-	gcoder.extruders.push_back(Extruder());
+
+	GCoderConfig gcoderCfg;
+	gcoderCfg.extruders.push_back(Extruder());
+
+	GCoder gcoder(gcoderCfg);
 
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_GRID_PATH);
 	for(int i = 0; i < slices.size(); i++)
@@ -483,8 +494,12 @@ void GCoderTestCase::testMultiGrid()
 	}
 
 	std::ofstream gout(SINGLE_EXTRUDER_MULTI_GRID_PATH);
-	GCoder gcoder;
-	gcoder.extruders.push_back(Extruder());
+
+	GCoderConfig gcoderCfg;
+	gcoderCfg.extruders.push_back(Extruder());
+
+	GCoder gcoder(gcoderCfg);
+
 	// loadGCoderData(config, gcoder);
 	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
 

@@ -185,52 +185,12 @@ struct GCoding
 	bool dualtrick;
 };
 
-
-class Progressive
+struct GCoderConfig
 {
-    ProgressBar *progress;
-public:
-    Progressive(ProgressBar *progress = NULL)
-    {
-        setProgress(progress);
-    }
-
-    void setProgress(ProgressBar *progress)
-    {
-        this->progress = progress;
-    }
-
-protected:
-    void initProgress(const char* title, unsigned int ticks)
-    {
-        if(progress)
-        {
-            progress->reset(ticks, title);
-        }
-    }
-    void tick()
-    {
-        if(progress)
-        {
-            progress->tick();
-        }
-    }
-
-};
-
-//
-// This class contains settings for the 3D printer,
-// user preferences as well as runtime information
-//
-class GCoder : public Progressive
-{
-
-public:
-	GCoder()
+	GCoderConfig()
 	:programName("Miracle-Grue"),
 	 versionStr("0.0.1")
-	{
-	}
+	{}
 
     std::string programName;
     std::string versionStr;
@@ -244,6 +204,26 @@ public:
 
     std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
+};
+
+
+//
+// This class contains settings for the 3D printer,
+// user preferences as well as runtime information
+//
+class GCoder : public Progressive
+{
+public:
+
+	GCoderConfig gcoderCfg;
+
+	GCoder(const GCoderConfig &gCoderCfg)
+		:gcoderCfg(gCoderCfg)
+	{
+	}
+
+
+
     void moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
 
 public:
@@ -256,9 +236,11 @@ public:
 
     void writeStartOfFile(std::ostream & ss, const char* filename);
     void writeGcodeEndOfFile(std::ostream & ss) const;
+
+    // todo: return the gCoderCfg instead
     const std::vector<Extruder> & readExtruders() const
     {
-        return extruders;
+        return gcoderCfg.extruders;
     }
 
     void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);

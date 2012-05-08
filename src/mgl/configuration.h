@@ -91,8 +91,8 @@ public:
 
 };
 
-void loadGCoderData(const Configuration& conf, GCoder &gcoder);
-void loadSlicerData( const Configuration &config, SlicerConfig &slicer);
+void loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcoder);
+void loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicer);
 
 }
 #endif /* CONFIGURATION_H_ */

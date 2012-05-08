@@ -23,25 +23,23 @@ namespace mgl
 {
 
 
-struct ModelSkeleton
+struct Regions
 {
 	Grid grid;
 	LayerMeasure layerMeasure;
 	std::vector<libthing::SegmentTable>   outlines;
-
-
     std::vector<libthing::Insets> 		insets;
     std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
     std::vector<GridRanges>     roofings;
     std::vector<GridRanges>     floorings;
     std::vector<GridRanges>     infills;
 
-    ModelSkeleton()
+    Regions()
     :layerMeasure(0,0)
     {}
 };
 
-class Regioner
+class Regioner : public Progressive
 {
 public:
 	SlicerConfig slicerCfg;
@@ -53,11 +51,17 @@ public:
 
 public:
 
-	Regioner()
-	:progress(NULL)
+	Regioner(const SlicerConfig &slicerCfg,
+			Scalar gridSpacingMultiplier,
+			size_t roofCount,
+			size_t floorCount,
+			size_t  skipCount,
+			ProgressBar *progress = NULL)
+	:Progressive(progress)
 	{
+		init(slicerCfg, gridSpacingMultiplier, roofCount, floorCount, skipCount, progress);
 	}
-
+private:
 	void init(	const SlicerConfig &slicerCfg,
 				Scalar gridSpacingMultiplier,
 				size_t roofCount,
@@ -75,29 +79,10 @@ public:
 		this->skipCount = skipCount;
 	}
 
-private:
-
-	// allow progress callback
-	void initProgress(const char*task, size_t tickCount)
-	{
-		if(progress)
-		{
-			progress->reset(tickCount, task);
-		}
-	}
-
-	// update parent
-	void tick()
-	{
-		if(progress)
-		{
-			progress->tick();
-		}
-	}
 
 public:
 
-	void generateSkeleton(const char* modelFile, ModelSkeleton &skeleton)
+	void generateSkeleton(const char* modelFile, Regions &skeleton)
 	{
 		outlines(	modelFile,
 					skeleton.layerMeasure,

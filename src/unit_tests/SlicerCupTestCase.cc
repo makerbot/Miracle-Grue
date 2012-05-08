@@ -49,14 +49,15 @@ void testModel(const char *model, const char* configFile)
 	Configuration config;
 	config.readFromFile(configFile);
 
-	GCoder gcoder;
-	loadGCoderData(config, gcoder);
+ 	SlicerConfig slicerCfg;
+	loadSlicerConfigFromFile(config, slicerCfg);
 
-	SlicerConfig slicer;
-	loadSlicerData(config, slicer);
-	ModelSkeleton skeleton;
+	GCoderConfig gcoderCfg;
+	loadGCoderConfigFromFile(config, gcoderCfg);
+
+	Regions skeleton;
 	std::vector< SliceData >  slices;
-	miracleGrue(gcoder, slicer, modelFile.c_str(), NULL,
+	miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(), NULL,
 				gcodeFile.c_str(), -1, -1,
 				skeleton,
 				slices);
@@ -64,8 +65,6 @@ void testModel(const char *model, const char* configFile)
 
 void testModels(vector<string>& models, const char* configFile)
 {
-
-
 
 	for(int i=0; i< models.size(); i++)
 	{

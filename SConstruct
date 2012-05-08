@@ -189,9 +189,11 @@ mgl_cc = [	'src/mgl/mgl.cc',
 			'src/mgl/insets.cc',
 			'src/mgl/clipper.cc',
 			'src/mgl/ScadDebugFile.cc',
-            		'src/mgl/Edge.cc',
-            		'src/mgl/log.cc',
-			'src/mgl/grid.cc']
+            'src/mgl/Edge.cc',
+            'src/mgl/log.cc',
+			'src/mgl/grid.cc',
+			'src/mgl/pather.cc',
+			]
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
             'submodule/json-cpp/src/lib_json/json_value.cpp',

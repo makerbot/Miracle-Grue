@@ -250,24 +250,30 @@ int main(int argc, char *argv[], char *envp[])
 		cout << endl << endl;
 		cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
-		GCoder gcoder;
-		loadGCoderData(config, gcoder);
+		GCoderConfig gcoderCfg;
+		loadGCoderConfigFromFile(config, gcoderCfg);
 
-		SlicerConfig slicer;
-		loadSlicerData(config, slicer);
-		std::vector<mgl::SliceData> slices;
-		std::vector<Scalar> zIndicies;
+		SlicerConfig slicerCfg;
+		loadSlicerConfigFromFile(config, slicerCfg);
+
 		const char* scad = NULL;
 
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
-		ModelSkeleton skeleton;
-		miracleGrue(gcoder, slicer, modelFile.c_str(),
-					scad, gcodeFile.c_str(),
-					firstSliceIdx, lastSliceIdx,
-					skeleton,
-					slices);
+		Regions regions;
+		std::vector<mgl::SliceData> slices;
+
+		ProgressLog log;
+
+		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
+					scad,
+					gcodeFile.c_str(),
+					firstSliceIdx,
+					lastSliceIdx,
+					regions,
+					slices,
+					&log);
 
     }
     catch(mgl::Exception &mixup)

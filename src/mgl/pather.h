@@ -13,49 +13,29 @@
 #ifndef SLICOR_H_
 #define SLICOR_H_
 
-#include "gcoder.h"
+
 #include "insets.h"
+#include "regioner.h"
 
 namespace mgl
 {
 
-class Pather
+class Pather : public Progressive
 {
-	ProgressBar *progress;
+
 public:
-	// GCoder gcoder;
 
-	Pather()
-		:progress(NULL)
+
+	Pather(ProgressBar * progress = NULL)
+		:Progressive(progress)
 	{
 	}
 
-//	void init(const GCoder &gcoderCfg, ProgressBar *progress = NULL)
-	void init(ProgressBar *progress = NULL)
-	{
-		this->progress = progress;
-		// this->gcoder = gcoderCfg;
-	}
 
-	// allow progress callback
-	void initProgress(const char*task, size_t tickCount)
-	{
-		if(progress)
-		{
-			progress->reset(tickCount, task);
-		}
-	}
-
-	// update parent
-	void tick()
-	{
-		if(progress)
-		{
-			progress->tick();
-		}
-	}
-
-	void generatePaths(const ModelSkeleton &skeleton, std::vector<SliceData> &slices, size_t firstSliceIdx=-1, size_t lastSliceIdx=-1)
+	void generatePaths(const Regions &skeleton,
+						std::vector<SliceData> &slices,
+						size_t firstSliceIdx=-1,
+						size_t lastSliceIdx=-1)
 	{
 		size_t sliceCount = skeleton.outlines.size();
 	    if(firstSliceIdx == -1) firstSliceIdx = 0;
@@ -65,11 +45,11 @@ public:
 		bool direction = false;
 		unsigned int currentSlice = 0;
 
-		if(progress){progress->reset(sliceCount, "Path generation");}
+		initProgress("Path generation", sliceCount);
 
 		for(size_t i=0; i < sliceCount; i++)
 		{
-			if(progress){progress->tick();}
+			tick();
 
 	        if(i <  firstSliceIdx) continue;
 	        if(i > lastSliceIdx) break;
@@ -119,26 +99,10 @@ public:
 		grid.polygonsFromRanges(infillRanges, direction, infills);
 	}
 
-	/*
-	void writeGcode(const char *gcodeFile, const char* modelSource, const std::vector<SliceData> &slices)
-	{
-		std::ofstream gout(gcodeFile);
-		gcoder.writeStartOfFile(gout, modelSource);
-		size_t sliceCount = slices.size();
-		initProgress("gcode", sliceCount);
-		for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
-		{
-			tick();
-			const SliceData &slice = slices[sliceId];
-			gcoder.writeSlice(gout, slice);
-		}
-		gout.close();
-	}
-	*/
 };
 
 
 
 }
 
-#endif /* SLICOR_H_ */
+#endif

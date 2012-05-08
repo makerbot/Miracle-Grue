@@ -1,7 +1,6 @@
 #include <cppunit/config/SourcePrefix.h>
 
-#include "mgl/skeletor.h"
-#include "mgl/slicor.h"
+#include "mgl/pather.h"
 
 #include "UnitTestUtils.h"
 
@@ -1049,39 +1048,37 @@ void RoofingTestCase::testSkeleton()
     Configuration config;
    	config.readFromFile(configFileName.c_str());
 
-	GCoder gcoderCfg;
+	GCoderConfig gcoderCfg;
 	SlicerConfig slicerCfg;
 
-	loadGCoderData(config, gcoderCfg);
-	loadSlicerData(config, slicerCfg);
-
+	loadGCoderConfigFromFile(config, gcoderCfg);
+	loadSlicerConfigFromFile(config, slicerCfg);
 	cout << "read model " << modelFile << endl;
 
-	Regioner skeletor;
-	skeletor.init(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount);
+	Regioner regioner(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount);
 
-	ModelSkeleton skeleton;
+	Regions skeleton;
 
 	cout << "outlines" << endl;
-	skeletor.outlines(modelFile.c_str(),
+	regioner.outlines(modelFile.c_str(),
 					skeleton.layerMeasure,
 					skeleton.grid,
 					skeleton.outlines);
 
 	cout << "insets" << endl;
-	skeletor.insets(skeleton.outlines,
+	regioner.insets(skeleton.outlines,
 				  skeleton.insets);
 
 	cout << "flat surfaces" << endl;
-	skeletor.flatSurfaces(skeleton.insets,
+	regioner.flatSurfaces(skeleton.insets,
 						skeleton.grid,
 						skeleton.flatSurfaces);
 
 	cout << "roofings" << endl;
-	skeletor.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+	regioner.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
 
 	cout << "infills" << endl;
-	skeletor.infills( skeleton.flatSurfaces,
+	regioner.infills( skeleton.flatSurfaces,
 					skeleton.grid,
 					skeleton.roofings,
 					skeleton.floorings,
@@ -1140,8 +1137,7 @@ void RoofingTestCase::test3dKnotPlatform()
 	slicerCfg.nbOfShells = 3;
 	slicerCfg.insetDistanceMultiplier = 0.95;
 
-	Regioner skeletor;
-	skeletor.init(slicerCfg, 0.95, 3, 3, 2);
+	Regioner skeletor(slicerCfg, 0.95, 3, 3, 2);
 
 	vector<SegmentTable> outlines;
 	Grid grid;
@@ -1364,21 +1360,21 @@ void RoofingTestCase::testUnionSurfaces()
 	cout <<  "row " << xRowId  << endl;
 
 	Configuration conf;
-	GCoder gcoderCfg;
+	GCoderConfig gcoderCfg;
 	SlicerConfig slicerCfg;
 
 	conf.readFromFile(configFileStr);
-	loadGCoderData(conf, gcoderCfg);
-	loadSlicerData(conf, slicerCfg);
+
+	loadGCoderConfigFromFile(conf, gcoderCfg);
+	loadSlicerConfigFromFile(conf, slicerCfg);
 
 
 	const char *scadFileStr = NULL;
 	int firstSliceIdx =0;
 	int lastSliceIdx =-1;
 
-	ModelSkeleton skeleton;
+	Regions skeleton;
 	vector<SliceData> slices;
-
 
 	miracleGrue(gcoderCfg,
 				slicerCfg,

@@ -12,73 +12,40 @@ using namespace Json;
 using namespace libthing;
 
 
-class Slicinator
-{
-	Regioner regioner;
-	Pather slicor;
-
-	ModelSkeleton skeleton;
-//	std::vector< SliceData >  slices;
-
-public:
-	Slicinator(	GCoder &gcoderCfg,
-            	const SlicerConfig &slicerCfg)
-	{
-	}
-
-	void slice(const char *modelFileStr, std::vector< SliceData >  &slices, ProgressBar &progress)
-	{
-
-	}
-
-	void writeGcode(ostream& output)
-	{
-
-	}
-
-};
-
 //// @param slices list of output slice (output )
-void mgl::miracleGrue(GCoder &gcoder,
+void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
                       const SlicerConfig &slicerCfg,
                       const char *modelFile,
                       const char *scadFileStr,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
-                      ModelSkeleton &skeleton,
+                      Regions &regions,
                       std::vector< SliceData >  &slices,
                       ProgressBar *progress)
 {
-
-	ProgressLog log;
-	if(!progress)
-	{
-		progress = &log;
-	}
 
 	unsigned int roofLayerCount = 3;
 	unsigned int floorLayerCount = 3;
 	unsigned int skipCount = 2;
 
-	Regioner regioner;
-	regioner.init(slicerCfg, 0.95,
+	Regioner regioner(slicerCfg, 0.95,
 					roofLayerCount,
 					floorLayerCount,
 					skipCount,
 					progress);
 
-	regioner.generateSkeleton(modelFile, skeleton);
+	regioner.generateSkeleton(modelFile, regions);
 
-	Pather pather;
-	pather.init(progress);
-	pather.generatePaths(skeleton, slices);
+	Pather pather(progress);
+
+	pather.generatePaths(regions, slices);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
-
 	std::ofstream gout(gcodeFile);
 
-    gcoder.writeGcodeFile(slices, skeleton.layerMeasure, gout, modelFile, firstSliceIdx, lastSliceIdx);
+	GCoder gcoder(gcoderCfg);
+    gcoder.writeGcodeFile(slices, regions.layerMeasure, gout, modelFile, firstSliceIdx, lastSliceIdx);
 
 	gout.close();
 
