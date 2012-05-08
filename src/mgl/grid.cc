@@ -170,12 +170,13 @@ void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
 
 typedef map<int, int> PointMap;
 typedef PointMap::iterator PointIter;
+typedef enum {X_AXIS, Y_AXIS} axis_e;
 
-void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
-								const std::vector<Scalar> &values, // the y values for each line
-								Polygons &polygons)				   // the output
+void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
+										const std::vector<Scalar> &values, // the opposite axis values for each line
+										axis_e axis,
+										Polygons &polygons)  // the output
 {
-
 	PointMap points_remaining;
 
 	//Convert ray ranges to segments and map endpoints
@@ -186,15 +187,21 @@ void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ran
 		if(ray.size() == 0)
 			continue;
 		
-		Scalar yval = values[i];
+		Scalar val = values[i];
 
 		for (vector<ScalarRange>::const_iterator j = ray.begin();
 			 j != ray.end(); j++) {
 
 			assert(j->min != j->max);
 
-			points.push_back(Vector2(j->min, yval));
-			points.push_back(Vector2(j->max, yval));
+			if (axis == X_AXIS) {
+				points.push_back(Vector2(j->min, val));
+				points.push_back(Vector2(j->max, val));
+			}
+			else {
+				points.push_back(Vector2(val, j->min));
+				points.push_back(Vector2(val, j->max));
+			}				
 			
 			points_remaining[points.size() - 2] = points.size() - 1;
 			points_remaining[points.size() - 1] = points.size() - 2;
@@ -220,19 +227,6 @@ void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ran
 			Scalar dist = LineSegment2(points[endpoint], points[close])
 				            .squaredLength();
 
-			if (dist == 0) {
-				cout << "close points" << endl << "endpoint" << endl;
-				cout << "\tp: " << endpoint << endl;
-				cout << "\tx: " << points[endpoint].x << endl;
-				cout << "\ty: " << points[endpoint].y << endl;
-				cout << "close" << endl;
-				cout << "\tp: " << close << endl;
-				cout << "\tx: " << points[close].x << endl;
-				cout << "\ty: " << points[close].y << endl;
-				
-				assert(0);
-			}
-
 			if (dist < closest_dist) {
 				closest = close;
 				closest_dist = dist;
@@ -250,97 +244,6 @@ void polygonsFromScalarRangesAlongX( const ScalarRangeTable &rays,	   // the ran
 		points_remaining.erase(closest);
 	}
 
-
-	// change direction of extrusion
-	// for each line
-	/*	bool forward = false;
-	assert(rays.size() == values.size());
-
-	for(size_t rayId =0; rayId < rays.size(); rayId++)
-	{
-		const vector<ScalarRange> &ray = rays[rayId];
-		if(ray.size() == 0)
-			continue;
-
-		forward = !forward;
-		Scalar value = values[rayId];
-
-		vector<ScalarRange> line;
-		line.reserve(ray.size());
-		if(forward)
-		{
-			line = ray;
-		}
-		else
-		{
-			// reverse the ranges in the ray
-			for(size_t i=0; i < ray.size(); i++)
-			{
-				ScalarRange range(ray[i].max, ray[i].min);
-				line.push_back(range);
-			}
-		}
-		for(size_t i= 0; i< line.size(); i++ )
-		{
-			const ScalarRange &range = line[i];
-			Vector2 begin(range.min, value);
-			Vector2 end(range.max, value);
-
-			// add a polygon
-			polygons.push_back(Polygon());
-			Polygon &poly = polygons.back();
-			poly.push_back(begin);
-			poly.push_back(end);
-		}
-		}*/
-}
-
-void polygonsFromScalarRangesAlongY( const ScalarRangeTable &rays,	   // the ranges along x, multiple per lines
-								const std::vector<Scalar> &values, // the x values for each line
-								Polygons &polygons)				   // the output
-{
-	// change direction of extrusion
-	// for each line
-	bool forward = false;
-	assert(rays.size() == values.size());
-
-	for(size_t rayId =0; rayId < rays.size(); rayId++)
-	{
-		const vector<ScalarRange> &ray = rays[rayId];
-		if(ray.size() == 0)
-			continue;
-
-		forward = !forward;
-		Scalar value = values[rayId];
-
-		vector<ScalarRange> line;
-		line.reserve(ray.size());
-		if(forward)
-		{
-			line = ray;
-		}
-		else
-		{
-			// reverse the ranges in the ray
-			for(size_t i=0; i < ray.size(); i++)
-			{
-				ScalarRange range(ray[i].max, ray[i].min);
-				line.push_back(range);
-			}
-		}
-		for(size_t i= 0; i< line.size(); i++ )
-		{
-			const ScalarRange &range = line[i];
-			Vector2 begin(value, range.min);
-			Vector2 end(value, range.max);
-
-			// add a polygon
-			polygons.push_back(Polygon());
-			Polygon &poly = polygons.back();
-			poly.push_back(begin);
-			poly.push_back(end);
-		}
-	}
 }
 
 bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scalar &end)
@@ -827,11 +730,11 @@ void Grid::polygonsFromRanges(const GridRanges &gridRanges, bool xDirection, Pol
 	assert(polys.size() == 0);
 	if(xDirection)
 	{
-		polygonsFromScalarRangesAlongX(gridRanges.xRays, yValues, polys);
+		polygonsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS, polys);
 	}
 	else
 	{
-		polygonsFromScalarRangesAlongY(gridRanges.yRays, xValues, polys);
+		polygonsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS, polys);
 	}
 }
 
