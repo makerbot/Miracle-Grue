@@ -14,6 +14,7 @@
 #define GCODER_H_
 
 #include <map>
+#include "mgl.h"
 #include "slicy.h"
 
 
@@ -185,12 +186,43 @@ struct GCoding
 };
 
 
+class Progressive
+{
+    ProgressBar *progress;
+public:
+    Progressive(ProgressBar *progress = NULL)
+    {
+        setProgress(progress);
+    }
+
+    void setProgress(ProgressBar *progress)
+    {
+        this->progress = progress;
+    }
+
+protected:
+    void initProgress(const char* title, unsigned int ticks)
+    {
+        if(progress)
+        {
+            progress->reset(ticks, title);
+        }
+    }
+    void tick()
+    {
+        if(progress)
+        {
+            progress->tick();
+        }
+    }
+
+};
 
 //
 // This class contains settings for the 3D printer,
 // user preferences as well as runtime information
 //
-class GCoder
+class GCoder : public Progressive
 {
 
 public:
@@ -231,6 +263,12 @@ public:
 
     void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
 
+    void writeGcodeFile(std::vector <SliceData>& slices,
+                        const mgl::LayerMeasure& LayerMeasure,
+                        std::ostream &gout,
+                            const char *title,
+                                int firstSliceIdx=-1,
+                                    int lastSliceIdx=-1);
 private:
 
     void writeGCodeConfig(std::ostream & ss, const char* filename) const;

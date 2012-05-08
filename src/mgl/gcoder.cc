@@ -357,6 +357,35 @@ void GCoder::calcInSetExtrusion (	unsigned int extruderId,
 	extrusion.flow *= gantry.scalingFactor;
 }
 
+void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
+                             const mgl::LayerMeasure& layerMeasure,
+                                std::ostream &gout,
+                                    const char* title,
+                                        int firstSliceIdx,
+                                            int lastSliceIdx)
+{
+    writeStartOfFile(gout, title);
+
+    size_t sliceCount = slices.size();
+    if(firstSliceIdx <0)firstSliceIdx = 0;
+    if(lastSliceIdx <0)lastSliceIdx = sliceCount -1;
+
+    initProgress("gcode", sliceCount);
+    size_t codeSlice = 0;
+    for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
+    {
+        tick();
+        if(sliceId < firstSliceIdx) continue;
+        if(sliceId > lastSliceIdx) break;
+
+        Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
+        SliceData &slice = slices[sliceId];
+        slice.updatePosition(z, sliceId);
+
+        writeSlice(gout, slice);
+        codeSlice ++;
+    }
+}
 
 void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 {

@@ -33,7 +33,7 @@ protected:
   void testSpecificIssuesB();
   void testSpecificIssuesC();
 
-  void testSliceShifting();
+//  void testSliceShifting();
 
 };
 

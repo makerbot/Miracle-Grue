@@ -267,7 +267,7 @@ void testStackCreation(	std::vector<SliceData>& slices)
 ////		cout << x << endl;
 //	}
 
-
+/*
 
 void SlicerCupTestCase::testSliceShifting()
 {
@@ -305,5 +305,5 @@ void SlicerCupTestCase::testSliceShifting()
 
 //	testModel(inputDir2 + "insetting/holy_cube.stl", "miracle.config");
 }
-
+*/
 

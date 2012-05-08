@@ -77,28 +77,9 @@ void mgl::miracleGrue(GCoder &gcoder,
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 
 	std::ofstream gout(gcodeFile);
-	gcoder.writeStartOfFile(gout, modelFile);
 
-	size_t sliceCount = slices.size();
-	if(firstSliceIdx <0)firstSliceIdx = 0;
-	if(lastSliceIdx <0)lastSliceIdx = sliceCount -1;
+    gcoder.writeGcodeFile(slices, skeleton.layerMeasure, gout, modelFile, firstSliceIdx, lastSliceIdx);
 
-
-	initProgress("gcode", sliceCount);
-	size_t codeSlice = 0;
-	for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
-	{
-		tick();
-		if(sliceId < firstSliceIdx) continue;
-		if(sliceId > lastSliceIdx) break;
-
-		Scalar z = skeleton.layerMeasure.sliceIndexToHeight(codeSlice);
-		SliceData &slice = slices[sliceId];
-		slice.updatePosition(z, sliceId);
-
-		gcoder.writeSlice(gout, slice);
-		codeSlice ++;
-	}
 	gout.close();
 
 }

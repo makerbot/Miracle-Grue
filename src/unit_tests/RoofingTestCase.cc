@@ -1092,8 +1092,6 @@ void RoofingTestCase::testSkeleton()
 	std::vector<SliceData> slices;
 
 	Pather slicor;
-	slicor.init(gcoderCfg);
-
 	size_t sliceCount = skeleton.outlines.size();
 
 	slices.resize(sliceCount);
@@ -1121,9 +1119,11 @@ void RoofingTestCase::testSkeleton()
 		slicor.infills(infillRanges, skeleton.grid, direction, infills);
 	}
 
-	cout << "gcode" << endl;
-	slicor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
-	cout << "done" << endl;
+    // cout << "gcode" << endl;
+
+    // slicor.writeGcode(gcodeFile.c_str(), modelFile.c_str(), slices);
+
+    // cout << "done" << endl;
 }
 
 
