@@ -14,20 +14,57 @@
 #ifndef SKELETOR_H_
 #define SKELETOR_H_
 
+#include "abstractable.h"
 #include "grid.h"
 #include "configuration.h"
 #include "insets.h"
-#include "slicy.h"
+
+
+#include "meshy.h"
 
 namespace mgl
 {
 
 
+// Slicer configuration data
+struct SlicerConfig
+{
+	SlicerConfig()
+	:layerH(0.27),
+	 firstLayerZ(0.1),
+	 tubeSpacing(1),
+	 angle(1.570796326794897),
+	 nbOfShells(2),
+	 layerW(0.4),
+	 infillShrinkingMultiplier(0.25),
+	 insetDistanceMultiplier(0.9),
+	 insetCuttOffMultiplier(0.01),
+	 writeDebugScadFiles(false),
+	 roofLayerCount(1),
+	 floorLayerCount(1),
+	 infillSkipCount(2),
+	 gridSpacingMultiplier(0.95)
+	{}
+
+	Scalar layerH;
+	Scalar firstLayerZ;
+	Scalar tubeSpacing;
+	Scalar angle;
+	unsigned int nbOfShells;
+	Scalar layerW;
+	Scalar infillShrinkingMultiplier;
+	Scalar insetDistanceMultiplier;
+	Scalar insetCuttOffMultiplier;
+	bool writeDebugScadFiles;
+
+	unsigned int roofLayerCount;
+	unsigned int floorLayerCount;
+	unsigned int infillSkipCount;
+	Scalar gridSpacingMultiplier;
+};
+
 struct Regions
 {
-	Grid grid;
-	LayerMeasure layerMeasure;
-	std::vector<libthing::SegmentTable>   outlines;
     std::vector<libthing::Insets> 		insets;
     std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
     std::vector<GridRanges>     roofings;
@@ -35,86 +72,49 @@ struct Regions
     std::vector<GridRanges>     infills;
 
     Regions()
-    :layerMeasure(0,0)
     {}
 };
 
-class Regioner : public Progressive
+
+struct LayerConfig
 {
-public:
-	SlicerConfig slicerCfg;
-	size_t roofCount;
-	size_t floorCount;
+	Scalar firstLayerZ;
+	Scalar layerH;
+	Scalar layerW;
 	Scalar gridSpacingMultiplier;
-	size_t skipCount;
-	ProgressBar *progress;
+};
+
+struct Tomograph
+{
+	Tomograph():layerMeasure(0,0){}
+
+	std::vector<libthing::SegmentTable>   outlines;
+	Grid grid;
+	LayerMeasure layerMeasure;
+};
+
+class Slicer : public Progressive
+{
+	LayerConfig layerCfg;
 
 public:
-
-	Regioner(const SlicerConfig &slicerCfg,
-			Scalar gridSpacingMultiplier,
-			size_t roofCount,
-			size_t floorCount,
-			size_t  skipCount,
-			ProgressBar *progress = NULL)
-	:Progressive(progress)
+	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress =NULL)
+		:Progressive(progress)
 	{
-		init(slicerCfg, gridSpacingMultiplier, roofCount, floorCount, skipCount, progress);
-	}
-private:
-	void init(	const SlicerConfig &slicerCfg,
-				Scalar gridSpacingMultiplier,
-				size_t roofCount,
-				size_t floorCount,
-				size_t  skipCount,
-				ProgressBar *progress = NULL)
-	{
-		this->progress = progress;
-		//std::cout << "progress = " << progress << std::endl;
-
-		this->slicerCfg = slicerCfg;
-		this->roofCount = roofCount;
-		this->floorCount = floorCount;
-		this->gridSpacingMultiplier = gridSpacingMultiplier;
-		this->skipCount = skipCount;
+		layerCfg.firstLayerZ = slicerCfg.firstLayerZ;
+		layerCfg.layerH = slicerCfg.layerH;
+		layerCfg.layerW = slicerCfg.layerW;
+		layerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
 	}
 
-
-public:
-
-	void generateSkeleton(const char* modelFile, Regions &skeleton)
+	void tomographyze( const char* modelFile, Tomograph &tomograph)
 	{
-		outlines(	modelFile,
-					skeleton.layerMeasure,
-					skeleton.grid,
-					skeleton.outlines);
-
-		insets(skeleton.outlines,
-					  skeleton.insets);
-
-		flatSurfaces(skeleton.insets,
-							skeleton.grid,
-							skeleton.flatSurfaces);
-
-		roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
-
-		flooring(skeleton.flatSurfaces, skeleton.grid, skeleton.floorings);
-
-		infills( skeleton.flatSurfaces,
-						skeleton.grid,
-						skeleton.roofings,
-						skeleton.floorings,
-						skeleton.infills);
-	}
-
-	void outlines( const char* modelFile, LayerMeasure &layerMeasure, Grid &grid, std::vector<libthing::SegmentTable> &outlines)
-	{
-		Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
+		Meshy mesh(layerCfg.firstLayerZ, layerCfg.layerH);
 		mesh.readStlFile(modelFile);
 
 		// grid.init(mesh.limits, slicerCfg.layerW);
 		unsigned int sliceCount = mesh.readSliceTable().size();
-		outlines.resize(sliceCount);
+		tomograph.outlines.resize(sliceCount);
 
 		initProgress("outlines", sliceCount);
 
@@ -122,16 +122,85 @@ public:
 		{
 			tick();
 			//cout << sliceId << "/" << sliceCount << " outlines" << endl;
-			libthing::SegmentTable &segments = outlines[sliceId];
+			libthing::SegmentTable &segments = tomograph.outlines[sliceId];
 			outlinesForSlice(mesh, sliceId, segments);
 		}
 
-		Scalar gridSpacing = slicerCfg.layerW * gridSpacingMultiplier;
+		Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
 		Limits limits = mesh.readLimits();
-		grid.init(limits, gridSpacing);
-		layerMeasure = mesh.readLayerMeasure();
+		tomograph.grid.init(limits, gridSpacing);
+		tomograph.layerMeasure = mesh.readLayerMeasure();
 	}
 
+
+    void outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments)
+    {
+        Scalar tol = 1e-6;
+        const LayerMeasure & layerMeasure = mesh.readLayerMeasure();
+        Scalar z = layerMeasure.sliceIndexToHeight(sliceId);
+        const std::vector<libthing::Triangle3> & allTriangles = mesh.readAllTriangles();
+        const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+        std::vector<libthing::LineSegment2> unorderedSegments;
+        segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
+        assert(segments.size() ==0);
+
+        // dumpSegments("unordered_", unorderedSegments);
+        // cout << segments << endl;
+        loopsFromLineSegments(unorderedSegments, tol, segments);
+		// cout << " done " << endl;
+	}
+
+
+	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments, Scalar tol, libthing::SegmentTable & segments)
+    {
+        // dumpSegments("unordered_", unorderedSegments);
+        // cout << segments << endl;
+        if(unorderedSegments.size() > 0){
+            //cout << " loopsAndHoleOgy " << endl;
+          	std::vector<libthing::LineSegment2> segs =  unorderedSegments;
+            loopsAndHoleOgy(segs, tol, segments);
+        }
+    }
+};
+
+class Regioner : public Progressive
+{
+public:
+	SlicerConfig slicerCfg;
+
+
+	Regioner(const SlicerConfig &slicerCfg,
+			ProgressBar *progress = NULL)
+	:Progressive(progress), slicerCfg(slicerCfg)
+	{
+	}
+
+public:
+
+	void generateSkeleton(const Tomograph &tomograph , Regions &regions)
+	{
+//		outlines(	modelFile,
+//					regions.layerMeasure,
+//					regions.grid,
+//					regions.outlines);
+
+		insets(tomograph.outlines,
+					  regions.insets);
+
+		flatSurfaces(regions.insets,
+				tomograph.grid,
+							regions.flatSurfaces);
+
+		roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
+
+		flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
+
+		infills( regions.flatSurfaces,
+				tomograph.grid,
+						regions.roofings,
+						regions.floorings,
+						regions.infills);
+	}
 
 
     void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
@@ -257,7 +326,7 @@ public:
         	const GridRanges &flooring = floorings[i];
         	GridRanges sparseInfill;
         	// cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
-        	grid.subSample(surface, skipCount, sparseInfill);
+        	grid.subSample(surface, slicerCfg.infillSkipCount, sparseInfill);
 
         	// std::cout << " infill = union roofing and surface " << i << "/" << sliceCount << std::endl;
         	GridRanges roofed;
@@ -277,32 +346,8 @@ public:
     }
 
 
-	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments, Scalar tol, libthing::SegmentTable & segments)
-    {
-        // dumpSegments("unordered_", unorderedSegments);
-        // cout << segments << endl;
-        if(unorderedSegments.size() > 0){
-            //cout << " loopsAndHoleOgy " << endl;
-          	std::vector<libthing::LineSegment2> segs =  unorderedSegments;
-            loopsAndHoleOgy(segs, tol, segments);
-        }
-    }
 
-    void outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments)
-    {
-        Scalar tol = 1e-6;
-        const LayerMeasure & layerMeasure = mesh.readLayerMeasure();
-        Scalar z = layerMeasure.sliceIndexToHeight(sliceId);
-        const std::vector<libthing::Triangle3> & allTriangles = mesh.readAllTriangles();
-        const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-        std::vector<libthing::LineSegment2> unorderedSegments;
-        segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
-        assert(segments.size() ==0);
-        // dumpSegments("unordered_", unorderedSegments);
-        // cout << segments << endl;
-        loopsFromLineSegments(unorderedSegments, tol, segments);
-		// cout << " done " << endl;
-	}
+
 
 };
 

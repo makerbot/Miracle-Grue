@@ -20,6 +20,61 @@
 namespace mgl
 {
 
+
+
+// slice data for an extruder
+class ExtruderSlice
+{
+public:
+
+	Polygons boundary;  // boundary loops for areas of this slice of a print.
+	Polygons infills; // list of all lines that create infill for this layer
+
+	PolygonsGroup  insetLoopsList;  /// a list, each entry of which is a Polygons
+							/// object. Each inset[i] is all shell polygons
+							/// for the matching loops[i] boundary for this layer
+
+};
+
+::std::ostream& operator<<(::std::ostream& os, const ExtruderSlice& x);
+
+typedef std::vector<ExtruderSlice > ExtruderSlices;
+
+/// The Slice data is contains polygons
+/// for each extruder, for a slice.
+/// there are multiple polygons for each extruder
+class SliceData
+{
+private:
+	Scalar zHeight;
+	size_t index;
+
+public:
+	ExtruderSlices extruderSlices;
+
+	/// @param inHeight: z height of this layer. Middle of the specified layer
+	/// @param inIndex: layer number in this  model, positive in the 'up' direction
+	SliceData(Scalar inHeight=0, size_t inIndex=0):zHeight(inHeight), index(inIndex)
+	{
+	}
+
+	/// Updates position of slice in a model
+	/// @param inHeight: z height of this layer. Middle of the specified layer
+	/// @param inIndex: layer number in this  model, positive in the 'up' direction
+	void updatePosition(Scalar inHeight,size_t inIndex){
+		zHeight = inHeight;
+		index = inIndex ;
+	}
+
+	Scalar getZHeight() const { return zHeight;}
+	size_t getIndex()const  { return index;}
+
+
+};
+
+::std::ostream& operator<<(::std::ostream& os, const SliceData& x);
+
+
 class Pather : public Progressive
 {
 
@@ -32,12 +87,13 @@ public:
 	}
 
 
-	void generatePaths(const Regions &skeleton,
+	void generatePaths(const Tomograph &tomograph,
+						const Regions &skeleton,
 						std::vector<SliceData> &slices,
 						size_t firstSliceIdx=-1,
 						size_t lastSliceIdx=-1)
 	{
-		size_t sliceCount = skeleton.outlines.size();
+		size_t sliceCount = tomograph.outlines.size();
 	    if(firstSliceIdx == -1) firstSliceIdx = 0;
 	    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
 
@@ -57,7 +113,7 @@ public:
 			direction = !direction;
 			SliceData& slice = slices[i];
 
-			Scalar z = skeleton.layerMeasure.sliceIndexToHeight(currentSlice);
+			Scalar z = tomograph.layerMeasure.sliceIndexToHeight(currentSlice);
 			currentSlice ++;
 
 			slice.updatePosition(z, i);
@@ -66,7 +122,7 @@ public:
 			ExtruderSlice &extruderSlice = slice.extruderSlices[0];
 
 			const libthing::Insets &insetsSegments = skeleton.insets[i];
-			const libthing::SegmentTable &outlineSegments = skeleton.outlines[i];
+			const libthing::SegmentTable &outlineSegments = tomograph.outlines[i];
 
 			outlines(outlineSegments, extruderSlice.boundary);
 
@@ -76,7 +132,7 @@ public:
 			const GridRanges &infillRanges = skeleton.infills[i];
 
 			Polygons &infillsPolygons = extruderSlice.infills;
-			this->infills(infillRanges, skeleton.grid, direction, infillsPolygons);
+			this->infills(infillRanges, tomograph.grid, direction, infillsPolygons);
 		}
 	}
 

@@ -27,84 +27,12 @@
 #include "segment.h"
 #include "shrinky.h"
 #include "infill.h"
+#include "pather.h"
 
 namespace mgl // Miracle-Grue's geometry library
 {
 
-// Slicer configuration data
-struct SlicerConfig
-{
-	SlicerConfig()
-	:layerH(0.27), firstLayerZ(0.1),
-	 tubeSpacing(1), angle(1.570796326794897),
-	 nbOfShells(2), layerW(0.4),
-	 infillShrinkingMultiplier(0.25), insetDistanceMultiplier(0.9),
-	 insetCuttOffMultiplier(0.01), writeDebugScadFiles(false)
-	{}
 
-	Scalar layerH;
-	Scalar firstLayerZ;
-	Scalar tubeSpacing;
-	Scalar angle;
-	unsigned int nbOfShells;
-	Scalar layerW;
-	Scalar infillShrinkingMultiplier;
-	Scalar insetDistanceMultiplier;
-	Scalar insetCuttOffMultiplier;
-	bool writeDebugScadFiles;
-};
-
-// slice data for an extruder
-class ExtruderSlice
-{
-public:
-
-	Polygons boundary;  // boundary loops for areas of this slice of a print.
-	Polygons infills; // list of all lines that create infill for this layer
-
-	PolygonsGroup  insetLoopsList;  /// a list, each entry of which is a Polygons
-							/// object. Each inset[i] is all shell polygons
-							/// for the matching loops[i] boundary for this layer
-
-};
-
-::std::ostream& operator<<(::std::ostream& os, const ExtruderSlice& x);
-
-typedef std::vector<ExtruderSlice > ExtruderSlices;
-
-/// The Slice data is contains polygons
-/// for each extruder, for a slice.
-/// there are multiple polygons for each extruder
-class SliceData
-{
-private:
-	Scalar zHeight;
-	size_t index;
-
-public:
-	ExtruderSlices extruderSlices;
-
-	/// @param inHeight: z height of this layer. Middle of the specified layer
-	/// @param inIndex: layer number in this  model, positive in the 'up' direction
-	SliceData(Scalar inHeight=0, size_t inIndex=0):zHeight(inHeight), index(inIndex)
-	{
-	}
-
-	/// Updates position of slice in a model
-	/// @param inHeight: z height of this layer. Middle of the specified layer
-	/// @param inIndex: layer number in this  model, positive in the 'up' direction
-	void updatePosition(Scalar inHeight,size_t inIndex){
-		zHeight = inHeight;
-		index = inIndex ;
-	}
-
-	Scalar getZHeight() const { return zHeight;}
-	size_t getIndex()const  { return index;}
-
-
-};
-
-::std::ostream& operator<<(::std::ostream& os, const SliceData& x);
 
 
 class Slicy

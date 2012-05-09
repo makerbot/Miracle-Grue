@@ -12,7 +12,7 @@
 #ifndef MIRACLE_H_
 #define MIRACLE_H_
 
-//#include "gcoder.h"
+#include "gcoder.h"
 #include "regioner.h"
 #include "pather.h"
 #include "log.h"
@@ -29,6 +29,7 @@ void miracleGrue(const GCoderConfig &gcoderCfg,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
+                      Tomograph &tomograph,
                       Regions &regions,
                       std::vector< SliceData >  &slices,
                       ProgressBar* progress = NULL);

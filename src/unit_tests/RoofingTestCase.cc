@@ -12,6 +12,7 @@
 // test union surfaces
 #include "mgl/miracle.h"
 
+#include "mgl/ScadDebugFile.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RoofingTestCase );
 
@@ -1040,9 +1041,6 @@ void RoofingTestCase::testSkeleton()
 
 	string configFileName = "miracle.config";
 
-	unsigned int roofLayerCount = 3;
-	unsigned int floorLayerCount = 3;
-	unsigned int skipCount =5;
 
 	cout << "read config" << endl;
     Configuration config;
@@ -1055,31 +1053,33 @@ void RoofingTestCase::testSkeleton()
 	loadSlicerConfigFromFile(config, slicerCfg);
 	cout << "read model " << modelFile << endl;
 
-	Regioner regioner(slicerCfg, 0.95, roofLayerCount, floorLayerCount, skipCount);
+	slicerCfg.infillSkipCount = 5;
+
+	Slicer slicer(slicerCfg);
+	Tomograph tomograph;
+
+	cout << "outlines" << endl;
+	slicer.tomographyze(modelFile.c_str(), tomograph);
+
+	Regioner regioner(slicerCfg);
 
 	Regions skeleton;
 
-	cout << "outlines" << endl;
-	regioner.outlines(modelFile.c_str(),
-					skeleton.layerMeasure,
-					skeleton.grid,
-					skeleton.outlines);
-
 	cout << "insets" << endl;
-	regioner.insets(skeleton.outlines,
+	regioner.insets(tomograph.outlines,
 				  skeleton.insets);
 
 	cout << "flat surfaces" << endl;
 	regioner.flatSurfaces(skeleton.insets,
-						skeleton.grid,
+			tomograph.grid,
 						skeleton.flatSurfaces);
 
 	cout << "roofings" << endl;
-	regioner.roofing(skeleton.flatSurfaces, skeleton.grid, skeleton.roofings);
+	regioner.roofing(skeleton.flatSurfaces, tomograph.grid, skeleton.roofings);
 
 	cout << "infills" << endl;
 	regioner.infills( skeleton.flatSurfaces,
-					skeleton.grid,
+			tomograph.grid,
 					skeleton.roofings,
 					skeleton.floorings,
 					skeleton.infills);
@@ -1089,7 +1089,7 @@ void RoofingTestCase::testSkeleton()
 	std::vector<SliceData> slices;
 
 	Pather slicor;
-	size_t sliceCount = skeleton.outlines.size();
+	size_t sliceCount = tomograph.outlines.size();
 
 	slices.resize(sliceCount);
 	bool direction = false;
@@ -1098,14 +1098,14 @@ void RoofingTestCase::testSkeleton()
 		direction = !direction;
 		SliceData& slice = slices[i];
 
-		Scalar z = skeleton.layerMeasure.sliceIndexToHeight(i);
+		Scalar z = tomograph.layerMeasure.sliceIndexToHeight(i);
 		slice.updatePosition(z, i);
 		slice.extruderSlices.resize(1);
 
 		ExtruderSlice &extruderSlice = slice.extruderSlices[0];
 
 		const Insets &insets = skeleton.insets[i];
-		const SegmentTable &outlineSegments = skeleton.outlines[i];
+		const SegmentTable &outlineSegments = tomograph.outlines[i];
 
 		slicor.outlines(outlineSegments, extruderSlice.boundary);
 		slicor.insets(insets, extruderSlice.insetLoopsList);
@@ -1113,7 +1113,7 @@ void RoofingTestCase::testSkeleton()
 		const GridRanges &infillRanges = skeleton.infills[i];
 
 		Polygons &infills = extruderSlice.infills;
-		slicor.infills(infillRanges, skeleton.grid, direction, infills);
+		slicor.infills(infillRanges, tomograph.grid, direction, infills);
 	}
 
     // cout << "gcode" << endl;
@@ -1137,31 +1137,29 @@ void RoofingTestCase::test3dKnotPlatform()
 	slicerCfg.nbOfShells = 3;
 	slicerCfg.insetDistanceMultiplier = 0.95;
 
-	Regioner skeletor(slicerCfg, 0.95, 3, 3, 2);
+	Slicer slicer(slicerCfg);
+	Tomograph tomograph;
 
-	vector<SegmentTable> outlines;
-	Grid grid;
-	LayerMeasure layerMeasure(0,0);
-	skeletor.outlines(modelFile.c_str(), layerMeasure,
-			grid,
-			outlines);
+	slicer.tomographyze(modelFile.c_str(), tomograph);
+
+	Regioner regioner(slicerCfg);
 
 	size_t sliceId = 18; // 20;
 
-	const SegmentTable &sliceOutlines = outlines[sliceId];
-	const SegmentTable &sliceAboveOutlines = outlines[sliceId+1];
+	const SegmentTable &sliceOutlines = tomograph.outlines[sliceId];
+	const SegmentTable &sliceAboveOutlines = tomograph.outlines[sliceId+1];
 
 	Insets insets;
-	skeletor.insetsForSlice(sliceOutlines, insets);
+	regioner.insetsForSlice(sliceOutlines, insets);
 	Insets insetsAbove;
-	skeletor.insetsForSlice(sliceAboveOutlines, insetsAbove);
+	regioner.insetsForSlice(sliceAboveOutlines, insetsAbove);
 	GridRanges surface;
-	skeletor.gridRangesForSlice(insets, grid, surface);
+	regioner.gridRangesForSlice(insets, tomograph.grid, surface);
 	GridRanges surfaceAbove;
-	skeletor.gridRangesForSlice(insetsAbove, grid, surfaceAbove);
+	regioner.gridRangesForSlice(insetsAbove, tomograph.grid, surfaceAbove);
 
 	GridRanges roofing;
-	skeletor.roofForSlice(surface, surfaceAbove, grid, roofing);
+	regioner.roofForSlice(surface, surfaceAbove, tomograph.grid, roofing);
 
 	// problems start at 27?
 	// size_t lineNb = 27;
@@ -1199,13 +1197,13 @@ void RoofingTestCase::test3dKnotPlatform()
 	writeScanLines(fscad, "outlines_", "linea", -1, -0.1 , innerOutlines);
 
 	SegmentTable xRays;
-    segmentTableFromRangeTable(surface.xRays , grid.readYvalues(), xRays);
+    segmentTableFromRangeTable(surface.xRays , tomograph.grid.readYvalues(), xRays);
 
 	SegmentTable xRaysAbove;
-    segmentTableFromRangeTable(surfaceAbove.xRays , grid.readYvalues(), xRaysAbove);
+    segmentTableFromRangeTable(surfaceAbove.xRays , tomograph.grid.readYvalues(), xRaysAbove);
 
     SegmentTable xRaysRoof;
-    segmentTableFromRangeTable( roofing.xRays , grid.readYvalues(), xRaysRoof);
+    segmentTableFromRangeTable( roofing.xRays , tomograph.grid.readYvalues(), xRaysRoof);
 
 
 	writeScanLines(fscad, "slice_x_", "linea",   z, dz, xRays);
@@ -1373,6 +1371,7 @@ void RoofingTestCase::testUnionSurfaces()
 	int firstSliceIdx =0;
 	int lastSliceIdx =-1;
 
+	Tomograph tomograph;
 	Regions skeleton;
 	vector<SliceData> slices;
 
@@ -1383,12 +1382,13 @@ void RoofingTestCase::testUnionSurfaces()
 				gcodeFileStr,
 				firstSliceIdx,
 				lastSliceIdx,
+				tomograph,
 				skeleton,
 				slices);
 
 	size_t skipCount = 1;
 
-	const Grid &grid = skeleton.grid;
+	const Grid &grid = tomograph.grid;
 	const GridRanges &surface = skeleton.flatSurfaces[sliceId];
 	const GridRanges &roofing = skeleton.roofings[sliceId];
 //	GridRanges &infill = skeleton.infills[sliceId];
@@ -1407,22 +1407,22 @@ void RoofingTestCase::testUnionSurfaces()
 
     GridRanges sparseLine;
     cout << "sparse_x_" << xRowId << "=";
-    extractLineX(skeleton.grid, sparseInfill, xRowId, sparseLine );
+    extractLineX(tomograph.grid, sparseInfill, xRowId, sparseLine );
     GridRanges roofingLine;
     cout << "roof_x_" << xRowId << "=";
-    extractLineX(skeleton.grid, roofing, xRowId, roofingLine );
+    extractLineX(tomograph.grid, roofing, xRowId, roofingLine );
     GridRanges infillLine;
     cout << "infill_x_" << xRowId << "=";
-    extractLineX(skeleton.grid, myInfill, xRowId, infillLine );
+    extractLineX(tomograph.grid, myInfill, xRowId, infillLine );
 
-	surfaceToscad(skeleton.grid, sparseLine, "sparseLine", 0, fscad);
-	surfaceToscad(skeleton.grid, roofingLine, "roofingLine", 0, fscad);
-	surfaceToscad(skeleton.grid, infillLine, "infillLine", 0, fscad);
+	surfaceToscad(tomograph.grid, sparseLine, "sparseLine", 0, fscad);
+	surfaceToscad(tomograph.grid, roofingLine, "roofingLine", 0, fscad);
+	surfaceToscad(tomograph.grid, infillLine, "infillLine", 0, fscad);
 
-	surfaceToscad(skeleton.grid, surface, "surface", 0, fscad);
-	surfaceToscad(skeleton.grid, sparseInfill, "sparseInfill", 0, fscad);
-	surfaceToscad(skeleton.grid, roofing, "roofing", 0, fscad);
-	surfaceToscad(skeleton.grid, myInfill, "infill", 0, fscad);
+	surfaceToscad(tomograph.grid, surface, "surface", 0, fscad);
+	surfaceToscad(tomograph.grid, sparseInfill, "sparseInfill", 0, fscad);
+	surfaceToscad(tomograph.grid, roofing, "roofing", 0, fscad);
+	surfaceToscad(tomograph.grid, myInfill, "infill", 0, fscad);
 
 
     std::ostream & out = fscad.getOut();

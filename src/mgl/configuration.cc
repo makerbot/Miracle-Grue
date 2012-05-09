@@ -16,7 +16,8 @@
 
 
 #include "configuration.h"
-
+#include "gcoder.h"
+#include "pather.h"
 
 using namespace mgl;
 using namespace std;
@@ -194,18 +195,18 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.gcoding.dualtrick   = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
 }
 
-void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicer)
+void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicerCfg)
 {
-	slicer.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
-	slicer.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
-	slicer.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
-	slicer.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
-	slicer.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
-	slicer.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
-	slicer.infillShrinkingMultiplier = doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
-	slicer.insetDistanceMultiplier   = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
-	slicer.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
+	slicerCfg.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
+	slicerCfg.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
+	slicerCfg.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
+	slicerCfg.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
+	slicerCfg.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
+	slicerCfg.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
+	slicerCfg.infillShrinkingMultiplier = doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
+	slicerCfg.insetDistanceMultiplier   = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
+	slicerCfg.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
-	slicer.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
+	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
 
 }

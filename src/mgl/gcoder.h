@@ -15,7 +15,7 @@
 
 #include <map>
 #include "mgl.h"
-#include "slicy.h"
+#include "pather.h"
 
 
 #define SAMESAME_TOL 1e-6
@@ -235,6 +235,7 @@ public:
     								Extrusion &extrusionParams) const;
 
     void writeStartOfFile(std::ostream & ss, const char* filename);
+
     void writeGcodeEndOfFile(std::ostream & ss) const;
 
     // todo: return the gCoderCfg instead

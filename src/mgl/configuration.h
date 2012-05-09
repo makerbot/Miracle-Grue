@@ -25,7 +25,8 @@
 #include <json/writer.h>
 
 #include "mgl.h"
-#include "gcoder.h"
+
+
 
 namespace mgl
 {
@@ -90,6 +91,9 @@ public:
 
 
 };
+
+class GCoderConfig;
+class SlicerConfig;
 
 void loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcoder);
 void loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicer);

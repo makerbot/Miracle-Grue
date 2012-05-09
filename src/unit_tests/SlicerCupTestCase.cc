@@ -55,10 +55,12 @@ void testModel(const char *model, const char* configFile)
 	GCoderConfig gcoderCfg;
 	loadGCoderConfigFromFile(config, gcoderCfg);
 
+	Tomograph tomograph;
 	Regions skeleton;
 	std::vector< SliceData >  slices;
 	miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(), NULL,
 				gcodeFile.c_str(), -1, -1,
+				tomograph,
 				skeleton,
 				slices);
 }

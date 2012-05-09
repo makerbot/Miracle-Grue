@@ -261,6 +261,7 @@ int main(int argc, char *argv[], char *envp[])
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
+		Tomograph tomograph;
 		Regions regions;
 		std::vector<mgl::SliceData> slices;
 
@@ -271,6 +272,7 @@ int main(int argc, char *argv[], char *envp[])
 					gcodeFile.c_str(),
 					firstSliceIdx,
 					lastSliceIdx,
+					tomograph,
 					regions,
 					slices,
 					&log);
