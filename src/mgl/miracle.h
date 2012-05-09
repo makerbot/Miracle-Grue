@@ -13,23 +13,26 @@
 #define MIRACLE_H_
 
 #include "gcoder.h"
-
+#include "regioner.h"
+#include "pather.h"
+#include "log.h"
 
 namespace mgl
 {
 
 
 
-void miracleGrue(GCoder &gcoder,
-                      const SlicerConfig &slicer,
+void miracleGrue(const GCoderConfig &gcoderCfg,
+                      const SlicerConfig &slicerCfg,
                       const char *modelFile,
                       const char *scadFile,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
+                      Tomograph &tomograph,
+                      Regions &regions,
                       std::vector< SliceData >  &slices,
                       ProgressBar* progress = NULL);
-
 
 void slicesFromSlicerAndMesh(
 		std::vector< SliceData >  &slices,
@@ -39,8 +42,6 @@ void slicesFromSlicerAndMesh(
 		int firstSliceIdx  = -1,
                 int lastSliceIdx  = -1,
                 ProgressBar* progress = NULL);
-
-
 
 void adjustSlicesToPlate(
 		std::vector<SliceData>& slices,

@@ -92,6 +92,7 @@ class ProgressBar
 
 protected:
     std::string task;
+
  public:
     ProgressBar(unsigned int count=0, const char* taskName="")
     {
@@ -130,6 +131,44 @@ public:
         void onTick(const char* taskName, unsigned int count, unsigned int tick);
 
 };
+
+// used as a base class to provide
+// optional progress bar support
+//
+// This is used for top level operations
+// that take time (Pather, Gcoder, Slicer)
+class Progressive
+{
+    ProgressBar *progress;
+public:
+    Progressive(ProgressBar *progress = NULL)
+    {
+        setProgress(progress);
+    }
+
+    void setProgress(ProgressBar *progress)
+    {
+        this->progress = progress;
+    }
+
+protected:
+    void initProgress(const char* title, unsigned int ticks)
+    {
+        if(progress)
+        {
+            progress->reset(ticks, title);
+        }
+    }
+    void tick()
+    {
+        if(progress)
+        {
+            progress->tick();
+        }
+    }
+
+};
+
 
 }
 

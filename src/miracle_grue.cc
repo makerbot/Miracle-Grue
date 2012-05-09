@@ -231,9 +231,7 @@ int main(int argc, char *argv[], char *envp[])
     Configuration config;
     try
     {
-
 		config.readFromFile(configFileName.c_str());
-
 		int firstSliceIdx, lastSliceIdx;
 		parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
 		// cout << config.asJson() << endl;
@@ -262,24 +260,32 @@ int main(int argc, char *argv[], char *envp[])
 		cout << endl << endl;
 		cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
-		GCoder gcoder;
-		loadGCoderData(config, gcoder);
+		GCoderConfig gcoderCfg;
+		loadGCoderConfigFromFile(config, gcoderCfg);
 
-		SlicerConfig slicer;
-		loadSlicerData(config, slicer);
-		std::vector<mgl::SliceData> slices;
-		std::vector<Scalar> zIndicies;
+		SlicerConfig slicerCfg;
+		loadSlicerConfigFromFile(config, slicerCfg);
+
 		const char* scad = NULL;
 
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
-	//	Meshy mesh(slicer.firstLayerZ, slicer.layerH);
-	//	mesh.readStlFile(modelFile.c_str());
+		Tomograph tomograph;
+		Regions regions;
+		std::vector<mgl::SliceData> slices;
 
-		miracleGrue(gcoder, slicer, modelFile.c_str(),
-					scad, gcodeFile.c_str(),
-					firstSliceIdx, lastSliceIdx, slices);
+		ProgressLog log;
+
+		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
+					scad,
+					gcodeFile.c_str(),
+					firstSliceIdx,
+					lastSliceIdx,
+					tomograph,
+					regions,
+					slices,
+					&log);
 
     }
     catch(mgl::Exception &mixup)

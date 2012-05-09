@@ -14,7 +14,8 @@
 #define GCODER_H_
 
 #include <map>
-#include "slicy.h"
+#include "mgl.h"
+#include "pather.h"
 
 
 #define SAMESAME_TOL 1e-6
@@ -112,15 +113,15 @@ public:
 
 
 	Gantry()
-		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 rapidMoveFeedRateXY(5000),
-		 rapidMoveFeedRateZ(1400),
-		 xyMaxHoming(true),
-		 zMaxHoming(false),
-		 scalingFactor(1),
-		 homingFeedRateZ(100)
+            :x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             rapidMoveFeedRateXY(5000),
+             rapidMoveFeedRateZ(1400),
+             scalingFactor(1),
+             xyMaxHoming(true),
+             zMaxHoming(false),
+             homingFeedRateZ(100)
 	{
 
 	}
@@ -184,21 +185,12 @@ struct GCoding
 	bool dualtrick;
 };
 
-
-
-//
-// This class contains settings for the 3D printer,
-// user preferences as well as runtime information
-//
-class GCoder
+struct GCoderConfig
 {
-
-public:
-	GCoder()
+	GCoderConfig()
 	:programName("Miracle-Grue"),
 	 versionStr("0.0.1")
-	{
-	}
+	{}
 
     std::string programName;
     std::string versionStr;
@@ -212,6 +204,26 @@ public:
 
     std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
+};
+
+
+//
+// This class contains settings for the 3D printer,
+// user preferences as well as runtime information
+//
+class GCoder : public Progressive
+{
+public:
+
+	GCoderConfig gcoderCfg;
+
+	GCoder(const GCoderConfig &gCoderCfg)
+		:gcoderCfg(gCoderCfg)
+	{
+	}
+
+
+
     void moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
 
 public:
@@ -223,14 +235,23 @@ public:
     								Extrusion &extrusionParams) const;
 
     void writeStartOfFile(std::ostream & ss, const char* filename);
+
     void writeGcodeEndOfFile(std::ostream & ss) const;
+
+    // todo: return the gCoderCfg instead
     const std::vector<Extruder> & readExtruders() const
     {
-        return extruders;
+        return gcoderCfg.extruders;
     }
 
     void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
 
+    void writeGcodeFile(std::vector <SliceData>& slices,
+                        const mgl::LayerMeasure& LayerMeasure,
+                        std::ostream &gout,
+                            const char *title,
+                                int firstSliceIdx=-1,
+                                    int lastSliceIdx=-1);
 private:
 
     void writeGCodeConfig(std::ostream & ss, const char* filename) const;

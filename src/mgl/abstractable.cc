@@ -116,7 +116,6 @@ ProgressLog::ProgressLog(unsigned int count)
         reset(count);
     Log::often() << ":";
 
-
 }
 
 

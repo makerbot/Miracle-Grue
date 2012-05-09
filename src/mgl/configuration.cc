@@ -16,7 +16,8 @@
 
 
 #include "configuration.h"
-
+#include "gcoder.h"
+#include "pather.h"
 
 using namespace mgl;
 using namespace std;
@@ -104,7 +105,7 @@ std::string Configuration::asJson(Json::StyledWriter writer ) const
 }
 
 // this is a work in progress...
-void loadExtrusionProfileData(const Configuration& conf, GCoder &gcoder)
+void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg)
 {
 	const Json::Value &extrusionsRoot = conf.root["extrusionProfiles"];
 	for( Json::ValueIterator itr = extrusionsRoot.begin() ; itr != extrusionsRoot.end() ; itr++ )
@@ -124,36 +125,36 @@ void loadExtrusionProfileData(const Configuration& conf, GCoder &gcoder)
 		extrusion.squirtFeedrate= doubleCheck(value["squirtFeedrate"], (prefix + "squirtFeedrate").c_str());
 		extrusion.squirtFlow 	= doubleCheck(value["squirtFlow"], (prefix + "squirtFlow").c_str());
 
-		gcoder.extrusionProfiles.insert( pair<std::string, Extrusion>(profileName, extrusion));
+		gcoderCfg.extrusionProfiles.insert( pair<std::string, Extrusion>(profileName, extrusion));
 	}
 }
 
 
-void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
+void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcoderCfg)
 {
 
-	gcoder.programName = stringCheck(conf.root["programName"],"programName");
-	gcoder.versionStr  = stringCheck(conf.root["versionStr"],"versionStr");
-	gcoder.machineName = stringCheck(conf.root["machineName"],"machineName");
-	gcoder.firmware    = stringCheck(conf.root["firmware"], "firmware");
+	gcoderCfg.programName = stringCheck(conf.root["programName"],"programName");
+	gcoderCfg.versionStr  = stringCheck(conf.root["versionStr"],"versionStr");
+	gcoderCfg.machineName = stringCheck(conf.root["machineName"],"machineName");
+	gcoderCfg.firmware    = stringCheck(conf.root["firmware"], "firmware");
 
-	gcoder.gantry.xyMaxHoming = boolCheck(conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming");
-	gcoder.gantry.zMaxHoming  = boolCheck(conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming");
-	gcoder.gantry.scalingFactor = doubleCheck(conf.root["gantry"]["scalingFactor"], "gantry.scalingFactor");
-	gcoder.gantry.rapidMoveFeedRateXY = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateXY"], "gantry.rapidMoveFeedRateXY");
-	gcoder.gantry.rapidMoveFeedRateZ = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateZ"], "gantry.rapidMoveFeedRateZ");
-	gcoder.gantry.homingFeedRateZ = doubleCheck(conf.root["gantry"]["homingFeedRateZ"], "gantry.homingFeedRateZ");
+	gcoderCfg.gantry.xyMaxHoming = boolCheck(conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming");
+	gcoderCfg.gantry.zMaxHoming  = boolCheck(conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming");
+	gcoderCfg.gantry.scalingFactor = doubleCheck(conf.root["gantry"]["scalingFactor"], "gantry.scalingFactor");
+	gcoderCfg.gantry.rapidMoveFeedRateXY = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateXY"], "gantry.rapidMoveFeedRateXY");
+	gcoderCfg.gantry.rapidMoveFeedRateZ = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateZ"], "gantry.rapidMoveFeedRateZ");
+	gcoderCfg.gantry.homingFeedRateZ = doubleCheck(conf.root["gantry"]["homingFeedRateZ"], "gantry.homingFeedRateZ");
 
-	gcoder.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
-	gcoder.platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
-	gcoder.platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
-	gcoder.platform.waitingPositionY = doubleCheck(conf.root["platform"]["waitingPositionY"], "platform.waitingPositionY");
-	gcoder.platform.waitingPositionZ = doubleCheck(conf.root["platform"]["waitingPositionZ"], "platform.waitingPositionZ");
+	gcoderCfg.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
+	gcoderCfg.platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
+	gcoderCfg.platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
+	gcoderCfg.platform.waitingPositionY = doubleCheck(conf.root["platform"]["waitingPositionY"], "platform.waitingPositionY");
+	gcoderCfg.platform.waitingPositionZ = doubleCheck(conf.root["platform"]["waitingPositionZ"], "platform.waitingPositionZ");
 
-	gcoder.outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
-	gcoder.outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
+	gcoderCfg.outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
+	gcoderCfg.outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
 
-	loadExtrusionProfileData(conf, gcoder);
+	loadExtrusionProfileData(conf, gcoderCfg);
 
 	if(conf.root["extruders"].size() ==0)
 	{
@@ -184,28 +185,28 @@ void mgl::loadGCoderData(const Configuration& conf, GCoder &gcoder)
 		extruder.insetsExtrusionProfile = stringCheck(value["insetsExtrusionProfile"], (prefix+"insetsExtrusionProfile").c_str() );
 		extruder.infillsExtrusionProfile = stringCheck(value["infillsExtrusionProfile"], (prefix+"infillsExtrusionProfile").c_str() );
 
-		gcoder.extruders.push_back(extruder);
+		gcoderCfg.extruders.push_back(extruder);
 	}
 
-	gcoder.gcoding.outline = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
-	gcoder.gcoding.insets  = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
-	gcoder.gcoding.infills = boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
-	gcoder.gcoding.infillFirst = boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
-	gcoder.gcoding.dualtrick   = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
+	gcoderCfg.gcoding.outline = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
+	gcoderCfg.gcoding.insets  = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
+	gcoderCfg.gcoding.infills = boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
+	gcoderCfg.gcoding.infillFirst = boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
+	gcoderCfg.gcoding.dualtrick   = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
 }
 
-void mgl::loadSlicerData( const Configuration &config, SlicerConfig &slicer)
+void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicerCfg)
 {
-	slicer.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
-	slicer.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
-	slicer.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
-	slicer.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
-	slicer.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
-	slicer.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
-	slicer.infillShrinkingMultiplier = doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
-	slicer.insetDistanceMultiplier   = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
-	slicer.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
+	slicerCfg.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
+	slicerCfg.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
+	slicerCfg.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
+	slicerCfg.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
+	slicerCfg.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
+	slicerCfg.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
+	slicerCfg.infillShrinkingMultiplier = doubleCheck(config["slicer"]["infillShrinkingMultiplier"], "slicer.infillShrinkingMultiplier");
+	slicerCfg.insetDistanceMultiplier   = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
+	slicerCfg.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
-	slicer.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
+	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
 
 }
