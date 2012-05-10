@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-TARGET = miracle_gui
+TARGET = bin/miracle_gui
 TEMPLATE = app
 
 

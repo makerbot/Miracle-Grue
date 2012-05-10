@@ -13,7 +13,11 @@
 *.pyc
 
 #ignore build system files
+/Makefile
+/miracle_gui.pro.user
 /.sconsign.dblite
+/moc_*.cpp
+/ui_mainwindow.h
 
 #ignore generated gcode files
 /*.gcode

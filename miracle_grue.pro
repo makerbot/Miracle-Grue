@@ -6,7 +6,7 @@
 
 QT       += core
 
-TARGET = miracle_grue
+TARGET = bin/miracle_grue
 TEMPLATE = app
 
 
