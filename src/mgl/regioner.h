@@ -60,6 +60,7 @@ struct SlicerConfig
 	unsigned int roofLayerCount;
 	unsigned int floorLayerCount;
 	unsigned int infillSkipCount;
+	double infillDensity;
 	Scalar gridSpacingMultiplier;
 };
 

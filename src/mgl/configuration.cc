@@ -199,7 +199,7 @@ void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &s
 {
 	slicerCfg.layerH = doubleCheck(config["slicer"]["layerH"], "slicer.layerH");
 	slicerCfg.firstLayerZ  = doubleCheck(config["slicer"]["firstLayerZ"], "slicer.firstLayerZ");
-	slicerCfg.tubeSpacing 	= doubleCheck(config["slicer"]["tubeSpacing"], "slicer.tubeSpacing");
+	slicerCfg.infillDensity = doubleCheck(config["slicer"]["infillDensity"], "slicer.infillDensity"); 
 	slicerCfg.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
 	slicerCfg.nbOfShells 	= uintCheck(config["slicer"]["nbOfShells"], "slicer.nbOfShells");
 	slicerCfg.layerW 		= doubleCheck(config["slicer"]["layerW"], "slicer.layerW");
@@ -208,5 +208,7 @@ void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &s
 	slicerCfg.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
 	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
+
+	slicerCfg.infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
 
 }
