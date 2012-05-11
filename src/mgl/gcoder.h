@@ -217,7 +217,7 @@ public:
 
 	GCoderConfig gcoderCfg;
 
-        GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress)
+        GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL)
             :Progressive(progress), gcoderCfg(gCoderCfg)
 	{
 
