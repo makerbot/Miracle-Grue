@@ -70,15 +70,16 @@
 
 ***OSX deployment***
 
-### Build Miracle-gui
 Update the code if necessary, cd to the directory containing  the tree, and then:
-    mkdir -p build
-    cd build
-    qmake -spec macx-g++ ../Miracle-Grue/miracle_gui.pro
-    make
+
+	"mkdir -p build"
+	"cd build"
+	"qmake -spec macx-g++ ../Miracle-Grue/miracle_gui.pro"
+	"make"
 
 To create a deployable .dmg file:
-    macdeployqt miracle_gui.app -dmg -verbose=2
+
+	"macdeployqt miracle_gui.app -dmg -verbose=2"
 
 
 # Compiling the code
