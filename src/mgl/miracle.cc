@@ -41,7 +41,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	std::ofstream gout(gcodeFile);
 
-	GCoder gcoder(gcoderCfg);
+        GCoder gcoder(gcoderCfg, progress);
     gcoder.writeGcodeFile(slices, tomograph.layerMeasure, gout, modelFile, firstSliceIdx, lastSliceIdx);
 
 	gout.close();

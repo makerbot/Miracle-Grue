@@ -416,7 +416,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		const Polygons &infills = sliceData.extruderSlices[extruderId].infills;
 		const vector<Polygons> &insets = sliceData.extruderSlices[extruderId].insetLoopsList;
 
-        //Log::often() << endl <<  "Slice " << sliceData.sliceIndex << endl;
+                // Log::often() << endl <<  "Slice " << sliceData.sliceIndex << endl;
 
 		try
 		{
