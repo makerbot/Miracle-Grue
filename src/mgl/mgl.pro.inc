@@ -27,7 +27,9 @@ mac {
 		   $$BOOST_PATH/libboost_regex.a
 }
 
-LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS -fopenmp
+QMAKE_CXXFLAGS += -fopenmp
+
+LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS
 INCLUDEPATH += $$MGL_SRC/.. $$BOOST_INCLUDE
 
 SOURCES +=     $$MGL_SRC/abstractable.cc \
