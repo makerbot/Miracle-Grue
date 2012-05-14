@@ -48,16 +48,26 @@ struct Extrusion
 {
 	Extrusion()
 		:feedrate(2400),
+ 		 retractDistance(0),
+		 retractRate(3000),
+		 restartExtraDistance(0),
+		 extrudedDimensionsRatio(0),
 		 flow(2.8),
 		 leadIn(0),
 		 leadOut(0),
 		 snortFlow(35),
 		 squirtFlow(35),
 		 snortFeedrate(600),
-		 squirtFeedrate(600)
+		squirtFeedrate(600)
 	{}
 
 	double feedrate;
+
+	double retractDistance;
+	double retractRate;
+	double restartExtraDistance;
+	double extrudedDimensionsRatio;
+
 	double flow; // RPM value for the extruder motor... not a real unit :-(
 
 	double leadIn;
@@ -75,8 +85,12 @@ struct Extruder
 		:coordinateSystemOffsetX(0),
 		extrusionTemperature(220),
 		nozzleZ(0),
-		zFeedRate(100)
+		zFeedRate(100),
+		extrusionMode(VOLUMETRIC_MODE),
+		feedDiameter(3)
 	{}
+
+	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
 
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
 	double extrusionTemperature; 	 // the extrusion temperature in Celsius
@@ -85,6 +99,8 @@ struct Extruder
 	// and the layer at position z (measured at the middle of the layer)
 	double nozzleZ;
 	double zFeedRate;
+	extrusionMode_t extrusionMode;
+	double feedDiameter;
 
 	std::string firstLayerExtrusionProfile;
 	std::string insetsExtrusionProfile;
