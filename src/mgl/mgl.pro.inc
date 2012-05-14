@@ -14,7 +14,7 @@ win32 {
                -lboost_regex-mgw46-mt-1_49
 }
 
-linux {
+unix {
     BOOST_LIB_PATH=
     BOOST_LIBS=-lboost_system -lboost_filesystem -lboost_regex
     BOOST_INCLUDE=    
@@ -24,7 +24,7 @@ mac {
 	BOOST_PATH=/opt/local/lib
 	BOOST_LIBS=$$BOOST_PATH/libboost_system.a \
 	           $$BOOST_PATH/libboost_filesystem.a \
-			   $$BOST_PATH/libboost_regex.a
+		   $$BOOST_PATH/libboost_regex.a
 }
 
 LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS -fopenmp
