@@ -15,7 +15,7 @@ win32 {
                -lboost_regex-mgw46-mt-1_49
     } else {
         BOOST_HOME=C:\Boost-1.41.0
-        BOOST_LIB_PATH=-L\\\"$$BOOST_HOME\lib\\\"
+        BOOST_LIB_PATH=-L$$quote($$BOOST_HOME\lib)
         BOOST_INCLUDE="$$BOOST_HOME\include\boost-1_41"
         BOOST_LIBS=-lboost_system-mgw34-mt \
                -lboost_filesystem-mgw34-mt \
