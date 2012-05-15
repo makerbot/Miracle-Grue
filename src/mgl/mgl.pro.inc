@@ -7,7 +7,7 @@
 
 win32 {
     isEmpty(JENKINS) {
-        isEmpty(BOOST_HOME):BOOST_HOME=C:/Boost
+        isEmpty(BOOST_HOME):BOOST_HOME=C:\Boost
         isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=-L$$BOOST_HOME\lib
         isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=-I$$BOOST_HOME\include\boost-1_49
         isEmpty(BOOST_LIBS):BOOST_LIBS=-lboost_system-mgw46-mt-1_49 \
