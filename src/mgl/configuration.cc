@@ -117,6 +117,12 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 		const Json::Value &value = *itr;
 		Extrusion extrusion;
 		extrusion.feedrate 	= doubleCheck(value["feedrate"], (prefix + "feedrate").c_str());
+
+		extrusion.retractDistance = doubleCheck(value["retractDistance"], (prefix + "retractDistance").c_str());
+		extrusion.retractRate = uintCheck(value["retractRate"], (prefix + "retractRate").c_str());
+		extrusion.restartExtraDistance = doubleCheck(value["restartExtraDistance"], (prefix + "restartExtraDistance").c_str());
+		extrusion.extrudedDimensionsRatio = doubleCheck(value["extrudedDimensionsRatio"], (prefix + "extrudedDimensionsRatio").c_str());
+
 		extrusion.flow 		= doubleCheck(value["flow"], (prefix + "flow").c_str());
 		extrusion.leadIn 	= doubleCheck(value["leadIn"], (prefix + "leadIn").c_str());
 		extrusion.leadOut	= doubleCheck(value["leadOut"], (prefix + "leadOut").c_str());
@@ -184,6 +190,23 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		extruder.firstLayerExtrusionProfile = stringCheck(value["firstLayerExtrusionProfile"], (prefix+"firstLayerExtrusionProfile").c_str() );
 		extruder.insetsExtrusionProfile = stringCheck(value["insetsExtrusionProfile"], (prefix+"insetsExtrusionProfile").c_str() );
 		extruder.infillsExtrusionProfile = stringCheck(value["infillsExtrusionProfile"], (prefix+"infillsExtrusionProfile").c_str() );
+
+		string extrusionMode = stringCheck(value["extrusionMode"], (prefix+"extrusionMode").c_str());
+		if ( extrusionMode == "rpm") {
+			extruder.extrusionMode = Extruder::RPM_MODE;
+		}
+		else if (extrusionMode == "volumetric") {
+			extruder.extrusionMode = Extruder::VOLUMETRIC_MODE;
+		}
+		else {
+			stringstream ss;
+			ss << "Invalid extrusion mode [" <<  extrusionMode << "]";
+			ConfigException mixup(ss.str().c_str());
+			throw mixup;
+			return;
+		}
+
+		extruder.feedDiameter = doubleCheck(value["feedDiameter"], (prefix+"feedDiameter").c_str());
 
 		gcoderCfg.extruders.push_back(extruder);
 	}

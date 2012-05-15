@@ -119,6 +119,7 @@ public:
 
 		initProgress("outlines", sliceCount);
 
+
 		for(size_t sliceId =0; sliceId < sliceCount; sliceId++)
 		{
 			tick();

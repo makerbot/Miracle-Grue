@@ -45,7 +45,10 @@ message( Lib path: $$BOOST_LIB_PATH)
 message( Libs: $$BOOST_LIB)
 
 
-LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS -fopenmp
+QMAKE_CXXFLAGS += -fopenmp
+
+LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS
+
 INCLUDEPATH += $$MGL_SRC/.. $$BOOST_INCLUDE
 
 SOURCES +=     $$MGL_SRC/abstractable.cc \
