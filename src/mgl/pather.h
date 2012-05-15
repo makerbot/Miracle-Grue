@@ -90,12 +90,23 @@ public:
 	void generatePaths(const Tomograph &tomograph,
 						const Regions &skeleton,
 						std::vector<SliceData> &slices,
-						size_t firstSliceIdx=-1,
-						size_t lastSliceIdx=-1)
+						int sfirstSliceIdx=-1,
+						int slastSliceIdx=-1)
 	{
+
 		size_t sliceCount = tomograph.outlines.size();
-	    if(firstSliceIdx == -1) firstSliceIdx = 0;
-	    if(lastSliceIdx  == -1) lastSliceIdx = sliceCount-1;
+		size_t firstSliceIdx = 0;
+		size_t lastSliceIdx  = sliceCount-1;
+
+		if(sfirstSliceIdx > 0 )
+		{
+			firstSliceIdx = (size_t)sfirstSliceIdx;
+		}
+
+	    if(slastSliceIdx  > 0 )
+	    {
+	    	lastSliceIdx = (size_t)slastSliceIdx;
+	    }
 
 		slices.resize(sliceCount);
 		bool direction = false;

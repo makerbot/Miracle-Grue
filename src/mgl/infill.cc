@@ -22,11 +22,11 @@ using namespace libthing;
 
 void mgl::infillosophy( const  SegmentTable &outlineLoops,
                         const Limits& limits,
-                        double z,
+                        double, //z,
                         double layerW,
                         size_t skipCount,
                         bool xDirection, // y when false
-                        Scalar infillShrinking,
+                        Scalar, // infillShrinking,
                         Polygons& infills)
 {
     Grid grid(limits, layerW);

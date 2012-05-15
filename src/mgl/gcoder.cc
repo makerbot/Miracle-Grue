@@ -66,11 +66,7 @@ void Gantry::writeSwitchExtruder(ostream& ss, int extruderId)
 	ss << endl;
 }
 
-void GCoder::writeWipeExtruder(ostream& ss, int extruderId) const
-{
-	//ss << "( GWIPE my extruder #" << extruderId << " )"<< endl;
-	//ss << endl;
-}
+
 
 
 
@@ -301,13 +297,13 @@ void GCoder::writePolygons(std::ostream& ss,
 	}
 }
 
-void GCoder::moveZ(ostream & ss, double z, unsigned int  extruderId, double zFeedrate)
+void GCoder::moveZ(ostream & ss, double z, unsigned int  , double zFeedrate)
 {
     bool doX = false;
     bool doY = false;
     bool doZ = true;
     bool doFeed = true;
-    const char *comment = NULL;
+
 
     gcoderCfg.gantry.g1Motion(ss, 0, 0, z, zFeedrate, "move Z", doX, doY, doZ, doFeed);
 
@@ -332,11 +328,11 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 	extrusion.flow *= gcoderCfg.gantry.scalingFactor;
 }
 
-void GCoder::calcInSetExtrusion (	unsigned int extruderId,
-										unsigned int sliceId,
-										unsigned int insetId,
-										unsigned int insetCount,
-										Extrusion &extrusion) const
+void GCoder::calcInSetExtrusion (   unsigned int extruderId,
+                                    unsigned int sliceId,
+                                    unsigned int , // insetId,
+                                    unsigned int , // insetCount,
+                                    Extrusion &extrusion) const
 {
 	string profileName;
 	if(sliceId == 0)
@@ -358,14 +354,17 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
                              const mgl::LayerMeasure& layerMeasure,
                                 std::ostream &gout,
                                     const char* title,
-                                        int firstSliceIdx,
-                                            int lastSliceIdx)
+                                        int iFirstSliceIdx,
+                                            int iLastSliceIdx)
 {
     writeStartOfFile(gout, title);
 
     size_t sliceCount = slices.size();
-    if(firstSliceIdx <0)firstSliceIdx = 0;
-    if(lastSliceIdx <0)lastSliceIdx = sliceCount -1;
+    size_t firstSliceIdx = 0;
+    size_t lastSliceIdx = sliceCount-1;
+
+    if(iFirstSliceIdx > 0) firstSliceIdx = (size_t) iFirstSliceIdx;
+    if(iLastSliceIdx  < 0) lastSliceIdx  = (size_t) iLastSliceIdx;
 
     initProgress("gcode", sliceCount);
     size_t codeSlice = 0;
@@ -386,7 +385,6 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
 
 void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 {
-
 	double layerZ = sliceData.getZHeight();
 	unsigned int sliceIndex = sliceData.getIndex();
 	unsigned int extruderCount = sliceData.extruderSlices.size();
@@ -406,10 +404,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-            Log::often() << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::often() << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
-
-		unsigned int dualtrickId =  extruderId;
 
 	  	ss << "(   Extruder " <<  extruderId << ")" << endl;
 		const Polygons &loops = sliceData.extruderSlices[extruderId].boundary;
@@ -434,8 +430,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-            Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-            Log::error() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::error() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 		try
 		{
@@ -443,15 +439,16 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
-                //Log::often()  << "   Write OUTLINE" << endl;
+                                //Log::often()  << "   Write OUTLINE" << endl;
 				ss << "(outlines: " << loops.size() << " )"<< endl;
 				writePolygons(ss, z, extrusion, loops);
 			}
 		}
 		catch(GcoderException &mixup)
 		{
-            Log::often()  << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-            Log::error() << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::often()  << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::error() << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    cerr << mixup.error << endl;
 		}
 
 		try
@@ -465,7 +462,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 					Extrusion extrusion;
 					calcInSetExtrusion(extruderId, sliceIndex, i, insetCount, extrusion);
 					const Polygons &inset = insets[i];
-                    // Log::often() << "   Write INSETS " << i << endl;
+                                        // Log::often() << "   Write INSETS " << i << endl;
 					ss << "(inset " << i << "/"<<  insetCount<< " )"<< endl;
 					writePolygons(ss, z, extrusion, inset);
 
@@ -474,7 +471,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-            Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                        Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
@@ -482,7 +479,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		{
 			if(gcoderCfg.gcoding.infills && !gcoderCfg.gcoding.infillFirst)
 			{
-                //Log::often() << "   Write INFILLS" << endl;
+                                //Log::often() << "   Write INFILLS" << endl;
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				writePolygons(ss, z, extrusion, infills);
@@ -490,14 +487,11 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-            Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                        Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
-		if (extruderCount > 0)
-		{
-			writeWipeExtruder(ss, extruderId);
-		}
+
 		extruderId ++;
 	}
 }
@@ -603,14 +597,6 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 	this->y = y;
 	this->z = z;
 	this->feed = feed;
-
-	if(g1Comment == NULL)
-	{
-		string msg = "";
-		this->comment = msg;
-	}
-	else
-		this->comment = g1Comment;
 
 }
 

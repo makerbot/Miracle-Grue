@@ -27,7 +27,7 @@ std::ostream &MyComputer::log()
 }
 
 
-int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname  )
+int FileSystemAbstractor::guarenteeDirectoryExists(const char* )//pathname  )
 {
 
 #ifdef QT_CORE_LIB
