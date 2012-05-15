@@ -5,31 +5,50 @@
 #
 #-------------------------------------------------
 
-
 win32 {
-    BOOST_LIB_PATH=-Lc:\Boost\lib
-    BOOST_INCLUDE=-Ic:\Boost\include\boost-1_49
-    BOOST_LIBS=-lboost_system-mgw46-mt-1_49 \
+    isEmpty(JENKINS) {
+        isEmpty(BOOST_HOME):BOOST_HOME=C:\Boost
+        isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=-L"$$BOOST_HOME\lib"
+        isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME\include\boost-1_49
+        isEmpty(BOOST_LIBS):BOOST_LIBS=-lboost_system-mgw46-mt-1_49 \
                -lboost_filesystem-mgw46-mt-1_49 \
                -lboost_regex-mgw46-mt-1_49
+    } else {
+        BOOST_HOME=C:\Boost-1.41.0
+        BOOST_LIB_PATH=-LC:/Boost-1.41.0/lib
+        BOOST_INCLUDE="$$BOOST_HOME\include\boost-1_41"
+        BOOST_LIBS=$$(BOOST_LIB_PATH)\libboost_system-mgw34-mt.lib \
+               $$(BOOST_LIB_PATH)\libboost_filesystem-mgw34-mt.lib \
+               $$(BOOST_LIB_PATH)\libboost_regex-mgw34-mt.lib
+    }
 }
 
 unix {
-    BOOST_LIB_PATH=
-    BOOST_LIBS=-lboost_system -lboost_filesystem -lboost_regex
-    BOOST_INCLUDE=    
+    isEmpty(BOOST_HOME) BOOST_HOME=/usr
+    isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=$$BOOST_HOME/lib
+    isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME/include
+    isEmpty(BOOST_LIBS):BOOST_LIBS=-lboost_system -lboost_filesystem -lboost_regex
 }
 
 mac {
-	BOOST_PATH=/opt/local/lib
-	BOOST_LIBS=$$BOOST_PATH/libboost_system.a \
-	           $$BOOST_PATH/libboost_filesystem.a \
-		   $$BOOST_PATH/libboost_regex.a
+    isEmpty(BOOST_HOME):BOOST_HOME=/opt/local
+    isEmpty(BOOST_STATIC_PATH):BOOST_LIB_PATH=$$BOOST_HOME/lib
+    isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME/include
+    isEmpty(BOOST_LIBS):BOOST_LIBS=$$BOOST_STATIC_PATH/libboost_system.a \
+	           $$BOOST_STATIC_PATH/libboost_filesystem.a \
+		   $$BOOST_STATIC_PATH/libboost_regex.a
 }
+
+message(Boost settings:)
+message( Include: $$BOOST_INCLUDE)
+message( Lib path: $$BOOST_LIB_PATH)
+message( Libs: $$BOOST_LIB)
+
 
 QMAKE_CXXFLAGS += -fopenmp
 
 LIBS += $$BOOST_LIB_PATH $$BOOST_LIBS
+
 INCLUDEPATH += $$MGL_SRC/.. $$BOOST_INCLUDE
 
 SOURCES +=     $$MGL_SRC/abstractable.cc \
