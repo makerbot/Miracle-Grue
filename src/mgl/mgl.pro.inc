@@ -17,9 +17,9 @@ win32 {
         BOOST_HOME=C:\Boost-1.41.0
         BOOST_LIB_PATH=-LC:/Boost-1.41.0/lib
         BOOST_INCLUDE="$$BOOST_HOME\include\boost-1_41"
-        BOOST_LIBS=-lboost_system-mgw34-mt \
-               -lboost_filesystem-mgw34-mt \
-               -lboost_regex-mgw34-mt
+        BOOST_LIBS=$$(BOOST_LIB_PATH)\libboost_system-mgw34-mt.lib \
+               $$(BOOST_LIB_PATH)\libboost_filesystem-mgw34-mt.lib \
+               $$(BOOST_LIB_PATH)\libboost_regex-mgw34-mt.lib
     }
 }
 
