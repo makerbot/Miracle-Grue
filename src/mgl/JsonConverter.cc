@@ -37,7 +37,8 @@ bool JsonConverter::loadVector2FromJson(Vector2& s, Value& input)
 }
 
 
-bool JsonConverter::loadJsonFromVector3(Value& val, Vector3& input)
+bool JsonConverter::loadJsonFromVector3(Value& ,//val,
+                                        Vector3&)// input)
 {
 	return false;
 }
@@ -62,8 +63,8 @@ bool JsonConverter::loadPolygonFromJson(Polygon& poly,Value& input)
 	if(input.size() < 1)
 		return false;
 
-	for ( int index = 0; index < input.size(); ++index ){
-			Value& tmp = input[index];
+        for ( size_t index = 0; index < input.size(); ++index ){
+                        Value& tmp = input[(int)index];
 			if( tmp.size() == 2) {
 				Vector2 vec(tmp[0].asDouble(), tmp[1].asDouble());
 				poly.push_back(vec);
@@ -80,9 +81,9 @@ bool JsonConverter::loadPolygonsFromJson(Polygons& polys,Value& input)
 {
 	if(input.size() < 1)
 		return false;
-	for ( int index = 0; index < input.size(); ++index ) {
+        for ( size_t index = 0; index < input.size(); ++index ) {
 		Polygon poly;
-		Value tmp = input[index];
+                Value tmp = input[(int)index];
 		bool ok = loadPolygonFromJson(poly,tmp);
 		if (ok == false){
 			cerr << "Vector2 miscount" << endl;
@@ -130,8 +131,8 @@ bool JsonConverter::loadPolygonsGroupFromJson(PolygonsGroup& pg, Value& input)
 {
 	if(input.size() < 1)
 		return false;
-	for ( int index = 0; index < input.size(); ++index ) {
-		Value group = input[index];
+        for ( size_t index = 0; index < input.size(); ++index ) {
+                Value group = input[(int)index];
 		Polygons polys;
 		bool ok = loadPolygonsFromJson(polys,group);
 		if (ok == false)

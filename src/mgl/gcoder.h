@@ -56,9 +56,9 @@ struct Extrusion
 		 leadIn(0),
 		 leadOut(0),
 		 snortFlow(35),
-		 squirtFlow(35),
-		 snortFeedrate(600),
-		squirtFeedrate(600)
+                 snortFeedrate(600),
+                 squirtFlow(35),
+                 squirtFeedrate(600)
 	{}
 
 	double feedrate;
@@ -116,7 +116,7 @@ struct Gantry
 
 	//unsigned int nb;
 	double x,y,z,feed;     // current position and feed
-	std::string comment;   // if I'm not useful by xmas please delete me
+        // std::string comment;   // if I'm not useful by xmas please delete me
 
 public:
 	double rapidMoveFeedRateXY;
@@ -132,14 +132,15 @@ public:
             :x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
              y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
              z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+             feed(0),
              rapidMoveFeedRateXY(5000),
              rapidMoveFeedRateZ(1400),
-             scalingFactor(1),
+             homingFeedRateZ(100),
              xyMaxHoming(true),
              zMaxHoming(false),
-             homingFeedRateZ(100)
-	{
+             scalingFactor(1)
 
+	{
 	}
 
 
@@ -161,7 +162,7 @@ public:
 	void squirt(std::ostream &ss, const libthing::Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed);
 	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed);
 
-    void writeSwitchExtruder(std::ostream& ss, int extruderId);
+        void writeSwitchExtruder(std::ostream& ss, int extruderId);
 
 	// emits a g1 command to the stream, only writing the parameters that have changed since the last g1.
 	void g1(std::ostream &ss,
@@ -288,7 +289,7 @@ private:
 						const Extrusion &extrusionParams,
 						const Polygon & polygon);
 
-    void writeWipeExtruder(std::ostream& ss, int extruderId) const;
+    // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
 };
 
 

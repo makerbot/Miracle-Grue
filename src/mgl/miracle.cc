@@ -16,7 +16,7 @@ using namespace libthing;
 void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
                       const SlicerConfig &slicerCfg,
                       const char *modelFile,
-                      const char *scadFileStr,
+                      const char *, // scadFileStr,
                       const char *gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,

@@ -248,7 +248,7 @@ void AddReflexSegments(	const std::vector<LineSegment2> &segments,
 
 		if(!convexVertices[i])
 		{
-			Vector2 center = segments[i].a;
+                        // Vector2 center = segments[i].a;
 			Vector2 start  = trimmedInsets[prevId].b;
 			Vector2 end    = trimmedInsets[i].a;
 			LineSegment2 straight(start, end);
@@ -297,7 +297,7 @@ void Shrinky::openScadFile(const char *scadFileName)
 }
 
 Shrinky::Shrinky( const char *scadFileName)
-		:scadFileName(scadFileName), color(1),  counter(0), dz(0), scadZ(0)
+                :scadFileName(scadFileName), scadZ(0), color(1),  counter(0),  dz(0)
 {
     openScadFile(scadFileName);
 }
@@ -410,7 +410,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 	{
 		unsigned int nextId = i==segments.size()-1 ? 0 : i+1;
 
-		const LineSegment2 &nextSeg = segments[nextId];
+                //const LineSegment2 &nextSeg = segments[nextId];
 		const Vector2 &nextBisector = bisectors[nextId];
 
 		const LineSegment2 &currentSegment =  segments[i];
@@ -698,7 +698,7 @@ void removeZeroLengthSegments(const std::vector<LineSegment2> &inputSegments, st
 Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 								Scalar insetDist,
 								Scalar continuityTolerance,
-								bool writePartialStep,
+                                                                bool ,//  writePartialStep,
 								std::vector<LineSegment2> &finalInsets)
 {
 	Scalar tol = 1e-6;
@@ -724,13 +724,13 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 
 	if(dumpSteps)segmentsDiagnostic("originalSegments", originalSegments);
 
-	Scalar insetStepDistance;
+        Scalar insetStepDistance =insetDist;
 	try
 	{
 	    if(scadFileName)
 	    {
 	        // OpenScad
-	        Scalar dz = 0.1;
+//	        Scalar dz = 0.1;
 	        stringstream coloredOutline;
 	        // Scalar color = (1.0 * i)/(shells-1);
 	        int color = 0;
@@ -785,8 +785,8 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	}
 	catch(ShrinkyException &mixup)
 	{
-		mixup;
-        Log::often() << " ^ "; //  << mixup.error << endl;
+
+            Log::often() <<    mixup.error << endl;
 
         // Log::often() << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
 		// this is a lie...  but we want to break the loop
@@ -794,7 +794,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 		throw;
 	}
 	this->counter++;
-    return insetStepDistance;
+        return insetStepDistance;
 }
 
 
@@ -860,8 +860,8 @@ void createShells( const SegmentVector & outlinesSegments,
 			insetTable.push_back(std::vector<LineSegment2>());
 		}
 
-		unsigned int segmentCountBefore =0;
-		unsigned int segmentCountAfter =0;
+                //unsigned int segmentCountBefore =0;
+                //unsigned int segmentCountAfter =0;
 
 		unsigned int currentShellIdForErrorReporting=0;
 		try
@@ -908,8 +908,8 @@ void createShells( const SegmentVector & outlinesSegments,
 
 
 					vector<LineSegment2> previousInsets  = outlineLoop;
-                    Log::often() << "Creating file: " << loopScadFile << endl;
-                    Log::often() << "	Number of points " << (int)previousInsets.size() << endl;
+                                        Log::often() << "Creating file: " << loopScadFile << endl;
+                                        Log::often() << "	Number of points " << (int)previousInsets.size() << endl;
 					ScadDebugFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
 					std::vector<LineSegment2> insets;
 					for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
@@ -920,12 +920,12 @@ void createShells( const SegmentVector & outlinesSegments,
 						insets.clear(); // discard...
 					}
 				}
-				catch(ShrinkyException &messup2) // the same excpetion is thrown again
+                                catch(ShrinkyException &) // the same excpetion is thrown again
 				{
-					messup2; //ignore
-                    Log::often() << "saving " << endl;
+
+                                        Log::often() << "saving " << endl;
 				}
-                Log::often() << "--- --- ERROR " << counter << " END --- ----" << endl;
+                                Log::often() << "--- --- ERROR " << counter << " END --- ----" << endl;
 				counter ++;
 			}
 		}
@@ -1010,12 +1010,12 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegment
 							shrinky.inset(inputSegments, dist, outlineShell);
 						}
 					}
-					catch(ShrinkyException &messup2) // the same excpetion is thrown again
+                                        catch(ShrinkyException &) // the same excpetion is thrown again
 					{
-						messup2; //ignore
-                        Log::often() << "saving " << endl;
+
+                                                Log::often() << "saving " << endl;
 					}
-                    Log::often() << "--- --- ERROR " << counter << " END --- ----" << endl;
+                                        Log::often() << "--- --- ERROR " << counter << " END --- ----" << endl;
 					counter ++;
 				}
 			}

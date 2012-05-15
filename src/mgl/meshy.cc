@@ -43,11 +43,11 @@ static inline void convertFromLittleEndian16(uint8_t* bytes)
     bytes[1] = tmp;
 }
 #else
-static inline void convertFromLittleEndian32(uint8_t* bytes)
+static inline void convertFromLittleEndian32(uint8_t*)// bytes)
 {
 }
 
-static inline void convertFromLittleEndian16(uint8_t* bytes)
+static inline void convertFromLittleEndian16(uint8_t*)// bytes)
 {
 }
 #endif
@@ -297,9 +297,9 @@ size_t Meshy::readStlFile(const char* stlFilename)
 	} else {
 		// ASCII STL file
 		// Gobble remainder of solid name line.
-		fgets((char*) buf, sizeof(buf), fHandle);
+                char* c = fgets((char*) buf, sizeof(buf), fHandle);
 		while (!feof(fHandle)) {
-			fscanf(fHandle, "%80s", buf);
+                        int q = fscanf(fHandle, "%80s", buf);
 			if (!strcasecmp((char*) buf, "endsolid")) {
 				break;
 			}
@@ -324,8 +324,9 @@ size_t Meshy::readStlFile(const char* stlFilename)
 				stringstream msg;
 				msg << "Error reading face " << facecount << " in file \"" << stlFilename << "\"";
 				MeshyException problem(msg.str().c_str());
-                Log::often() << msg << endl;
-                Log::often() << buf << endl;
+                                Log::often() << msg << endl;
+                                Log::often() << buf << endl;
+                                Log::often() << c << " " <<  q << endl;
 				throw(problem);
 			}
 			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));

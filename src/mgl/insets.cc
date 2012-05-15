@@ -99,7 +99,8 @@ void  mglToClipper(const SegmentVector &segmentTable, ClipperLib::Polygons &out_
 
 void  dumpSegmentTable(const char* name, const SegmentTable & outTable)
 {
-    for(int i = 0;i < outTable.size();i++){
+    for(size_t i = 0;i < outTable.size();i++)
+    {
         const vector<LineSegment2> & segs = outTable[i];
         stringstream ss;
         ss << name << "_" << i;
@@ -175,7 +176,15 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 	insetDistances.reserve(nbOfShells);
 	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 	{
-		Scalar insetDistance = shellId ==0? insetDistance = 0.5*layerW: insetDistanceFactor *layerW;
+                Scalar insetDistance;
+                if(shellId ==0)
+                {
+                    insetDistance = 0.5*layerW;
+                }
+                else
+                {
+                    insetDistance = insetDistanceFactor *layerW;
+                }
 		insetDistances.push_back(insetDistance);
 	}
 
@@ -214,7 +223,7 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 		{
 			// const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
 
-			int lastKnownShell = -1;
+                        int lastKnownShell = -1;
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
 				const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
@@ -224,16 +233,16 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 					lastKnownShell = shellId;
 				}
 			}
-			if(lastKnownShell >= 0)
-			{
-				const vector<LineSegment2> &deppestInset = insetsForLoops[lastKnownShell][loop];
-				//innerOutlinesSegments.push_back(deppestInset);
-			}
-			else
-			{
-				const vector<LineSegment2> &deppestInset = outlinesSegments[loop];
-				//innerOutlinesSegments.push_back(deppestInset);
-			}
+                        if(lastKnownShell >= 0)
+                        {
+//				const vector<LineSegment2> &deppestInset = insetsForLoops[lastKnownShell][loop];
+//				//innerOutlinesSegments.push_back(deppestInset);
+                        }
+//			else
+//			{
+//				const vector<LineSegment2> &deppestInset = outlinesSegments[loop];
+//				//innerOutlinesSegments.push_back(deppestInset);
+//			}
 		}
 	}
 }
