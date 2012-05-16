@@ -31,9 +31,10 @@
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
 #define M_PI 3.14159265358979323846
-#define M_TAU 6.28318530717958647692
 
 #endif // WIN32
+
+#define M_TAU M_PI*2
 
 // #define STRONG_CHECKING
 
