@@ -24,7 +24,7 @@ unix {
 
 mac {
     isEmpty(BOOST_HOME):BOOST_HOME=/opt/local
-    isEmpty(BOOST_STATIC_PATH):BOOST_LIB_PATH=$$BOOST_HOME/lib
+    isEmpty(BOOST_STATIC_PATH):BOOST_STATIC_PATH=$$BOOST_HOME/lib
     isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME/include
     isEmpty(BOOST_LIBS):BOOST_LIBS=$$BOOST_STATIC_PATH/libboost_system.a \
 	           $$BOOST_STATIC_PATH/libboost_filesystem.a \
