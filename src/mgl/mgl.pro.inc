@@ -6,21 +6,13 @@
 #-------------------------------------------------
 
 win32 {
-    isEmpty(JENKINS) {
-        isEmpty(BOOST_HOME):BOOST_HOME=C:\Boost
-        isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=-L"$$BOOST_HOME\lib"
-        isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME\include\boost-1_49
-        isEmpty(BOOST_LIBS):BOOST_LIBS=-lboost_system-mgw46-mt-1_49 \
-               -lboost_filesystem-mgw46-mt-1_49 \
-               -lboost_regex-mgw46-mt-1_49
-    } else {
-        BOOST_HOME=C:\Boost-1.41.0
-        BOOST_LIB_PATH=-LC:\Boost-1.41.0\lib
-        BOOST_INCLUDE="$$BOOST_HOME\include\boost-1_41"
-        BOOST_LIBS=$${BOOST_LIB_PATH}\libboost_system-mgw34-mt.lib \
-               $${BOOST_LIB_PATH}\libboost_filesystem-mgw34-mt.lib \
-               $${BOOST_LIB_PATH}\libboost_regex-mgw34-mt.lib
-    }
+    isEmpty(BOOST_HOME):BOOST_HOME=C:\Boost
+    isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=-L"$$BOOST_HOME\lib"
+    isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME\include\boost-1_49
+    isEmpty(BOOST_LIBS):BOOST_LIBS=-lboost_system-mgw46-mt-1_49 \
+           -lboost_filesystem-mgw46-mt-1_49 \
+           -lboost_regex-mgw46-mt-1_49 \
+	   -lws2_32
 }
 
 unix {
