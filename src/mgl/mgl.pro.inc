@@ -25,7 +25,7 @@ win32 {
 
 unix {
     isEmpty(BOOST_HOME) BOOST_HOME=/usr
-    isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=$$BOOST_HOME/lib
+    isEmpty(BOOST_LIB_PATH):BOOST_LIB_PATH=-L$$BOOST_HOME/lib
     isEmpty(BOOST_INCLUDE):BOOST_INCLUDE=$$BOOST_HOME/include
     isEmpty(BOOST_LIBS):BOOST_LIBS=-lboost_system -lboost_filesystem -lboost_regex
 }
