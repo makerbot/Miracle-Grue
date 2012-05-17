@@ -231,7 +231,6 @@ int main(int argc, char *argv[], char *envp[])
     Configuration config;
     try
     {
-		config.readFromFile(configFileName.c_str());
 		int firstSliceIdx, lastSliceIdx;
 		parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
 		// cout << config.asJson() << endl;
