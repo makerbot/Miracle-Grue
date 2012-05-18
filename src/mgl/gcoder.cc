@@ -16,7 +16,7 @@ using namespace std;
 using namespace libthing;
 
 #include "log.h"
-
+#include <math.h>
 
 // function that adds an s to a noun if count is more than 1
 std::string plural(const char*noun, int count, const char* ending = "s")
@@ -34,8 +34,9 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 // These positions are aligned with the fisrt line and last line of the polygon.
 // LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
 // LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
-void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadOut,
-								Vector2 &start, Vector2 &end)
+void polygonLeadInAndLeadOut(const Polygon &polygon, const Extruder &extruder,
+							 double leadIn, double leadOut,
+							 Vector2 &start, Vector2 &end)
 {
 	size_t count =  polygon.size();
 
@@ -44,6 +45,12 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 
 	const Vector2 &c = polygon[count-2];
 	const Vector2 &d = polygon[count-1]; // last element
+
+	if (extruder.isVolumetric()) {
+		start = a;
+		end = d;
+		return;
+	}
 
 	Vector2 ab = b - a;
 	ab.normalise();
@@ -58,11 +65,12 @@ void polygonLeadInAndLeadOut(const Polygon &polygon, double leadIn, double leadO
 }
 
 
-void Gantry::writeSwitchExtruder(ostream& ss, int extruderId)
+void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder)
 {
-	ss << "( extruder " << extruderId << " )" << endl;
-	ss << "( GSWITCH T" << extruderId << " )" << endl;
+	ss << "( extruder " << extruder.id << " )" << endl;
+	ss << "( GSWITCH T" << extruder.id << " )" << endl;
 	ss << "( TODO: add offset management to Gantry )" << endl;
+	ab = extruder.code;
 	ss << endl;
 }
 
@@ -152,11 +160,21 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 	int extruderCount = gcoderCfg.extruders.size();
 	if (extruderCount >0)
 	{
-		gcoderCfg.gantry.g1(ss, 	gcoderCfg.platform.waitingPositionX,
-						gcoderCfg.platform.waitingPositionY,
-						gcoderCfg.platform.waitingPositionZ,
-						gcoderCfg.gantry.rapidMoveFeedRateXY,
-						"go to waiting position" );
+		ss << "G92 A0" << endl;
+		if (extruderCount > 1) {
+			ss << "G92 B0" << endl;
+		}
+
+		gcoderCfg.gantry.a = 0;
+		gcoderCfg.gantry.b = 0;
+		gcoderCfg.gantry.extruding = false;
+
+		gcoderCfg.gantry.g1(ss, gcoderCfg.platform.waitingPositionX,
+							gcoderCfg.platform.waitingPositionY,
+							gcoderCfg.platform.waitingPositionZ,
+							gcoderCfg.gantry.rapidMoveFeedRateXY,
+							"go to waiting position");
+						
 
 	}
 	else
@@ -237,35 +255,40 @@ void GCoder::writeAnchor(std::ostream &ss)
 	double dy = gcoderCfg.platform.waitingPositionY - 0.0;
 
 	gcoderCfg.gantry.g1(ss, dx, dy, z, 0.2 * anchorFeedRate , NULL);
-	ss << "M102 (Stop extruder)" << endl;
+	ss << "M103 (Stop extruder)" << endl;
 	ss << endl;
 }
 
 
 void GCoder::writePolygon(	std::ostream & ss,
 							double z,
+							const Extruder &extruder,
 							const Extrusion &extrusion,
 							const Polygon & polygon)
 {
     Vector2 start(0, 0), stop(0, 0);
 
-    polygonLeadInAndLeadOut(polygon, extrusion.leadIn, extrusion.leadOut, start, stop);
+    polygonLeadInAndLeadOut(polygon, extruder, extrusion.leadIn, extrusion.leadOut, start, stop);
 
     // rapid move into position
-    gcoderCfg.gantry.g1(ss, start.x, start.y, z, gcoderCfg.gantry.rapidMoveFeedRateXY, NULL);
+    gcoderCfg.gantry.g1(ss, extruder, extrusion,
+						start.x, start.y, z,
+						gcoderCfg.gantry.rapidMoveFeedRateXY,
+						"move into position");
 
     // start extruding ahead of time while moving towards the first point
-    gcoderCfg.gantry.squirt(ss, polygon[0], extrusion.squirtFeedrate, extrusion.squirtFlow, extrusion.flow);
+    gcoderCfg.gantry.squirt(ss, polygon[0], extruder, extrusion);
 
    // for all other points in the polygon
     for(size_t i=1; i < polygon.size(); i++)
 	{
     	// move towards the point
 		const Vector2 &p = polygon[i];
-		gcoderCfg.gantry.g1(ss, p.x, p.y, z, extrusion.feedrate, NULL);
+		gcoderCfg.gantry.g1(ss, extruder, extrusion, p.x, p.y, z,
+							extrusion.feedrate, NULL);
 	}
     //ss << "(STOP!)" << endl;
-    gcoderCfg.gantry.snort(ss, stop, extrusion.snortFeedrate, extrusion.snortFlow);
+    gcoderCfg.gantry.snort(ss, stop, extruder, extrusion);
     //ss << "(!STOP)" << endl;
     ss << endl;
 
@@ -273,9 +296,10 @@ void GCoder::writePolygon(	std::ostream & ss,
 
 
 void GCoder::writePolygons(std::ostream& ss,
-		double z,
-		const Extrusion &extrusion,
-		const Polygons &paths)
+						   double z,
+						   const Extruder &extruder,
+						   const Extrusion &extrusion,
+						   const Polygons &paths)
 {
 	unsigned int pathCount = paths.size();
 	for (unsigned int i = 0 ; i < pathCount;  i ++)
@@ -293,7 +317,7 @@ void GCoder::writePolygons(std::ostream& ss,
 			throw mixup;
 		}
 
-		writePolygon(ss, z, extrusion, polygon);
+		writePolygon(ss, z, extruder, extrusion, polygon);
 	}
 }
 
@@ -302,10 +326,11 @@ void GCoder::moveZ(ostream & ss, double z, unsigned int  , double zFeedrate)
     bool doX = false;
     bool doY = false;
     bool doZ = true;
+	bool doE = false;
     bool doFeed = true;
 
 
-    gcoderCfg.gantry.g1Motion(ss, 0, 0, z, zFeedrate, "move Z", doX, doY, doZ, doFeed);
+    gcoderCfg.gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
 
 }
 
@@ -397,6 +422,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
 	{
 	    double z = layerZ + gcoderCfg.extruders[extruderId].nozzleZ;
+		Extruder &extruder = gcoderCfg.extruders[extruderId];
 
 		try
 		{
@@ -418,14 +444,14 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		{
 			if (extruderCount > 0)
 			{
-				gcoderCfg.gantry.writeSwitchExtruder(ss, extruderId);
+				gcoderCfg.gantry.writeSwitchExtruder(ss, extruder);
 			}
 			if(gcoderCfg.gcoding.infills && gcoderCfg.gcoding.infillFirst)
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				ss << "(infills: "  << infills.size() << ")"<< endl;
-				writePolygons(ss, z, extrusion, infills);
+				writePolygons(ss, z, extruder, extrusion, infills);
 			}
 		}
 		catch(GcoderException &mixup)
@@ -441,7 +467,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
                                 //Log::often()  << "   Write OUTLINE" << endl;
 				ss << "(outlines: " << loops.size() << " )"<< endl;
-				writePolygons(ss, z, extrusion, loops);
+				writePolygons(ss, z, extruder, extrusion, loops);
 			}
 		}
 		catch(GcoderException &mixup)
@@ -464,7 +490,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 					const Polygons &inset = insets[i];
                                         // Log::often() << "   Write INSETS " << i << endl;
 					ss << "(inset " << i << "/"<<  insetCount<< " )"<< endl;
-					writePolygons(ss, z, extrusion, inset);
+					writePolygons(ss, z, extruder, extrusion, inset);
 
 				}
 			}
@@ -482,7 +508,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
                                 //Log::often() << "   Write INFILLS" << endl;
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
-				writePolygons(ss, z, extrusion, infills);
+				writePolygons(ss, z, extruder, extrusion, infills);
 			}
 		}
 		catch(GcoderException &mixup)
@@ -496,15 +522,60 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 	}
 }
 
+Scalar Extrusion::crossSectionArea(Scalar height) const {
+	Scalar width = height * extrudedDimensionsRatio;
 
+	//two semicircles joined by a rectangle
+	Scalar radius = height / 2;
+	return (M_TAU / 2) * radius * radius + height * (width - height);
+	//LONG LIVE TAU!
+}
 
-void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, const char *comment = NULL)
+Scalar Extruder::feedCrossSectionArea()  const {
+	Scalar radius = feedDiameter / 2;
+	//feedstock should be a cylinder
+	return (M_TAU / 2) * radius * radius;
+	//LONG LIVE TAU!
+}
+
+Scalar Gantry::segmentVolume(const Extruder &extruder,
+							 const Extrusion &extrusion,
+							 LineSegment2 &segment) const {
+	Scalar cross_area = extrusion.crossSectionArea(layerH);
+	Scalar length = segment.length();
+
+	return cross_area * length;
+}
+	
+
+Scalar Gantry::volumetricE(const Extruder &extruder, const Extrusion &extrusion,
+						   Scalar x, Scalar y, Scalar z) const {
+
+	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
+	//segments get extruded
+	LineSegment2 seg(Vector2(this->x, this->y), Vector2(x, y));
+	Scalar seg_volume = segmentVolume(extruder, extrusion, seg);
+
+	Scalar feed_cross_area = extruder.feedCrossSectionArea();
+
+	Scalar feed_len = seg_volume / feed_cross_area;
+
+	return feed_len + getCurrentE();
+}
+
+/*if extruder and extrusion are null we don't extrude*/
+void Gantry::g1(std::ostream &ss,
+				const Extruder *extruder, const Extrusion *extrusion,
+				double x, double y, double z, double feed,
+				const char *comment = NULL)
 {
 
 	bool doX = true;
 	bool doY = true;
 	bool doZ = true;
 	bool doFeed = true;
+	bool doE = false;
+	Scalar e = getCurrentE();
 
 	if(!libthing::tequals(this->x, x, SAMESAME_TOL))
 	{
@@ -524,40 +595,67 @@ void Gantry::g1(std::ostream &ss, double x, double y, double z, double feed, con
 		doFeed=true;
 	}
 
-	g1Motion(ss, x,y,z,feed,comment,doX,doY,doZ,doFeed);
+	if(extruding && extruder != NULL && extrusion != NULL
+	   && extruder->isVolumetric()) {
+		doE = true;
+		e = volumetricE(*extruder, *extrusion, x, y, z);
+	}		
+
+	g1Motion(ss, x, y, z, e, feed, comment,
+			 doX, doY, doZ, doE, doFeed);
 }
 
 void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
-						double reversalFeedrate,
-						double reversalFlow,
-						double extrusionFlow)
+					const Extruder &extruder, const Extrusion &extrusion)
 {
+	if (extruder.isVolumetric()) {
+		g1Motion(ss, x, y, z,
+				 getCurrentE() + extrusion.retractDistance
+				 + extrusion.restartExtraDistance, extrusion.retractRate,
+				 "squirt", false, false, false, true, true); //only E and F
+	}
+	else {
+		ss << "M108 R" <<  extrusion.squirtFlow << " (squirt)" << endl;
+		ss << "M101" << endl;
+		g1(ss, extruder, extrusion,
+		   lineStart.x, lineStart.y, z, extrusion.squirtFeedrate, NULL);
+		ss << "M108 R" << extrusion.flow << " (good to go)" << endl;
+	}
 
-	ss << "M108 R" <<  reversalFlow << " (squirt)" << endl;
-	ss << "M101" << endl;
-	g1(ss, lineStart.x, lineStart.y, z, reversalFeedrate, NULL);
-	ss << "M108 R" << extrusionFlow << " (good to go)" << endl;
+	extruding = true;
 }
 
-void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed)
+void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
+				   const Extruder &extruder, const Extrusion &extrusion)
 {
-	ss << "M108 R" << reversalExtrusionSpeed << "  (snort)" << endl;
-	ss << "M102" << endl;
-	g1(ss, lineEnd.x, lineEnd.y, z, reversalFeedrate, NULL);
-	ss << "M103" << endl;
+	if (extruder.isVolumetric()) {
+		g1Motion(ss, x, y, z,
+				 getCurrentE() - extrusion.retractDistance,
+				 extrusion.retractRate, "snort",
+				 false, false, false, true, true); //only E and F
+	}
+	else {
+		ss << "M108 R" << extrusion.snortFlow << "  (snort)" << endl;
+		ss << "M102" << endl;
+		g1(ss, extruder, extrusion, lineEnd.x, lineEnd.y, z,
+		   extrusion.snortFeedrate, NULL);
+		ss << "M103" << endl;
+	}
+
+	extruding = false;
 }
 
 
 
 
-void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
-								double feed, const char *g1Comment,
-								bool doX, bool doY, bool doZ, bool doFeed)
+void Gantry::g1Motion(std::ostream &ss, double x, double y, double z, double e,
+					  double feed, const char *g1Comment, bool doX,
+					  bool doY, bool doZ, bool doE, bool doFeed)
 {
 
 	// not do something is not an option .. under certain conditions
 	#ifdef STRONG_CHECKING
-	if( !(doX || doY || doZ || doFeed)   )
+	if( !(doX || doY || doZ || doFeed )   )
 	{
 		stringstream ss;
 		ss << "G1 without moving where x=" << x << ", y=" << y << ", z=" << z << ", feed=" << feed ;
@@ -587,16 +685,18 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z,
 	if(doY) ss << " Y" << y;
 	if(doZ) ss << " Z" << z;
 	if(doFeed) ss << " F" << feed;
+	if(doE) ss << " " << ab << e;
 	if(g1Comment) ss << " (" << g1Comment << ")";
 	ss << endl;
 
 	// if(feed >= 5000) assert(0);
 
 	// update state machine
-	this->x = x;
-	this->y = y;
-	this->z = z;
-	this->feed = feed;
+	if (doX) this->x = x;
+	if (doY) this->y = y;
+	if (doZ) this->z = z;
+	if (doFeed) this->feed = feed;
+	if (doE) setCurrentE(e);
 
 }
 

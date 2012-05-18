@@ -61,6 +61,8 @@ struct Extrusion
                  squirtFeedrate(600)
 	{}
 
+	Scalar crossSectionArea(Scalar height) const;
+
 	double feedrate;
 
 	double retractDistance;
@@ -81,16 +83,22 @@ struct Extrusion
 
 struct Extruder
 {
+	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
+
 	Extruder()
 		:coordinateSystemOffsetX(0),
 		extrusionTemperature(220),
 		nozzleZ(0),
 		zFeedRate(100),
 		extrusionMode(VOLUMETRIC_MODE),
-		feedDiameter(3)
+		feedDiameter(3),
+		id(0),
+		code('A')
 	{}
 
-	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
+	Scalar feedCrossSectionArea() const;
+	bool isVolumetric() const { return  extrusionMode == VOLUMETRIC_MODE; };
+
 
 	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
 	double extrusionTemperature; 	 // the extrusion temperature in Celsius
@@ -101,6 +109,8 @@ struct Extruder
 	double zFeedRate;
 	extrusionMode_t extrusionMode;
 	double feedDiameter;
+	char code;
+	int id;
 
 	std::string firstLayerExtrusionProfile;
 	std::string insetsExtrusionProfile;
@@ -115,17 +125,21 @@ struct Gantry
 {
 
 	//unsigned int nb;
-	double x,y,z,feed;     // current position and feed
+
+	double x,y,z,a,b,feed;     // current position and feed
         // std::string comment;   // if I'm not useful by xmas please delete me
 
 public:
 	double rapidMoveFeedRateXY;
 	double rapidMoveFeedRateZ;
 	double homingFeedRateZ;
+	double layerH;
 
 	bool xyMaxHoming;
 	bool zMaxHoming;
+	bool extruding;
 	double scalingFactor;
+	char ab;
 
 
 	Gantry()
@@ -139,6 +153,9 @@ public:
              xyMaxHoming(true),
              zMaxHoming(false),
              scalingFactor(1)
+		     homingFeedRateZ(100),
+        	 layerH(.27)
+	{
 
 	{
 	}
@@ -148,30 +165,65 @@ public:
 public:
 	// emits a g1 command
 	void g1Motion(std::ostream &ss,
-			double x,
-			double y,
-			double z,
-			double feed,
-			const char *comment,
-			bool doX,
-			bool doY,
-			bool doZ,
-			bool doFeed);
+				  double x,
+				  double y,
+				  double z,
+				  double e,
+				  double feed,
+				  const char *comment,
+				  bool doX,
+				  bool doY,
+				  bool doZ,
+				  bool doE,
+				  bool doFeed);
 
 public:
-	void squirt(std::ostream &ss, const libthing::Vector2 &lineStart, double reversalFeedrate, double reversalExtrusionSpeed,  double extrusionSpeed);
-	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd, double reversalFeedrate, double reversalExtrusionSpeed);
+	void squirt(std::ostream &ss, const libthing::Vector2 &lineStart,
+				const Extruder &extruder, const Extrusion &extrusion);
+	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd,
+			   const Extruder &extruder, const Extrusion &extrusion);
 
-        void writeSwitchExtruder(std::ostream& ss, int extruderId);
+    void writeSwitchExtruder(std::ostream& ss, Extruder &extruder);
 
 	// emits a g1 command to the stream, only writing the parameters that have changed since the last g1.
 	void g1(std::ostream &ss,
+			const Extruder *extruder,
+			const Extrusion *extrusion,
 			double x,
 			double y,
 			double z,
 			double feed,
 			const char *comment);
 
+	//overloaded methods to make interface simpler
+	void g1(std::ostream &ss,
+			double x,
+			double y,
+			double z,
+			double feed,
+			const char *comment) {
+		g1(ss, NULL, NULL, x, y, z, feed, comment);
+	};
+
+	void g1(std::ostream &ss,
+			const Extruder &extruder,
+			const Extrusion &extrusion,
+			double x,
+			double y,
+			double z,
+			double feed,
+			const char *comment) {
+		g1(ss, &extruder, &extrusion, x, y, z, feed, comment);
+	};
+
+	Scalar volumetricE(const Extruder &extruder, const Extrusion &extrusion,
+					   Scalar x, Scalar y, Scalar z) const;
+
+	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
+						 libthing::LineSegment2 &segment) const;
+
+	Scalar getCurrentE() const { if (ab == 'A') return a; else return b; };
+	void setCurrentE(Scalar e) { if (ab == 'A') a = e; else b = e; };
 };
 
 
@@ -281,12 +333,14 @@ private:
     void writeAnchor(std::ostream & ss);
     void writePolygons(	std::ostream& ss,
 						double z,
-						const Extrusion &extrusionParams,
+						const Extruder &extruder,
+						const Extrusion &extrusion,
 						const Polygons &paths);
 
     void writePolygon(	std::ostream & ss,
 						double z,
-						const Extrusion &extrusionParams,
+						const Extruder &extruder,
+						const Extrusion &extrusion,
 						const Polygon & polygon);
 
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
