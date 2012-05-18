@@ -152,12 +152,10 @@ public:
              homingFeedRateZ(100),
              xyMaxHoming(true),
              zMaxHoming(false),
-             scalingFactor(1)
-		     homingFeedRateZ(100),
+		     scalingFactor(1),
         	 layerH(.27)
 	{
 
-	{
 	}
 
 
