@@ -21,7 +21,7 @@ using namespace std;
 
 using namespace libthing;
 
-
+const Scalar GRID_RANGE_TOL = 0.01;
 
 
 std::ostream& mgl::operator << (std::ostream &os,const ScalarRange &p)
@@ -458,9 +458,6 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 	//cout << " rangeUnionDone" << endl;
 }
 
-
-
-
 bool scalarRangeDifference(const ScalarRange& diffRange,
 							ScalarRange& srcRange,
 							ScalarRange &resultRange)
@@ -506,6 +503,10 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 			srcRange.min = srcRange.max;
 		}
 		// cout << resultRange << " (intersection!) leftover " <<  srcRange << endl;
+		if (tequals(resultRange.max, resultRange.min, GRID_RANGE_TOL)) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -539,9 +540,10 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 	{
 		const ScalarRange &itRange = *it;
 		// cout << " itRange=" << itRange << endl;
-		if( (itRange.min >= range.max)  )
+		if( (itRange.min >= range.max))
 		{
-			result.push_back(range);
+			if (!tequals(range.min, range.max, GRID_RANGE_TOL))
+				result.push_back(range);
 			//cout << "subRangeDifference return" << endl;
 			return it;
 		}
@@ -561,7 +563,7 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 		it ++;
 	}
 	// add the left over (if any)
-	if(range.max > range.min)
+	if(range.max > range.min && !tequals(range.min, range.max, GRID_RANGE_TOL))
 	{
 		// cout << "add_left_over =" << range << endl;
 		result.push_back(range);
