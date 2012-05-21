@@ -279,13 +279,18 @@ void GCoder::writePolygon(	std::ostream & ss,
     // start extruding ahead of time while moving towards the first point
     gcoderCfg.gantry.squirt(ss, polygon[0], extruder, extrusion);
 
+	Vector2 last = start;
    // for all other points in the polygon
     for(size_t i=1; i < polygon.size(); i++)
 	{
     	// move towards the point
 		const Vector2 &p = polygon[i];
+		Scalar dist = LineSegment2(last, p).length();
+		stringstream comment;
+		comment << "d: " << dist;
+
 		gcoderCfg.gantry.g1(ss, extruder, extrusion, p.x, p.y, z,
-							extrusion.feedrate, NULL);
+							extrusion.feedrate, comment.str().c_str());
 	}
     //ss << "(STOP!)" << endl;
     gcoderCfg.gantry.snort(ss, stop, extruder, extrusion);
@@ -506,6 +511,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 			if(gcoderCfg.gcoding.infills && !gcoderCfg.gcoding.infillFirst)
 			{
                                 //Log::often() << "   Write INFILLS" << endl;
+				ss << "(infills: "  << infills.size() << ")"<< endl;
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				writePolygons(ss, z, extruder, extrusion, infills);
