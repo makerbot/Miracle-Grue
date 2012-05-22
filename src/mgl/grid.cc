@@ -782,13 +782,13 @@ void rangeTrim(const vector<ScalarRange> &src, Scalar cutOff, vector<ScalarRange
 		// cout << "  Len=" << len << " / " << cutOff<< endl;
 		if(len > cutOff)
 		{
-			cout << " (+)" << len;
+			// cout << " (+)" << len;
 			result.push_back(range);
 		}
-		else
-		{
-			cout << " (-)" << len;
-		}
+//		else
+//		{
+//			// cout << " (-)" << len;
+//		}
 	}
 	cout << endl;
 }
