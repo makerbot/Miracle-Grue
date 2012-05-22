@@ -27,13 +27,14 @@ std::ostream &MyComputer::log()
 }
 
 
+#ifdef QT_CORE_LIB
 int FileSystemAbstractor::guarenteeDirectoryExists(const char* )//pathname  )
 {
-
-#ifdef QT_CORE_LIB
     Log::often() << "not supported on QT" << endl;
     return -1;
 #else
+int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
+{
     int status = 0;
 
 #ifdef WIN32
