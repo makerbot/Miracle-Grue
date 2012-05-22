@@ -10,8 +10,8 @@
 */
 
 
-#ifndef SLICOR_H_
-#define SLICOR_H_
+#ifndef PATHER_H_
+#define PATHER_H_
 
 
 #include "insets.h"

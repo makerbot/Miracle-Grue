@@ -193,7 +193,8 @@ mgl_cc = [	'src/mgl/mgl.cc',
             'src/mgl/log.cc',
 			'src/mgl/grid.cc',
 			'src/mgl/pather.cc',
-			'src/mgl/regioner.cc'
+			'src/mgl/regioner.cc',
+			'src/mgl/slicer.cc'
 			]
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',

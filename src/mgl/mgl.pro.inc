@@ -61,6 +61,7 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/log.cc\
     $$MGL_SRC/grid.cc\
     $$MGL_SRC/regioner.cc\
+    $$MGL_SRC/slicer.cc\
 
 HEADERS +=     $$MGL_SRC/abstractable.h\
     $$MGL_SRC/clipper.h\
