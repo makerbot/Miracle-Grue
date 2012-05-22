@@ -790,12 +790,12 @@ void rangeTrim(const vector<ScalarRange> &src, Scalar cutOff, vector<ScalarRange
 //			// cout << " (-)" << len;
 //		}
 	}
-	cout << endl;
+// cout << endl;
 }
 
 void rangeTableTrim(const ScalarRangeTable &src, Scalar cutOff, ScalarRangeTable &result)
 {
-	cout << "rangeTableTrim" << endl;
+	//cout << "rangeTableTrim" << endl;
 	assert(result.size() == 0);
 	result.resize(src.size());
 	for(size_t i=0; i < src.size(); i++ )
