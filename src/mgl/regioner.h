@@ -167,188 +167,38 @@ public:
 
 class Regioner : public Progressive
 {
+	Scalar roofLengthCutOff;
 public:
 	SlicerConfig slicerCfg;
 
-
 	Regioner(const SlicerConfig &slicerCfg,
-			ProgressBar *progress = NULL)
-	:Progressive(progress), slicerCfg(slicerCfg)
-	{
-	}
+				ProgressBar *progress = NULL);
 
-public:
+	void generateSkeleton(const Tomograph &tomograph , Regions &regions);
+	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
+	    					libthing::Insets &sliceInsets,
+	    					const char*scadFile=NULL);
 
-	void generateSkeleton(const Tomograph &tomograph , Regions &regions)
-	{
-//		outlines(	modelFile,
-//					regions.layerMeasure,
-//					regions.grid,
-//					regions.outlines);
+	void insets(const std::vector<libthing::SegmentTable> & outlinesSegments, std::vector<libthing::Insets> & insets);
 
-		insets(tomograph.outlines,
-					  regions.insets);
+	void flatSurfaces(	const std::vector<libthing::Insets> & insets,
+	    					const Grid & grid,
+	    					std::vector<GridRanges> & gridRanges);
 
-		flatSurfaces(regions.insets,
-				tomograph.grid,
-							regions.flatSurfaces);
+	void floorForSlice( const GridRanges & currentSurface, const GridRanges & surfaceBelow, const Grid & grid,
+	    					GridRanges & flooring);
 
-		roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
-
-		flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
-
-		infills( regions.flatSurfaces,
-				tomograph.grid,
-						regions.roofings,
-						regions.floorings,
-						regions.infills);
-	}
-
-
-    void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
-    					libthing::Insets &sliceInsets,
-    					const char*scadFile=NULL)
-    {
-
-
-        bool writeDebugScadFiles = false;
-        inshelligence(sliceOutlines,
-        				slicerCfg.nbOfShells,
-        				slicerCfg.layerW,
-        				slicerCfg.insetDistanceMultiplier,
-        				scadFile,
-        				writeDebugScadFiles,
-        				sliceInsets);
-    }
-
-    void insets(const std::vector<libthing::SegmentTable> & outlinesSegments, std::vector<libthing::Insets> & insets)
-    {
-
-        unsigned int sliceCount = outlinesSegments.size();
-        initProgress("insets", sliceCount);
-        insets.resize(sliceCount);
-        // slice id must be adjusted for
-        for(size_t i = 0;i < sliceCount;i++)
-        {
-        	tick();
-        	const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
-        	libthing::Insets & sliceInsets = insets[i];
-
-            insetsForSlice(sliceOutlines, sliceInsets);
-		}
-	}
-
-
-    void flatSurfaces(	const std::vector<libthing::Insets> & insets,
-    					const Grid & grid,
-    					std::vector<GridRanges> & gridRanges)
-    {
-        assert(gridRanges.size() == 0);
-        unsigned int sliceCount = insets.size();
-        initProgress("flat surfaces", sliceCount);
-        gridRanges.resize(sliceCount);
-        for(size_t i = 0;i < sliceCount;i++)
-        {
-        	tick();
-        	const libthing::Insets & allInsetsForSlice = insets[i];
-        	GridRanges & surface = gridRanges[i];
-            gridRangesForSlice(allInsetsForSlice, grid, surface);
-		}
-	}
-
-    void floorForSlice( const GridRanges & currentSurface, const GridRanges & surfaceBelow, const Grid & grid, GridRanges & flooring)
-    {
-    	grid.gridRangeDifference(currentSurface, surfaceBelow,  flooring);
-    }
-
-    void roofForSlice( const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing)
-    {
-        grid.gridRangeDifference(currentSurface, surfaceAbove, roofing);
-    }
-
-    void roofing(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & roofings)
-    {
-        assert(flatSurfaces.size() > 0);
-        assert(roofings.size() == 0);
-        unsigned int sliceCount = flatSurfaces.size();
-        initProgress("roofing", sliceCount);
-
-        roofings.resize(sliceCount);
-        for(size_t i = 0;i < sliceCount-1; i++){
-            tick();
-        	const GridRanges & currentSurface = flatSurfaces[i];
-            const GridRanges & surfaceAbove = flatSurfaces[i + 1];
-            GridRanges & roofing = roofings[i];
-            roofForSlice(currentSurface, surfaceAbove, grid, roofing);
-    	}
-    	tick();
-        roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
-
-    }
-
-    void flooring(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & floorings)
-    {
-        assert(flatSurfaces.size() > 0);
-        assert(floorings.size() == 0);
-        unsigned int sliceCount = flatSurfaces.size();
-        initProgress("flooring", sliceCount);
-
-        floorings.resize(sliceCount);
-        for(size_t i = 1; i < sliceCount; i++)
-        {
-            tick();
-        	const GridRanges & currentSurface = flatSurfaces[i];
-            const GridRanges & surfaceBelow = flatSurfaces[i - 1];
-            GridRanges & flooring = floorings[i];
-            floorForSlice(currentSurface, surfaceBelow, grid, flooring);
-    	}
-    	tick();
-        floorings[0] = flatSurfaces[0];
-
-    }
+    void roofing(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & roofings);
+    void roofForSlice( const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing);
+    void flooring(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & floorings);
     void infills(const std::vector<GridRanges> &flatSurfaces,
     			 const Grid &grid,
     			 const std::vector<GridRanges> &roofings,
     			 const std::vector<GridRanges> &floorings,
-    			 std::vector<GridRanges> &infills)
-    {
-
-    	assert(infills.size() == 0);
-    	assert(flatSurfaces.size() > 0);
-    	assert(roofings.size() > 0);
-        unsigned int sliceCount = flatSurfaces.size();
-        initProgress("infills", sliceCount);
-        infills.resize(sliceCount);
-        for(size_t i=0; i< sliceCount; i++)
-        {
-        	tick();
-        	// std::cout  << "INFILL " << i << "/" << sliceCount << std::endl;
-        	const GridRanges &surface = flatSurfaces[i];
-        	const GridRanges &roofing = roofings[i];
-        	const GridRanges &flooring = floorings[i];
-        	GridRanges sparseInfill;
-        	// cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
-        	grid.subSample(surface, slicerCfg.infillSkipCount, sparseInfill);
-
-        	// std::cout << " infill = union roofing and surface " << i << "/" << sliceCount << std::endl;
-        	GridRanges roofed;
-        	grid.gridRangeUnion(sparseInfill, roofing, roofed);
-        	GridRanges &infill = infills[i];
-        	grid.gridRangeUnion(roofed, flooring, infill);
-        }
-
-    }
-
+    			 std::vector<GridRanges> &infills);
     void gridRangesForSlice(const libthing::Insets &allInsetsForSlice,
     						const Grid &grid,
-    						GridRanges &surface)
-    {
-    	const libthing::SegmentTable &innerMostLoops = allInsetsForSlice.back();
-    	grid.createGridRanges(innerMostLoops, surface);
-    }
-
-
-
+    						GridRanges &surface);
 
 
 };

@@ -94,6 +94,8 @@ public:
     void gridRangeDifference(const GridRanges& src, const GridRanges &diff, GridRanges &result) const;
     void gridIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
 
+    void trimGridRange(const GridRanges& src, Scalar cutOff, GridRanges &result) const;
+
 };
 
 }

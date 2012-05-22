@@ -64,6 +64,7 @@ public:
 	void set_b() {
 		set = BOOL;
 	};
+
 	~ConfigSetter() {
 		if (set == NONE)
 			return;
@@ -83,12 +84,14 @@ public:
 	};
 private:
 	Configuration &config;
+	const char *section;
+	const char *name;
 	configtype set;
 	string sval;
 	double dval;
 	int ival;
-	const char *section;
-	const char *name;
+
+
 };
 
 void usage() {
@@ -119,11 +122,11 @@ void exitUsage() {
 	exit(0);
 }
 
-void parseArgs(Configuration &config,
+void parseArgs( Configuration &config,
 				int argc,
 				char *argv[],
 				string &modelFile,
-				string &configFileName,
+				string &, // configFileName,
 				int &firstSliceIdx,
 				int &lastSliceIdx)
 {
@@ -196,7 +199,7 @@ void parseArgs(Configuration &config,
 
 
 
-int preConditionsOrShowUsage(int argc, char *argv[])
+int preConditionsOrShowUsage(int argc, char *[]) // argv[]
 {
 	cout << endl;
 	cout << "Miracle-Grue "<< getMiracleGrueVersionStr() << endl;
@@ -215,7 +218,7 @@ int preConditionsOrShowUsage(int argc, char *argv[])
 
 
 
-int main(int argc, char *argv[], char *envp[])
+int main(int argc, char *argv[], char *[]) // envp
 {
 
 	// design by contract ;-)

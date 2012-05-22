@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
  
-TARGET = roofingUnitTest
+TARGET = pathologyUnitTest
 SOURCES +=  src/unit_tests/PathologyTestCase.cc \
             src/unit_tests/UnitTestMain.cc
 

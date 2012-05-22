@@ -101,7 +101,6 @@ void mkDebugPath(const char *path)
 	{
 	    if (sp != pp)
 	    {
-
 	        *sp = '\0';
 	        status = verifyDir((const char*)copypath);
 	        *sp = '/';

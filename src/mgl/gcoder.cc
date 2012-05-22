@@ -544,7 +544,7 @@ Scalar Extruder::feedCrossSectionArea()  const {
 	//LONG LIVE TAU!
 }
 
-Scalar Gantry::segmentVolume(const Extruder &extruder,
+Scalar Gantry::segmentVolume(const Extruder &, // extruder,
 							 const Extrusion &extrusion,
 							 LineSegment2 &segment) const {
 	Scalar cross_area = extrusion.crossSectionArea(layerH);
@@ -554,8 +554,11 @@ Scalar Gantry::segmentVolume(const Extruder &extruder,
 }
 	
 
-Scalar Gantry::volumetricE(const Extruder &extruder, const Extrusion &extrusion,
-						   Scalar x, Scalar y, Scalar z) const {
+Scalar Gantry::volumetricE(	const Extruder &extruder,
+							const Extrusion &extrusion,
+							Scalar x, Scalar y, Scalar // z
+						   ) const
+{
 
 	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
 	//segments get extruded

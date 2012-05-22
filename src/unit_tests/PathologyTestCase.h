@@ -10,9 +10,7 @@ class PathologyTestCase : public CPPUNIT_NS::TestFixture
 
 private:
 
-	CPPUNIT_TEST_SUITE( RoofingTestCase );
-
-
+	CPPUNIT_TEST_SUITE( PathologyTestCase );
 		CPPUNIT_TEST(testSimple);
     CPPUNIT_TEST_SUITE_END();
 

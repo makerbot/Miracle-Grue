@@ -771,3 +771,46 @@ void Grid::gridIntersection(const GridRanges& a, const GridRanges &b, GridRanges
 	rangeTableIntersection(a.yRays, b.yRays, result.yRays);
 }
 
+void rangeTrim(const vector<ScalarRange> &src, Scalar cutOff, vector<ScalarRange> &result)
+{
+	// cout << "rangeTrim" << endl;
+	result.reserve(src.size());
+	for(size_t i=0; i < src.size(); i++ )
+	{
+		const ScalarRange &range = src[i];
+		Scalar len = SCALAR_ABS(range.max - range.min);
+		// cout << "  Len=" << len << " / " << cutOff<< endl;
+		if(len > cutOff)
+		{
+			cout << " (+)" << len;
+			result.push_back(range);
+		}
+		else
+		{
+			cout << " (-)" << len;
+		}
+	}
+	cout << endl;
+}
+
+void rangeTableTrim(const ScalarRangeTable &src, Scalar cutOff, ScalarRangeTable &result)
+{
+	cout << "rangeTableTrim" << endl;
+	assert(result.size() == 0);
+	result.resize(src.size());
+	for(size_t i=0; i < src.size(); i++ )
+	{
+		const vector<ScalarRange> &lineSrc = src[i];
+		vector<ScalarRange> &lineTrims = result[i];
+		rangeTrim(lineSrc, cutOff, lineTrims);
+	}
+}
+
+
+void Grid::trimGridRange(const GridRanges& src, Scalar cutOff, GridRanges &result) const
+{
+	rangeTableTrim(src.xRays, cutOff, result.xRays);
+	rangeTableTrim(src.yRays, cutOff, result.yRays);
+
+}
+

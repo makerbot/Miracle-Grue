@@ -92,8 +92,8 @@ struct Extruder
 		zFeedRate(100),
 		extrusionMode(VOLUMETRIC_MODE),
 		feedDiameter(3),
-		id(0),
-		code('A')
+		code('A'),
+		id(0)
 	{}
 
 	Scalar feedCrossSectionArea() const;
@@ -124,10 +124,8 @@ struct Extruder
 struct Gantry
 {
 
-	//unsigned int nb;
-
 	double x,y,z,a,b,feed;     // current position and feed
-        // std::string comment;   // if I'm not useful by xmas please delete me
+
 
 public:
 	double rapidMoveFeedRateXY;
@@ -143,17 +141,18 @@ public:
 
 
 	Gantry()
-            :x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-             y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-             z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-             feed(0),
-             rapidMoveFeedRateXY(5000),
-             rapidMoveFeedRateZ(1400),
-             homingFeedRateZ(100),
-             xyMaxHoming(true),
-             zMaxHoming(false),
-		     scalingFactor(1),
-        	 layerH(.27)
+		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 feed(0),
+		 rapidMoveFeedRateXY(5000),
+		 rapidMoveFeedRateZ(1400),
+		 homingFeedRateZ(100),
+		 layerH(.27),
+		 xyMaxHoming(true),
+		 zMaxHoming(false),
+		 scalingFactor(1)
+
 	{
 
 	}
