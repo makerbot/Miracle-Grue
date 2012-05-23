@@ -21,7 +21,7 @@ using namespace std;
 
 using namespace libthing;
 
-const Scalar GRID_RANGE_TOL = 0.01;
+const Scalar GRID_RANGE_TOL = 0.05;
 
 
 std::ostream& mgl::operator << (std::ostream &os,const ScalarRange &p)
