@@ -49,7 +49,6 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/clipper.cc\
     $$MGL_SRC/configuration.cc\
     $$MGL_SRC/gcoder.cc\
-    $$MGL_SRC/infill.cc\
     $$MGL_SRC/insets.cc\
     $$MGL_SRC/JsonConverter.cc\
     $$MGL_SRC/mgl.cc\
