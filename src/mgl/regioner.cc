@@ -12,13 +12,13 @@
 #include "regioner.h"
 
 using namespace mgl;
-
+using namespace std;
 
 Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 	:Progressive(progress), slicerCfg(slicerCfg)
 {
-	// move that to config?
-	roofLengthCutOff = 1000.0;
+	// move that to its own config element?
+	roofLengthCutOff = 0.5 * slicerCfg.layerH;
 	std::cout <<  "Ho " << std::endl;
 	std::cout << " the cutoff " <<roofLengthCutOff << std::endl;
 }
@@ -101,20 +101,21 @@ void Regioner::flatSurfaces(	const std::vector<libthing::Insets> & insets,
 	}
 }
 
-void Regioner::floorForSlice( const GridRanges & currentSurface, const GridRanges & surfaceBelow, const Grid & grid,
-					GridRanges & flooring)
+void Regioner::floorForSlice( const GridRanges & currentSurface,
+								const GridRanges & surfaceBelow,
+									const Grid & grid,
+										GridRanges & flooring)
 {
-	//GridRanges floor;
-	grid.gridRangeDifference(currentSurface, surfaceBelow, flooring);
-	//grid.trimGridRange(floor, roofLengthCutOff, flooring);
+	GridRanges floor;
+	grid.gridRangeDifference(currentSurface, surfaceBelow, floor);
+	grid.trimGridRange(floor, roofLengthCutOff, flooring);
 }
 
 void Regioner::roofForSlice( const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing)
 {
-	//GridRanges roof;
-	grid.gridRangeDifference(currentSurface, surfaceAbove, roofing);
-	//grid.trimGridRange(roof, roofLengthCutOff, roofing);
-
+	GridRanges  roof;
+	grid.gridRangeDifference(currentSurface, surfaceAbove, roof);
+	grid.trimGridRange(roof, this->roofLengthCutOff, roofing );
 }
 
 void Regioner::roofing(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & roofings)
@@ -131,9 +132,19 @@ void Regioner::roofing(const std::vector<GridRanges> & flatSurfaces, const Grid 
 		const GridRanges & currentSurface = flatSurfaces[i];
 		const GridRanges & surfaceAbove = flatSurfaces[i + 1];
 		GridRanges & roofing = roofings[i];
-		roofForSlice(currentSurface, surfaceAbove, grid, roofing);
+		// cout << "roof " << i << "/" << sliceCount-1 << endl;
+
+		GridRanges roof;
+		roofForSlice(currentSurface, surfaceAbove, grid, roof);
+
+		GridRanges roof2;
+		// cout << "cut " << this->roofLengthCutOff << endl;
+		grid.trimGridRange(roof, this->roofLengthCutOff, roof2 );
+		roofing = roof2;
+
 	}
 	tick();
+	// cout << "last roof " << sliceCount -1 << endl;
 	roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
 
 }

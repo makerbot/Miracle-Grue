@@ -30,7 +30,7 @@ using namespace libthing;
 
 std::string mgl::getMiracleGrueVersionStr()
 {
-    return  "v 0.03 alpha";
+    return  "v 0.04 alpha";
 }
 
 std::ostream& mgl::operator<<(ostream& os, const Vector3& v)

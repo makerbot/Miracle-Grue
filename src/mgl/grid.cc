@@ -21,7 +21,7 @@ using namespace std;
 
 using namespace libthing;
 
-const Scalar GRID_RANGE_TOL = 0.05;
+const Scalar GRID_RANGE_TOL = 0.0;
 
 
 std::ostream& mgl::operator << (std::ostream &os,const ScalarRange &p)
@@ -603,6 +603,7 @@ void rangeTableDifference(	const ScalarRangeTable &src,
 							const ScalarRangeTable &del,
 							ScalarRangeTable &diff)
 {
+
 	size_t lineCount = src.size();
 	if(lineCount != del.size())
 	{
@@ -619,6 +620,8 @@ void rangeTableDifference(	const ScalarRangeTable &src,
 
 		rangeDifference(lineRangeSrc, lineRangeDel, lineRangeDiff);
 	}
+
+
 }
 
 
@@ -773,22 +776,17 @@ void Grid::gridIntersection(const GridRanges& a, const GridRanges &b, GridRanges
 
 void rangeTrim(const vector<ScalarRange> &src, Scalar cutOff, vector<ScalarRange> &result)
 {
+	assert(result.size() == 0);
 	// cout << "rangeTrim" << endl;
 	result.reserve(src.size());
 	for(size_t i=0; i < src.size(); i++ )
 	{
-		const ScalarRange &range = src[i];
-		Scalar len = SCALAR_ABS(range.max - range.min);
-		// cout << "  Len=" << len << " / " << cutOff<< endl;
-		if(len > cutOff)
+		const ScalarRange range = src[i];
+		if( !tequals(range.max, range.min, cutOff) )
 		{
-			// cout << " (+)" << len;
 			result.push_back(range);
 		}
-//		else
-//		{
-//			// cout << " (-)" << len;
-//		}
+
 	}
 // cout << endl;
 }
@@ -811,6 +809,19 @@ void Grid::trimGridRange(const GridRanges& src, Scalar cutOff, GridRanges &resul
 {
 	rangeTableTrim(src.xRays, cutOff, result.xRays);
 	rangeTableTrim(src.yRays, cutOff, result.yRays);
+
+//	result.xRays.resize(src.xRays.size());
+//	result.yRays.resize(src.yRays.size());
+//
+//	for (size_t i = 0 ; i < src.xRays.size(); i++)
+//	{
+//		const  vector<ScalarRange>& sRanges = src.xRays[i];
+//		const  vector<ScalarRange>& dRanges = result.xRays[i];
+//		for(size_t j=0; j < ranges.size(); j ++)
+//		{
+//			ScalarRange r
+//		}
+//	}
 
 }
 

@@ -25,15 +25,6 @@
 #include "libthing/Triangle3.h"
 
 
-// WIN32 compatibility stuff
-#ifdef WIN32
-
-#define strncasecmp _strnicmp
-#define strcasecmp _stricmp
-#define M_PI 3.14159265358979323846
-
-#endif // WIN32
-
 #define M_TAU M_PI*2
 
 // #define STRONG_CHECKING
