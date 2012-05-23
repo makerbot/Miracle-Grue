@@ -13,9 +13,9 @@ build: build-stamp
 
 build-stamp:
 	dh_testdir
-	qmake-qt4 CONFIG+="release" -oMakefile.grue miracle_grue.pro
+	qmake-qt4 CONFIG+="release" -o Makefile.grue miracle_grue.pro
 	make -f Makefile.grue
-	qmake-qt4 CONFIG+="release" -oMakefile.gui miracle_gui.pro
+	qmake-qt4 CONFIG+="release" -o Makefile.gui miracle_gui.pro
 	make -f Makefile.gui
 	touch build-stamp
 
