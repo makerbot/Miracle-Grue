@@ -27,6 +27,8 @@ install: build
 	make INSTALL_ROOT=`pwd`/debian/bin/miracle_grue install
 	make INSTALL_ROOT=`pwd`/debian/bin/miracle_gui install
 
+override_dh_auto_build:
+
 override_dh_auto_configure:
 
 %:
