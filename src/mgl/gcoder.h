@@ -244,6 +244,9 @@ struct GCoding
 		 infillFirst(false),
 		 dualtrick(false)
 		{}
+
+	std::string header;
+	std::string footer;
 	bool outline;
 	bool insets;
 	bool infills;
