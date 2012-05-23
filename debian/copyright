@@ -1,0 +1,24 @@
+Format: http://dep.debian.net/deps/dep5
+Upstream-Name: miracle-grue
+Source: <https://github.com/makerbot/Miracle-Grue>
+
+Files: *
+Copyright: 2012 MakerBot Industries dev team <dev@makerbot.com>
+License: GNU-AGPL
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+  .
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+  .
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.
+
+# AGM: waiting on confirmation from various parties and cleanup

@@ -112,6 +112,8 @@ void usage() {
 	cout << "  -n --firstSliceIdx : slice from a specific slice" << endl;
 	cout << "  -m --lastSliceIdx  : stop slicing at specific slice" << endl;
 	cout << "  -d --writeDebug    : debug mode (creates scad files for each inset error)" << endl;
+	cout << "  -b --header        : override the header gcode file " << endl;
+	cout << "  -e --footer        : override the footer gcode file " << endl;
 	cout << "  -o --outputFilename: write gcode to specific filename (defaults to <model>.gcode" << endl;
 	cout << endl;
 	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
@@ -170,6 +172,12 @@ void parseArgs( Configuration &config,
 		ConfigSetter m(config, "slicer", "lastSliceIdx");
 		parser.add_parameter("-m", "--lastSliceIdx", &m, &ConfigSetter::set_i)
 			.default_value(-1);
+
+		ConfigSetter b(config, "gcoder", "header");
+		parser.add_parameter("-b", "--header", &b, &ConfigSetter::set_s);
+
+		ConfigSetter e(config, "gcoder", "footer");
+		parser.add_parameter("-e", "--footer", &b, &ConfigSetter::set_s);
 
 		ConfigSetter o(config, "gcoder", "outputFilename");
 		parser.add_parameter("-o", "--outputFilename",
