@@ -10,12 +10,13 @@
 export DH_VERBOSE=1
 
 build: build-stamp
+
 build-stamp:
 	dh_testdir
-	qmake-qt4 CONFIG+="release" miracle_grue.pro
-	make
-	qmake-qt4 CONFIG+="release" miracle_gui.pro
-	make
+	qmake-qt4 CONFIG+="release" -o Makefile.grue miracle_grue.pro
+	make -f Makefile.grue
+	qmake-qt4 CONFIG+="release" -o Makefile.gui miracle_gui.pro
+	make -f Makefile.gui
 	touch build-stamp
 
 install: build
@@ -25,6 +26,8 @@ install: build
 	dh_installdirs
 	make INSTALL_ROOT=`pwd`/debian/bin/miracle_grue install
 	make INSTALL_ROOT=`pwd`/debian/bin/miracle_gui install
+
+override_dh_auto_configure:
 
 %:
 	dh $@ 
