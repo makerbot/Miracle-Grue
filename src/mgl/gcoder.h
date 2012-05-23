@@ -144,6 +144,8 @@ public:
 		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
 		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		 a(0),
+         b(0),
 		 feed(0),
 		 rapidMoveFeedRateXY(5000),
 		 rapidMoveFeedRateZ(1400),
@@ -151,8 +153,9 @@ public:
 		 layerH(.27),
 		 xyMaxHoming(true),
 		 zMaxHoming(false),
-		 scalingFactor(1)
-
+		 extruding(false),
+		 scalingFactor(1),
+		 ab('A')
 	{
 
 	}
