@@ -132,19 +132,19 @@ void Regioner::roofing(const std::vector<GridRanges> & flatSurfaces, const Grid 
 		const GridRanges & currentSurface = flatSurfaces[i];
 		const GridRanges & surfaceAbove = flatSurfaces[i + 1];
 		GridRanges & roofing = roofings[i];
-		cout << "roof " << i << "/" << sliceCount-1 << endl;
+		// cout << "roof " << i << "/" << sliceCount-1 << endl;
 
 		GridRanges roof;
 		roofForSlice(currentSurface, surfaceAbove, grid, roof);
 
 		GridRanges roof2;
-		cout << "cut " << this->roofLengthCutOff << endl;
+		// cout << "cut " << this->roofLengthCutOff << endl;
 		grid.trimGridRange(roof, this->roofLengthCutOff, roof2 );
 		roofing = roof2;
 
 	}
 	tick();
-	cout << "last roof " << sliceCount -1 << endl;
+	// cout << "last roof " << sliceCount -1 << endl;
 	roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
 
 }
