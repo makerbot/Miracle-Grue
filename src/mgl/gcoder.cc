@@ -211,25 +211,79 @@ void GCoder::writeStartOfFile(std::ostream &gout, const char* sourceName)
 	gout.setf(ios::fixed);
 
 	writeGCodeConfig(gout, sourceName);
-	writeMachineInitialization(gout);
-	writeExtrudersInitialization(gout);
-	writePlatformInitialization(gout);
-	writeHomingSequence(gout);
-	writeWarmupSequence(gout);
-	writeAnchor(gout);
+
+	const string &header_file = gcoderCfg.gcoding.header;
+
+	if (header_file.length() > 0) {
+		ifstream header_in(header_file.c_str(), ifstream::in);
+
+		if (header_in.fail()) 
+			throw GcoderException((string("Unable to open header file [") +
+								   header_file + "]").c_str());
+
+		gout << "(header [" << header_file << "] begin)" << endl;
+
+		while (header_in.good()) {
+			char buf[1024];
+
+			header_in.read(buf, sizeof(buf));
+			gout.write(buf, header_in.gcount());
+		}
+
+		if (header_in.fail() && !header_in.eof())
+			throw GcoderException((string("Error reading header file [") +
+								   header_file + "]").c_str());
+
+		gout << "(header [" << header_file << "] end)" << endl << endl;
+	}
+	else {
+		writeMachineInitialization(gout);
+		writeExtrudersInitialization(gout);
+		writePlatformInitialization(gout);
+		writeHomingSequence(gout);
+		writeWarmupSequence(gout);
+		writeAnchor(gout);
+	}
 }
 
 void GCoder::writeGcodeEndOfFile(std::ostream &ss) const
 {
-	for (size_t i=0; i< gcoderCfg.extruders.size(); i++)
-	{
-		ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
-		ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
-	}
+	const string &footer_file = gcoderCfg.gcoding.footer;
 
-	if(gcoderCfg.gantry.zMaxHoming)
-		ss << "G162 Z F500 (home Z axis maximum)" << endl;
-	ss << "(That's all folks!)" << endl;
+	if (footer_file.length() > 0) {
+		ifstream footer_in(footer_file.c_str(), ifstream::in);
+
+		if (footer_in.fail()) 
+			throw GcoderException((string("Unable to open footer file [") +
+								   footer_file + "]").c_str());
+
+		ss << "(footer [" << footer_file << "] begin)" << endl;
+
+		while (footer_in.good()) {
+			char buf[1024];
+
+			footer_in.read(buf, sizeof(buf));
+			ss.write(buf, footer_in.gcount());
+		}
+
+		if (footer_in.fail() && !footer_in.eof())
+			throw GcoderException((string("Error reading footer file [") +
+								   footer_file + "]").c_str());
+
+		ss << "(footer [" << footer_file << "] end)" << endl << endl;
+	}		
+
+	else {
+		for (size_t i=0; i< gcoderCfg.extruders.size(); i++)
+		{
+			ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
+			ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
+		}
+
+		if(gcoderCfg.gantry.zMaxHoming)
+			ss << "G162 Z F500 (home Z axis maximum)" << endl;
+		ss << "(That's all folks!)" << endl;
+	}
 }
 
 void GCoder::writeAnchor(std::ostream &ss)
@@ -411,6 +465,8 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
         writeSlice(gout, slice);
         codeSlice ++;
     }
+
+	writeGcodeEndOfFile(gout);
 }
 
 void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
