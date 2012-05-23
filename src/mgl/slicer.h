@@ -37,7 +37,7 @@ struct SlicerConfig
 	 writeDebugScadFiles(false),
 	 roofLayerCount(1),
 	 floorLayerCount(1),
-	 infillSkipCount(2),
+         // infillSkipCount(2),
 	 gridSpacingMultiplier(0.95)
 	{}
 
@@ -54,7 +54,7 @@ struct SlicerConfig
 
 	unsigned int roofLayerCount;
 	unsigned int floorLayerCount;
-	unsigned int infillSkipCount;
+        //unsigned int infillSkipCount;
 	double infillDensity;
 	Scalar gridSpacingMultiplier;
 };

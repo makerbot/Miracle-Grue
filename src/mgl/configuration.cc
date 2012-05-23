@@ -239,6 +239,6 @@ void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &s
 
 	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
 
-	slicerCfg.infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
+
 
 }
