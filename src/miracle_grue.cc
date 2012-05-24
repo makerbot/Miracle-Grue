@@ -15,7 +15,6 @@
 #include <string>
 
 #include <stdlib.h>
-#include <boost/filesystem.hpp>
 
 #include "mgl/abstractable.h"
 #include "mgl/configuration.h"
@@ -272,7 +271,8 @@ int newParseArgs( Configuration &config,
 		//handle the unnamed parameter separately
 		modelFile = parse.nonOption(0);
 		std::cout << "filename " << modelFile << endl;
-		if (!boost::filesystem::is_regular_file(modelFile)) {
+		ifstream testmodel(modelFile.c_str(), ifstream::in);
+		if (testmodel.fail()) {
 			usage();
 			throw mgl::Exception(("Invalid model file [" + modelFile + "]").c_str());
 			exit(-10);
