@@ -241,9 +241,10 @@ struct Outline
 struct GCoderConfig
 {
 	GCoderConfig()
-	:programName("Miracle-Grue"),
-	 versionStr("0.0.1"),
-	 root()
+	:root(),
+	 programName("Miracle-Grue"),
+	 versionStr("0.0.1")
+
 {}
 
     Json::Value root;

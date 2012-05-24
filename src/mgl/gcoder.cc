@@ -524,7 +524,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		try
 		{
 		  bool out = gcoderCfg.root["outline"].asBool();
-          if(  gcoderCfg.root["outline"].asBool() )
+          if(out)
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
