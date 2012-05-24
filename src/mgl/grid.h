@@ -89,7 +89,7 @@ public:
     void createGridRanges(const libthing::SegmentTable &loops, GridRanges &gridRanges) const;
     void subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges &result) const;
     void polygonsFromRanges(const GridRanges &gridRanges,
-							const std::vector<libthing::SegmentTable> &outlines,
+							const libthing::SegmentTable &outline,
 							bool xDirection, Polygons &polys) const;
 
     void gridRangeUnion(const GridRanges& a, const GridRanges &b, GridRanges &result) const;

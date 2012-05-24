@@ -168,20 +168,16 @@ void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
 	}
 }
 
-bool crossesOutlines(const LineSegment2 &seg,
-					 const vector<libthing::SegmentTable> outlines) {
-	for (vector<libthing::SegmentTable>::const_iterator outline
-			 = outlines.begin();
-		 outline != outlines.end(); outline++) {
-		for (libthing::SegmentTable::const_iterator loop = outline->begin();
-			 loop != outline->end(); loop++) {
-		   for (vector<libthing::LineSegment2>::const_iterator border
-					= loop->begin();
-				border != loop->end(); border++) {
-			   Vector2 intersection;
-			   if (segmentSegmentIntersection(seg, *border, intersection))
-				   return true;
-		   }
+bool crossesOutline(const LineSegment2 &seg,
+					const libthing::SegmentTable &outline) {
+	for (libthing::SegmentTable::const_iterator loop = outline.begin();
+		 loop != outline.end(); loop++) {
+		for (vector<libthing::LineSegment2>::const_iterator border
+				 = loop->begin();
+			 border != loop->end(); border++) {
+			Vector2 intersection;
+			if (segmentSegmentIntersection(seg, *border, intersection))
+				return true;
 		}
 	}
 
@@ -195,7 +191,7 @@ typedef enum {X_AXIS, Y_AXIS} axis_e;
 void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 										const std::vector<Scalar> &values, // the opposite axis values for each line
 										axis_e axis,
-								const vector<libthing::SegmentTable> &outlines,
+										const libthing::SegmentTable &outline,
 										Polygons &polygons)  // the output
 {
 	if (rays.size() == 0) return;
@@ -260,8 +256,8 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 			}
 		}
 
-		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
-							outlines)) {
+		if (crossesOutline(LineSegment2(points[endpoint], points[closest]),
+							outline)) {
 			polygons.push_back(Polygon());
 		}
 
@@ -770,19 +766,19 @@ void Grid::subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges 
 }
 
 void Grid::polygonsFromRanges(const GridRanges &gridRanges,
-							  const vector<libthing::SegmentTable> &outlines,
+							  const libthing::SegmentTable &outline,
 							  bool xDirection, Polygons &polys) const
 {
 	assert(polys.size() == 0);
 	if(xDirection)
 	{
 		polygonsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS,
-										  outlines, polys);
+										  outline, polys);
 	}
 	else
 	{
 		polygonsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS,
-										  outlines, polys);
+										  outline, polys);
 	}
 }
 

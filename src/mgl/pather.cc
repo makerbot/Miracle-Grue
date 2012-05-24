@@ -76,7 +76,7 @@ void Pather::generatePaths(const Tomograph &tomograph,
 		const GridRanges &infillRanges = skeleton.infills[i];
 
 		Polygons &infillsPolygons = extruderSlice.infills;
-		this->infills(infillRanges, tomograph.grid, tomograph.outlines,
+		this->infills(infillRanges, tomograph.grid, outlineSegments,
 					  direction, infillsPolygons);
 	}
 }
@@ -94,9 +94,9 @@ void Pather::insets(const libthing::Insets& insetsForSlice, PolygonsGroup &inset
 
 void Pather::infills(const GridRanges &infillRanges,
 					 const Grid &grid,
-					 const vector<libthing::SegmentTable> &outlines,
+					 const libthing::SegmentTable &outline,
 					 bool direction,
 					 Polygons &infills)
 {
-	grid.polygonsFromRanges(infillRanges, outlines, direction, infills);
+	grid.polygonsFromRanges(infillRanges, outline, direction, infills);
 }

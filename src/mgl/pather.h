@@ -97,7 +97,7 @@ public:
 
 	void infills(const GridRanges &infillRanges,
 				 const Grid &grid,
-				 const std::vector<libthing::SegmentTable> &outlines,
+				 const libthing::SegmentTable &outline,
 				 bool direction,
 				 Polygons &infills);
 
