@@ -177,7 +177,7 @@ void parseArgs( Configuration &config,
 		parser.add_parameter("-b", "--header", &b, &ConfigSetter::set_s);
 
 		ConfigSetter e(config, "gcoder", "footer");
-		parser.add_parameter("-e", "--footer", &b, &ConfigSetter::set_s);
+		parser.add_parameter("-e", "--footer", &e, &ConfigSetter::set_s);
 
 		ConfigSetter o(config, "gcoder", "outputFilename");
 		parser.add_parameter("-o", "--outputFilename",
