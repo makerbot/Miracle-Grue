@@ -168,6 +168,22 @@ void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
 	}
 }
 
+bool crossesOutline(const LineSegment2 &seg,
+					const libthing::SegmentTable &outline) {
+	for (libthing::SegmentTable::const_iterator loop = outline.begin();
+		 loop != outline.end(); loop++) {
+		for (vector<libthing::LineSegment2>::const_iterator border
+				 = loop->begin();
+			 border != loop->end(); border++) {
+			Vector2 intersection;
+			if (segmentSegmentIntersection(seg, *border, intersection))
+				return true;
+		}
+	}
+
+	return false;
+}
+
 typedef map<int, int> PointMap;
 typedef PointMap::iterator PointIter;
 typedef enum {X_AXIS, Y_AXIS} axis_e;
@@ -175,8 +191,11 @@ typedef enum {X_AXIS, Y_AXIS} axis_e;
 void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 										const std::vector<Scalar> &values, // the opposite axis values for each line
 										axis_e axis,
+										const libthing::SegmentTable &outline,
 										Polygons &polygons)  // the output
 {
+	if (rays.size() == 0) return;
+
 	PointMap points_remaining;
 
 	//Convert ray ranges to segments and map endpoints
@@ -184,8 +203,7 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 	for (size_t i = 0; i < rays.size(); i++) {
 		const vector<ScalarRange> &ray = rays[i];
 
-		if(ray.size() == 0)
-			continue;
+		if(ray.size() == 0)	continue;
 		
 		Scalar val = values[i];
 
@@ -208,7 +226,12 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 		}
 	}
 
+	if (points.size() == 0) return;
+
 	int endpoint = points_remaining.begin()->first;
+
+	polygons.push_back(Polygon());
+
 	while(!points_remaining.empty()) {
 		points_remaining.erase(endpoint);
 
@@ -233,8 +256,11 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 			}
 		}
 
+		if (crossesOutline(LineSegment2(points[endpoint], points[closest]),
+							outline)) {
+			polygons.push_back(Polygon());
+		}
 
-		polygons.push_back(Polygon());
 		Polygon &poly = polygons.back();
 
 		int connected = points_remaining[closest];
@@ -742,16 +768,20 @@ void Grid::subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges 
 	}
 }
 
-void Grid::polygonsFromRanges(const GridRanges &gridRanges, bool xDirection, Polygons &polys) const
+void Grid::polygonsFromRanges(const GridRanges &gridRanges,
+							  const libthing::SegmentTable &outline,
+							  bool xDirection, Polygons &polys) const
 {
 	assert(polys.size() == 0);
 	if(xDirection)
 	{
-		polygonsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS, polys);
+		polygonsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS,
+										  outline, polys);
 	}
 	else
 	{
-		polygonsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS, polys);
+		polygonsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS,
+										  outline, polys);
 	}
 }
 

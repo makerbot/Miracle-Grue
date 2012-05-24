@@ -96,9 +96,10 @@ public:
 	void insets(const libthing::Insets& insetsForSlice, PolygonsGroup &insetPolys);
 
 	void infills(const GridRanges &infillRanges,
-					const Grid &grid,
-					bool direction,
-					Polygons &infills);
+				 const Grid &grid,
+				 const libthing::SegmentTable &outline,
+				 bool direction,
+				 Polygons &infills);
 
 
 };
