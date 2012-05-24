@@ -168,9 +168,9 @@ const option::Descriptor usageDescriptor[] =
 		"  -t \ttop slice index" },
 { DEBUG_ME, 	10, "d", "debug", Arg::Numeric,
 		"  -d \tdebug level" },
-{ START_GCODE, 	11, "s", "startGcode", Arg::NonEmpty,
+{ START_GCODE, 	11, "s", "header", Arg::NonEmpty,
 		"  -s \tstart gcode file" },
-{ END_GCODE, 	12, "e", "endGcode", Arg::NonEmpty,
+{ END_GCODE, 	12, "e", "footer", Arg::NonEmpty,
 		"  -e \tend gcode file" },
 { OUT_FILENAME, 	13, "o", "outFilename", Arg::NonEmpty,
 		"  -o \twrite gcode to specific filename (defaults to <model>.gcode" },
@@ -204,6 +204,10 @@ int newParseArgs( Configuration &config,
 		int &firstSliceIdx,
 		int &lastSliceIdx) {
 
+    //always read default config
+	config.readFromFile(configFilename);
+
+
 	argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
 	option::Stats  stats(usageDescriptor, argc, argv);
 	option::Option* options = new option::Option[stats.options_max];
@@ -213,7 +217,7 @@ int newParseArgs( Configuration &config,
 	if (parse.error())
 		return -20;
 
-	for (int i = 0; i < parse.optionsCount(); ++i)
+        for (int i = 0; i < parse.optionsCount(); ++i)
 	{
 		option::Option& opt = buffer[i];
 		fprintf(stdout, "Argument #%d name %s is #%s\n", i, opt.desc->longopt, opt.arg );
