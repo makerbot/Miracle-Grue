@@ -259,7 +259,7 @@ int main(int argc, char *argv[], char *[]) // envp
 		scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad" );
 
 		
-		std::string gcodeFile = config["gcoder"]["outputFilename"].asString();
+		std::string gcodeFile = config["gcoder"]["outFilename"].asString();
 
 		if (gcodeFile.empty()) {
 			gcodeFile = ".";
