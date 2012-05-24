@@ -922,7 +922,7 @@ void RoofingTestCase::testGridStruct()
     limits.grow(Vector3(10,10,10));
 
     Grid grid(limits, 0.391);
-    cout << "center = " << grid.readGridCenter() << endl;
+    cout << "center = " << grid.getOrigin() << endl;
 //    cout << "X values" << endl;
 //    for(unsigned int i=0; i < grid.readXvalues().size(); i++)
 //    {
@@ -935,8 +935,8 @@ void RoofingTestCase::testGridStruct()
 //        cout << " " << grid.readYvalues()[i] << endl;
 //    }
 
-    CPPUNIT_ASSERT_EQUAL((size_t)13, grid.readXvalues().size());
-    CPPUNIT_ASSERT_EQUAL((size_t)13, grid.readYvalues().size());
+    CPPUNIT_ASSERT_EQUAL((size_t)13, grid.getXValues().size());
+    CPPUNIT_ASSERT_EQUAL((size_t)13, grid.getYValues().size());
 }
 
 
@@ -1197,13 +1197,13 @@ void RoofingTestCase::test3dKnotPlatform()
 	writeScanLines(fscad, "outlines_", "linea", -1, -0.1 , innerOutlines);
 
 	SegmentTable xRays;
-    segmentTableFromRangeTable(surface.xRays , tomograph.grid.readYvalues(), xRays);
+    segmentTableFromRangeTable(surface.xRays , tomograph.grid.getYValues(), xRays);
 
 	SegmentTable xRaysAbove;
-    segmentTableFromRangeTable(surfaceAbove.xRays , tomograph.grid.readYvalues(), xRaysAbove);
+    segmentTableFromRangeTable(surfaceAbove.xRays , tomograph.grid.getYValues(), xRaysAbove);
 
     SegmentTable xRaysRoof;
-    segmentTableFromRangeTable( roofing.xRays , tomograph.grid.readYvalues(), xRaysRoof);
+    segmentTableFromRangeTable( roofing.xRays , tomograph.grid.getYValues(), xRaysRoof);
 
 
 	writeScanLines(fscad, "slice_x_", "linea",   z, dz, xRays);
@@ -1334,8 +1334,8 @@ void surfaceToscad( const Grid &grid,
 void extractLineX(const Grid &grid,
 					const GridRanges &surface, size_t lineId, GridRanges &result)
 {
-	result.xRays.resize(grid.readYvalues().size());
-	result.yRays.resize(grid.readXvalues().size());
+	result.xRays.resize(grid.getYValues().size());
+	result.yRays.resize(grid.getXValues().size());
 	result.xRays[lineId] = surface.xRays[lineId];
 
 	dumpRanges(surface.xRays[lineId]);

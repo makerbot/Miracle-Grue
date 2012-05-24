@@ -69,33 +69,66 @@ struct GridRanges
 };
 
 
+///  A grid is a set of intersecting lines that is subsampled to create
+/// infill patterns.
+///
+///
 class Grid
 {
-    std::vector<Scalar> xValues;
-    std::vector<Scalar> yValues;
-    libthing::Vector2 gridCenter;
+    std::vector<Scalar> xValues; ///< list of spacing between lines along y axis(mm)
+    std::vector<Scalar> yValues; ///< list of spacing between lines along x axis(mm)
+    libthing::Vector2 gridOrigin; ///< origin of our grid system
 
 public:
     Grid();
 
+    /// Generates grid during construction
+    /// @param limits: x,y size of grid
+    /// @param gridSpacing: idealized space between generated infill lines at 100%
+	///		coverage. Maps directly to filament witdh in final print.
     Grid(const Limits &limits, Scalar gridSpacing);
+
+	/// re-initialize the grid, so you can recycle grid and save electrons. (jk)
     void init(const Limits &limits, Scalar gridSpacing);
 
-    libthing::Vector2 readGridCenter() const {return gridCenter;}
-    const std::vector<Scalar>& readXvalues() const{return xValues;}
-    const std::vector<Scalar>& readYvalues() const{return yValues;}
 
+    libthing::Vector2 getOrigin() const {return gridOrigin;}
 
-    void createGridRanges(const libthing::SegmentTable &loops, GridRanges &gridRanges) const;
-    void subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges &result) const;
+    const std::vector<Scalar>& getXValues() const{return xValues;}
+
+    const std::vector<Scalar>& getYValues() const{return yValues;}
+
+    /// Creates range of beginning to end of gridlines
+    /// @param returns a list of GridRanges 'cut out' of the underlying
+    /// idealized grid based on our segments in segments.
+    /// @param loops: a SegmentTable containing segments specifying
+    ///		exactly one layer outline to use to 'cookie cutter' out gridlines
+    void createGridRanges(const libthing::SegmentTable &loops, GridRanges &outGridRanges) const;
+
+    /// The grid starts out at 100% infill, this function selectlviy removes filament
+    /// based on a skip count to reduce density
+    /// @param srcGridRanges: input grid range to sub-sample
+    /// @param skipCount : number if infill lines to skip. infill_ration = (1/skipCount) -1
+    /// @param result: returned grid post-subsampling
+    void subSample(const GridRanges &srcGridRanges, size_t skipCount, GridRanges &result) const;
+
+    /// Takes a gridRange and converts that into Polygons that can be used to generate
+    /// gcode.
     void polygonsFromRanges(const GridRanges &gridRanges,
 							const libthing::SegmentTable &outline,
 							bool xDirection, Polygons &polys) const;
 
+    /// joins a/b grid ranges into
     void gridRangeUnion(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
+
+	/// subtracts GridRagne diff from GridRange src to return result grid range
     void gridRangeDifference(const GridRanges& src, const GridRanges &diff, GridRanges &result) const;
+
+	/// returns a gridrange that is the interesction of a/b
     void gridIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
 
+    /// removes all grid ranges shorter than toleranne 'cutOff', returns a new
+    /// simplified grid range
     void trimGridRange(const GridRanges& src, Scalar cutOff, GridRanges &result) const;
 
 };

@@ -27,17 +27,11 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 void Regioner::generateSkeleton(const Tomograph &tomograph , Regions &regions)
 {
-//		outlines(	modelFile,
-//					regions.layerMeasure,
-//					regions.grid,
-//					regions.outlines);
 
-	insets(tomograph.outlines,
-				  regions.insets);
 
-	flatSurfaces(regions.insets,
-			tomograph.grid,
-						regions.flatSurfaces);
+	insets(tomograph.outlines, regions.insets);
+
+	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
 
 	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
 
@@ -51,6 +45,7 @@ void Regioner::generateSkeleton(const Tomograph &tomograph , Regions &regions)
 }
 
 
+
 void Regioner::insetsForSlice(const libthing::SegmentTable &sliceOutlines,
 					libthing::Insets &sliceInsets, const char*scadFile)
 {
@@ -58,20 +53,23 @@ void Regioner::insetsForSlice(const libthing::SegmentTable &sliceOutlines,
 
 	bool writeDebugScadFiles = false;
 	inshelligence(sliceOutlines,
-					slicerCfg.nbOfShells,
-					slicerCfg.layerW,
-					slicerCfg.insetDistanceMultiplier,
-					scadFile,
-					writeDebugScadFiles,
-					sliceInsets);
+			slicerCfg.nbOfShells,
+			slicerCfg.layerW,
+			slicerCfg.insetDistanceMultiplier,
+			scadFile,
+			writeDebugScadFiles,
+			sliceInsets);
 }
 
-void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments, std::vector<libthing::Insets> & insets)
+//
+void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
+			std::vector<libthing::Insets> & insets)
 {
 
 	unsigned int sliceCount = outlinesSegments.size();
 	initProgress("insets", sliceCount);
 	insets.resize(sliceCount);
+
 	// slice id must be adjusted for
 	for(size_t i = 0;i < sliceCount;i++)
 	{

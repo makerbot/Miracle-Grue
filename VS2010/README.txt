@@ -1,1 +1,0 @@
-Move the VS2010 folder to the root directory of Miracle-Grue

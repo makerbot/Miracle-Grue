@@ -151,6 +151,7 @@ void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
 	}
 }
 
+
 void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
 					const std::vector<Scalar> &values, // x
 					Scalar min,
@@ -168,6 +169,7 @@ void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
 	}
 }
 
+
 bool crossesOutline(const LineSegment2 &seg,
 					const libthing::SegmentTable &outline) {
 	for (libthing::SegmentTable::const_iterator loop = outline.begin();
@@ -184,9 +186,11 @@ bool crossesOutline(const LineSegment2 &seg,
 	return false;
 }
 
+
 typedef map<int, int> PointMap;
 typedef PointMap::iterator PointIter;
 typedef enum {X_AXIS, Y_AXIS} axis_e;
+
 
 void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 										const std::vector<Scalar> &values, // the opposite axis values for each line
@@ -710,8 +714,8 @@ void Grid::init(const Limits &limits, Scalar gridSpacing)
 	Scalar deltaY = limits.yMax - limits.yMin;
 	Scalar deltaX = limits.xMax - limits.xMin;
 
-	gridCenter[0] = limits.xMin + 0.5 * deltaX;
-	gridCenter[1] = limits.yMin + 0.5 * deltaY;
+	gridOrigin[0] = limits.xMin + 0.5 * deltaX;
+	gridOrigin[1] = limits.yMin + 0.5 * deltaY;
 
 	// round to nearest odd number
 	unsigned int yGridSize = (unsigned int)( deltaY / gridSpacing) + 1;
@@ -720,14 +724,14 @@ void Grid::init(const Limits &limits, Scalar gridSpacing)
 	yValues.resize(yGridSize);
 	for (unsigned int i=0; i < yGridSize; i++)
 	{
-		Scalar v = gridCenter[1] -0.5 * deltaY + i * gridSpacing;
+		Scalar v = gridOrigin[1] -0.5 * deltaY + i * gridSpacing;
 		yValues[i] = v;
 	}
 
 	xValues.resize(xGridSize);
 	for (unsigned int i=0; i < xGridSize; i++)
 	{
-		Scalar v = gridCenter[0] -0.5 * deltaX + i * gridSpacing;
+		Scalar v = gridOrigin[0] -0.5 * deltaX + i * gridSpacing;
 		xValues[i] = v;
 	}
 }

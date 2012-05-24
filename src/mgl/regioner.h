@@ -36,7 +36,7 @@ struct Regions
 
 
 
-//// Class to calculate regions of a file
+//// Class to calculate regions of a model
 ///
 class Regioner : public Progressive
 {
