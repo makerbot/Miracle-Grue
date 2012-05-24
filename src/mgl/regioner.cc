@@ -19,8 +19,7 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 {
 	// move that to its own config element?
 	roofLengthCutOff = 0.5 * slicerCfg.layerH;
-	std::cout <<  "Ho " << std::endl;
-	std::cout << " the cutoff " <<roofLengthCutOff << std::endl;
+
 }
 
 
@@ -47,6 +46,8 @@ void Regioner::generateSkeleton(const Tomograph &tomograph , Regions &regions)
 			tomograph.grid,
 					regions.roofings,
 					regions.floorings,
+					regions.solids,
+					regions.sparses,
 					regions.infills);
 }
 
@@ -132,19 +133,14 @@ void Regioner::roofing(const std::vector<GridRanges> & flatSurfaces, const Grid 
 		const GridRanges & currentSurface = flatSurfaces[i];
 		const GridRanges & surfaceAbove = flatSurfaces[i + 1];
 		GridRanges & roofing = roofings[i];
-		// cout << "roof " << i << "/" << sliceCount-1 << endl;
 
 		GridRanges roof;
 		roofForSlice(currentSurface, surfaceAbove, grid, roof);
 
-		GridRanges roof2;
-		// cout << "cut " << this->roofLengthCutOff << endl;
-		grid.trimGridRange(roof, this->roofLengthCutOff, roof2 );
-		roofing = roof2;
+		grid.trimGridRange(roof, this->roofLengthCutOff, roofing );
 
 	}
 	tick();
-	// cout << "last roof " << sliceCount -1 << endl;
 	roofings[sliceCount -1] = flatSurfaces[sliceCount -1];
 
 }
@@ -176,32 +172,88 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 			 const Grid &grid,
 			 const std::vector<GridRanges> &roofings,
 			 const std::vector<GridRanges> &floorings,
+			 std::vector<GridRanges> &solids,
+			 std::vector<GridRanges> &sparses,
 			 std::vector<GridRanges> &infills)
 {
 
-	assert(infills.size() == 0);
+
 	assert(flatSurfaces.size() > 0);
 	assert(roofings.size() > 0);
+
 	unsigned int sliceCount = flatSurfaces.size();
-	initProgress("infills", sliceCount);
+
+	assert(infills.size() == 0);
 	infills.resize(sliceCount);
+
+	assert(sparses.size() == 0);
+	sparses.resize(sliceCount);
+
+	assert(solids.size() == 0);
+	solids.resize(sliceCount);
+
+	initProgress("infills", sliceCount);
+
+
 	for(size_t i=0; i< sliceCount; i++)
 	{
-		tick();
-		// std::cout  << "INFILL " << i << "/" << sliceCount << std::endl;
 		const GridRanges &surface = flatSurfaces[i];
-		const GridRanges &roofing = roofings[i];
-		const GridRanges &flooring = floorings[i];
-		GridRanges sparseInfill;
-		// cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
-                size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
-                grid.subSample(surface, infillSkipCount, sparseInfill);
+		tick();
+		{
+			const GridRanges &surface = flatSurfaces[i];
+			const GridRanges &roofing = roofings[i];
+			const GridRanges &flooring = floorings[i];
+			GridRanges sparseInfill;
 
-		// std::cout << " infill = union roofing and surface " << i << "/" << sliceCount << std::endl;
-		GridRanges roofed;
-		grid.gridRangeUnion(sparseInfill, roofing, roofed);
-		GridRanges &infill = infills[i];
-		grid.gridRangeUnion(roofed, flooring, infill);
+			size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
+			grid.subSample(surface, infillSkipCount, sparseInfill);
+
+			GridRanges roofed;
+			grid.gridRangeUnion(sparseInfill, roofing, roofed);
+			GridRanges &infill = infills[i];
+			grid.gridRangeUnion(roofed, flooring, infill);
+		}
+
+		// Solids
+		GridRanges solid;
+
+		solid.xRays.resize(surface.xRays.size());
+		solid.yRays.resize(surface.yRays.size());
+
+		size_t firstFloor = 0;
+		int f = i - this->slicerCfg.floorLayerCount;
+		if(f > 0) firstFloor = (size_t)f;
+
+		size_t lastRoof = i + this->slicerCfg.roofLayerCount;
+		if(lastRoof > (sliceCount-1) ) lastRoof = sliceCount - 1;
+
+		//cout << "Solid [" << i << "]  = sum (";
+		//cout << " floor(";
+		for (size_t j = (size_t)firstFloor; j <=  i; j++)
+		{
+			GridRanges multiFloor;
+			//cout << j << ", ";
+			const GridRanges &floor = floorings[j];
+			grid.gridRangeUnion(solid, floor, multiFloor);
+			solid = multiFloor;
+		}
+		//cout << "), roof(";
+		for (size_t j = i; j <= lastRoof; j++)
+		{
+			GridRanges multiRoof;
+			const GridRanges &roofing = roofings[j];
+			grid.gridRangeUnion(solid, roofing, multiRoof);
+			//cout << j << ", ";
+			solid = multiRoof;
+		}
+		// solid = flooring;
+		//cout << ") )" << endl;
+
+		solids[i] = solid;
+
+		GridRanges &sparse = sparses[i];
+		sparse = infills[i];
+
 	}
 
 }

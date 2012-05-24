@@ -172,7 +172,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		throw mixup;
         return;
 	}
-//
+
 	int x = conf.root["extruders"].size();
 	unsigned int extruderCount = (unsigned int)x;
 	for(unsigned int i=0; i < extruderCount; i++)
@@ -212,25 +212,16 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		}
 
 		extruder.feedDiameter = doubleCheck(value["feedDiameter"], (prefix+"feedDiameter").c_str());
-
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-    gcoderCfg.root = conf.root["gcoder"];
-    if( false == gcoderCfg.root.isMember("header") )
-        gcoderCfg.root["header"] = "gcoder.header";
-    if( false == gcoderCfg.root.isMember("footer") )
-        gcoderCfg.root["footer"] = "gcoder.footer";
-    if( false == gcoderCfg.root.isMember("outline") )
-        gcoderCfg.root["outline"] = "True";
-	if( false == gcoderCfg.root.isMember("insets") )
-    	gcoderCfg.root["insets"] = "True";
-	if( false == gcoderCfg.root.isMember("infills") )
-    	gcoderCfg.root["infills"] = "True";
-	if( false == gcoderCfg.root.isMember("infillFirst") )
-    	gcoderCfg.root["infillFirst"] = "False";
-	if( false == gcoderCfg.root.isMember("dualtrick") )
-    	gcoderCfg.root["dualtrick"] = "False";
+
+	gcoderCfg.doOutlines = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
+	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
+	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
+	gcoderCfg.doInfills  =  boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
+
+
 }
 
 void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicerCfg)
@@ -246,7 +237,4 @@ void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &s
 	slicerCfg.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
 	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
-
-
-
 }

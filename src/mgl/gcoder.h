@@ -242,11 +242,10 @@ struct GCoderConfig
 {
 	GCoderConfig()
 	:programName("Miracle-Grue"),
-	 versionStr("0.0.1"),
-	 root()
+	 versionStr("0.0.1")
+
 {}
 
-    Json::Value root;
 
     std::string programName;
     std::string versionStr;
@@ -259,7 +258,20 @@ struct GCoderConfig
 
     std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
+
+
+    bool doOutlines;
+    bool doInsets;
+    bool doInfills;
+    bool doInfillsFirst;
+
+    std::string header;
+    std::string footer;
+
 };
+
+
+
 
 
 //
@@ -275,7 +287,6 @@ public:
         GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL)
             :Progressive(progress), gcoderCfg(gCoderCfg)
 	{
-
 	}
 
 
