@@ -237,25 +237,6 @@ struct Outline
 
 
 
-// directives for the Gcoder
-struct GCoding
-{
-	GCoding()
-		:outline(false),
-		 insets(true),
-		 infills(true),
-		 infillFirst(false),
-		 dualtrick(false)
-		{}
-
-	std::string header;
-	std::string footer;
-	bool outline;
-	bool insets;
-	bool infills;
-	bool infillFirst;
-	bool dualtrick;
-};
 
 struct GCoderConfig
 {
@@ -264,12 +245,13 @@ struct GCoderConfig
 	 versionStr("0.0.1")
 	{}
 
+        Json::Value root;
+
     std::string programName;
     std::string versionStr;
     std::string machineName;
     std::string firmware;
 
-    GCoding gcoding;
     Platform platform;
     Outline outline;
     Gantry gantry;
