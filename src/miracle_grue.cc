@@ -28,6 +28,7 @@ using namespace std;
 using namespace mgl;
 
 
+/// Extends options::Arg to specifiy limitations on arguments
 struct Arg: public option::Arg
 {
   static void printError(const char* msg1, const option::Option& opt, const char* msg2)
@@ -61,8 +62,6 @@ struct Arg: public option::Arg
     return option::ARG_ILLEGAL;
   }
 
-
-
   static option::ArgStatus Numeric(const option::Option& option, bool msg)
   {
     char* endptr = 0;
@@ -75,9 +74,11 @@ struct Arg: public option::Arg
   }
 };
 
+// all ID's of the options we expect
 enum optionIndex {UNKNOWN, HELP, CONFIG, FIRST_Z,LAYER_H,LAYER_W, FILL_ANGLE, FILL_DENSITY,
 				 N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX, DEBUG_ME, START_GCODE,
 				END_GCODE, OUT_FILENAME};
+// options descriptor table
 const option::Descriptor usageDescriptor[] =
 {
  {UNKNOWN, 0, "", "",Arg::None, "miracle-grue [OPTIONS] FILE.STL \n\n"
@@ -112,9 +113,6 @@ const option::Descriptor usageDescriptor[] =
 {0,0,0,0,0,0},
 };
 
-
-
-
 void usage() {
 	cout << endl;
 	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
@@ -126,19 +124,14 @@ void usage() {
 	cout << endl;
 }
 
-void exitUsage(int code = 0) {
-	usage();
-	exit(code);
-}
-
 
 int newParseArgs( Configuration &config,
 		int argc, char *argv[],
 		string &modelFile,
-		string &configFilename,
 		int &firstSliceIdx,
 		int &lastSliceIdx) {
 
+	string configFilename = "";
 
 	argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
 	option::Stats  stats(usageDescriptor, argc, argv);
@@ -149,7 +142,7 @@ int newParseArgs( Configuration &config,
 	if (parse.error())
 		return -20;
 
-	///read config file first.
+	///read config file and/or help option first
  	for (int i = 0; i < parse.optionsCount(); ++i)
 	{
 		option::Option& opt = buffer[i];
@@ -160,6 +153,7 @@ int newParseArgs( Configuration &config,
 			exit(0);
 		}
 	}
+	// fallback to default config
     if (configFilename.compare(string("")) == 0)
 		configFilename = "miracle.config";
 
@@ -225,41 +219,25 @@ int newParseArgs( Configuration &config,
 	// [programName] and [versionStr] are always hard-code overwritten
 	config["programName"] = GRUE_PROGRAM_NAME;
 	config["versionStr"] = GRUE_VERSION;
-
 	config["firmware"] = "unknown";
-	//exit(-10);
+
 	return 0;
 }
 
-
-// @returns true of preconditions are met
-bool preConditions(int argc, char *[]) //char * argv[]
-{
-	if (argc < 2)
-		return false;
-	return true;
-}
 
 
 
 int main(int argc, char *argv[], char *[]) // envp
 {
 
-	// design by contract ;-)
-	int cmdsOk = preConditions(argc,argv);
-	if( false == cmdsOk )
-		exitUsage(-1);
-
 	string modelFile;
-	string configFileName = "";
 
     Configuration config;
     try
     {
 		int firstSliceIdx, lastSliceIdx;
 
-		//parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
-		int ret = newParseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
+		int ret = newParseArgs(config, argc, argv, modelFile, firstSliceIdx, lastSliceIdx);
 
 		if(ret != 0){
 			usage();
