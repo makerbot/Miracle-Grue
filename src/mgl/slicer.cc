@@ -13,6 +13,7 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 }
 
 
+
 void Slicer::tomographyze( const char* modelFile, Tomograph &tomograph)
 {
 	Meshy mesh(layerCfg.firstLayerZ, layerCfg.layerH);
@@ -39,6 +40,8 @@ void Slicer::tomographyze( const char* modelFile, Tomograph &tomograph)
 	tomograph.layerMeasure = mesh.readLayerMeasure();
 }
 
+
+
 void Slicer::outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments)
 {
 	Scalar tol = 1e-6;
@@ -55,6 +58,7 @@ void Slicer::outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::Segm
 	loopsFromLineSegments(unorderedSegments, tol, segments);
 	// cout << " done " << endl;
 }
+
 
 
 void Slicer::loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments, Scalar tol, libthing::SegmentTable & segments)
