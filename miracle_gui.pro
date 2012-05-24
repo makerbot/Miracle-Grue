@@ -8,7 +8,7 @@ QT       += core gui
 
 TARGET = bin/miracle_gui
 TEMPLATE = app
-
+INSTALLS += target
 
 GUI_SRC =  submodule/toolpathviz
 include($$GUI_SRC/toolpathviz.pro.inc)

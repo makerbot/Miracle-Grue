@@ -8,8 +8,7 @@ QT       += core
 
 TARGET = bin/miracle_grue
 TEMPLATE = app
-
-
+INSTALLS += target
 
 MGL_SRC = src/mgl
 include($$MGL_SRC/mgl.pro.inc)
@@ -26,6 +25,9 @@ include($$OPTIONPARSER_BASE/optionparser.pro.inc)
 
 INCLUDEPATH += src \
     submodule/clp-parser
+DEPENDPATH += src \
+    submodule/clp-parser
+
 
 SOURCES +=  src/miracle_grue.cc
 
