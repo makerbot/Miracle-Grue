@@ -13,3 +13,6 @@
 [submodule "submodule/libthing"]
 	path = submodule/libthing
 	url = git@github.com:makerbot/libthing.git
+[submodule "submodule/optionparser"]
+	path = submodule/optionparser
+	url = git@github.com:makerbot/optionparser.git

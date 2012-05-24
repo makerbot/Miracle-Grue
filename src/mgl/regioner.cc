@@ -194,7 +194,8 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 		const GridRanges &flooring = floorings[i];
 		GridRanges sparseInfill;
 		// cout << i << "/" << sliceCount << " subsample " << skipCount << endl;
-		grid.subSample(surface, slicerCfg.infillSkipCount, sparseInfill);
+                size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
+                grid.subSample(surface, infillSkipCount, sparseInfill);
 
 		// std::cout << " infill = union roofing and surface " << i << "/" << sliceCount << std::endl;
 		GridRanges roofed;

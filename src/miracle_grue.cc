@@ -24,6 +24,8 @@
 #include "libthing/Vector2.h"
 #include <clpp/parser.hpp>
 
+#include "optionparser.h"
+
 
 using namespace std;
 using namespace mgl;
@@ -90,38 +92,189 @@ private:
 	string sval;
 	double dval;
 	int ival;
-
-
 };
+
+
+struct Arg: public option::Arg
+{
+  static void printError(const char* msg1, const option::Option& opt, const char* msg2)
+  {
+    fprintf(stderr, "%s", msg1);
+    fwrite(opt.name, opt.namelen, 1, stderr);
+    fprintf(stderr, "%s", msg2);
+  }
+
+  static option::ArgStatus Unknown(const option::Option& option, bool msg)
+  {
+    if (msg) printError("Unknown option '", option, "'\n");
+    return option::ARG_ILLEGAL;
+  }
+
+  static option::ArgStatus Required(const option::Option& option, bool msg)
+  {
+    if (option.arg != 0)
+      return option::ARG_OK;
+
+    if (msg) printError("Option '", option, "' requires an argument\n");
+    return option::ARG_ILLEGAL;
+  }
+
+  static option::ArgStatus NonEmpty(const option::Option& option, bool msg)
+  {
+    if (option.arg != 0 && option.arg[0] != 0)
+      return option::ARG_OK;
+
+    if (msg) printError("Option '", option, "' requires a non-empty argument\n");
+    return option::ARG_ILLEGAL;
+  }
+
+  static option::ArgStatus Numeric(const option::Option& option, bool msg)
+  {
+    char* endptr = 0;
+    if (option.arg != 0 && strtol(option.arg, &endptr, 10)){};
+    if (endptr != option.arg && *endptr == 0)
+      return option::ARG_OK;
+
+    if (msg) printError("Option '", option, "' requires a numeric argument\n");
+    return option::ARG_ILLEGAL;
+  }
+};
+
+enum optionIndex {UNKNOWN, HELP, CONFIG, FIRST_Z,LAYER_H,LAYER_W, FILL_ANGLE, FILL_DENSITY,
+				 N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX, DEBUG_ME, START_GCODE,
+				END_GCODE, OUT_FILENAME};
+const option::Descriptor usageDescriptor[] =
+{
+ {UNKNOWN, 0, "", "",Arg::None, "miracle-grue [OPTIONS] FILE.STL \n\n"
+                                        "Options:" },
+ {HELP, 0,"", "help",Arg::None, "  --help  \tPrint usage and exit." },
+{CONFIG, 1,"c", "config", Arg::NonEmpty, "-c  \tconfig data in a config.json file."
+		 "(default is local miracle.config)" },
+{FIRST_Z, 2,"f", "firstLayerZ", Arg::Numeric,
+		"-f \tfirst layer height (mm)" },
+{LAYER_H, 3,"h", "layerH", Arg::Numeric,
+		"  -h \tgeneral layer height(mm)" },
+{LAYER_W, 4,"w", "layerW", Arg::Numeric,
+		"  -w \tlayer width(mm)" },
+{ FILL_ANGLE, 5, "a","angle", Arg::Numeric,
+		"  -a \tinfill grid inter slice angle(radians)" },
+{ FILL_DENSITY, 6, "d", "density", Arg::Numeric,
+		"  -d \tapprox infill density(percent)" },
+{ N_SHELLS, 	7, "n", "nShells", Arg::Numeric,
+		"  -n \tnumber of shells per layer" },
+{ BOTTOM_SLICE_IDX, 8, "b", "bottomIdx", Arg::Numeric,
+		"  -b \tbottom slice index" },
+{ TOP_SLICE_IDX, 	9, "t", "topIdx", Arg::Numeric,
+		"  -t \ttop slice index" },
+{ DEBUG_ME, 	10, "d", "debug", Arg::Numeric,
+		"  -d \tdebug level" },
+{ START_GCODE, 	11, "s", "header", Arg::NonEmpty,
+		"  -s \tstart gcode file" },
+{ END_GCODE, 	12, "e", "footer", Arg::NonEmpty,
+		"  -e \tend gcode file" },
+{ OUT_FILENAME, 	13, "o", "outFilename", Arg::NonEmpty,
+		"  -o \twrite gcode to specific filename (defaults to <model>.gcode" },
+{0,0,0,0,0,0},
+};
+
+
+
 
 void usage() {
 	cout << endl;
-	cout << endl;
-	cout << "This program translates a 3d model file in STL format to GCODE toolpath for a 3D printer "<< endl;
-	cout << "It also generates an OpenScad file for visualization"<< endl;
-	cout << endl;
-	cout << "usage: miracle-grue [OPTIONS] STL FILE" << endl;
-	cout << "options: " << endl;
-	cout << "  -c --config        : set the configuration file (default is local miracle.config)" << endl;
-	cout << "  -f --firstLayerZ   : override the first layer height" << endl;
-	cout << "  -l --layerH        : override the layer height" << endl;
-	cout << "  -w --layerW        : override layer width" << endl;
-	cout << "  -t --tubeSpacing   : override the infill grid width" << endl;
-	cout << "  -a --angle         : override the infill grid inter slice angle (radians)" << endl;
-	cout << "  -s --nbOfShells    : override the number of shells" << endl;
-	cout << "  -n --firstSliceIdx : slice from a specific slice" << endl;
-	cout << "  -m --lastSliceIdx  : stop slicing at specific slice" << endl;
-	cout << "  -d --writeDebug    : debug mode (creates scad files for each inset error)" << endl;
-	cout << "  -b --header        : override the header gcode file " << endl;
-	cout << "  -e --footer        : override the footer gcode file " << endl;
-	cout << "  -o --outputFilename: write gcode to specific filename (defaults to <model>.gcode" << endl;
-	cout << endl;
 	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
+	cout << endl;
+	cout << "This program translates a 3d model file in STL format to GCODE toolpath for a " << endl;
+	cout << "3D printer." << " Another fine MakerBot Industries product!"<< endl;
+	cout << endl;
+    option::printUsage(std::cout, usageDescriptor);
+	cout << endl;
 }
 
-void exitUsage() {
+void exitUsage(int code = 0) {
 	usage();
-	exit(0);
+	exit(code);
+}
+
+
+int newParseArgs( Configuration &config,
+		int argc, char *argv[],
+		string &modelFile,
+		string &configFilename,
+		int &firstSliceIdx,
+		int &lastSliceIdx) {
+
+    //always read default config
+	config.readFromFile(configFilename);
+
+
+	argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
+	option::Stats  stats(usageDescriptor, argc, argv);
+	option::Option* options = new option::Option[stats.options_max];
+	option::Option* buffer  = new option::Option[stats.buffer_max];
+	option::Parser parse(usageDescriptor, argc, argv, options, buffer);
+
+	if (parse.error())
+		return -20;
+
+        for (int i = 0; i < parse.optionsCount(); ++i)
+	{
+		option::Option& opt = buffer[i];
+		fprintf(stdout, "Argument #%d name %s is #%s\n", i, opt.desc->longopt, opt.arg );
+		switch (opt.index())
+		{
+			case CONFIG:
+				configFilename = string(opt.arg);
+				config.readFromFile(configFilename);
+				break;
+			case  LAYER_H:
+			case  LAYER_W:
+			case  FILL_ANGLE:
+			case  FILL_DENSITY:
+			case  N_SHELLS:
+			case  BOTTOM_SLICE_IDX:
+			case  TOP_SLICE_IDX:
+			case  FIRST_Z:
+				configFilename = string(opt.arg);
+				config["slicer"][opt.desc->longopt] = doubleFromCharEqualsStr(opt.arg);;
+				break;
+			case  DEBUG_ME:
+			case  START_GCODE:
+			case  END_GCODE:
+			case  OUT_FILENAME:
+				configFilename = string(opt.arg);
+				config["gcoder"][opt.desc->longopt] = opt.arg;
+				break;
+			case HELP:
+			// not possible, because handled further above and exits the program
+			default:
+				break;
+		}
+	}
+
+	/// handle parameters (not options!)
+	if ( parse.nonOptionsCount() == 0) {
+		usage();
+	}
+	else if ( parse.nonOptionsCount() != 1) {
+		std::cout << "too many parameters" << endl;
+		for (int i = 0; i < parse.nonOptionsCount(); ++i)
+			std::cout << "Parameter #" << i << ": " << parse.nonOption(i) << "\n";
+			exit(-10);
+	}
+	else {
+		//handle the unnamed parameter separately
+		modelFile = parse.nonOption(0);
+		std::cout << "filename " << modelFile << endl;
+		if (!boost::filesystem::is_regular_file(modelFile)) {
+			usage();
+			throw mgl::Exception(("Invalid model file [" + modelFile + "]").c_str());
+			exit(-10);
+		}
+	}
+
+	//exit(-10);
+	return 0;
 }
 
 void parseArgs( Configuration &config,
@@ -177,7 +330,7 @@ void parseArgs( Configuration &config,
 		parser.add_parameter("-b", "--header", &b, &ConfigSetter::set_s);
 
 		ConfigSetter e(config, "gcoder", "footer");
-		parser.add_parameter("-e", "--footer", &b, &ConfigSetter::set_s);
+		parser.add_parameter("-e", "--footer", &e, &ConfigSetter::set_s);
 
 		ConfigSetter o(config, "gcoder", "outputFilename");
 		parser.add_parameter("-o", "--outputFilename",
@@ -206,22 +359,12 @@ void parseArgs( Configuration &config,
 }
 
 
-
-int preConditionsOrShowUsage(int argc, char *[]) // argv[]
+// @returns true of preconditions are met
+bool preConditions(int argc, char *[]) //char * argv[]
 {
-	cout << endl;
-	cout << "Miracle-Grue "<< getMiracleGrueVersionStr() << endl;
-	cout << "Makerbot Industries 2012"  << endl;
-	cout << endl;
-
-	cout << endl;
-
 	if (argc < 2)
-	{
-		usage();
-		return (-1);
-	}
-	return 0;
+		return false;
+	return true;
 }
 
 
@@ -230,11 +373,9 @@ int main(int argc, char *argv[], char *[]) // envp
 {
 
 	// design by contract ;-)
-	int checks = preConditionsOrShowUsage(argc, argv);
-	if(checks != 0)
-	{
-		return checks;
-	}
+	int cmdsOk = preConditions(argc,argv);
+	if( false == cmdsOk )
+		exitUsage(-1);
 
 	string modelFile;
 	string configFileName = "miracle.config";
@@ -243,7 +384,10 @@ int main(int argc, char *argv[], char *[]) // envp
     try
     {
 		int firstSliceIdx, lastSliceIdx;
-		parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
+
+		//parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
+		newParseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
+
 		// cout << config.asJson() << endl;
 
 		cout << "Tube spacing: " << config["slicer"]["tubeSpacing"] << endl;
