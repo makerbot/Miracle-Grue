@@ -10,6 +10,8 @@ TARGET = bin/miracle_grue
 TEMPLATE = app
 INSTALLS += target
 
+target.path = /usr/bin
+
 MGL_SRC = src/mgl
 include($$MGL_SRC/mgl.pro.inc)
 
