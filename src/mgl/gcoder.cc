@@ -520,9 +520,11 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
                     Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
                     Log::error() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
+		/// Write outlines? outlines == skirt
 		try
 		{
-                        if(  gcoderCfg.root["outline"].asBool() )
+		  bool out = gcoderCfg.root["outline"].asBool();
+          if(  gcoderCfg.root["outline"].asBool() )
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);

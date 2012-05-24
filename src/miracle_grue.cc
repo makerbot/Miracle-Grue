@@ -204,9 +204,6 @@ int newParseArgs( Configuration &config,
 		int &firstSliceIdx,
 		int &lastSliceIdx) {
 
-    //always read default config
-	config.readFromFile(configFilename);
-
 
 	argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
 	option::Stats  stats(usageDescriptor, argc, argv);
@@ -217,16 +214,24 @@ int newParseArgs( Configuration &config,
 	if (parse.error())
 		return -20;
 
-        for (int i = 0; i < parse.optionsCount(); ++i)
+	///read config file first.
+ 	for (int i = 0; i < parse.optionsCount(); ++i)
+	{
+		option::Option& opt = buffer[i];
+		if(opt.index() == CONFIG )
+			configFilename = string(opt.arg);
+	}
+    if (configFilename.compare(string("")) == 0)
+		configFilename = "miracle.config";
+
+	config.readFromFile(configFilename);
+
+	for (int i = 0; i < parse.optionsCount(); ++i)
 	{
 		option::Option& opt = buffer[i];
 		fprintf(stdout, "Argument #%d name %s is #%s\n", i, opt.desc->longopt, opt.arg );
 		switch (opt.index())
 		{
-			case CONFIG:
-				configFilename = string(opt.arg);
-				config.readFromFile(configFilename);
-				break;
 			case  LAYER_H:
 			case  LAYER_W:
 			case  FILL_ANGLE:
@@ -235,15 +240,16 @@ int newParseArgs( Configuration &config,
 			case  BOTTOM_SLICE_IDX:
 			case  TOP_SLICE_IDX:
 			case  FIRST_Z:
-				configFilename = string(opt.arg);
 				config["slicer"][opt.desc->longopt] = doubleFromCharEqualsStr(opt.arg);;
 				break;
 			case  DEBUG_ME:
 			case  START_GCODE:
 			case  END_GCODE:
 			case  OUT_FILENAME:
-				configFilename = string(opt.arg);
 				config["gcoder"][opt.desc->longopt] = opt.arg;
+				break;
+			case CONFIG:
+				// handled above before other config values
 				break;
 			case HELP:
 			// not possible, because handled further above and exits the program
@@ -272,6 +278,12 @@ int newParseArgs( Configuration &config,
 			exit(-10);
 		}
 	}
+
+	firstSliceIdx = -1;
+	lastSliceIdx = -1;
+	//firstSliceIdx = config["slicer"]["firstSliceIdx"].asInt();
+	//lastSliceIdx = config["slicer"]["lastSliceIdx"].asInt();
+
 
 	//exit(-10);
 	return 0;
@@ -378,7 +390,7 @@ int main(int argc, char *argv[], char *[]) // envp
 		exitUsage(-1);
 
 	string modelFile;
-	string configFileName = "miracle.config";
+	string configFileName = "";
 
     Configuration config;
     try

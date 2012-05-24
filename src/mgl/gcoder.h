@@ -242,10 +242,11 @@ struct GCoderConfig
 {
 	GCoderConfig()
 	:programName("Miracle-Grue"),
-	 versionStr("0.0.1")
-	{}
+	 versionStr("0.0.1"),
+	 root()
+{}
 
-        Json::Value root;
+    Json::Value root;
 
     std::string programName;
     std::string versionStr;

@@ -222,7 +222,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
     if( false == gcoderCfg.root.isMember("footer") )
         gcoderCfg.root["footer"] = "gcoder.footer";
     if( false == gcoderCfg.root.isMember("outline") )
-        gcoderCfg.root["outline"] = "False";
+        gcoderCfg.root["outline"] = "True";
 	if( false == gcoderCfg.root.isMember("insets") )
     	gcoderCfg.root["insets"] = "True";
 	if( false == gcoderCfg.root.isMember("infills") )
