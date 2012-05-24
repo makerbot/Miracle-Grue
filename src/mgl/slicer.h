@@ -21,7 +21,7 @@
 namespace mgl
 {
 
-// Slicer configuration data
+//// Slicer configuration data
 struct SlicerConfig
 {
 	SlicerConfig()
@@ -41,32 +41,37 @@ struct SlicerConfig
 	 gridSpacingMultiplier(0.95)
 	{}
 
-	Scalar layerH;
-	Scalar firstLayerZ;
-	Scalar tubeSpacing;
-	Scalar angle;
-	unsigned int nbOfShells;
-	Scalar layerW;
-	Scalar infillShrinkingMultiplier;
-	Scalar insetDistanceMultiplier;
-	Scalar insetCuttOffMultiplier;
-	bool writeDebugScadFiles;
+	Scalar layerH; //< z height of layers 1+ 9(mm)
+	Scalar firstLayerZ; //< z height of 0th layer (mm)
+	Scalar tubeSpacing; //< distance in between infill (mm)
+	Scalar angle;	//< angle of infill
+	unsigned int nbOfShells; //< shell count of model
+	Scalar layerW; //< TBD
+	Scalar infillShrinkingMultiplier; //< TBD
+	Scalar insetDistanceMultiplier; //< TBD
+	Scalar insetCuttOffMultiplier; //< TBD
+	bool writeDebugScadFiles; //< true if we want to output debug scad files
 
-	unsigned int roofLayerCount;
-	unsigned int floorLayerCount;
-        //unsigned int infillSkipCount;
-	double infillDensity;
-	Scalar gridSpacingMultiplier;
+	unsigned int roofLayerCount; //< TBD
+	unsigned int floorLayerCount; //< TBD
+	//unsigned int infillSkipCount; //< TBD
+	double infillDensity; //< TBD
+	Scalar gridSpacingMultiplier; //< TBD
 };
 
 struct LayerConfig
 {
-	Scalar firstLayerZ;
-	Scalar layerH;
-	Scalar layerW;
-	Scalar gridSpacingMultiplier;
+	Scalar firstLayerZ; //z height of 0th layer(mm)
+	Scalar layerH; //z height of 1+ layer (mm)
+	Scalar layerW; // width of layer (mm)
+	Scalar gridSpacingMultiplier; /// TBD:w
 };
 
+///
+/// Structure to contain model-wide slicing data used to generate regions of
+/// infill, etc.  All of the outlines of the model for every slice,
+/// slicer output.
+///
 struct Tomograph
 {
 	Tomograph():layerMeasure(0,0){}
@@ -76,16 +81,26 @@ struct Tomograph
 	LayerMeasure layerMeasure;
 };
 
+
+/// This class contains the slice processes that are run on
+/// input
 class Slicer : public Progressive
 {
 	LayerConfig layerCfg;
 
 public:
+	/// Constructor for a slicer
+	/// @param slicerCfg slicer config!
+	/// @param progress Optional Progress Bar
 	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress =NULL);
+
+	/// TBD
 	void tomographyze( const char* modelFile, Tomograph &tomograph);
 
+	/// TBD
     void outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments);
 
+	/// TBD
 	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments,
 			Scalar tol, libthing::SegmentTable & segments);
 };

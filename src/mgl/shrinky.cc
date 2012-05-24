@@ -932,12 +932,13 @@ void createShells( const SegmentVector & outlinesSegments,
 	}
 }
 
+//// creates shells from the segments table
+////
 void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
-										   const std::vector<Scalar> &insetDistances,
-										   unsigned int sliceId,
-										   const char *scadFile,
-										   bool writeDebugScadFiles,
-										   std::vector<SegmentVector> & insetsForLoops)
+		const std::vector<Scalar> &insetDistances,
+		unsigned int sliceId,
+		const char *scadFile,
+		std::vector<SegmentVector> & insetsForLoops)
 
 {
 	assert(insetsForLoops.size() ==0);
@@ -975,7 +976,7 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegment
 			}
 			catch(ShrinkyException &messup)
 			{
-				if(writeDebugScadFiles)
+				if(scadFile != 0x00)
 				{
 					static int counter =0;
                     Log::often() << endl;

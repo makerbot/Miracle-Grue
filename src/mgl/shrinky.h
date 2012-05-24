@@ -62,17 +62,17 @@ public:
 
 
 	void inset(const std::vector<libthing::LineSegment2> & segments,
-								Scalar insetDist,
-									std::vector<libthing::LineSegment2> & finalInsets);
+			Scalar insetDist,
+			std::vector<libthing::LineSegment2> & finalInsets);
 
 	~Shrinky();
 
 private:
 	Scalar insetStep(const std::vector<libthing::LineSegment2> & segments,
-							Scalar insetDist,
-								Scalar cutoffLength,
-								bool writeThisStep,
-									std::vector<libthing::LineSegment2> & finalInsets);
+			Scalar insetDist,
+			Scalar cutoffLength,
+			bool writeThisStep,
+			std::vector<libthing::LineSegment2> & finalInsets);
 };
 
 /// uses a Straight Skeleton algorithm to 'shrink' the outlines to create
@@ -84,11 +84,10 @@ private:
 /// and nbOffShels insets)
 ///
 void createShellsForSliceUsingShrinky(const libthing::SegmentVector & 	outlinesSegments,
-									  const std::vector<Scalar> &insetDistances,
-									  unsigned int sliceId,
-									  const char *scadFile,
-									  bool writeDebugScadFiles,
-									  std::vector<libthing::SegmentVector> & insetsForLoops);
+		const std::vector<Scalar> &insetDistances,
+		unsigned int sliceId,
+		const char *scadFile,
+		std::vector<libthing::SegmentVector> & insetsForLoops);
 
 
 

@@ -19,7 +19,7 @@
 
 
 #define SAMESAME_TOL 1e-6
-#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM 100000000
+#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM 100000000
 
 namespace mgl
 {
@@ -27,6 +27,7 @@ namespace mgl
 class GcoderException : public Exception {	public: GcoderException(const char *msg) :Exception(msg){} };
 
 
+/// Properties of a print platform
 struct Platform
 {
 	Platform():temperature(100),
@@ -44,6 +45,9 @@ struct Platform
     double waitingPositionZ;
 };
 
+/// Properties of an extrusion profile
+/// an extruder may have multiple extrusion profiles
+/// EG: large, fast, 'first layer'
 struct Extrusion
 {
 	Extrusion()
@@ -81,6 +85,8 @@ struct Extrusion
 	double squirtFeedrate;
 };
 
+
+/// Properties common to a single hardware extruder
 struct Extruder
 {
 	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
@@ -118,8 +124,8 @@ struct Extruder
 };
 
 
-// a gantry has a purpose,
-// or at least a position in space, feed rate and other state that
+/// a gantry covers functions of the printer frame,
+/// contains the state of x,y,z, feed rate and other state that
 // change as the print happens.
 struct Gantry
 {
@@ -139,11 +145,10 @@ public:
 	double scalingFactor;
 	char ab;
 
-
 	Gantry()
-		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
-		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM),
+		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
+		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
+		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
 		 a(0),
          b(0),
 		 feed(0),
@@ -163,17 +168,15 @@ public:
 
 
 public:
-	// emits a g1 command
+
+	/// writes g1 motion command to gcode output stream
+	/// TODO: make this lower level function private.
 	void g1Motion(std::ostream &ss,
-				  double x,
-				  double y,
-				  double z,
+				  double x, double y, double z,
 				  double e,
 				  double feed,
 				  const char *comment,
-				  bool doX,
-				  bool doY,
-				  bool doZ,
+				  bool doX, bool doY, bool doZ,
 				  bool doE,
 				  bool doFeed);
 
@@ -185,7 +188,8 @@ public:
 
     void writeSwitchExtruder(std::ostream& ss, Extruder &extruder);
 
-	// emits a g1 command to the stream, only writing the parameters that have changed since the last g1.
+	/// public method emits a g1 command to the stream,
+    /// only writing the parameters that have changed since the last g1.
 	void g1(std::ostream &ss,
 			const Extruder *extruder,
 			const Extrusion *extrusion,
@@ -195,7 +199,7 @@ public:
 			double feed,
 			const char *comment);
 
-	//overloaded methods to make interface simpler
+	/// g1 public overloaded methods to make interface simpler
 	void g1(std::ostream &ss,
 			double x,
 			double y,
@@ -205,6 +209,7 @@ public:
 		g1(ss, NULL, NULL, x, y, z, feed, comment);
 	};
 
+	/// g1 public overloaded methods to make interface simpler
 	void g1(std::ostream &ss,
 			const Extruder &extruder,
 			const Extrusion &extrusion,
@@ -222,12 +227,18 @@ public:
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
 						 libthing::LineSegment2 &segment) const;
 
+	/// get axis value of the current extruder in(mm)
+	/// (aka mm of feedstock since the last reset this print)
 	Scalar getCurrentE() const { if (ab == 'A') return a; else return b; };
+
+	/// set axis value of the current extruder in(mm)
+	/// (aka mm of feedstock since the last reset this print)
 	void setCurrentE(Scalar e) { if (ab == 'A') a = e; else b = e; };
 };
 
 
-// a line around the print
+//// a line around the print used as a print 'skirt'
+///
 struct Outline
 {
 	Outline() :enabled(false), distance(3.0){}
@@ -240,11 +251,11 @@ struct Outline
 
 struct GCoderConfig
 {
-	GCoderConfig()
-	:programName("Miracle-Grue"),
-	 versionStr("0.0.1")
+	GCoderConfig():
+	 programName(GRUE_PROGRAM_NAME),
+	 versionStr(GRUE_VERSION)
+	{}
 
-{}
 
 
     std::string programName;
@@ -286,24 +297,47 @@ public:
 
         GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL)
             :Progressive(progress), gcoderCfg(gCoderCfg)
-	{
-	}
+{}
 
 
-
-    void moveZ( std::ostream & ss, double z, unsigned int  extruderId, double zFeedrate);
+        /// shortcut for doing a G1 that only move Z
+        void moveZ( std::ostream & ss, double z,
+        		unsigned int  extruderId, double zFeedrate);
 
 public:
+        /// top level entry point for writing a gcode file
+        /// @param slices: list of slices to write into a gcode
+        /// @param layerMeasure:  tool to calc layer Z
+        /// @param gout: stream to write gcode to
+        /// @param title: name of the model to write?
+        /// @param firstSliceIdx: starting slice index, -1 if you want the whole model
+        /// @param lastSliceIdx: ending slice index, -1 if you want the whole model
+        void writeGcodeFile(std::vector <SliceData>& slices,
+                            const mgl::LayerMeasure& layerMeasure,
+                            std::ostream &gout,
+    						const char *title,
+    						int firstSliceIdx=-1,
+    						int lastSliceIdx=-1);
 
+    ///  returns extrusionParams set based on the extruder id, and where you
+    /// are in the model
     void calcInfillExtrusion(	unsigned int extruderId, unsigned int sliceId,
     								Extrusion &extrusionParams) const;
+
+    ///  returns extrusionParams set based on the extruder id, and where you
+    /// are in the model
     void calcInSetExtrusion (	unsigned int extruderId, unsigned int sliceId,
     								unsigned int insetId,	 unsigned int insetCount,
     								Extrusion &extrusionParams) const;
 
-    void writeStartOfFile(std::ostream & ss, const char* filename);
+    /// Writes the start.gcode file, otherwise generates a
+    /// start.gcode if needed
+    void writeStartDotGCode(std::ostream & ss, const char* filename);
 
-    void writeGcodeEndOfFile(std::ostream & ss) const;
+    /// Writes the end.gcode file, otherwise generates a
+    /// end.gcode if needed
+    void writeEndDotGCode(std::ostream & ss) const;
+
 
     // todo: return the gCoderCfg instead
     const std::vector<Extruder> & readExtruders() const
@@ -313,12 +347,6 @@ public:
 
     void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
 
-    void writeGcodeFile(std::vector <SliceData>& slices,
-                        const mgl::LayerMeasure& LayerMeasure,
-                        std::ostream &gout,
-                            const char *title,
-                                int firstSliceIdx=-1,
-                                    int lastSliceIdx=-1);
 private:
 
     void writeGCodeConfig(std::ostream & ss, const char* filename) const;

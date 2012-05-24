@@ -178,8 +178,8 @@ void GCoderTestCase::testSingleExtruder()
 
 
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME);
-	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_FILE_NAME);
-	gcoder.writeGcodeEndOfFile(gout);
+	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_FILE_NAME);
+	gcoder.writeEndDotGCode(gout);
 
 
 	// verify that gcode file has been generated
@@ -210,9 +210,9 @@ void GCoderTestCase::testDualExtruders()
 //	loadGCoderData(config, gcoder);
 	GCoder gcoder(gcoderCfg);
 
-	gcoder.writeStartOfFile(gout, DUAL_EXTRUDER_FILE_NAME );
+	gcoder.writeStartDotGCode(gout, DUAL_EXTRUDER_FILE_NAME );
 	dbg__
-	gcoder.writeGcodeEndOfFile(gout);
+	gcoder.writeEndDotGCode(gout);
 	dbg__
 	CPPUNIT_ASSERT( ifstream(DUAL_EXTRUDER_FILE_NAME) );
 	dbg__
@@ -247,8 +247,8 @@ void GCoderTestCase::testSimplePath()
 
 	GCoder gcoder(gcoderCfg);
 
-	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_WITH_PATH);
-	gcoder.writeGcodeEndOfFile(gout);
+	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_WITH_PATH);
+	gcoder.writeEndDotGCode(gout);
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
@@ -258,7 +258,7 @@ void GCoderTestCase::testSimplePath()
 		gcoder.writeSlice(gout, slice);
 	}
 
-	gcoder.writeGcodeEndOfFile(gout);
+	gcoder.writeEndDotGCode(gout);
 	gout.close();
 
 	// verify that gcode file has been generated
@@ -437,7 +437,7 @@ void GCoderTestCase::testGridPath()
 
 	GCoder gcoder(gcoderCfg);
 
-	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_GRID_PATH);
+	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_GRID_PATH);
 	for(int i = 0; i < slices.size(); i++)
 	{
     	cout.flush();
@@ -447,7 +447,7 @@ void GCoderTestCase::testGridPath()
 		gcoder.writeSlice(gout, slice);
 	}
 
-	gcoder.writeGcodeEndOfFile(gout);
+	gcoder.writeEndDotGCode(gout);
 	gout.close();
 
 	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_WITH_PATH) );
@@ -501,7 +501,7 @@ void GCoderTestCase::testMultiGrid()
 	GCoder gcoder(gcoderCfg);
 
 	// loadGCoderData(config, gcoder);
-	gcoder.writeStartOfFile(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
+	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
 
 	for(int i = 0; i < slices.size(); i++)
 	{
@@ -512,7 +512,7 @@ void GCoderTestCase::testMultiGrid()
 		gcoder.writeSlice(gout, slice);
 	}
 
-	gcoder.writeGcodeEndOfFile(gout);
+	gcoder.writeEndDotGCode(gout);
 	gout.close();
 
 

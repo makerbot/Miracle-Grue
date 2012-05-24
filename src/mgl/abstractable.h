@@ -132,16 +132,17 @@ public:
 
 };
 
-// used as a base class to provide
-// optional progress bar support
-//
-// This is used for top level operations
-// that take time (Pather, Gcoder, Slicer)
+/// used as a base class to provide progress bar support
+///
+/// This is used for top level operations that take time (Pather, Gcoder, Slicer)
+/// and need to report progress
 class Progressive
 {
-    ProgressBar *progress;
+
+	ProgressBar *progress;
 public:
-    Progressive(ProgressBar *progress = NULL)
+
+	Progressive(ProgressBar *progress = NULL)
     {
         setProgress(progress);
     }

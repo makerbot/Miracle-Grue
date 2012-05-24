@@ -12,7 +12,7 @@
 
 
 #ifndef REGIONER_H_
-#define REGIONER_H_
+#define REGIONER_H_ (1)
 
 #include "slicer.h"
 
@@ -41,17 +41,22 @@ struct Regions
 
 
 
-
+//// Class to calculate regions of a model
+///
 class Regioner : public Progressive
 {
+
+
 	Scalar roofLengthCutOff;
 public:
 	SlicerConfig slicerCfg;
+
 
 	Regioner(const SlicerConfig &slicerCfg,
 				ProgressBar *progress = NULL);
 
 	void generateSkeleton(const Tomograph &tomograph , Regions &regions);
+
 	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
 	    					libthing::Insets &sliceInsets,
 	    					const char*scadFile=NULL);

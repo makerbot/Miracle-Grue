@@ -205,7 +205,7 @@ void GCoder::writeWarmupSequence(std::ostream &ss)
  * @param gout - output stream for the gcode text
  * @param sourceName - source of this gcode (usually the origional stl file)
  */
-void GCoder::writeStartOfFile(std::ostream &gout, const char* sourceName)
+void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName)
 {
 	gout.precision(3);
 	gout.setf(ios::fixed);
@@ -246,7 +246,7 @@ void GCoder::writeStartOfFile(std::ostream &gout, const char* sourceName)
 	}
 }
 
-void GCoder::writeGcodeEndOfFile(std::ostream &ss) const
+void GCoder::writeEndDotGCode(std::ostream &ss) const
 {
     const string &footer_file = gcoderCfg.footer;
 
@@ -442,7 +442,7 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
                                         int iFirstSliceIdx,
                                             int iLastSliceIdx)
 {
-    writeStartOfFile(gout, title);
+    writeStartDotGCode(gout, title);
 
     size_t sliceCount = slices.size();
     size_t firstSliceIdx = 0;
@@ -467,7 +467,7 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
         codeSlice ++;
     }
 
-	writeGcodeEndOfFile(gout);
+	writeEndDotGCode(gout);
 }
 
 void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
@@ -525,11 +525,11 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		try
 		{
 
-          if( gcoderCfg.doOutlines )
+			if(gcoderCfg.doOutlines)
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
-                                //Log::often()  << "   Write OUTLINE" << endl;
+								//Log::often()  << "   Write OUTLINE" << endl;
 				ss << "(outlines: " << loops.size() << " )"<< endl;
 				writePolygons(ss, z, extruder, extrusion, loops);
 			}
@@ -734,9 +734,9 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z, double e,
 
 	// our moto: don't be bad!
 	bool bad = false;
-	if(fabs(x) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
-	if(fabs(y) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
-	if(fabs(z) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM) bad = true;
+	if(fabs(x) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if(fabs(y) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if(fabs(z) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
 	if(feed <= 0 || feed > 100000) bad = true;
 
 	if(bad)

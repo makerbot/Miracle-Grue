@@ -155,36 +155,40 @@ void ClipperInsetter::inset( const SegmentVector &inputPolys,
 }
 
 bool useShrinky = false;
-// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
+
+/// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
 // and counter clockwise for holes)
-// b) creates nbOfShells insets for each
-// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
-// and nbOffShels insets)
-//
-void mgl::inshelligence( const SegmentTable & outlinesSegments,
-					unsigned int nbOfShells,
-					double layerW,
+/// b) creates nbOfShells insets for each
+/// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
+/// and nbOffShels insets)
+///
+/// @param inOutlineSegments : segment table used for shell section lookup.
+/// @param nShells : number of shells to generate
+/// @param layerW : width of extrusion of layer
+///	@param insetDistanceFactor : TBD
+/// @param scanFile : debug openScad file
+/// @param writeDebugScadFiles : true/false if we want to write scad files
+/// @param insetsForLoops : vector of TBD
+void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
+					const unsigned int nShells,
+					const double layerW,
 					//unsigned int sliceId,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
 					bool writeDebugScadFiles,
 					Insets &insetsForLoops)
 {
-	//assert(innerOutlinesSegments.size() == 0);
+
 
 	std::vector<Scalar> insetDistances;
-	insetDistances.reserve(nbOfShells);
-	for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+	insetDistances.reserve(nShells);
+	for (unsigned int shellId=0; shellId < nShells; shellId++)
 	{
-                Scalar insetDistance;
-                if(shellId ==0)
-                {
-                    insetDistance = 0.5*layerW;
-                }
-                else
-                {
-                    insetDistance = insetDistanceFactor *layerW;
-                }
+		Scalar insetDistance;
+		if(shellId ==0)
+			insetDistance = 0.5*layerW;
+		else
+			insetDistance = insetDistanceFactor *layerW;
 		insetDistances.push_back(insetDistance);
 	}
 
@@ -199,7 +203,7 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 			SegmentTable & outputs = *insetsForLoops.rbegin();
 			if(i==0)
 			{
-				insetter.inset(outlinesSegments, dist, outputs);
+				insetter.inset(inOutlinesSegments, dist, outputs);
 			}
 			else
 			{
@@ -211,20 +215,19 @@ void mgl::inshelligence( const SegmentTable & outlinesSegments,
 	}
 	else
 	{
-		createShellsForSliceUsingShrinky(	outlinesSegments,
-											insetDistances,
-											0,//sliceId,
-											scadFile,
-											writeDebugScadFiles,
-											insetsForLoops);
+		createShellsForSliceUsingShrinky(	inOutlinesSegments,
+				insetDistances,
+				0,//sliceId,
+				scadFile,
+				insetsForLoops);
 
-		unsigned int loopCount = outlinesSegments.size();
+		unsigned int loopCount = inOutlinesSegments.size();
 		for (unsigned int loop = 0; loop < loopCount; loop++)
 		{
 			// const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
 
-                        int lastKnownShell = -1;
-			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
+			int lastKnownShell = -1;
+			for (unsigned int shellId=0; shellId < nShells; shellId++)
 			{
 				const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
 				const vector<LineSegment2> &segmentsForLoop = loopsForCurrentShell[loop];
