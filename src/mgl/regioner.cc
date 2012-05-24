@@ -27,15 +27,10 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 void Regioner::generateSkeleton(const Tomograph &tomograph , Regions &regions)
 {
 
-
 	insets(tomograph.outlines, regions.insets);
-
 	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
-
 	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
-
 	flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
-
 	infills( regions.flatSurfaces,
 			tomograph.grid,
 					regions.roofings,
@@ -197,26 +192,26 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 	{
 		const GridRanges &surface = flatSurfaces[i];
 		tick();
-		{
-			const GridRanges &surface = flatSurfaces[i];
-			const GridRanges &roofing = roofings[i];
-			const GridRanges &flooring = floorings[i];
-			GridRanges sparseInfill;
-
-			size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
-			grid.subSample(surface, infillSkipCount, sparseInfill);
-
-			GridRanges roofed;
-			grid.gridRangeUnion(sparseInfill, roofing, roofed);
-			GridRanges &infill = infills[i];
-			grid.gridRangeUnion(roofed, flooring, infill);
-		}
+//		{
+//			const GridRanges &surface = flatSurfaces[i];
+//			const GridRanges &roofing = roofings[i];
+//			const GridRanges &flooring = floorings[i];
+//			GridRanges sparseInfill;
+//
+//			size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
+//			grid.subSample(surface, infillSkipCount, sparseInfill);
+//
+//			GridRanges roofed;
+//			grid.gridRangeUnion(sparseInfill, roofing, roofed);
+//			GridRanges &infill = infills[i];
+//			grid.gridRangeUnion(roofed, flooring, infill);
+//		}
 
 		// Solids
-		GridRanges solid;
+		GridRanges combinedSolid;
 
-		solid.xRays.resize(surface.xRays.size());
-		solid.yRays.resize(surface.yRays.size());
+		combinedSolid.xRays.resize(surface.xRays.size());
+		combinedSolid.yRays.resize(surface.yRays.size());
 
 		size_t firstFloor = 0;
 		int f = i - this->slicerCfg.floorLayerCount;
@@ -232,22 +227,35 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 			GridRanges multiFloor;
 			//cout << j << ", ";
 			const GridRanges &floor = floorings[j];
-			grid.gridRangeUnion(solid, floor, multiFloor);
-			solid = multiFloor;
+			grid.gridRangeUnion(combinedSolid, floor, multiFloor);
+			combinedSolid = multiFloor;
 		}
 		//cout << "), roof(";
 		for (size_t j = i; j <= lastRoof; j++)
 		{
 			GridRanges multiRoof;
 			const GridRanges &roofing = roofings[j];
-			grid.gridRangeUnion(solid, roofing, multiRoof);
+			grid.gridRangeUnion(combinedSolid, roofing, multiRoof);
 			//cout << j << ", ";
-			solid = multiRoof;
+			combinedSolid = multiRoof;
 		}
-		// solid = flooring;
-		//cout << ") )" << endl;
 
-		solids[i] = solid;
+		// solid now contains the combination of combinedSolid regions from
+		// multiple slices. We need to extract the perimeter from it
+
+		GridRanges& solid = solids[i];
+		grid.gridRangeIntersection(surface, combinedSolid, solid);
+
+		// solid = combinedSolid;
+		// solids[i] = solid;
+
+		// todo move me to the slicer
+		GridRanges sparseInfill;
+		size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
+		grid.subSample(surface, infillSkipCount, sparseInfill);
+
+		GridRanges &infill = infills[i];
+		grid.gridRangeUnion(solid, sparseInfill, infill);
 
 		GridRanges &sparse = sparses[i];
 		sparse = infills[i];

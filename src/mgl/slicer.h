@@ -35,8 +35,8 @@ struct SlicerConfig
 	 insetDistanceMultiplier(0.9),
 	 insetCuttOffMultiplier(0.01),
 	 writeDebugScadFiles(false),
-	 roofLayerCount(1),
-	 floorLayerCount(1),
+	 roofLayerCount(3),
+	 floorLayerCount(3),
          // infillSkipCount(2),
 	 gridSpacingMultiplier(0.95)
 	{}
@@ -52,11 +52,11 @@ struct SlicerConfig
 	Scalar insetCuttOffMultiplier; //< TBD
 	bool writeDebugScadFiles; //< true if we want to output debug scad files
 
-	unsigned int roofLayerCount; //< TBD
-	unsigned int floorLayerCount; //< TBD
+	unsigned int roofLayerCount; // number of solid layers for roofs
+	unsigned int floorLayerCount; // number of solid layers for floors
 	//unsigned int infillSkipCount; //< TBD
-	double infillDensity; //< TBD
-	Scalar gridSpacingMultiplier; //< TBD
+	double infillDensity; // the density of the infill patterns (0 to 1)
+	Scalar gridSpacingMultiplier; // interference between 2 grid lines ( 0 to 1, for adhesion)
 };
 
 struct LayerConfig
