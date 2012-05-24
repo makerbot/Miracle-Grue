@@ -172,7 +172,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		throw mixup;
         return;
 	}
-
+//
 	int x = conf.root["extruders"].size();
 	unsigned int extruderCount = (unsigned int)x;
 	for(unsigned int i=0; i < extruderCount; i++)
@@ -216,13 +216,21 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-	gcoderCfg.gcoding.header = stringCheck(conf.root["gcoder"]["header"], "gcoder.header");
-	gcoderCfg.gcoding.footer = stringCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
-	gcoderCfg.gcoding.outline = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
-	gcoderCfg.gcoding.insets  = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
-	gcoderCfg.gcoding.infills = boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
-	gcoderCfg.gcoding.infillFirst = boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
-	gcoderCfg.gcoding.dualtrick   = boolCheck(conf.root["gcoder"]["dualtrick"], "gcoder.dualtrick");
+    gcoderCfg.root = conf.root["gcoder"];
+    if( false == gcoderCfg.root.isMember("header") )
+        gcoderCfg.root["header"] = "gcoder.header";
+    if( false == gcoderCfg.root.isMember("footer") )
+        gcoderCfg.root["footer"] = "gcoder.footer";
+    if( false == gcoderCfg.root.isMember("outline") )
+        gcoderCfg.root["outline"] = "False";
+	if( false == gcoderCfg.root.isMember("insets") )
+    	gcoderCfg.root["insets"] = "True";
+	if( false == gcoderCfg.root.isMember("infills") )
+    	gcoderCfg.root["infills"] = "True";
+	if( false == gcoderCfg.root.isMember("infillFirst") )
+    	gcoderCfg.root["infillFirst"] = "False";
+	if( false == gcoderCfg.root.isMember("dualtrick") )
+    	gcoderCfg.root["dualtrick"] = "False";
 }
 
 void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicerCfg)
