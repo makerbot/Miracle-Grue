@@ -21,77 +21,11 @@
 #include "mgl/miracle.h"
 
 #include "libthing/Vector2.h"
-#include <clpp/parser.hpp>
-
 #include "optionparser.h"
 
 
 using namespace std;
 using namespace mgl;
-
-
-int intFromCharEqualsStr(const std::string& str)
-{
-	string nb = str.substr(2, str.length()-2);
-	int val = atoi(nb.c_str());
-	return val;
-}
-
-double doubleFromCharEqualsStr(const std::string& str)
-{
-	string nb = str.substr(2, str.length()-2);
-	double val = atof(nb.c_str());
-	return val;
-}
-
-class ConfigSetter {
-	typedef enum {NONE, INT, STR, DBL, BOOL} configtype;
-public:
-	ConfigSetter(Configuration &c, const char *s, const char *n):
-		config(c), section(s), name(n), set(NONE) {
-	};
-	void set_s(const string val) {
-		sval = val;
-		set = STR;
-	};
-	void set_d(const double val) {
-		dval = val;
-		set = DBL;
-	};
-	void set_i(const int val) {
-		ival = val;
-		set = INT;
-	};
-	void set_b() {
-		set = BOOL;
-	};
-
-	~ConfigSetter() {
-		if (set == NONE)
-			return;
-
-		if (set == INT) {
-			config[section][name] = ival;
-		}
-		else if (set == DBL) {
-			config[section][name] = dval;
-		}
-		else if (set == STR) {
-			config[section][name] = sval;
-		}
-		else if (set == BOOL) {
-			config[section][name] = true;
-		}
-	};
-private:
-	Configuration &config;
-	const char *section;
-	const char *name;
-	configtype set;
-	string sval;
-	double dval;
-	int ival;
-};
 
 
 struct Arg: public option::Arg
@@ -127,10 +61,12 @@ struct Arg: public option::Arg
     return option::ARG_ILLEGAL;
   }
 
+
+
   static option::ArgStatus Numeric(const option::Option& option, bool msg)
   {
     char* endptr = 0;
-    if (option.arg != 0 && strtol(option.arg, &endptr, 10)){};
+    if (option.arg != 0 && strtod(option.arg, &endptr)){};
     if (endptr != option.arg && *endptr == 0)
       return option::ARG_OK;
 
@@ -157,8 +93,8 @@ const option::Descriptor usageDescriptor[] =
 		"  -w \tlayer width(mm)" },
 { FILL_ANGLE, 5, "a","angle", Arg::Numeric,
 		"  -a \tinfill grid inter slice angle(radians)" },
-{ FILL_DENSITY, 6, "d", "density", Arg::Numeric,
-		"  -d \tapprox infill density(percent)" },
+{ FILL_DENSITY, 6, "p", "density", Arg::Numeric,
+		"  -p \tapprox infill density(percent), aka rho aka p" },
 { N_SHELLS, 	7, "n", "nShells", Arg::Numeric,
 		"  -n \tnumber of shells per layer" },
 { BOTTOM_SLICE_IDX, 8, "b", "bottomIdx", Arg::Numeric,
@@ -219,6 +155,10 @@ int newParseArgs( Configuration &config,
 		option::Option& opt = buffer[i];
 		if(opt.index() == CONFIG )
 			configFilename = string(opt.arg);
+		if(opt.index() == HELP ) {
+			usage();
+			exit(0);
+		}
 	}
     if (configFilename.compare(string("")) == 0)
 		configFilename = "miracle.config";
@@ -239,7 +179,7 @@ int newParseArgs( Configuration &config,
 			case  BOTTOM_SLICE_IDX:
 			case  TOP_SLICE_IDX:
 			case  FIRST_Z:
-				config["slicer"][opt.desc->longopt] = doubleFromCharEqualsStr(opt.arg);;
+				config["slicer"][opt.desc->longopt] = atof(opt.arg);;
 				break;
 			case  DEBUG_ME:
 			case  START_GCODE:
@@ -281,93 +221,14 @@ int newParseArgs( Configuration &config,
 
 	firstSliceIdx = -1;
 	lastSliceIdx = -1;
-	//firstSliceIdx = config["slicer"]["firstSliceIdx"].asInt();
-	//lastSliceIdx = config["slicer"]["lastSliceIdx"].asInt();
 
+	// [programName] and [versionStr] are always hard-code overwritten
+	config["programName"] = GRUE_PROGRAM_NAME;
+	config["versionStr"] = GRUE_VERSION;
 
+	config["firmware"] = "unknown";
 	//exit(-10);
 	return 0;
-}
-
-void parseArgs( Configuration &config,
-				int argc,
-				char *argv[],
-				string &modelFile,
-				string &, // configFileName,
-				int &firstSliceIdx,
-				int &lastSliceIdx)
-{
-	firstSliceIdx = -1;
-	lastSliceIdx = -1;
-
-	//first get the config parameter and parse the file so that other params can override the
-	//config
-	try {
-		clpp::command_line_parameters_parser parser;
-
-		parser.add_parameter("-h", "--help", &exitUsage);
-
-		parser.add_parameter("-c", "--config", &config, &Configuration::readFromFile)
-			.default_value("miracle.config");
-
-		ConfigSetter f(config, "slicer", "firstLayerZ");
-		parser.add_parameter("-f", "--firstLayerZ", &f, &ConfigSetter::set_d);
-
-		ConfigSetter l(config, "slicer", "layerH");
-		parser.add_parameter("-l", "--layerH", &l, &ConfigSetter::set_d);
-
-		ConfigSetter w(config, "slicer", "layerW");
-		parser.add_parameter("-w", "--layerW", &w, &ConfigSetter::set_d);
-
-		ConfigSetter t(config, "slicer", "tubeSpacing");
-		parser.add_parameter("-t", "--tubeSpacing", &t, &ConfigSetter::set_d);
-
-		ConfigSetter a(config, "slicer", "angle");
-		parser.add_parameter("-a", "--angle", &a, &ConfigSetter::set_d);
-
-		ConfigSetter s(config, "slicer", "nbOfShells");
-		parser.add_parameter("-s", "--nbOfShells", &s, &ConfigSetter::set_d);
-
-		ConfigSetter d(config, "slicer", "writeDebugScadFiles");
-		parser.add_parameter("-d", "--writeDebug", &d, &ConfigSetter::set_b);
-
-		ConfigSetter n(config, "slicer", "firstSliceIdx");
-		parser.add_parameter("-n", "--firstSliceIdx", &n, &ConfigSetter::set_i);
-
-		ConfigSetter m(config, "slicer", "lastSliceIdx");
-		parser.add_parameter("-m", "--lastSliceIdx", &m, &ConfigSetter::set_i)
-			.default_value(-1);
-
-		ConfigSetter b(config, "gcoder", "header");
-		parser.add_parameter("-b", "--header", &b, &ConfigSetter::set_s);
-
-		ConfigSetter e(config, "gcoder", "footer");
-		parser.add_parameter("-e", "--footer", &e, &ConfigSetter::set_s);
-
-		ConfigSetter o(config, "gcoder", "outputFilename");
-		parser.add_parameter("-o", "--outputFilename",
-							 &o, &ConfigSetter::set_s);
-
-		parser.parse(argc - 1, argv);
-	}
-	catch (std::exception &exp) {
-		usage();
-		throw mgl::Exception(exp.what());
-	}
-	catch (mgl::Exception &exp) {
-		usage();
-		throw exp;
-	}
-
-	firstSliceIdx = config["slicer"]["firstSliceIdx"].asInt();
-	lastSliceIdx = config["slicer"]["lastSliceIdx"].asInt();
-
-	//handle the unnamed parameter separately
-	modelFile = argv[argc  - 1];
-	if (!boost::filesystem::is_regular_file(modelFile)) {
-		usage();
-		throw mgl::Exception(("Invalid model file [" + modelFile + "]").c_str());
-	}
 }
 
 
@@ -398,7 +259,12 @@ int main(int argc, char *argv[], char *[]) // envp
 		int firstSliceIdx, lastSliceIdx;
 
 		//parseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
-		newParseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
+		int ret = newParseArgs(config, argc, argv, modelFile, configFileName, firstSliceIdx, lastSliceIdx);
+
+		if(ret != 0){
+			usage();
+			exit(ret);
+		}
 
 		// cout << config.asJson() << endl;
 

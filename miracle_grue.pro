@@ -25,11 +25,10 @@ include($$JSON_CPP_SRC/json-cpp.pro.inc)
 OPTIONPARSER_BASE = submodule/optionparser
 include($$OPTIONPARSER_BASE/optionparser.pro.inc)
 
-INCLUDEPATH += src \
-    submodule/clp-parser
-DEPENDPATH += src \
-    submodule/clp-parser
-
+//INCLUDEPATH += src \
+//    submodule/clp-parser
+//DEPENDPATH += src \
+//    submodule/clp-parser
 
 SOURCES +=  src/miracle_grue.cc
 
