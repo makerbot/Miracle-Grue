@@ -7,9 +7,6 @@
 [submodule "submodule/toolpathviz"]
 	path = submodule/toolpathviz
 	url = git@github.com:makerbot/ToolPathViz.git
-[submodule "submodule/clp-parser"]
-	path = submodule/clp-parser
-	url = git://github.com/makerbot/clp-parser.git
 [submodule "submodule/libthing"]
 	path = submodule/libthing
 	url = git@github.com:makerbot/libthing.git
