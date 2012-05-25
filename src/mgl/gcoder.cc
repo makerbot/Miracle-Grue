@@ -491,7 +491,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-                    Log::often() << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::info() << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
 	  	ss << "(   Extruder " <<  extruderId << ")" << endl;
@@ -517,8 +517,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-                    Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-                    Log::error() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::info() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::severe() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 		/// Write outlines? outlines == skirt
 		try
@@ -535,8 +535,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-                    Log::often()  << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-                    Log::error() << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::info()  << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                    Log::severe() << "ERROR writing loops in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
                     cerr << mixup.error << endl;
 		}
 
@@ -560,7 +560,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-                        Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                        Log::info() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 
@@ -577,7 +577,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-                        Log::often() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+                        Log::info() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 			cerr << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 

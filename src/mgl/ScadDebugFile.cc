@@ -19,7 +19,7 @@ void ScadDebugFile::open(const char* path)
 		stringstream ss;
 		ss << "Can't open \"" << filename.c_str() << "\"";
 		string tmp = ss.str();
-        Log::often() << "ERROR: " << tmp << endl;
+        Log::info() << "ERROR: " << tmp << endl;
 		ScadException problem(ss.str().c_str());
 		throw (problem);
 	}

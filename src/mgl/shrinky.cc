@@ -35,7 +35,7 @@ void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
         // Log::often() << msg << " seg[" << i << "] = " << seg << " l=" << l << endl;
 		if(!( l > 0 ) )
 		{
-            Log::often() << "Z";
+            Log::info() << "Z";
 			stringstream ss;
 			ss << msg << " Zero length: segment[" << i << "] = " << seg << endl;
 			ScadDebugFile::segment3(ss,"","segments", segments, 0, 0.1);
@@ -69,7 +69,7 @@ void connectivityCheck( const std::vector<LineSegment2> &segments,
 			ss << " Distance between segments " << dist.magnitude();
 
 			ss << endl;
-            Log::often() << "C";
+            Log::info() << "C";
             // Log::often() << "|" << dist.magnitude() << "|" << prevSeg.length() << "|" << seg.length() << "|";
 			ScadDebugFile::segment3(ss,"","segments", segments, 0, 0.1);
 			ShrinkyException mixup(ss.str().c_str());
@@ -109,7 +109,7 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
         	Scalar distance = d.magnitude();
         	ss << "distance " << distance << endl;
         	ss << "SameSame " << isSameSame << endl;
-            Log::often() << "_C_";
+            Log::info() << "_C_";
         	ShrinkyException mixup(ss.str().c_str());
         	throw mixup;
 
@@ -123,8 +123,8 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
 void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &segments)
 {
 
-    Log::often() << endl << title << endl;
-    Log::often() << "id\tconvex\tlength\tdistance\tangle\ta, b" << endl;
+    Log::info() << endl << title << endl;
+    Log::info() << "id\tconvex\tlength\tdistance\tangle\ta, b" << endl;
 
     for(size_t id = 0; id < segments.size(); id++)
     {
@@ -145,7 +145,7 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &seg
         Scalar angle = d.angleFromPoint2s(i, j, k);
         bool vertex = convexVertex(i,j,k);
 
-        Log::often() << id << "\t" << vertex << "\t" << length << ",\t" << distance << ",\t" <<  angle << "\t" << seg.a << ", " << seg.b <<"\t" << endl;
+        Log::info() << id << "\t" << vertex << "\t" << length << ",\t" << distance << ",\t" <<  angle << "\t" << seg.a << ", " << seg.b <<"\t" << endl;
     }
 }
 
@@ -379,13 +379,13 @@ bool edgeCollapse(const LineSegment2& segment,
 
 void outMap(const std::multimap<Scalar, unsigned int> &collapsingSegments)
 {
-    Log::often() << "collapse distance\tsegment id" << endl;
-    Log::often() << "--------------------------------" << endl;
+    Log::info() << "collapse distance\tsegment id" << endl;
+    Log::info() << "--------------------------------" << endl;
 	for(std::multimap<Scalar, unsigned int>::const_iterator it= collapsingSegments.begin();
 			it != collapsingSegments.end(); it++)
 	{
 		const std::pair<Scalar, unsigned int>& seg = *it;
-        Log::often() << "\t" <<seg.first<< ",\t" << seg.second << endl;
+        Log::info() << "\t" <<seg.first<< ",\t" << seg.second << endl;
 	}
 }
 
@@ -520,20 +520,20 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 
 		if(previousSegment.length()==0)
 		{
-            Log::often() << "X";
+            Log::info() << "X";
 			continue;
 		}
 
 		if(currentSegment.length()==0)
 		{
-            Log::often() << "Y";
+            Log::info() << "Y";
 			continue;
 		}
 
 		bool attached = attachSegments(previousSegment, currentSegment, elongation);
 		if(!attached)
 		{
-            Log::often() << "!";
+            Log::info() << "!";
 			Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
 			previousSegment.b = m;
 			currentSegment.a = m;
@@ -579,7 +579,7 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
 			ss << endl;
 			ScadDebugFile::segment3(ss,"","segments", segments, 0, 0.1);
-            Log::often() << "O";
+            Log::info() << "O";
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 			// assert(0);
@@ -589,7 +589,7 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 			stringstream ss;
 			ss << "Null bisector at segment [" << i << "] position=" << seg.a << endl;
 			ss << " previous_inset=" << prevInset << " inset=" << inset;
-            Log::often() << "N";
+            Log::info() << "N";
 			ShrinkyException mixup(ss.str().c_str());
 			throw mixup;
 		}
@@ -786,7 +786,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	catch(ShrinkyException &mixup)
 	{
 
-            Log::often() <<    mixup.error << endl;
+            Log::info() <<    mixup.error << endl;
 
         // Log::often() << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
 		// this is a lie...  but we want to break the loop
@@ -886,11 +886,11 @@ void createShells( const SegmentVector & outlinesSegments,
 			if(writeDebugScadFiles)
 			{
 				static int counter =0;
-                Log::often() << endl;
-                Log::often() << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
-                Log::often() << "sliceId: " <<  sliceId   << endl;
-                Log::often() << "loopId : " <<  outlineId << endl;
-                Log::often() << "shellId: " <<  currentShellIdForErrorReporting   << endl;
+                Log::info() << endl;
+                Log::info() << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
+                Log::info() << "sliceId: " <<  sliceId   << endl;
+                Log::info() << "loopId : " <<  outlineId << endl;
+                Log::info() << "shellId: " <<  currentShellIdForErrorReporting   << endl;
 
 				stringstream ss;
 				ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
@@ -908,8 +908,8 @@ void createShells( const SegmentVector & outlinesSegments,
 
 
 					vector<LineSegment2> previousInsets  = outlineLoop;
-                                        Log::often() << "Creating file: " << loopScadFile << endl;
-                                        Log::often() << "	Number of points " << (int)previousInsets.size() << endl;
+                                        Log::info() << "Creating file: " << loopScadFile << endl;
+                                        Log::info() << "	Number of points " << (int)previousInsets.size() << endl;
 					ScadDebugFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
 					std::vector<LineSegment2> insets;
 					for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
@@ -923,9 +923,9 @@ void createShells( const SegmentVector & outlinesSegments,
                                 catch(ShrinkyException &) // the same excpetion is thrown again
 				{
 
-                                        Log::often() << "saving " << endl;
+                                        Log::info() << "saving " << endl;
 				}
-                                Log::often() << "--- --- ERROR " << counter << " END --- ----" << endl;
+                                Log::info() << "--- --- ERROR " << counter << " END --- ----" << endl;
 				counter ++;
 			}
 		}
@@ -979,11 +979,11 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegment
 				if(scadFile != 0x00)
 				{
 					static int counter =0;
-                    Log::often() << endl;
-                    Log::often() << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
-                    Log::often() << "sliceId: " <<  sliceId   << endl;
-                    Log::often() << "loopId : " <<  outlineId << endl;
-                    Log::often() << "shellId: " <<  shellId   << endl;
+                    Log::info() << endl;
+                    Log::info() << "----- ------ ERROR " << counter <<" ------ ------"<< endl;
+                    Log::info() << "sliceId: " <<  sliceId   << endl;
+                    Log::info() << "loopId : " <<  outlineId << endl;
+                    Log::info() << "shellId: " <<  shellId   << endl;
 
 					stringstream ss;
 					ss << "_slice_" << sliceId << "_loop_" << outlineId << ".scad";
@@ -1014,9 +1014,9 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegment
                                         catch(ShrinkyException &) // the same excpetion is thrown again
 					{
 
-                                                Log::often() << "saving " << endl;
+                                                Log::info() << "saving " << endl;
 					}
-                                        Log::often() << "--- --- ERROR " << counter << " END --- ----" << endl;
+                                        Log::info() << "--- --- ERROR " << counter << " END --- ----" << endl;
 					counter ++;
 				}
 			}

@@ -477,7 +477,7 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
     	const std::vector<LineSegment2 > &loop = loops[i];
     	if (loop.size() < 2)
     	{
-            Log::often() << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
+            Log::info() << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
     	}
     }
 }

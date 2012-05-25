@@ -23,6 +23,8 @@
 #include "libthing/Vector2.h"
 #include "optionparser.h"
 
+#include "mgl/log.h"
+
 
 using namespace std;
 using namespace mgl;
@@ -103,7 +105,7 @@ const option::Descriptor usageDescriptor[] =
 { TOP_SLICE_IDX, 	9, "t", "topIdx", Arg::Numeric,
 		"  -t \ttop slice index" },
 { DEBUG_ME, 	10, "d", "debug", Arg::Numeric,
-		"  -d \tdebug level" },
+		"  -d \tdebug level, 0 to 99. 60 is 'info'" },
 { START_GCODE, 	11, "s", "header", Arg::NonEmpty,
 		"  -s \tstart gcode file" },
 { END_GCODE, 	12, "e", "footer", Arg::NonEmpty,
@@ -114,6 +116,13 @@ const option::Descriptor usageDescriptor[] =
 };
 
 void usage() {
+
+	Log::severe() <<" test Log::severe " <<endl;
+	Log::info()<<" test Log::info " <<endl;
+	Log::fine() <<" test Log::fine " <<endl;
+	Log::finer() <<" test Log::finer " <<endl;
+	Log::finest() <<" test Log::finest " <<endl;
+
 	cout << endl;
 	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
 	cout << endl;
@@ -173,9 +182,11 @@ int newParseArgs( Configuration &config,
 			case  BOTTOM_SLICE_IDX:
 			case  TOP_SLICE_IDX:
 			case  FIRST_Z:
-				config["slicer"][opt.desc->longopt] = atof(opt.arg);;
+				config["slicer"][opt.desc->longopt] = atof(opt.arg);
 				break;
 			case  DEBUG_ME:
+				config["meta"][opt.desc->longopt] = atof(opt.arg);
+				break;
 			case  START_GCODE:
 			case  END_GCODE:
 			case  OUT_FILENAME:
@@ -196,15 +207,15 @@ int newParseArgs( Configuration &config,
 		usage();
 	}
 	else if ( parse.nonOptionsCount() != 1) {
-		std::cout << "too many parameters" << endl;
+		Log::severe() << "too many parameters" << endl;
 		for (int i = 0; i < parse.nonOptionsCount(); ++i)
-			std::cout << "Parameter #" << i << ": " << parse.nonOption(i) << "\n";
+			Log::severe() << "Parameter #" << i << ": " << parse.nonOption(i) << "\n";
 			exit(-10);
 	}
 	else {
 		//handle the unnamed parameter separately
 		modelFile = parse.nonOption(0);
-		std::cout << "filename " << modelFile << endl;
+		Log::finer() << "filename " << modelFile << endl;
 		ifstream testmodel(modelFile.c_str(), ifstream::in);
 		if (testmodel.fail()) {
 			usage();
@@ -220,6 +231,25 @@ int newParseArgs( Configuration &config,
 	config["programName"] = GRUE_PROGRAM_NAME;
 	config["versionStr"] = GRUE_VERSION;
 	config["firmware"] = "unknown";
+
+	/// convert debug data to a module/level specific setting
+	g_debugVerbosity = log_verbosity_unset;
+	if ( config["meta"].isMember("debug") ) {
+		try {
+			uint debugLvl = config["meta"]["debug"].asUInt();
+			if ( debugLvl < 90 ) g_debugVerbosity = log_finest;
+			else if ( debugLvl < 80 ) g_debugVerbosity = log_finer;
+			else if ( debugLvl < 70 ) g_debugVerbosity = log_fine;
+			else if ( debugLvl < 60 ) g_debugVerbosity = log_info;
+			else if ( debugLvl < 10 ) g_debugVerbosity = log_severe;
+			else g_debugVerbosity = log_verbosity_unset;
+		}
+		catch (...){
+			cout << "fail sauce on debug level" << endl;
+			// passed -d sans option. Assume default dbg level
+				g_debugVerbosity = log_default_level;
+		}
+	}
 
 	return 0;
 }
@@ -246,13 +276,12 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		// cout << config.asJson() << endl;
 
-		cout << "Tube spacing: " << config["slicer"]["tubeSpacing"] << endl;
+		Log::finer() << "Tube spacing: " << config["slicer"]["tubeSpacing"] << endl;
 
 		MyComputer computer;
-		cout << endl;
-		cout << endl;
-		cout << "behold!" << endl;
-		cout << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
+		Log::fine() << endl << endl;
+		Log::fine() << "behold!" << endl;
+		Log::fine() << "Materialization of \"" << modelFile << "\" has begun at " << computer.clock.now() << endl;
 
 		std::string scadFile = "."; // outDir
 		scadFile += computer.fileSystem.getPathSeparatorCharacter();
@@ -267,8 +296,8 @@ int main(int argc, char *argv[], char *[]) // envp
 			gcodeFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".gcode" );
 		}
 
-		cout << endl << endl;
-		cout << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
+		Log::fine() << endl << endl;
+		Log::fine() << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
 
 		GCoderConfig gcoderCfg;
 		loadGCoderConfigFromFile(config, gcoderCfg);
@@ -300,7 +329,7 @@ int main(int argc, char *argv[], char *[]) // envp
     }
     catch(mgl::Exception &mixup)
     {
-    	cout << "ERROR: "<< mixup.error << endl;
+    	Log::severe() << "ERROR: "<< mixup.error << endl;
     	return -1;
     }
 }

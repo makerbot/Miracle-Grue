@@ -30,7 +30,7 @@ std::ostream &MyComputer::log()
 #ifdef QT_CORE_LIB
 int FileSystemAbstractor::guarenteeDirectoryExists(const char* )//pathname  )
 {
-    Log::often() << "not supported on QT" << endl;
+    Log::info() << "not supported on QT" << endl;
     return -1;
 #else
 int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
@@ -114,8 +114,8 @@ string FileSystemAbstractor::removeExtension(const char *filename) const
 ProgressLog::ProgressLog(unsigned int count)
     :ProgressBar(count,"")
 {
-        reset(count);
-    Log::often() << ":";
+	reset(count);
+	std::cout << ":";
 
 }
 
@@ -126,23 +126,24 @@ void ProgressLog::onTick(const char* taskName, unsigned int count, unsigned int 
 		this->deltaTicks = 0;
 		this->deltaProgress = 0;
 		this->delta = count / 10;
-		cout << taskName;
+		std::cout << taskName;
+		Log::info() << " [" << deltaProgress * 10 << "%] ";
 	}
 
 	if (deltaTicks >= this->delta)
 	{
 		deltaProgress++;
-		cout << " [" << deltaProgress * 10 << "%] ";
-		cout.flush();
-        Log::often() << " [" << deltaProgress * 10 << "%] ";
+		std::cout << " [" << deltaProgress * 10 << "%] ";
+		std::cout.flush();
+		Log::info() << " [" << deltaProgress * 10 << "%] ";
 		this->deltaTicks = 0;
 
 	}
 	if ( ticks >= count -1  ) {
 
 		string now = myPc.clock.now();
-        Log::often() << now;
-		cout << now << endl;
+        Log::info() << now;
+        std::cout << now << endl;
 	}
 	deltaTicks++;
 }

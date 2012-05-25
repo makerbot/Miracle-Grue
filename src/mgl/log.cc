@@ -1,5 +1,6 @@
 #include "log.h"
 
+//#undef QT_CORE_LIB
 #ifndef QT_CORE_LIB
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "ezlogger/ezlogger_headers.hpp"
@@ -8,44 +9,88 @@
 using namespace mgl;
 using namespace std;
 
-#ifdef QT_CORE_LIB
 
-ostream & Log::often()
+
+
+ostream & Log::severe()
 {
-    // return EZLOGGERVLSTREAM(axter::log_often);
-    return std::cout;
+    return cerr;
 }
 
 
-ostream & Log::rarely()
+
+#ifdef QT_CORE_LIB
+
+
+struct nullstream : std::ostream {
+    nullstream() : std::ios(0), std::ostream(0) {}
+};
+
+static nullstream nullout;
+
+
+
+verbosity mgl::g_debugVerbosity = log_finest;
+
+ostream & Log::info()
 {
-    return std::cout;
+
+	if( g_debugVerbosity >= log_info )
+		return std::cout;
+	return nullout;
+}
+
+
+ostream & Log::fine()
+{
+	if( g_debugVerbosity >= log_fine )
+		return std::cout;
+	return nullout;
+
+}
+
+ostream & Log::finer()
+{
+	if(g_debugVerbosity >= log_finer )
+		return std::cout;
+	return nullout;
+}
+
+ostream & Log::finest()
+{
+	if(g_debugVerbosity >= log_finer )
+		return std::cout;
+	return nullout;
 }
 
 #else
 
 
 
-ostream &Log::often()
+ostream &Log::info()
 {
-    return EZLOGGERVLSTREAM(axter::log_often).get_log_stream();
+    return EZLOGGERVLSTREAM(axter::log_info).get_log_stream();
+}
 
+ostream &Log::fine()
+{
+    return EZLOGGERVLSTREAM(axter::log_fine).get_log_stream();
+}
+
+ostream &Log::finer()
+{
+    return EZLOGGERVLSTREAM(axter::log_finer).get_log_stream();
 }
 
 
-ostream &Log::rarely()
+ostream &Log::finest()
 {
-    return EZLOGGERVLSTREAM(axter::log_rarely).get_log_stream();
+    return EZLOGGERVLSTREAM(axter::log_finest).get_log_stream();
 }
 
+/*
+ * std::ostream &severe() {
+	EZLOGGERVLSTREAM(axter::log_severe).get_log_stream();
+}
+ */
 #endif
-
-
-
-
-
-ostream & Log::error()
-{
-    return cerr;
-}
-

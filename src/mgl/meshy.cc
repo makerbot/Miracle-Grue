@@ -147,7 +147,7 @@ void Meshy::dump(std::ostream &out)
 
 size_t Meshy::triangleCount() {
 	return allTriangles.size();
-    Log::often() << "all triangle count" << allTriangles.size();
+    Log::info() << "all triangle count" << allTriangles.size();
 }
 
 void Meshy::writeStlFile(const char* fileName) const
@@ -258,7 +258,7 @@ size_t Meshy::readStlFile(const char* stlFilename)
 		int countdown = (int)tricount;
 		while (!feof(fHandle) && countdown-- > 0) {
 			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
-                Log::often() << __FUNCTION__ << "BREAKING" << endl;
+                Log::info() << __FUNCTION__ << "BREAKING" << endl;
 				break;
 			}
 			for (int i = 0; i < 3 * 4; i++) {
@@ -288,7 +288,7 @@ size_t Meshy::readStlFile(const char* stlFilename)
 			msg += stringify(this->triangleCount());
 			msg += ", faced:";
 			msg += stringify(facecount);
-            Log::often() << msg;
+            Log::info() << msg;
 //			MeshyException problem(msg.c_str());
 //			throw (problem);
 		}
@@ -324,9 +324,9 @@ size_t Meshy::readStlFile(const char* stlFilename)
 				stringstream msg;
 				msg << "Error reading face " << facecount << " in file \"" << stlFilename << "\"";
 				MeshyException problem(msg.str().c_str());
-                                Log::often() << msg << endl;
-                                Log::often() << buf << endl;
-                                Log::often() << c << " " <<  q << endl;
+                                Log::info() << msg << endl;
+                                Log::info() << buf << endl;
+                                Log::info() << c << " " <<  q << endl;
 				throw(problem);
 			}
 			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1),	Vector3(v.x2, v.y2, v.z2),	Vector3(v.x3, v.y3, v.z3));

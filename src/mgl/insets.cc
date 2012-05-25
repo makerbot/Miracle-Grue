@@ -113,13 +113,13 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	for(size_t i=0; i < polys.size(); i++)
 	{
 		const ClipperLib::Polygon &poly = polys[i];
-        Log::often() <<  name <<"_" << i << "= [";
+        Log::info() <<  name <<"_" << i << "= [";
 		for(size_t j=0; j < poly.size(); j++)
 		{
 			const ClipperLib::IntPoint &p = poly[j];
-            Log::often() << "[" << p.X << ", "<< p.Y << "]," << endl;
+            Log::info() << "[" << p.X << ", "<< p.Y << "]," << endl;
 		}
-        Log::often() << "];" << endl;
+        Log::info() << "];" << endl;
 	}
 }
 
@@ -175,7 +175,7 @@ void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 					//unsigned int sliceId,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
-					bool writeDebugScadFiles,
+					bool /*writeDebugScadFiles*/,
 					Insets &insetsForLoops)
 {
 

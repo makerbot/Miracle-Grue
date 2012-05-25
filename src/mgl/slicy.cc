@@ -137,7 +137,7 @@ void Slicy::writeScadSlice(const TriangleIndices & trianglesForSlice,
 		{
 			#ifdef OMPFF
 			OmpGuard lock (my_lock);
-            Log::often() << "slice "<< sliceId << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
+            Log::info() << "slice "<< sliceId << "/" << sliceCount << " thread: " << "thread id " << omp_get_thread_num() << " (pool size: " << omp_get_num_threads() << ")"<< endl;
 			#endif
 
 			fscad.writeTrianglesModule("tri_", allTriangles, trianglesForSlice, sliceId);
@@ -184,7 +184,7 @@ void Slicy::closeScadFile()
 		out << "// segments = [[ points[i], points[i+1]] for i in range(len(points)-1 ) ]" << endl;
         out << "// s = [\"segs.push_back(LineSegment2(Vector2(%s, %s), Vector2(%s, %s)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
         const char* scadfn = fscad.getScadFileName().c_str();
-        Log::often() << "closing OpenSCad file: " << scadfn ;
+        Log::info() << "closing OpenSCad file: " << scadfn ;
 		fscad.close();
 	}
 

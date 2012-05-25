@@ -165,20 +165,20 @@ bool JsonConverter::loadExtruderSliceFromJson(ExtruderSlice& input,Value& val)
 	if(loaded)
 		input.insetLoopsList = insetLoopsList;
 	else
-        Log::rarely() << "loadExtruderSliceFromJson fail a" <<endl;
+        Log::fine() << "loadExtruderSliceFromJson fail a" <<endl;
 
 	loaded = loadPolygonsFromJson(infills,infillsValue );
 	if(loaded)
 		input.infills= infills;
 	else
-        Log::rarely() << "loadExtruderSliceFromJson fail b" <<endl;
+        Log::fine() << "loadExtruderSliceFromJson fail b" <<endl;
 
 
 	loaded = loadPolygonsFromJson(boundary,boundaryValue );
 	if(loaded)
 		input.boundary = boundary;
 	else
-        Log::rarely() << "loadExtruderSliceFromJson fail c" <<endl;
+        Log::fine() << "loadExtruderSliceFromJson fail c" <<endl;
 
 	return false;
 }
