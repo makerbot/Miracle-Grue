@@ -22,7 +22,7 @@ LIBTHING_BASE = submodule/libthing/src/main
 include($$LIBTHING_BASE/cpp-qt/Libthing.pro.inc)
 
 JSON_CPP_SRC = submodule/json-cpp
-include($$JSON_CPP_SRC/json-cpp.pro.inc)
+include($$JSON_CPP_SRC/json-cpp.pri)
 
 
 

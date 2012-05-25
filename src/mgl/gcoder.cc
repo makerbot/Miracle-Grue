@@ -212,7 +212,7 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName)
 
 	writeGCodeConfig(gout, sourceName);
 
-    const string &header_file = gcoderCfg.root["header"].asString();
+    const string &header_file = gcoderCfg.header;
 
 	if (header_file.length() > 0) {
 		ifstream header_in(header_file.c_str(), ifstream::in);
@@ -248,7 +248,8 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName)
 
 void GCoder::writeEndDotGCode(std::ostream &ss) const
 {
-        const string &footer_file = gcoderCfg.root["footer"].asString();
+    const string &footer_file = gcoderCfg.footer;
+
 
 	if (footer_file.length() > 0) {
 		ifstream footer_in(footer_file.c_str(), ifstream::in);
@@ -507,7 +508,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 			{
 				gcoderCfg.gantry.writeSwitchExtruder(ss, extruder);
 			}
-			if(gcoderCfg.root["infills"].asBool() && gcoderCfg.root["infillFirst"].asBool())
+			if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst)
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
@@ -517,18 +518,18 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		}
 		catch(GcoderException &mixup)
 		{
-                    Log::info() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
-                    Log::severe() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			Log::info() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+			Log::severe() << "ERROR writing infills in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
 		}
 		/// Write outlines? outlines == skirt
 		try
 		{
-		  bool out = gcoderCfg.root["outline"].asBool();
-          if(out)
+
+			if(gcoderCfg.doOutlines)
 			{
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
-                                //Log::often()  << "   Write OUTLINE" << endl;
+								//Log::often()  << "   Write OUTLINE" << endl;
 				ss << "(outlines: " << loops.size() << " )"<< endl;
 				writePolygons(ss, z, extruder, extrusion, loops);
 			}
@@ -542,7 +543,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
 		try
 		{
-			if( gcoderCfg.root["insets"].asBool() )
+			if( gcoderCfg.doInsets )
 			{
 				// each iteration is for a shell
 				unsigned int insetCount = insets.size();
@@ -566,7 +567,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
 		try
 		{
-			if(gcoderCfg.root["infills"].asBool() && !gcoderCfg.root["infillFirst"].asBool())
+			if(gcoderCfg.doInfills && ! gcoderCfg.doInfillsFirst)
 			{
                                 //Log::often() << "   Write INFILLS" << endl;
 				ss << "(infills: "  << infills.size() << ")"<< endl;
@@ -792,15 +793,15 @@ void GCoder::writeGCodeConfig(std::ostream &ss, const char* title="unknown sourc
 	std::string plurial = gcoderCfg.extruders.size()? "":"s";
 	ss << "(" << indent << gcoderCfg.extruders.size() << " extruder" << plurial << ")" << endl;
 
-	ss << "(" << indent << "Extrude infills: " << gcoderCfg.root["infills"] <<  ")" << endl;
+	ss << "(" << indent << "Extrude infills: " << gcoderCfg.doInfills <<  ")" << endl;
 	ss << "(" << indent;
-	if(gcoderCfg.root["infillFirst"].asBool() )
+	if(gcoderCfg.doInfillsFirst )
 		ss << "first operation: Infill";
 	else
 		ss << "first operation: Insets";
 	ss << ")" << endl;
-	ss << "(" << indent << "Extrude insets: " << gcoderCfg.root["insets"] << ")" << endl;
-	ss << "(" << indent << "Extrude outlines: " << gcoderCfg.root["outline"] << ")" << endl;
+	ss << "(" << indent << "Extrude insets: " << gcoderCfg.doInsets << ")" << endl;
+	ss << "(" << indent << "Extrude outlines: " << gcoderCfg.doOutlines << ")" << endl;
 	ss << endl;
 }
 

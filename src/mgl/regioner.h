@@ -28,7 +28,12 @@ struct Regions
     std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
     std::vector<GridRanges>     roofings;
     std::vector<GridRanges>     floorings;
+
+
     std::vector<GridRanges>     infills;
+
+    std::vector<GridRanges>     solids;
+    std::vector<GridRanges>     sparses;
 
     Regions()
     {}
@@ -72,10 +77,16 @@ public:
     			 const Grid &grid,
     			 const std::vector<GridRanges> &roofings,
     			 const std::vector<GridRanges> &floorings,
+    			 std::vector<GridRanges> &solids,
+    			 std::vector<GridRanges> &sparses,
     			 std::vector<GridRanges> &infills);
     void gridRangesForSlice(const libthing::Insets &allInsetsForSlice,
     						const Grid &grid,
     						GridRanges &surface);
+
+private:
+
+
 
 
 };

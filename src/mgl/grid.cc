@@ -327,7 +327,7 @@ vector< ScalarRange >::const_iterator  subRangeTersect(	const ScalarRange &range
 	while(it != itEnd)
 	{
 		const ScalarRange &currentRange = *it;
-		if( (it->min >= range.max)  )
+		if( (currentRange.min >= range.max)  )
 		{
 			// cout << " subrange done" << endl; // << currentRange << endl;
 			return it;
@@ -351,21 +351,29 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 					 const vector< ScalarRange > &twoLine,
 						vector< ScalarRange > &boolLine )
 {
+	static int toto = 0;
+	toto ++;
+	if(toto == 5007)
+		cout << toto << endl;
+
 	vector< ScalarRange >::const_iterator itOne = oneLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = twoLine.begin();
 	while(itOne != oneLine.end())
 	{
 		const ScalarRange &range = *itOne;
-		// cout << "range=" << range << endl;
+		cout << " range=" << range << endl;
 		itTwo = subRangeTersect(range, itTwo, twoLine.end(), boolLine);
 		if(itTwo == twoLine.end())
 		{
 			itOne++;
 			if(itOne != oneLine.end())
 			{
-				const ScalarRange &lastRange = twoLine.back();
-				// cout << "lastRange=" << lastRange << endl;
-				subRangeTersect(lastRange, itOne, oneLine.end(), boolLine);
+				if(twoLine.size()>0)
+				{
+					const ScalarRange &lastRange = twoLine.back();
+					cout << " lastRange= [" << lastRange.min << ", " << lastRange.max << "]" << endl;
+					subRangeTersect(lastRange, itOne, oneLine.end(), boolLine);
+				}
 			}
 			return;
 		}
@@ -665,12 +673,12 @@ void rangeTableIntersection(const ScalarRangeTable &a,
 	assert(lineCount == b.size());
 	result.resize(lineCount);
 
-	for(size_t i=0; i < a.size(); i++ )
+	for(size_t i=0; i < lineCount; i++ )
 	{
 		const vector<ScalarRange> &lineRange0 = a[i];
 		const vector<ScalarRange> &lineRange1 = b[i];
 		vector<ScalarRange> &lineRangeRes = result[i];
-
+		// cout << "rangeTableIntersection " << i << endl;
 		rangeTersection(lineRange0, lineRange1, lineRangeRes);
 	}
 }
@@ -802,7 +810,7 @@ void Grid::gridRangeDifference(const GridRanges& src, const GridRanges &del, Gri
 
 }
 
-void Grid::gridIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const
+void Grid::gridRangeIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const
 {
 	rangeTableIntersection(a.xRays, b.xRays, result.xRays);
 	rangeTableIntersection(a.yRays, b.yRays, result.yRays);

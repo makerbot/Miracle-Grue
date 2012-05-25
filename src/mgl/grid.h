@@ -125,7 +125,7 @@ public:
     void gridRangeDifference(const GridRanges& src, const GridRanges &diff, GridRanges &result) const;
 
 	/// returns a gridrange that is the interesction of a/b
-    void gridIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
+    void gridRangeIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
 
     /// removes all grid ranges shorter than toleranne 'cutOff', returns a new
     /// simplified grid range

@@ -251,14 +251,12 @@ struct Outline
 
 struct GCoderConfig
 {
-	GCoderConfig()
-	:root(),
+	GCoderConfig():
 	 programName(GRUE_PROGRAM_NAME),
 	 versionStr(GRUE_VERSION)
+	{}
 
-{}
 
-    Json::Value root;
 
     std::string programName;
     std::string versionStr;
@@ -271,7 +269,20 @@ struct GCoderConfig
 
     std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
+
+
+    bool doOutlines;
+    bool doInsets;
+    bool doInfills;
+    bool doInfillsFirst;
+
+    std::string header;
+    std::string footer;
+
 };
+
+
+
 
 
 //
@@ -286,7 +297,7 @@ public:
 
         GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL)
             :Progressive(progress), gcoderCfg(gCoderCfg)
-	{	}
+{}
 
 
         /// shortcut for doing a G1 that only move Z
