@@ -335,4 +335,6 @@ int main(int argc, char *argv[], char *[]) // envp
     	Log::severe() << "ERROR: "<< mixup.error << endl;
     	return -1;
     }
+
+	exit(EXIT_SUCCESS);
 }
