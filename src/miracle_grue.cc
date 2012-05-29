@@ -119,19 +119,20 @@ const option::Descriptor usageDescriptor[] =
 
 void usage() {
 
-	Log::severe() <<" test Log::severe " <<endl;
-	Log::info()<<" test Log::info " <<endl;
-	Log::fine() <<" test Log::fine " <<endl;
-	Log::finer() <<" test Log::finer " <<endl;
-	Log::finest() <<" test Log::finest " <<endl;
 
 	cout << endl;
 	cout << "It is pitch black. You are likely to be eaten by a grue." << endl;
+	cout << "You are using " << GRUE_PROGRAM_NAME << " version " << GRUE_VERSION  << endl;
 	cout << endl;
 	cout << "This program translates a 3d model file in STL format to GCODE toolpath for a " << endl;
 	cout << "3D printer." << " Another fine MakerBot Industries product!"<< endl;
 	cout << endl;
     option::printUsage(std::cout, usageDescriptor);
+	Log::severe() <<" Log level::severe ";
+	Log::info()<<"::info";
+	Log::fine() <<"::fine";
+	Log::finer() <<"::finer";
+	Log::finest() <<"::finest";
 	cout << endl;
 }
 
@@ -150,20 +151,20 @@ int newParseArgs( Configuration &config,
 	option::Option* buffer  = new option::Option[stats.buffer_max];
 	option::Parser parse(usageDescriptor, argc, argv, options, buffer);
 
+
 	if (parse.error())
 		return -20;
 
-	///read config file and/or help option first
- 	for (int i = 0; i < parse.optionsCount(); ++i)
-	{
-		option::Option& opt = buffer[i];
-		if(opt.index() == CONFIG )
-			configFilename = string(opt.arg);
-		if(opt.index() == HELP ) {
-			usage();
-			exit(0);
-		}
+	if (options[HELP] || argc == 0) {
+		usage();
+		exit(0);
 	}
+
+	///read config file and/or help option first
+	if ( options[CONFIG]) {
+		configFilename = string(options[CONFIG].arg);
+	}
+
 	// fallback to default config
     if (configFilename.compare(string("")) == 0)
 		configFilename = "miracle.config";
