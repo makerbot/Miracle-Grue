@@ -15,6 +15,7 @@
 #include <string>
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "mgl/abstractable.h"
 #include "mgl/configuration.h"
@@ -24,6 +25,7 @@
 #include "optionparser.h"
 
 #include "mgl/log.h"
+
 
 
 using namespace std;
