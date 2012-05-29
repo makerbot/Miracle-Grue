@@ -451,8 +451,18 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
     if(iFirstSliceIdx > 0) firstSliceIdx = (size_t) iFirstSliceIdx;
     if(iLastSliceIdx  < 0) lastSliceIdx  = (size_t) iLastSliceIdx;
 
+	Extruder &extruder = gcoderCfg.extruders[0];
+	Extrusion extrusion;
+	calcInfillExtrusion(0, 0, extrusion);
+	Vector2 start = startPoint(slices[0]);
+	gcoderCfg.gantry.squirt(gout, start, extruder, extrusion);
+	gcoderCfg.gantry.g1(gout, extruder, extrusion, start.x, start.y,
+						gcoderCfg.gantry.z, extrusion.feedrate,
+						"Extrude into position");
+
     initProgress("gcode", sliceCount);
     size_t codeSlice = 0;
+
     for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
     {
         tick();
@@ -468,6 +478,21 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
     }
 
 	writeEndDotGCode(gout);
+}
+
+Vector2 GCoder::startPoint(const SliceData& sliceData) {
+	if (gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
+		return sliceData.extruderSlices[0].infills[0][0];
+	}
+	else if (gcoderCfg.doOutlines) {
+		return sliceData.extruderSlices[0].boundary[0][0];
+	}
+	else if (gcoderCfg.doInsets) {
+		return sliceData.extruderSlices[0].insetLoopsList[0][0][0];
+	}
+	else {
+		return sliceData.extruderSlices[0].infills[0][0];
+	}
 }
 
 void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )

@@ -144,6 +144,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.machineName = stringCheck(conf.root["machineName"],"machineName");
 	gcoderCfg.firmware    = stringCheck(conf.root["firmware"], "firmware");
 
+
 	gcoderCfg.gantry.xyMaxHoming = boolCheck(conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming");
 	gcoderCfg.gantry.zMaxHoming  = boolCheck(conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming");
 	gcoderCfg.gantry.scalingFactor = doubleCheck(conf.root["gantry"]["scalingFactor"], "gantry.scalingFactor");
@@ -151,6 +152,9 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.gantry.rapidMoveFeedRateZ = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateZ"], "gantry.rapidMoveFeedRateZ");
 	gcoderCfg.gantry.homingFeedRateZ = doubleCheck(conf.root["gantry"]["homingFeedRateZ"], "gantry.homingFeedRateZ");
 	gcoderCfg.gantry.layerH = doubleCheck(conf.root["slicer"]["layerH"], "slicer.layerH");
+	gcoderCfg.gantry.x = doubleCheck(conf.root["gantry"]["startX"], "gantry.startX");
+	gcoderCfg.gantry.y = doubleCheck(conf.root["gantry"]["startY"], "gantry.startY");
+	gcoderCfg.gantry.z = doubleCheck(conf.root["gantry"]["startZ"], "gantry.startZ");
 
 
 	gcoderCfg.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");

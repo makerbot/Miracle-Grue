@@ -276,6 +276,8 @@ struct GCoderConfig
     bool doInfills;
     bool doInfillsFirst;
 
+	Scalar startX;
+	Scalar startY;
     std::string header;
     std::string footer;
 
@@ -368,6 +370,7 @@ private:
 						const Extrusion &extrusion,
 						const Polygon & polygon);
 
+	libthing::Vector2 startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
 };
 

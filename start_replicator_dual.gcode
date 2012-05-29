@@ -19,11 +19,8 @@ G1 X-110.5 Y-74 Z150 F3300.0 (move to waiting position)
 G130 X0 Y0 A0 B0 (Lower stepper Vrefs while heating)
 M6 T0 (wait for toolhead, and HBP to reach temperature)
 G130 X127 Y127 A127 B127 (Set Stepper motor Vref to defaults)
-M108 R3.0 T0
+
 G0 X-110.5 Y-74 (Position Nozzle)
 G0 Z0.2      (Position Height)
-M108 R4.0    (Set Extruder Speed)
-M101         (Start Extruder)
-G4 P1500     (Create Anchor)
-M103         (Stop Extruder)
+G1 A2.0     (Create Anchor)
 (**** end of start.gcode ****)
