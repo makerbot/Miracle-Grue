@@ -236,7 +236,7 @@ int newParseArgs( Configuration &config,
 	g_debugVerbosity = log_verbosity_unset;
 	if ( config["meta"].isMember("debug") ) {
 		try {
-			uint debugLvl = config["meta"]["debug"].asUInt();
+			uint32_t debugLvl = config["meta"]["debug"].asUInt();
 			if ( debugLvl < 90 ) g_debugVerbosity = log_finest;
 			else if ( debugLvl < 80 ) g_debugVerbosity = log_finer;
 			else if ( debugLvl < 70 ) g_debugVerbosity = log_fine;
