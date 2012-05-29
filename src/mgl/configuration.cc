@@ -215,7 +215,8 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-
+	gcoderCfg.header = stringCheck(conf.root["gcoder"]["header"], "gcoder.header");
+	gcoderCfg.footer = stringCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
 	gcoderCfg.doOutlines = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
 	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
