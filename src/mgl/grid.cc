@@ -13,6 +13,7 @@
 #include <map>
 
 #include "grid.h"
+#include "log.h"
 #include <limits.h>
 #include <list>
 
@@ -361,7 +362,7 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 	while(itOne != oneLine.end())
 	{
 		const ScalarRange &range = *itOne;
-		cout << " range=" << range << endl;
+		//Log::finest << string(" range=") << range << endl;
 		itTwo = subRangeTersect(range, itTwo, twoLine.end(), boolLine);
 		if(itTwo == twoLine.end())
 		{
@@ -371,7 +372,7 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 				if(twoLine.size()>0)
 				{
 					const ScalarRange &lastRange = twoLine.back();
-					cout << " lastRange= [" << lastRange.min << ", " << lastRange.max << "]" << endl;
+					//Log::finest << string(" lastRange= [") << lastRange.min << ", " << lastRange.max << "]" << endl;
 					subRangeTersect(lastRange, itOne, oneLine.end(), boolLine);
 				}
 			}
