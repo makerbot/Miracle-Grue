@@ -60,6 +60,8 @@ public:
 
          void readFromFile(const char* filename);
          void readFromFile(const std::string &filename) { readFromFile(filename.c_str()); };
+	void readFromDefault() { readFromFile(defaultFilename()); };
+	
 
     public:
 
@@ -89,7 +91,8 @@ public:
 
       	std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
 
-
+private:
+	std::string defaultFilename();
 };
 
 class GCoderConfig;

@@ -167,9 +167,9 @@ int newParseArgs( Configuration &config,
 
 	// fallback to default config
     if (configFilename.compare(string("")) == 0)
-		configFilename = "miracle.config";
-
-	config.readFromFile(configFilename);
+		config.readFromDefault();
+	else
+		config.readFromFile(configFilename);
 
 	for (int i = 0; i < parse.optionsCount(); ++i)
 	{

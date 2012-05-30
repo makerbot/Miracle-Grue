@@ -22,6 +22,11 @@
 using namespace mgl;
 using namespace std;
 
+string Configuration::defaultFilename() {
+	return string("miracle.config");
+}
+
+
 double mgl::doubleCheck(const Json::Value &value, const char *name)
 {
 	if(value.isNull())
