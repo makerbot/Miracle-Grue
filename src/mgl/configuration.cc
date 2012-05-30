@@ -121,7 +121,9 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 		extrusion.retractDistance = doubleCheck(value["retractDistance"], (prefix + "retractDistance").c_str());
 		extrusion.retractRate = uintCheck(value["retractRate"], (prefix + "retractRate").c_str());
 		extrusion.restartExtraDistance = doubleCheck(value["restartExtraDistance"], (prefix + "restartExtraDistance").c_str());
-		extrusion.extrudedDimensionsRatio = doubleCheck(value["extrudedDimensionsRatio"], (prefix + "extrudedDimensionsRatio").c_str());
+		extrusion.extrudedDimensionsRatio =
+			doubleCheck(conf.root["slicer"]["layerW"], "slicer.layerW") /
+			doubleCheck(conf.root["slicer"]["layerH"], "slicer.layerH");
 
 		extrusion.flow 		= doubleCheck(value["flow"], (prefix + "flow").c_str());
 		extrusion.leadIn 	= doubleCheck(value["leadIn"], (prefix + "leadIn").c_str());
