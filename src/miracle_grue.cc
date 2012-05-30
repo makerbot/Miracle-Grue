@@ -279,8 +279,6 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		// cout << config.asJson() << endl;
 
-		Log::finer() << "Tube spacing: " << config["slicer"]["tubeSpacing"] << endl;
-
 		MyComputer computer;
 		Log::fine() << endl << endl;
 		Log::fine() << "behold!" << endl;
