@@ -16,10 +16,19 @@ using namespace std;
 
 #include "log.h"
 
+#ifdef __APPLE__
+#include <CFBundle.h>
+#endif 
+
 #ifdef WIN32
 #include <Windows.h>
+#include <Shlobj.h>
+#else
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 
+#include <fstream>
 
 std::ostream &MyComputer::log()
 {
@@ -79,7 +88,11 @@ string FileSystemAbstractor::pathJoin(string path, string filename) const
 
 char FileSystemAbstractor::getPathSeparatorCharacter() const
 {
-	return '/'; // Linux & Mac, works on Windows most times
+#ifdef WIN32
+    return '\\';
+#else
+    return '/'; // Linux & Mac, works on Windows most times
+#endif
 }
 
 string FileSystemAbstractor::ExtractDirectory(const char *directoryPath) const
@@ -109,6 +122,101 @@ string FileSystemAbstractor::removeExtension(const char *filename) const
 	string filenameStr = ExtractFilename(path.c_str());
 	return ExtractDirectory(path.c_str())
 			+ filenameStr.substr(0, filenameStr.find_last_of('.'));
+}
+
+bool FileSystemAbstractor::fileReadable(const char *filename) const {
+	ifstream testfile(filename, ifstream::in);
+	bool readable = !testfile.fail();
+	testfile.close();
+
+	return readable;
+}
+
+string FileSystemAbstractor::getConfigFile(const char *filename) const {
+	string found = getUserConfigFile(filename);
+	if (found.length() > 0 && fileReadable(found.c_str()))
+		return found;
+	
+	found = getSystemConfigFile(filename);
+	if (found.length() > 0 && fileReadable(found.c_str())) 
+		return found;
+		
+	return string();
+}
+
+string FileSystemAbstractor::getSystemConfigFile(const char *filename) const {
+#ifdef WIN32
+    char app_path[1024];
+
+	GetModuleFileNameA(0, app_path, sizeof(app_path) - 1);
+
+	// Extract directory
+	std::string app_dir = ExtractDirectory(app_path);
+	return pathJoin(app_dir, filename);
+
+#elif defined __APPLE__
+	CFBundleRef mainBundle;
+
+	mainBundle = CFBundleGetMainBundle();
+	if(!mainBundle)
+		return string();
+
+	CFURLRef resourceURL;
+	resourceURL =
+		CFBundleCopyResourceURL(mainBundle,
+					CFStringCreateWithCString(NULL,
+											  filename,
+											  kCFStringEncodingASCII),
+
+								NULL,
+								NULL);
+
+	if (!resourceURL) 
+		return string();
+
+	char fileurl[1024];
+	if(!CFURLGetFileSystemRepresentation(resourceURL,
+										 true,
+										 (UInt8*)
+										 fileurl,
+										 1024)) {
+		return string();
+p	}
+
+	return string(fileurl);
+#else //linux
+
+	return pathJoin(string("/etc/xdg/makerbot/"), filename);
+#endif
+}
+
+string FileSystemAbstractor::getUserConfigFile(const char *filename) const {
+#ifdef WIN32
+	char app_data[1024];
+	if(SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0,
+								 app_data))) { 
+		return pathJoin(pathJoin(string(app_data), "Makerbot"),
+						filename);
+	}
+#else //linux or apple
+	char pwbuff[1024];
+	struct passwd pw;
+	struct passwd *tempptr;
+	if (getpwuid_r(getuid(), &pw, pwbuff, 1024, &tempptr) == 0) {
+
+#ifdef __APPLE__
+		return pathJoin(pathJoin(string(pw.pw_dir),
+								 "Library/Preferences/Makerbot/Miracle-Grue"),
+						filename);
+#else //linux
+		return pathJoin(pathJoin(string(pw.pw_dir), ".config/makerbot"),
+						filename);
+#endif //linux
+	}
+
+#endif //win32
+
+	return string();
 }
 
 ProgressLog::ProgressLog(unsigned int count)

@@ -5,7 +5,9 @@
 #
 #-------------------------------------------------
 
-
+mac {
+    INCLUDEPATH += /System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers
+}
 
 QMAKE_CXXFLAGS += -fopenmp
 

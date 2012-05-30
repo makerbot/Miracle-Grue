@@ -18,12 +18,19 @@
 #include "configuration.h"
 #include "gcoder.h"
 #include "pather.h"
+#include "abstractable.h"
 
 using namespace mgl;
 using namespace std;
 
 string Configuration::defaultFilename() {
-	return string("miracle.config");
+	MyComputer computer;
+	string file = computer.fileSystem.getConfigFile("miracle.config");
+
+	if (file.length() > 0)
+		return file;
+	else
+		return string("miracle.config");
 }
 
 

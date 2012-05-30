@@ -63,7 +63,12 @@ public:
 	::std::string pathJoin(std::string path, std::string filename) const;
 
     int guarenteeDirectoryExists(const char* dirPath);
+	bool fileReadable(const char *filename) const;
 
+	::std::string getConfigFile(const char *filename) const;
+private:
+	::std::string getUserConfigFile(const char *filename) const;
+	::std::string getSystemConfigFile(const char *filename) const;
 };
 
 
