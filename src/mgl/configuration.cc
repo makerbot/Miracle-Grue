@@ -33,7 +33,6 @@ string Configuration::defaultFilename() {
 		return string("miracle.config");
 }
 
-
 double mgl::doubleCheck(const Json::Value &value, const char *name)
 {
 	if(value.isNull())
@@ -56,6 +55,16 @@ unsigned int mgl::uintCheck(const Json::Value &value, const char *name)
 		throw mixup;
 	}
 	return value.asUInt();
+}
+
+string mgl::pathCheck(const Json::Value &value, const char *name) {
+	string result = stringCheck(value, name);
+	if (result.substr(0, 10) == "default://") {
+		MyComputer computer;
+		result = computer.fileSystem.getDataFile(result.substr(10).c_str());
+	}
+
+	return result;
 }
 
 string mgl::stringCheck(const Json::Value &value, const char *name)
@@ -233,8 +242,8 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-	gcoderCfg.header = stringCheck(conf.root["gcoder"]["header"], "gcoder.header");
-	gcoderCfg.footer = stringCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
+	gcoderCfg.header = pathCheck(conf.root["gcoder"]["header"], "gcoder.header");
+	gcoderCfg.footer = pathCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
 	gcoderCfg.doOutlines = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
 	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
