@@ -132,6 +132,18 @@ bool FileSystemAbstractor::fileReadable(const char *filename) const {
 	return readable;
 }
 
+string FileSystemAbstractor::getDataFile(const char *filename) const {
+	string found = getUserDataFile(filename);
+	if (found.length() > 0 && fileReadable(found.c_str()))
+		return found;
+	
+	found = getSystemDataFile(filename);
+	if (found.length() > 0 && fileReadable(found.c_str())) 
+		return found;
+		
+	return string();
+}
+
 string FileSystemAbstractor::getConfigFile(const char *filename) const {
 	string found = getUserConfigFile(filename);
 	if (found.length() > 0 && fileReadable(found.c_str()))
@@ -142,6 +154,34 @@ string FileSystemAbstractor::getConfigFile(const char *filename) const {
 		return found;
 		
 	return string();
+}
+
+string FileSystemAbstractor::getUserDataFile(const char *filename) const {
+#ifdef __APPLE__
+	char pwbuff[1024];
+	struct passwd pw;
+	struct passwd *tempptr;
+	if (getpwuid_r(getuid(), &pw, pwbuff, 1024, &tempptr) == 0) {
+	   return pathJoin(pathJoin(string(pw.pw_dir),
+								 "Library/Makerbot/Miracle-Grue"),
+					   filename);
+	}
+	else {
+		return string();
+	}
+#else
+	/*other platforms should be fine putting user data files in the same
+	  dir as user config files*/	
+	return getUserConfigFile(filename);
+#endif
+}
+
+string FileSystemAbstractor::getSystemDataFile(const char *filename) const {
+#ifdef __linux__
+	return pathJoin(string("/usr/share/makerbot"), filename);
+#else
+	return getSystemConfigFile(filename);
+#endif
 }
 
 string FileSystemAbstractor::getSystemConfigFile(const char *filename) const {
@@ -186,7 +226,7 @@ p	}
 	return string(fileurl);
 #else //linux
 
-	return pathJoin(string("/etc/xdg/makerbot/"), filename);
+	return pathJoin(string("/etc/xdg/makerbot"), filename);
 #endif
 }
 

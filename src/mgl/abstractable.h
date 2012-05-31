@@ -65,8 +65,11 @@ public:
     int guarenteeDirectoryExists(const char* dirPath);
 	bool fileReadable(const char *filename) const;
 
+	::std::string getDataFile(const char *filename) const;
 	::std::string getConfigFile(const char *filename) const;
 private:
+	::std::string getUserDataFile(const char *filename) const;
+	::std::string getSystemDataFile(const char *filename) const;
 	::std::string getUserConfigFile(const char *filename) const;
 	::std::string getSystemConfigFile(const char *filename) const;
 };
