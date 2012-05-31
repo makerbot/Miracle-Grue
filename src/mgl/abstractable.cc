@@ -181,7 +181,7 @@ string FileSystemAbstractor::getSystemConfigFile(const char *filename) const {
 										 fileurl,
 										 1024)) {
 		return string();
-p	}
+	}
 
 	return string(fileurl);
 #else //linux
