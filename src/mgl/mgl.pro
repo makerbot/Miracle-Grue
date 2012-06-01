@@ -6,6 +6,8 @@
 #-------------------------------------------------
 
 TEMPLATE=lib
+CONFIG=staticlib
+TARGET=../../lib/mgl
 
 mac {
     INCLUDEPATH += /System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers
@@ -14,7 +16,18 @@ mac {
 
 QMAKE_CXXFLAGS += -fopenmp
 
+SUBMODULES = ../../submodule
+	
+MGL_SRC = .
 INCLUDEPATH += $$MGL_SRC/..
+
+JSON_CPP_SRC = $$SUBMODULES/json-cpp
+include($$JSON_CPP_SRC/json-cpp.pri)
+
+LIBTHING_BASE = $$SUBMODULES/libthing/src/main
+include($$LIBTHING_BASE/cpp-qt/Libthing.pro.inc)
+
+INCLUDEPATH += $$SUBMODULES/EzCppLog
 
 SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/clipper.cc\

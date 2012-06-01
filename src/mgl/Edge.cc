@@ -4,7 +4,7 @@ using namespace mgl;
 using namespace std;
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "ezlogger_headers.hpp"
 
 Edge::Edge(index_t v0, index_t v1, index_t face)
 	//:vertexIndices({v0,v1},

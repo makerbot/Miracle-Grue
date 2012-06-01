@@ -6,23 +6,24 @@
 
 QT       += core
 
-TARGET = bin/miracle_grue
+TARGET = ../../bin/miracle_grue
 TEMPLATE = app
 INSTALLS += target
 
 target.path = /usr/bin
 
-MGL_SRC = src/mgl
-include($$MGL_SRC/mgl.pro.inc)
 
-LIBTHING_BASE = submodule/libthing/src/main
+//include($$MGL_SRC/mgl.pro.inc)
+INCLUDEPATH += ..
+
+LIBTHING_BASE = ../../submodule/libthing/src/main
 include($$LIBTHING_BASE/cpp-qt/Libthing.pro.inc)
 
-JSON_CPP_SRC = submodule/json-cpp
+JSON_CPP_SRC = ../../submodule/json-cpp
 include($$JSON_CPP_SRC/json-cpp.pri)
 
 
-OPTIONPARSER_BASE = submodule/optionparser
+OPTIONPARSER_BASE = ../../submodule/optionparser
 include($$OPTIONPARSER_BASE/optionparser.pro.inc)
 
 //INCLUDEPATH += src \
@@ -30,7 +31,7 @@ include($$OPTIONPARSER_BASE/optionparser.pro.inc)
 //DEPENDPATH += src \
 //    submodule/clp-parser
 
-SOURCES +=  src/miracle_grue.cc
-
+SOURCES +=  miracle_grue.cc
+LIBS += ../../lib/libmgl.a
 
 
