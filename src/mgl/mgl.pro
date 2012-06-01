@@ -8,6 +8,7 @@
 TEMPLATE=lib
 CONFIG=staticlib
 TARGET=../../lib/mgl
+QT       += core
 
 mac {
     INCLUDEPATH += /System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers
