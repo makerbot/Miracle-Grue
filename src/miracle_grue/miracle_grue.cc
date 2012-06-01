@@ -236,11 +236,11 @@ int newParseArgs( Configuration &config,
 	config["firmware"] = "unknown";
 
 	/// convert debug data to a module/level specific setting
-	/*mgl::setVerbosity(log_verbosity_unset);
+	g_debugVerbosity = log_verbosity_unset;
 	if ( config["meta"].isMember("debug") ) {
 		try {
 			uint32_t debugLvl = config["meta"]["debug"].asUInt();
-			if ( debugLvl < 90 ) setVerbosity(log_finest);
+			if ( debugLvl < 90 ) g_debugVerbosity = log_finest;
 			else if ( debugLvl < 80 ) g_debugVerbosity = log_finer;
 			else if ( debugLvl < 70 ) g_debugVerbosity = log_fine;
 			else if ( debugLvl < 60 ) g_debugVerbosity = log_info;
@@ -252,7 +252,7 @@ int newParseArgs( Configuration &config,
 			// passed -d sans option. Assume default dbg level
 			//g_debugVerbosity = log_default_level;
 		}
-		}*/
+	}
 
 	return 0;
 }

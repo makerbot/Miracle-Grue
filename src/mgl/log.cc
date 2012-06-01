@@ -14,6 +14,7 @@ ostream & Log::severe()
     return cerr;
 }
 
+verbosity mgl::g_debugVerbosity = log_finest;
 
 
 #ifdef QT_CORE_LIB
@@ -26,11 +27,6 @@ struct nullstream : std::ostream {
 static nullstream nullout;
 
 
-
-verbosity mgl::g_debugVerbosity = log_finest;
-
-verbosity getVerbosity() { return g_debugVerbosity; }
-void setVerbosity(verbosity val) { g_debugVerbosity = val; }
 
 ostream & Log::info()
 {

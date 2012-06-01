@@ -16,8 +16,7 @@ enum verbosity {
 	log_finest // was very_rarely
 };
 
-	verbosity getVerbosity();
-	void setVerbosity(verbosity val);
+extern verbosity g_debugVerbosity;
 
 class Log
     {
