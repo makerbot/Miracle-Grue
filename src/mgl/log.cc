@@ -1,5 +1,10 @@
 #include "log.h"
 
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 //#undef QT_CORE_LIB
 #ifndef QT_CORE_LIB
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
