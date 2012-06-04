@@ -14,7 +14,7 @@
 #define GRID_H_
 
 #include "mgl.h"
-#include "limits.h"
+#include "obj_limits.h"
 #include "libthing/LineSegment2.h"
 #include "segment.h"
 

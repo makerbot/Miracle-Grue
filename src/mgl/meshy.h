@@ -22,7 +22,7 @@
 #endif
 
 #include "segment.h"
-#include "limits.h"
+#include "obj_limits.h"
 #include "abstractable.h"
 #include "mgl.h"
 

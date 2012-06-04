@@ -20,7 +20,7 @@
 
 //#include "meshy.h"
 #include "abstractable.h"
-#include "limits.h"
+#include "obj_limits.h"
 #include "mgl.h"
 
 
