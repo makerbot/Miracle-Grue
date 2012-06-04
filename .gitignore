@@ -13,7 +13,7 @@
 *.pyc
 
 #ignore build system files
-/Makefile
+Makefile
 /miracle_gui.pro.user
 /.sconsign.dblite
 /moc_*.cpp
@@ -29,6 +29,8 @@ test_cases/slicerCupTestCase/output/*.scad
 test_cases/slicerCupTestCase/output/*.gcode
 test_cases/GCoderTestCase/output/*.gcode
 test_cases/fileWriterTestCase/output/*
+src/unit_tests/*TestCase/*
+src/unit_tests/unit_tests.pri
 #ignore doyxgen generated docs
 documentation/Doxyfile/*
 documentation/html/*

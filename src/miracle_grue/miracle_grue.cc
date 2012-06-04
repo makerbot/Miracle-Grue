@@ -254,7 +254,7 @@ int newParseArgs( Configuration &config,
 		catch (...){
 			cout << "fail sauce on debug level" << endl;
 			// passed -d sans option. Assume default dbg level
-				g_debugVerbosity = log_default_level;
+			//g_debugVerbosity = log_default_level;
 		}
 	}
 

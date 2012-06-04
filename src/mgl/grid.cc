@@ -14,7 +14,7 @@
 
 #include "grid.h"
 #include "log.h"
-#include <limits.h>
+#include <limits>
 #include <list>
 
 using namespace mgl;
@@ -243,7 +243,7 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 		//handle last point
 		if (points_remaining.empty()) break;
 
-		Scalar closest_dist = INT_MAX;
+		Scalar closest_dist = numeric_limits<int>::max();
 		int closest;
 
 		//find the remaining point closest to this point

@@ -3,20 +3,18 @@
 //#undef QT_CORE_LIB
 #ifndef QT_CORE_LIB
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "ezlogger_headers.hpp"
 #endif
 
 using namespace mgl;
 using namespace std;
-
-
-
 
 ostream & Log::severe()
 {
     return cerr;
 }
 
+verbosity mgl::g_debugVerbosity = log_finest;
 
 
 #ifdef QT_CORE_LIB
@@ -29,8 +27,6 @@ struct nullstream : std::ostream {
 static nullstream nullout;
 
 
-
-verbosity mgl::g_debugVerbosity = log_finest;
 
 ostream & Log::info()
 {

@@ -17,6 +17,7 @@ enum verbosity {
 };
 
 extern verbosity g_debugVerbosity;
+
 class Log
     {
     public:

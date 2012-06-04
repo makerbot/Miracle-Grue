@@ -1,36 +1,35 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2012
-#
-#-------------------------------------------------
 
-QT       += core
+# Build versioning
+GIT_COMMIT = $$(GIT_COMMIT)
+isEmpty(GIT_COMMIT) {
+    GIT_COMMIT = $$system(git rev-parse --short HEAD)
+}
+GIT_BRANCH = $$(GIT_BRANCH)
+isEmpty(GIT_BRANCH) {
+    GIT_BRANCH = $$system(git rev-parse --abbrev-ref HEAD)
+}
+BUILD_NUMBER = $$(BUILD_NUMBER)
+isEmpty(BUILD_NUMBER) {
+    BUILD_NUMBER = 'manual_build'
+}
 
-TARGET = bin/miracle_grue
-TEMPLATE = app
-INSTALLS += target
+MAJOR=0
+MINOR=05
 
-target.path = /usr/bin
+VERSION = $${MAJOR}.$${MINOR}
 
-MGL_SRC = src/mgl
-include($$MGL_SRC/mgl.pro.inc)
+CHECKIN = '$${GIT_BRANCH}-$${GIT_COMMIT}'
 
-LIBTHING_BASE = submodule/libthing/src/main
-include($$LIBTHING_BASE/cpp-qt/Libthing.pro.inc)
+DEFINES += VERSION_STR=\\\"$${VERSION}\\\"
+DEFINES += CHECKIN_STR=\\\"$${CHECKIN}\\\"
+DEFINES += BUILD_STR=\\\"$${BUILD_NUMBER}\\\"
 
-JSON_CPP_SRC = submodule/json-cpp
-include($$JSON_CPP_SRC/json-cpp.pri)
+TEMPLATE = subdirs
+SUBDIRS = src/mgl src/miracle_grue
 
+src/miracle_grue.depends = mgl
 
-OPTIONPARSER_BASE = submodule/optionparser
-include($$OPTIONPARSER_BASE/optionparser.pro.inc)
-
-//INCLUDEPATH += src \
-//    submodule/clp-parser
-//DEPENDPATH += src \
-//    submodule/clp-parser
-
-SOURCES +=  src/miracle_grue.cc
-
-
-
+test {
+	system(cd src/unit_tests; python make_test_pro.py)
+    include(src/unit_tests/unit_tests.pri)
+}

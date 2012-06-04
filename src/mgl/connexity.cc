@@ -16,7 +16,7 @@ using namespace std;
 using namespace libthing;
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger/ezlogger_headers.hpp"
+#include "ezlogger_headers.hpp"
 
 
 index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
