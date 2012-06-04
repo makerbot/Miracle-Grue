@@ -235,6 +235,10 @@ int newParseArgs( Configuration &config,
 	config["versionStr"] = GRUE_VERSION;
 	config["firmware"] = "unknown";
 
+    if(false == config.isMember("machineName")) {
+        config["machineName"] = "Machine Name Unknown";
+    }
+
 	/// convert debug data to a module/level specific setting
 	g_debugVerbosity = log_verbosity_unset;
 	if ( config["meta"].isMember("debug") ) {

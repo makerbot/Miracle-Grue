@@ -61,10 +61,13 @@ public:
 
          void readFromFile(const char* filename);
          void readFromFile(const std::string &filename) { readFromFile(filename.c_str()); };
-	void readFromDefault() { readFromFile(defaultFilename()); };
+         void readFromDefault() { readFromFile(defaultFilename()); };
 	
 
     public:
+         bool isMember(const char* key) {
+             return this->root.isMember(key);
+         }
 
      	/// index function, to read/write values as config["foo"]
      	Json::Value& operator[] (const char* key)
