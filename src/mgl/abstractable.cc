@@ -47,7 +47,7 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
     int status = 0;
 
 #ifdef WIN32
-        DWORD attrib = GetFileAttributes(pathname);
+        DWORD attrib = GetFileAttributesA(pathname);
 
         if (attrib == INVALID_FILE_ATTRIBUTES) {
             BOOL result = CreateDirectoryA(pathname, NULL);
