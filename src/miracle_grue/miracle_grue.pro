@@ -11,6 +11,9 @@ TEMPLATE = app
 CONFIG += console
 INSTALLS += target
 
+win32 {
+    TARGET=../../../bin/miracle_grue
+}
 target.path = /usr/bin
 
 mac {

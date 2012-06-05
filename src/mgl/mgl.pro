@@ -7,8 +7,12 @@
 
 TEMPLATE=lib
 CONFIG+=staticlib
-TARGET=../../lib/mgl
 QT       += core
+TARGET=../../lib/mgl
+
+win32 {
+    TARGET=../../../lib/mgl
+}
 
 mac {
     INCLUDEPATH += /System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers
@@ -18,7 +22,7 @@ mac {
 QMAKE_CXXFLAGS += -fopenmp
 
 SUBMODULES = ../../submodule
-	
+
 MGL_SRC = .
 INCLUDEPATH += $$MGL_SRC/..
 
