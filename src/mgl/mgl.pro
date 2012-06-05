@@ -6,7 +6,7 @@
 #-------------------------------------------------
 
 TEMPLATE=lib
-CONFIG=staticlib
+CONFIG+=staticlib
 TARGET=../../lib/mgl
 QT       += core
 
