@@ -8,6 +8,7 @@ QT       += core
 
 TARGET = ../../bin/miracle_grue
 TEMPLATE = app
+CONFIG += console
 INSTALLS += target
 
 target.path = /usr/bin
