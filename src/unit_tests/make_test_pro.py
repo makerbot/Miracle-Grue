@@ -24,9 +24,10 @@ ROOT = ../../..
 SUBMODULES = $$ROOT/submodule
 
 INCLUDEPATH += $$ROOT/src
-LIBS += $$ROOT/lib/libmgl.a -lcppunit
+LIBS += $$ROOT/lib/libmgl.a -lcppunit -lgomp
 SOURCES += ../UnitTestMain.cc ../UnitTestUtils.cc
 HEADERS += ../UnitTestUtils.h
+QMAKE_CXXFLAGS += -fopenmp
 
 JSON_CPP_SRC = $$SUBMODULES/json-cpp
 include($$JSON_CPP_SRC/json-cpp.pri)
