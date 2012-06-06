@@ -7,7 +7,7 @@
 #include "UnitTestUtils.h"
 #include "MglCoreTestCase.h"
 
-
+#include "libthing/Scalar.h"
 #include "mgl/abstractable.h"
 #include "mgl/meshy.h"
 #include "mgl/configuration.h"
@@ -15,6 +15,7 @@
 
 using namespace std;
 using namespace mgl;
+using namespace libthing;
 
 
 string testCaseInputsDir("test_cases/mglCoreTestCase/inputs/");
