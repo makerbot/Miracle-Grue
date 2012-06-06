@@ -973,10 +973,10 @@ void RoofingTestCase::testFlatsurface()
 	grid.subSample(surface, skipCount, infills);
 
 	Polygons xPolys;
-	grid.polygonsFromRanges(infills, true, xPolys);
+	grid.polygonsFromRanges(infills, loops, true, xPolys);
 
 	Polygons yPolys;
-	grid.polygonsFromRanges(infills, false, yPolys);
+	grid.polygonsFromRanges(infills, loops, false, yPolys);
 
 	string filename = outputDir + "hexagon_surface.scad";
 	ScadDebugFile fscad;
@@ -1053,7 +1053,7 @@ void RoofingTestCase::testSkeleton()
 	loadSlicerConfigFromFile(config, slicerCfg);
 	cout << "read model " << modelFile << endl;
 
-	slicerCfg.infillSkipCount = 5;
+	slicerCfg.infillDensity = 0.2;
 
 	Slicer slicer(slicerCfg);
 	Tomograph tomograph;
@@ -1078,11 +1078,13 @@ void RoofingTestCase::testSkeleton()
 	regioner.roofing(skeleton.flatSurfaces, tomograph.grid, skeleton.roofings);
 
 	cout << "infills" << endl;
-	regioner.infills( skeleton.flatSurfaces,
-			tomograph.grid,
-					skeleton.roofings,
-					skeleton.floorings,
-					skeleton.infills);
+	regioner.infills(skeleton.flatSurfaces,
+					 tomograph.grid,
+					 skeleton.roofings,
+					 skeleton.floorings,
+					 skeleton.solids,
+					 skeleton.sparses,
+					 skeleton.infills);
 
 
 	cout << "slice data" << endl;
@@ -1113,7 +1115,8 @@ void RoofingTestCase::testSkeleton()
 		const GridRanges &infillRanges = skeleton.infills[i];
 
 		Polygons &infills = extruderSlice.infills;
-		slicor.infills(infillRanges, tomograph.grid, direction, infills);
+		slicor.infills(infillRanges, tomograph.grid, outlineSegments,
+					   direction, infills);
 	}
 
     // cout << "gcode" << endl;
@@ -1301,7 +1304,7 @@ void RoofingTestCase::testDiffBug1()
 
 }
 
-
+/* this doesn't have the necessary data to use polygonsFromRanges anymore
 void surfaceToscad( const Grid &grid,
 					const GridRanges &surface,
 					const char * name,
@@ -1330,7 +1333,7 @@ void surfaceToscad( const Grid &grid,
 //    out << "color([1,0,0,1])"<< xname << "0();" << endl;
 //    out << "color([0,1,0,1])"<< yname << "0();" << endl;
 }
-
+*/
 void extractLineX(const Grid &grid,
 					const GridRanges &surface, size_t lineId, GridRanges &result)
 {
@@ -1415,14 +1418,14 @@ void RoofingTestCase::testUnionSurfaces()
     cout << "infill_x_" << xRowId << "=";
     extractLineX(tomograph.grid, myInfill, xRowId, infillLine );
 
-	surfaceToscad(tomograph.grid, sparseLine, "sparseLine", 0, fscad);
+	/*	surfaceToscad(tomograph.grid, sparseLine, "sparseLine", 0, fscad);
 	surfaceToscad(tomograph.grid, roofingLine, "roofingLine", 0, fscad);
 	surfaceToscad(tomograph.grid, infillLine, "infillLine", 0, fscad);
 
 	surfaceToscad(tomograph.grid, surface, "surface", 0, fscad);
 	surfaceToscad(tomograph.grid, sparseInfill, "sparseInfill", 0, fscad);
 	surfaceToscad(tomograph.grid, roofing, "roofing", 0, fscad);
-	surfaceToscad(tomograph.grid, myInfill, "infill", 0, fscad);
+	surfaceToscad(tomograph.grid, myInfill, "infill", 0, fscad);*/
 
 
     std::ostream & out = fscad.getOut();
