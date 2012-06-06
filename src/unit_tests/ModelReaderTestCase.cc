@@ -478,7 +478,7 @@ void batchProcess(	Scalar firstLayerZ,
 		std::vector< SliceData > slices;
 
 		unsigned int nbOfShells = 0;
-		Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, mesh.readSliceTable().size(), scadFile.c_str());
+		//Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, mesh.readSliceTable().size(), scadFile.c_str());
 
 		cout << "Slicing" << endl;
 		unsigned int extruderId = 0;
@@ -491,6 +491,8 @@ void batchProcess(	Scalar firstLayerZ,
 			slices.push_back( SliceData());
 			SliceData &slice = slices[sliceId];
 
+			bool hazNewPaths = false;
+			/*needs to be converted to slicer and tomographize
 			bool hazNewPaths = slicy.slice( trianglesForSlice,
 											sliceId,
 											extruderId,
@@ -501,7 +503,7 @@ void batchProcess(	Scalar firstLayerZ,
 											infillShrinking,
 											insetDistanceFactor,
 											writeDebugScadFiles,
-											slice);
+											slice);*/
 			if(!hazNewPaths)
 			{
 		    	cout << "WARNING: Layer " << sliceId << " has no outline!" << endl;
