@@ -6,7 +6,7 @@
 #include "UnitTestUtils.h"
 #include "SlicerSplitTestCase.h"
 
-#include "insetTests.h"
+#include "UnitTestUtils.h"
 
 #include "mgl/mgl.h"
 #include "mgl/configuration.h"
