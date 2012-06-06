@@ -320,16 +320,20 @@ int main(int argc, char *argv[], char *[]) // envp
 		std::vector<mgl::SliceData> slices;
 
 		ProgressLog log;
-
-		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
-					scad,
-					gcodeFile.c_str(),
-					firstSliceIdx,
-					lastSliceIdx,
-					tomograph,
-					regions,
-					slices,
-					&log);
+		try{
+			miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
+						scad,
+						gcodeFile.c_str(),
+						firstSliceIdx,
+						lastSliceIdx,
+						tomograph,
+						regions,
+						slices,
+						&log);
+		} catch(char const* c){
+			cerr << "miracleGrue throws exception...\n" << c << endl;
+			exit(666);
+		}
 
     }
     catch(mgl::Exception &mixup)

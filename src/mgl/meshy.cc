@@ -3,6 +3,8 @@
 #include "mgl.h"
 
 #include<iostream>
+#include<algorithm>
+#include<string>
 #include<stdint.h>
 #include<cstring>
 
@@ -212,7 +214,7 @@ size_t Meshy::readStlFile(const char* stlFilename)
 	} intdata;
 
 	size_t facecount = 0;
-
+	
 	uint8_t buf[512];
 	FILE *fHandle = fopen(stlFilename, "rb");
 	if (!fHandle)
@@ -231,8 +233,13 @@ size_t Meshy::readStlFile(const char* stlFilename)
 		MeshyException problem(msg.c_str());
 		throw (problem);
 	}
-	bool isBinary = true;
-	if (!strncasecmp((const char*) buf, "solid", 5)) {
+	bool isBinary = true;	
+	
+	string solid_string = "solid";
+	string test_string((const char*)buf, 5);
+	transform(test_string.begin(), test_string.end(), test_string.begin(), ::tolower);
+	
+	if (test_string != solid_string) {
 		isBinary = false;
 	}
 	if (isBinary) {
