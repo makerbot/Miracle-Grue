@@ -6,9 +6,9 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "ClipperTestCase.h"
 #include "UnitTestUtils.h"
-#include "insetTests.h"
+#include "mgl/abstractable.h"
 #include "mgl/clipper.h"
-
+#include "mgl/ScadDebugFile.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ClipperTestCase );
 
