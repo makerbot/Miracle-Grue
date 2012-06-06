@@ -1,7 +1,7 @@
 #ifndef UNIT_TEST_UTIL_H_
 #define UNIT_TEST_UTIL_H_
 
-#include "libthing/LineSegment2.h"
+#include "mgl/mgl.h"
 
 void clip(const std::vector<libthing::LineSegment2> &in,
 			unsigned int min,
