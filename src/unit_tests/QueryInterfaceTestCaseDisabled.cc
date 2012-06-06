@@ -3,16 +3,16 @@
 #include <cppunit/config/SourcePrefix.h>
 #include "QueryInterfaceTestCase.h"
 
-#include "../Configuration.h"
+#include "mgl/configuration.h"
 //#include "../ModelFileReaderOperation.h"
 //#include "../SliceOperation.h"
 //#include "../RegionerOperation.h"
 //#include "../PatherOperation.h"
 //#include "../GCoderOperation.h"
-#include "../FileWriterOperation.h"
+//#include "../FileWriterOperation.h"
 
-#include "../json-cpp/include/json/writer.h"
-#include "../json-cpp/include/json/value.h"
+#include <json/writer.h>
+#include <json/value.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( QueryInterfaceTestCase );
 
@@ -72,7 +72,7 @@ using namespace std;
 void QueryInterfaceTestCase::simpleInterrogationTest()
 {
 
-	BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
+	//BOOST_LOG_TRIVIAL(trace)<< "Starting:" <<__FUNCTION__ << endl;
 
 	// Get our dictionary of Config Requirements.
 	Json::Value* fileWriteRequires = FileWriterOperation::getStaticConfigRequirements();
