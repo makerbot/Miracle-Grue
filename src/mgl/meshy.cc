@@ -236,12 +236,12 @@ size_t Meshy::readStlFile(const char* stlFilename)
 	bool isBinary = true;	
 	
 	string solid_string = "solid";
+	buf[5] = '\0';
 	string test_string((const char*)buf, 5);
 	transform(test_string.begin(), test_string.end(), test_string.begin(), ::tolower);
 	
-	if (test_string != solid_string) {
-		isBinary = false;
-	}
+	isBinary = (test_string.compare(solid_string) != 0);
+
 	if (isBinary) {
 		// Binary STL file
 		// Skip remainder of 80 character comment field
