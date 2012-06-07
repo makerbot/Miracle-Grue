@@ -320,7 +320,6 @@ int main(int argc, char *argv[], char *[]) // envp
 		std::vector<mgl::SliceData> slices;
 
 		ProgressLog log;
-
 		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
 					scad,
 					gcodeFile.c_str(),
@@ -330,13 +329,17 @@ int main(int argc, char *argv[], char *[]) // envp
 					regions,
 					slices,
 					&log);
-
     }
     catch(mgl::Exception &mixup)
     {
     	Log::severe() << "ERROR: "<< mixup.error << endl;
     	return -1;
     }
+	catch(char const* c)
+	{
+		Log::severe() << c << endl;
+		return -1;
+	}
 
 	exit(EXIT_SUCCESS);
 }
