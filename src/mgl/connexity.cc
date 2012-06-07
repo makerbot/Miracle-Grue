@@ -16,6 +16,10 @@ using namespace mgl;
 using namespace std;
 using namespace libthing;
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "ezlogger_headers.hpp"
 
