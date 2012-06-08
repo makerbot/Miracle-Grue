@@ -10,15 +10,13 @@
 */
 
 #include "connexity.h"
-#include "log.h"
 
 using namespace mgl;
 using namespace std;
 using namespace libthing;
 
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
-#include "ezlogger_headers.hpp"
-
+#include "log.h"
 
 index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
 								const Vector3 &coords,

@@ -235,7 +235,7 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 
 	int endpoint = points_remaining.begin()->first;
 
-	polygons.push_back(Polygon());
+	polygons.push_back(mgl::Polygon());
 
 	while(!points_remaining.empty()) {
 		points_remaining.erase(endpoint);
@@ -263,10 +263,10 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 
 		if (crossesOutline(LineSegment2(points[endpoint], points[closest]),
 							outline)) {
-			polygons.push_back(Polygon());
+			polygons.push_back(mgl::Polygon());
 		}
 
-		Polygon &poly = polygons.back();
+		mgl::Polygon &poly = polygons.back();
 
 		int connected = points_remaining[closest];
 		poly.push_back(points[closest]);

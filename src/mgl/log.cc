@@ -1,6 +1,3 @@
-#include "log.h"
-
-
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -10,6 +7,8 @@
 #define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "ezlogger_headers.hpp"
 #endif
+
+#include "log.h"
 
 using namespace mgl;
 using namespace std;

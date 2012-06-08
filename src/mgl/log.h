@@ -3,6 +3,12 @@
 
 #include <iostream>
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+#include "../../submodule/EzCppLog/ezlogger_headers.hpp"
+
 namespace mgl
 {
 

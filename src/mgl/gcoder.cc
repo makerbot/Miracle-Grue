@@ -34,7 +34,7 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 // These positions are aligned with the fisrt line and last line of the polygon.
 // LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
 // LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
-void polygonLeadInAndLeadOut(const Polygon &polygon, const Extruder &extruder,
+void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extruder,
 							 double leadIn, double leadOut,
 							 Vector2 &start, Vector2 &end)
 {
