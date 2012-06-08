@@ -141,6 +141,9 @@ string FileSystemAbstractor::getDataFile(const char *filename) const {
 	if (found.length() > 0 && fileReadable(found.c_str())) 
 		return found;
 		
+	if (fileReadable(filename)) //fall back to current working directory
+		return string(filename);
+
 	return string();
 }
 
