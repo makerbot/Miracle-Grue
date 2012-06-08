@@ -148,7 +148,7 @@ void SlicerCupTestCase::testSpecificIssuesC()
 }
 
 
-void addPoints(Polygon& pol)
+void addPoints(mgl::Polygon& pol)
 {
 	pol.push_back(Vector2());
 	pol.push_back(Vector2());
@@ -161,7 +161,7 @@ void addPoints(Polygon& pol)
 
 void addPolys(Polygons& pol)
 {
-	Polygon p0,p1,p2,p3;
+	mgl::Polygon p0,p1,p2,p3;
 	addPoints(p0);
 	addPoints(p1);
 	addPoints(p2);
@@ -185,7 +185,7 @@ void addPolysGroup(PolygonsGroup &pg)
 
 void addExtruderSlice( ExtruderSlice &slice)
 {
-	Polygon p1, p2;
+	mgl::Polygon p1, p2;
 	Polygons pg1;
 	addPoints(p1);
 	addPoints(p2);
@@ -198,7 +198,7 @@ void addExtruderSlice( ExtruderSlice &slice)
 
 void testStackCreation(	std::vector<SliceData>& slices)
 {
-	Polygon pol;
+	mgl::Polygon pol;
 	addPoints(pol);
 	CPPUNIT_ASSERT( 7 == pol.size());
 
