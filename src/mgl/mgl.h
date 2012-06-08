@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include "Exception.h"
+#include "libthing/Scalar.h"
 #include "libthing/Vector2.h"
 #include "libthing/Vector3.h"
 #include "libthing/LineSegment2.h"
@@ -37,9 +38,6 @@ namespace mgl
 {
 
 std::string getMiracleGrueVersionStr();
-
-// Type used for indexes of triangles/etc for unique indexing
-typedef unsigned int index_t;
 
 /// Structure contains list of triangle 'id's, used to
 /// reference which triangle in the master list is related.
