@@ -7,8 +7,6 @@
 #include <windows.h>
 #endif
 
-#include "../../submodule/EzCppLog/ezlogger_headers.hpp"
-
 namespace mgl
 {
 

@@ -15,7 +15,6 @@ using namespace mgl;
 using namespace std;
 using namespace libthing;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "log.h"
 
 index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
@@ -34,14 +33,14 @@ index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
 		Scalar dd =  dx * dx + dy * dy + dz * dz;
 		if( dd < tolerence )
 		{
-			//EZLOGGERVLSTREAM(axter::log_often) << "Found VERTEX" << std::endl;
+			Log::info() << "Found VERTEX" << std::endl;
 			index_t vertexIndex = std::distance(vertices.begin(), it);
 			return vertexIndex;
 		}
 	}
 
 	index_t vertexIndex;
-	// EZLOGGERVLSTREAM(axter::log_often) << "NEW VERTEX " << coords << std::endl;
+	Log::info() << "NEW VERTEX " << coords << std::endl;
 	Vertex vertex;
 	vertex.point = coords;
 	vertices.push_back(vertex);
@@ -248,11 +247,11 @@ void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNe
 		}
 	}
 
-	//EZLOGGERVLSTREAM(axter::log_info) << "All Neighbors of face:" << startFaceIndex <<":" << neighbors0.size() << ", " << neighbors1.size() << ", " << neighbors2.size() << std::endl;
-	//for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
-	//{
-	//	EZLOGGERVLSTREAM(axter::log_info) << " >" << *i << std::endl;
-	//}
+	Log::info() << "All Neighbors of face:" << startFaceIndex <<":" << neighbors0.size() << ", " << neighbors1.size() << ", " << neighbors2.size() << std::endl;
+	for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
+	{
+		Log::info() << " >" << *i << std::endl;
+	}
 }
 
 index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
@@ -272,7 +271,7 @@ index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
 			const Face& face = faces[faceIndex];
 			if( cutFace(z, face, cut))
 			{
-		//		EZLOGGERVLSTREAM(axter::log_info) << " " << faceIndex << " CUTS it!" << std::endl;
+				Log::info() << " " << faceIndex << " CUTS it!" << std::endl;
 				return faceIndex;
 			}
 		}

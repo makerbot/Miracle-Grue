@@ -3,7 +3,6 @@
 using namespace mgl;
 using namespace std;
 
-#define EZLOGGER_OUTPUT_FILENAME "ezlogger.txt"
 #include "log.h"
 
 Edge::Edge(index_t v0, index_t v1, index_t face)
