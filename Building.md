@@ -24,6 +24,11 @@
 **Windows Requirements**
 
 	We are still working on this. 
+	
+	-Install Python. Version 2.7 and up should work. Add python.exe to your PATH variable.
+	-Install the Qt SDK. Add the included QtSDK/mingw/bin directory as well as QtSDK/Desktop/Qt/<Version>/mingw/bin directories to your path.
+	-For unit tests to compile, download CppUnit from sourceforge.net/apps/mediawiki/cppunit/
+		-configure, make, make install, then move the created bin, lib, and include directory to QtSDK/mingw
     
 	Scons: scons requires Python, which may not be on your system.
     	 
