@@ -17,6 +17,10 @@ using namespace libthing;
 
 #include "log.h"
 
+#ifdef WIN32
+typedef unsigned int index_t;
+#endif
+
 index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
 								const Vector3 &coords,
 								Scalar tolerence)

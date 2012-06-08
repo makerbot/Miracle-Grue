@@ -22,10 +22,6 @@
 
 #include "Edge.h"
 
-#ifdef WIN32
-typedef int index_t;
-#endif
-
 
 namespace mgl // Miracle-Grue's geometry library
 {
