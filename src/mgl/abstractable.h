@@ -63,6 +63,7 @@ public:
 	::std::string pathJoin(std::string path, std::string filename) const;
 
     int guarenteeDirectoryExists(const char* dirPath);
+	int guarenteeDirectoryExistsRecursive(const char* dirPath);
 	bool fileReadable(const char *filename) const;
 
 	::std::string getDataFile(const char *filename) const;
