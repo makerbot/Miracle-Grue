@@ -20,6 +20,7 @@ for filename in os.listdir('.'):
         pro = open(testname+'/'+testname+'.pro', 'w')
         pro.write('''
 TEMPLATE = app
+CONFIG += console
 ROOT = ../../..
 SUBMODULES = $$ROOT/submodule
 
