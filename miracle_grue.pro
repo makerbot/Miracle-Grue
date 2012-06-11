@@ -1,4 +1,8 @@
 
+!noclean {
+	system("python clean_qmake_files.py")
+}
+
 # Build versioning
 GIT_COMMIT = $$(GIT_COMMIT)
 isEmpty(GIT_COMMIT) {
