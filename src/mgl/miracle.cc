@@ -26,9 +26,12 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
                       ProgressBar *progress)
 {
 
+	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	mesh.readStlFile(modelFile);
+
 	Slicer slicer(slicerCfg, progress);
 
-	slicer.tomographyze(modelFile, tomograph);
+	slicer.tomographyze(mesh, tomograph);
 
 	Regioner regioner(slicerCfg, progress);
 

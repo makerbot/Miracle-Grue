@@ -14,11 +14,8 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 
 
-void Slicer::tomographyze( const char* modelFile, Tomograph &tomograph)
+void Slicer::tomographyze( Meshy &mesh, Tomograph &tomograph)
 {
-	Meshy mesh(layerCfg.firstLayerZ, layerCfg.layerH);
-	mesh.readStlFile(modelFile);
-
 	// grid.init(mesh.limits, slicerCfg.layerW);
 	unsigned int sliceCount = mesh.readSliceTable().size();
 	tomograph.outlines.resize(sliceCount);

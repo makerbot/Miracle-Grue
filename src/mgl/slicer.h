@@ -95,7 +95,7 @@ public:
 	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress =NULL);
 
 	/// TBD
-	void tomographyze( const char* modelFile, Tomograph &tomograph);
+	void tomographyze( Meshy &mesh, Tomograph &tomograph);
 
 	/// TBD
     void outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments);
