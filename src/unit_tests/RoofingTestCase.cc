@@ -1053,13 +1053,16 @@ void RoofingTestCase::testSkeleton()
 	loadSlicerConfigFromFile(config, slicerCfg);
 	cout << "read model " << modelFile << endl;
 
+	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	mesh.readStlFile(modelFile.c_str());
+
 	slicerCfg.infillDensity = 0.2;
 
 	Slicer slicer(slicerCfg);
 	Tomograph tomograph;
 
 	cout << "outlines" << endl;
-	slicer.tomographyze(modelFile.c_str(), tomograph);
+	slicer.tomographyze(mesh, tomograph);
 
 	Regioner regioner(slicerCfg);
 
@@ -1143,7 +1146,10 @@ void RoofingTestCase::test3dKnotPlatform()
 	Slicer slicer(slicerCfg);
 	Tomograph tomograph;
 
-	slicer.tomographyze(modelFile.c_str(), tomograph);
+	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	mesh.readStlFile(modelFile.c_str());
+
+	slicer.tomographyze(mesh, tomograph);
 
 	Regioner regioner(slicerCfg);
 
