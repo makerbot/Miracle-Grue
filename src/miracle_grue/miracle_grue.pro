@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core
+#QT       += core
 
 TARGET = ../../bin/miracle_grue
 TEMPLATE = app
@@ -20,7 +20,7 @@ mac {
     INCLUDEPATH += /System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers
         LIBS += -framework CoreFoundation
 }
-//include($$MGL_SRC/mgl.pro.inc)
+include($$MGL_SRC/mgl.pro.inc)
 INCLUDEPATH += ..
 
 LIBTHING_BASE = ../../submodule/libthing/src/main
