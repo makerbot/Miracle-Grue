@@ -37,6 +37,7 @@ include($$LIBTHING_BASE/cpp-qt/Libthing.pro.inc)
 
 ''')
         pro.write('TARGET = $$ROOT/bin/unit_tests/'+testname+'\n')
+        pro.write('CONFIG += console\n')
         pro.write('SOURCES += ../'+testname+'.cc\n')
         pro.write('HEADERS += ../'+testname+'.h\n')
 
