@@ -11,8 +11,10 @@
 #include "mgl/meshy.h"
 #include "mgl/configuration.h"
 #include "mgl/gcoder.h"
+#include "mgl/abstractable.h"
 
 #include <sys/stat.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace mgl;
@@ -23,6 +25,9 @@ using namespace libthing;
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
 #ifdef WIN32
+
+static const string testdir = "outputs\\test_cases\\GCoderTestCase";
+
 #define SINGLE_EXTRUDER_CONFIG "outputs\\test_cases\\GCoderTestCase\\single_xtruder.config"
 #define SINGLE_EXTRUDER_FILE_NAME "outputs\\test_cases\\GCoderTestCase\\single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "outputs\\test_cases\\GCoderTestCase\\dual_xtruder_warmup.gcode"
@@ -31,6 +36,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define SINGLE_EXTRUDER_MULTI_GRID_PATH "outputs\\test_cases\\GCoderTestCase\\single_xtruder_multigrid_path.gcode"
 #define SINGLE_EXTRUDER_KNOT "outputs\\test_cases\\GCoderTestCase\\knot.gcode"
 #else
+
+static const string testdir = "outputs/test_cases/GCoderTestCase";
+
 #define SINGLE_EXTRUDER_CONFIG "outputs/test_cases/GCoderTestCase/single_xtruder.config"
 #define SINGLE_EXTRUDER_FILE_NAME "outputs/test_cases/GCoderTestCase/single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "outputs/test_cases/GCoderTestCase/dual_xtruder_warmup.gcode"
@@ -113,7 +121,9 @@ void GCoderTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
-
+	
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(testdir.c_str());
+	
 	mkDebugPath(outputDir.c_str() );
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
@@ -188,13 +198,20 @@ void GCoderTestCase::testSingleExtruder()
 	GCoder gcoder(cfg);
 
 
-	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME);
+	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME, std::ios::out);
+	std::cout << "Gout has been declared as of now!" << std::endl;
+	perror("FOO");
+	CPPUNIT_ASSERT ( gout );
+	
 	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_FILE_NAME);
 	gcoder.writeEndDotGCode(gout);
 
-
-	// verify that gcode file has been generated
-	CPPUNIT_ASSERT( ifstream(SINGLE_EXTRUDER_FILE_NAME) );
+	// verify that gcode file has been generatedperror();
+	ifstream sefn(SINGLE_EXTRUDER_FILE_NAME);
+	bool sefn_openstate = sefn.is_open();
+	std::cout<< SINGLE_EXTRUDER_FILE_NAME << 
+			" open state is " << sefn_openstate << std::endl;
+	CPPUNIT_ASSERT( sefn.is_open() );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 

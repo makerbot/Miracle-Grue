@@ -36,12 +36,6 @@ std::ostream &MyComputer::log()
 }
 
 
-#ifdef QT_CORE_LIB
-int FileSystemAbstractor::guarenteeDirectoryExists(const char* )//pathname  )
-{
-    Log::info() << "not supported on QT" << endl;
-    return -1;
-#else
 int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
 {
     int status = 0;
@@ -56,6 +50,7 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
         }
         else if (!(attrib & FILE_ATTRIBUTE_DIRECTORY)) 
             status = -1;
+		return status;
 
 #else //WIN32
         // mode_t does not work under QT
@@ -73,8 +68,21 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
 			status = -1;
 		return status;
 #endif //!WIN32
-#endif //!QT_CORE_LIB
+}
 
+int FileSystemAbstractor::guarenteeDirectoryExistsRecursive(const char* dirPath){
+	/* Assume dirPath is delimited by getPathSeparatorCharacter() */
+	string dirString(dirPath);
+	size_t pos = 0;
+	int err;
+	while((pos = dirString.find(getPathSeparatorCharacter(), pos+1)) != 
+			string::npos){
+		string dirSub = dirString.substr(0, pos);
+		err = guarenteeDirectoryExists(dirSub.c_str());
+		if(err)
+			return err;
+	}
+	return guarenteeDirectoryExists(dirPath);
 }
 
 string FileSystemAbstractor::pathJoin(string path, string filename) const
