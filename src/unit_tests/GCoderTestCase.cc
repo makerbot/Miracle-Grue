@@ -22,6 +22,15 @@ using namespace libthing;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 
+#ifdef WIN32
+#define SINGLE_EXTRUDER_CONFIG "outputs\\test_cases\\GCoderTestCase\\single_xtruder.config"
+#define SINGLE_EXTRUDER_FILE_NAME "outputs\\test_cases\\GCoderTestCase\\single_xtruder_warmup.gcode"
+#define DUAL_EXTRUDER_FILE_NAME "outputs\\test_cases\\GCoderTestCase\\dual_xtruder_warmup.gcode"
+#define SINGLE_EXTRUDER_WITH_PATH "outputs\\test_cases\\GCoderTestCase\\single_xtruder_with_path.gcode"
+#define SINGLE_EXTRUDER_GRID_PATH "outputs\\test_cases\\GCoderTestCase\\single_xtruder_grid_path.gcode"
+#define SINGLE_EXTRUDER_MULTI_GRID_PATH "outputs\\test_cases\\GCoderTestCase\\single_xtruder_multigrid_path.gcode"
+#define SINGLE_EXTRUDER_KNOT "outputs\\test_cases\\GCoderTestCase\\knot.gcode"
+#else
 #define SINGLE_EXTRUDER_CONFIG "outputs/test_cases/GCoderTestCase/single_xtruder.config"
 #define SINGLE_EXTRUDER_FILE_NAME "outputs/test_cases/GCoderTestCase/single_xtruder_warmup.gcode"
 #define DUAL_EXTRUDER_FILE_NAME "outputs/test_cases/GCoderTestCase/dual_xtruder_warmup.gcode"
@@ -29,6 +38,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION( GCoderTestCase );
 #define SINGLE_EXTRUDER_GRID_PATH "outputs/test_cases/GCoderTestCase/single_xtruder_grid_path.gcode"
 #define SINGLE_EXTRUDER_MULTI_GRID_PATH "outputs/test_cases/GCoderTestCase/single_xtruder_multigrid_path.gcode"
 #define SINGLE_EXTRUDER_KNOT "outputs/test_cases/GCoderTestCase/knot.gcode"
+#endif
+
 
 string outputDir("outputs/test_cases/GCoderTestCase/");
 
