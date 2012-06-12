@@ -19,6 +19,7 @@ target.path = /usr/bin
 mac {
     INCLUDEPATH += /System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers
         LIBS += -framework CoreFoundation
+    CONFIG -= app_bundle
 }
 include($$MGL_SRC/mgl.pro.inc)
 INCLUDEPATH += ..
