@@ -16,6 +16,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <sstream>
 #include <cassert>
 
 #include "Exception.h"
@@ -84,20 +85,23 @@ public:
 		:firstLayerZ(firstLayerZ), layerH(layerH)
 	{}
 
-	unsigned int zToLayerAbove(Scalar z) const
+	unsigned int zToLayerAbove(Scalar const z) const
 	{
-		if(z < 0)
+		Scalar const tol = 0.000001; // tolerance: 1 nanometer
+		if (libthing::tlower(z, 0, tol))
 		{
-                        LayerException mixup("Model with points below the z axis are not supported in this version. Please center your model on the build area");
-                        throw mixup;
+			std::ostringstream oss;
+			oss << "Model with points below the z axis are not supported in this version. Please center your model on the build area.";
+			oss << " z=" << z << std::endl;
+			LayerException mixup(oss.str().c_str());
+			throw mixup;
 		}
 
-		if (z < firstLayerZ)
+		if (libthing::tlower(z, firstLayerZ, tol))
 			return 0;
 
-		Scalar tol = 0.00000000000001; // tolerance
-		Scalar layer = (z+tol-firstLayerZ) / layerH;
-		return (unsigned int)ceil(layer);
+		Scalar const layer = (z+tol-firstLayerZ) / layerH;
+		return static_cast<unsigned int>(ceil(layer));
 	}
 
 	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
