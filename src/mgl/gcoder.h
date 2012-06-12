@@ -18,8 +18,8 @@
 #include "pather.h"
 
 
-#define SAMESAME_TOL 1e-6
-#define MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM 100000000
+static const Scalar SAMESAME_TOL = 1e-6;
+static const Scalar MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM = 100000000;
 
 namespace mgl
 {
@@ -36,13 +36,13 @@ struct Platform
 				waitingPositionY(-50),
 				waitingPositionZ(0)
 	{}
-	double temperature;				// temperature of the platform during builds
+	Scalar temperature;				// temperature of the platform during builds
 	bool automated;
 
 	// the wiper(s) are affixed to the platform
-    double waitingPositionX;
-    double waitingPositionY;
-    double waitingPositionZ;
+    Scalar waitingPositionX;
+    Scalar waitingPositionY;
+    Scalar waitingPositionZ;
 };
 
 /// Properties of an extrusion profile
@@ -67,22 +67,22 @@ struct Extrusion
 
 	Scalar crossSectionArea(Scalar height) const;
 
-	double feedrate;
+	Scalar feedrate;
 
-	double retractDistance;
-	double retractRate;
-	double restartExtraDistance;
-	double extrudedDimensionsRatio;
+	Scalar retractDistance;
+	Scalar retractRate;
+	Scalar restartExtraDistance;
+	Scalar extrudedDimensionsRatio;
 
-	double flow; // RPM value for the extruder motor... not a real unit :-(
+	Scalar flow; // RPM value for the extruder motor... not a real unit :-(
 
-	double leadIn;
-	double leadOut;
+	Scalar leadIn;
+	Scalar leadOut;
 
-	double snortFlow;
-	double snortFeedrate;
-	double squirtFlow;
-	double squirtFeedrate;
+	Scalar snortFlow;
+	Scalar snortFeedrate;
+	Scalar squirtFlow;
+	Scalar squirtFeedrate;
 };
 
 
@@ -106,16 +106,16 @@ struct Extruder
 	bool isVolumetric() const { return  extrusionMode == VOLUMETRIC_MODE; };
 
 
-	double coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
-	double extrusionTemperature; 	 // the extrusion temperature in Celsius
+	Scalar coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
+	Scalar extrusionTemperature; 	 // the extrusion temperature in Celsius
 
 	// this determines the gap between the nozzle tip
 	// and the layer at position z (measured at the middle of the layer)
-	double nozzleZ;
-	double zFeedRate;
+	Scalar nozzleZ;
+	Scalar zFeedRate;
 	extrusionMode_t extrusionMode;
-	double feedDiameter;
-	char code;
+	Scalar feedDiameter;
+	unsigned char code;
 	int id;
 
 	std::string firstLayerExtrusionProfile;
@@ -127,43 +127,42 @@ struct Extruder
 /// a gantry covers functions of the printer frame,
 /// contains the state of x,y,z, feed rate and other state that
 // change as the print happens.
-struct Gantry
+class Gantry
 {
-
-	double x,y,z,a,b,feed;     // current position and feed
-
+public:
+	Scalar x,y,z,a,b,feed;     // current position and feed
+	unsigned char ab;
 
 public:
-	double rapidMoveFeedRateXY;
-	double rapidMoveFeedRateZ;
-	double homingFeedRateZ;
-	double layerH;
+	
+	Gantry();
+	
+	Scalar get_x() const;
+	Scalar get_y() const;
+	Scalar get_z() const;
+	Scalar get_a() const;
+	Scalar get_b() const;
+	Scalar get_feed() const;
+	unsigned char get_current_extruder() const;
+	
+	void set_x(Scalar nx);
+	void set_y(Scalar ny);
+	void set_z(Scalar nz);
+	void set_a(Scalar na);
+	void set_b(Scalar nb);
+	void set_feed(Scalar nfeed);
+	void set_current_extruder(unsigned char nab);
+
+public:
+	Scalar rapidMoveFeedRateXY;
+	Scalar rapidMoveFeedRateZ;
+	Scalar homingFeedRateZ;
+	Scalar layerH;
 
 	bool xyMaxHoming;
 	bool zMaxHoming;
 	bool extruding;
-	double scalingFactor;
-	char ab;
-
-	Gantry()
-		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
-		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
-		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
-		 a(0),
-         b(0),
-		 feed(0),
-		 rapidMoveFeedRateXY(5000),
-		 rapidMoveFeedRateZ(1400),
-		 homingFeedRateZ(100),
-		 layerH(.27),
-		 xyMaxHoming(true),
-		 zMaxHoming(false),
-		 extruding(false),
-		 scalingFactor(1),
-		 ab('A')
-	{
-
-	}
+	Scalar scalingFactor;
 
 
 
@@ -172,9 +171,9 @@ public:
 	/// writes g1 motion command to gcode output stream
 	/// TODO: make this lower level function private.
 	void g1Motion(std::ostream &ss,
-				  double x, double y, double z,
-				  double e,
-				  double feed,
+				  Scalar x, Scalar y, Scalar z,
+				  Scalar e,
+				  Scalar feed,
 				  const char *comment,
 				  bool doX, bool doY, bool doZ,
 				  bool doE,
@@ -193,18 +192,18 @@ public:
 	void g1(std::ostream &ss,
 			const Extruder *extruder,
 			const Extrusion *extrusion,
-			double x,
-			double y,
-			double z,
-			double feed,
+			Scalar x,
+			Scalar y,
+			Scalar z,
+			Scalar feed,
 			const char *comment);
 
 	/// g1 public overloaded methods to make interface simpler
 	void g1(std::ostream &ss,
-			double x,
-			double y,
-			double z,
-			double feed,
+			Scalar x,
+			Scalar y,
+			Scalar z,
+			Scalar feed,
 			const char *comment) {
 		g1(ss, NULL, NULL, x, y, z, feed, comment);
 	};
@@ -213,10 +212,10 @@ public:
 	void g1(std::ostream &ss,
 			const Extruder &extruder,
 			const Extrusion &extrusion,
-			double x,
-			double y,
-			double z,
-			double feed,
+			Scalar x,
+			Scalar y,
+			Scalar z,
+			Scalar feed,
 			const char *comment) {
 		g1(ss, &extruder, &extrusion, x, y, z, feed, comment);
 	};
@@ -243,7 +242,7 @@ struct Outline
 {
 	Outline() :enabled(false), distance(3.0){}
 	bool enabled;   // when true, a rectangular ouline of the part will be performed
-	double distance; // the distance in mm  between the model and the rectangular outline
+	Scalar distance; // the distance in mm  between the model and the rectangular outline
 };
 
 
@@ -303,8 +302,8 @@ public:
 
 
         /// shortcut for doing a G1 that only move Z
-        void moveZ( std::ostream & ss, double z,
-        		unsigned int  extruderId, double zFeedrate);
+        void moveZ( std::ostream & ss, Scalar z,
+        		unsigned int  extruderId, Scalar zFeedrate);
 
 public:
         /// top level entry point for writing a gcode file
@@ -359,13 +358,13 @@ private:
     void writeWarmupSequence(std::ostream & ss);
     void writeAnchor(std::ostream & ss);
     void writePolygons(	std::ostream& ss,
-						double z,
+						Scalar z,
 						const Extruder &extruder,
 						const Extrusion &extrusion,
 						const Polygons &paths);
 
     void writePolygon(	std::ostream & ss,
-						double z,
+						Scalar z,
 						const Extruder &extruder,
 						const Extrusion &extrusion,
 						const Polygon & polygon);
