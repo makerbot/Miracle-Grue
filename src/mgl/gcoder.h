@@ -167,6 +167,20 @@ public:
 	
 	/// reinitialize current xyzabf to start xyzabf
 	void init_to_start();
+	
+	Scalar get_rapid_move_feed_rate_xy() const;
+	Scalar get_rapid_move_feed_rate_z() const;
+	Scalar get_homing_feed_rate_z() const;
+	bool get_xy_max_homing() const;
+	bool get_z_max_homing() const;
+	Scalar get_layer_h() const;
+	
+	void set_rapid_move_feed_rate_xy(Scalar nxyr);
+	void set_rapid_move_feed_rate_z(Scalar nzr);
+	void set_homing_feed_rate_z(Scalar nhfrz);
+	void set_xy_max_homing(bool mh);
+	void set_z_max_homing(bool mh);
+	void set_layer_h(Scalar lh);
 
 public:
 	Scalar rapidMoveFeedRateXY;

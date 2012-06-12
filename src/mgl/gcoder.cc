@@ -121,23 +121,23 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 	ss << endl;
 	ss << "(go to home position)" << endl;
 
-	if(gcoderCfg.gantry.xyMaxHoming)
-		ss << "G162 X Y F" << gcoderCfg.gantry.rapidMoveFeedRateXY<< " (home XY axes maximum)" << endl;
+	if(gcoderCfg.gantry.get_xy_max_homing())
+		ss << "G162 X Y F" << gcoderCfg.gantry.get_rapid_move_feed_rate_xy()<< " (home XY axes maximum)" << endl;
 	else
-		ss << "G161 X Y F" << gcoderCfg.gantry.rapidMoveFeedRateXY<< " (home XY axes minimum)" << endl;
+		ss << "G161 X Y F" << gcoderCfg.gantry.get_rapid_move_feed_rate_xy()<< " (home XY axes minimum)" << endl;
 
-	if(gcoderCfg.gantry.zMaxHoming)
-		ss << "G162 Z F" << gcoderCfg.gantry.rapidMoveFeedRateZ<< " (home Z axis maximum)" << endl;
+	if(gcoderCfg.gantry.get_z_max_homing())
+		ss << "G162 Z F" << gcoderCfg.gantry.get_rapid_move_feed_rate_z()<< " (home Z axis maximum)" << endl;
 	else
-		ss << "G161 Z F" << gcoderCfg.gantry.rapidMoveFeedRateZ<< " (home Z axis minimum)" << endl;
+		ss << "G161 Z F" << gcoderCfg.gantry.get_rapid_move_feed_rate_z()<< " (home Z axis minimum)" << endl;
 
 	ss << "G92 Z5 (set Z to 5)" << endl;
 	ss << "G1 Z0.0 (move Z down 0)" << endl;
 
-	if(gcoderCfg.gantry.zMaxHoming)
-		ss << "G162 Z F" << gcoderCfg. gantry.homingFeedRateZ<< " (home Z axis maximum)" << endl;
+	if(gcoderCfg.gantry.get_z_max_homing())
+		ss << "G162 Z F" << gcoderCfg. gantry.get_homing_feed_rate_z()<< " (home Z axis maximum)" << endl;
 	else
-		ss << "G161 Z F" << gcoderCfg.gantry.homingFeedRateZ<< " (home Z axis minimum)" << endl;
+		ss << "G161 Z F" << gcoderCfg.gantry.get_homing_feed_rate_z()<< " (home Z axis minimum)" << endl;
 
 	ss << "M132 X Y Z A B (Recall stored home offsets for XYZAB axis)" << endl;
 
@@ -269,7 +269,7 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const
 			ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
 		}
 
-		if(gcoderCfg.gantry.zMaxHoming)
+		if(gcoderCfg.gantry.get_z_max_homing())
 			ss << "G162 Z F500 (home Z axis maximum)" << endl;
 		ss << "(That's all folks!)" << endl;
 	}
@@ -316,7 +316,7 @@ void GCoder::writePolygon(	std::ostream & ss,
     // rapid move into position
     gcoderCfg.gantry.g1(ss, extruder, extrusion,
 						start.x, start.y, z,
-						gcoderCfg.gantry.rapidMoveFeedRateXY,
+						gcoderCfg.gantry.get_rapid_move_feed_rate_xy(),
 						"move into position");
 
     // start extruding ahead of time while moving towards the first point

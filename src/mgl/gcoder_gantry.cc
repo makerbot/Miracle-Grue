@@ -12,21 +12,23 @@ using std::stringstream;
 using libthing::LineSegment2;
 using libthing::Vector2;
 
-Gantry::Gantry() : x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
-		 y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
-		 z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),
-		 a(0),
-         b(0),
-		 feed(0),
-		 rapidMoveFeedRateXY(5000),
-		 rapidMoveFeedRateZ(1400),
-		 homingFeedRateZ(100),
-		 layerH(.27),
-		 xyMaxHoming(true),
-		 zMaxHoming(false),
-		 extruding(false),
-		 scalingFactor(1),
-		 ab('A') {}
+Gantry::Gantry() : rapidMoveFeedRateXY(5000),
+		rapidMoveFeedRateZ(1400),
+		homingFeedRateZ(100),
+		layerH(.27),
+		xyMaxHoming(true),
+		zMaxHoming(false),
+		scalingFactor(1) {
+	set_start_x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	set_start_y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	set_start_z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	set_start_a(0);
+	set_start_b(0);
+	set_start_feed(0);
+	set_current_extruder_index('A');
+	init_to_start();
+	set_extruding(false);
+}
 
 Scalar Gantry::get_x() const { return x; }
 Scalar Gantry::get_y() const { return y; }
@@ -60,6 +62,52 @@ void Gantry::set_start_a(Scalar na) { sx = na; }
 void Gantry::set_start_b(Scalar nb) { sx = nb; }
 void Gantry::set_start_feed(Scalar nfeed) { sfeed = nfeed; }
 
+void Gantry::init_to_start(){
+	set_x(get_start_x());
+	set_y(get_start_y());
+	set_z(get_start_z());
+	set_a(get_start_a());
+	set_b(get_start_b());
+	set_feed(get_start_feed());
+}
+
+Scalar Gantry::get_rapid_move_feed_rate_xy() const { 
+	return rapidMoveFeedRateXY;
+}
+Scalar Gantry::get_rapid_move_feed_rate_z() const {
+	return rapidMoveFeedRateZ;
+}
+Scalar Gantry::get_homing_feed_rate_z() const{
+	return homingFeedRateZ;
+}
+bool Gantry::get_xy_max_homing() const{
+	return xyMaxHoming;
+}
+bool Gantry::get_z_max_homing() const{
+	return zMaxHoming;
+}
+Scalar Gantry::get_layer_h() const{
+	return layerH;
+}
+
+void Gantry::set_rapid_move_feed_rate_xy(Scalar nxyr){
+	rapidMoveFeedRateXY = nxyr;
+}
+void Gantry::set_rapid_move_feed_rate_z(Scalar nzr){
+	rapidMoveFeedRateZ = nzr;
+}
+void Gantry::set_homing_feed_rate_z(Scalar nhfrz){
+	homingFeedRateZ = nhfrz;
+}
+void Gantry::set_xy_max_homing(bool mh){
+	xyMaxHoming = mh;
+}
+void Gantry::set_z_max_homing(bool mh){
+	zMaxHoming = mh;
+}
+void Gantry::set_layer_h(Scalar lh){
+	layerH = lh;
+}
 
 /// get axis value of the current extruder in(mm)
 /// (aka mm of feedstock since the last reset this print)
@@ -98,17 +146,6 @@ void Gantry::setCurrentE(Scalar e) {
 	}
 	}
 }
-
-
-void Gantry::init_to_start(){
-	set_x(get_start_x());
-	set_y(get_start_y());
-	set_z(get_start_z());
-	set_a(get_start_a());
-	set_b(get_start_b());
-	set_feed(get_start_feed());
-}
-
 void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
 	ss << "( extruder " << extruder.id << " )" << endl;
 	ss << "( GSWITCH T" << extruder.id << " )" << endl;
@@ -116,7 +153,6 @@ void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
 	ab = extruder.code;
 	ss << endl;
 }
-
 Scalar Gantry::segmentVolume(const Extruder &, // extruder,
 		const Extrusion &extrusion,
 		LineSegment2 &segment) const {
@@ -178,7 +214,6 @@ void Gantry::g1(std::ostream &ss,
 	g1Motion(ss, gx, gy, gz, e, gfeed, comment,
 			 doX, doY, doZ, doE, doFeed);
 }
-
 void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		const Extruder &extruder, const Extrusion &extrusion) {
 	if (extruder.isVolumetric()) {
@@ -197,7 +232,6 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 
 	set_extruding(true);
 }
-
 void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 		const Extruder &extruder, const Extrusion &extrusion) {
 	if (extruder.isVolumetric()) {
@@ -216,7 +250,6 @@ void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 
 	set_extruding(false);
 }
-
 void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz, 
 		Scalar e, Scalar mfeed, const char *g1Comment, bool doX,
 		bool doY, bool doZ, bool doE, bool doFeed) {
