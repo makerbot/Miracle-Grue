@@ -237,7 +237,7 @@ size_t Meshy::readStlFile(const char* stlFilename)
 	
 	string solid_string = "solid";
 	buf[5] = '\0';
-	string test_string((const char*)buf, 5);
+	string test_string((const char*)buf);
 	transform(test_string.begin(), test_string.end(), test_string.begin(), ::tolower);
 	
 	isBinary = (test_string.compare(solid_string) != 0);
@@ -306,8 +306,11 @@ size_t Meshy::readStlFile(const char* stlFilename)
 		// Gobble remainder of solid name line.
                 char* c = fgets((char*) buf, sizeof(buf), fHandle);
 		while (!feof(fHandle)) {
-                        int q = fscanf(fHandle, "%80s", buf);
-			if (!strcasecmp((char*) buf, "endsolid")) {
+			int q = fscanf(fHandle, "%80s", buf);
+			test_string = (const char*)(buf);
+			transform(test_string.begin(), test_string.end(), test_string.begin(), ::tolower);
+			string endsolid_string("endsolid");
+			if (test_string == endsolid_string) {
 				break;
 			}
 			vertexes_t &v = tridata.vertexes;
