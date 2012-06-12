@@ -34,7 +34,8 @@ Scalar Gantry::get_z() const { return z; }
 Scalar Gantry::get_a() const { return a; }
 Scalar Gantry::get_b() const { return b; }
 Scalar Gantry::get_feed() const { return feed; }
-unsigned char Gantry::get_current_extruder() const { return ab; }
+bool Gantry::get_extruding() const { return extruding; }
+unsigned char Gantry::get_current_extruder_index() const { return ab; }
 
 void Gantry::set_x(Scalar nx) { x = nx; }
 void Gantry::set_y(Scalar ny) { y = ny; }
@@ -42,7 +43,71 @@ void Gantry::set_z(Scalar nz) { z = nz; }
 void Gantry::set_a(Scalar na) { a = na; }
 void Gantry::set_b(Scalar nb) { b = nb; }
 void Gantry::set_feed(Scalar nfeed) { feed = nfeed; }
-void Gantry::set_current_extruder(unsigned char nab) { ab = nab;}
+void Gantry::set_extruding(bool nextruding) { extruding = nextruding; }
+void Gantry::set_current_extruder_index(unsigned char nab) { ab = nab;}
+
+Scalar Gantry::get_start_x() const { return sx; }
+Scalar Gantry::get_start_y() const { return sy; }
+Scalar Gantry::get_start_z() const { return sz; }
+Scalar Gantry::get_start_a() const { return sa; }
+Scalar Gantry::get_start_b() const { return sb; }
+Scalar Gantry::get_start_feed() const { return sfeed; }
+
+void Gantry::set_start_x(Scalar nx) { sx = nx; }
+void Gantry::set_start_y(Scalar ny) { sx = ny; }
+void Gantry::set_start_z(Scalar nz) { sx = nz; }
+void Gantry::set_start_a(Scalar na) { sx = na; }
+void Gantry::set_start_b(Scalar nb) { sx = nb; }
+void Gantry::set_start_feed(Scalar nfeed) { sfeed = nfeed; }
+
+
+/// get axis value of the current extruder in(mm)
+/// (aka mm of feedstock since the last reset this print)
+Scalar Gantry::getCurrentE() const {
+	switch(get_current_extruder_index()){
+	case 'A':
+		return get_a();
+		break;
+	case 'B':
+		return get_b();
+		break;
+	default:
+	{
+		string msg("Illegal extruder index ");
+		msg.push_back(get_current_extruder_index());
+		throw GcoderException(msg.c_str());
+		return 0;
+		break;
+	}
+	}
+}
+void Gantry::setCurrentE(Scalar e) {
+	switch(get_current_extruder_index()){
+	case 'A':
+		set_a(e);
+		break;
+	case 'B':
+		set_b(e);
+		break;
+	default:
+	{
+		string msg("Illegal extruder index ");
+		msg.push_back(get_current_extruder_index());
+		throw GcoderException(msg.c_str());
+		break;
+	}
+	}
+}
+
+
+void Gantry::init_to_start(){
+	set_x(get_start_x());
+	set_y(get_start_y());
+	set_z(get_start_z());
+	set_a(get_start_a());
+	set_b(get_start_b());
+	set_feed(get_start_feed());
+}
 
 void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
 	ss << "( extruder " << extruder.id << " )" << endl;
@@ -61,10 +126,10 @@ Scalar Gantry::segmentVolume(const Extruder &, // extruder,
 }
 Scalar Gantry::volumetricE(	const Extruder &extruder,
 		const Extrusion &extrusion,
-		Scalar x, Scalar y, Scalar z ) const {
+		Scalar vx, Scalar vy, Scalar vz ) const {
 	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
 	//segments get extruded
-	LineSegment2 seg(Vector2(this->x, this->y), Vector2(x, y));
+	LineSegment2 seg(Vector2(get_x(), get_y()), Vector2(vx, vy));
 	Scalar seg_volume = segmentVolume(extruder, extrusion, seg);
 
 	Scalar feed_cross_area = extruder.feedCrossSectionArea();
@@ -76,7 +141,7 @@ Scalar Gantry::volumetricE(	const Extruder &extruder,
 /*if extruder and extrusion are null we don't extrude*/
 void Gantry::g1(std::ostream &ss,
 		const Extruder *extruder, const Extrusion *extrusion,
-		Scalar x, Scalar y, Scalar z, Scalar feed,
+		Scalar gx, Scalar gy, Scalar gz, Scalar gfeed,
 		const char *comment = NULL) {
 
 	bool doX = true;
@@ -86,38 +151,38 @@ void Gantry::g1(std::ostream &ss,
 	bool doE = false;
 	Scalar e = getCurrentE();
 
-	if(!libthing::tequals(this->x, x, SAMESAME_TOL))
+	if(!libthing::tequals(get_x(), gx, SAMESAME_TOL))
 	{
 		doX = true;
 	}
-	if(!libthing::tequals(this->y, y, SAMESAME_TOL))
+	if(!libthing::tequals(get_y(), gy, SAMESAME_TOL))
 	{
 		doY=true;
 	}
-	if(!libthing::tequals(this->z, z, SAMESAME_TOL))
+	if(!libthing::tequals(get_z(), gz, SAMESAME_TOL))
 	{
 		doZ=true;
 	}
 
-	if(!libthing::tequals(this->feed, feed, SAMESAME_TOL))
+	if(!libthing::tequals(get_feed(), gfeed, SAMESAME_TOL))
 	{
 		doFeed=true;
 	}
 
-	if(extruding && extruder != NULL && extrusion != NULL
+	if(get_extruding() && extruder != NULL && extrusion != NULL
 	   && extruder->isVolumetric()) {
 		doE = true;
-		e = volumetricE(*extruder, *extrusion, x, y, z);
+		e = volumetricE(*extruder, *extrusion, gx, gy, gz);
 	}		
 
-	g1Motion(ss, x, y, z, e, feed, comment,
+	g1Motion(ss, gx, gy, gz, e, gfeed, comment,
 			 doX, doY, doZ, doE, doFeed);
 }
 
 void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		const Extruder &extruder, const Extrusion &extrusion) {
 	if (extruder.isVolumetric()) {
-		g1Motion(ss, x, y, z,
+		g1Motion(ss, get_x(), get_y(), get_z(),
 				 getCurrentE() + extrusion.retractDistance
 				 + extrusion.restartExtraDistance, extrusion.retractRate,
 				 "squirt", false, false, false, true, true); //only E and F
@@ -130,13 +195,13 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		ss << "M108 R" << extrusion.flow << " (good to go)" << endl;
 	}
 
-	extruding = true;
+	set_extruding(true);
 }
 
 void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 		const Extruder &extruder, const Extrusion &extrusion) {
 	if (extruder.isVolumetric()) {
-		g1Motion(ss, x, y, z,
+		g1Motion(ss, get_x(), get_y(), get_z(),
 				 getCurrentE() - extrusion.retractDistance,
 				 extrusion.retractRate, "snort",
 				 false, false, false, true, true); //only E and F
@@ -149,11 +214,11 @@ void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 		ss << "M103" << endl;
 	}
 
-	extruding = false;
+	set_extruding(false);
 }
 
-void Gantry::g1Motion(std::ostream &ss, Scalar x, Scalar y, Scalar z, Scalar e,
-		Scalar feed, const char *g1Comment, bool doX,
+void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz, 
+		Scalar e, Scalar mfeed, const char *g1Comment, bool doX,
 		bool doY, bool doZ, bool doE, bool doFeed) {
 
 	// not do something is not an option .. under certain conditions
@@ -169,36 +234,36 @@ void Gantry::g1Motion(std::ostream &ss, Scalar x, Scalar y, Scalar z, Scalar e,
 
 	// our moto: don't be bad!
 	bool bad = false;
-	if(fabs(x) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
-	if(fabs(y) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
-	if(fabs(z) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
-	if(feed <= 0 || feed > 100000) bad = true;
+	if(fabs(mx) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if(fabs(my) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if(fabs(mz) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if(mfeed <= 0 || mfeed > 100000) bad = true;
 
 	if(bad)
 	{
 		stringstream ss;
-		ss << "Illegal G1 move where x=" << x << ", y=" << y << ", z=" << z << ", feed=" << feed ;
+		ss << "Illegal G1 move where x=" << mx << ", y=" << my << ", z=" << mz << ", feed=" << mfeed ;
 		GcoderException mixup(ss.str().c_str());
 		throw mixup;
 	}
 
 
 	ss << "G1";
-	if(doX) ss << " X" << x;
-	if(doY) ss << " Y" << y;
-	if(doZ) ss << " Z" << z;
-	if(doFeed) ss << " F" << feed;
-	if(doE) ss << " " << ab << e;
+	if(doX) ss << " X" << mx;
+	if(doY) ss << " Y" << my;
+	if(doZ) ss << " Z" << mz;
+	if(doFeed) ss << " F" << mfeed;
+	if(doE) ss << " " << get_current_extruder_index() << e;
 	if(g1Comment) ss << " (" << g1Comment << ")";
 	ss << endl;
 
 	// if(feed >= 5000) assert(0);
 
 	// update state machine
-	if (doX) this->x = x;
-	if (doY) this->y = y;
-	if (doZ) this->z = z;
-	if (doFeed) this->feed = feed;
+	if (doX) set_x(mx);
+	if (doY) set_y(my);
+	if (doZ) set_z(mz);
+	if (doFeed) set_feed(mfeed);
 	if (doE) setCurrentE(e);
 }
 

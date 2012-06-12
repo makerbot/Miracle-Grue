@@ -199,8 +199,6 @@ void GCoderTestCase::testSingleExtruder()
 
 
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME, std::ios::out);
-	std::cout << "Gout has been declared as of now!" << std::endl;
-	perror("FOO");
 	CPPUNIT_ASSERT ( gout );
 	
 	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_FILE_NAME);
@@ -208,10 +206,7 @@ void GCoderTestCase::testSingleExtruder()
 
 	// verify that gcode file has been generatedperror();
 	ifstream sefn(SINGLE_EXTRUDER_FILE_NAME);
-	bool sefn_openstate = sefn.is_open();
-	std::cout<< SINGLE_EXTRUDER_FILE_NAME << 
-			" open state is " << sefn_openstate << std::endl;
-	CPPUNIT_ASSERT( sefn.is_open() );
+	CPPUNIT_ASSERT( sefn );
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 }
 

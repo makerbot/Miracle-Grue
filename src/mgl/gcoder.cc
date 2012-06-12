@@ -153,9 +153,9 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 			ss << "G92 B0" << endl;
 		}
 
-		gcoderCfg.gantry.a = 0;
-		gcoderCfg.gantry.b = 0;
-		gcoderCfg.gantry.extruding = false;
+		gcoderCfg.gantry.set_a(0);
+		gcoderCfg.gantry.set_b(0);
+		gcoderCfg.gantry.set_extruding(false);
 
 		gcoderCfg.gantry.g1(ss, gcoderCfg.platform.waitingPositionX,
 							gcoderCfg.platform.waitingPositionY,
@@ -445,7 +445,7 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
 	Vector2 start = startPoint(slices[0]);
 	gcoderCfg.gantry.squirt(gout, start, extruder, extrusion);
 	gcoderCfg.gantry.g1(gout, extruder, extrusion, start.x, start.y,
-						gcoderCfg.gantry.z, extrusion.feedrate,
+						gcoderCfg.gantry.get_z(), extrusion.feedrate,
 						"Extrude into position");
 
     initProgress("gcode", sliceCount);

@@ -132,7 +132,10 @@ class Gantry
 public:
 	Scalar x,y,z,a,b,feed;     // current position and feed
 	unsigned char ab;
+	bool extruding;
 
+private:
+	Scalar sx, sy, sz, sa, sb, sfeed;
 public:
 	
 	Gantry();
@@ -143,7 +146,8 @@ public:
 	Scalar get_a() const;
 	Scalar get_b() const;
 	Scalar get_feed() const;
-	unsigned char get_current_extruder() const;
+	bool get_extruding() const;
+	unsigned char get_current_extruder_index() const;
 	
 	void set_x(Scalar nx);
 	void set_y(Scalar ny);
@@ -151,7 +155,25 @@ public:
 	void set_a(Scalar na);
 	void set_b(Scalar nb);
 	void set_feed(Scalar nfeed);
-	void set_current_extruder(unsigned char nab);
+	void set_extruding(bool nextruding);
+	void set_current_extruder_index(unsigned char nab);
+	
+	Scalar get_start_x() const;
+	Scalar get_start_y() const;
+	Scalar get_start_z() const;
+	Scalar get_start_a() const;
+	Scalar get_start_b() const;
+	Scalar get_start_feed() const;
+	
+	void set_start_x(Scalar nx);
+	void set_start_y(Scalar ny);
+	void set_start_z(Scalar nz);
+	void set_start_a(Scalar na);
+	void set_start_b(Scalar nb);
+	void set_start_feed(Scalar nfeed);
+	
+	/// reinitialize current xyzabf to start xyzabf
+	void init_to_start();
 
 public:
 	Scalar rapidMoveFeedRateXY;
@@ -161,7 +183,6 @@ public:
 
 	bool xyMaxHoming;
 	bool zMaxHoming;
-	bool extruding;
 	Scalar scalingFactor;
 
 
@@ -171,9 +192,9 @@ public:
 	/// writes g1 motion command to gcode output stream
 	/// TODO: make this lower level function private.
 	void g1Motion(std::ostream &ss,
-				  Scalar x, Scalar y, Scalar z,
+				  Scalar mx, Scalar my, Scalar mz,
 				  Scalar e,
-				  Scalar feed,
+				  Scalar mfeed,
 				  const char *comment,
 				  bool doX, bool doY, bool doZ,
 				  bool doE,
@@ -192,47 +213,47 @@ public:
 	void g1(std::ostream &ss,
 			const Extruder *extruder,
 			const Extrusion *extrusion,
-			Scalar x,
-			Scalar y,
-			Scalar z,
-			Scalar feed,
+			Scalar gx,
+			Scalar gy,
+			Scalar gz,
+			Scalar gfeed,
 			const char *comment);
 
 	/// g1 public overloaded methods to make interface simpler
 	void g1(std::ostream &ss,
-			Scalar x,
-			Scalar y,
-			Scalar z,
-			Scalar feed,
+			Scalar gx,
+			Scalar gy,
+			Scalar gz,
+			Scalar gfeed,
 			const char *comment) {
-		g1(ss, NULL, NULL, x, y, z, feed, comment);
+		g1(ss, NULL, NULL, gx, gy, gz, gfeed, comment);
 	};
 
 	/// g1 public overloaded methods to make interface simpler
 	void g1(std::ostream &ss,
 			const Extruder &extruder,
 			const Extrusion &extrusion,
-			Scalar x,
-			Scalar y,
-			Scalar z,
-			Scalar feed,
+			Scalar gx,
+			Scalar gy,
+			Scalar gz,
+			Scalar gfeed,
 			const char *comment) {
-		g1(ss, &extruder, &extrusion, x, y, z, feed, comment);
+		g1(ss, &extruder, &extrusion, gx, gy, gz, gfeed, comment);
 	};
 
 	Scalar volumetricE(const Extruder &extruder, const Extrusion &extrusion,
-					   Scalar x, Scalar y, Scalar z) const;
+					   Scalar vx, Scalar vy, Scalar vz) const;
 
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
 						 libthing::LineSegment2 &segment) const;
 
 	/// get axis value of the current extruder in(mm)
 	/// (aka mm of feedstock since the last reset this print)
-	Scalar getCurrentE() const { if (ab == 'A') return a; else return b; };
+	Scalar getCurrentE() const;// { if (ab == 'A') return a; else return b; };
 
 	/// set axis value of the current extruder in(mm)
 	/// (aka mm of feedstock since the last reset this print)
-	void setCurrentE(Scalar e) { if (ab == 'A') a = e; else b = e; };
+	void setCurrentE(Scalar e);// { if (ab == 'A') a = e; else b = e; };
 };
 
 
