@@ -42,3 +42,10 @@ test {
 	}
     include(src/unit_tests/unit_tests.pri)
 }
+
+mac {
+    CONFIG -= app_bundle
+    QT -= gui core
+    LIBS -= -lQtGui -lQtCore
+
+}
