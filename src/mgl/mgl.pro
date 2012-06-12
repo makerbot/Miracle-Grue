@@ -11,6 +11,10 @@ QT       += core
 TARGET=../../lib/mgl
 
 win32 {
+	QMAKE_LFLAGS += -static -static-ligbcc -static-libstdc++
+}
+
+win32 {
     TARGET=../../../lib/mgl
 }
 
