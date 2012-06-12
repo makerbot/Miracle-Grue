@@ -778,7 +778,13 @@ void Gantry::g1Motion(std::ostream &ss, double x, double y, double z, double e,
 	if(doY) ss << " Y" << y;
 	if(doZ) ss << " Z" << z;
 	if(doFeed) ss << " F" << feed;
-	if(doE) ss << " " << ab << e;
+
+	if(doE) {
+		char axis = useEAxis ? 'E' : ab;
+
+		ss << " " << axis << e;
+	}
+
 	if(g1Comment) ss << " (" << g1Comment << ")";
 	ss << endl;
 

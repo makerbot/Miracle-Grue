@@ -144,6 +144,7 @@ public:
 	bool extruding;
 	double scalingFactor;
 	char ab;
+	bool useEAxis;
 
 	Gantry()
 		:x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM),

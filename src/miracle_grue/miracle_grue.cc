@@ -113,7 +113,7 @@ const option::Descriptor usageDescriptor[] =
 { END_GCODE, 	12, "e", "footer", Arg::NonEmpty,
 		"  -e \tend gcode file" },
 { OUT_FILENAME, 	13, "o", "outFilename", Arg::NonEmpty,
-		"  -o \twrite gcode to specific filename (defaults to <model>.gcode" },
+		"  -o \twrite gcode to specific filename (defaults to <model>.gcode)" },
 {0,0,0,0,0,0},
 };
 
