@@ -130,13 +130,6 @@ struct Extruder
 class Gantry
 {
 public:
-	Scalar x,y,z,a,b,feed;     // current position and feed
-	unsigned char ab;
-	bool extruding;
-
-private:
-	Scalar sx, sy, sz, sa, sb, sfeed;
-public:
 	
 	Gantry();
 	
@@ -185,6 +178,13 @@ public:
 	bool zMaxHoming;
 	Scalar scalingFactor;
 
+private:
+	Scalar x,y,z,a,b,feed;     // current position and feed
+	unsigned char ab;
+	bool extruding;
+
+private:
+	Scalar sx, sy, sz, sa, sb, sfeed;
 
 
 public:
