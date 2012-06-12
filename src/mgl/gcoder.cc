@@ -160,7 +160,7 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 		gcoderCfg.gantry.g1(ss, gcoderCfg.platform.waitingPositionX,
 							gcoderCfg.platform.waitingPositionY,
 							gcoderCfg.platform.waitingPositionZ,
-							gcoderCfg.gantry.rapidMoveFeedRateXY,
+							gcoderCfg.gantry.get_rapid_move_feed_rate_xy(),
 							"go to waiting position");
 						
 
@@ -291,7 +291,7 @@ void GCoder::writeAnchor(std::ostream &ss)
 			gcoderCfg.platform.waitingPositionX,
 			gcoderCfg.platform.waitingPositionY,
 				z,
-			gcoderCfg.gantry.rapidMoveFeedRateXY,
+			gcoderCfg.gantry.get_rapid_move_feed_rate_xy(),
 				NULL );
 
 	Scalar dx = gcoderCfg.platform.waitingPositionX - 3.0;
@@ -397,8 +397,8 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 
 	const std::map<std::string, Extrusion>::const_iterator &it = gcoderCfg.extrusionProfiles.find(profileName);
 	extrusion = it->second;
-	extrusion.feedrate *= gcoderCfg.gantry.scalingFactor;
-	extrusion.flow *= gcoderCfg.gantry.scalingFactor;
+	extrusion.feedrate *= gcoderCfg.gantry.get_scaling_factor();
+	extrusion.flow *= gcoderCfg.gantry.get_scaling_factor();
 }
 
 void GCoder::calcInSetExtrusion (   unsigned int extruderId,
@@ -419,8 +419,8 @@ void GCoder::calcInSetExtrusion (   unsigned int extruderId,
 
 	const std::map<std::string, Extrusion>::const_iterator &it = gcoderCfg.extrusionProfiles.find(profileName);
 	extrusion = it->second;
-	extrusion.feedrate *= gcoderCfg.gantry.scalingFactor;
-	extrusion.flow *= gcoderCfg.gantry.scalingFactor;
+	extrusion.feedrate *= gcoderCfg.gantry.get_scaling_factor();
+	extrusion.flow *= gcoderCfg.gantry.get_scaling_factor();
 }
 
 void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
@@ -491,7 +491,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
 	ss << "(Slice " << sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
 	// to each extruder its speed
-	Scalar zFeedrate = gcoderCfg.gantry.scalingFactor * gcoderCfg.extruders[0].zFeedRate;
+	Scalar zFeedrate = gcoderCfg.gantry.get_scaling_factor() * gcoderCfg.extruders[0].zFeedRate;
 	// moving all up. This is the first move for every new layer
 
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)

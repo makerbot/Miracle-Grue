@@ -172,9 +172,9 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 			conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming"));
 	gcoderCfg.gantry.set_z_max_homing(boolCheck(
 			conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming"));
-	gcoderCfg.gantry.scalingFactor = doubleCheck(
+	gcoderCfg.gantry.set_scaling_Factor(doubleCheck(
 			conf.root["gantry"]["scalingFactor"], 
-			"gantry.scalingFactor");
+			"gantry.scalingFactor"));
 	gcoderCfg.gantry.set_rapid_move_feed_rate_xy(doubleCheck(
 			conf.root["gantry"]["rapidMoveFeedRateXY"], 
 			"gantry.rapidMoveFeedRateXY"));

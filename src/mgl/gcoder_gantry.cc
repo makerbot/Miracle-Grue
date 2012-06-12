@@ -89,6 +89,9 @@ bool Gantry::get_z_max_homing() const{
 Scalar Gantry::get_layer_h() const{
 	return layerH;
 }
+Scalar Gantry::get_scaling_factor() const{
+	return scalingFactor;
+}
 
 void Gantry::set_rapid_move_feed_rate_xy(Scalar nxyr){
 	rapidMoveFeedRateXY = nxyr;
@@ -107,6 +110,9 @@ void Gantry::set_z_max_homing(bool mh){
 }
 void Gantry::set_layer_h(Scalar lh){
 	layerH = lh;
+}
+void Gantry::set_scaling_Factor(Scalar sf){
+	scalingFactor = sf;
 }
 
 /// get axis value of the current extruder in(mm)

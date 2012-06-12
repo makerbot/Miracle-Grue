@@ -174,6 +174,7 @@ public:
 	bool get_xy_max_homing() const;
 	bool get_z_max_homing() const;
 	Scalar get_layer_h() const;
+	Scalar get_scaling_factor() const;
 	
 	void set_rapid_move_feed_rate_xy(Scalar nxyr);
 	void set_rapid_move_feed_rate_z(Scalar nzr);
@@ -181,27 +182,7 @@ public:
 	void set_xy_max_homing(bool mh);
 	void set_z_max_homing(bool mh);
 	void set_layer_h(Scalar lh);
-
-public:
-	Scalar rapidMoveFeedRateXY;
-	Scalar rapidMoveFeedRateZ;
-	Scalar homingFeedRateZ;
-	Scalar layerH;
-
-	bool xyMaxHoming;
-	bool zMaxHoming;
-	Scalar scalingFactor;
-
-private:
-	Scalar x,y,z,a,b,feed;     // current position and feed
-	unsigned char ab;
-	bool extruding;
-
-private:
-	Scalar sx, sy, sz, sa, sb, sfeed;
-
-
-public:
+	void set_scaling_Factor(Scalar sf);
 
 	/// writes g1 motion command to gcode output stream
 	/// TODO: make this lower level function private.
@@ -268,6 +249,22 @@ public:
 	/// set axis value of the current extruder in(mm)
 	/// (aka mm of feedstock since the last reset this print)
 	void setCurrentE(Scalar e);// { if (ab == 'A') a = e; else b = e; };
+	
+private:
+	Scalar rapidMoveFeedRateXY;
+	Scalar rapidMoveFeedRateZ;
+	Scalar homingFeedRateZ;
+	Scalar layerH;
+
+	bool xyMaxHoming;
+	bool zMaxHoming;
+	Scalar scalingFactor;
+
+	Scalar x,y,z,a,b,feed;     // current position and feed
+	unsigned char ab;
+	bool extruding;
+
+	Scalar sx, sy, sz, sa, sb, sfeed;	// start positions and feed
 };
 
 
