@@ -37,8 +37,10 @@ class ConfigException : public Exception {public: ConfigException(const char *ms
 double doubleCheck(const Json::Value &value, const char *name);
 unsigned int uintCheck(const Json::Value &value, const char *name);
 std::string stringCheck(const Json::Value &value, const char *name);
-std::string optionalPathCheck(const Json::Value &value, const char *name);
+std::string pathCheck(const Json::Value &value, const char *name,
+					  const std::string &defaultval);
 std::string pathCheck(const Json::Value &value, const char *name);
+bool boolCheck(const Json::Value &value, const char *name, bool defaultval);
 bool boolCheck(const Json::Value &value, const char *name);
 //
 // This class contains settings for the 3D printer, and user preferences

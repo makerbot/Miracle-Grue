@@ -57,9 +57,10 @@ unsigned int mgl::uintCheck(const Json::Value &value, const char *name)
 	return value.asUInt();
 }
 
-string mgl::optionalPathCheck(const Json::Value &value, const char *name) {
+string mgl::pathCheck(const Json::Value &value, const char *name,
+					  const std::string &defaultval) {
 	if (value.isNull()) 
-		return string("");
+		return defaultval;
 	else
 		return pathCheck(value, name);
 }
@@ -85,6 +86,15 @@ string mgl::stringCheck(const Json::Value &value, const char *name)
 		throw mixup;
 	}
 	return value.asString();
+}
+
+bool mgl::boolCheck(const Json::Value &value, const char *name,
+					const bool defaultval)
+{
+	if (value.isNull())
+		return defaultval;
+	else
+		return boolCheck(value, name);
 }
 
 bool mgl::boolCheck(const Json::Value &value, const char *name)
@@ -250,13 +260,13 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-	gcoderCfg.header = optionalPathCheck(conf.root["gcoder"]["header"], "gcoder.header");
-	gcoderCfg.footer = optionalPathCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
+	gcoderCfg.header = pathCheck(conf.root["gcoder"]["header"], "gcoder.header", "");
+	gcoderCfg.footer = pathCheck(conf.root["gcoder"]["footer"], "gcoder.footer", "");
 	gcoderCfg.doOutlines = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
 	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
 	gcoderCfg.doInfills  =  boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
-	gcoderCfg.gantry.useEAxis = boolCheck(conf.root["gcoder"]["useEAxis"], "gcoder.useEAxis");
+	gcoderCfg.gantry.useEAxis = boolCheck(conf.root["gcoder"]["useEAxis"], "gcoder.useEAxis", false);
 
 }
 
