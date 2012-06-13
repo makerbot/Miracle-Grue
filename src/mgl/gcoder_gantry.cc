@@ -1,3 +1,4 @@
+#include "gcoder_gantry.h"
 #include "gcoder.h"
 #include <cmath>
 #include <iostream>
@@ -12,22 +13,10 @@ using std::stringstream;
 using libthing::LineSegment2;
 using libthing::Vector2;
 
-Gantry::Gantry() : rapidMoveFeedRateXY(5000),
-		rapidMoveFeedRateZ(1400),
-		homingFeedRateZ(100),
-		layerH(.27),
-		xyMaxHoming(true),
-		zMaxHoming(false),
-		scalingFactor(1) {
-	set_start_x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
-	set_start_y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
-	set_start_z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
-	set_start_a(0);
-	set_start_b(0);
-	set_start_feed(0);
+Gantry::Gantry(const GantryConfig& gCfg) : gantryCfg(gCfg) {
 	set_current_extruder_index('A');
-	init_to_start();
 	set_extruding(false);
+	init_to_start();
 }
 
 Scalar Gantry::get_x() const { return x; }
@@ -48,72 +37,15 @@ void Gantry::set_feed(Scalar nfeed) { feed = nfeed; }
 void Gantry::set_extruding(bool nextruding) { extruding = nextruding; }
 void Gantry::set_current_extruder_index(unsigned char nab) { ab = nab;}
 
-Scalar Gantry::get_start_x() const { return sx; }
-Scalar Gantry::get_start_y() const { return sy; }
-Scalar Gantry::get_start_z() const { return sz; }
-Scalar Gantry::get_start_a() const { return sa; }
-Scalar Gantry::get_start_b() const { return sb; }
-Scalar Gantry::get_start_feed() const { return sfeed; }
-
-void Gantry::set_start_x(Scalar nx) { sx = nx; }
-void Gantry::set_start_y(Scalar ny) { sx = ny; }
-void Gantry::set_start_z(Scalar nz) { sx = nz; }
-void Gantry::set_start_a(Scalar na) { sx = na; }
-void Gantry::set_start_b(Scalar nb) { sx = nb; }
-void Gantry::set_start_feed(Scalar nfeed) { sfeed = nfeed; }
-
 void Gantry::init_to_start(){
-	set_x(get_start_x());
-	set_y(get_start_y());
-	set_z(get_start_z());
-	set_a(get_start_a());
-	set_b(get_start_b());
-	set_feed(get_start_feed());
+	set_x(gantryCfg.get_start_x());
+	set_y(gantryCfg.get_start_y());
+	set_z(gantryCfg.get_start_z());
+	set_a(gantryCfg.get_start_a());
+	set_b(gantryCfg.get_start_b());
+	set_feed(gantryCfg.get_start_feed());
 }
 
-Scalar Gantry::get_rapid_move_feed_rate_xy() const { 
-	return rapidMoveFeedRateXY;
-}
-Scalar Gantry::get_rapid_move_feed_rate_z() const {
-	return rapidMoveFeedRateZ;
-}
-Scalar Gantry::get_homing_feed_rate_z() const{
-	return homingFeedRateZ;
-}
-bool Gantry::get_xy_max_homing() const{
-	return xyMaxHoming;
-}
-bool Gantry::get_z_max_homing() const{
-	return zMaxHoming;
-}
-Scalar Gantry::get_layer_h() const{
-	return layerH;
-}
-Scalar Gantry::get_scaling_factor() const{
-	return scalingFactor;
-}
-
-void Gantry::set_rapid_move_feed_rate_xy(Scalar nxyr){
-	rapidMoveFeedRateXY = nxyr;
-}
-void Gantry::set_rapid_move_feed_rate_z(Scalar nzr){
-	rapidMoveFeedRateZ = nzr;
-}
-void Gantry::set_homing_feed_rate_z(Scalar nhfrz){
-	homingFeedRateZ = nhfrz;
-}
-void Gantry::set_xy_max_homing(bool mh){
-	xyMaxHoming = mh;
-}
-void Gantry::set_z_max_homing(bool mh){
-	zMaxHoming = mh;
-}
-void Gantry::set_layer_h(Scalar lh){
-	layerH = lh;
-}
-void Gantry::set_scaling_Factor(Scalar sf){
-	scalingFactor = sf;
-}
 
 /// get axis value of the current extruder in(mm)
 /// (aka mm of feedstock since the last reset this print)
@@ -152,6 +84,7 @@ void Gantry::setCurrentE(Scalar e) {
 	}
 	}
 }
+
 void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
 	ss << "( extruder " << extruder.id << " )" << endl;
 	ss << "( GSWITCH T" << extruder.id << " )" << endl;
@@ -159,20 +92,13 @@ void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
 	ab = extruder.code;
 	ss << endl;
 }
-Scalar Gantry::segmentVolume(const Extruder &, // extruder,
-		const Extrusion &extrusion,
-		LineSegment2 &segment) const {
-	Scalar cross_area = extrusion.crossSectionArea(layerH);
-	Scalar length = segment.length();
-	return cross_area * length;
-}
 Scalar Gantry::volumetricE(	const Extruder &extruder,
 		const Extrusion &extrusion,
 		Scalar vx, Scalar vy, Scalar vz ) const {
 	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
 	//segments get extruded
 	LineSegment2 seg(Vector2(get_x(), get_y()), Vector2(vx, vy));
-	Scalar seg_volume = segmentVolume(extruder, extrusion, seg);
+	Scalar seg_volume = gantryCfg.segmentVolume(extruder, extrusion, seg);
 
 	Scalar feed_cross_area = extruder.feedCrossSectionArea();
 
@@ -304,6 +230,88 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 	if (doZ) set_z(mz);
 	if (doFeed) set_feed(mfeed);
 	if (doE) setCurrentE(e);
+}
+
+GantryConfig::GantryConfig(){
+	set_start_x(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	set_start_y(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	set_start_z(MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	set_start_a(0);
+	set_start_b(0);
+	set_start_feed(0);
+	set_rapid_move_feed_rate_xy(5000);
+	set_rapid_move_feed_rate_z(1400);
+	set_homing_feed_rate_z(100);
+	set_layer_h(0.27);
+	set_xy_max_homing(true);
+	set_z_max_homing(false);
+	set_scaling_Factor(1.0);
+}
+
+
+Scalar GantryConfig::get_start_x() const { return sx; }
+Scalar GantryConfig::get_start_y() const { return sy; }
+Scalar GantryConfig::get_start_z() const { return sz; }
+Scalar GantryConfig::get_start_a() const { return sa; }
+Scalar GantryConfig::get_start_b() const { return sb; }
+Scalar GantryConfig::get_start_feed() const { return sfeed; }
+
+void GantryConfig::set_start_x(Scalar nx) { sx = nx; }
+void GantryConfig::set_start_y(Scalar ny) { sx = ny; }
+void GantryConfig::set_start_z(Scalar nz) { sx = nz; }
+void GantryConfig::set_start_a(Scalar na) { sx = na; }
+void GantryConfig::set_start_b(Scalar nb) { sx = nb; }
+void GantryConfig::set_start_feed(Scalar nfeed) { sfeed = nfeed; }
+
+Scalar GantryConfig::get_rapid_move_feed_rate_xy() const { 
+	return rapidMoveFeedRateXY;
+}
+Scalar GantryConfig::get_rapid_move_feed_rate_z() const {
+	return rapidMoveFeedRateZ;
+}
+Scalar GantryConfig::get_homing_feed_rate_z() const{
+	return homingFeedRateZ;
+}
+bool GantryConfig::get_xy_max_homing() const{
+	return xyMaxHoming;
+}
+bool GantryConfig::get_z_max_homing() const{
+	return zMaxHoming;
+}
+Scalar GantryConfig::get_layer_h() const{
+	return layerH;
+}
+Scalar GantryConfig::get_scaling_factor() const{
+	return scalingFactor;
+}
+Scalar GantryConfig::segmentVolume(const Extruder &, // extruder,
+		const Extrusion &extrusion,
+		LineSegment2 &segment) const {
+	Scalar cross_area = extrusion.crossSectionArea(layerH);
+	Scalar length = segment.length();
+	return cross_area * length;
+}
+
+void GantryConfig::set_rapid_move_feed_rate_xy(Scalar nxyr){
+	rapidMoveFeedRateXY = nxyr;
+}
+void GantryConfig::set_rapid_move_feed_rate_z(Scalar nzr){
+	rapidMoveFeedRateZ = nzr;
+}
+void GantryConfig::set_homing_feed_rate_z(Scalar nhfrz){
+	homingFeedRateZ = nhfrz;
+}
+void GantryConfig::set_xy_max_homing(bool mh){
+	xyMaxHoming = mh;
+}
+void GantryConfig::set_z_max_homing(bool mh){
+	zMaxHoming = mh;
+}
+void GantryConfig::set_layer_h(Scalar lh){
+	layerH = lh;
+}
+void GantryConfig::set_scaling_Factor(Scalar sf){
+	scalingFactor = sf;
 }
 
 

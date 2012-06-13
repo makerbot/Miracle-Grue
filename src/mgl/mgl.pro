@@ -62,6 +62,7 @@ HEADERS +=     $$MGL_SRC/abstractable.h\
     $$MGL_SRC/connexity.h\
     $$MGL_SRC/Exception.h\
     $$MGL_SRC/gcoder.h\
+    $$MGL_SRC/gcoder_gantry.h\
     $$MGL_SRC/infill.h\
     $$MGL_SRC/insets.h\
     $$MGL_SRC/JsonConverter.h\

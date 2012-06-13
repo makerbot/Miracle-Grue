@@ -11,12 +11,14 @@
 
 #include "gcoder.h"
 
-using namespace mgl;
+#include "log.h"
+#include <math.h>
+
+namespace mgl {
+
 using namespace std;
 using namespace libthing;
 
-#include "log.h"
-#include <math.h>
 
 // function that adds an s to a noun if count is more than 1
 std::string plural(const char*noun, int count, const char* ending = "s")
@@ -63,8 +65,6 @@ void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extrud
 	end.y   = d.y + cd.y * leadOut;
 
 }
-
-
 
 void GCoder::writeMachineInitialization(std::ostream &ss) const
 {
@@ -121,23 +121,23 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 	ss << endl;
 	ss << "(go to home position)" << endl;
 
-	if(gcoderCfg.gantry.get_xy_max_homing())
-		ss << "G162 X Y F" << gcoderCfg.gantry.get_rapid_move_feed_rate_xy()<< " (home XY axes maximum)" << endl;
+	if(gcoderCfg.gantryCfg.get_xy_max_homing())
+		ss << "G162 X Y F" << gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy()<< " (home XY axes maximum)" << endl;
 	else
-		ss << "G161 X Y F" << gcoderCfg.gantry.get_rapid_move_feed_rate_xy()<< " (home XY axes minimum)" << endl;
+		ss << "G161 X Y F" << gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy()<< " (home XY axes minimum)" << endl;
 
-	if(gcoderCfg.gantry.get_z_max_homing())
-		ss << "G162 Z F" << gcoderCfg.gantry.get_rapid_move_feed_rate_z()<< " (home Z axis maximum)" << endl;
+	if(gcoderCfg.gantryCfg.get_z_max_homing())
+		ss << "G162 Z F" << gcoderCfg.gantryCfg.get_rapid_move_feed_rate_z()<< " (home Z axis maximum)" << endl;
 	else
-		ss << "G161 Z F" << gcoderCfg.gantry.get_rapid_move_feed_rate_z()<< " (home Z axis minimum)" << endl;
+		ss << "G161 Z F" << gcoderCfg.gantryCfg.get_rapid_move_feed_rate_z()<< " (home Z axis minimum)" << endl;
 
 	ss << "G92 Z5 (set Z to 5)" << endl;
 	ss << "G1 Z0.0 (move Z down 0)" << endl;
 
-	if(gcoderCfg.gantry.get_z_max_homing())
-		ss << "G162 Z F" << gcoderCfg. gantry.get_homing_feed_rate_z()<< " (home Z axis maximum)" << endl;
+	if(gcoderCfg.gantryCfg.get_z_max_homing())
+		ss << "G162 Z F" << gcoderCfg. gantryCfg.get_homing_feed_rate_z()<< " (home Z axis maximum)" << endl;
 	else
-		ss << "G161 Z F" << gcoderCfg.gantry.get_homing_feed_rate_z()<< " (home Z axis minimum)" << endl;
+		ss << "G161 Z F" << gcoderCfg.gantryCfg.get_homing_feed_rate_z()<< " (home Z axis minimum)" << endl;
 
 	ss << "M132 X Y Z A B (Recall stored home offsets for XYZAB axis)" << endl;
 
@@ -153,14 +153,14 @@ void GCoder::writeHomingSequence(std::ostream &ss)
 			ss << "G92 B0" << endl;
 		}
 
-		gcoderCfg.gantry.set_a(0);
-		gcoderCfg.gantry.set_b(0);
-		gcoderCfg.gantry.set_extruding(false);
+		gantry.set_a(0);
+		gantry.set_b(0);
+		gantry.set_extruding(false);
 
-		gcoderCfg.gantry.g1(ss, gcoderCfg.platform.waitingPositionX,
+		gantry.g1(ss, gcoderCfg.platform.waitingPositionX,
 							gcoderCfg.platform.waitingPositionY,
 							gcoderCfg.platform.waitingPositionZ,
-							gcoderCfg.gantry.get_rapid_move_feed_rate_xy(),
+							gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
 							"go to waiting position");
 						
 
@@ -269,7 +269,7 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const
 			ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
 		}
 
-		if(gcoderCfg.gantry.get_z_max_homing())
+		if(gcoderCfg.gantryCfg.get_z_max_homing())
 			ss << "G162 Z F500 (home Z axis maximum)" << endl;
 		ss << "(That's all folks!)" << endl;
 	}
@@ -287,17 +287,17 @@ void GCoder::writeAnchor(std::ostream &ss)
 	ss << "M101        (Start Extruder)" << endl;
 	ss << "G4 P1600" << endl;
 
-	gcoderCfg.gantry.g1(  ss,
+	gantry.g1(  ss,
 			gcoderCfg.platform.waitingPositionX,
 			gcoderCfg.platform.waitingPositionY,
 				z,
-			gcoderCfg.gantry.get_rapid_move_feed_rate_xy(),
+			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
 				NULL );
 
 	Scalar dx = gcoderCfg.platform.waitingPositionX - 3.0;
 	Scalar dy = gcoderCfg.platform.waitingPositionY - 0.0;
 
-	gcoderCfg.gantry.g1(ss, dx, dy, z, 0.2 * anchorFeedRate , NULL);
+	gantry.g1(ss, dx, dy, z, 0.2 * anchorFeedRate , NULL);
 	ss << "M103 (Stop extruder)" << endl;
 	ss << endl;
 }
@@ -314,13 +314,13 @@ void GCoder::writePolygon(	std::ostream & ss,
     polygonLeadInAndLeadOut(polygon, extruder, extrusion.leadIn, extrusion.leadOut, start, stop);
 
     // rapid move into position
-    gcoderCfg.gantry.g1(ss, extruder, extrusion,
+    gantry.g1(ss, extruder, extrusion,
 						start.x, start.y, z,
-						gcoderCfg.gantry.get_rapid_move_feed_rate_xy(),
+						gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
 						"move into position");
 
     // start extruding ahead of time while moving towards the first point
-    gcoderCfg.gantry.squirt(ss, polygon[0], extruder, extrusion);
+    gantry.squirt(ss, polygon[0], extruder, extrusion);
 
 	Vector2 last = start;
    // for all other points in the polygon
@@ -332,11 +332,11 @@ void GCoder::writePolygon(	std::ostream & ss,
 		stringstream comment;
 		comment << "d: " << dist;
 
-		gcoderCfg.gantry.g1(ss, extruder, extrusion, p.x, p.y, z,
+		gantry.g1(ss, extruder, extrusion, p.x, p.y, z,
 							extrusion.feedrate, comment.str().c_str());
 	}
     //ss << "(STOP!)" << endl;
-    gcoderCfg.gantry.snort(ss, stop, extruder, extrusion);
+    gantry.snort(ss, stop, extruder, extrusion);
     //ss << "(!STOP)" << endl;
     ss << endl;
 
@@ -378,7 +378,7 @@ void GCoder::moveZ(ostream & ss, Scalar z, unsigned int  , Scalar zFeedrate)
     bool doFeed = true;
 
 
-    gcoderCfg.gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
+    gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
 
 }
 
@@ -397,8 +397,8 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 
 	const std::map<std::string, Extrusion>::const_iterator &it = gcoderCfg.extrusionProfiles.find(profileName);
 	extrusion = it->second;
-	extrusion.feedrate *= gcoderCfg.gantry.get_scaling_factor();
-	extrusion.flow *= gcoderCfg.gantry.get_scaling_factor();
+	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
+	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::calcInSetExtrusion (   unsigned int extruderId,
@@ -419,8 +419,8 @@ void GCoder::calcInSetExtrusion (   unsigned int extruderId,
 
 	const std::map<std::string, Extrusion>::const_iterator &it = gcoderCfg.extrusionProfiles.find(profileName);
 	extrusion = it->second;
-	extrusion.feedrate *= gcoderCfg.gantry.get_scaling_factor();
-	extrusion.flow *= gcoderCfg.gantry.get_scaling_factor();
+	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
+	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
@@ -443,9 +443,9 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
 	Extrusion extrusion;
 	calcInfillExtrusion(0, 0, extrusion);
 	Vector2 start = startPoint(slices[0]);
-	gcoderCfg.gantry.squirt(gout, start, extruder, extrusion);
-	gcoderCfg.gantry.g1(gout, extruder, extrusion, start.x, start.y,
-						gcoderCfg.gantry.get_z(), extrusion.feedrate,
+	gantry.squirt(gout, start, extruder, extrusion);
+	gantry.g1(gout, extruder, extrusion, start.x, start.y,
+						gantry.get_z(), extrusion.feedrate,
 						"Extrude into position");
 
     initProgress("gcode", sliceCount);
@@ -491,7 +491,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
 	ss << "(Slice " << sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
 	// to each extruder its speed
-	Scalar zFeedrate = gcoderCfg.gantry.get_scaling_factor() * gcoderCfg.extruders[0].zFeedRate;
+	Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() * gcoderCfg.extruders[0].zFeedRate;
 	// moving all up. This is the first move for every new layer
 
 	for(unsigned int extruderId = 0; extruderId < extruderCount; extruderId++)
@@ -519,7 +519,7 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 		{
 			if (extruderCount > 0)
 			{
-				gcoderCfg.gantry.writeSwitchExtruder(ss, extruder);
+				gantry.writeSwitchExtruder(ss, extruder);
 			}
 			if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst)
 			{
@@ -663,7 +663,7 @@ void GCoder::writeGCodeConfig(std::ostream &ss, const char* title="unknown sourc
 	ss << endl;
 }
 
-
+}
 
 
 

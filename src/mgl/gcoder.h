@@ -18,8 +18,7 @@
 #include "pather.h"
 
 
-static const Scalar SAMESAME_TOL = 1e-6;
-static const Scalar MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM = 100000000;
+#include "gcoder_gantry.h"
 
 namespace mgl
 {
@@ -48,8 +47,8 @@ struct Platform
 /// Properties of an extrusion profile
 /// an extruder may have multiple extrusion profiles
 /// EG: large, fast, 'first layer'
-struct Extrusion
-{
+class Extrusion {
+public:
 	Extrusion()
 		:feedrate(2400),
  		 retractDistance(0),
@@ -87,8 +86,9 @@ struct Extrusion
 
 
 /// Properties common to a single hardware extruder
-struct Extruder
+class Extruder
 {
+public:
 	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
 
 	Extruder()
@@ -127,145 +127,8 @@ struct Extruder
 /// a gantry covers functions of the printer frame,
 /// contains the state of x,y,z, feed rate and other state that
 // change as the print happens.
-class Gantry
-{
-public:
-	
-	Gantry();
-	
-	Scalar get_x() const;
-	Scalar get_y() const;
-	Scalar get_z() const;
-	Scalar get_a() const;
-	Scalar get_b() const;
-	Scalar get_feed() const;
-	bool get_extruding() const;
-	unsigned char get_current_extruder_index() const;
-	
-	void set_x(Scalar nx);
-	void set_y(Scalar ny);
-	void set_z(Scalar nz);
-	void set_a(Scalar na);
-	void set_b(Scalar nb);
-	void set_feed(Scalar nfeed);
-	void set_extruding(bool nextruding);
-	void set_current_extruder_index(unsigned char nab);
-	
-	Scalar get_start_x() const;
-	Scalar get_start_y() const;
-	Scalar get_start_z() const;
-	Scalar get_start_a() const;
-	Scalar get_start_b() const;
-	Scalar get_start_feed() const;
-	
-	void set_start_x(Scalar nx);
-	void set_start_y(Scalar ny);
-	void set_start_z(Scalar nz);
-	void set_start_a(Scalar na);
-	void set_start_b(Scalar nb);
-	void set_start_feed(Scalar nfeed);
-	
-	/// reinitialize current xyzabf to start xyzabf
-	void init_to_start();
-	
-	Scalar get_rapid_move_feed_rate_xy() const;
-	Scalar get_rapid_move_feed_rate_z() const;
-	Scalar get_homing_feed_rate_z() const;
-	bool get_xy_max_homing() const;
-	bool get_z_max_homing() const;
-	Scalar get_layer_h() const;
-	Scalar get_scaling_factor() const;
-	
-	void set_rapid_move_feed_rate_xy(Scalar nxyr);
-	void set_rapid_move_feed_rate_z(Scalar nzr);
-	void set_homing_feed_rate_z(Scalar nhfrz);
-	void set_xy_max_homing(bool mh);
-	void set_z_max_homing(bool mh);
-	void set_layer_h(Scalar lh);
-	void set_scaling_Factor(Scalar sf);
 
-	/// writes g1 motion command to gcode output stream
-	/// TODO: make this lower level function private.
-	void g1Motion(std::ostream &ss,
-				  Scalar mx, Scalar my, Scalar mz,
-				  Scalar e,
-				  Scalar mfeed,
-				  const char *comment,
-				  bool doX, bool doY, bool doZ,
-				  bool doE,
-				  bool doFeed);
 
-public:
-	void squirt(std::ostream &ss, const libthing::Vector2 &lineStart,
-				const Extruder &extruder, const Extrusion &extrusion);
-	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd,
-			   const Extruder &extruder, const Extrusion &extrusion);
-
-    void writeSwitchExtruder(std::ostream& ss, Extruder &extruder);
-
-	/// public method emits a g1 command to the stream,
-    /// only writing the parameters that have changed since the last g1.
-	void g1(std::ostream &ss,
-			const Extruder *extruder,
-			const Extrusion *extrusion,
-			Scalar gx,
-			Scalar gy,
-			Scalar gz,
-			Scalar gfeed,
-			const char *comment);
-
-	/// g1 public overloaded methods to make interface simpler
-	void g1(std::ostream &ss,
-			Scalar gx,
-			Scalar gy,
-			Scalar gz,
-			Scalar gfeed,
-			const char *comment) {
-		g1(ss, NULL, NULL, gx, gy, gz, gfeed, comment);
-	};
-
-	/// g1 public overloaded methods to make interface simpler
-	void g1(std::ostream &ss,
-			const Extruder &extruder,
-			const Extrusion &extrusion,
-			Scalar gx,
-			Scalar gy,
-			Scalar gz,
-			Scalar gfeed,
-			const char *comment) {
-		g1(ss, &extruder, &extrusion, gx, gy, gz, gfeed, comment);
-	};
-
-	Scalar volumetricE(const Extruder &extruder, const Extrusion &extrusion,
-					   Scalar vx, Scalar vy, Scalar vz) const;
-
-	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
-						 libthing::LineSegment2 &segment) const;
-
-	/// get axis value of the current extruder in(mm)
-	/// (aka mm of feedstock since the last reset this print)
-	Scalar getCurrentE() const;// { if (ab == 'A') return a; else return b; };
-
-	/// set axis value of the current extruder in(mm)
-	/// (aka mm of feedstock since the last reset this print)
-	void setCurrentE(Scalar e);// { if (ab == 'A') a = e; else b = e; };
-	
-private:
-	Scalar rapidMoveFeedRateXY;
-	Scalar rapidMoveFeedRateZ;
-	Scalar homingFeedRateZ;
-	Scalar layerH;
-
-	bool xyMaxHoming;
-	bool zMaxHoming;
-	Scalar scalingFactor;
-
-	Scalar x,y,z,a,b,feed;     // current position and feed
-	unsigned char ab;
-	bool extruding;
-
-	Scalar sx, sy, sz, sa, sb, sfeed;	// start positions and feed
-};
 
 
 //// a line around the print used as a print 'skirt'
@@ -296,7 +159,7 @@ struct GCoderConfig
 
     Platform platform;
     Outline outline;
-    Gantry gantry;
+    GantryConfig gantryCfg;
 
     std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
@@ -327,10 +190,13 @@ class GCoder : public Progressive
 public:
 
 	GCoderConfig gcoderCfg;
+	Gantry gantry;
 
-        GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL)
-            :Progressive(progress), gcoderCfg(gCoderCfg)
-{}
+	GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL) : 
+			Progressive(progress), gcoderCfg(gCoderCfg), 
+			gantry(gCoderCfg.gantryCfg) {
+		gantry.init_to_start();
+	}
 
 
         /// shortcut for doing a G1 that only move Z

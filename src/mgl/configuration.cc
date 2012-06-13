@@ -168,29 +168,29 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.firmware    = stringCheck(conf.root["firmware"], "firmware");
 
 
-	gcoderCfg.gantry.set_xy_max_homing(boolCheck(
+	gcoderCfg.gantryCfg.set_xy_max_homing(boolCheck(
 			conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming"));
-	gcoderCfg.gantry.set_z_max_homing(boolCheck(
+	gcoderCfg.gantryCfg.set_z_max_homing(boolCheck(
 			conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming"));
-	gcoderCfg.gantry.set_scaling_Factor(doubleCheck(
+	gcoderCfg.gantryCfg.set_scaling_Factor(doubleCheck(
 			conf.root["gantry"]["scalingFactor"], 
 			"gantry.scalingFactor"));
-	gcoderCfg.gantry.set_rapid_move_feed_rate_xy(doubleCheck(
+	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_xy(doubleCheck(
 			conf.root["gantry"]["rapidMoveFeedRateXY"], 
 			"gantry.rapidMoveFeedRateXY"));
-	gcoderCfg.gantry.set_rapid_move_feed_rate_z(doubleCheck(
+	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_z(doubleCheck(
 			conf.root["gantry"]["rapidMoveFeedRateZ"], 
 			"gantry.rapidMoveFeedRateZ"));
-	gcoderCfg.gantry.set_homing_feed_rate_z(doubleCheck(
+	gcoderCfg.gantryCfg.set_homing_feed_rate_z(doubleCheck(
 			conf.root["gantry"]["homingFeedRateZ"], 
 			"gantry.homingFeedRateZ"));
-	gcoderCfg.gantry.set_layer_h(doubleCheck(
+	gcoderCfg.gantryCfg.set_layer_h(doubleCheck(
 			conf.root["slicer"]["layerH"], "slicer.layerH"));
-	gcoderCfg.gantry.set_start_x(doubleCheck(
+	gcoderCfg.gantryCfg.set_start_x(doubleCheck(
 			conf.root["gantry"]["startX"], "gantry.startX"));
-	gcoderCfg.gantry.set_start_y(doubleCheck(
+	gcoderCfg.gantryCfg.set_start_y(doubleCheck(
 			conf.root["gantry"]["startY"], "gantry.startY"));
-	gcoderCfg.gantry.set_start_z(doubleCheck(
+	gcoderCfg.gantryCfg.set_start_z(doubleCheck(
 			conf.root["gantry"]["startZ"], "gantry.startZ"));
 
 
