@@ -121,13 +121,11 @@ void GantryTestCase::testSquirtSnort(){
 	Extrusion usion;
 		
 	gantry.snort(ss, Vector2(20,20), uder, usion);
-	gantry.g1(ss, uder, usion, 90, 90, 0, 3200, "");
 	s = ss.str();
 	cout << "Snort:  \t" << s << endl;
 	CPPUNIT_ASSERT(s.size() != 0);
 	ss.str("");
 	gantry.squirt(ss, Vector2(30,30), uder, usion);
-	gantry.g1(ss, uder, usion, 50, 50, 0, 3200, "");
 	s = ss.str();
 	cout << "Squirt: \t" << s << endl;
 	CPPUNIT_ASSERT(s.size() != 0);

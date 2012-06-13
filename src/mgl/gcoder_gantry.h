@@ -112,6 +112,18 @@ public:
 				const Extruder &extruder, const Extrusion &extrusion);
 	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd,
 			   const Extruder &extruder, const Extrusion &extrusion);
+	/// Squirt at the current location
+	void squirt(std::ostream& ss, const Extruder& extruder, 
+			const Extrusion& extrusion){
+		squirt(ss, libthing::Vector2(get_x(), get_y()), 
+				extruder, extrusion);
+	}
+	/// Snort at the current location
+	void snort(std::ostream& ss, const Extruder& extruder,
+			const Extrusion& extrusion){
+		snort(ss, libthing::Vector2(get_x(), get_y()), 
+				extruder, extrusion);
+	}
 
     void writeSwitchExtruder(std::ostream& ss, Extruder &extruder);
 
