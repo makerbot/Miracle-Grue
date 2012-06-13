@@ -38,7 +38,7 @@ public:
 	::std::string now() const
 	{
 		time_t t = time(0);   // get time now
-#if defined WIN32 && ! defined __GNUC__
+#if defined WIN32 && defined _MSVC_VER
 #pragma warning(disable:4996)
 #endif
 		struct tm * now = localtime( & t );

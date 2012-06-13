@@ -127,7 +127,7 @@ string stringify(size_t x)
   return o.str();
 }
 
-#if defined WIN32 && ! defined __GNUC__
+#if defined WIN32 && defined _MSVC_VER
 #pragma warning(disable:4996)
 #endif
 
