@@ -75,131 +75,6 @@ void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder)
 }
 
 
-
-
-
-void GCoder::writeMachineInitialization(std::ostream &ss) const
-{
-	ss <<  "G21 (set units to mm)" << endl;
-	ss <<  "G90 (absolute positioning mode)" << endl;
-
-	const GCoder &gcoder = *this;
-	int toolHeadId = 0;
-	if (gcoder.gcoderCfg.extruders.size() > 1)
-	{
-		for (std::vector<Extruder>::const_iterator i= gcoder.gcoderCfg.extruders.begin(); i!=gcoder.gcoderCfg.extruders.end(); i++)
-		{
-			const Extruder &t = *i;
-			int coordinateSystemNb = toolHeadId +1;
-			ss << "G10 P" << coordinateSystemNb << " X" <<  t.coordinateSystemOffsetX << " Y0 Z-0.3" << endl;
-			toolHeadId ++;
-		}
-	}
-	ss << endl;
-}
-
-
-void GCoder::writeExtrudersInitialization(std::ostream &ss) const
-{
-
-	string plural = "";
-	if(gcoderCfg.extruders.size()>1) plural = "s";
-	ss << "(setup extruder" << plural <<")" <<endl;
-	int toolHeadId = 0;
-	for (std::vector<Extruder>::const_iterator i= gcoderCfg.extruders.begin(); i!=gcoderCfg.extruders.end(); i++)
-	{
-		const Extruder &t = *i;
-		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
-		ss << "M104 S" << t.extrusionTemperature  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << t.extrusionTemperature << " degrees Celsius)" << endl;
-		ss << endl;
-		toolHeadId ++;
-	}
-	ss << endl;
-}
-
-
-void GCoder::writePlatformInitialization(std::ostream &ss) const
-{
-
-	double t = gcoderCfg.platform.temperature;
-	ss << "M109 S" << t << " T0 (heat the build-platform to "  << t << " Celsius)" << endl;
-	ss << endl;
-
-}
-
-
-void GCoder::writeHomingSequence(std::ostream &ss)
-{
-	ss << endl;
-	ss << "(go to home position)" << endl;
-
-	if(gcoderCfg.gantry.xyMaxHoming)
-		ss << "G162 X Y F" << gcoderCfg.gantry.rapidMoveFeedRateXY<< " (home XY axes maximum)" << endl;
-	else
-		ss << "G161 X Y F" << gcoderCfg.gantry.rapidMoveFeedRateXY<< " (home XY axes minimum)" << endl;
-
-	if(gcoderCfg.gantry.zMaxHoming)
-		ss << "G162 Z F" << gcoderCfg.gantry.rapidMoveFeedRateZ<< " (home Z axis maximum)" << endl;
-	else
-		ss << "G161 Z F" << gcoderCfg.gantry.rapidMoveFeedRateZ<< " (home Z axis minimum)" << endl;
-
-	ss << "G92 Z5 (set Z to 5)" << endl;
-	ss << "G1 Z0.0 (move Z down 0)" << endl;
-
-	if(gcoderCfg.gantry.zMaxHoming)
-		ss << "G162 Z F" << gcoderCfg. gantry.homingFeedRateZ<< " (home Z axis maximum)" << endl;
-	else
-		ss << "G161 Z F" << gcoderCfg.gantry.homingFeedRateZ<< " (home Z axis minimum)" << endl;
-
-	ss << "M132 X Y Z A B (Recall stored home offsets for XYZAB axis)" << endl;
-
-	if (gcoderCfg.extruders.size() > 1)
-		ss << "G54 (first work coordinate system)" << endl;
-	ss << endl;
-
-	int extruderCount = gcoderCfg.extruders.size();
-	if (extruderCount >0)
-	{
-		ss << "G92 A0" << endl;
-		if (extruderCount > 1) {
-			ss << "G92 B0" << endl;
-		}
-
-		gcoderCfg.gantry.a = 0;
-		gcoderCfg.gantry.b = 0;
-		gcoderCfg.gantry.extruding = false;
-
-		gcoderCfg.gantry.g1(ss, gcoderCfg.platform.waitingPositionX,
-							gcoderCfg.platform.waitingPositionY,
-							gcoderCfg.platform.waitingPositionZ,
-							gcoderCfg.gantry.rapidMoveFeedRateXY,
-							"go to waiting position");
-						
-
-	}
-	else
-	{
-		stringstream ss;
-		ss << "There are no extruders configured. Has the config file been read?";
-		GcoderException mixup(ss.str().c_str());
-		throw mixup;
-	}
-}
-
-void GCoder::writeWarmupSequence(std::ostream &ss)
-{
-
-	ss << endl;
-	size_t extruderCount = gcoderCfg.extruders.size();
-	for (size_t i=0; i< extruderCount; i++)
-	{
-		ss << "M6 T" << i << " (wait for tool " << i<<" to reach temperature)" << endl;
-	}
-
-	ss << "(note: the heated build platform temperature is tied to tool 0 for now)" << endl;
-	ss << endl;
-}
-
 /**
  * Writes intial gcode data to start of the gcode file, including setup & startup info
  * @param gout - output stream for the gcode text
@@ -236,14 +111,6 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName)
 
 		gout << "(header [" << header_file << "] end)" << endl << endl;
 	}
-	else {
-		writeMachineInitialization(gout);
-		writeExtrudersInitialization(gout);
-		writePlatformInitialization(gout);
-		writeHomingSequence(gout);
-		writeWarmupSequence(gout);
-		writeAnchor(gout);
-	}
 }
 
 void GCoder::writeEndDotGCode(std::ostream &ss) const
@@ -273,47 +140,7 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const
 
 		ss << "(footer [" << footer_file << "] end)" << endl << endl;
 	}		
-
-	else {
-		for (size_t i=0; i< gcoderCfg.extruders.size(); i++)
-		{
-			ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
-			ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
-		}
-
-		if(gcoderCfg.gantry.zMaxHoming)
-			ss << "G162 Z F500 (home Z axis maximum)" << endl;
-		ss << "(That's all folks!)" << endl;
-	}
 }
-
-void GCoder::writeAnchor(std::ostream &ss)
-{
-	double anchorFeedRate = 3000;
-	double z = 0.6;
-
-
-	ss << "(Create Anchor)" << endl;
-	ss << "G1 Z0.6 F300    (Position Height)" << endl;
-	ss << "M108 R4.0   (Set Extruder Speed)" << endl;
-	ss << "M101        (Start Extruder)" << endl;
-	ss << "G4 P1600" << endl;
-
-	gcoderCfg.gantry.g1(  ss,
-			gcoderCfg.platform.waitingPositionX,
-			gcoderCfg.platform.waitingPositionY,
-				z,
-			gcoderCfg.gantry.rapidMoveFeedRateXY,
-				NULL );
-
-	double dx = gcoderCfg.platform.waitingPositionX - 3.0;
-	double dy = gcoderCfg.platform.waitingPositionY - 0.0;
-
-	gcoderCfg.gantry.g1(ss, dx, dy, z, 0.2 * anchorFeedRate , NULL);
-	ss << "M103 (Stop extruder)" << endl;
-	ss << endl;
-}
-
 
 void GCoder::writePolygon(	std::ostream & ss,
 							double z,
