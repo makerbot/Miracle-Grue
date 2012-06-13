@@ -14,5 +14,7 @@ for testname in fnmatch.filter(os.listdir(os.path.join('src', 'unit_tests')),
     for sub in fnmatch.filter(os.listdir(testdir), '*.pro'):
         os.unlink(os.path.join(testdir, sub))
 
-os.unlink(os.path.join('src', 'unit_tests', 'unit_tests.pri'))
+testlist = os.path.join('src', 'unit_tests', 'unit_tests.pri')
+if os.access(testlist, os.R_OK):
+  os.unlink(testlist)
                                   

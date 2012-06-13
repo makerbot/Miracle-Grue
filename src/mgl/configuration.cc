@@ -248,7 +248,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
 	gcoderCfg.doInfills  =  boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
-
+	gcoderCfg.gantry.useEAxis = boolCheck(conf.root["gcoder"]["useEAxis"], "gcoder.useEAxis");
 
 }
 
