@@ -63,11 +63,11 @@ void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector
     }
 }
 
-void rayCastAlongX(	const SegmentTable &outlineLoops,
-									Scalar y,
-									Scalar xMin,
-									Scalar xMax,
-									std::vector<ScalarRange> &ranges)
+void rayCastAlongX(const SegmentTable &outlineLoops,
+		Scalar y,
+		Scalar xMin,
+		Scalar xMax,
+		std::vector<ScalarRange> &ranges)
 {
     std::set<Scalar> lineCuts;
 
@@ -99,11 +99,11 @@ void rayCastAlongX(	const SegmentTable &outlineLoops,
 
 }
 
-void rayCastAlongY(	const SegmentTable &outlineLoops,
-						Scalar x,
-						Scalar yMin,
-						Scalar yMax,
-						std::vector<ScalarRange> &ranges)
+void rayCastAlongY(const SegmentTable &outlineLoops,
+		Scalar x,
+		Scalar yMin,
+		Scalar yMax,
+		std::vector<ScalarRange> &ranges)
 {
     std::set<Scalar> lineCuts;
 
@@ -136,10 +136,10 @@ void rayCastAlongY(	const SegmentTable &outlineLoops,
 
 
 void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
-					const std::vector<Scalar> &yValues,
-					Scalar xMin,
-					Scalar xMax,
-					ScalarRangeTable &rangeTable)
+		const std::vector<Scalar> &yValues,
+		Scalar xMin,
+		Scalar xMax,
+		ScalarRangeTable &rangeTable)
 {
 	assert(rangeTable.size() == 0);
 	rangeTable.resize(yValues.size());
@@ -154,10 +154,10 @@ void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
 
 
 void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
-					const std::vector<Scalar> &values, // x
-					Scalar min,
-					Scalar max,
-					ScalarRangeTable &rangeTable)
+		const std::vector<Scalar> &values, // x
+		Scalar min,
+		Scalar max,
+		ScalarRangeTable &rangeTable)
 {
 	assert(rangeTable.size() == 0);
 	rangeTable.resize(values.size());
@@ -277,56 +277,38 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 
 }
 
-bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scalar &end)
-{
+bool intersectRange(Scalar a, Scalar b, Scalar c, 
+		Scalar d, Scalar &begin, Scalar &end) {
 	assert(b>=a);
 	assert(d>=c);
 
-//	cout << "[" << a << ", " << b << "] inter ";
-//  cout << "[" << c << ", " << d << "]";
-
-	if(a >= d)
-	{
-		//cout << " = 0" << endl;
+	if(a >= d) {
 		return false;
 	}
-
-	if (c >=b )
-	{
-		//cout << " = 0" << endl;
+	if (c >=b ) {
 		return false;
 	}
-
-	if(a >= c)
-	{
+	if(a >= c) {
 		begin = a;
-	}
-	else
-	{
+	} else {
 		begin = c;
 	}
-
-	if( b >= d)
-	{
+	if( b >= d) {
 		end = d;
-	}
-	else
-	{
+	} else {
 		end = b;
 	}
-//	cout << " = [" << begin << ", " << end << "]" << endl;
 	return true;
 }
 
 
-vector< ScalarRange >::const_iterator  subRangeTersect(	const ScalarRange &range,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result )
-{
+vector< ScalarRange >::const_iterator  subRangeTersect( 
+		const ScalarRange &range,
+		vector< ScalarRange >::const_iterator it,
+		vector< ScalarRange >::const_iterator itEnd,
+		vector< ScalarRange > &result ) {
 
-	while(it != itEnd)
-	{
+	while(it != itEnd) {
 		const ScalarRange &currentRange = *it;
 		if( (currentRange.min >= range.max)  )
 		{
@@ -385,7 +367,8 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 
 // return false if the ranges don't intersect
 //
-bool scalarRangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange)
+bool scalarRangeUnion(const ScalarRange& range0, 
+		const ScalarRange& range1, ScalarRange &resultRange)
 {
 	//cout << " union( " << range0 << ", " << range1 << ")=";
 	if( (range1.min > range0.max) || (range0.min > range1.max) )
@@ -406,9 +389,9 @@ bool scalarRangeUnion(const ScalarRange& range0, const ScalarRange& range1, Scal
 
 
 vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialRange,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result )
+		vector< ScalarRange >::const_iterator it,
+		vector< ScalarRange >::const_iterator itEnd,
+		vector< ScalarRange > &result )
 {
 
 	ScalarRange range(initialRange);
@@ -451,8 +434,8 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 
 
 void rangeUnion( const vector< ScalarRange > &firstLine,
-		 	 	 	  const vector< ScalarRange > &secondLine,
-		 	 	 	  vector< ScalarRange > &unionLine )
+		const vector< ScalarRange > &secondLine,
+		vector< ScalarRange > &unionLine )
 {
 	vector< ScalarRange >::const_iterator itOne = firstLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = secondLine.begin();
@@ -498,8 +481,8 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 }
 
 bool scalarRangeDifference(const ScalarRange& diffRange,
-							ScalarRange& srcRange,
-							ScalarRange &resultRange)
+		ScalarRange& srcRange,
+		ScalarRange &resultRange)
 {
 	//cout << srcRange << " - " << diffRange << " = ";
 	// the diffRange is left of srcRange ... no result
@@ -568,10 +551,11 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 	return false;
 }
 
-vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &initialRange,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result )
+vector< ScalarRange >::const_iterator  subRangeDifference(
+		const ScalarRange &initialRange,
+		vector< ScalarRange >::const_iterator it,
+		vector< ScalarRange >::const_iterator itEnd,
+		vector< ScalarRange > &result )
 {
 	ScalarRange range(initialRange);
 	// cout << "subRangeDifference from " << range << endl;
@@ -611,8 +595,8 @@ vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &in
 }
 
 void rangeDifference(const vector< ScalarRange > &srcLine,
-		 	 	 	  const vector< ScalarRange > &delLine,
-		 	 	 	  vector< ScalarRange > &diffLine )
+		const vector< ScalarRange > &delLine,
+		vector< ScalarRange > &diffLine )
 {
 	vector< ScalarRange >::const_iterator itOne = srcLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = delLine.begin();
@@ -638,9 +622,9 @@ void rangeDifference(const vector< ScalarRange > &srcLine,
 }
 
 // computes the difference between the ranges of two layers
-void rangeTableDifference(	const ScalarRangeTable &src,
-							const ScalarRangeTable &del,
-							ScalarRangeTable &diff)
+void rangeTableDifference(const ScalarRangeTable &src,
+		const ScalarRangeTable &del,
+		ScalarRangeTable &diff)
 {
 
 	size_t lineCount = src.size();
@@ -667,8 +651,8 @@ void rangeTableDifference(	const ScalarRangeTable &src,
 
 
 void rangeTableIntersection(const ScalarRangeTable &a,
-							const ScalarRangeTable &b,
-							ScalarRangeTable &result)
+		const ScalarRangeTable &b,
+		ScalarRangeTable &result)
 {
 	size_t lineCount = a.size();
 	assert(lineCount == b.size());
@@ -685,8 +669,8 @@ void rangeTableIntersection(const ScalarRangeTable &a,
 }
 
 void rangeTableUnion(const ScalarRangeTable &a,
-							const ScalarRangeTable &b,
-							ScalarRangeTable &result)
+		const ScalarRangeTable &b,
+		ScalarRangeTable &result)
 {
 	size_t lineCount = a.size();
 	// cout << " rangeTableUnion " << lineCount << " vs " << b.size() << endl;
@@ -709,16 +693,13 @@ void rangeTableUnion(const ScalarRangeTable &a,
 
 // Grid class implementation
 
-Grid::Grid()
-{}
+Grid::Grid() {}
 
-Grid::Grid(const Limits &limits, Scalar gridSpacing)
-{
+Grid::Grid(const Limits &limits, Scalar gridSpacing) {
 	init(limits, gridSpacing);
 }
 
-void Grid::init(const Limits &limits, Scalar gridSpacing)
-{
+void Grid::init(const Limits &limits, Scalar gridSpacing) {
 
 	Scalar deltaY = limits.yMax - limits.yMin;
 	Scalar deltaX = limits.xMax - limits.xMin;
@@ -748,8 +729,7 @@ void Grid::init(const Limits &limits, Scalar gridSpacing)
 
 
 void Grid::createGridRanges(const SegmentTable &loops,
-							GridRanges &gridRanges) const
-{
+							GridRanges &gridRanges) const {
 	Scalar xMin = xValues[0];
 	Scalar xMax = xValues.back();
 	castRaysOnSliceAlongX(loops, yValues, xMin, xMax, gridRanges.xRays);
@@ -760,8 +740,7 @@ void Grid::createGridRanges(const SegmentTable &loops,
 
 }
 
-void Grid::subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges &result) const
-{
+void Grid::subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges &result) const {
 	assert(result.xRays.size() == 0);
 	assert(result.yRays.size() == 0);
 

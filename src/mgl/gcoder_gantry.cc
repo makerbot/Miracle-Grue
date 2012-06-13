@@ -119,26 +119,20 @@ void Gantry::g1(std::ostream &ss,
 	bool doE = false;
 	Scalar e = getCurrentE();
 
-	if(!libthing::tequals(get_x(), gx, SAMESAME_TOL))
-	{
+	if(!libthing::tequals(get_x(), gx, SAMESAME_TOL)) {
 		doX = true;
 	}
-	if(!libthing::tequals(get_y(), gy, SAMESAME_TOL))
-	{
+	if(!libthing::tequals(get_y(), gy, SAMESAME_TOL)) {
 		doY=true;
 	}
-	if(!libthing::tequals(get_z(), gz, SAMESAME_TOL))
-	{
+	if(!libthing::tequals(get_z(), gz, SAMESAME_TOL)) {
 		doZ=true;
 	}
-
-	if(!libthing::tequals(get_feed(), gfeed, SAMESAME_TOL))
-	{
+	if(!libthing::tequals(get_feed(), gfeed, SAMESAME_TOL)) {
 		doFeed=true;
 	}
-
-	if(get_extruding() && extruder != NULL && extrusion != NULL
-	   && extruder->isVolumetric()) {
+	if(get_extruding() && extruder && extrusion && 
+			extruder->isVolumetric()) {
 		doE = true;
 		e = volumetricE(*extruder, *extrusion, gx, gy, gz);
 	}		

@@ -12,6 +12,8 @@ CONFIG += console
 INSTALLS += target
 
 win32 {
+    DESTDIR=.
+    OBJECTS_DIR=.
     TARGET=../../../bin/miracle_grue
 }
 target.path = /usr/bin

@@ -13,6 +13,7 @@
 #include "mgl/miracle.h"
 
 #include "mgl/ScadDebugFile.h"
+#include "mgl/grid.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( RoofingTestCase );
 
@@ -26,39 +27,8 @@ string outputDir ("outputs/test_cases/roofingTestCase/");
 
 string inputDir("./test_cases/roofingTestCase/stls/");
 
-void rangeTableDifference(	const ScalarRangeTable &src,
-							const ScalarRangeTable &del,
-							ScalarRangeTable &diff);
 
-void rangeDifference(const vector< ScalarRange > &srcLine,
-		 	 	 	  const vector< ScalarRange > &delLine,
-		 	 	 	  vector< ScalarRange > &diffLine );
 
-bool scalarRangeDifference(const ScalarRange& diffRange,
-							ScalarRange& srcRange,
-							ScalarRange &resultRange);
-
-vector< ScalarRange >::const_iterator  subRangeDifference(	const ScalarRange &initialRange,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result );
-
-void rangeUnion( const vector< ScalarRange > &firstLine,
-		 	 	 	  const vector< ScalarRange > &secondLine,
-		 	 	 	  vector< ScalarRange > &unionLine );
-
-vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialRange,
-		 	 	 	 	vector< ScalarRange >::const_iterator it,
-		 	 	 	 	vector< ScalarRange >::const_iterator itEnd,
-						vector< ScalarRange > &result );
-
-bool scalarRangeUnion(const ScalarRange& range0, const ScalarRange& range1, ScalarRange &resultRange);
-
-bool intersectRange(Scalar a, Scalar b, Scalar c, Scalar d, Scalar &begin, Scalar &end);
-
-void rangeTersection(const vector< ScalarRange > &oneLine,
-					 const vector< ScalarRange > &twoLine,
-						vector< ScalarRange > &boolLine );
 
 
 //bool scalarRangeIntersection(const ScalarRange &a,
@@ -139,19 +109,6 @@ void addValues(Scalar min, Scalar max, Scalar delta, std::vector<Scalar>& values
 		value += delta;
 	}
 }
-
-
-void rayCastAlongX(	const SegmentTable &outlineLoops,
-									Scalar y,
-									Scalar xMin,
-									Scalar xMax,
-									std::vector<ScalarRange> &ranges);
-
-void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
-					const std::vector<Scalar> &yValues,
-					Scalar xMin,
-					Scalar xMax,
-					ScalarRangeTable &rangeTable);
 
 double tol = 1e-6;
 

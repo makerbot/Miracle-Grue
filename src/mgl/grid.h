@@ -21,10 +21,7 @@
 namespace mgl
 {
 
-class GridException : public mgl::Exception {	public: GridException(const char *msg) :Exception(msg){} };
-
-
-struct ScalarRange {
+class ScalarRange {
 public:
 	Scalar min;
 	Scalar max;
@@ -42,6 +39,11 @@ public:
 	}
 };
 
+class GridException : public mgl::Exception {
+public: 
+	GridException(const char *msg) :Exception(msg){} 
+};
+
 std::ostream& operator << (std::ostream &os, const ScalarRange &pt);
 
 typedef std::vector<std::vector<ScalarRange> > ScalarRangeTable;
@@ -51,6 +53,69 @@ struct GridRanges {
     ScalarRangeTable xRays;
     ScalarRangeTable yRays;
 };
+
+bool intersectRange(Scalar a, Scalar b, Scalar c, 
+		Scalar d, Scalar &begin, Scalar &end);
+std::vector< ScalarRange >::const_iterator  subRangeTersect( 
+		const ScalarRange &range,
+		std::vector< ScalarRange >::const_iterator it,
+		std::vector< ScalarRange >::const_iterator itEnd,
+		std::vector< ScalarRange > &result );
+void rangeTersection(const std::vector< ScalarRange > &oneLine,
+		const std::vector< ScalarRange > &twoLine,
+		std::vector< ScalarRange > &boolLine );
+bool scalarRangeUnion(const ScalarRange& range0, 
+		const ScalarRange& range1, ScalarRange &resultRange);
+std::vector< ScalarRange >::const_iterator  subRangeUnion(
+		const ScalarRange &initialRange,
+		std::vector< ScalarRange >::const_iterator it,
+		std::vector< ScalarRange >::const_iterator itEnd,
+		std::vector< ScalarRange > &result );
+void rangeUnion( const std::vector< ScalarRange > &firstLine,
+		const std::vector< ScalarRange > &secondLine,
+		std::vector< ScalarRange > &unionLine );
+bool scalarRangeDifference(const ScalarRange& diffRange,
+		ScalarRange& srcRange,
+		ScalarRange &resultRange);
+std::vector< ScalarRange >::const_iterator  subRangeDifference(
+		const ScalarRange &initialRange,
+		std::vector< ScalarRange >::const_iterator it,
+		std::vector< ScalarRange >::const_iterator itEnd,
+		std::vector< ScalarRange > &result );
+void rangeDifference(const std::vector< ScalarRange > &srcLine,
+		const std::vector< ScalarRange > &delLine,
+		std::vector< ScalarRange > &diffLine );
+void rangeTableDifference(const ScalarRangeTable &src,
+		const ScalarRangeTable &del,
+		ScalarRangeTable &diff);
+void rangeTableIntersection(const ScalarRangeTable &a,
+		const ScalarRangeTable &b,
+		ScalarRangeTable &result);
+void rangeTableUnion(const ScalarRangeTable &a,
+		const ScalarRangeTable &b,
+		ScalarRangeTable &result);
+void rayCastAlongX(const libthing::SegmentTable &outlineLoops,
+		Scalar y,
+		Scalar xMin,
+		Scalar xMax,
+		std::vector<ScalarRange> &ranges);
+void rayCastAlongY(const libthing::SegmentTable &outlineLoops,
+		Scalar x,
+		Scalar yMin,
+		Scalar yMax,
+		std::vector<ScalarRange> &ranges);
+void castRaysOnSliceAlongX(const libthing::SegmentTable &outlineLoops,
+		const std::vector<Scalar> &yValues,
+		Scalar xMin,
+		Scalar xMax,
+		ScalarRangeTable &rangeTable);
+void castRaysOnSliceAlongY(const libthing::SegmentTable &outlineLoops,
+		const std::vector<Scalar> &values, // x
+		Scalar min,
+		Scalar max,
+		ScalarRangeTable &rangeTable);
+bool crossesOutline(const libthing::LineSegment2 &seg,
+		const libthing::SegmentTable &outline);
 
 
 ///  A grid is a set of intersecting lines that is subsampled to create

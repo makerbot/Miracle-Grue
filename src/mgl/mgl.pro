@@ -11,6 +11,8 @@ QT       += core
 TARGET=../../lib/mgl
 
 win32 {
+    DESTDIR=.
+    OBJECTS_DIR=.
     TARGET=../../../lib/mgl
 }
 

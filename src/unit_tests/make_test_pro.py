@@ -22,8 +22,14 @@ for filename in os.listdir('.'):
 TEMPLATE = app
 CONFIG += console
 ROOT = ../../..
-SUBMODULES = $$ROOT/submodule
 
+
+win32 {
+    DESTDIR=.
+    OBJECTS_DIR=.
+}
+
+SUBMODULES = $$ROOT/submodule
 INCLUDEPATH += $$ROOT/src
 LIBS += $$ROOT/lib/libmgl.a -lcppunit -lgomp
 SOURCES += ../UnitTestMain.cc ../UnitTestUtils.cc
@@ -36,8 +42,13 @@ include($$JSON_CPP_SRC/json-cpp.pri)
 LIBTHING_BASE = $$SUBMODULES/libthing/src/main
 include($$LIBTHING_BASE/cpp-qt/Libthing.pro.inc)
 
+win32 {
 ''')
-        pro.write('TARGET = $$ROOT/bin/unit_tests/'+testname+'\n')
+        pro.write('	TARGET = ../$$ROOT/bin/unit_tests/'+testname+'\n')
+	pro.write('}')
+	pro.write('!win32 {')
+        pro.write('	TARGET = ../$$ROOT/bin/unit_tests/'+testname+'\n')
+  	pro.write('}')
         pro.write('CONFIG += console\n')
         pro.write('SOURCES += ../'+testname+'.cc\n')
         pro.write('HEADERS += ../'+testname+'.h\n')
