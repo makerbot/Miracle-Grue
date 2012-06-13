@@ -27,14 +27,14 @@ class GcoderException : public Exception {	public: GcoderException(const char *m
 
 
 /// Properties of a print platform
-struct Platform
-{
-	Platform():temperature(100),
-				automated(false),
-				waitingPositionX(50),
-				waitingPositionY(-50),
-				waitingPositionZ(0)
-	{}
+class Platform{
+public:
+	Platform() : temperature(100),
+			automated(false),
+			waitingPositionX(50),
+			waitingPositionY(-50),
+			waitingPositionZ(0)	{}
+	
 	Scalar temperature;				// temperature of the platform during builds
 	bool automated;
 
@@ -49,20 +49,18 @@ struct Platform
 /// EG: large, fast, 'first layer'
 class Extrusion {
 public:
-	Extrusion()
-		:feedrate(2400),
- 		 retractDistance(0),
-		 retractRate(3000),
-		 restartExtraDistance(0),
-		 extrudedDimensionsRatio(0),
-		 flow(2.8),
-		 leadIn(0),
-		 leadOut(0),
-		 snortFlow(35),
-                 snortFeedrate(600),
-                 squirtFlow(35),
-                 squirtFeedrate(600)
-	{}
+	Extrusion() : feedrate(2400),
+			retractDistance(0),
+			retractRate(3000),
+			restartExtraDistance(0),
+			extrudedDimensionsRatio(0),
+			flow(2.8),
+			leadIn(0),
+			leadOut(0),
+			snortFlow(35),
+			snortFeedrate(600),
+			squirtFlow(35),
+			squirtFeedrate(600)	{}
 
 	Scalar crossSectionArea(Scalar height) const;
 
@@ -91,16 +89,14 @@ class Extruder
 public:
 	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
 
-	Extruder()
-		:coordinateSystemOffsetX(0),
-		extrusionTemperature(220),
-		nozzleZ(0),
-		zFeedRate(100),
-		extrusionMode(VOLUMETRIC_MODE),
-		feedDiameter(3),
-		code('A'),
-		id(0)
-	{}
+	Extruder() : coordinateSystemOffsetX(0),
+			extrusionTemperature(220),
+			nozzleZ(0),
+			zFeedRate(100),
+			extrusionMode(VOLUMETRIC_MODE),
+			feedDiameter(3),
+			code('A'),
+			id(0) {}
 
 	Scalar feedCrossSectionArea() const;
 	bool isVolumetric() const { return  extrusionMode == VOLUMETRIC_MODE; };
@@ -133,9 +129,9 @@ public:
 
 //// a line around the print used as a print 'skirt'
 ///
-struct Outline
-{
-	Outline() :enabled(false), distance(3.0){}
+class Outline {
+public:
+	Outline() : enabled(false), distance(3.0) {}
 	bool enabled;   // when true, a rectangular ouline of the part will be performed
 	Scalar distance; // the distance in mm  between the model and the rectangular outline
 };
@@ -143,14 +139,10 @@ struct Outline
 
 
 
-struct GCoderConfig
-{
-	GCoderConfig():
-	 programName(GRUE_PROGRAM_NAME),
-	 versionStr(GRUE_VERSION)
-	{}
-
-
+class GCoderConfig {
+public:
+	GCoderConfig() : programName(GRUE_PROGRAM_NAME), 
+			versionStr(GRUE_VERSION) {}
 
     std::string programName;
     std::string versionStr;
@@ -192,42 +184,37 @@ public:
 	GCoderConfig gcoderCfg;
 	Gantry gantry;
 
-	GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL) : 
-			Progressive(progress), gcoderCfg(gCoderCfg), 
-			gantry(gCoderCfg.gantryCfg) {
-		gantry.init_to_start();
-	}
+	GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL);
 
-
-        /// shortcut for doing a G1 that only move Z
-        void moveZ( std::ostream & ss, Scalar z,
-        		unsigned int  extruderId, Scalar zFeedrate);
+	/// shortcut for doing a G1 that only move Z
+	void moveZ( std::ostream & ss, Scalar z,
+			unsigned int  extruderId, Scalar zFeedrate);
 
 public:
-        /// top level entry point for writing a gcode file
-        /// @param slices: list of slices to write into a gcode
-        /// @param layerMeasure:  tool to calc layer Z
-        /// @param gout: stream to write gcode to
-        /// @param title: name of the model to write?
-        /// @param firstSliceIdx: starting slice index, -1 if you want the whole model
-        /// @param lastSliceIdx: ending slice index, -1 if you want the whole model
-        void writeGcodeFile(std::vector <SliceData>& slices,
-                            const mgl::LayerMeasure& layerMeasure,
-                            std::ostream &gout,
-    						const char *title,
-    						int firstSliceIdx=-1,
-    						int lastSliceIdx=-1);
+	/// top level entry point for writing a gcode file
+	/// @param slices: list of slices to write into a gcode
+	/// @param layerMeasure:  tool to calc layer Z
+	/// @param gout: stream to write gcode to
+	/// @param title: name of the model to write?
+	/// @param firstSliceIdx: starting slice index, -1 if you want the whole model
+	/// @param lastSliceIdx: ending slice index, -1 if you want the whole model
+	void writeGcodeFile(std::vector <SliceData>& slices,
+			const mgl::LayerMeasure& layerMeasure,
+			std::ostream &gout,
+			const char *title,
+			int firstSliceIdx=-1,
+			int lastSliceIdx=-1);
 
     ///  returns extrusionParams set based on the extruder id, and where you
     /// are in the model
-    void calcInfillExtrusion(	unsigned int extruderId, unsigned int sliceId,
-    								Extrusion &extrusionParams) const;
+    void calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
+		Extrusion &extrusionParams) const;
 
     ///  returns extrusionParams set based on the extruder id, and where you
     /// are in the model
-    void calcInSetExtrusion (	unsigned int extruderId, unsigned int sliceId,
-    								unsigned int insetId,	 unsigned int insetCount,
-    								Extrusion &extrusionParams) const;
+    void calcInSetExtrusion(unsigned int extruderId, unsigned int sliceId,
+    		unsigned int insetId,	 unsigned int insetCount,
+    		Extrusion &extrusionParams) const;
 
     /// Writes the start.gcode file, otherwise generates a
     /// start.gcode if needed
@@ -255,17 +242,17 @@ private:
     void writeHomingSequence(std::ostream & ss);
     void writeWarmupSequence(std::ostream & ss);
     void writeAnchor(std::ostream & ss);
-    void writePolygons(	std::ostream& ss,
-						Scalar z,
-						const Extruder &extruder,
-						const Extrusion &extrusion,
-						const Polygons &paths);
+    void writePolygons(std::ostream& ss,
+			Scalar z,
+			const Extruder &extruder,
+			const Extrusion &extrusion,
+			const Polygons &paths);
 
-    void writePolygon(	std::ostream & ss,
-						Scalar z,
-						const Extruder &extruder,
-						const Extrusion &extrusion,
-						const Polygon & polygon);
+    void writePolygon(std::ostream & ss,
+			Scalar z,
+			const Extruder &extruder,
+			const Extrusion &extrusion,
+			const Polygon & polygon);
 
 	libthing::Vector2 startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};

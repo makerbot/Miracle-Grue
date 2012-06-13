@@ -354,11 +354,12 @@ void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Lin
 }
 
 
-index_t Connexity::findOrCreateNewEdge(const Vector3 &coords0, const Vector3 &coords1, size_t face)
-{
+index_t Connexity::findOrCreateNewEdge(const Vector3 &coords0, 
+		const Vector3 &coords1, size_t face) {
 	index_t v0 = findOrCreateVertex(coords0);
 	index_t v1 = findOrCreateVertex(coords1);
 	findOrCreateEdge(v0, v1, face);
+	return 0;
 }
 
 index_t Connexity::findOrCreateEdge(index_t v0, index_t v1, size_t face)

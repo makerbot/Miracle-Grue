@@ -23,23 +23,23 @@
 
 
 
-using namespace mgl;
+namespace mgl {
+
 using namespace std;
 using namespace libthing;
 
-
-std::string mgl::getMiracleGrueVersionStr()
+string getMiracleGrueVersionStr()
 {
     return  "v 0.04 alpha";
 }
 
-std::ostream& mgl::operator<<(ostream& os, const Vector3& v)
+ostream& operator<<(ostream& os, const Vector3& v)
 {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Polygon& polygon)
+ostream& operator<<(std::ostream& os, const Polygon& polygon)
 {
 	for(unsigned int i=0; i< polygon.size(); i++)
 	{
@@ -50,7 +50,7 @@ std::ostream& operator<<(std::ostream& os, const Polygon& polygon)
 
 
 
-void mgl::rotatePolygon(Polygon& polygon, Scalar angle)
+void rotatePolygon(Polygon& polygon, Scalar angle)
 {
 	for(unsigned int i=0; i<polygon.size(); i++)
 	{
@@ -59,7 +59,7 @@ void mgl::rotatePolygon(Polygon& polygon, Scalar angle)
 	}
 }
 
-void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
+void rotatePolygons(Polygons& polygons, Scalar angle)
 {
 	for(unsigned int i=0; i<polygons.size(); i++)
 	{
@@ -68,20 +68,42 @@ void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
 	}
 }
 
+LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) : 
+		firstLayerZ(firstLayerZ), layerH(layerH) {}
+unsigned int LayerMeasure::zToLayerAbove(const Scalar z) const {
+	Scalar const tol = 0.000001; // tolerance: 1 nanometer
+	if (libthing::tlower(z, 0, tol))
+	{
+		ostringstream oss;
+		oss << "Model with points below the z axis " << 
+				"are not supported in this version. " << 
+				"Please center your model on the build area.";
+		oss << " z=" << z << endl;
+		LayerException mixup(oss.str().c_str());
+		throw mixup;
+	}
+
+	if (libthing::tlower(z, firstLayerZ, tol))
+		return 0;
+
+	Scalar const layer = (z+tol-firstLayerZ) / layerH;
+	return static_cast<unsigned int>(ceil(layer));
+}
+Scalar LayerMeasure::sliceIndexToHeight(unsigned int sliceIndex) const {
+	return firstLayerZ + sliceIndex * layerH;
+}
+Scalar LayerMeasure::getLayerH() const {
+	return layerH;
+}
 
 
-
-
-
-
-
-std::ostream& mgl::operator<<(ostream& os, const Limits& l)
+ostream& operator<<(ostream& os, const Limits& l)
 {
 	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
 	return os;
 }
 
-ostream& mgl::operator <<(ostream &os,const Vector2 &pt)
+ostream& operator <<(ostream &os,const Vector2 &pt)
 {
     os << "[" << pt.x << ", " << pt.y << "]";
     return os;
@@ -89,23 +111,23 @@ ostream& mgl::operator <<(ostream &os,const Vector2 &pt)
 
 
 
-std::string mgl::stringify(Scalar x)
+string stringify(Scalar x)
 {
-  std::ostringstream o;
+  ostringstream o;
   if (!(o << x))
     throw Exception("stringify(Scalar)");
   return o.str();
 }
 
-std::string mgl::stringify(size_t x)
+string stringify(size_t x)
 {
-  std::ostringstream o;
+  ostringstream o;
   if (!(o << x))
     throw Exception("stringify(double)");
   return o.str();
 }
 
-#ifdef WIN32
+#if defined WIN32 && ! defined __GNUC__
 #pragma warning(disable:4996)
 #endif
 
@@ -118,7 +140,7 @@ std::string mgl::stringify(size_t x)
  * Ex: ((0,0)(0,1)(1,0))  returns -1 (normal points negative Z out of plane)
  * Ex: ((1,0)(0,0)(0,1))  returns 1 (normal points positive Z out of plane)
  */
-Scalar mgl::AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
 {
 	Scalar area2;
     area2 = (b[0] - a[0] ) * (Scalar)( c[1] - a[1]) -
@@ -132,7 +154,7 @@ Scalar mgl::AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
  * @returns true if the triangle of these vectors has a negative index,
  * false otherwise
  */
-bool mgl::convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
+bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
 {
 	return AreaSign(i,j,k) < 0;
 }
@@ -146,7 +168,7 @@ bool mgl::convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
 /**
  * @returns true if the passed line segments are colinear within the tolerance tol
  */
-bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current,
+bool collinear(const LineSegment2 &prev, const LineSegment2 &current,
 		Scalar tol, Vector2 &mid)
 {
 
@@ -166,7 +188,7 @@ bool mgl::collinear(const LineSegment2 &prev, const LineSegment2 &current,
 
 /// Verifies each Vector2 in the passed Polygon are in tolerance
 // tol
-bool mgl::tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
+bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
 {
 	if( poly1.size() != poly2.size())
 		return false;
@@ -182,7 +204,7 @@ bool mgl::tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
 
 
 /// Verifies each Polygon in the passed Polygons are in tolerance
-bool mgl::tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
+bool tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
 {
 	if( polys1.size() != polys2.size())
 		return false;
@@ -199,3 +221,8 @@ bool mgl::tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
 	}
 	return true;
 }
+
+
+}
+
+

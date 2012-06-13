@@ -22,9 +22,9 @@ void Edge::lookUpIncidentFaces(int& f1, int &f2) const
 
 int Edge::lookUpNeighbor(index_t face) const
 {
-	if(face0 == face)
+	if((unsigned)face0 == face)
 		return face1;
-	if (face1 == face)
+	if ((unsigned)face1 == face)
 		return face0;
 	assert(0);
 	return -1;

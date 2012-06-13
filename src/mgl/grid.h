@@ -24,46 +24,30 @@ namespace mgl
 class GridException : public mgl::Exception {	public: GridException(const char *msg) :Exception(msg){} };
 
 
-struct ScalarRange
-{
+struct ScalarRange {
+public:
 	Scalar min;
 	Scalar max;
-	ScalarRange()
-	:min(0), max(0)
-	{
-
-	}
-
-	ScalarRange(Scalar a, Scalar b)
-	:min(a), max(b)
-	{
-		// assert(b>a);
-	}
-
-	ScalarRange(const ScalarRange& original)
-	{
+	ScalarRange(Scalar a = 0, Scalar b = 0)	: min(a), max(b) {}
+	ScalarRange(const ScalarRange& original) {
 		this->min = original.min;
 		this->max = original.max;
 	}
-
-	// default assignment operator (min and max are copied)
-	void operator = (const ScalarRange& next)
-	{
-		if( &next != this)
-		{
+	ScalarRange& operator = (const ScalarRange& next) {
+		if( &next != this) {
 			this->min = next.min;
 			this->max = next.max;
 		}
+		return *this;
 	}
 };
 
-std::ostream& operator << (std::ostream &os,const ScalarRange &pt);
+std::ostream& operator << (std::ostream &os, const ScalarRange &pt);
 
-typedef std::vector< std::vector<ScalarRange> > ScalarRangeTable;
+typedef std::vector<std::vector<ScalarRange> > ScalarRangeTable;
 
 
-struct GridRanges
-{
+struct GridRanges {
     ScalarRangeTable xRays;
     ScalarRangeTable yRays;
 };

@@ -17,16 +17,16 @@
 #include <limits>
 #include <list>
 
-using namespace mgl;
-using namespace std;
+namespace mgl {
 
+
+using namespace std;
 using namespace libthing;
 
 const Scalar GRID_RANGE_TOL = 0.0;
 
 
-std::ostream& mgl::operator << (std::ostream &os,const ScalarRange &p)
-{
+ostream& operator << (std::ostream &os,const ScalarRange &p) {
 	cout << "[" << p.min << ", " << p.max << "]";
 	return os;
 }
@@ -867,4 +867,7 @@ void Grid::trimGridRange(const GridRanges& src, Scalar cutOff, GridRanges &resul
 //	}
 
 }
+
+}
+
 

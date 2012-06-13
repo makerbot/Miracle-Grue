@@ -37,9 +37,8 @@ std::string plural(const char*noun, int count, const char* ending = "s")
 // LeadIn is the distance between start and the first point of the polygon (along the first polygon line).
 // LeadOut is the distance between the last point of the Polygon and stop (along the last polygon line).
 void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extruder,
-							 double leadIn, double leadOut,
-							 Vector2 &start, Vector2 &end)
-{
+		double leadIn, double leadOut,
+		Vector2 &start, Vector2 &end) {
 	size_t count =  polygon.size();
 
 	const Vector2 &a = polygon[0];	// first element
@@ -64,6 +63,14 @@ void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extrud
 	end.x   = d.x + cd.x * leadOut;
 	end.y   = d.y + cd.y * leadOut;
 
+}
+
+GCoder::GCoder(const GCoderConfig &gCoderCfg, 
+		ProgressBar* progress) : 
+		Progressive(progress), 
+		gcoderCfg(gCoderCfg), 
+		gantry(gCoderCfg.gantryCfg) {
+	gantry.init_to_start();
 }
 
 void GCoder::writeMachineInitialization(std::ostream &ss) const
@@ -97,8 +104,12 @@ void GCoder::writeExtrudersInitialization(std::ostream &ss) const
 	for (std::vector<Extruder>::const_iterator i= gcoderCfg.extruders.begin(); i!=gcoderCfg.extruders.end(); i++)
 	{
 		const Extruder &t = *i;
-		ss << "M103 T" << toolHeadId << " (Make sure motor for extruder " << toolHeadId << " is stopped)" << endl;
-		ss << "M104 S" << t.extrusionTemperature  << " T" << toolHeadId << " (set temperature of extruder " << toolHeadId <<  " to "  << t.extrusionTemperature << " degrees Celsius)" << endl;
+		ss << "M103 T" << toolHeadId << 
+				" (Make sure motor for extruder " << 
+				toolHeadId << " is stopped)" << endl;
+		ss << "M104 S" << t.extrusionTemperature  << 
+				" T" << toolHeadId << 
+				" (set temperature of extruder " << toolHeadId <<  " to "  << t.extrusionTemperature << " degrees Celsius)" << endl;
 		ss << endl;
 		toolHeadId ++;
 	}

@@ -25,7 +25,7 @@ mac {
     QT -= gui core
 
 }
-include($$MGL_SRC/mgl.pro.inc)
+
 INCLUDEPATH += ..
 
 LIBTHING_BASE = ../../submodule/libthing/src/main
