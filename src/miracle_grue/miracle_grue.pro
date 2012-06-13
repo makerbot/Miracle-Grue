@@ -12,7 +12,7 @@ CONFIG += console
 INSTALLS += target
 
 win32 {
-	QMAKE_LFLAGS += -static -static-libstdc++
+	QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
 }
 
 win32 {
