@@ -100,7 +100,7 @@ public:
 	/// TODO: make this lower level function private.
 	void g1Motion(std::ostream &ss,
 				  Scalar mx, Scalar my, Scalar mz,
-				  Scalar e,
+				  Scalar me,
 				  Scalar mfeed,
 				  const char *comment,
 				  bool doX, bool doY, bool doZ,

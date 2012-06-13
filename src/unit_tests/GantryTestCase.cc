@@ -57,13 +57,12 @@ void GantryTestCase::testG1Move(){
 	gantry.set_feed(3200);
 	
 	expected << "G1 X" << x << " Y" << y << " Z" << z << 
-			" F" << gantry.get_feed() << " ()" << endl;
+			" F" << 3200 << " ()" << endl;
 	
 	try{
 		gantry.g1(ss, x, y, z, gantry.get_feed(), "");
 	} catch (mgl::Exception thrown){
-		std::cout << "g1 exception: \t" << thrown.error << endl;
-		CPPUNIT_ASSERT(false);
+		CPPUNIT_ASSERT_MESSAGE(thrown.error, false);
 	}
 	string estring = expected.str();
 	string astring = ss.str();
@@ -72,6 +71,39 @@ void GantryTestCase::testG1Move(){
 	cout << "Actual GCode:   \t" << astring << endl;
 	
 	CPPUNIT_ASSERT(estring == astring);
+}
+void GantryTestCase::testG1Extrude(){
+	static const Scalar x = 75, y = 42, z = 0;
+	
+	stringstream ss;
+	stringstream expected;
+	
+	GantryConfig gantryCfg;
+	Gantry gantry(gantryCfg);
+	
+	Extruder uder;
+	Extrusion usion;
+	
+	gantry.set_x(0);
+	gantry.set_y(0);
+	gantry.set_z(0);
+	gantry.set_feed(3200);
+	
+	gantry.set_extruding(true);
+	
+	try{
+		gantry.g1(ss, uder, usion, x, y, z, usion.feedrate, "");
+	} catch (mgl::Exception thrown){
+		CPPUNIT_ASSERT_MESSAGE(thrown.error, false);
+	}
+	
+	string estring = expected.str();
+	string astring = ss.str();
+	
+	cout << "Expected GCode: \t" << estring << endl;
+	cout << "Actual GCode:   \t" << astring << endl;
+	
+	CPPUNIT_ASSERT(astring.size());
 }
 void GantryTestCase::testSquirtSnort(){
 	stringstream ss;
@@ -85,13 +117,17 @@ void GantryTestCase::testSquirtSnort(){
 	gantry.set_z(0);
 	gantry.set_feed(3200);
 	
-	
-	gantry.snort(ss, Vector2(), Extruder(), Extrusion());
+	Extruder uder;
+	Extrusion usion;
+		
+	gantry.snort(ss, Vector2(20,20), uder, usion);
+	gantry.g1(ss, uder, usion, 90, 90, 0, 3200, "");
 	s = ss.str();
 	cout << "Snort:  \t" << s << endl;
 	CPPUNIT_ASSERT(s.size() != 0);
 	ss.str("");
-	gantry.squirt(ss, Vector2(), Extruder(), Extrusion());
+	gantry.squirt(ss, Vector2(30,30), uder, usion);
+	gantry.g1(ss, uder, usion, 50, 50, 0, 3200, "");
 	s = ss.str();
 	cout << "Squirt: \t" << s << endl;
 	CPPUNIT_ASSERT(s.size() != 0);

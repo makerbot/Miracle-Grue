@@ -117,7 +117,7 @@ void Gantry::g1(std::ostream &ss,
 	bool doZ = true;
 	bool doFeed = true;
 	bool doE = false;
-	Scalar e = getCurrentE();
+	Scalar me = getCurrentE();
 
 	if(!libthing::tequals(get_x(), gx, SAMESAME_TOL)) {
 		doX = true;
@@ -134,10 +134,10 @@ void Gantry::g1(std::ostream &ss,
 	if(get_extruding() && extruder && extrusion && 
 			extruder->isVolumetric()) {
 		doE = true;
-		e = volumetricE(*extruder, *extrusion, gx, gy, gz);
+		me = volumetricE(*extruder, *extrusion, gx, gy, gz);
 	}		
 
-	g1Motion(ss, gx, gy, gz, e, gfeed, comment,
+	g1Motion(ss, gx, gy, gz, me, gfeed, comment,
 			 doX, doY, doZ, doE, doFeed);
 }
 void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
@@ -177,7 +177,7 @@ void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 	set_extruding(false);
 }
 void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz, 
-		Scalar e, Scalar mfeed, const char *g1Comment, bool doX,
+		Scalar me, Scalar mfeed, const char *g1Comment, bool doX,
 		bool doY, bool doZ, bool doE, bool doFeed) {
 
 	// not do something is not an option .. under certain conditions
@@ -212,7 +212,7 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 	if(doY) ss << " Y" << my;
 	if(doZ) ss << " Z" << mz;
 	if(doFeed) ss << " F" << mfeed;
-	if(doE) ss << " " << get_current_extruder_index() << e;
+	if(doE) ss << " " << get_current_extruder_index() << me;
 	if(g1Comment) ss << " (" << g1Comment << ")";
 	ss << endl;
 
@@ -223,7 +223,7 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 	if (doY) set_y(my);
 	if (doZ) set_z(mz);
 	if (doFeed) set_feed(mfeed);
-	if (doE) setCurrentE(e);
+	if (doE) setCurrentE(me);
 }
 
 GantryConfig::GantryConfig(){
