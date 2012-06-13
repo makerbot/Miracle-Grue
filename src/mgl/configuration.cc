@@ -57,6 +57,14 @@ unsigned int mgl::uintCheck(const Json::Value &value, const char *name)
 	return value.asUInt();
 }
 
+string mgl::optionalPathCheck(const Json::Value &value, const char *name) {
+	if (value.isNull()) 
+		return string("");
+	else
+		return pathCheck(value, name);
+}
+	
+
 string mgl::pathCheck(const Json::Value &value, const char *name) {
 	string result = stringCheck(value, name);
 	if (result.substr(0, 10) == "default://") {
@@ -242,8 +250,8 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-	gcoderCfg.header = pathCheck(conf.root["gcoder"]["header"], "gcoder.header");
-	gcoderCfg.footer = pathCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
+	gcoderCfg.header = optionalPathCheck(conf.root["gcoder"]["header"], "gcoder.header");
+	gcoderCfg.footer = optionalPathCheck(conf.root["gcoder"]["footer"], "gcoder.footer");
 	gcoderCfg.doOutlines = boolCheck(conf.root["gcoder"]["outline"], "gcoder.outline");
 	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
