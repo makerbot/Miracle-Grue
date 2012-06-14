@@ -19,6 +19,7 @@ class GantryTestCase : public CPPUNIT_NS::TestFixture{
 	CPPUNIT_TEST( testG1Move );
 	CPPUNIT_TEST( testG1Extrude );
 	CPPUNIT_TEST( testSquirtSnort );
+	CPPUNIT_TEST( testConfig );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -30,6 +31,7 @@ protected:
 	void testG1Move();
 	void testG1Extrude();
 	void testSquirtSnort();
+	void testConfig();
 };
 
 

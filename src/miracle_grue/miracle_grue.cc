@@ -80,41 +80,43 @@ struct Arg: public option::Arg
 
 // all ID's of the options we expect
 enum optionIndex {UNKNOWN, HELP, CONFIG, FIRST_Z,LAYER_H,LAYER_W, FILL_ANGLE, FILL_DENSITY,
-				 N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX, DEBUG_ME, START_GCODE,
-				END_GCODE, OUT_FILENAME};
+				 N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX, DEBUG_ME, DEBUG_LAYER, 
+				 START_GCODE, END_GCODE, OUT_FILENAME};
 // options descriptor table
 const option::Descriptor usageDescriptor[] =
 {
- {UNKNOWN, 0, "", "",Arg::None, "miracle-grue [OPTIONS] FILE.STL \n\n"
-                                        "Options:" },
- {HELP, 0,"", "help",Arg::None, "  --help  \tPrint usage and exit." },
-{CONFIG, 1,"c", "config", Arg::NonEmpty, "-c  \tconfig data in a config.json file."
-		 "(default is local miracle.config)" },
-{FIRST_Z, 2,"f", "firstLayerZ", Arg::Numeric,
-		"-f \tfirst layer height (mm)" },
-{LAYER_H, 3,"h", "layerH", Arg::Numeric,
-		"  -h \tgeneral layer height(mm)" },
-{LAYER_W, 4,"w", "layerW", Arg::Numeric,
-		"  -w \tlayer width(mm)" },
-{ FILL_ANGLE, 5, "a","angle", Arg::Numeric,
-		"  -a \tinfill grid inter slice angle(radians)" },
-{ FILL_DENSITY, 6, "p", "density", Arg::Numeric,
-		"  -p \tapprox infill density(percent), aka rho aka p" },
-{ N_SHELLS, 	7, "n", "nShells", Arg::Numeric,
-		"  -n \tnumber of shells per layer" },
-{ BOTTOM_SLICE_IDX, 8, "b", "bottomIdx", Arg::Numeric,
-		"  -b \tbottom slice index" },
-{ TOP_SLICE_IDX, 	9, "t", "topIdx", Arg::Numeric,
-		"  -t \ttop slice index" },
-{ DEBUG_ME, 	10, "d", "debug", Arg::Numeric,
-		"  -d \tdebug level, 0 to 99. 60 is 'info'" },
-{ START_GCODE, 	11, "s", "header", Arg::NonEmpty,
-		"  -s \tstart gcode file" },
-{ END_GCODE, 	12, "e", "footer", Arg::NonEmpty,
-		"  -e \tend gcode file" },
-{ OUT_FILENAME, 	13, "o", "outFilename", Arg::NonEmpty,
-		"  -o \twrite gcode to specific filename (defaults to <model>.gcode)" },
-{0,0,0,0,0,0},
+	{UNKNOWN, 0, "", "",Arg::None, "miracle-grue [OPTIONS] FILE.STL \n\n"
+			"Options:" },
+	{HELP, 0,"", "help",Arg::None, "  --help  \tPrint usage and exit." },
+	{CONFIG, 1,"c", "config", Arg::NonEmpty, "-c  \tconfig data in a config.json file."
+			"(default is local miracle.config)" },
+	{FIRST_Z, 2,"f", "firstLayerZ", Arg::Numeric,
+			"-f \tfirst layer height (mm)" },
+	{LAYER_H, 3,"h", "layerH", Arg::Numeric,
+			"  -h \tgeneral layer height(mm)" },
+	{LAYER_W, 4,"w", "layerW", Arg::Numeric,
+			"  -w \tlayer width(mm)" },
+	{ FILL_ANGLE, 5, "a","angle", Arg::Numeric,
+			"  -a \tinfill grid inter slice angle(radians)" },
+	{ FILL_DENSITY, 6, "p", "density", Arg::Numeric,
+			"  -p \tapprox infill density(percent), aka rho aka p" },
+	{ N_SHELLS, 	7, "n", "nShells", Arg::Numeric,
+			"  -n \tnumber of shells per layer" },
+	{ BOTTOM_SLICE_IDX, 8, "b", "bottomIdx", Arg::Numeric,
+			"  -b \tbottom slice index" },
+	{ TOP_SLICE_IDX, 	9, "t", "topIdx", Arg::Numeric,
+			"  -t \ttop slice index" },
+	{ DEBUG_ME, 	10, "d", "debug", Arg::Numeric,
+			"  -d \tdebug level, 0 to 99. 60 is 'info'" },
+	{ DEBUG_LAYER, 11, "dl", "doPrintLayerMessages", Arg::None, 
+			"  -dl\tinsert layer messages in gcode" }, 
+	{ START_GCODE, 	12, "s", "header", Arg::NonEmpty,
+			"  -s \tstart gcode file" },
+	{ END_GCODE, 	13, "e", "footer", Arg::NonEmpty,
+			"  -e \tend gcode file" },
+	{ OUT_FILENAME, 	14, "o", "outFilename", Arg::NonEmpty,
+			"  -o \twrite gcode to specific filename (defaults to <model>.gcode)" },
+	{0,0,0,0,0,0},
 };
 
 void usage() {
@@ -189,6 +191,9 @@ int newParseArgs( Configuration &config,
 				break;
 			case  DEBUG_ME:
 				config["meta"][opt.desc->longopt] = atof(opt.arg);
+				break;
+			case DEBUG_LAYER:
+				config["gcoder"][opt.desc->longopt] = true;
 				break;
 			case  START_GCODE:
 			case  END_GCODE:

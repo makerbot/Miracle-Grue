@@ -251,10 +251,10 @@ Scalar GantryConfig::get_start_b() const { return sb; }
 Scalar GantryConfig::get_start_feed() const { return sfeed; }
 
 void GantryConfig::set_start_x(Scalar nx) { sx = nx; }
-void GantryConfig::set_start_y(Scalar ny) { sx = ny; }
-void GantryConfig::set_start_z(Scalar nz) { sx = nz; }
-void GantryConfig::set_start_a(Scalar na) { sx = na; }
-void GantryConfig::set_start_b(Scalar nb) { sx = nb; }
+void GantryConfig::set_start_y(Scalar ny) { sy = ny; }
+void GantryConfig::set_start_z(Scalar nz) { sz = nz; }
+void GantryConfig::set_start_a(Scalar na) { sa = na; }
+void GantryConfig::set_start_b(Scalar nb) { sb = nb; }
 void GantryConfig::set_start_feed(Scalar nfeed) { sfeed = nfeed; }
 
 Scalar GantryConfig::get_rapid_move_feed_rate_xy() const { 

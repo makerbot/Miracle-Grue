@@ -157,6 +157,7 @@ public:
     bool doInsets;
     bool doInfills;
     bool doInfillsFirst;
+	bool doPrintLayerMessages;
 
 	Scalar startX;
 	Scalar startY;

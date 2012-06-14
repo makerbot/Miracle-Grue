@@ -20,7 +20,7 @@ using namespace mgl;
 using namespace libthing;
 
 
-#define DBLTOINT 1000
+static const Scalar DBLTOINT = 1000;
 
 void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
 									const Insets & insetsForLoops,
@@ -125,8 +125,7 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 
 
 
-class ClipperInsetter
-{
+class ClipperInsetter {
 
 public:
 	ClipperInsetter(){}
@@ -154,8 +153,6 @@ void ClipperInsetter::inset( const SegmentVector &inputPolys,
 	clipperToMgl(out_polys, outputPolys);
 }
 
-bool useShrinky = false;
-
 /// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
 // and counter clockwise for holes)
 /// b) creates nbOfShells insets for each
@@ -170,20 +167,19 @@ bool useShrinky = false;
 /// @param writeDebugScadFiles : true/false if we want to write scad files
 /// @param insetsForLoops : vector of TBD
 void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
-					const unsigned int nShells,
-					const double layerW,
-					//unsigned int sliceId,
-					Scalar insetDistanceFactor,
-					const char *scadFile,
-					bool /*writeDebugScadFiles*/,
-					Insets &insetsForLoops)
-{
-
-
+		const unsigned int nShells,
+		const double layerW,
+		//unsigned int sliceId,
+		Scalar insetDistanceFactor,
+		const char *scadFile,
+		bool /*writeDebugScadFiles*/,
+		Insets &insetsForLoops) {
+	
+	static const bool USE_SHRINKY = false;
+	
 	std::vector<Scalar> insetDistances;
 	insetDistances.reserve(nShells);
-	for (unsigned int shellId=0; shellId < nShells; shellId++)
-	{
+	for (unsigned int shellId=0; shellId < nShells; shellId++) {
 		Scalar insetDistance;
 		if(shellId ==0)
 			insetDistance = 0.5*layerW;
@@ -192,29 +188,21 @@ void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 		insetDistances.push_back(insetDistance);
 	}
 
-	if(!useShrinky)
-	{
+	if(!USE_SHRINKY) {
 		ClipperInsetter insetter;
-		for(size_t i=0; i < insetDistances.size(); i++)
-		{
-
+		for(size_t i=0; i < insetDistances.size(); i++) {
 			Scalar dist = insetDistances[i];
 			insetsForLoops.push_back(SegmentTable());
 			SegmentTable & outputs = *insetsForLoops.rbegin();
-			if(i==0)
-			{
+			if(i==0) {
 				insetter.inset(inOutlinesSegments, dist, outputs);
-			}
-			else
-			{
+			} else {
 				SegmentTable &inputs = insetsForLoops[i-1];
 				insetter.inset(inputs, dist, outputs);
 			}
 		}
 		//innerOutlinesSegments = *insetsForLoops.rbegin();
-	}
-	else
-	{
+	} else {
 		createShellsForSliceUsingShrinky(	inOutlinesSegments,
 				insetDistances,
 				0,//sliceId,
@@ -222,8 +210,7 @@ void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 				insetsForLoops);
 
 		unsigned int loopCount = inOutlinesSegments.size();
-		for (unsigned int loop = 0; loop < loopCount; loop++)
-		{
+		for (unsigned int loop = 0; loop < loopCount; loop++) {
 			// const std::vector<LineSegment2 > &deppestInset = *insetsForLoops[i].rbegin();
 
 			int lastKnownShell = -1;

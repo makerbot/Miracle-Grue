@@ -3103,6 +3103,7 @@ PolyOffsetBuilder(const Polygons& in_polys, Polygons& out_polys,
     {
         m_curr_poly = &out_polys[m_i];
         size_t len = in_polys[m_i].size();
+		//if the first point is equal to the last point, discard the last point
         if (len > 1 && m_p[m_i][0].X == m_p[m_i][len - 1].X &&
             m_p[m_i][0].Y == m_p[m_i][len-1].Y) len--;
 
@@ -3114,8 +3115,7 @@ PolyOffsetBuilder(const Polygons& in_polys, Polygons& out_polys,
 
         if (len == 0 || (len < 3 && delta <= 0))
           continue;
-        else if (len == 1)
-        {
+        else if (len == 1) {
             Polygon arc;
             arc = BuildArc(in_polys[m_i][len-1], 0, 2 * pi, delta);
             out_polys[m_i] = arc;
@@ -3130,12 +3130,11 @@ PolyOffsetBuilder(const Polygons& in_polys, Polygons& out_polys,
             normals[m_j] = GetUnitNormal(in_polys[m_i][m_j], in_polys[m_i][m_j+1]);
         
         m_k = len -1;
-        for (m_j = 0; m_j < len; ++m_j)
-        {
-          switch (jointype)
-          {
+        for (m_j = 0; m_j < len; ++m_j) {
+          switch (jointype) {
             case jtMiter:
             {
+			  //m_R = 1 + normals[m_j].dot(normals[m_k];
               m_R = 1 + (normals[m_j].X*normals[m_k].X + 
                 normals[m_j].Y*normals[m_k].Y);
               if (m_R >= m_RMin) DoMiter(); else DoSquare(MiterLimit);
@@ -3151,13 +3150,10 @@ PolyOffsetBuilder(const Polygons& in_polys, Polygons& out_polys,
     //finally, clean up untidy corners using Clipper ...
     Clipper clpr;
     clpr.AddPolygons(out_polys, ptSubject);
-    if (delta > 0)
-    {
+    if (delta > 0) {
         if (!clpr.Execute(ctUnion, out_polys, pftPositive, pftPositive))
             out_polys.clear();
-    }
-    else
-    {
+    } else {
         IntRect r = clpr.GetBounds();
         Polygon outer(4);
         outer[0] = IntPoint(r.left - 10, r.bottom + 10);
@@ -3219,15 +3215,14 @@ void DoSquare(double mul = 1.0)
 
 void DoMiter()
 {
-    if ((normals[m_k].X * normals[m_j].Y - normals[m_j].X * normals[m_k].Y) * m_delta >= 0)
-    {
+    if ((normals[m_k].X * normals[m_j].Y - 
+			normals[m_j].X * normals[m_k].Y) * m_delta >= 0) {
+		/* If cross product times delta >= 0 */
         double q = m_delta / m_R;
         AddPoint(IntPoint((long64)Round(m_p[m_i][m_j].X + 
             (normals[m_k].X + normals[m_j].X) * q),
             (long64)Round(m_p[m_i][m_j].Y + (normals[m_k].Y + normals[m_j].Y) * q)));
-    }
-    else
-    {
+    } else {
         IntPoint pt1 = IntPoint((long64)Round(m_p[m_i][m_j].X + normals[m_k].X *
           m_delta), (long64)Round(m_p[m_i][m_j].Y + normals[m_k].Y * m_delta));
         IntPoint pt2 = IntPoint((long64)Round(m_p[m_i][m_j].X + normals[m_j].X *

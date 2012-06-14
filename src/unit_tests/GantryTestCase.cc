@@ -151,4 +151,28 @@ void GantryTestCase::testSquirtSnort(){
 	
 }
 
+void GantryTestCase::testConfig(){
+	
+	const Scalar x = 4, y = 5, z = 6;
+	
+	GantryConfig gantryCfg;
+	
+	CPPUNIT_ASSERT_EQUAL(gantryCfg.get_start_x(), 
+			MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	CPPUNIT_ASSERT_EQUAL(gantryCfg.get_start_y(), 
+			MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	CPPUNIT_ASSERT_EQUAL(gantryCfg.get_start_z(), 
+			MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM);
+	CPPUNIT_ASSERT(gantryCfg.get_start_a() == 0);
+	CPPUNIT_ASSERT(gantryCfg.get_start_b() == 0);
+	CPPUNIT_ASSERT(gantryCfg.get_start_feed() == 0);
+	
+	gantryCfg.set_start_x(x);
+	CPPUNIT_ASSERT(gantryCfg.get_start_x() == x);
+	gantryCfg.set_start_y(y);
+	CPPUNIT_ASSERT(gantryCfg.get_start_y() == y);
+	gantryCfg.set_start_z(z);
+	CPPUNIT_ASSERT(gantryCfg.get_start_z() == z);
+}
+
 
