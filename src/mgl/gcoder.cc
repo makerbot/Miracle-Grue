@@ -459,7 +459,6 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
         Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
         SliceData &slice = slices[sliceId];
         slice.updatePosition(z, sliceId);
-
         writeSlice(gout, slice);
         codeSlice ++;
     }
@@ -489,6 +488,9 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 	unsigned int extruderCount = sliceData.extruderSlices.size();
 
 	ss << "(Slice " << sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
+	if(gcoderCfg.doPrintLayerMessages){
+		ss << "M70 (Layer: " << sliceIndex << ")" << endl;
+	}
 	// to each extruder its speed
 	Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() * gcoderCfg.extruders[0].zFeedRate;
 	// moving all up. This is the first move for every new layer
