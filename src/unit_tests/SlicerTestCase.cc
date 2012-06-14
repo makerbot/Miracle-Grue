@@ -173,7 +173,7 @@ void SlicerTestCase::testSlicyKnot_44()
 	std::list<LineSegment2> cuts;
 	double tol = 1e-6;
 	// Load slice connectivity information
-	for (int i=0; i < triangleCount; i++)
+	for (unsigned int i=0; i < triangleCount; i++)
 	{
 		unsigned int triangleIndex = trianglesInSlice[i];
 		const Triangle3& t = allTriangles[triangleIndex];
@@ -290,7 +290,7 @@ void dumpAngles1(std::vector<LineSegment2> & segments)
     // ijkAngles(insets);
     cout << "i, j, k, angle" << endl;
     cout << "---------------" << endl;
-    for(int id = 0;id < segments.size();id++){
+    for(unsigned int id = 0;id < segments.size();id++){
         //cout << id << " / " << insets.size() << endl;
         LineSegment2 seg = segments[id];
         unsigned int previousSegmentId;
@@ -333,7 +333,7 @@ void dumpAngles3(std::vector<LineSegment2> & segments)
 	cout << "v0, v1, angle" << endl;
     cout << "---------------" << endl;
 
-    for(int id = 0;id < segments.size();id++){
+    for(unsigned id = 0;id < segments.size();id++){
         //cout << id << " / " << insets.size() << endl;
         LineSegment2 seg = segments[id];
         unsigned int previousSegmentId;
@@ -362,7 +362,7 @@ void dumpAngles2(std::vector<LineSegment2> & segments)
 	cout << "v0, v1, angle" << endl;
     cout << "---------------" << endl;
 
-    for(int id = 0;id < segments.size();id++){
+    for(unsigned int id = 0;id < segments.size();id++){
         //cout << id << " / " << insets.size() << endl;
         LineSegment2 seg = segments[id];
         unsigned int previousSegmentId;
@@ -464,9 +464,9 @@ void SlicerTestCase::testInset()
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
-	Scalar cuttOffLength = 1.0;
+	//Scalar cuttOffLength = 1.0;
 
-	for (int i=0; i < shells; i++)
+	for (unsigned int i=0; i < shells; i++)
 	{
 		cout << "\n shell " << i << " - " << insetTable.size() <<  endl;
 		if(segments.size() > 2)
@@ -529,9 +529,9 @@ void SlicerTestCase::testInset2()
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
-	Scalar cuttOffLength = 1.0;
+	//Scalar cuttOffLength = 1.0;
 
-	for (int i=0; i < shells; i++)
+	for (unsigned int i=0; i < shells; i++)
 	{
 		cout << "\n" << insetTable.size() << " ----- "<< endl;
 		//dumpSegments(segments);
@@ -570,9 +570,9 @@ void SlicerTestCase::testInset3()
 
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
-	Scalar cuttOffLength = 1.0;
+	//Scalar cuttOffLength = 1.0;
 
-	for (int i=0; i < shells; i++)
+	for (unsigned int i=0; i < shells; i++)
 	{
 		cout << "\n" << insetTable.size() << " ----- "<< endl;
 		//dumpSegments(segments);
@@ -649,9 +649,9 @@ void SlicerTestCase::testInset4()
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
-	Scalar cuttOffLength = 1.0;
+	//Scalar cuttOffLength = 1.0;
 
-	for (int i=0; i < shells; i++)
+	for (unsigned int i=0; i < shells; i++)
 	{
 		cout << "\n" << insetTable.size() << " ----- " << endl;
 		//dumpSegments(segments);
@@ -697,9 +697,9 @@ void SlicerTestCase::testHexagon()
 	shrinky.dz = 0.05;
 	Scalar insetDist = 1;
 	unsigned int shells = 1;
-	Scalar cuttOffLength = 1.0;
+	//Scalar cuttOffLength = 1.0;
 
-	for (int i=0; i < shells; i++)
+	for (unsigned int i=0; i < shells; i++)
 	{
 		cout << "\n" << insetTable.size() << " ----- " << endl;
 		//dumpSegments(segments);
@@ -973,7 +973,7 @@ void inset2scad(std::vector<LineSegment2> &segs,
     shrinky.dz = 0.05;
 
     cout << "inset2scad: segments =  "  << segs.size() << endl;
-    int i;
+    unsigned int i;
     try
     {
     	 for(i = 0;i < shells;i++)
@@ -1343,7 +1343,7 @@ void SlicerTestCase::scratch()
 
 	Scalar elongation = 10;
 
-	bool success = attachSegments(s0, s1, elongation);
+	/* bool success = */ attachSegments(s0, s1, elongation);
 //	CPPUNIT_ASSERT(success);
 }
 
@@ -1351,8 +1351,8 @@ void SlicerTestCase::scratch()
 void SlicerTestCase::test_slice_0_loop_0()
 {
 	std::vector<LineSegment2> segs;
-	double x = 0;
-	double y = 0;
+	//Scalar x = 0;
+	//Scalar y = 0;
 
 	segs.push_back(LineSegment2(Vector2(-25.567, 20.4295), Vector2(-24.9313, 20.4295)));
 	segs.push_back(LineSegment2(Vector2(-24.9313, 20.4295), Vector2(25.567, 20.4295)));
@@ -1518,7 +1518,7 @@ void SlicerTestCase::testCollapse()
 	LineSegment2 s0 = bisectorSegment0.elongate(elongation);
 	LineSegment2 s1 = bisectorSegment1.prelongate(elongation);
 	Vector2 intersection;
-	bool attached = segmentSegmentIntersection(s0, s1, intersection);
+	/* bool attached = */ segmentSegmentIntersection(s0, s1, intersection);
 
 	cout << "-- testCollapse2 -- " << endl;
 	cout << "segment = " << segment << endl;
@@ -1789,8 +1789,8 @@ void SlicerTestCase::test_3d_knot_57_3()
 	cout << endl;
 
 	std::vector<LineSegment2> segs;
-	Scalar x = 0;
-	Scalar y = 0;
+	//Scalar x = 0;
+	//Scalar y = 0;
 
 	segs.push_back(LineSegment2(Vector2(2.211841, -3.693989), Vector2(3.123649, -3.832589)));
 	segs.push_back(LineSegment2(Vector2(3.123649, -3.832589), Vector2(4.970302, -4.147696)));
