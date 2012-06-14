@@ -84,10 +84,13 @@ public:
 
 
 /// Properties common to a single hardware extruder
-class Extruder
-{
+class Extruder {
 public:
-	typedef enum {RPM_MODE, VOLUMETRIC_MODE} extrusionMode_t; 
+	
+	enum extrusionMode_t {
+		RPM_MODE, 
+		VOLUMETRIC_MODE
+	}; 
 
 	Extruder() : coordinateSystemOffsetX(0),
 			extrusionTemperature(220),

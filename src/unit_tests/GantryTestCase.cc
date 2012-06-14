@@ -14,7 +14,7 @@ using namespace libthing;
 CPPUNIT_TEST_SUITE_REGISTRATION( GantryTestCase );
 
 void GantryTestCase::setUp(){
-	std::cout<< " Done" << endl;
+	std::cout << " Setup Done" << endl;
 }
 
 void GantryTestCase::testInitConfig(){
@@ -107,7 +107,9 @@ void GantryTestCase::testG1Extrude(){
 }
 void GantryTestCase::testSquirtSnort(){
 	stringstream ss;
-	string s;
+	stringstream expected;
+	string astring;
+	string estring;
 	
 	GantryConfig gantryCfg;
 	Gantry gantry(gantryCfg);
@@ -116,19 +118,36 @@ void GantryTestCase::testSquirtSnort(){
 	gantry.set_y(0);
 	gantry.set_z(0);
 	gantry.set_feed(3200);
+	gantry.setCurrentE(0);
 	
 	Extruder uder;
 	Extrusion usion;
-		
+	
+	usion.retractDistance = -0.5;
+	
+	cout << "\nSnort test\n" << endl;
+	
 	gantry.snort(ss, Vector2(20,20), uder, usion);
-	s = ss.str();
-	cout << "Snort:  \t" << s << endl;
-	CPPUNIT_ASSERT(s.size() != 0);
+	expected << "G1" << " F" << usion.retractRate << 
+			" A" << -usion.retractDistance << " (snort)" << endl;
+	astring = ss.str();
+	estring = expected.str();
+	cout << "Expected: \t" << estring << endl;
+	cout << "Actual:   \t" << astring << endl;
+	CPPUNIT_ASSERT_MESSAGE("Snort test failed", astring == estring);
 	ss.str("");
+	expected.str("");
+	
+	cout << "\nSquirt test\n" << endl;
+	
 	gantry.squirt(ss, Vector2(30,30), uder, usion);
-	s = ss.str();
-	cout << "Squirt: \t" << s << endl;
-	CPPUNIT_ASSERT(s.size() != 0);
+	expected << "G1" << " F" << usion.retractRate << 
+			" A" << 0.0 << " (squirt)" << endl;
+	astring = ss.str();
+	estring = expected.str();
+	cout << "Expected: \t" << estring << endl;
+	cout << "Actual:   \t" << astring << endl;
+	CPPUNIT_ASSERT_MESSAGE("Squirt test failed", astring == estring);
 	
 }
 
