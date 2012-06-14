@@ -12,11 +12,10 @@ CONFIG += console
 INSTALLS += target
 
 win32 {
-	QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
-}
-
-win32 {
+    DESTDIR=.
+    OBJECTS_DIR=.
     TARGET=../../../bin/miracle_grue
+	QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
 }
 target.path = /usr/bin
 
@@ -29,7 +28,7 @@ mac {
     QT -= gui core
 
 }
-include($$MGL_SRC/mgl.pro.inc)
+
 INCLUDEPATH += ..
 
 LIBTHING_BASE = ../../submodule/libthing/src/main

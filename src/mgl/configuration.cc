@@ -186,16 +186,30 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.firmware    = stringCheck(conf.root["firmware"], "firmware");
 
 
-	gcoderCfg.gantry.xyMaxHoming = boolCheck(conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming");
-	gcoderCfg.gantry.zMaxHoming  = boolCheck(conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming");
-	gcoderCfg.gantry.scalingFactor = doubleCheck(conf.root["gantry"]["scalingFactor"], "gantry.scalingFactor");
-	gcoderCfg.gantry.rapidMoveFeedRateXY = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateXY"], "gantry.rapidMoveFeedRateXY");
-	gcoderCfg.gantry.rapidMoveFeedRateZ = doubleCheck(conf.root["gantry"]["rapidMoveFeedRateZ"], "gantry.rapidMoveFeedRateZ");
-	gcoderCfg.gantry.homingFeedRateZ = doubleCheck(conf.root["gantry"]["homingFeedRateZ"], "gantry.homingFeedRateZ");
-	gcoderCfg.gantry.layerH = doubleCheck(conf.root["slicer"]["layerH"], "slicer.layerH");
-	gcoderCfg.gantry.x = doubleCheck(conf.root["gantry"]["startX"], "gantry.startX");
-	gcoderCfg.gantry.y = doubleCheck(conf.root["gantry"]["startY"], "gantry.startY");
-	gcoderCfg.gantry.z = doubleCheck(conf.root["gantry"]["startZ"], "gantry.startZ");
+	gcoderCfg.gantryCfg.set_xy_max_homing(boolCheck(
+			conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming"));
+	gcoderCfg.gantryCfg.set_z_max_homing(boolCheck(
+			conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming"));
+	gcoderCfg.gantryCfg.set_scaling_Factor(doubleCheck(
+			conf.root["gantry"]["scalingFactor"], 
+			"gantry.scalingFactor"));
+	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_xy(doubleCheck(
+			conf.root["gantry"]["rapidMoveFeedRateXY"], 
+			"gantry.rapidMoveFeedRateXY"));
+	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_z(doubleCheck(
+			conf.root["gantry"]["rapidMoveFeedRateZ"], 
+			"gantry.rapidMoveFeedRateZ"));
+	gcoderCfg.gantryCfg.set_homing_feed_rate_z(doubleCheck(
+			conf.root["gantry"]["homingFeedRateZ"], 
+			"gantry.homingFeedRateZ"));
+	gcoderCfg.gantryCfg.set_layer_h(doubleCheck(
+			conf.root["slicer"]["layerH"], "slicer.layerH"));
+	gcoderCfg.gantryCfg.set_start_x(doubleCheck(
+			conf.root["gantry"]["startX"], "gantry.startX"));
+	gcoderCfg.gantryCfg.set_start_y(doubleCheck(
+			conf.root["gantry"]["startY"], "gantry.startY"));
+	gcoderCfg.gantryCfg.set_start_z(doubleCheck(
+			conf.root["gantry"]["startZ"], "gantry.startZ"));
 
 
 	gcoderCfg.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
@@ -266,7 +280,9 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], "gcoder.insets");
 	gcoderCfg.doInfillsFirst =  boolCheck(conf.root["gcoder"]["infillFirst"], "gcoder.infillFirst");
 	gcoderCfg.doInfills  =  boolCheck(conf.root["gcoder"]["infills"], "gcoder.infills");
-	gcoderCfg.gantry.useEAxis = boolCheck(conf.root["gcoder"]["useEAxis"], "gcoder.useEAxis", false);
+	gcoderCfg.gantryCfg.set_use_e_axis(boolCheck(
+			conf.root["gcoder"]["useEAxis"], 
+			"gcoder.useEAxis", false));
 
 }
 

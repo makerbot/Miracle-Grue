@@ -81,38 +81,13 @@ class LayerMeasure
 	Scalar layerH;
 
 public:
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH)
-		:firstLayerZ(firstLayerZ), layerH(layerH)
-	{}
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH);
 
-	unsigned int zToLayerAbove(Scalar const z) const
-	{
-		Scalar const tol = 0.000001; // tolerance: 1 nanometer
-		if (libthing::tlower(z, 0, tol))
-		{
-			std::ostringstream oss;
-			oss << "Model with points below the z axis are not supported in this version. Please center your model on the build area.";
-			oss << " z=" << z << std::endl;
-			LayerException mixup(oss.str().c_str());
-			throw mixup;
-		}
+	unsigned int zToLayerAbove(Scalar const z) const;
 
-		if (libthing::tlower(z, firstLayerZ, tol))
-			return 0;
+	Scalar sliceIndexToHeight(unsigned int sliceIndex) const;
 
-		Scalar const layer = (z+tol-firstLayerZ) / layerH;
-		return static_cast<unsigned int>(ceil(layer));
-	}
-
-	Scalar sliceIndexToHeight(unsigned int sliceIndex) const
-	{
-		return firstLayerZ + sliceIndex * layerH;
-	}
-
-	Scalar getLayerH() const
-	{
-		return layerH;
-	}
+	Scalar getLayerH() const;
 };
 
 /// A polygon is an arbitarty collection of 2d points

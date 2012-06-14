@@ -15,6 +15,9 @@ win32 {
 }
 
 win32 {
+    DESTDIR=.
+    OBJECTS_DIR=.
+	QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
     TARGET=../../../lib/mgl
 }
 
@@ -42,6 +45,7 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/clipper.cc\
     $$MGL_SRC/configuration.cc\
     $$MGL_SRC/gcoder.cc\
+    $$MGL_SRC/gcoder_gantry.cc\	
     $$MGL_SRC/insets.cc\
     $$MGL_SRC/JsonConverter.cc\
     $$MGL_SRC/mgl.cc\
@@ -65,6 +69,7 @@ HEADERS +=     $$MGL_SRC/abstractable.h\
     $$MGL_SRC/connexity.h\
     $$MGL_SRC/Exception.h\
     $$MGL_SRC/gcoder.h\
+    $$MGL_SRC/gcoder_gantry.h\
     $$MGL_SRC/infill.h\
     $$MGL_SRC/insets.h\
     $$MGL_SRC/JsonConverter.h\
