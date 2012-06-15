@@ -206,13 +206,16 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 		throw mixup;
 	}
 
-
+	unsigned char ss_axis = 
+			(gantryCfg.get_use_e_axis() ? 'E' : 
+				get_current_extruder_index());
+	
 	ss << "G1";
 	if(doX) ss << " X" << mx;
 	if(doY) ss << " Y" << my;
 	if(doZ) ss << " Z" << mz;
 	if(doFeed) ss << " F" << mfeed;
-	if(doE) ss << " " << get_current_extruder_index() << me;
+	if(doE) ss << " " << ss_axis << me;
 	if(g1Comment) ss << " (" << g1Comment << ")";
 	ss << endl;
 
