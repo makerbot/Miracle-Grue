@@ -58,11 +58,16 @@ void testModel(const char *model, const char* configFile)
 	Tomograph tomograph;
 	Regions skeleton;
 	std::vector< SliceData >  slices;
+	
+	std::ofstream gcodeFileStream(gcodeFile.c_str());
+	
 	miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(), NULL,
-				gcodeFile.c_str(), -1, -1,
+				gcodeFileStream, -1, -1,
 				tomograph,
 				skeleton,
 				slices);
+	
+	gcodeFileStream.close();
 }
 
 void testModels(vector<string>& models, const char* configFile)

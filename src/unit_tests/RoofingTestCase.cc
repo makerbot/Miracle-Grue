@@ -1340,17 +1340,21 @@ void RoofingTestCase::testUnionSurfaces()
 	Tomograph tomograph;
 	Regions skeleton;
 	vector<SliceData> slices;
+	
+	std::ofstream gcodeFileStream(gcodeFileStr);
 
 	miracleGrue(gcoderCfg,
 				slicerCfg,
 				modelFileStr,
 				scadFileStr,
-				gcodeFileStr,
+				gcodeFileStream,
 				firstSliceIdx,
 				lastSliceIdx,
 				tomograph,
 				skeleton,
 				slices);
+	
+	gcodeFileStream.close();
 
 	size_t skipCount = 1;
 
