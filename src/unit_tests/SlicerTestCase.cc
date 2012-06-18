@@ -11,6 +11,7 @@
 #include "mgl/mgl.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
+#include "mgl/abstractable.h"
 
 #include "mgl/shrinky.h"
 #include "mgl/meshy.h"
@@ -47,7 +48,11 @@ void SlicerTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
-	mkDebugPath(outputDir.c_str());
+	outputDir = string("outputs") + computer.fileSystem.getPathSeparatorCharacter() + 
+			string("test_case") + computer.fileSystem.getPathSeparatorCharacter() + 
+			string("slicerTestCase") + computer.fileSystem.getPathSeparatorCharacter();
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
+	//mkDebugPath(outputDir.c_str());
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
 }
 

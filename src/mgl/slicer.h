@@ -55,7 +55,7 @@ struct SlicerConfig
 	unsigned int roofLayerCount; // number of solid layers for roofs
 	unsigned int floorLayerCount; // number of solid layers for floors
 	//unsigned int infillSkipCount; //< TBD
-	double infillDensity; // the density of the infill patterns (0 to 1)
+	Scalar infillDensity; // the density of the infill patterns (0 to 1)
 	Scalar gridSpacingMultiplier; // interference between 2 grid lines ( 0 to 1, for adhesion)
 };
 
