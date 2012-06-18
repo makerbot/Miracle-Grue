@@ -68,13 +68,6 @@ void mgl::rotatePolygons(Polygons& polygons, Scalar angle)
 	}
 }
 
-
-
-
-
-
-
-
 std::ostream& mgl::operator<<(ostream& os, const Limits& l)
 {
 	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
