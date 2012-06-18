@@ -379,20 +379,9 @@ void Meshy::translate(const Vector3 &change) {
 
 	for (vector<Triangle3>::iterator i = oldTriangles.begin();
 		 i != oldTriangles.end(); i++) {
-		Vector3 point1 = (*i)[0];
-		point1.x += change.x;
-		point1.y += change.y;
-		point1.z += change.z;
-
-		Vector3 point2 = (*i)[1];
-		point2.x += change.x;
-		point2.y += change.y;
-		point2.z += change.z;
-
-		Vector3 point3 = (*i)[2];
-		point3.x += change.x;
-		point3.y += change.y;
-		point3.z += change.z;
+		Vector3 point1 = (*i)[0] + change;
+		Vector3 point2 = (*i)[1] + change;
+		Vector3 point3 = (*i)[2] + change;
 
 		Triangle3 newTriangle(point1, point2, point3);
 		addTriangle(newTriangle);
