@@ -90,8 +90,8 @@ void  mglToClipper(const SegmentVector &segmentTable, ClipperLib::Polygons &out_
 			size_t reverseIndex = loop.size()-1 -j;
 			const LineSegment2 &seg = loop[reverseIndex];
 			ClipperLib::IntPoint p;
-			p.X = seg.a[0] * DBLTOINT;
-			p.Y = seg.a[1] * DBLTOINT;
+            p.X = (UINT64)(seg.a[0] * DBLTOINT);
+            p.Y = (UINT64)(seg.a[1] * DBLTOINT);
 			poly.push_back(p);
 		}
 	}

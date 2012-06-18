@@ -976,6 +976,7 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegment
 			}
 			catch(ShrinkyException &messup)
 			{
+                UNREFERENCED_PARAMETER(messup);
 				if(scadFile != 0x00)
 				{
 					static int counter =0;

@@ -30,6 +30,9 @@ using namespace std;
 
 #include <fstream>
 
+#define UNREFERENCED_PARAMETER(P) (P)
+
+
 std::ostream &MyComputer::log()
 {
     return cout;

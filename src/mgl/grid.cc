@@ -27,7 +27,7 @@ const Scalar GRID_RANGE_TOL = 0.0;
 
 
 ostream& operator << (std::ostream &os,const ScalarRange &p) {
-	cout << "[" << p.min << ", " << p.max << "]";
+    cout << "[" << p.m_min << ", " << p.m_max << "]";
 	return os;
 }
 
@@ -215,15 +215,15 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 		for (vector<ScalarRange>::const_iterator j = ray.begin();
 			 j != ray.end(); j++) {
 
-			assert(j->min != j->max);
+            assert(j->m_min != j->m_max);
 
 			if (axis == X_AXIS) {
-				points.push_back(Vector2(j->min, val));
-				points.push_back(Vector2(j->max, val));
+                points.push_back(Vector2(j->m_min, val));
+                points.push_back(Vector2(j->m_max, val));
 			}
 			else {
-				points.push_back(Vector2(val, j->min));
-				points.push_back(Vector2(val, j->max));
+                points.push_back(Vector2(val, j->m_min));
+                points.push_back(Vector2(val, j->m_max));
 			}				
 			
 			points_remaining[points.size() - 2] = points.size() - 1;
@@ -243,7 +243,7 @@ void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the 
 		//handle last point
 		if (points_remaining.empty()) break;
 
-		Scalar closest_dist = numeric_limits<int>::max();
+        Scalar closest_dist = (numeric_limits<int>::max)();
 		int closest;
 
 		//find the remaining point closest to this point
@@ -310,7 +310,7 @@ vector< ScalarRange >::const_iterator  subRangeTersect(
 
 	while(it != itEnd) {
 		const ScalarRange &currentRange = *it;
-		if( (currentRange.min >= range.max)  )
+        if( (currentRange.m_min >= range.m_max)  )
 		{
 			// cout << " subrange done" << endl; // << currentRange << endl;
 			return it;
@@ -318,7 +318,7 @@ vector< ScalarRange >::const_iterator  subRangeTersect(
 
 		ScalarRange intersection;
 		// cout << " second="<< currentRange << endl;
-		if( intersectRange(range.min, range.max, currentRange.min, currentRange.max, intersection.min, intersection.max) )
+        if( intersectRange(range.m_min, range.m_max, currentRange.m_min, currentRange.m_max, intersection.m_min, intersection.m_max) )
 		{
 			// cout << " Intersect: [" << range.min << ", " << range.max << "]"<< endl;
 			result.push_back(intersection);
@@ -371,14 +371,14 @@ bool scalarRangeUnion(const ScalarRange& range0,
 		const ScalarRange& range1, ScalarRange &resultRange)
 {
 	//cout << " union( " << range0 << ", " << range1 << ")=";
-	if( (range1.min > range0.max) || (range0.min > range1.max) )
+    if( (range1.m_min > range0.m_max) || (range0.m_min > range1.m_max) )
 	{
 		// cout << "0" << endl;
 		return false;
 	}
 
-	resultRange.min = range0.min < range1.min?range0.min:range1.min;
-	resultRange.max = range0.max > range1.max?range0.max:range1.max;
+    resultRange.m_min = range0.m_min < range1.m_min?range0.m_min:range1.m_min;
+    resultRange.m_max = range0.m_max > range1.m_max?range0.m_max:range1.m_max;
 
 	// cout << resultRange<<endl;
 	return true;
@@ -399,7 +399,7 @@ vector< ScalarRange >::const_iterator  subRangeUnion(const ScalarRange &initialR
 	while(it != itEnd)
 	{
 		const ScalarRange &itRange = *it;
-		if( (itRange.min > range.max)  )
+        if( (itRange.m_min > range.m_max)  )
 		{
 			// cout << " -PUSH" << range << endl;
 			result.push_back(range);
@@ -456,10 +456,10 @@ void rangeUnion( const vector< ScalarRange > &firstLine,
 		{
 			ScalarRange &lastUnion = unionLine.back();
 			// cout << "LAST RANGE UPDATE COMPARE: last=" << lastUnion << " range=" << range;
-			if(range.min <= lastUnion.max && lastUnion.max >= range.max)
+            if(range.m_min <= lastUnion.m_max && lastUnion.m_max >= range.m_max)
 			{
 				//cout << " !UPDATE ONLY" << endl;
-				lastUnion.max = range.max;
+                lastUnion.m_max = range.m_max;
 				itOne++;
 				continue;
 			}
@@ -486,7 +486,7 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 {
 	//cout << srcRange << " - " << diffRange << " = ";
 	// the diffRange is left of srcRange ... no result
-	if(diffRange.max <= srcRange.min)
+    if(diffRange.m_max <= srcRange.m_min)
 	{
 		//cout << "0 (before)" << endl;
 		return false;
@@ -494,38 +494,38 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 
 	// the diff covers the src
 	// the src is (partially) occluded
-	if(diffRange.min <= srcRange.min)
+    if(diffRange.m_min <= srcRange.m_min)
 	{
-		if(diffRange.max >= srcRange.max )
+        if(diffRange.m_max >= srcRange.m_max )
 		{
-			srcRange.min = srcRange.max;
+            srcRange.m_min = srcRange.m_max;
 			//cout << "0 (occlusion)" << endl;
 			return false;
 		}
 		// else... adjust the srcRange and make it smaller
-		srcRange.min = diffRange.max;
+        srcRange.m_min = diffRange.m_max;
 		//cout << "0 partial occlusion, leftover = " << srcRange << endl;
 		return false;
 
 	}
 
 	// intersection of the ranges
-	if( (diffRange.min >= srcRange.min)  )
+    if( (diffRange.m_min >= srcRange.m_min)  )
 	{
-		resultRange.min = srcRange.min;
-		resultRange.max = diffRange.min;
+        resultRange.m_min = srcRange.m_min;
+        resultRange.m_max = diffRange.m_min;
 
 		// left over on the right side
-		if(diffRange.max <= srcRange.max)
+        if(diffRange.m_max <= srcRange.m_max)
 		{
-			srcRange.min = diffRange.max;
+            srcRange.m_min = diffRange.m_max;
 		}
 		else
 		{
-			srcRange.min = srcRange.max;
+            srcRange.m_min = srcRange.m_max;
 		}
 		// cout << resultRange << " (intersection!) leftover " <<  srcRange << endl;
-		if (tequals(resultRange.max, resultRange.min, GRID_RANGE_TOL)) {
+        if (tequals(resultRange.m_max, resultRange.m_min, GRID_RANGE_TOL)) {
 			return false;
 		}
 
@@ -535,13 +535,13 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 	// srcRange is not occluded by diffRange which
 	// is right of scrRange
 	// there is nothing to remove: the result is the range
-	if(diffRange.min >= srcRange.max)
+    if(diffRange.m_min >= srcRange.m_max)
 	{
 		resultRange = srcRange;
 
 		// remove srcRange so it is
 		// not used twice
-		srcRange.min = srcRange.max;
+        srcRange.m_min = srcRange.m_max;
 		// cout << resultRange << " (all in!) leftover " <<  srcRange << endl;
 		return true;
 	}
@@ -563,9 +563,9 @@ vector< ScalarRange >::const_iterator  subRangeDifference(
 	{
 		const ScalarRange &itRange = *it;
 		// cout << " itRange=" << itRange << endl;
-		if( (itRange.min >= range.max))
+        if( (itRange.m_min >= range.m_max))
 		{
-			if (!tequals(range.min, range.max, GRID_RANGE_TOL))
+            if (!tequals(range.m_min, range.m_max, GRID_RANGE_TOL))
 				result.push_back(range);
 			//cout << "subRangeDifference return" << endl;
 			return it;
@@ -577,7 +577,7 @@ vector< ScalarRange >::const_iterator  subRangeDifference(
 			// cout << " PUSHx " <<  difference << endl;
 			result.push_back(difference);
 		}
-		if(range.min >= range.max) // the leftover range has no length
+        if(range.m_min >= range.m_max) // the leftover range has no length
 		{
 			// cout << "no left over" << endl;
 			return it;
@@ -586,7 +586,7 @@ vector< ScalarRange >::const_iterator  subRangeDifference(
 		it ++;
 	}
 	// add the left over (if any)
-	if(range.max > range.min && !tequals(range.min, range.max, GRID_RANGE_TOL))
+    if(range.m_max > range.m_min && !tequals(range.m_min, range.m_max, GRID_RANGE_TOL))
 	{
 		// cout << "add_left_over =" << range << endl;
 		result.push_back(range);
@@ -804,7 +804,7 @@ void rangeTrim(const vector<ScalarRange> &src, Scalar cutOff, vector<ScalarRange
 	for(size_t i=0; i < src.size(); i++ )
 	{
 		const ScalarRange range = src[i];
-		if( !tequals(range.max, range.min, cutOff) )
+        if( !tequals(range.m_max, range.m_min, cutOff) )
 		{
 			result.push_back(range);
 		}

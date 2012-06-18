@@ -15,7 +15,10 @@ win32 {
     DESTDIR=.
     OBJECTS_DIR=.
     TARGET=../../../bin/miracle_grue
-	QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
+!win32-msvc* {
+        QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
+}
+    DEFINES += _CRT_SECURE_NO_WARNINGS
 }
 target.path = /usr/bin
 
@@ -47,6 +50,6 @@ include($$OPTIONPARSER_BASE/optionparser.pro.inc)
 //    submodule/clp-parser
 
 SOURCES +=  miracle_grue.cc
-LIBS += ../../lib/libmgl.a
 
-
+win32: LIBS += ../../lib/mgl.lib -lshell32
+!win32: LIBS+= ../../lib/mgl.a

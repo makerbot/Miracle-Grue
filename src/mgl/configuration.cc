@@ -298,8 +298,8 @@ void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &s
 	slicerCfg.insetDistanceMultiplier   = doubleCheck(config["slicer"]["insetDistanceMultiplier"], "slicer.insetDistanceMultiplier");
 	slicerCfg.insetCuttOffMultiplier  	 = doubleCheck(config["slicer"]["insetCuttOffMultiplier"],  "slicer.insetCuttOffMultiplier");
 
-	slicerCfg.roofLayerCount = doubleCheck(config["slicer"]["roofLayerCount"],  "slicer.roofLayerCount");
-	slicerCfg.floorLayerCount = doubleCheck(config["slicer"]["roofLayerCount"],  "slicer.floorLayerCount");
+    slicerCfg.roofLayerCount = uintCheck(config["slicer"]["roofLayerCount"],  "slicer.roofLayerCount");
+    slicerCfg.floorLayerCount = uintCheck(config["slicer"]["roofLayerCount"],  "slicer.floorLayerCount");
 
 	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
 }

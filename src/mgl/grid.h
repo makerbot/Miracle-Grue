@@ -23,17 +23,17 @@ namespace mgl
 
 class ScalarRange {
 public:
-	Scalar min;
-	Scalar max;
-	ScalarRange(Scalar a = 0, Scalar b = 0)	: min(a), max(b) {}
+    Scalar m_min;
+    Scalar m_max;
+    ScalarRange(Scalar a = 0, Scalar b = 0)	: m_min(a), m_max(b) {}
 	ScalarRange(const ScalarRange& original) {
-		this->min = original.min;
-		this->max = original.max;
+        this->m_min = original.m_min;
+        this->m_max = original.m_max;
 	}
 	ScalarRange& operator = (const ScalarRange& next) {
 		if( &next != this) {
-			this->min = next.min;
-			this->max = next.max;
+            this->m_min = next.m_min;
+            this->m_max = next.m_max;
 		}
 		return *this;
 	}
