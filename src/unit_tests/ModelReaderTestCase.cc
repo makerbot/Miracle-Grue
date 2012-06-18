@@ -748,6 +748,46 @@ void ModelReaderTestCase::testLayerMeasure()
 	CPPUNIT_ASSERT_EQUAL( (unsigned int) 1000001, abode);
 }
 
+
+void ModelReaderTestCase::testAlignToPlate() {
+	cout << endl << "Testing object above the bed" << endl;
+	string above_file = inputsDir + "above.stl";
+	Meshy above(.5, .5);
+	//10mm cube one mm above the bed
+	above.readStlFile(above_file.c_str());
+
+	//before we align
+	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMin, 1.0);
+	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMax, 11.0);
+
+	above.alignToPlate();
+
+	//after alignment
+	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMin, 0.0);
+	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMax, 10.0);
+	//we make a phantom layer above the last real layer
+	CPPUNIT_ASSERT_EQUAL((int)above.readSliceTable().size(), 21);
+
+	cout << endl << "Testing object below the bed" << endl;
+	string below_file = inputsDir + "below.stl";
+	Meshy below(.5, .5);
+	//10mm cube one mm below the bed
+	below.readStlFile(below_file.c_str());
+
+	//before we align
+	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMin, -1.0);
+	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMax, 9.0);
+
+	below.alignToPlate();
+
+	//after alignment
+	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMin, 0.0);
+	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMax, 10.0);
+	//we make a phantom layer above the last real layer
+	CPPUNIT_ASSERT_EQUAL((int)below.readSliceTable().size(), 21);
+	
+}
+
 void initConfig(Configuration &config)
 {
 	config["slicer"]["firstLayerZ"] = 0.11;
@@ -825,4 +865,3 @@ void slicyTest()
 //	dumpIntList(edges);
 
 }
-
