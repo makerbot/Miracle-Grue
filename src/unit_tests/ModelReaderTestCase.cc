@@ -39,6 +39,13 @@ CPPUNIT_ASSERT( 12L == 12L );
 void ModelReaderTestCase::setUp()
 {
 	MyComputer computer;
+	
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	
+	outputsDir = string("outputs") + pathsep + string("test_cases") + pathsep + 
+			string("modelReaderTestCase") + pathsep;
+	inputsDir = string("test_cases") + pathsep + "modelReaderTestCase" + pathsep;
+	
 	mkDebugPath(outputsDir.c_str());
 }
 
