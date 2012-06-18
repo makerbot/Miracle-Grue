@@ -28,6 +28,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 
 	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
 	mesh.readStlFile(modelFile);
+	mesh.analyzeTriangles();
 	mesh.alignToPlate();
 
 	Slicer slicer(slicerCfg, progress);
