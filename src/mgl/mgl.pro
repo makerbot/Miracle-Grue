@@ -45,7 +45,7 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/clipper.cc\
     $$MGL_SRC/configuration.cc\
     $$MGL_SRC/gcoder.cc\
-    $$MGL_SRC/gcoder_gantry.cc\	
+    $$MGL_SRC/gcoder_gantry.cc \
     $$MGL_SRC/insets.cc\
     $$MGL_SRC/JsonConverter.cc\
     $$MGL_SRC/mgl.cc\
@@ -83,3 +83,4 @@ HEADERS +=     $$MGL_SRC/abstractable.h\
     $$MGL_SRC/grid.h \
     $$MGL_SRC/pather.h \
     $$MGL_SRC/regioner.h \
+	$$MGL_SRC/loop_path.h

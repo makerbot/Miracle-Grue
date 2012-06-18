@@ -47,7 +47,7 @@ win32 {
         pro.write('	TARGET = ../$$ROOT/bin/unit_tests/'+testname+'\n')
 	pro.write('}')
 	pro.write('!win32 {')
-        pro.write('	TARGET = ../$$ROOT/bin/unit_tests/'+testname+'\n')
+        pro.write('	TARGET = $$ROOT/bin/unit_tests/'+testname+'\n')
   	pro.write('}')
         pro.write('CONFIG += console\n')
         pro.write('SOURCES += ../'+testname+'.cc\n')
