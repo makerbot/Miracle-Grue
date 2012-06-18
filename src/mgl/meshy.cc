@@ -380,6 +380,7 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 		}
 	}
 	fclose(fHandle);
+	flushBuffer();
 	return this->triangleCount();
 
 }
