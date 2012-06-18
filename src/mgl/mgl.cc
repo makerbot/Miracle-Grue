@@ -72,16 +72,6 @@ LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) :
 		firstLayerZ(firstLayerZ), layerH(layerH) {}
 unsigned int LayerMeasure::zToLayerAbove(const Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
-	if (libthing::tlower(z, 0, tol))
-	{
-		ostringstream oss;
-		oss << "Model with points below the z axis " << 
-				"are not supported in this version. " << 
-				"Please center your model on the build area.";
-		oss << " z=" << z << endl;
-		LayerException mixup(oss.str().c_str());
-		throw mixup;
-	}
 
 	if (libthing::tlower(z, firstLayerZ, tol))
 		return 0;
