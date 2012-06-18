@@ -155,6 +155,9 @@ public:
 	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const;
 
 	size_t readStlFile(const char* stlFilename);
+
+	void alignToPlate();
+	void translate(const libthing::Vector3 &change);
 };
 
 
