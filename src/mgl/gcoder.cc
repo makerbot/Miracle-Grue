@@ -315,6 +315,15 @@ Vector2 GCoder::startPoint(const SliceData& sliceData) {
 		return sliceData.extruderSlices[0].boundary[0][0];
 	}
 	else if (gcoderCfg.doInsets) {
+		if (sliceData.extruderSlices.size() < 1)
+			throw Exception("zero extruder slices for finding start point");
+
+		if (sliceData.extruderSlices[0].insetLoopsList.size() < 1)
+			throw Exception("zero inset loops for finding start point");
+
+		if (sliceData.extruderSlices[0].insetLoopsList[0].size() < 1)
+			throw Exception("zero loops for finding start point");
+
 		return sliceData.extruderSlices[0].insetLoopsList[0][0][0];
 	}
 	else {
