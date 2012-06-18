@@ -363,6 +363,42 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 
 }
 
+void Meshy::alignToPlate() {
+	if (!tequals(limits.zMin, 0, 0.0000001)) {
+		translate(Vector3(0, 0, -limits.zMin));
+	}
+}
+
+void Meshy::translate(const Vector3 &change) {
+	vector<Triangle3> oldTriangles(allTriangles.begin(), allTriangles.end());
+
+	allTriangles.clear();
+	sliceTable.clear();
+
+	limits = Limits();
+
+	for (vector<Triangle3>::iterator i = oldTriangles.begin();
+		 i != oldTriangles.end(); i++) {
+		Vector3 point1 = (*i)[0];
+		point1.x += change.x;
+		point1.y += change.y;
+		point1.z += change.z;
+
+		Vector3 point2 = (*i)[1];
+		point2.x += change.x;
+		point2.y += change.y;
+		point2.z += change.z;
+
+		Vector3 point3 = (*i)[2];
+		point3.x += change.x;
+		point3.y += change.y;
+		point3.z += change.z;
+
+		Triangle3 newTriangle(point1, point2, point3);
+		addTriangle(newTriangle);
+	}
+}
+
 }
 
 
