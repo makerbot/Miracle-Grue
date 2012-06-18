@@ -323,17 +323,21 @@ int main(int argc, char *argv[], char *[]) // envp
 		Tomograph tomograph;
 		Regions regions;
 		std::vector<mgl::SliceData> slices;
+		
+		std::ofstream gcodeFileStream(gcodeFile.c_str());
 
 		ProgressLog log;
 		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
 					scad,
-					gcodeFile.c_str(),
+					gcodeFileStream,
 					firstSliceIdx,
 					lastSliceIdx,
 					tomograph,
 					regions,
 					slices,
 					&log);
+		
+		gcodeFileStream.close();
     }
     catch(mgl::Exception &mixup)
     {
