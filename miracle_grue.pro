@@ -1,6 +1,6 @@
 
 !noclean {
-	system("python clean_qmake_files.py")
+	system(python clean_qmake_files.py)
 }
 
 # Build versioning
