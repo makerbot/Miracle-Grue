@@ -7,6 +7,7 @@
 #include<string>
 #include<stdint.h>
 #include<cstring>
+#include <list>
 
 #include "log.h"
 
@@ -107,6 +108,26 @@ const SliceTable& Meshy::readSliceTable() const {
 	return sliceTable;
 }
 
+
+//
+// Adds buffered triangles to allTriangles
+//
+
+void Meshy::analyzeTriangles() {
+	while(!bufferedTriangles.empty()){
+		addTriangle(bufferedTriangles.front());
+		bufferedTriangles.pop_front();
+	}
+}
+
+
+//
+// Adds a triangle to the buffer of triangles to be analyzed
+//
+
+void Meshy::bufferTriangle(libthing::Triangle3& t){
+	bufferedTriangles.push_back(t);
+}
 
 //
 // Adds a triangle to the global array and for each slice of interest
@@ -293,7 +314,7 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 			Vector3 pt3(v.x3, v.y3, v.z3);
 
 			Triangle3 triangle(pt1, pt2, pt3);
-			this->addTriangle(triangle);
+			bufferTriangle(triangle);
 
 			facecount++;
 		}
@@ -353,7 +374,7 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 				throw(problem);
 			}
 			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1), Vector3(v.x2, v.y2, v.z2), Vector3(v.x3, v.y3, v.z3));
-			this->addTriangle(triangle);
+			bufferTriangle(triangle);
 
 			facecount++;
 		}
