@@ -34,6 +34,7 @@ class ModelReaderTestCase : public CPPUNIT_NS::TestFixture
 //
 //	  CPPUNIT_TEST( testMeshySimple );
 //	  CPPUNIT_TEST( testKnot);
+	CPPUNIT_TEST( testAlignToPlate );
   CPPUNIT_TEST_SUITE_END();
 
 
@@ -66,6 +67,7 @@ protected:
   void testMyStls();
   void fixContourProblem();
   void testKnot();
+	void testAlignToPlate();
 };
 
 
