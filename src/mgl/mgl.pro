@@ -45,7 +45,7 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/clipper.cc\
     $$MGL_SRC/configuration.cc\
     $$MGL_SRC/gcoder.cc\
-    $$MGL_SRC/gcoder_gantry.cc\	
+    $$MGL_SRC/gcoder_gantry.cc \
     $$MGL_SRC/insets.cc\
     $$MGL_SRC/JsonConverter.cc\
     $$MGL_SRC/mgl.cc\
@@ -59,6 +59,7 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/regioner.cc\
     $$MGL_SRC/slicer.cc\
     $$MGL_SRC/pather.cc\
+	$$MGL_SRC/path2.cc\
 #these are dead code but temporarily pulled in for unit tests
     $$MGL_SRC/connexity.cc\
     $$MGL_SRC/Edge.cc
@@ -83,3 +84,4 @@ HEADERS +=     $$MGL_SRC/abstractable.h\
     $$MGL_SRC/grid.h \
     $$MGL_SRC/pather.h \
     $$MGL_SRC/regioner.h \
+	$$MGL_SRC/path2.h
