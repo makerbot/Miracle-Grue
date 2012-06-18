@@ -27,6 +27,12 @@ string outputDir("outputs/test_cases/SlicerSplitTestCase/");
 void SlicerSplitTestCase::setUp()
 {
 	MyComputer computer;
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	inputDir = string("test_cases") + pathsep + string("slicerCupTestCase") + 
+			pathsep + string("stls") + pathsep;
+	outputDir = string("outputs") + pathsep + string("test_cases") + pathsep + 
+			string("SlicerSplitTestCase") + pathsep;
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
 	mkDebugPath(outputDir.c_str());
 }
 

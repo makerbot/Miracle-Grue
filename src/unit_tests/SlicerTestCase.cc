@@ -48,9 +48,10 @@ void SlicerTestCase::setUp()
 {
 	std::cout<< "Setup for :" <<__FUNCTION__ << endl;
 	MyComputer computer;
-	outputDir = string("outputs") + computer.fileSystem.getPathSeparatorCharacter() + 
-			string("test_case") + computer.fileSystem.getPathSeparatorCharacter() + 
-			string("slicerTestCase") + computer.fileSystem.getPathSeparatorCharacter();
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	outputDir = string("outputs") + pathsep + 
+			string("test_case") + pathsep + 
+			string("slicerTestCase") + pathsep;
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
 	//mkDebugPath(outputDir.c_str());
 	std::cout<< "Setup for :" <<__FUNCTION__ << " Done" << endl;
@@ -541,7 +542,7 @@ void SlicerTestCase::testInset2()
 		cout << "\n" << insetTable.size() << " ----- "<< endl;
 		//dumpSegments(segments);
 		insetTable.push_back(std::vector<LineSegment2 >());
-		std::vector<LineSegment2> &finalInsets = insetTable[insetTable.size() -1] ;
+		std::vector<LineSegment2> &finalInsets = insetTable.back() ;
 		shrinky.inset(segments, insetDist,  finalInsets);
 	    segments = finalInsets;
 	}
