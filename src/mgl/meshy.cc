@@ -113,7 +113,7 @@ const SliceTable& Meshy::readSliceTable() const {
 // Adds buffered triangles to allTriangles
 //
 
-void Meshy::analyzeTriangles() {
+void Meshy::flushBuffer() {
 	while(!bufferedTriangles.empty()){
 		addTriangle(bufferedTriangles.front());
 		bufferedTriangles.pop_front();
