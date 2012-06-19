@@ -67,20 +67,26 @@ private:
 	PointList points;
 };
 
-	/*class Loop2 {
+class Loop2 {
 public:
+	template <class BASE>
 	class iterator_gen {
 	public:
-		iterator(Loop2 &p, PointList::iterator *i = NULL,
+		iterator_gen(Loop2 &p, PointList::iterator *i = NULL,
 				 PointList::reverse_iterator *i = NULL);
 		
-		libthing::Vector2 &operator*();
-		iterator operator++();
-		iterator operator+(int off);
+		libthing::Vector2 &operator*() { return *base };
+			
+		iterator_gen operator++() {
+			
+		iterator_gen operator+(int off);
 
 	private:
-		PoinList::iterator *base;
+		BASE base;
 	};
+
+	typedef iterator_gen<PointList::iterator> cw_iterator;
+	typedef iterator_gen<PointList::reverse_iterator> ccw_iterator;
 
 	Loop2() {};
 	Loop2(const Loop2 &orig); 
@@ -92,7 +98,7 @@ private:
 	PointList points;
 }
 
-
+/*
 class LoopPath {
 public:
 	class iterator {
