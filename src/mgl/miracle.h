@@ -16,6 +16,7 @@
 #include "regioner.h"
 #include "pather.h"
 #include "log.h"
+#include <iostream>
 
 namespace mgl
 {
@@ -26,7 +27,7 @@ void miracleGrue(const GCoderConfig &gcoderCfg,
                       const SlicerConfig &slicerCfg,
                       const char *modelFile,
                       const char *scadFile,
-                      const char *gcodeFile,
+                      std::ostream& gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
                       Tomograph &tomograph,

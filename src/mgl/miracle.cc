@@ -17,7 +17,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
                       const SlicerConfig &slicerCfg,
                       const char *modelFile,
                       const char *, // scadFileStr,
-                      const char *gcodeFile,
+                      ostream& gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
                       Tomograph &tomograph,
@@ -28,7 +28,6 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 
 	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
 	mesh.readStlFile(modelFile);
-	mesh.analyzeTriangles();
 	mesh.alignToPlate();
 
 	Slicer slicer(slicerCfg, progress);
@@ -44,12 +43,12 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	pather.generatePaths(tomograph, regions, slices);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
-	std::ofstream gout(gcodeFile);
+	//std::ofstream gout(gcodeFile);
 
-        GCoder gcoder(gcoderCfg, progress);
-    gcoder.writeGcodeFile(slices, tomograph.layerMeasure, gout, modelFile, firstSliceIdx, lastSliceIdx);
+    GCoder gcoder(gcoderCfg, progress);
+    gcoder.writeGcodeFile(slices, tomograph.layerMeasure, gcodeFile, modelFile, firstSliceIdx, lastSliceIdx);
 
-	gout.close();
+	//gout.close();
 
 }
 
