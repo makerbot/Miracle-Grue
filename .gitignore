@@ -1,3 +1,5 @@
+#ignore netbeans project directory
+nbproject
 
 #ignore project files from eclipse
 /.cproject
