@@ -16,7 +16,7 @@
 #include "grid.h"
 #include "configuration.h"
 #include "insets.h"
-#include "meshy.h"
+#include "segmenter.h"
 
 namespace mgl
 {
@@ -95,10 +95,10 @@ public:
 	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress =NULL);
 
 	/// TBD
-	void tomographyze( Meshy &mesh, Tomograph &tomograph);
+	void tomographyze( Segmenter& seg, Tomograph &tomograph);
 
 	/// TBD
-    void outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments);
+    void outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::SegmentTable & segments);
 
 	/// TBD
 	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments,

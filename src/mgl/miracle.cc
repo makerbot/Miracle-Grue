@@ -29,10 +29,13 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
+	
+	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	segmenter.tablaturize(mesh);
 
 	Slicer slicer(slicerCfg, progress);
 
-	slicer.tomographyze(mesh, tomograph);
+	slicer.tomographyze(segmenter, tomograph);
 
 	Regioner regioner(slicerCfg, progress);
 
