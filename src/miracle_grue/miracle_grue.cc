@@ -218,7 +218,7 @@ int newParseArgs( Configuration &config,
 		Log::severe() << "too many parameters" << endl;
 		for (int i = 0; i < parse.nonOptionsCount(); ++i)
 			Log::severe() << "Parameter #" << i << ": " << parse.nonOption(i) << "\n";
-			exit(-10);
+        exit(-10);
 	}
 	else {
 		//handle the unnamed parameter separately
@@ -320,6 +320,8 @@ int main(int argc, char *argv[], char *[]) // envp
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
+        // a tomograph is "a machine for making an x-ray of a single plane of the body"
+        // here it is used to slice triangles
 		Tomograph tomograph;
 		Regions regions;
 		std::vector<mgl::SliceData> slices;

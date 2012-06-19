@@ -78,7 +78,7 @@ void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegmen
 }
 
 
-void Regioner::flatSurfaces(	const std::vector<libthing::Insets> & insets,
+void Regioner::flatSurfaces(const std::vector<libthing::Insets> & insets,
 					const Grid & grid,
 					std::vector<GridRanges> & gridRanges)
 {
