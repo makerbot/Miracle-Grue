@@ -40,11 +40,6 @@
 	see http://stackoverflow.com/questions/5462852/how-to-build-cppunit-with-visual-studio-2010 for more info.
 
 	
-	boost exists as a binary on jenkins for makerbot developers
-	for people outside of makerbot, joseph.sadusk@makerbot.com is 
- 	the one to email until he makes a download available.FAILSAUCE
-
-		  
 **OS X Requirements**
 
 	To install SCONS, we recommend that you download MacPorts at macports.org/install.php. Once installed, to download/install scons and all dependent libraries, open a terminal window and type:
