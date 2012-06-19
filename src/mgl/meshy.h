@@ -108,8 +108,9 @@ public:
 	//
 	// Adds a triangle to the global array and for each slice of interest
 	//
-	void bufferTriangle(libthing::Triangle3& t);
+	void bufferTriangle(libthing::Triangle3 t);
 	void addTriangle(libthing::Triangle3 &t);
+	void updateSlicesTriangle(size_t newTriangleId);
 
 
 	void dump(std::ostream &out);

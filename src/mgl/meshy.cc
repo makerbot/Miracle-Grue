@@ -125,7 +125,7 @@ void Meshy::analyzeTriangles() {
 // Adds a triangle to the buffer of triangles to be analyzed
 //
 
-void Meshy::bufferTriangle(libthing::Triangle3& t){
+void Meshy::bufferTriangle(libthing::Triangle3 t){
 	bufferedTriangles.push_back(t);
 }
 
@@ -135,6 +135,35 @@ void Meshy::bufferTriangle(libthing::Triangle3& t){
 
 void Meshy::addTriangle(Triangle3 &t) {
 
+	allTriangles.push_back(t);
+
+	limits.grow(t[0]);
+	limits.grow(t[1]);
+	limits.grow(t[2]);
+
+	updateSlicesTriangle(allTriangles.size() - 1);
+}
+
+void Meshy::dump(std::ostream &out) {
+	out << "dumping " << this << std::endl;
+	out << "Nb of triangles: " << allTriangles.size() << std::endl;
+	size_t sliceCount = sliceTable.size();
+
+	out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
+	for (size_t i = 0; i < sliceCount; i++) {
+		TriangleIndices &trianglesForSlice = sliceTable[i];
+		//trianglesForSlice.push_back(newTriangleId);
+		out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
+		//Log::often() << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
+	}
+}
+
+//
+// Perform slice updates on a triangle (this will move to new class)
+//
+void Meshy::updateSlicesTriangle(size_t newTriangleId){
+	Triangle3 t = allTriangles[newTriangleId];
+	
 	Vector3 a, b, c;
 	t.zSort(a, b, c);
 
@@ -155,35 +184,11 @@ void Meshy::addTriangle(Triangle3 &t) {
 		//			Log::often() << "- new slice count: " << sliceTable.size() << std::endl;
 	}
 
-	allTriangles.push_back(t);
-
-	size_t newTriangleId = allTriangles.size() - 1;
-
 	//		 Log::often() << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
 	for (size_t i = minSliceIndex; i <= maxSliceIndex; i++) {
 		TriangleIndices &trianglesForSlice = sliceTable[i];
 		trianglesForSlice.push_back(newTriangleId);
 		//			Log::often() << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
-	}
-
-	limits.grow(t[0]);
-	limits.grow(t[1]);
-	limits.grow(t[2]);
-
-
-}
-
-void Meshy::dump(std::ostream &out) {
-	out << "dumping " << this << std::endl;
-	out << "Nb of triangles: " << allTriangles.size() << std::endl;
-	size_t sliceCount = sliceTable.size();
-
-	out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
-	for (size_t i = 0; i < sliceCount; i++) {
-		TriangleIndices &trianglesForSlice = sliceTable[i];
-		//trianglesForSlice.push_back(newTriangleId);
-		out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
-		//Log::often() << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
 	}
 }
 
