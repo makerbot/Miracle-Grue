@@ -26,7 +26,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
                       ProgressBar *progress)
 {
 
-	Meshy mesh(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	Meshy mesh;
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
 	
