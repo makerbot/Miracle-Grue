@@ -27,7 +27,7 @@
 #include "libthing/Triangle3.h"
 
 
-#define M_TAU M_PI*2
+//#define M_TAU M_PI*2
 
 // #define STRONG_CHECKING
 
@@ -37,6 +37,8 @@
 
 namespace mgl
 {
+
+static const Scalar M_TAU = M_PI*2;
 
 std::string getMiracleGrueVersionStr();
 
