@@ -1,6 +1,7 @@
 #include "log.h"
 #include "JsonConverter.h"
 
+//"polygon" collides with the one defined in wingdi.h
 using namespace mgl;
 using namespace Json;
 using namespace std;
@@ -44,9 +45,9 @@ bool JsonConverter::loadJsonFromVector3(Value& ,//val,
 }
 
 
-bool JsonConverter::loadJsonFromPolygon(Value& val, Polygon& input)
+bool JsonConverter::loadJsonFromPolygon(Value& val, mgl::Polygon& input)
 {
-	for(Polygon::iterator i = input.begin(); i < input.end(); i++)
+    for(mgl::Polygon::iterator i = input.begin(); i < input.end(); i++)
 	{
 		//const std::pair<Scalar, unsigned int>& seg = *it;
 		const Vector2& vec = *i;
@@ -58,7 +59,7 @@ bool JsonConverter::loadJsonFromPolygon(Value& val, Polygon& input)
 	return true;
 }
 
-bool JsonConverter::loadPolygonFromJson(Polygon& poly,Value& input)
+bool JsonConverter::loadPolygonFromJson(mgl::Polygon& poly,Value& input)
 {
 	if(input.size() < 1)
 		return false;
@@ -82,7 +83,7 @@ bool JsonConverter::loadPolygonsFromJson(Polygons& polys,Value& input)
 	if(input.size() < 1)
 		return false;
         for ( size_t index = 0; index < input.size(); ++index ) {
-		Polygon poly;
+        mgl::Polygon poly;
                 Value tmp = input[(int)index];
 		bool ok = loadPolygonFromJson(poly,tmp);
 		if (ok == false){
@@ -100,8 +101,8 @@ bool JsonConverter::loadJsonFromPolygons(Value& val, Polygons& input)
 	for(Polygons::iterator i = input.begin(); i < input.end(); i++)
 	{
 		Value polys;
-		Polygon& polyList = *i;
-		for(Polygon::iterator j = polyList.begin(); j < polyList.end(); j++)
+        mgl::Polygon& polyList = *i;
+        for(mgl::Polygon::iterator j = polyList.begin(); j < polyList.end(); j++)
 		{
 			//const std::pair<Scalar, unsigned int>& seg = *it;
 			const Vector2& vec = *j;

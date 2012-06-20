@@ -19,6 +19,7 @@ win32 {
     OBJECTS_DIR=.
 	QMAKE_LFLAGS += -static -static-libgcc -static-libstdc++
     TARGET=../../../lib/mgl
+    DEFINES += _CRT_SECURE_NO_WARNINGS
 }
 
 mac {
@@ -26,7 +27,9 @@ mac {
 	LIBS += -framework CoreFoundation
 }
 
-QMAKE_CXXFLAGS += -fopenmp
+!win32-msvc* {
+    QMAKE_CXXFLAGS += -fopenmp
+}
 
 SUBMODULES = ../../submodule
 

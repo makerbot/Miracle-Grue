@@ -17,8 +17,8 @@ isEmpty(BUILD_NUMBER) {
     BUILD_NUMBER = 'manual_build'
 }
 
-win32 {
-	QMAKE_LFLAGS += -static -static-ligbcc -static-libstdc++
+win32 & !win32-msvc* {
+        QMAKE_LFLAGS += -static -static-ligbcc -static-libstdc++
 }
 
 MAJOR=0
