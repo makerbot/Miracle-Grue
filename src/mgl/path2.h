@@ -155,9 +155,9 @@ public:
 										  parent.points.end()),
 						*this); };
 	reverse_iterator rend() {
-		return reverse_iterator(Loop::ccw_iterator(parent.points.end(),
-												   parent.points.end(),
-												   parent.points.end()),
+		return reverse_iterator(Loop::ccw_iterator(parent.points.rend(),
+												   parent.points.rend(),
+												   parent.points.rend()),
 								*this); };
 
 	iterator fromStart();
