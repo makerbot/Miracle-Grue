@@ -51,7 +51,7 @@ void Pather::generatePaths(const Tomograph &tomograph,
 	{
 		tick();
 
-		if(i <  firstSliceIdx) continue;
+        if(i < firstSliceIdx) continue;
 		if(i > lastSliceIdx) break;
 
 		direction = !direction;
@@ -70,7 +70,7 @@ void Pather::generatePaths(const Tomograph &tomograph,
 
 		outlines(outlineSegments, extruderSlice.boundary);
 
-		PolygonsGroup &insetPolys = extruderSlice.insetLoopsList;
+        PolygonsGroup &insetPolys = extruderSlice.insetLoopsList;
 		this->insets(insetsSegments, insetPolys );
 
 		const GridRanges &infillRanges = skeleton.infills[i];

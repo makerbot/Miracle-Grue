@@ -10,13 +10,19 @@ This project is laid out in the following directory tree (roughly)
  - documentation/ Documentation
  - configs/ Eclipse project, personal stuff
  - src/  Source Code for the project MiracleGrue
-	- json-cpp library to read/write JSON text files (configuration)
+	- json-cpp/ library to read/write JSON text files (configuration)
 	- mgl/ the Miracle-Grue library
 	- morphogen.cc the main file
-	- unit_tests various test programs (using cppunit)
+	- unit_tests/ various test programs (using cppunit)
  - inputs/ Some stl input files for demo
  - test_cases/ unit test input and output files
  - site_scons build files for qt
+ - submodule/  
+	- EzCppLog/ 
+	- json-cpp/ 
+	- libthing/ 
+	- optionparser/ 
+	- toolpathviz/ 
 
 ** miracle.config ** 
 This is the default configuration file for Miracle-Grue. It contains information like the layer height, the nb of shells, and the infill pattern. 
