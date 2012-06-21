@@ -78,17 +78,19 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	cout << endl;
 	cout << fixed;
 
-	Meshy mesh(firstLayerZ, layerH);
+	Meshy mesh;
+	Segmenter seg(firstLayerZ, layerH);
 
 	string inputFile = inputDir + "ultimate_calibration_test.stl";
 	mesh.readStlFile(inputFile.c_str());
-	unsigned int sliceCount = mesh.readSliceTable().size();
+	seg.tablaturize(mesh);
+	unsigned int sliceCount = seg.readSliceTable().size();
 	cout << "Slices " << sliceCount << endl;
 
-	const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[70];
+	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[70];
 	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	std::vector<LineSegment2> segments;
-	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(70);
+	Scalar z = seg.readLayerMeasure().sliceIndexToHeight(70);
 	cout  << "z="<< z << endl;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 

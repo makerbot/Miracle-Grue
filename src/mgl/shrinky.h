@@ -89,7 +89,8 @@ void createShellsForSliceUsingShrinky(const libthing::SegmentVector & 	outlinesS
 		const char *scadFile,
 		std::vector<libthing::SegmentVector> & insetsForLoops);
 
-
+bool attachSegments(libthing::LineSegment2 &first, 
+		libthing::LineSegment2 &second, Scalar elongation);
 
 }
 

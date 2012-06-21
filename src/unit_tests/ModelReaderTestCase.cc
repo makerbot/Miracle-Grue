@@ -20,6 +20,7 @@
 #include "mgl/connexity.h"
 #include "mgl/configuration.h"
 #include "mgl/slicy.h"
+#include "mgl/segmenter.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
@@ -99,7 +100,8 @@ void ModelReaderTestCase::testMeshySimple()
 	cout << endl;
 	cout << __FUNCTION__ << endl;
 	Scalar zH = 1.0;
-	Meshy mesh(zH, zH);
+	Meshy mesh;
+	Segmenter seg(zH, zH);
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
@@ -112,18 +114,18 @@ void ModelReaderTestCase::testMeshySimple()
  	cout << "mesh.dump(cout);" << endl;
  	mesh.dump(cout);
 
-
+	seg.tablaturize(mesh);
     // 3 layers in this cake!
- 	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
+ 	CPPUNIT_ASSERT_EQUAL((size_t)3, seg.readSliceTable().size());
 
  	// 1 triangle for each layer
- 	const TriangleIndices &slice0 =  mesh.readSliceTable()[0];
+ 	const TriangleIndices &slice0 =  seg.readSliceTable()[0];
  	CPPUNIT_ASSERT_EQUAL((size_t)1, slice0.size());
 
-    const TriangleIndices &slice1 =  mesh.readSliceTable()[1];
+    const TriangleIndices &slice1 =  seg.readSliceTable()[1];
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice1.size());
 
-    const TriangleIndices &slice2 =  mesh.readSliceTable()[2];
+    const TriangleIndices &slice2 =  seg.readSliceTable()[2];
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
 
 
@@ -132,7 +134,7 @@ void ModelReaderTestCase::testMeshySimple()
     t[2] =Vector3(0,10, 1);
 
 	mesh.addTriangle(t);
-	CPPUNIT_ASSERT_EQUAL((size_t)3, mesh.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)3, seg.readSliceTable().size());
 	//cout << "#$%^%" << endl;
 	const Limits &limits = mesh.readLimits();
 	double tol = 0.00001;
@@ -152,31 +154,34 @@ void ModelReaderTestCase::testLayerSplit()
 {
 	cout << endl;
 
-	Meshy mesh(0.35, 0.35);
+	Meshy mesh;
+	Segmenter seg(0.35, 0.35);
 	unsigned int t0, t1;
 	t0 = clock();
 
-	Meshy mesh3(0.35, 0.35);
+	Meshy mesh3;
+	Segmenter seg3(0.35, 0.35);
 	string inputFile = inputsDir + "Water.stl";
 	mesh.readStlFile(inputFile.c_str() );
 	t1=clock()-t0;
 	mesh.dump(cout);
 
-	cout << " **** testLayerSplit " << endl;
-	for(int i=0; i != mesh.readSliceTable().size(); i++)
-	{
-		stringstream ss;
-		ss << outputsDir << "water_" << i << ".stl";
-		mesh.writeStlFileForLayer(i, ss.str().c_str());
-		cout << ss.str().c_str() << endl;
-	}
+//	cout << " **** testLayerSplit " << endl;
+//	for(int i=0; i != seg.readSliceTable().size(); i++)
+//	{
+//		stringstream ss;
+//		ss << outputsDir << "water_" << i << ".stl";
+//		mesh.writeStlFileForLayer(i, ss.str().c_str());
+//		cout << ss.str().c_str() << endl;
+//	}
 }
 
 void ModelReaderTestCase::testLargeMeshy()
 {
 	unsigned int t0,t1;
 	cout << "Light saber" << endl;
-	Meshy mesh(0.35, 0.35);
+	Meshy mesh;
+	Segmenter seg(0.35, 0.35);
 	t0=clock();
 	string inputFile = inputsDir + "lightsaber.stl";
 	mesh.readStlFile(inputFile.c_str() );
@@ -190,24 +195,28 @@ void ModelReaderTestCase::testMeshyLoad()
 {
 	unsigned int t0,t1;
 	cout << "Water" << endl;
-	Meshy mesh(0.35, 0.35);
+	Meshy mesh;
+	Segmenter seg(0.35, 0.35);
 	t0=clock();
 	string inputFile = inputsDir + "Water.stl";
 	mesh.readStlFile(inputFile.c_str() );
 	t1=clock()-t0;
 	mesh.dump(cout);
+	seg.tablaturize(mesh);
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)172, mesh.readSliceTable().size());
+	CPPUNIT_ASSERT_EQUAL((size_t)172, seg.readSliceTable().size());
 
 	cout << "Land" << endl;
-	Meshy mesh2(0.35, 0.35);
+	Meshy mesh2;
+	Segmenter seg2(0.35, 0.35);
 
 	t0=clock();
 	string inputFile2 = inputsDir + "Land.stl";
 	mesh2.readStlFile(inputFile2.c_str() );
 	t1=clock()-t0;
 	cout << "time: " << t1 << endl;
-	CPPUNIT_ASSERT_EQUAL((size_t)174, mesh2.readSliceTable().size());
+	seg2.tablaturize(mesh2);
+	CPPUNIT_ASSERT_EQUAL((size_t)174, seg2.readSliceTable().size());
 	mesh2.dump(cout);
 }
 
@@ -219,7 +228,8 @@ void ModelReaderTestCase::testMeshyCycle()
 	string drop2 = outputsDir + "3D_Knot_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
-	Meshy mesh3(0.35, 0.35);
+	Meshy mesh3;
+	Segmenter seg3(0.35, 0.35);
 	t0=clock();
 	mesh3.readStlFile(target.c_str());
 	t1=clock()-t0;
@@ -231,7 +241,8 @@ void ModelReaderTestCase::testMeshyCycle()
 	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
 
 	cout << "Reload test, reloading file: "  << drop << endl;
-	Meshy mesh4(0.35, 0.35);
+	Meshy mesh4;
+	Segmenter seg4(0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
 	t1=clock()-t0;
@@ -252,7 +263,8 @@ void ModelReaderTestCase::testMeshyCycleNull()
 	string drop2 = outputsDir + "Null_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
-	Meshy mesh3(0.35, 0.35);
+	Meshy mesh3;
+	Segmenter seg3(0.35, 0.35);
 	t0=clock();
 	mesh3.readStlFile(target.c_str());
 	t1=clock()-t0;
@@ -264,7 +276,8 @@ void ModelReaderTestCase::testMeshyCycleNull()
 	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
 
 	cout << "Reload test, reloading file: "  << drop << endl;
-	Meshy mesh4(0.35, 0.35);
+	Meshy mesh4;
+	Segmenter seg4(0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
 	t1=clock()-t0;
@@ -284,7 +297,8 @@ void ModelReaderTestCase::testMeshyCycleMin()
 	string drop2 = outputsDir + "OneTriangle_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
-	Meshy mesh3(0.35, 0.35);
+	Meshy mesh3;
+	Segmenter seg3(0.35, 0.35);
 	t0=clock();
 	mesh3.readStlFile( target.c_str() );
 	t1=clock()-t0;
@@ -296,7 +310,8 @@ void ModelReaderTestCase::testMeshyCycleMin()
 	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
 
 	cout << "Reload test, reloading file: "  << drop << endl;
-	Meshy mesh4(0.35, 0.35);
+	Meshy mesh4;
+	Segmenter seg4(0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
 	t1=clock()-t0;
@@ -312,11 +327,12 @@ void ModelReaderTestCase::testMeshyCycleMin()
 
 void ModelReaderTestCase::testSlicyWater()
 {
-	Meshy mesh(0.35, 0.35);
+	Meshy mesh;
+	Segmenter seg(0.35, 0.35);
 	string target = inputsDir + "Water.stl";
 	mesh.readStlFile( target.c_str());
-
-	const SliceTable& table = mesh.readSliceTable();
+	seg.tablaturize(mesh);
+	const SliceTable& table = seg.readSliceTable();
 
 	unsigned int t0,t1;
 	t0=clock();
@@ -479,21 +495,22 @@ void batchProcess(	Scalar firstLayerZ,
 		t0=clock();
 
 		Scalar angle = M_PI*0.5;
-		Meshy mesh(firstLayerZ, layerH);
+		Meshy mesh;
+		Segmenter seg(firstLayerZ, layerH);
 		mesh.readStlFile( modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
 		std::vector< SliceData > slices;
-
+		seg.tablaturize(mesh);
 		unsigned int nbOfShells = 0;
 		//Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, mesh.readSliceTable().size(), scadFile.c_str());
 
 		cout << "Slicing" << endl;
 		unsigned int extruderId = 0;
-		unsigned int sliceCount = mesh.readSliceTable().size();
+		unsigned int sliceCount = seg.readSliceTable().size();
 		for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 		{
-			const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
-			Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(sliceId);
+			const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
+			Scalar z = seg.readLayerMeasure().sliceIndexToHeight(sliceId);
 			Scalar sliceAngle = sliceId * angle;
 			slices.push_back( SliceData());
 			SliceData &slice = slices[sliceId];
@@ -646,14 +663,16 @@ void ModelReaderTestCase::fixContourProblem()
 
 	LayerMeasure zTapeMeasure(firstZ, layerH);
 
-	Meshy mesh(firstZ, layerH); // 0.35
+	Meshy mesh;
+	Segmenter seg(firstZ, layerH); // 0.35
 	cout << "LOADING... " << endl;
 	mesh.readStlFile( "inputs/3D_Knot.stl");
 
 	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
 	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
-	const SliceTable &sliceTable = mesh.readSliceTable();
+	seg.tablaturize(mesh);
+	const SliceTable &sliceTable = seg.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 
 	std::vector<LineSegment2> segments;
@@ -759,7 +778,8 @@ void ModelReaderTestCase::testLayerMeasure()
 void ModelReaderTestCase::testAlignToPlate() {
 	cout << endl << "Testing object above the bed" << endl;
 	string above_file = inputsDir + "above.stl";
-	Meshy above(.5, .5);
+	Meshy above;
+	Segmenter segabove(.5, .5);
 	//10mm cube one mm above the bed
 	above.readStlFile(above_file.c_str());
 
@@ -768,16 +788,18 @@ void ModelReaderTestCase::testAlignToPlate() {
 	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMax, 11.0);
 
 	above.alignToPlate();
+	segabove.tablaturize(above);
 
 	//after alignment
 	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMin, 0.0);
 	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMax, 10.0);
 	//we make a phantom layer above the last real layer
-	CPPUNIT_ASSERT_EQUAL((int)above.readSliceTable().size(), 21);
+	CPPUNIT_ASSERT_EQUAL((int)segabove.readSliceTable().size(), 21);
 
 	cout << endl << "Testing object below the bed" << endl;
 	string below_file = inputsDir + "below.stl";
-	Meshy below(.5, .5);
+	Meshy below;
+	Segmenter segbelow(.5, .5);
 	//10mm cube one mm below the bed
 	below.readStlFile(below_file.c_str());
 
@@ -786,12 +808,13 @@ void ModelReaderTestCase::testAlignToPlate() {
 	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMax, 9.0);
 
 	below.alignToPlate();
+	segbelow.tablaturize(below);
 
 	//after alignment
 	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMin, 0.0);
 	CPPUNIT_ASSERT_EQUAL(below.readLimits().zMax, 10.0);
 	//we make a phantom layer above the last real layer
-	CPPUNIT_ASSERT_EQUAL((int)below.readSliceTable().size(), 21);
+	CPPUNIT_ASSERT_EQUAL((int)segbelow.readSliceTable().size(), 21);
 	
 }
 
@@ -808,22 +831,23 @@ void slicyTest()
 
     Configuration config;
     initConfig(config);
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	Meshy mesh;
+	Segmenter seg(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	mesh.readStlFile(modelFile.c_str());
-
+	seg.tablaturize(mesh);
 	cout << "file " << modelFile << endl;
-	const SliceTable &sliceTable = mesh.readSliceTable();
+	const SliceTable &sliceTable = seg.readSliceTable();
 	int layerCount = sliceTable.size();
 	cout  << "Slice count: "<< layerCount << endl;
 	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	cout << "Faces: " << allTriangles.size() << endl;
-	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
+	cout << "layer " << layerCount-1 << " z: " << seg.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
 
 	int layerIndex = 44;
 	CPPUNIT_ASSERT (layerIndex < layerCount);
 	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
 	unsigned int triangleCount = trianglesInSlice.size();
-	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
+	Scalar z = seg.readLayerMeasure().sliceIndexToHeight(layerIndex);
 	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
 
 	// Load slice connectivity information
