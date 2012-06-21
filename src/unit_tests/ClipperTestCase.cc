@@ -38,6 +38,10 @@ public:
 void ClipperTestCase::setUp()
 {
 	MyComputer computer;
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	outputDir = string("outputs") + pathsep + string("test_cases") + 
+			string("ClipperTestCase") + pathsep;
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
 	mkDebugPath(outputDir.c_str());
 }
 
