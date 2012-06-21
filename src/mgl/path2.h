@@ -3,10 +3,12 @@
 
 #include <vector>
 #include "libthing/Vector2.h"
+#include "libthing/LineSegment2.h"
 
 namespace mgl {
 
 typedef std::vector<libthing::Vector2> PointList;
+typedef std::vector<libthing::Vector2> VectorList;
 
 /*! /brief Interface for path iterators
  * A pure virtual interface to the iterators in Paths and LoopPaths
@@ -27,14 +29,14 @@ class OpenPath {
 	template <class BASE>
 	class iterator_gen : public PathIterator {
 	public:
-		iterator_gen(PointList::iterator &b) : base(b) {};
+		iterator_gen(BASE b) : base(b) {};
 
 		libthing::Vector2& operator*() { return *base; };
-		iterator_gen& operator++() {
+		iterator_gen<BASE>& operator++() {
 			base++;
 			return *this;
 		};
-		iterator_gen& operator+(int off) {
+   		iterator_gen<BASE>& operator+(int off) {
 			base = base + off;
 			return *this;
 		};
@@ -53,12 +55,17 @@ public:
 	iterator fromStart();
 	reverse_iterator fromEnd();
 
+	iterator end() { return iterator(points.end()); };
+	reverse_iterator rend() { return reverse_iterator(points.rend()); };
+
 	void connect(const PathIterator &connection);
 
-	void appendPoints(const PathIterator &first, const PathIterator &last);
+	template <class ITER>
+	void appendPoints(const ITER &first, const ITER &last);
 	void appendPoint(const libthing::Vector2 &point);
 
-	void prependPoints(const PathIterator &first, const PathIterator &last);
+	template <class ITER>
+	void prependPoints(const ITER &first, const ITER &last);
 	void prependPoint(const libthing::Vector2 &point);
 
 	libthing::Vector2& operator[](int index);
@@ -67,52 +74,99 @@ private:
 	PointList points;
 };
 
-class Loop2 {
+class Loop {
 public:
 	template <class BASE>
 	class iterator_gen {
 	public:
-		iterator_gen(Loop2 &p, PointList::iterator *i = NULL,
-				 PointList::reverse_iterator *i = NULL);
+		iterator_gen(BASE i, BASE b, BASE e) : base(i), begin(b), end(e) {};
 		
-		libthing::Vector2 &operator*() { return *base };
+		libthing::Vector2 &operator*() { return *base; };
 			
-		iterator_gen operator++() {
+		iterator_gen<BASE> operator++() {
+			base++;
+			if (base == end) {
+				base = begin;
+			}
 			
-		iterator_gen operator+(int off);
+			return *this;
+		}
 
 	private:
 		BASE base;
+		BASE begin;
+		BASE end;
 	};
 
 	typedef iterator_gen<PointList::iterator> cw_iterator;
 	typedef iterator_gen<PointList::reverse_iterator> ccw_iterator;
 
-	Loop2() {};
-	Loop2(const Loop2 &orig); 
+	Loop() {};
+	Loop(const Loop &orig); 
 
-	iterator insertPoint(const libthing::Vector2 &point, iterator after);
-	iterator insertPoint(const libthing::Vector2 &point, iterator after);
+	template <class ITER>
+	cw_iterator insertPoint(const libthing::Vector2 &point, ITER after);
 
+	cw_iterator clockwise(const libthing::Vector2 &startpoint);
+	ccw_iterator counterClockwise(const libthing::Vector2 &startpoint);
+
+	template <class ITER>
+	libthing::LineSegment2 segmentAfterPoint(const ITER &location);
+	template <class ITER>
+	libthing::Vector2 normalAfterPoint(const ITER &location);
+
+	friend class LoopPath;
 private:
 	PointList points;
-}
+	VectorList normals;
+};
 
-/*
+
 class LoopPath {
 public:
-	class iterator {
+	template <class BASE>
+	class iterator_gen {
 	public:
-		iterator(LoopPath &p, Loop2::iterator b) : parent(p), base_iter(b);
+		iterator_gen(BASE i, LoopPath &p) : base(i), parent(p) {};
 
-		libthing::Vector2& operator*();
-		iterator operator++();
-		iterator operator+(int off);
-	}
+		libthing::Vector2& operator*() { return *base; }
+
+		iterator_gen<BASE> operator++() {
+			base++;
+			if (base == parent.start()) {
+				base == parent.end();
+			}
+
+			return base;
+		}
+	private:
+		BASE base;
+		LoopPath &parent;
+	};
+
+	LoopPath(Loop &p, Loop::cw_iterator s) : parent(p), start(s) {};
+
+	typedef iterator_gen<Loop::cw_iterator> iterator;
+	typedef iterator_gen<Loop::ccw_iterator> reverse_iterator;
+
+	iterator end() {
+		return iterator(Loop::cw_iterator(parent.points.end(),
+										  parent.points.end(),
+										  parent.points.end()),
+						*this); };
+	reverse_iterator rend() {
+		return reverse_iterator(Loop::ccw_iterator(parent.points.end(),
+												   parent.points.end(),
+												   parent.points.end()),
+								*this); };
+
+	iterator fromStart();
+	reverse_iterator fromEnd();
+
 private:
-	Loop2 *base;
-	Loop2::iterator *start;
-}
-*/
+	Loop &parent;
+	Loop::cw_iterator start;
+};
+
 }
 #endif
