@@ -34,6 +34,17 @@ void JsonConverterTestCase::setUp()
 {
 	std::cout<< " Starting:" <<__FUNCTION__ << endl;
 	MyComputer computer;
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	testCaseInputsDir = string("test_cases") + pathsep + 
+			string("jsconConverterTestCase") + pathsep;
+	testCaseOutputsDir = string("outputs") + pathsep + 
+			string("test_cases") + pathsep + 
+			string("jsonConverterTestCase") + pathsep + 
+			string("inputs") + pathsep;
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(
+			testCaseInputsDir.c_str());
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(
+			testCaseOutputsDir.c_str());
 	mkDebugPath(outputDir.c_str());
 }
 
