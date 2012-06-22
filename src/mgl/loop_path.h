@@ -1,5 +1,5 @@
-#ifndef PATH_H
-#define PATH_H
+#ifndef LOOP_PATH_H
+#define LOOP_PATH_H
 
 #include <vector>
 #include "libthing/Vector2.h"

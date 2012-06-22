@@ -1,7 +1,7 @@
 #include "UnitTestUtils.h"
 #include "LoopPathTestCase.h"
 
-#include "mgl/path2.h"
+#include "mgl/loop_path.h"
 
 #include <iostream>
 #include <sstream>
