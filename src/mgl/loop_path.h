@@ -7,8 +7,10 @@
 
 namespace mgl {
 
-typedef std::vector<libthing::Vector2> PointList;
-typedef std::vector<libthing::Vector2> VectorList;
+typedef libthing::Vector2 PointType;
+
+typedef std::vector<PointType> PointList;
+typedef std::vector<PointType> VectorList;
 
 
 /*!
@@ -21,6 +23,9 @@ typedef std::vector<libthing::Vector2> VectorList;
  * following it.
  */
 class OpenPath {
+	/*!
+	 * /brief A shallow wrapper around underlying container iterators
+	 */
 	template <class BASE>
 	class iterator_gen {
 	public:
@@ -58,9 +63,9 @@ public:
 	 *  /param end stop iterating here
 	 */
 	template <class ITER>
-	void appendPoints(const ITER &first, const ITER &end) {
-		for (ITER i = first; i != end; i++)
-			appendPoint(*i);
+	void appendPoints(ITER first, ITER end) {
+		for (; first != end; ++first)
+			appendPoint(*first);
 	}
 
 	/*! Add a single point to the end of a path. This copies the point
@@ -75,9 +80,9 @@ public:
 	 *  /param end stop iterating here
 	 */
 	template <class ITER>
-	void prependPoints(const ITER &first, const ITER &end) {
-		for (ITER i = first; i != end; i++) 
-			prependPoint(*i);
+	void prependPoints(ITER first, ITER end) {
+		for (; first != end; ++first) 
+			prependPoint(*first);
 	}
 		
 	/*! Add a single point to the beginning of a path. This copies the point
