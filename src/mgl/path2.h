@@ -49,16 +49,13 @@ public:
 	typedef iterator_gen<PointList::iterator> iterator;
 	typedef iterator_gen<PointList::reverse_iterator> reverse_iterator;
 
-	OpenPath() {};
-	OpenPath(const OpenPath &orig);
+	OpenPath() : endpoints(2) {};
 
-	iterator fromStart();
-	reverse_iterator fromEnd();
+	iterator fromStart() { return iterator(points.begin()); };
+	reverse_iterator fromEnd() { return reverse_iterator(points.rbegin()); };
 
 	iterator end() { return iterator(points.end()); };
 	reverse_iterator rend() { return reverse_iterator(points.rend()); };
-
-	void connect(const PathIterator &connection);
 
 	template <class ITER>
 	void appendPoints(const ITER &first, const ITER &last);
@@ -68,10 +65,17 @@ public:
 	void prependPoints(const ITER &first, const ITER &last);
 	void prependPoint(const libthing::Vector2 &point);
 
-	libthing::Vector2& operator[](int index);
+	iterator getStartingPoints() {
+		endpoints[0] = points[0];
+		endpoints[1] = points.back();
+		return endpoints.begin();
+	};
+
+	iterator getSuspendedPoints() { return fromStart(); }; //stub
 	
 private:
 	PointList points;
+	PointList endpoints;
 };
 
 class Loop {
@@ -114,6 +118,13 @@ public:
 	libthing::LineSegment2 segmentAfterPoint(const ITER &location);
 	template <class ITER>
 	libthing::Vector2 normalAfterPoint(const ITER &location);
+
+	cw_iterator getEntryPoints() {
+		return cw_iterator(points.begin(), points.begin(), points.end());
+	};
+
+	//stub
+	cw_iterator getSuspendedPoints() { return clockwise(points.front()); };
 
 	friend class LoopPath;
 private:
@@ -162,6 +173,8 @@ public:
 
 	iterator fromStart();
 	reverse_iterator fromEnd();
+
+	iterator getSuspendedPoints() { return fromStart(); }; //stub
 
 private:
 	Loop &parent;
