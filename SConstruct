@@ -8,6 +8,7 @@
 # the moc tool is detected and Qt4 is detected 
 import os
 import sys
+import re
 import commands
 import datetime
 import multiprocessing
@@ -194,84 +195,21 @@ p = env.Program('./bin/miracle_grue',
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
 
+tests = []
+gettestname = re.compile('^(.*)TestCase\.cc')
+for filename in os.listdir('src/unit_tests'):
+    match = gettestname.match(filename)
+    if match is not None:
+        testname = match.group(1)
 
-p = env.Program(  	'./bin/unit_tests/clipperUnitTest',   
-				mix(['src/unit_tests/ClipperTestCase.cc',], unit_test), 
-    			LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				 )
-runThisTest(p, run_unit_tests)	
-
-p = env.Program(  	'./bin/unit_tests/jsonConverterUnitTest',   
-				mix(['src/unit_tests/JsonConverterTestCase.cc'], unit_test), 
-    			LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ["."] )
-runThisTest(p, run_unit_tests)	
-
-
-#p = env.Program(  	'./bin/unit_tests/mglCoreUnitTest',   
-#				mix(['src/unit_tests/MglCoreTestCase.cc'], unit_test), 
-#    			LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= [".."])
-#runThisTest(p, run_unit_tests)	
-
-p = env.Program(  	'./bin/unit_tests/slicerCupUnitTest',   
-				mix(['src/unit_tests/SlicerCupTestCase.cc'], unit_test), 
-    			LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= [".."])
-runThisTest(p, run_unit_tests)	
+	p = env.Program('./bin/unit_tests/{}UnitTest'.format(testname),
+			mix(['src/unit_tests/{}TestCase.cc'.format(testname)],
+			     unit_test),
+			LIBS = default_libs + debug_libs,
+			LIBPATH = default_libs_path + debug_libs_path)
+	runThisTest(p, run_unit_tests)
 
 
-p = env.Program( 	'./bin/unit_tests/slicerUnitTest', 
-				mix(['src/unit_tests/SlicerTestCase.cc'],
-				    unit_test), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-runThisTest(p, run_unit_tests)
-	#Command('slicerUnitTest.passed','./bin/tests/slicerUnitTest',runUnitTest)
-
-
-p = env.Program(  	'./bin/unit_tests/modelReaderUnitTest',   
-				mix(['src/unit_tests/ModelReaderTestCase.cc'], unit_test), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-runThisTest(p, run_unit_tests)
-
-
-p = env.Program( 	'./bin/unit_tests/gcoderUnitTest', 
-				mix(['src/unit_tests/GCoderTestCase.cc'], unit_test), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= default_includes )
-runThisTest(p, run_unit_tests)
-
-
-p = env.Program( 	'./bin/unit_tests/slicerSplitUnitTest', 
-				mix(['src/unit_tests/SlicerSplitTestCase.cc'],
-				     unit_test), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-runThisTest(p, run_unit_tests)
-
-p = env.Program( 	'./bin/unit_tests/roofingUnitTest', 
-				mix(['src/unit_tests/RoofingTestCase.cc'], unit_test), 
-				LIBS = default_libs + debug_libs,
-				LIBPATH = default_libs_path + debug_libs_path, 
-				CPPPATH= ['..'])
-runThisTest(p, run_unit_tests)
-#p = env.Program(  	'./bin/unit_tests/regionerUnitTest',   
-#				mix(['src/unit_tests/RegionerTestCase.cc'], unit_test), 
-#				LIBS = default_libs + debug_libs,
-#				LIBPATH = default_libs_path + debug_libs_path, 
-#				CPPPATH= ['..'])
-#
-#runThisTest(p, run_unit_tests)
 
 
 
