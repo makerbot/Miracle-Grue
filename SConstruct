@@ -19,12 +19,17 @@ unitTestOutputDir = './test_cases'
 AddOption('--debug_build', action='store_true', dest='debug_build')
 debug = GetOption('debug_build')
 
-# Add command line option '--unit_test to build command
-AddOption('--unit_test')
+AddOption('--unit_tests', default=None, dest='unit_test')
+build_unit_tests = False
 run_unit_tests = False
-if ( GetOption('unit_test') != None):
-	print "running unit test"
-	run_unit_tests = True;
+testmode = GetOption('unit_test')
+if testmode is not None:
+    if testmode == 'run':
+        build_unit_tests = True
+        run_unit_tests = True
+    elif testmode == 'build':
+        build_unit_tests = True
+
 
 
 def get_environment_flag(flag_name, default):
@@ -37,11 +42,10 @@ def get_environment_flag(flag_name, default):
         flag = False 
     return flag   
 
-def runThisTest(program, run_unit_tests):
-	if run_unit_tests:
-		#print('runThisTest', program[0].path )
-		sts,text = commands.getstatusoutput(program[0].path)
-		print(text)
+def runThisTest(testname):
+    sts,text = commands.getstatusoutput(
+        'bin/unit_tests/{}UnitTest'.format(testname))
+    print(text)
 
 
 def runUnitTest(env,target,source):
@@ -195,19 +199,28 @@ p = env.Program('./bin/miracle_grue',
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
 
-tests = []
+
 gettestname = re.compile('^(.*)TestCase\.cc')
+tests = []
 for filename in os.listdir('src/unit_tests'):
     match = gettestname.match(filename)
     if match is not None:
         testname = match.group(1)
+        tests.append(testname)
 
-	p = env.Program('./bin/unit_tests/{}UnitTest'.format(testname),
-			mix(['src/unit_tests/{}TestCase.cc'.format(testname)],
-			     unit_test),
-			LIBS = default_libs + debug_libs,
-			LIBPATH = default_libs_path + debug_libs_path)
-	runThisTest(p, run_unit_tests)
+
+if build_unit_tests:
+    for testname in tests:
+        p = env.Program('bin/unit_tests/{}UnitTest'.format(testname),
+                        mix(['src/unit_tests/{}TestCase.cc'.format(testname)],
+                            unit_test),
+                        LIBS = default_libs + debug_libs,
+                        LIBPATH = default_libs_path + debug_libs_path)
+
+if run_unit_tests:
+    for testname in tests:
+        print "Running "+testname
+        runThisTest(testname)
 
 
 
