@@ -23,11 +23,6 @@ if ( GetOption('unit_test') != None):
 	print "running unit test"
 	run_unit_tests = True;
 
-#AddOption('--valgrind')
-#if ( GetOption('valgrind') != None):
-#	print "run valgrind"
-#	run_valgrind = True;
-
 
 def get_environment_flag(flag_name, default):
     flag = default
@@ -81,12 +76,7 @@ print "Miracle-Grue build script"
 print " * it is now", datetime.datetime.now(), " (Qt and cppUnit are sold separately)"
 print
 
-operating_system = ""
-uname = os.popen("uname")
-for line in uname.readlines():
-    operating_system = operating_system + line
-
-operating_system = operating_system.rstrip()
+operating_system = sys.platform
 
 print "Operating system: [" + operating_system + "]"
 
@@ -100,31 +90,17 @@ default_includes = ['submodule/json-cpp/include',
 				 'submodule/clp-parser',
 				 LIBTHING_INCLUDE]
 
-if operating_system == "Linux":
+if operating_system.startswith("linux"):
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
     default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
-boost_lib_extension = ""
 
-if operating_system.find("_NT") > 0:
-    default_libs_path = ['c:\\Boost\\lib', '.\\bin\\lib']
-    default_libs = ['wsock32', 'ws2_32']
-    boost_lib_extension = '-mgw46-mt-1_49'
-    default_includes.append('c:\\Boost\\include\\boost-1_49')
-    print " ** CPPUNIT version checK:", "N/A"#commands.getoutput("cygcheck -l cppunit")
-
-if operating_system == "Darwin":
-    print " ** CPPUNIT version checK:", commands.getoutput("port info --line cppunit | grep ^cppunit")
-    default_libs_path =['/usr/lib', '/usr/local/lib', './bin/lib', '/opt/local/lib']
-
-def boostlib(name):
-    return name + boost_lib_extension
+if operating_system == "win32":
+    default_libs_path = ['.\\bin\\lib']
 
 debug = get_environment_flag('MG_DEBUG',False)
 debug = True;
-multi_thread = get_environment_flag('MG_MT', False)
-qt =  get_environment_flag('MG_QT',False)
-        
+
 # Using just one environemt setup for now	
 tools = ['default']
 if qt:
@@ -169,33 +145,29 @@ libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
 
 
 
-mgl_cc = [	'src/mgl/mgl.cc',
-			'src/mgl/configuration.cc', 
-			LIBTHING_SRC+ 'Vector2.cc',
-			LIBTHING_SRC+ 'Vector3.cc',
-			LIBTHING_SRC+ 'Triangle3.cc',
-			LIBTHING_SRC+ 'LineSegment2.cc',
-			LIBTHING_SRC+'Scalar.cc',
-			'src/mgl/gcoder.cc',
-			'src/mgl/shrinky.cc',
-			'src/mgl/slicy.cc',
-			'src/mgl/meshy.cc',
-			'src/mgl/connexity.cc',
-			'src/mgl/segment.cc',
-			'src/mgl/miracle.cc',
-			'src/mgl/infill.cc',
-			'src/mgl/abstractable.cc',
-			'src/mgl/JsonConverter.cc',
-			'src/mgl/insets.cc',
-			'src/mgl/clipper.cc',
-			'src/mgl/ScadDebugFile.cc',
-            'src/mgl/Edge.cc',
-            'src/mgl/log.cc',
-			'src/mgl/grid.cc',
-			'src/mgl/pather.cc',
-			'src/mgl/regioner.cc',
-			'src/mgl/slicer.cc'
-			]
+mgl_cc = ['src/mgl/Edge.cc',
+          'src/mgl/JsonConverter.cc',
+          'src/mgl/ScadDebugFile.cc',
+          'src/mgl/abstractable.cc',
+          'src/mgl/clipper.cc',
+          'src/mgl/configuration.cc'
+          'src/mgl/connexity.cc',
+          'src/mgl/gcoder.cc',
+          'src/mgl/gcoder_gantry.cc',
+          'src/mgl/grid.cc',
+          'src/mgl/infill.cc',
+          'src/mgl/insets.cc',
+          'src/mgl/log.cc',
+          'src/mgl/meshy.cc',
+          'src/mgl/mgl.cc',
+          'src/mgl/miracle.cc',
+          'src/mgl/pather.cc',
+          'src/mgl/regioner.cc',
+          'src/mgl/segment.cc',
+          'src/mgl/shrinky.cc',
+          'src/mgl/slicer.cc',
+          'src/mgl/slicy.cc']
+
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
             'submodule/json-cpp/src/lib_json/json_value.cpp',
@@ -210,7 +182,7 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',]
 
 
 
-default_libs.extend(['mgl', '_json', boostlib('boost_system'), boostlib('boost_filesystem'), boostlib('boost_regex')])
+default_libs.extend(['mgl', '_json'])
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
@@ -218,7 +190,7 @@ debug_libs_path = ["", ]
 env.Append(CPPPATH = default_includes)
 
 p = env.Program('./bin/miracle_grue', 
-		mix(['src/miracle_grue.cc'] ),
+		mix(['src/miracle_grue/miracle_grue.cc'] ),
 		LIBS = default_libs,
 		LIBPATH = default_libs_path,
 		CPPPATH = default_includes)
@@ -301,6 +273,7 @@ runThisTest(p, run_unit_tests)
 #				CPPPATH= ['..'])
 #
 #runThisTest(p, run_unit_tests)
+
 
 
 
