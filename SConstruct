@@ -7,6 +7,7 @@
 # On Mac builds, scons complains that Qt4 can't be found. By merging the PATH environment variable
 # the moc tool is detected and Qt4 is detected 
 import os
+import sys
 import commands
 import datetime
 import multiprocessing
