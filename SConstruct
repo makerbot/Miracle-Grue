@@ -104,18 +104,15 @@ debug = True;
 
 # Using just one environemt setup for now	
 tools = ['default']
-if qt:
-	tools = tools+['qt4']
+#if qt:
+#	tools = tools+['qt4']
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
 # print "os.environ['PATH']=", os.environ['PATH']
 
 
-if operating_system == "Darwin":
+if operating_system == "darwin":
     env.Append(CPPPATH = ['/opt/local/include'])
     env.Append(LIBPATH = ['/opt/local/lib'])
-
-if operating_system.find("_NT") > 0:
-   env.Append(LIBPATH = ['c:\Boost\lib'])
 
 if debug:
     env.Append(CCFLAGS = '-g')
@@ -127,13 +124,13 @@ if  multi_thread:
     env.Append(LINKFLAGS = '-fopenmp')    
        
 
-if qt:
-	print "OS: ", operating_system
-	print " ** QT version check:",  commands.getoutput("moc -v")
-	print	
-	qtModules = ['QtCore', 'QtNetwork' ]
-	print "QT modules", qtModules
-	env.EnableQt4Modules(qtModules)
+#if qt:
+#	print "OS: ", operating_system
+#	print " ** QT version check:",  commands.getoutput("moc -v")
+#	print	
+#	qtModules = ['QtCore', 'QtNetwork' ]
+#	print "QT modules", qtModules
+#	env.EnableQt4Modules(qtModules)
 
 libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
 				LIBTHING_SRC+'Vector2.cc', 
