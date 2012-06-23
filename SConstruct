@@ -14,9 +14,10 @@ import datetime
 import multiprocessing
 
 jcore_count = multiprocessing.cpu_count() * 1.5 
-
-
 unitTestOutputDir = './test_cases'
+
+AddOption('--debug_build', action='store_true', dest='debug_build')
+debug = GetOption('debug_build')
 
 # Add command line option '--unit_test to build command
 AddOption('--unit_test')
@@ -100,9 +101,6 @@ if operating_system.startswith("linux"):
 if operating_system == "win32":
     default_libs_path = ['.\\bin\\lib']
 
-debug = get_environment_flag('MG_DEBUG',False)
-debug = True;
-
 # Using just one environemt setup for now	
 tools = ['default']
 #if qt:
@@ -117,6 +115,8 @@ if operating_system == "darwin":
 
 if debug:
     env.Append(CCFLAGS = '-g')
+else:
+    env.Append(CCFLAGS = '-O2')
 
 #env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
 multi_thread = False
