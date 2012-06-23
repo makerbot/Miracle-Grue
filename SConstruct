@@ -87,9 +87,9 @@ LIBTHING_SRC = LIBTHING_PATH + 'src/'
 
 default_libs = []
 default_includes = ['submodule/json-cpp/include',
-				 'submodule/EzCppLog', 
-				 'submodule/clp-parser',
-				 LIBTHING_INCLUDE]
+		    'submodule/EzCppLog', 
+		    'submodule/optionparser/src',
+		    LIBTHING_INCLUDE]
 
 if operating_system.startswith("linux"):
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
@@ -133,13 +133,13 @@ if  multi_thread:
 #	env.EnableQt4Modules(qtModules)
 
 libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
-				LIBTHING_SRC+'Vector2.cc', 
-				LIBTHING_SRC+'Vector3.cc',
-				LIBTHING_SRC+'Triangle3.cc',
-				LIBTHING_SRC+"LineSegment2.cc",
-				LIBTHING_SRC+"Mesh.cc",
-				LIBTHING_SRC+'StlReader.cc',
-				LIBTHING_SRC+'StlWriter.cc']
+		LIBTHING_SRC+'Vector2.cc', 
+		LIBTHING_SRC+'Vector3.cc',
+		LIBTHING_SRC+'Triangle3.cc',
+		LIBTHING_SRC+"LineSegment2.cc",
+		LIBTHING_SRC+"Mesh.cc",
+		LIBTHING_SRC+'StlReader.cc',
+		LIBTHING_SRC+'StlWriter.cc']
 
 
 
@@ -148,12 +148,11 @@ mgl_cc = ['src/mgl/Edge.cc',
           'src/mgl/ScadDebugFile.cc',
           'src/mgl/abstractable.cc',
           'src/mgl/clipper.cc',
-          'src/mgl/configuration.cc'
+          'src/mgl/configuration.cc',
           'src/mgl/connexity.cc',
           'src/mgl/gcoder.cc',
           'src/mgl/gcoder_gantry.cc',
           'src/mgl/grid.cc',
-          'src/mgl/infill.cc',
           'src/mgl/insets.cc',
           'src/mgl/log.cc',
           'src/mgl/meshy.cc',
@@ -173,14 +172,16 @@ json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
 
 JSON_CPP_BASE = 'submodule/json-cpp/include'
 
-env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src','src/EzCppLog', LIBTHING_INCLUDE, JSON_CPP_BASE] )  
+env.Library('./bin/lib/thing', libthing_cc, CPPPATH=[LIBTHING_INCLUDE])
+env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src', default_includes])
 env.Library('./bin/lib/_json', json_cc, CPPPATH=[JSON_CPP_BASE,])
 
-unit_test   = ['src/unit_tests/UnitTestMain.cc',]
+unit_test   = ['src/unit_tests/UnitTestMain.cc',
+	       'src/unit_tests/UnitTestUtils.cc']
 
 
 
-default_libs.extend(['mgl', '_json'])
+default_libs.extend(['mgl', '_json', 'thing'])
 
 debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
@@ -225,8 +226,8 @@ runThisTest(p, run_unit_tests)
 
 
 p = env.Program( 	'./bin/unit_tests/slicerUnitTest', 
-				mix(['src/unit_tests/SlicerTestCase.cc',
-					'src/unit_tests/insetTests.cc' ], unit_test), 
+				mix(['src/unit_tests/SlicerTestCase.cc'],
+				    unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
@@ -251,8 +252,8 @@ runThisTest(p, run_unit_tests)
 
 
 p = env.Program( 	'./bin/unit_tests/slicerSplitUnitTest', 
-				mix(['src/unit_tests/SlicerSplitTestCase.cc',
-					'src/unit_tests/insetTests.cc' ], unit_test), 
+				mix(['src/unit_tests/SlicerSplitTestCase.cc'],
+				     unit_test), 
 				LIBS = default_libs + debug_libs,
 				LIBPATH = default_libs_path + debug_libs_path, 
 				CPPPATH= ['..'])
