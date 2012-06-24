@@ -31,8 +31,32 @@ if testmode is not None:
 AddOption('--gui', action='store_true', dest='gui')
 build_gui = GetOption('gui')
 
-def detectLatestQtDir():
-    return '/usr'
+def detectLatestQtDir(operating_system, compiler_type):
+    if os.environ.get('QTDIR') is not None:
+        return os.environ.get('QTDIR')
+    elif operating_system.startswith('linux'):
+        return '/usr' #use the system qt install
+    elif operating_system == 'win32':
+        if compiler_type == 'mingw':
+            qtbase = 'c:\\QtSDK\\Desktop\\Qt'
+            versions = re.compile('4\.(\d+)\.(\d+)')
+            minor = 0
+            release = 0
+            for dir in os.listdir(qtbase):
+                match = versions.match(dir)
+                if match is not None:
+                    if int(match.group(1)) > minor:
+                        minor = int(match.group(1))
+                        release = int(match.group(2))
+                    elif (int(match.group(1)) == minor) \
+                            and (int(match.group(2)) > release):
+                        release = int(match.group(2))
+            qtdir = '{base}\\4.{minor}.{release}\\mingw'.format(
+                base=qtbase, minor=minor, release=release)
+            print 'Found latest qt at {}'.format(qtdir)
+            return qtdir
+                                      
+                    
 
 def get_environment_flag(flag_name, default):
     flag = default
@@ -222,7 +246,7 @@ p = env.Program('./bin/miracle_grue',
 if build_gui:
     print "Building miracle_gui"
     qtEnv = env.Clone()
-    qtEnv['QT4DIR'] = '/usr'
+    qtEnv['QT4DIR'] = detectLatestQtDir(operating_system, compiler_type)
     qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/lib/pkgconfig'
     qtEnv.Tool('qt4')
     qtEnv.EnableQt4Modules(['QtGui',
