@@ -33,29 +33,41 @@ build_gui = GetOption('gui')
 
 def detectLatestQtDir(operating_system, compiler_type):
     if os.environ.get('QTDIR') is not None:
+        print 'Using env variable QTDIR: '+os.environ.get('QTDIR')
         return os.environ.get('QTDIR')
     elif operating_system.startswith('linux'):
         return '/usr' #use the system qt install
+
     elif operating_system == 'win32':
-        if compiler_type == 'mingw':
-            qtbase = 'c:\\QtSDK\\Desktop\\Qt'
-            versions = re.compile('4\.(\d+)\.(\d+)')
-            minor = 0
-            release = 0
-            for dir in os.listdir(qtbase):
-                match = versions.match(dir)
-                if match is not None:
-                    if int(match.group(1)) > minor:
-                        minor = int(match.group(1))
-                        release = int(match.group(2))
-                    elif (int(match.group(1)) == minor) \
-                            and (int(match.group(2)) > release):
-                        release = int(match.group(2))
-            qtdir = '{base}\\4.{minor}.{release}\\mingw'.format(
-                base=qtbase, minor=minor, release=release)
-            print 'Found latest qt at {}'.format(qtdir)
-            return qtdir
-                                      
+        qtbase = 'c:\\QtSDK\\Desktop\\Qt'
+    elif operating_system == 'darwin':
+        qtbase = '~/QtSDK/Desktop/Qt'
+
+    versions = re.compile('4\.(\d+)\.(\d+)')
+    minor = 0
+    release = 0
+    for dir in os.listdir(qtbase):
+        match = versions.match(dir)
+        if match is not None:
+            if int(match.group(1)) > minor:
+                minor = int(match.group(1))
+                release = int(match.group(2))
+            elif (int(match.group(1)) == minor) \
+                     and (int(match.group(2)) > release):
+                release = int(match.group(2))
+
+    qtver = '4.{minor}.{release}'.format(minor=minor, release=release)
+
+    qtdir = None
+    if operating_system == 'win32':
+        qtdir = '{base}\\{ver}\\{compiler}'.format(base=qtbase, ver=qtver,
+                                                 compiler=compiler_type)
+    elif operating_system == 'darwin':
+        print "Darwin!"
+        qtdir = '{base}/{ver}/gcc'.format(base=qtbase, ver=qtver)
+
+    print 'Found latest qt at {dir}'.format(dir=qtdir)
+    return qtdir
                     
 
 def get_environment_flag(flag_name, default):
@@ -136,8 +148,11 @@ compiler_type = None
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
 
 if operating_system == "darwin":
-    env.Append(CPPPATH = ['/opt/local/include'])
-    env.Append(LIBPATH = ['/opt/local/lib'])
+    default_includes.append('/opt/local/include')
+    default_includes.append(
+      '/System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers')
+    default_libs_path = ['/opt/local/lib', './bin/lib']
+    env['FRAMEWORKS'] = ['CoreFoundation']
 
 if operating_system == "win32":
     AddOption('--compiler_type', dest="compiler_type", default="mingw" )
