@@ -99,26 +99,34 @@ default_includes = ['submodule/json-cpp/include',
 		    'submodule/optionparser/src',
 		    LIBTHING_INCLUDE]
 
+tools = ['default']
+
 if operating_system.startswith("linux"):
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
     default_libs_path = ['/usr/lib', '/usr/local/lib', './bin/lib']
 
+compiler_type = None
 
-if operating_system == "win32":
-    default_libs_path = ['.\\bin\\lib']
 
-# Using just one environemt setup for now	
-tools = ['default']
 
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
-# print "os.environ['PATH']=", os.environ['PATH']
-
-
-
 
 if operating_system == "darwin":
     env.Append(CPPPATH = ['/opt/local/include'])
     env.Append(LIBPATH = ['/opt/local/lib'])
+
+if operating_system == "win32":
+    AddOption('--compiler_type', dest="compiler_type", default="mingw" )
+    compiler_type = GetOption('compiler_type')
+    if compiler_type == "mingw":
+        env.Replace(CCFLAGS=[])
+        env.Tool('mingw')
+    elif compiler_type == "cl":
+        pass
+    else:
+        print "Unknown compiler {}: Only mingw or cl supported on windows".format(compiler_type)
+        exit(1)
+    default_libs_path = ['.\\bin\\lib']
 
 if debug:
     env.Append(CCFLAGS = '-g')
