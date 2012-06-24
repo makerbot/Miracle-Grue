@@ -2,8 +2,6 @@
 # Top-level SConstruct file for Miracle Grue.
 #
 
-# env = Environment(tools=['default','qt4']
-
 # On Mac builds, scons complains that Qt4 can't be found. By merging the PATH environment variable
 # the moc tool is detected and Qt4 is detected 
 import os
@@ -30,7 +28,11 @@ if testmode is not None:
     elif testmode == 'build':
         build_unit_tests = True
 
+AddOption('--gui', action='store_true', dest='gui')
+build_gui = GetOption('gui')
 
+def detectLatestQtDir():
+    return '/usr'
 
 def get_environment_flag(flag_name, default):
     flag = default
@@ -107,10 +109,11 @@ if operating_system == "win32":
 
 # Using just one environemt setup for now	
 tools = ['default']
-#if qt:
-#	tools = tools+['qt4']
+
 env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
 # print "os.environ['PATH']=", os.environ['PATH']
+
+
 
 
 if operating_system == "darwin":
@@ -175,6 +178,16 @@ json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
             'submodule/json-cpp/src/lib_json/json_value.cpp',
             'submodule/json-cpp/src/lib_json/json_writer.cpp' ]
 
+toolpathviz_cc = ['submodule/toolpathviz/main.cpp',
+                  'submodule/toolpathviz/mainwindow.cpp',
+                  'submodule/toolpathviz/gcode.cpp',
+                  'submodule/toolpathviz/gcodeview.cpp',
+                  'submodule/toolpathviz/gcodeviewapplication.cpp',
+                  'submodule/toolpathviz/arcball.cpp',
+                  'submodule/toolpathviz/quaternion.cpp',
+                  'submodule/toolpathviz/algebra3.cpp']
+toolpathviz_ui = ['submodule/toolpathviz/mainwindow.ui']
+
 JSON_CPP_BASE = 'submodule/json-cpp/include'
 
 env.Library('./bin/lib/thing', libthing_cc, CPPPATH=[LIBTHING_INCLUDE])
@@ -192,13 +205,24 @@ debug_libs = ['cppunit',]
 debug_libs_path = ["", ]
 
 env.Append(CPPPATH = default_includes)
+env.Append(LIBS = default_libs)
+env.Append(LIBPATH = default_libs_path)
 
 p = env.Program('./bin/miracle_grue', 
-		mix(['src/miracle_grue/miracle_grue.cc'] ),
-		LIBS = default_libs,
-		LIBPATH = default_libs_path,
-		CPPPATH = default_includes)
+		mix(['src/miracle_grue/miracle_grue.cc'] ))
 
+if build_gui:
+    print "Building miracle_gui"
+    qtEnv = env.Clone()
+    qtEnv['QT4DIR'] = '/usr'
+    qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/lib/pkgconfig'
+    qtEnv.Tool('qt4')
+    qtEnv.EnableQt4Modules(['QtGui',
+                            'QtCore',
+                            'QtOpenGL'])
+    ui = qtEnv.Uic4(toolpathviz_ui)
+    p = qtEnv.Program('bin/miracle_gui',
+                    toolpathviz_cc)
 
 gettestname = re.compile('^(.*)TestCase\.cc')
 tests = []
@@ -210,18 +234,18 @@ for filename in os.listdir('src/unit_tests'):
 
 
 if build_unit_tests:
+    testEnv = env.Clone()
+    testEnv.Append(LIBS = debug_libs)
+    testEnv.Append(LIBSPATH = debug_libs_path)
     for testname in tests:
-        p = env.Program('bin/unit_tests/{}UnitTest'.format(testname),
-                        mix(['src/unit_tests/{}TestCase.cc'.format(testname)],
-                            unit_test),
-                        LIBS = default_libs + debug_libs,
-                        LIBPATH = default_libs_path + debug_libs_path)
+        p = testEnv.Program('bin/unit_tests/{}UnitTest'.format(testname),
+                          mix(['src/unit_tests/{}TestCase.cc'.format(testname)],
+                              unit_test))
 
 if run_unit_tests:
     for testname in tests:
         print "Running "+testname
         runThisTest(testname)
-
 
 
 
