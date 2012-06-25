@@ -25,6 +25,19 @@ string inputDir2("./test_cases/specific_issues/");
 void SlicerCupTestCase::setUp()
 {
 	MyComputer computer;
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	outputDir = string("outputs") + pathsep + string("test_cases") + 
+			pathsep + string("slicerCupTestCase") + pathsep;
+	outputDir2 = string("outputs") + pathsep + string("test_cases") + 
+			pathsep + string("specific_issues") + pathsep;
+	inputDir = string("test_cases") + pathsep + string("slicerCupTestCase") + 
+			pathsep + string("stls") + pathsep;
+	inputDir = string("test_cases") + pathsep + string("specific_issues") + 
+			pathsep;
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir2.c_str());
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(inputDir.c_str());
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(inputDir2.c_str());
 	mkDebugPath(outputDir.c_str());
 	mkDebugPath(outputDir2.c_str());
 }
