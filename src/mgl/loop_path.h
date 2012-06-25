@@ -40,6 +40,9 @@ class OpenPath {
 			base = base + off;
 			return *this;
 		};
+		bool operator==(iterator_gen<BASE> other) {
+			return base == other.base;
+		}
 
 	private:
 		BASE base;
@@ -95,10 +98,21 @@ public:
 	/*! Retrieve the LineSegment2 in the path that starts with a provided point.
 	 *  This creates a new LineSegment2 value
 	 *  /param location iterator pointing to the first endpoint of the segment
-	 *  /return The line segment starting with the point at location
+	 *  /return The line segment starting with the point at location, or a zero
+	 *          length segment if this is the last point in the path
 	 */
 	template <class ITER>
-	libthing::LineSegment2 segmentAfterPoint(const ITER &location);
+	libthing::LineSegment2 segmentAfterPoint(ITER &beginning) {
+		ITER endpoint = beginning;
+		++endpoint;
+
+		if (isEnd(endpoint))
+			//0 len segment if we're at the last point
+			return libthing::LineSegment2(*beginning, *beginning);
+
+		else
+			return libthing::LineSegment2(*beginning, *endpoint);
+	}
 
 	/*! Find points you can start extrusion on for this path.  For an
 	 *  OpenPath, this gives you the endpoints.
@@ -107,7 +121,7 @@ public:
 	iterator getEntryPoints() {
 		endpoints[0] = points[0];
 		endpoints[1] = points.back();
-		return endpoints.begin();
+		return iterator(endpoints.begin());
 	};
 
 	/*! Find points that are suspended by material underneath.
@@ -118,6 +132,14 @@ public:
 	iterator getSuspendedPoints() { return fromStart(); }; //stub
 	
 private:
+	bool isEnd(iterator i) {
+		return i == end();
+	}
+
+	bool isEnd(reverse_iterator i) {
+		return i == rend();
+	}
+
 	PointList points;
 	PointList endpoints;
 };
