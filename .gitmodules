@@ -1,15 +1,15 @@
 [submodule "submodule/json-cpp"]
 	path = submodule/json-cpp
-	url = ../json-cpp.git
+	url = https://github.com/makerbot/json-cpp.git
 [submodule "submodule/EzCppLog"]
 	path = submodule/EzCppLog
-	url = ../EzCppLog.git
+	url =  https://github.com/makerbot/EzCppLog.git
 [submodule "submodule/toolpathviz"]
 	path = submodule/toolpathviz
-	url = ../ToolPathViz.git
+	url =  https://github.com/makerbot/ToolPathViz.git
 [submodule "submodule/libthing"]
 	path = submodule/libthing
-	url = ../libthing.git
+	url =  https://github.com/makerbot/libthing.git
 [submodule "submodule/optionparser"]
 	path = submodule/optionparser
-	url = ../optionparser.git
+	url =  https://github.com/makerbot/optionparser.git
