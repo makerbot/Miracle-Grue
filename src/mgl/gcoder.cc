@@ -394,8 +394,16 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 		profileName = gcoderCfg.extruders[extruderId].infillsExtrusionProfile;
 	}
 
-	const std::map<std::string, Extrusion>::const_iterator &it = gcoderCfg.extrusionProfiles.find(profileName);
-	extrusion = it->second;
+	const std::map<std::string, Extrusion>::const_iterator it = gcoderCfg.extrusionProfiles.find(profileName);
+	if(it == gcoderCfg.extrusionProfiles.end()){
+		Log::severe() << "Failed to find extrusion profile <name>" << 
+				profileName  << "</name>" << endl;
+//		GcoderException mixup((string("Failed to find extrusion profile ") + 
+//				profileName).c_str());
+//		throw mixup;
+	} else {
+		extrusion = it->second;
+	}
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
 	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }

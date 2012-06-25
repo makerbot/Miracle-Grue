@@ -27,6 +27,7 @@ SOURCES +=     $$MGL_SRC/abstractable.cc \
     $$MGL_SRC/meshy.cc\
     $$MGL_SRC/miracle.cc\
     $$MGL_SRC/segment.cc\
+    $$MGL_SRC/segmenter.cc\
     $$MGL_SRC/shrinky.cc\
     $$MGL_SRC/ScadDebugFile.cc \
     $$MGL_SRC/log.cc\
@@ -49,6 +50,7 @@ HEADERS +=     $$MGL_SRC/abstractable.h\
     $$MGL_SRC/mgl.h\
     $$MGL_SRC/miracle.h\
     $$MGL_SRC/segment.h\
+    $$MGL_SRC/segmenter.h\
     $$MGL_SRC/shrinky.h\
     $$MGL_SRC/ScadDebugFile.h \
     $$MGL_SRC/log.h \

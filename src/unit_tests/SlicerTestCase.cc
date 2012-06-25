@@ -158,22 +158,24 @@ void SlicerTestCase::testSlicyKnot_44()
 
     Configuration config;
     initConfig(config);
-	Meshy mesh(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
+	Meshy mesh;
+	Segmenter seg(config["slicer"]["firstLayerZ"].asDouble(), config["slicer"]["layerH"].asDouble()); // 0.35
 	mesh.readStlFile( modelFile.c_str());
-
+	seg.tablaturize(mesh);
+	
 	cout << "file " << modelFile << endl;
-	const SliceTable &sliceTable = mesh.readSliceTable();
+	const SliceTable &sliceTable = seg.readSliceTable();
 	int layerCount = sliceTable.size();
 	cout  << "Slice count: "<< layerCount << endl;
 	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
 	cout << "Faces: " << allTriangles.size() << endl;
-	cout << "layer " << layerCount-1 << " z: " << mesh.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
+	cout << "layer " << layerCount-1 << " z: " << seg.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
 
 	int layerIndex = 44;
 	CPPUNIT_ASSERT (layerIndex < layerCount);
 	const TriangleIndices &trianglesInSlice = sliceTable[layerIndex];
 	unsigned int triangleCount = trianglesInSlice.size();
-	Scalar z = mesh.readLayerMeasure().sliceIndexToHeight(layerIndex);
+	Scalar z = seg.readLayerMeasure().sliceIndexToHeight(layerIndex);
 	cout << triangleCount <<" triangles in layer " << layerIndex  << " z = " << z << endl;
 
 	std::list<LineSegment2> cuts;
@@ -1334,8 +1336,6 @@ void SlicerTestCase::testKnot89()
     inset2scad(segs, outputFile.c_str(), 5, 0.35);
 }
 
-
-bool attachSegments(LineSegment2 &first, LineSegment2 &next, Scalar elongation);
 
 void SlicerTestCase::scratch()
 {

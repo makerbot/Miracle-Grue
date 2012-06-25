@@ -14,10 +14,10 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 
 
-void Slicer::tomographyze( Meshy &mesh, Tomograph &tomograph)
+void Slicer::tomographyze( Segmenter& seg, Tomograph &tomograph)
 {
 	// grid.init(mesh.limits, slicerCfg.layerW);
-	unsigned int sliceCount = mesh.readSliceTable().size();
+	unsigned int sliceCount = seg.readSliceTable().size();
 	tomograph.outlines.resize(sliceCount);
 
 	initProgress("outlines", sliceCount);
@@ -28,24 +28,24 @@ void Slicer::tomographyze( Meshy &mesh, Tomograph &tomograph)
 		tick();
 		//cout << sliceId << "/" << sliceCount << " outlines" << endl;
 		libthing::SegmentTable &segments = tomograph.outlines[sliceId];
-		outlinesForSlice(mesh, sliceId, segments);
+		outlinesForSlice(seg, sliceId, segments);
 	}
 
 	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
-	Limits limits = mesh.readLimits();
+	Limits limits = seg.readLimits();
 	tomograph.grid.init(limits, gridSpacing);
-	tomograph.layerMeasure = mesh.readLayerMeasure();
+	tomograph.layerMeasure = seg.readLayerMeasure();
 }
 
 
 
-void Slicer::outlinesForSlice(const Meshy & mesh, size_t sliceId, libthing::SegmentTable & segments)
+void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::SegmentTable & segments)
 {
 	Scalar tol = 1e-6;
-	const LayerMeasure & layerMeasure = mesh.readLayerMeasure();
+	const LayerMeasure & layerMeasure = seg.readLayerMeasure();
 	Scalar z = layerMeasure.sliceIndexToHeight(sliceId);
-	const std::vector<libthing::Triangle3> & allTriangles = mesh.readAllTriangles();
-	const TriangleIndices & trianglesForSlice = mesh.readSliceTable()[sliceId];
+	const std::vector<libthing::Triangle3> & allTriangles = seg.readAllTriangles();
+	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
 	std::vector<libthing::LineSegment2> unorderedSegments;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
 	assert(segments.size() ==0);

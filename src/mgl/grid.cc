@@ -334,10 +334,10 @@ void rangeTersection(const vector< ScalarRange > &oneLine,
 					 const vector< ScalarRange > &twoLine,
 						vector< ScalarRange > &boolLine )
 {
-	static int toto = 0;
-	toto ++;
-	if(toto == 5007)
-		cout << toto << endl;
+//	static int toto = 0;
+//	toto ++;
+//	if(toto == 5007)
+//		cout << toto << endl;
 
 	vector< ScalarRange >::const_iterator itOne = oneLine.begin();
 	vector< ScalarRange >::const_iterator itTwo = twoLine.begin();

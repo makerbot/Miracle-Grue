@@ -89,8 +89,7 @@ void StlWriter::close() {
 
 /// requires firstLayerSlice height, and general layer height
 
-Meshy::Meshy(Scalar firstSliceZ, Scalar layerH) : 
-		zTapeMeasure(firstSliceZ, layerH) {}
+Meshy::Meshy() {}
 
 const std::vector<Triangle3>& Meshy::readAllTriangles() const {
 	return allTriangles;
@@ -98,14 +97,6 @@ const std::vector<Triangle3>& Meshy::readAllTriangles() const {
 
 const Limits& Meshy::readLimits() const {
 	return limits;
-}
-
-const LayerMeasure& Meshy::readLayerMeasure() const {
-	return zTapeMeasure;
-}
-
-const SliceTable& Meshy::readSliceTable() const {
-	return sliceTable;
 }
 
 
@@ -125,7 +116,7 @@ void Meshy::flushBuffer() {
 // Adds a triangle to the buffer of triangles to be analyzed
 //
 
-void Meshy::bufferTriangle(libthing::Triangle3& t){
+void Meshy::bufferTriangle(libthing::Triangle3 t){
 	bufferedTriangles.push_back(t);
 }
 
@@ -135,57 +126,30 @@ void Meshy::bufferTriangle(libthing::Triangle3& t){
 
 void Meshy::addTriangle(Triangle3 &t) {
 
-	Vector3 a, b, c;
-	t.zSort(a, b, c);
-
-	unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(a.z);
-	if (minSliceIndex > 0)
-		minSliceIndex--;
-
-	unsigned int maxSliceIndex = this->zTapeMeasure.zToLayerAbove(c.z);
-	if (maxSliceIndex - minSliceIndex > 1)
-		maxSliceIndex--;
-
-	//		Log::often() << "Min max index = [" <<  minSliceIndex << ", "<< maxSliceIndex << "]"<< std::endl;
-	//		Log::often() << "Max index =" <<  maxSliceIndex << std::endl;
-	unsigned int currentSliceCount = sliceTable.size();
-	if (maxSliceIndex >= currentSliceCount) {
-		unsigned int newSize = maxSliceIndex + 1;
-		sliceTable.resize(newSize); // make room for potentially new slices
-		//			Log::often() << "- new slice count: " << sliceTable.size() << std::endl;
-	}
-
 	allTriangles.push_back(t);
-
-	size_t newTriangleId = allTriangles.size() - 1;
-
-	//		 Log::often() << "adding triangle " << newTriangleId << " to layer " << minSliceIndex  << " to " << maxSliceIndex << std::endl;
-	for (size_t i = minSliceIndex; i <= maxSliceIndex; i++) {
-		TriangleIndices &trianglesForSlice = sliceTable[i];
-		trianglesForSlice.push_back(newTriangleId);
-		//			Log::often() << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
-	}
 
 	limits.grow(t[0]);
 	limits.grow(t[1]);
 	limits.grow(t[2]);
-
-
 }
 
 void Meshy::dump(std::ostream &out) {
 	out << "dumping " << this << std::endl;
 	out << "Nb of triangles: " << allTriangles.size() << std::endl;
-	size_t sliceCount = sliceTable.size();
-
-	out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
-	for (size_t i = 0; i < sliceCount; i++) {
-		TriangleIndices &trianglesForSlice = sliceTable[i];
-		//trianglesForSlice.push_back(newTriangleId);
-		out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
+//	size_t sliceCount = sliceTable.size();
+//
+//	out << "triangles per slice: (" << sliceCount << " slices)" << std::endl;
+//	for (size_t i = 0; i < sliceCount; i++) {
+//		TriangleIndices &trianglesForSlice = sliceTable[i];
+//		//trianglesForSlice.push_back(newTriangleId);
+//		out << "  slice " << i << " size: " << trianglesForSlice.size() << std::endl;
 		//Log::often() << "adding triangle " << newTriangleId << " to layer " << i << std::endl;
-	}
+//	}
 }
+
+//
+// Perform slice updates on a triangle (this will move to new class)
+//
 
 size_t Meshy::triangleCount() {
 	return allTriangles.size();
@@ -205,20 +169,20 @@ void Meshy::writeStlFile(const char* fileName) const {
 
 }
 
-void Meshy::writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const {
-
-	StlWriter out;
-	out.open(fileName);
-
-	const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
-	for (std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i != trianglesForSlice.end(); i++) {
-		index_t index = *i;
-		const Triangle3 &t = allTriangles[index];
-		out.writeTriangle(t);
-	}
-	out.close();
-	// Log::often() << fileName << " written!"<< std::endl;
-}
+//void Meshy::writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const {
+//
+//	StlWriter out;
+//	out.open(fileName);
+//
+//	const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
+//	for (std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i != trianglesForSlice.end(); i++) {
+//		index_t index = *i;
+//		const Triangle3 &t = allTriangles[index];
+//		out.writeTriangle(t);
+//	}
+//	out.close();
+//	// Log::often() << fileName << " written!"<< std::endl;
+//}
 
 /// Loads an STL file into a mesh object, from a binary or ASCII stl file.
 ///
@@ -392,10 +356,10 @@ void Meshy::alignToPlate() {
 }
 
 void Meshy::translate(const Vector3 &change) {
+	flushBuffer();
 	vector<Triangle3> oldTriangles(allTriangles.begin(), allTriangles.end());
 
 	allTriangles.clear();
-	sliceTable.clear();
 
 	limits = Limits();
 
@@ -406,8 +370,10 @@ void Meshy::translate(const Vector3 &change) {
 		Vector3 point3 = (*i)[2] + change;
 
 		Triangle3 newTriangle(point1, point2, point3);
-		addTriangle(newTriangle);
+		bufferTriangle(newTriangle);
 	}
+	
+	flushBuffer();
 }
 
 }

@@ -18,8 +18,9 @@
 #include "shrinky.h"
 #include "log.h"
 
+namespace mgl{
+
 using namespace std;
-using namespace mgl;
 using namespace libthing;
 
 
@@ -934,7 +935,7 @@ void createShells( const SegmentVector & outlinesSegments,
 
 //// creates shells from the segments table
 ////
-void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
+void createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
 		const std::vector<Scalar> &insetDistances,
 		unsigned int sliceId,
 		const char *scadFile,
@@ -1023,3 +1024,6 @@ void mgl::createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegment
 		}
 	}
 }
+
+}
+

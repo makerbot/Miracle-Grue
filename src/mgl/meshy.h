@@ -83,33 +83,26 @@ public:
 class Meshy {
 	mgl::Limits limits; /// Bounding box for the model
 	std::vector<libthing::Triangle3> allTriangles; /// every triangle in the model.
-	/// for each slice, a list of indicies, each index is a lookup into vector
-	// allTriangles
-	SliceTable sliceTable;
 	
 	std::list<libthing::Triangle3> bufferedTriangles; /// list of triangles that
 	/// have been parsed from the file, but not yet analyzed and placed into
 	/// allTriangles
 	//bufferTriangles
 
-	// Ze tape measure, for Z
-	LayerMeasure zTapeMeasure;
-
 public:
 
 
 	/// requires firstLayerSlice height, and general layer height
-	Meshy(Scalar firstSliceZ, Scalar layerH);
+	Meshy();
 	const std::vector<libthing::Triangle3>& readAllTriangles() const;
 	const Limits& readLimits() const;
-	const LayerMeasure& readLayerMeasure() const;
-	const SliceTable &readSliceTable() const;
 
 	//
 	// Adds a triangle to the global array and for each slice of interest
 	//
-	void bufferTriangle(libthing::Triangle3& t);
+	void bufferTriangle(libthing::Triangle3 t);
 	void addTriangle(libthing::Triangle3 &t);
+	void updateSlicesTriangle(size_t newTriangleId);
 
 
 	void dump(std::ostream &out);
@@ -118,7 +111,7 @@ public:
 
 	size_t triangleCount();
 	void writeStlFile(const char* fileName) const;
-	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const;
+//	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const;
 
 	size_t readStlFile(const char* stlFilename);
 	void flushBuffer();
