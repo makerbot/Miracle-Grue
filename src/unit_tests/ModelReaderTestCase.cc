@@ -14,6 +14,7 @@
 #include "ModelReaderTestCase.h"
 
 #include <sys/stat.h>
+#include <bits/basic_string.h>
 
 #include "UnitTestUtils.h"
 
@@ -46,6 +47,9 @@ void ModelReaderTestCase::setUp()
 	outputsDir = string("outputs") + pathsep + string("test_cases") + pathsep + 
 			string("modelReaderTestCase") + pathsep;
 	inputsDir = string("test_cases") + pathsep + "modelReaderTestCase" + pathsep;
+	
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputsDir.c_str());
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(inputsDir.c_str());
 	
 	mkDebugPath(outputsDir.c_str());
 }

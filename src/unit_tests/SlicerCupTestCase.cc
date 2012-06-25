@@ -73,12 +73,15 @@ void testModel(const char *model, const char* configFile)
 	std::vector< SliceData >  slices;
 	
 	std::ofstream gcodeFileStream(gcodeFile.c_str());
-	
-	miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(), NULL,
-				gcodeFileStream, -1, -1,
-				tomograph,
-				skeleton,
-				slices);
+	try{
+		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(), NULL,
+					gcodeFileStream, -1, -1,
+					tomograph,
+					skeleton,
+					slices);
+	} catch (mgl::Exception mgle) {
+		CPPUNIT_FAIL(mgle.error);
+	}
 	
 	gcodeFileStream.close();
 }

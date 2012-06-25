@@ -1,7 +1,7 @@
 #Debug flag
 DBG_FLAG = --debug_build
 #Build unit tests
-TST_FLAG = --unit_tests
+TST_FLAG = --unit_tests=build
 #Build GUI app
 GUI_FLAG = --gui
 #Clean flag
