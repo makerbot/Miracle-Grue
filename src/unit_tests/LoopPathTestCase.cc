@@ -43,16 +43,25 @@ void LoopPathTestCase::testOpenPathBasic() {
 	LineSegment2 seg = path.segmentAfterPoint(i);
 	CPPUNIT_ASSERT_EQUAL(seg.length(), 1.0);
 
-	OpenPath::iterator ep = path.getEntryPoints();
-	Vector2 first_ep = *ep;
+	OpenPath::iterator entry = path.getEntryPoints();
+	Vector2 first_entry = *entry;
 	Vector2 start = *(path.fromStart());
-	CPPUNIT_ASSERT_EQUAL(first_ep.x, start.x);
-	CPPUNIT_ASSERT_EQUAL(first_ep.y, start.y);
+	CPPUNIT_ASSERT_EQUAL(first_entry.x, start.x);
+	CPPUNIT_ASSERT_EQUAL(first_entry.y, start.y);
 	
-	Vector2 second_ep = *ep;
+	++entry;
+	Vector2 second_entry = *entry;
 	Vector2 end = *(path.fromEnd());
-	CPPUNIT_ASSERT_EQUAL(second_ep.x, end.x);
-	CPPUNIT_ASSERT_EQUAL(second_ep.y, end.y);
+	CPPUNIT_ASSERT_EQUAL(second_entry.x, end.x);
+	CPPUNIT_ASSERT_EQUAL(second_entry.y, end.y);
+
+	Vector2 first_exit = path.getExitPoint(first_entry);
+	CPPUNIT_ASSERT_EQUAL(first_exit.x, second_entry.x);
+	CPPUNIT_ASSERT_EQUAL(first_exit.y, second_entry.y);
+
+	Vector2 second_exit = path.getExitPoint(second_entry);
+	CPPUNIT_ASSERT_EQUAL(second_exit.x, first_entry.x);
+	CPPUNIT_ASSERT_EQUAL(second_exit.y, second_entry.y);
 }
 
 void LoopPathTestCase::testLoopBasic() {

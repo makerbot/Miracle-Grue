@@ -119,10 +119,22 @@ public:
 	 *  /return iterator for all the valid staring points
 	 */
 	iterator getEntryPoints() {
-		endpoints[0] = points[0];
-		endpoints[1] = points.back();
+		setEndPoints();
 		return iterator(endpoints.begin());
 	};
+
+	libthing::Vector2& getExitPoint(libthing::Vector2 entry) {
+		setEndPoints();
+		if (endpoints[0] == entry) {
+			return endpoints[1];
+		}
+		else if (endpoints[1] == entry) {
+			return endpoints[0];
+		}
+		else {
+			throw Exception("Not a valid entry point");
+		}
+	}
 
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
@@ -134,11 +146,16 @@ public:
 private:
 	bool isEnd(iterator i) {
 		return i == end();
-	}
+	};
 
 	bool isEnd(reverse_iterator i) {
 		return i == rend();
-	}
+	};
+
+	void setEndPoints() {
+		endpoints[0] = points.front();
+		endpoints[1] = points.back();
+	}		
 
 	PointList points;
 	PointList endpoints;
