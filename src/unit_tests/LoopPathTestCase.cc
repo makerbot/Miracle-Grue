@@ -39,8 +39,8 @@ void LoopPathTestCase::testOpenPathBasic() {
 	CPPUNIT_ASSERT_EQUAL(first.x, 1.0);
 	CPPUNIT_ASSERT_EQUAL(first.y, 0.0);
 
-	LineSegment2 seg = path.segmentAfterPoint(i);
-	CPPUNIT_ASSERT_EQUAL(seg.length(), 1.0);
+	//LineSegment2 seg = path.segmentAfterPoint(i);
+	//CPPUNIT_ASSERT_EQUAL(seg.length(), 1.0);
 }
 
 void LoopPathTestCase::testLoopBasic() {
