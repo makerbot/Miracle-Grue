@@ -15,7 +15,7 @@ nbproject
 *.pyc
 
 #ignore build system files
-Makefile
+Makefile.*
 /miracle_gui.pro.user
 /.sconsign.dblite
 /moc_*.cpp
