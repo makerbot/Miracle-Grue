@@ -5,6 +5,7 @@
 
 
 #include <cppunit/config/SourcePrefix.h>
+#include <cppunit/TestAssert.h>
 
 #include "UnitTestUtils.h"
 #include "SlicerTestCase.h"
@@ -538,15 +539,18 @@ void SlicerTestCase::testInset2()
 	Scalar insetDist = 1;
 	unsigned int shells = 6;
 	//Scalar cuttOffLength = 1.0;
-
-	for (unsigned int i=0; i < shells; i++)
-	{
-		cout << "\n" << insetTable.size() << " ----- "<< endl;
-		//dumpSegments(segments);
-		insetTable.push_back(std::vector<LineSegment2 >());
-		std::vector<LineSegment2> &finalInsets = insetTable.back() ;
-		shrinky.inset(segments, insetDist,  finalInsets);
-	    segments = finalInsets;
+	try{
+		for (unsigned int i=0; i < shells; i++)
+		{
+			cout << "\n" << insetTable.size() << " ----- "<< endl;
+			//dumpSegments(segments);
+			insetTable.push_back(std::vector<LineSegment2 >());
+			std::vector<LineSegment2> &finalInsets = insetTable.back() ;
+			shrinky.inset(segments, insetDist,  finalInsets);
+			segments = finalInsets;
+		}
+	} catch (mgl::Exception mgle) {
+		CPPUNIT_FAIL(mgle.error);
 	}
 
 }

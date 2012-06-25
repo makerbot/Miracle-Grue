@@ -23,6 +23,7 @@ string testCaseInputsDir("test_cases/mglCoreTestCase/inputs/");
 
 CPPUNIT_TEST_SUITE_REGISTRATION( MglCoreTestCase );
 #include <float.h>
+#include <bits/basic_string.h>
 
 string outputDir("outputs/test_cases/mglCoreTestCase/");
 
@@ -30,6 +31,10 @@ void MglCoreTestCase::setUp()
 {
 	std::cout<< " Starting:" <<__FUNCTION__ << endl;
 	MyComputer computer;
+	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
+	outputDir = string("outputs") + pathsep + string("test_cases ") + 
+			pathsep + string("mglCoreTestCase") + pathsep;
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
 	mkDebugPath(outputDir.c_str());
 }
 
@@ -78,18 +83,28 @@ void  MglCoreTestCase::testScalarMaths(){
 void  MglCoreTestCase::testVector2Basics()
 {
 	Vector2 foo;
+	cout << "Does default constructor initialize to 0?" << endl;
 	CPPUNIT_ASSERT( foo.x == 0);
 	CPPUNIT_ASSERT( foo.y == 0);
-
+	cout << "Yes!" << endl;
+	
 	Vector2 bar(10,100);
+	cout << "Does the constructor set the values correctly?" << endl;
 	CPPUNIT_ASSERT( bar[0] == 10);
 	CPPUNIT_ASSERT( bar[1] == 100);
+	cout << "Yes!" << endl;
+	cout << "Does the bracket operator fail correctly?" << endl;
 	CPPUNIT_ASSERT_THROW(bar[2], Exception);
+	cout << "Yes!" << endl;
 
 	bar[0] = 20; bar[1] = 200;
+	cout << "Does the bracket operator allow assignment?" << endl;
 	CPPUNIT_ASSERT( bar[0] == 20);
 	CPPUNIT_ASSERT( bar[1] == 200);
+	cout << "Yes!" << endl;
+	cout << "Does the bracket operator assignment fail correctly?" << endl;
 	CPPUNIT_ASSERT_THROW(bar[2] = 2000, Exception);
+	cout << "Yes!" << endl;
 
 }
 
