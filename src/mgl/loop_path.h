@@ -31,7 +31,7 @@ class OpenPath {
 	public:
 		iterator_gen(BASE b) : base(b) {};
 
-		libthing::Vector2& operator*() { return *base; };
+		PointType& operator*() { return *base; };
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
@@ -100,7 +100,7 @@ public:
 	/*! Add a single point to the end of a path. This copies the point
 	 *  /param point value to be appended
 	 */
-	void appendPoint(const libthing::Vector2 &point) {
+	void appendPoint(const PointType &point) {
 		points.push_back(point);
 	};
 
@@ -117,7 +117,7 @@ public:
 	/*! Add a single point to the beginning of a path. This copies the point
 	 *  /param point value to be appended
 	 */
-	void prependPoint(const libthing::Vector2 &point) {
+	void prependPoint(const PointType &point) {
 		points.insert(points.begin(), point);
 	}
 
@@ -149,7 +149,7 @@ public:
 		return iterator(endpoints.begin());
 	};
 
-	libthing::Vector2& getExitPoint(libthing::Vector2 entry) {
+	PointType& getExitPoint(PointType entry) {
 		setEndPoints();
 		if (endpoints[0] == entry) {
 			return endpoints[1];
@@ -241,7 +241,7 @@ public:
 	typedef iterator_gen<PointList::reverse_iterator> ccw_iterator;
 
 	Loop() { };
-	Loop(const libthing::Vector2 &first) { points.push_back(first); };
+	Loop(const PointType &first) { points.push_back(first); };
 
 	/*! Insert a point into the loop at a specific location.
 	 *  The iterator passed to after is not guaranteed valid when this operation
@@ -251,14 +251,14 @@ public:
 	 *  /return iterator for the location of the new point
 	 */
 	template <typename ITER>
-	cw_iterator insertPoint(const libthing::Vector2 &point, ITER after);
+	cw_iterator insertPoint(const PointType &point, ITER after);
 
 	/*! Get an iterator that traverses around the loop clockwise.  There is no
 	 *  end, the iterator will continue around the loop indefinitely.
 	 *  /param startpoint Point value to start on
 	 *  /return clockwise iterator from the start point
 	 */
-	cw_iterator clockwise(const libthing::Vector2 &startpoint) {
+	cw_iterator clockwise(const PointType &startpoint) {
 		for (PointList::iterator i = points.begin();
 			 i != points.end(); i++) {
 			if (*i == startpoint)
@@ -279,7 +279,7 @@ public:
 	 *  /param startpoint Point value to start on
 	 *  /return counter clockwise iterator from the start point
 	 */
-	ccw_iterator counterClockwise(const libthing::Vector2 &startpoint);
+	ccw_iterator counterClockwise(const PointType &startpoint);
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
 	 *  arbitrary start point. There is no end, the iterator will continue
@@ -304,7 +304,7 @@ public:
 	 *  /return The normal vector at this location
 	 */
 	template <typename ITER>
-	libthing::Vector2 normalAfterPoint(const ITER &location);
+	PointType normalAfterPoint(const ITER &location);
 
 	/*! Find points you can start extrusion on for this path.  For a
 	 *  Loop, this gives you every point in the loop.
@@ -338,7 +338,7 @@ class LoopPath {
 	public:
 		iterator_gen(BASE i, LoopPath &p) : base(i), parent(p) {};
 
-		libthing::Vector2& operator*() { return *base; }
+		PointType& operator*() { return *base; }
 
 		iterator_gen<BASE> operator++() {
 			base++;
