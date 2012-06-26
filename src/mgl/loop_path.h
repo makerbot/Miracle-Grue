@@ -250,7 +250,8 @@ public:
 	public:
 		
 		typedef iterator_gen<PointNormalList::iterator> myIteratorType;
-		
+		PointNormal(const PointType& point) : point(point), normalDirty(true), 
+				myIteratorPointer(NULL) {}
 		PointNormal() : normalDirty(true), myIteratorPointer(NULL) {}
 		PointNormal(const PointNormal& orig) : point(orig.point), 
 				normalDirty(orig.normalDirty), normal(orig.normal),
@@ -335,11 +336,11 @@ public:
 		myIteratorType* myIteratorPointer;
 	};
 	
-	typedef iterator_gen<PointList::iterator> cw_iterator;
-	typedef iterator_gen<PointList::reverse_iterator> ccw_iterator;
+	typedef iterator_gen<PointNormalList::iterator> cw_iterator;
+	typedef iterator_gen<PointNormalList::reverse_iterator> ccw_iterator;
 
 	Loop() { }
-	Loop(const PointType &first) { points.push_back(first); }
+	Loop(const PointType &first) { pointNormals.push_back(first); }
 	/*! Insert a point into the loop at a specific location.
 	 *  The iterator passed to after is not guaranteed valid when this operation
 	 *  is done
@@ -348,7 +349,9 @@ public:
 	 *  /return iterator for the location of the new point
 	 */
 	template <typename ITER>
-	cw_iterator insertPoint(const PointType &point, ITER after);
+	cw_iterator insertPoint(const PointType &point, ITER after){
+		
+	}
 
 	/*! Get an iterator that traverses around the loop clockwise.  There is no
 	 *  end, the iterator will continue around the loop indefinitely.
@@ -356,10 +359,11 @@ public:
 	 *  /return clockwise iterator from the start point
 	 */
 	cw_iterator clockwise(const PointType &startpoint) {
-		for (PointList::iterator i = points.begin();
-			 i != points.end(); i++) {
-			if (*i == startpoint)
-				return cw_iterator(i, i, points.end());
+		for (PointNormalList::iterator i = pointNormals.begin();
+			 i != pointNormals.end(); i++) {
+			if (static_cast<PointType>(*i) == startpoint)
+				return cw_iterator(i, pointNormals.begin(), 
+						pointNormals.end());
 		}
 	}
 	/*! Get an iterator that traverses around the loop clockwise from an
@@ -367,7 +371,7 @@ public:
 	 *  around the loop indefinitely.
 	 *  /return clockwise iterator from the start point
 	 */
-	cw_iterator clockwise() { return clockwise(points.front()); };
+	cw_iterator clockwise() { return clockwise(pointNormals.front()); };
 
 	/*! Get an iterator that traverses around the loop counter clockwise.
 	 *  There is no end, the iterator will continue around the loop
@@ -375,7 +379,14 @@ public:
 	 *  /param startpoint Point value to start on
 	 *  /return counter clockwise iterator from the start point
 	 */
-	ccw_iterator counterClockwise(const PointType &startpoint);
+	ccw_iterator counterClockwise(const PointType &startpoint) {
+		for (PointNormalList::reverse_iterator i = pointNormals.rbegin();
+			 i != pointNormals.rend(); i++) {
+			if (static_cast<PointType>(*i) == startpoint)
+				return ccw_iterator(i, pointNormals.rbegin(), 
+						pointNormals.rend());
+		}
+	}
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
 	 *  arbitrary start point. There is no end, the iterator will continue
@@ -383,7 +394,7 @@ public:
 	 *  /return counter clockwise iterator from the start point
 	 */
 	ccw_iterator counterClockwise() {
-		return counterClockwise(points.front());
+		return counterClockwise(pointNormals.front());
 	};
 
 	/*! Retrieve the LineSegment2 in the path that starts with a provided point.
@@ -407,7 +418,8 @@ public:
 	 *  /return iterator for all the valid staring points
 	 */
 	cw_iterator getEntryPoints() {
-		return cw_iterator(points.begin(), points.begin(), points.end());
+		return cw_iterator(pointNormals.begin(), 
+				pointNormals.begin(), pointNormals.end());
 	};
 
 	/*! Find points that are suspended by material underneath.
@@ -415,7 +427,9 @@ public:
 	 *  /return An iterator to retrieve all suspended points, currently
 	            retrieves all points
 	 */
-	cw_iterator getSuspendedPoints() { return clockwise(points.front()); };
+	cw_iterator getSuspendedPoints() { 
+		return clockwise(pointNormals.front()); 
+	};
 
 	friend class LoopPath;
 private:
@@ -436,14 +450,33 @@ class LoopPath {
 		iterator_gen(BASE i, LoopPath &p) : base(i), parent(p) {};
 
 		PointType& operator*() { return *base; }
-
-		iterator_gen<BASE> operator++() {
-			base++;
+		PointType* operator->() { return &*base; }
+		// ++iterator
+		iterator_gen<BASE>& operator++() {
+			++base;
 			if (base == parent.start()) {
 				base = parent.end();
 			}
-
 			return *this;
+		}
+		// iterator++
+		iterator_gen<BASE> operator++(int) {
+			iterator_gen<BASE> iter_copy = *this;
+			return ++iter_copy;
+		}
+		// --iterator
+		iterator_gen<BASE>& operator--() {
+			if(base == parent.start){
+				base = end;
+			} else {
+				--base;
+			}
+			return *this;
+		}
+		// iterator--
+		iterator_gen<BASE> operator--(int) {
+			iterator_gen<BASE> iter_copy = *this;
+			return --iter_copy;
 		}
 	private:
 		BASE base;
@@ -463,16 +496,16 @@ public:
 
 	/*! Iterator after the end of the list. */
 	iterator end() {
-		return iterator(Loop::cw_iterator(parent.points.end(),
-										  parent.points.end(),
-										  parent.points.end()),
+		return iterator(Loop::cw_iterator(parent.pointNormals.end(),
+										  parent.pointNormals.end(),
+										  parent.pointNormals.end()),
 						*this); };
 
 	/*! Reverse iterator after the end of the list. */
 	reverse_iterator rend() {
-		return reverse_iterator(Loop::ccw_iterator(parent.points.rend(),
-												   parent.points.rend(),
-												   parent.points.rend()),
+		return reverse_iterator(Loop::ccw_iterator(parent.pointNormals.rend(),
+												   parent.pointNormals.rend(),
+												   parent.pointNormals.rend()),
 								*this); };
 
 	/*! Get an iterator from the start point
