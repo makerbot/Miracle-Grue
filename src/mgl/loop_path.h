@@ -181,8 +181,11 @@ class Loop {
 			}
 			
 			return *this;
-		}
+		};
 
+		bool operator==(iterator_gen<BASE> other) {
+			return base == other.base;
+		};
 	private:
 		BASE base;
 		BASE begin;
@@ -197,7 +200,9 @@ public:
 	Loop(const libthing::Vector2 &first) { points.push_back(first); };
 	Loop(const Loop &orig); 
 
-	/*! Insert a point into the loop at a specific location
+	/*! Insert a point into the loop at a specific location.
+	 *  The iterator passed to after is not guaranteed valid when this operation
+	 *  is done
 	 *  /param point value to be inserted
 	 *  /param iterator location for this to be inserted after
 	 *  /return iterator for the location of the new point
@@ -210,7 +215,13 @@ public:
 	 *  /param startpoint Point value to start on
 	 *  /return clockwise iterator from the start point
 	 */
-	cw_iterator clockwise(const libthing::Vector2 &startpoint);
+	cw_iterator clockwise(const libthing::Vector2 &startpoint) {
+		for (PointList::iterator i = points.begin();
+			 i != points.end(); i++) {
+			if (*i == startpoint)
+				return cw_iterator(i, i, points.end());
+		}
+	}
 
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
