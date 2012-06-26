@@ -29,10 +29,12 @@ class OpenPath {
 	template <typename BASE>
 	class iterator_gen {
 	public:
+		typedef BASE iterator;
 		iterator_gen(BASE b) : base(b) {};
 
 		PointType& operator*() { return *base; }
 		PointType* operator->() { return &*base; }
+		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
@@ -203,10 +205,12 @@ private:
 	template <typename BASE>
 	class iterator_gen {
 	public:
+		typedef BASE iterator;
 		iterator_gen(BASE i, BASE b, BASE e) : base(i), begin(b), end(e) {};
 		
 		PointNormal& operator*() { return *base; }
 		PointNormal* operator->() { return &*base; }
+		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
@@ -350,7 +354,9 @@ public:
 	 */
 	template <typename ITER>
 	cw_iterator insertPoint(const PointType &point, ITER after){
-		
+		typename ITER::iterator afterbase = &after;
+		afterbase = pointNormals.insert(afterbase, point);
+		return cw_iterator(afterbase, pointNormals.begin(), pointNormals.end());
 	}
 
 	/*! Get an iterator that traverses around the loop clockwise.  There is no
@@ -433,6 +439,16 @@ public:
 
 	friend class LoopPath;
 private:
+	
+	void refreshIteratorRefs(){
+		for(PointNormalList::iterator it = pointNormals.begin(); 
+				it != pointNormals.end(); 
+				++it){
+			it->setIterator(PointNormal::myIteratorType(it, 
+					pointNormals.begin(), 
+					pointNormals.end()));
+		}
+	}
 
 	PointList points;
 	VectorList normals;
@@ -447,10 +463,12 @@ class LoopPath {
 	template <typename BASE>
 	class iterator_gen {
 	public:
+		typedef BASE iterator;
 		iterator_gen(BASE i, LoopPath &p) : base(i), parent(p) {};
 
 		PointType& operator*() { return *base; }
 		PointType* operator->() { return &*base; }
+		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
