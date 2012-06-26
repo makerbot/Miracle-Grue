@@ -82,6 +82,7 @@ class OpenPath {
 public:
 	typedef iterator_gen<PointList::iterator> iterator;
 	typedef iterator_gen<PointList::reverse_iterator> reverse_iterator;
+	typedef iterator entry_iterator;
 
 	OpenPath() : endpoints(2) {};
 	/*! Get an iterator from the first point of the path */
@@ -149,7 +150,7 @@ public:
 	 *  OpenPath, this gives you the endpoints.
 	 *  /return iterator for all the valid staring points
 	 */
-	iterator getEntryPoints() {
+	entry_iterator getEntryPoints() {
 		setEndPoints();
 		return iterator(endpoints.begin());
 	}
@@ -342,6 +343,7 @@ public:
 	
 	typedef iterator_gen<PointNormalList::iterator> cw_iterator;
 	typedef iterator_gen<PointNormalList::reverse_iterator> ccw_iterator;
+	typedef cw_iterator entry_iterator;
 
 	Loop() { }
 	Loop(const PointType &first) { pointNormals.push_back(first); }
