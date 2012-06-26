@@ -242,7 +242,6 @@ public:
 
 	Loop() { };
 	Loop(const PointType &first) { points.push_back(first); };
-
 	/*! Insert a point into the loop at a specific location.
 	 *  The iterator passed to after is not guaranteed valid when this operation
 	 *  is done
@@ -265,7 +264,6 @@ public:
 				return cw_iterator(i, i, points.end());
 		}
 	}
-
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
 	 *  around the loop indefinitely.

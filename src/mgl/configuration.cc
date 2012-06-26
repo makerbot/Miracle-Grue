@@ -214,9 +214,6 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 
 	gcoderCfg.platform.temperature = doubleCheck(conf.root["platform"]["temperature"], "platform.temperature");
 	gcoderCfg.platform.automated   = boolCheck(conf.root["platform"]["automated"], "platform.automated");
-	gcoderCfg.platform.waitingPositionX = doubleCheck(conf.root["platform"]["waitingPositionX"], "platform.waitingPositionX");
-	gcoderCfg.platform.waitingPositionY = doubleCheck(conf.root["platform"]["waitingPositionY"], "platform.waitingPositionY");
-	gcoderCfg.platform.waitingPositionZ = doubleCheck(conf.root["platform"]["waitingPositionZ"], "platform.waitingPositionZ");
 
 	gcoderCfg.outline.enabled  = boolCheck(conf.root["outline"]["enabled"], "outline.enabled");
 	gcoderCfg.outline.distance = doubleCheck(conf.root["outline"]["distance"], "outline.distance");
@@ -304,5 +301,5 @@ void mgl::loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &s
 	slicerCfg.roofLayerCount = doubleCheck(config["slicer"]["roofLayerCount"],  "slicer.roofLayerCount");
 	slicerCfg.floorLayerCount = doubleCheck(config["slicer"]["roofLayerCount"],  "slicer.floorLayerCount");
 
-	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles");
+	slicerCfg.writeDebugScadFiles = boolCheck(config["slicer"]["writeDebugScadFiles"], "slicer.writeDebugScadFiles", false);
 }

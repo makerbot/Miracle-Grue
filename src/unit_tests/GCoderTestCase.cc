@@ -58,9 +58,9 @@ void configurePlatform(Configuration& config, bool automaticBuildPlatform, doubl
 	config["scalingFactor"] = 1.0;
 	config["platform"]["temperature"] = platformTemp;
 	config["platform"]["automated"] = automaticBuildPlatform;
-	config["platform"]["waitingPositionX"] = 52.0;
-	config["platform"]["waitingPositionY"] = -57.0;
-	config["platform"]["waitingPositionZ"] = 10.0;
+//	config["platform"]["waitingPositionX"] = 52.0;
+//	config["platform"]["waitingPositionY"] = -57.0;
+//	config["platform"]["waitingPositionZ"] = 10.0;
 	std::cout<< "Exiting:" <<__FUNCTION__ << endl;
 
 }

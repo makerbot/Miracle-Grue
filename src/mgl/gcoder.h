@@ -30,18 +30,15 @@ class GcoderException : public Exception {	public: GcoderException(const char *m
 class Platform{
 public:
 	Platform() : temperature(100),
-			automated(false),
-			waitingPositionX(50),
-			waitingPositionY(-50),
-			waitingPositionZ(0)	{}
+			automated(false){}
 	
 	Scalar temperature;				// temperature of the platform during builds
 	bool automated;
 
 	// the wiper(s) are affixed to the platform
-    Scalar waitingPositionX;
-    Scalar waitingPositionY;
-    Scalar waitingPositionZ;
+//    Scalar waitingPositionX;
+//    Scalar waitingPositionY;
+//    Scalar waitingPositionZ;
 };
 
 /// Properties of an extrusion profile
@@ -233,12 +230,12 @@ public:
 private:
 
     void writeGCodeConfig(std::ostream & ss, const char* filename) const;
-    void writeMachineInitialization(std::ostream & ss) const;
-    void writePlatformInitialization(std::ostream & ss) const;
-    void writeExtrudersInitialization(std::ostream & ss) const;
-    void writeHomingSequence(std::ostream & ss);
-    void writeWarmupSequence(std::ostream & ss);
-    void writeAnchor(std::ostream & ss);
+//    void writeMachineInitialization(std::ostream & ss) const;
+//    void writePlatformInitialization(std::ostream & ss) const;
+//    void writeExtrudersInitialization(std::ostream & ss) const;
+//    void writeHomingSequence(std::ostream & ss);
+//    void writeWarmupSequence(std::ostream & ss);
+//    void writeAnchor(std::ostream & ss);
     void writePolygons(std::ostream& ss,
 			Scalar z,
 			const Extruder &extruder,
