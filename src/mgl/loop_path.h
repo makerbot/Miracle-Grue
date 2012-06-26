@@ -31,16 +31,18 @@ class OpenPath {
 	public:
 		iterator_gen(BASE b) : base(b) {};
 
-		PointType& operator*() { return *base; };
+		PointType& operator*() { return *base; }
+		PointType* operator->() { return &*base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
 			return *this;
-		};
+		}
 		// iterator++
 		iterator_gen<BASE> operator++(int) {
 			iterator_gen<BASE> iter_copy = *this;
-			return ++iter_copy;
+			++*this;
+			return iter_copy;
 		}
 		iterator_gen<BASE>& operator+=(int off) {
 			base += off;
@@ -54,15 +56,16 @@ class OpenPath {
 		iterator_gen<BASE>& operator--() {
 			--base;
 			return *this;
-		};
+		}
 		// iterator--
 		iterator_gen<BASE> operator--(int) {
 			iterator_gen<BASE> iter_copy = *this;
-			return --iter_copy;
+			--*this;
+			return iter_copy;
 		}
 		iterator_gen<BASE>& operator-=(int off) {
 			return base += (-off);
-		};
+		}
 		iterator_gen<BASE> operator-(int off) {
 			return *this + (-off);
 		}
@@ -102,7 +105,7 @@ public:
 	 */
 	void appendPoint(const PointType &point) {
 		points.push_back(point);
-	};
+	}
 
 	/*! Add points to the beginning of a path. This makes coppies of the points.
 	 *  /param first iterator to the first point to append
@@ -147,7 +150,7 @@ public:
 	iterator getEntryPoints() {
 		setEndPoints();
 		return iterator(endpoints.begin());
-	};
+	}
 
 	PointType& getExitPoint(PointType entry) {
 		setEndPoints();
@@ -172,11 +175,11 @@ public:
 private:
 	bool isEnd(iterator i) {
 		return i == end();
-	};
+	}
 
 	bool isEnd(reverse_iterator i) {
 		return i == rend();
-	};
+	}
 
 	void setEndPoints() {
 		endpoints[0] = points.front();
@@ -193,12 +196,17 @@ private:
  *  an interior.
  */
 class Loop {
+public:
+	class PointNormal;
+	typedef std::vector<PointNormal> PointNormalList;
+private:
 	template <typename BASE>
 	class iterator_gen {
 	public:
 		iterator_gen(BASE i, BASE b, BASE e) : base(i), begin(b), end(e) {};
 		
-		BASE::value_type &operator*() { return *base; }
+		PointNormal& operator*() { return *base; }
+		PointNormal* operator->() { return &*base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
@@ -237,11 +245,101 @@ class Loop {
 	};
 
 public:
+	
+	class PointNormal{
+	public:
+		
+		typedef iterator_gen<PointNormalList::iterator> myIteratorType;
+		
+		PointNormal() : normalDirty(true), myIteratorPointer(NULL) {}
+		PointNormal(const PointNormal& orig) : point(orig.point), 
+				normalDirty(orig.normalDirty), normal(orig.normal),
+				myIteratorPointer(NULL) {
+			if(orig.myIteratorPointer)
+				myIteratorPointer = new 
+						myIteratorType(*orig.myIteratorPointer);
+		}
+		PointNormal& operator=(const PointNormal& orig) {
+			if(&orig == this)
+				return *this;
+			point = orig.point;
+			normalDirty = orig.normalDirty;
+			normal = orig.normal;
+			delete myIteratorPointer;
+			if(orig.myIteratorPointer)
+				myIteratorPointer = new 
+						myIteratorType(*orig.myIteratorPointer);
+		}
+		~PointNormal() {
+			delete myIteratorPointer;
+		}
+		operator PointType() const { return point; }
+		const PointType& getPoint() const { return point; }
+		const PointType& getNormal() const { 
+			if(normalDirty)
+				recalculateNormal();
+			return normal;
+		}
+		void setPoint(const PointType& npoint) {
+			point = npoint;
+			normalDirty = true;
+			if(myIteratorPointer){
+				myIteratorType Bi = *myIteratorPointer;
+				myIteratorType Ai = Bi;
+				myIteratorType Ci = Bi;
+				--Ai;	//point to previous
+				++Ci;	//point to next
+				Ai->normalDirty = true;
+				Ci->normalDirty = true;
+			}
+		}
+		void setIterator(const myIteratorType& iter) {
+			if(myIteratorPointer)
+				*myIteratorPointer = iter;
+			else
+				myIteratorPointer = new myIteratorType(iter);
+		}
+		
+	private:
+		void recalculateNormal() const{
+			normalDirty = false;
+			/* A------B------C
+			 * Assume we are point B. Normal is (B-A).rotate(90 degrees cw)
+			 * normalized average with (C-B).rotate(90 degrees cw) normalized
+			 * Then normalize the average
+			 */
+			if(myIteratorPointer){
+				myIteratorType Bi = *myIteratorPointer;
+				myIteratorType Ai = Bi;
+				myIteratorType Ci = Bi;
+				--Ai;	//point to previous
+				++Ci;	//point to next
+				recalculateNormal(*Ai, *Bi);
+			} else {
+				normal = PointType();
+			}
+		}
+		void recalculateNormal(const PointNormal& A, const PointNormal& C) const {
+			// A------B------C
+			// this is B
+			PointType ba = point-A;
+			PointType cb = static_cast<PointType>(C)-point;
+			ba = ba.rotate2d(M_PI_2).unit();
+			cb = cb.rotate2d(M_PI_2).unit();
+			normal = (ba+cb).unit();
+		}
+		PointType point;
+		//true when need to recalculate normal
+		mutable bool normalDirty;
+		mutable PointType normal;
+		myIteratorType* myIteratorPointer;
+	};
+	
 	typedef iterator_gen<PointList::iterator> cw_iterator;
 	typedef iterator_gen<PointList::reverse_iterator> ccw_iterator;
 
-	Loop() { };
-	Loop(const PointType &first) { points.push_back(first); };
+	Loop() { }
+	Loop(const PointType &first) { points.push_back(first); }
 	/*! Insert a point into the loop at a specific location.
 	 *  The iterator passed to after is not guaranteed valid when this operation
 	 *  is done
@@ -324,6 +422,7 @@ private:
 
 	PointList points;
 	VectorList normals;
+	PointNormalList pointNormals;
 };
 
 /*! /brief Adapter to make a Loop look like an OpenPath
