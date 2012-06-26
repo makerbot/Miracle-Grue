@@ -26,20 +26,46 @@ class OpenPath {
 	/*!
 	 * /brief A shallow wrapper around underlying container iterators
 	 */
-	template <class BASE>
+	template <typename BASE>
 	class iterator_gen {
 	public:
 		iterator_gen(BASE b) : base(b) {};
 
 		libthing::Vector2& operator*() { return *base; };
-		iterator_gen<BASE> operator++() {
-			base++;
+		// ++iterator
+		iterator_gen<BASE>& operator++() {
+			++base;
 			return *this;
 		};
-   		iterator_gen<BASE>& operator+(int off) {
-			base = base + off;
+		// iterator++
+		iterator_gen<BASE> operator++(int) {
+			iterator_gen<BASE> iter_copy = *this;
+			return ++iter_copy;
+		}
+		iterator_gen<BASE>& operator+=(int off) {
+			base += off;
 			return *this;
 		};
+		iterator_gen<BASE> operator+(int off) {
+			iterator_gen<BASE> iter_copy = *this;
+			return iter_copy+=off;
+		}
+		// --iterator
+		iterator_gen<BASE>& operator--() {
+			--base;
+			return *this;
+		};
+		// iterator--
+		iterator_gen<BASE> operator--(int) {
+			iterator_gen<BASE> iter_copy = *this;
+			return --iter_copy;
+		}
+		iterator_gen<BASE>& operator-=(int off) {
+			return base += (-off);
+		};
+		iterator_gen<BASE> operator-(int off) {
+			return *this + (-off);
+		}
 		bool operator==(iterator_gen<BASE> other) {
 			return base == other.base;
 		}
@@ -65,7 +91,7 @@ public:
 	 *  /param first iterator to the first point to append
 	 *  /param end stop iterating here
 	 */
-	template <class ITER>
+	template <typename ITER>
 	void appendPoints(ITER first, ITER end) {
 		for (; first != end; ++first)
 			appendPoint(*first);
@@ -82,7 +108,7 @@ public:
 	 *  /param first iterator to the first point to append
 	 *  /param end stop iterating here
 	 */
-	template <class ITER>
+	template <typename ITER>
 	void prependPoints(ITER first, ITER end) {
 		for (; first != end; ++first) 
 			prependPoint(*first);
@@ -101,7 +127,7 @@ public:
 	 *  /return The line segment starting with the point at location, or a zero
 	 *          length segment if this is the last point in the path
 	 */
-	template <class ITER>
+	template <typename ITER>
 	libthing::LineSegment2 segmentAfterPoint(ITER &beginning) {
 		ITER endpoint = beginning;
 		++endpoint;
@@ -167,22 +193,40 @@ private:
  *  an interior.
  */
 class Loop {
-	template <class BASE>
+	template <typename BASE>
 	class iterator_gen {
 	public:
 		iterator_gen(BASE i, BASE b, BASE e) : base(i), begin(b), end(e) {};
 		
-		libthing::Vector2 &operator*() { return *base; };
-			
-		iterator_gen<BASE> operator++() {
-			base++;
+		BASE::value_type &operator*() { return *base; }
+		// ++iterator
+		iterator_gen<BASE>& operator++() {
+			++base;
 			if (base == end) {
 				base = begin;
 			}
 			
 			return *this;
-		};
-
+		}
+		// iterator++
+		iterator_gen<BASE> operator++(int) {
+			iterator_gen<BASE> iter_copy = *this;
+			return ++iter_copy;
+		}
+		// --iterator
+		iterator_gen<BASE>& operator--() {
+			if(base == begin){
+				base = end;
+			}
+			--base;
+			return *this;
+		}
+		// iterator--
+		iterator_gen<BASE> operator--(int) {
+			iterator_gen<BASE> iter_copy = *this;
+			return --iter_copy;
+		}
+		
 		bool operator==(iterator_gen<BASE> other) {
 			return base == other.base;
 		};
@@ -198,7 +242,6 @@ public:
 
 	Loop() { };
 	Loop(const libthing::Vector2 &first) { points.push_back(first); };
-	Loop(const Loop &orig); 
 
 	/*! Insert a point into the loop at a specific location.
 	 *  The iterator passed to after is not guaranteed valid when this operation
@@ -207,7 +250,7 @@ public:
 	 *  /param iterator location for this to be inserted after
 	 *  /return iterator for the location of the new point
 	 */
-	template <class ITER>
+	template <typename ITER>
 	cw_iterator insertPoint(const libthing::Vector2 &point, ITER after);
 
 	/*! Get an iterator that traverses around the loop clockwise.  There is no
@@ -252,7 +295,7 @@ public:
 	 *  /param location iterator pointing to the first endpoint of the segment
 	 *  /return The line segment starting with the point at location
 	 */
-	template <class ITER>
+	template <typename ITER>
 	libthing::LineSegment2 segmentAfterPoint(const ITER &location);
 
 	/*! Retrieve the normal vector in a loop at a provided point.
@@ -260,7 +303,7 @@ public:
 	 *  /param location iterator pointing to the point before the normal
 	 *  /return The normal vector at this location
 	 */
-	template <class ITER>
+	template <typename ITER>
 	libthing::Vector2 normalAfterPoint(const ITER &location);
 
 	/*! Find points you can start extrusion on for this path.  For a
@@ -290,7 +333,7 @@ private:
  *  operation of OpenPath.  
  */
 class LoopPath {
-	template <class BASE>
+	template <typename BASE>
 	class iterator_gen {
 	public:
 		iterator_gen(BASE i, LoopPath &p) : base(i), parent(p) {};
