@@ -413,7 +413,7 @@ public:
 	
 	typedef iterator_gen<PointNormalList::iterator> cw_iterator;
 	typedef iterator_gen<PointNormalList::reverse_iterator> ccw_iterator;
-	typedef cw_iterator entry_iterator;
+	typedef iterator_entry_gen<PointNormalList::iterator> entry_iterator;
 
 	Loop() { }
 	Loop(const PointType &first) { pointNormals.push_back(first); }
