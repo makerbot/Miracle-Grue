@@ -580,7 +580,7 @@ class LoopPath {
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
-			if (base.isBegin()) {
+			if (parent.isBegin(base)) {
 				base = base.makeEnd();
 			}
 			return *this;
@@ -592,7 +592,7 @@ class LoopPath {
 		}
 		// --iterator
 		iterator_gen<BASE>& operator--() {
-			if(base == parent.start){
+			if(parent.isBegin(base)) {
 				base = end;
 			} else {
 				--base;
@@ -610,6 +610,7 @@ class LoopPath {
 		bool operator!=(const iterator_gen<BASE>& other) {
 			return !((*this)==other);
 		}
+
 	private:
 		iterator base;
 		LoopPath &parent;
@@ -657,6 +658,9 @@ private:
 	Loop &parent;
 	Loop::cw_iterator start;
 	Loop::ccw_iterator rstart;
+
+	bool isBegin(Loop::cw_iterator i) { return i == start; };
+	bool isBegin(Loop::ccw_iterator i) { return i == rstart; };
 };
 
 }
