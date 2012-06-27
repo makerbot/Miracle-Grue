@@ -71,8 +71,11 @@ class OpenPath {
 		iterator_gen<BASE> operator-(int off) {
 			return *this + (-off);
 		}
-		bool operator==(iterator_gen<BASE> other) {
+		bool operator==(const iterator_gen<BASE>& other) {
 			return base == other.base;
+		}
+		bool operator!=(const iterator_gen<BASE>& other) {
+			return !(*this==other);
 		}
 
 	private:
@@ -207,16 +210,26 @@ private:
 	class iterator_gen {
 	public:
 		typedef BASE iterator;
-		iterator_gen(BASE i, BASE b, BASE e) : base(i), begin(b), end(e) {};
+		iterator_gen(iterator i, iterator b, iterator e) : 
+				base(i), begin(b), end(e) {};
+		iterator_gen(const iterator_gen& orig) : 
+				base(orig.base), begin(orig.begin), end(orig.end) {}
+		iterator_gen<BASE>& operator=(const iterator_gen<BASE>& orig) {
+			base = orig.base;
+			begin = orig.begin;
+			end = orig.end;
+		}
 		
 		PointNormal& operator*() { return *base; }
 		PointNormal* operator->() { return &*base; }
 		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
-			++base;
-			if (base == end) {
-				base = begin;
+			if(base != end) {
+				++base;
+				if (base == end) {
+					base = begin;
+				}
 			}
 			
 			return *this;
@@ -228,10 +241,12 @@ private:
 		}
 		// --iterator
 		iterator_gen<BASE>& operator--() {
-			if(base == begin){
-				base = end;
+			if(base != end) {
+				if(base == begin){
+					base = end;
+				}
+				--base;
 			}
-			--base;
 			return *this;
 		}
 		// iterator--
@@ -239,14 +254,63 @@ private:
 			iterator_gen<BASE> iter_copy = *this;
 			return --iter_copy;
 		}
+		iterator_gen<BASE> makeBegin() { 
+			return iterator_gen(begin, begin, end); 
+		}
+		iterator_gen<BASE> makeEnd() { 
+			return iterator_gen(end, begin, end); 
+		}
 		
-		bool operator==(iterator_gen<BASE> other) {
+		bool operator==(const iterator_gen& other) const {
 			return base == other.base;
-		};
-	private:
-		BASE base;
-		BASE begin;
-		BASE end;
+		}
+		bool operator!=(const iterator_gen& other) const {
+			return !(*this == other);
+		}
+		bool isBegin() const { return base == begin; }
+		bool isEnd() const { return base == end; }
+	protected:
+		iterator base;
+		iterator begin;
+		iterator end;
+	};
+	
+	/*! Specialization of iterator_gen for entry points
+	 *
+	 */
+	template <typename BASE>
+	class iterator_entry_gen : public iterator_gen<BASE> {
+		typedef typename iterator_gen<BASE>::iterator iterator;
+	public:
+		iterator_entry_gen(iterator i, iterator b, iterator e) : 
+				iterator_gen<BASE>(i, b, e) {}
+		const PointType& operator*() { 
+			return iterator_gen<BASE>::base->getPoint(); 
+		}
+		const PointType* operator->() { 
+			return &(iterator_gen<BASE>::base->getPoint()); 
+		}
+		// ++iterator	
+		iterator_entry_gen<BASE>& operator++() {
+			++iterator_gen<BASE>::base;
+			return *this;
+		}
+		// iterator++
+		iterator_entry_gen<BASE> operator++(int) {
+			iterator_entry_gen<BASE> iter_copy = *this;
+			++*this;
+			return iter_copy;
+		}
+		// --iterator
+		iterator_entry_gen<BASE>& operator--() {
+			--iterator_gen<BASE>::base;
+			return *this;
+		}
+		iterator_entry_gen<BASE>& operator--(int) {
+			iterator_entry_gen<BASE> iter_copy = *this;
+			--*this;
+			return iter_copy;
+		}
 	};
 
 public:
@@ -315,6 +379,10 @@ public:
 			 * Then normalize the average
 			 */
 			if(myIteratorPointer){
+				/* If we have a valid iterator, use it to find the point
+				 * before and after, then call the computation on those
+				 *
+				 */
 				myIteratorType Bi = *myIteratorPointer;
 				myIteratorType Ai = Bi;
 				myIteratorType Ci = Bi;
@@ -330,8 +398,10 @@ public:
 			// this is B
 			PointType ba = point-A;
 			PointType cb = static_cast<PointType>(C)-point;
+			// rotate and normalize both vectors
 			ba = ba.rotate2d(M_PI_2).unit();
 			cb = cb.rotate2d(M_PI_2).unit();
+			// normal is the unit vector of the sum (same as unit of average)
 			normal = (ba+cb).unit();
 		}
 		PointType point;
@@ -373,6 +443,7 @@ public:
 				return cw_iterator(i, pointNormals.begin(), 
 						pointNormals.end());
 		}
+		return clockwiseEnd();
 	}
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
@@ -380,6 +451,14 @@ public:
 	 *  /return clockwise iterator from the start point
 	 */
 	cw_iterator clockwise() { return clockwise(pointNormals.front()); };
+	
+	/*! Get an iterator that represents an end of the loop.
+	 *  This is not a point on the loop, but is returned upon failure to
+	 *  find a point using clockwise(const PointType&)
+	 *  /return cw_iterator representing the "end"
+	 */
+	cw_iterator clockwiseEnd() { return cw_iterator(pointNormals.end(), 
+			pointNormals.begin(), pointNormals.end()); };
 
 	/*! Get an iterator that traverses around the loop counter clockwise.
 	 *  There is no end, the iterator will continue around the loop
@@ -394,6 +473,7 @@ public:
 				return ccw_iterator(i, pointNormals.rbegin(), 
 						pointNormals.rend());
 		}
+		return counterClockwiseEnd();
 	}
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
@@ -404,6 +484,14 @@ public:
 	ccw_iterator counterClockwise() {
 		return counterClockwise(pointNormals.front());
 	};
+	
+	/*! Get an iterator that represents an end of the loop.
+	 *  This is not a point on the loop, but is returned upon failure to
+	 *  find a point using counterClockwise(const PointType&)
+	 *  /return ccw_iterator representing the "end"
+	 */
+	ccw_iterator counterClockwiseEnd() { return ccw_iterator(pointNormals.rend(), 
+			pointNormals.rbegin(), pointNormals.rend()); };
 
 	/*! Retrieve the LineSegment2 in the path that starts with a provided point.
 	 *  This creates a new LineSegment2 value
@@ -411,7 +499,9 @@ public:
 	 *  /return The line segment starting with the point at location
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint(const ITER &location);
+	libthing::LineSegment2 segmentAfterPoint(ITER location){
+		return libthing::LineSegment2(*location, *(++location));
+	}
 
 	/*! Retrieve the normal vector in a loop at a provided point.
 	 *  Normals point toward the interior of a loop.
@@ -419,17 +509,31 @@ public:
 	 *  /return The normal vector at this location
 	 */
 	template <typename ITER>
-	PointType normalAfterPoint(const ITER &location);
+	PointType normalAfterPoint(ITER location);
 
 	/*! Find points you can start extrusion on for this path.  For a
 	 *  Loop, this gives you every point in the loop.
 	 *  /return iterator for all the valid staring points
 	 */
-	cw_iterator getEntryPoints() {
-		return cw_iterator(pointNormals.begin(), 
+	entry_iterator entryBegin() {
+		return entry_iterator(pointNormals.begin(), 
 				pointNormals.begin(), pointNormals.end());
 	};
-
+	
+	/*! Get an iterator that represents the end of entry points
+	 *  /return entry_iterator representing the "end".
+	 */
+	entry_iterator entryEnd() {
+		return entry_iterator(pointNormals.end(), 
+				pointNormals.begin(), pointNormals.end());
+	};
+	
+	/*! Get an exit point for a given entry point
+	 *  /return PointType representing the "end".
+	 */
+	PointType getExitPoint(entry_iterator entry) {
+		return *entry;
+	}
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
 	 *  /return An iterator to retrieve all suspended points, currently
@@ -466,16 +570,16 @@ class LoopPath {
 	class iterator_gen {
 	public:
 		typedef BASE iterator;
-		iterator_gen(BASE i, LoopPath &p) : base(i), parent(p) {};
+		iterator_gen(iterator i, LoopPath &p) : base(i), parent(p) {};
 
-		PointType& operator*() { return *base; }
-		PointType* operator->() { return &*base; }
+		const PointType& operator*() { return base->getPoint(); }
+		const PointType* operator->() { return &(base->getPoint()); }
 		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
 			++base;
-			if (base == parent.start()) {
-				base = parent.end();
+			if (base.isBegin()) {
+				base = base.makeEnd();
 			}
 			return *this;
 		}
@@ -498,8 +602,11 @@ class LoopPath {
 			iterator_gen<BASE> iter_copy = *this;
 			return --iter_copy;
 		}
+		bool operator==(const iterator_gen<BASE>& other) {
+			return base == other.base;
+		}
 	private:
-		BASE base;
+		iterator base;
 		LoopPath &parent;
 	};
 public:
@@ -516,16 +623,12 @@ public:
 
 	/*! Iterator after the end of the list. */
 	iterator end() {
-		return iterator(Loop::cw_iterator(parent.pointNormals.end(),
-										  parent.pointNormals.end(),
-										  parent.pointNormals.end()),
+		return iterator(parent.clockwiseEnd(),
 						*this); };
 
 	/*! Reverse iterator after the end of the list. */
 	reverse_iterator rend() {
-		return reverse_iterator(Loop::ccw_iterator(parent.pointNormals.rend(),
-												   parent.pointNormals.rend(),
-												   parent.pointNormals.rend()),
+		return reverse_iterator(parent.counterClockwiseEnd(),
 								*this); };
 
 	/*! Get an iterator from the start point

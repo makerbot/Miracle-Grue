@@ -129,8 +129,8 @@ void LoopPathTestCase::testLoopBasic() {
 
 	cout << "Testing entry points" << endl;
 	int count = 1;
-	Loop::entry_iterator entry = loop.getEntryPoints();
-	for (;	entry !+ loop.entryEnd(); entry++)
+	Loop::entry_iterator entry = loop.entryBegin();
+	for (;	entry != loop.entryEnd(); entry++)
 		count++;
 
 	CPPUNIT_ASSERT_EQUAL(count, 3);
@@ -142,11 +142,12 @@ void LoopPathTestCase::testLoopBasic() {
 }
 
 void LoopPathTestCase::testLoopPathBasic() {
-	Loop loop(Vector(1, 2));
+	Loop loop(Vector2(1, 2));
 
-	Loop::cw_iterator last = loop.insertPoint(Vector(3, 4), loop.clockwise());
+	Loop::cw_iterator last = loop.insertPoint(Vector2(3, 4), loop.clockwise());
 
-	LoopPath lp(loop.clockwise(Vector(1, 2)), Vector(1, 2));
+	LoopPath lp(loop, loop.clockwise(Vector2(1, 2)), 
+			loop.counterClockwise(Vector2(1, 2)));
 
 	LoopPath::iterator i = lp.fromStart();
 	Vector2 first = *i;
