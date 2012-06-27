@@ -288,7 +288,7 @@ private:
 			return iterator_gen<BASE>::base->getPoint(); 
 		}
 		const PointType* operator->() { 
-			return &(this->operator*());
+			return &(**this);
 		}
 		// ++iterator	
 		iterator_entry_gen<BASE>& operator++() {
@@ -575,7 +575,7 @@ class LoopPath {
 		iterator_gen(iterator i, LoopPath &p) : base(i), parent(p) {};
 
 		const PointType& operator*() { return base->getPoint(); }
-		const PointType* operator->() { return &(base->getPoint()); }
+		const PointType* operator->() { return &(**this); }
 		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
