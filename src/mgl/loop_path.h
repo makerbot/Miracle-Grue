@@ -500,7 +500,9 @@ public:
 	 */
 	template <typename ITER>
 	libthing::LineSegment2 segmentAfterPoint(ITER location){
-		return libthing::LineSegment2(*location, *(++location));
+		ITER second = location;
+		++second;
+		return libthing::LineSegment2(*location, *second);
 	}
 
 	/*! Retrieve the normal vector in a loop at a provided point.
