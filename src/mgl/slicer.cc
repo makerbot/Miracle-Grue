@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "slicer.h"
 
 using namespace mgl;
@@ -12,10 +14,7 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 	layerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
 }
 
-
-
-void Slicer::tomographyze( Segmenter& seg, Tomograph &tomograph)
-{
+void Slicer::tomographyze(Segmenter& seg, Tomograph &tomograph) {
 	// grid.init(mesh.limits, slicerCfg.layerW);
 	unsigned int sliceCount = seg.readSliceTable().size();
 	tomograph.outlines.resize(sliceCount);
@@ -23,8 +22,7 @@ void Slicer::tomographyze( Segmenter& seg, Tomograph &tomograph)
 	initProgress("outlines", sliceCount);
 
 
-	for(size_t sliceId =0; sliceId < sliceCount; sliceId++)
-	{
+	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
 		tick();
 		//cout << sliceId << "/" << sliceCount << " outlines" << endl;
 		libthing::SegmentTable &segments = tomograph.outlines[sliceId];
@@ -35,6 +33,36 @@ void Slicer::tomographyze( Segmenter& seg, Tomograph &tomograph)
 	Limits limits = seg.readLimits();
 	tomograph.grid.init(limits, gridSpacing);
 	tomograph.layerMeasure = seg.readLayerMeasure();
+}
+
+void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
+	unsigned int sliceCount = seg.readSliceTable().size();
+	initProgress("outlines", sliceCount);
+	
+	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
+		LayerLoops::Layer currentLayer;
+		libthing::SegmentTable segments;
+		outlinesForSlice(seg, sliceId, segments);
+		for(libthing::SegmentTable::iterator it = segments.begin();
+				it != segments.end();
+				++it){
+			Loop currentLoop;
+			Loop::cw_iterator iter = currentLoop.clockwiseEnd();
+			for(std::vector<libthing::LineSegment2>::iterator it2 = it->begin(); 
+					it2 != it->end(); 
+					++it2){
+				iter = currentLoop.insertPoint(it2->b, iter);
+			}
+			if(!it->empty())
+				iter = currentLoop.insertPoint(it->begin()->a, iter);
+			currentLayer.push_back(currentLoop);
+		}
+		layerloops.push_back(currentLayer);
+	}
+	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
+	Limits limits = seg.readLimits();
+	layerloops.grid.init(limits, gridSpacing);
+	layerloops.layerMeasure = seg.readLayerMeasure();
 }
 
 

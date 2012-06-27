@@ -219,6 +219,7 @@ mgl_cc = ['src/mgl/Edge.cc',
           'src/mgl/segmenter.cc',
           'src/mgl/shrinky.cc',
           'src/mgl/slicer.cc',
+          'src/mgl/slicer_loops.cc',
           'src/mgl/slicy.cc']
 
 

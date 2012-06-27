@@ -17,6 +17,7 @@
 #include "configuration.h"
 #include "insets.h"
 #include "segmenter.h"
+#include "slicer_loops.h"
 
 namespace mgl
 {
@@ -96,6 +97,7 @@ public:
 
 	/// TBD
 	void tomographyze( Segmenter& seg, Tomograph &tomograph);
+	void generateLoops(const Segmenter& seg, LayerLoops& layerloops);
 
 	/// TBD
     void outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::SegmentTable & segments);
@@ -103,6 +105,8 @@ public:
 	/// TBD
 	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments,
 			Scalar tol, libthing::SegmentTable & segments);
+	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& 
+			unorderedSegments, Scalar tol, LayerLoops::Layer layer);
 };
 
 }

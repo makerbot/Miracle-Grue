@@ -34,8 +34,13 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	segmenter.tablaturize(mesh);
 
 	Slicer slicer(slicerCfg, progress);
+	LayerLoops layerloops(slicerCfg.firstLayerZ, slicerCfg.layerH);
 
+	//old interface
 	slicer.tomographyze(segmenter, tomograph);
+	//new interface
+	slicer.generateLoops(segmenter, layerloops);
+	
 
 	Regioner regioner(slicerCfg, progress);
 
