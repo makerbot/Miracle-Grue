@@ -605,6 +605,9 @@ class LoopPath {
 		bool operator==(const iterator_gen<BASE>& other) {
 			return base == other.base;
 		}
+		bool operator!=(const iterator_gen<BASE>& other) {
+			return (*this) != other;
+		}
 	private:
 		iterator base;
 		LoopPath &parent;
