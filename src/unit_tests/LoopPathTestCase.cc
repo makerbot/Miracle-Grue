@@ -131,8 +131,7 @@ void LoopPathTestCase::testLoopBasic() {
 	int count = 0;
 	Loop::entry_iterator entry = loop.entryBegin();
 	for (;	entry != loop.entryEnd(); entry++){
-		cout << "Entry " << count << "\t" << entry->x 
-				<< ", " << entry->y << endl;
+		cout << "Entry " << count << " :\t" << *entry << endl;
 		++count;
 	}
 
@@ -176,13 +175,35 @@ void LoopPathTestCase::testOpenPathJoin() {
 	OpenPath path1;
 	path1.appendPoint(Vector2(1, 1));
 	path1.appendPoint(Vector2(2, 2));
+	
+	cout << "Path 1:" << endl;
+	for(OpenPath::iterator i = path1.fromStart(); 
+			i != path1.end(); 
+			++i) {
+		cout << *i << endl;
+	}
 
 	OpenPath path2;
 	path2.appendPoint(Vector2(3, 3));
 	path2.appendPoint(Vector2(4, 4));
+	
+	cout << "Path 2:" << endl;
+	for(OpenPath::iterator i = path2.fromStart(); 
+			i != path2.end(); 
+			++i) {
+		cout << *i << endl;
+	}
 
 	OpenPath joined;
 	joined.appendPoints(path1.fromStart(), path1.end());
+	joined.appendPoints(path2.fromStart(), path2.end());
+	
+	cout << "Joined Path:" << endl;
+	for(OpenPath::iterator i = joined.fromStart(); 
+			i != joined.end(); 
+			++i) {
+		cout << *i << endl;
+	}
 
 	OpenPath::iterator i = joined.fromStart();
 
@@ -208,6 +229,13 @@ void LoopPathTestCase::testOpenPathJoin() {
 	OpenPath reversed;
 	reversed.appendPoints(path2.fromEnd(), path2.rend());
 	reversed.appendPoints(path1.fromEnd(), path1.rend());
+	
+	cout << "Reversed Path:" << endl;
+	for(OpenPath::iterator i = reversed.fromStart(); 
+			i != reversed.end(); 
+			++i) {
+		cout << *i << endl;
+	}
 
 	i = reversed.fromStart();
 
