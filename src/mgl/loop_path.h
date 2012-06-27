@@ -288,7 +288,7 @@ private:
 			return iterator_gen<BASE>::base->getPoint(); 
 		}
 		const PointType* operator->() { 
-			return &(iterator_gen<BASE>::base->getPoint()); 
+			return &(this->operator*());
 		}
 		// ++iterator	
 		iterator_entry_gen<BASE>& operator++() {
