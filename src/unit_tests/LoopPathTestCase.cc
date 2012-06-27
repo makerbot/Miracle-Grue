@@ -125,7 +125,7 @@ void LoopPathTestCase::testLoopBasic() {
 	
 	cout << "Testing segmentAfterPoint" << endl;
 	LineSegment2 seg = loop.segmentAfterPoint(i);
-	CPPUNIT_ASSERT_EQUAL(seg.length(), 1.0);
+	CPPUNIT_ASSERT_EQUAL(seg.squaredLength(), 8.0);
 
 	cout << "Testing entry points" << endl;
 	int count = 1;
