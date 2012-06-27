@@ -1,4 +1,4 @@
-#include "pather.h"
+ #include "pather.h"
 
 namespace mgl {
 
@@ -40,5 +40,8 @@ LayerPaths::layer_iterator LayerPaths::erase(layer_iterator from,
 }
 bool LayerPaths::empty() const { return layers.empty(); }
 
+size_t LayerPaths::layerCount() const { return layers.size(); }
+
+LayerPaths::Layer& LayerPaths::back() { return layers.back(); }
 
 }

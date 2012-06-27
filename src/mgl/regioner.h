@@ -15,6 +15,7 @@
 #define REGIONER_H_ (1)
 
 #include "slicer.h"
+#include "loop_path.h"
 
 namespace mgl
 {
@@ -25,6 +26,7 @@ namespace mgl
 struct Regions
 {
     std::vector<libthing::Insets> 	insets;
+    std::vector<std::list<LoopList> > 	        insetLoops;
     std::vector<GridRanges>     flatSurfaces; // # number of slices + roofCount * 2
     std::vector<GridRanges>     roofings;
     std::vector<GridRanges>     floorings;

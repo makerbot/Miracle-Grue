@@ -17,6 +17,8 @@
 #include "obj_limits.h"
 #include "libthing/LineSegment2.h"
 #include "segment.h"
+#include "loop_path.h"
+
 
 namespace mgl
 {
@@ -163,9 +165,9 @@ public:
 
     /// Takes a gridRange and converts that into Polygons that can be used to generate
     /// gcode.
-    void polygonsFromRanges(const GridRanges &gridRanges,
-							const libthing::SegmentTable &outline,
-							bool xDirection, Polygons &polys) const;
+    void pathsFromRanges(const GridRanges &gridRanges,
+						 LoopList &outline,
+						 bool xDirection, OpenPathList &paths) const;
 
     /// joins a/b grid ranges into
     void gridRangeUnion(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
