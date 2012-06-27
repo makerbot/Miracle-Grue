@@ -165,7 +165,88 @@ void LoopPathTestCase::testLoopPathBasic() {
 }
 
 void LoopPathTestCase::testOpenPathJoin() {
+	OpenPath path1;
+	path1.appendPoint(Vector2(1, 1));
+	path1.appendPoint(Vector2(2, 2));
 
+	OpenPath path2;
+	path2.appendPoint(Vector2(3, 3));
+	path2.appendPoint(Vector2(4, 4));
+
+	OpenPath joined;
+	joined.appendPoints(path1.fromStart(), path1.end());
+
+	OpenPath::iterator i = joined.fromStart();
+
+	Vector2 point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 1.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 1.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 2.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 2.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 3.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 3.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 4.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 4.0);
+
+	OpenPath reversed;
+	reversed.appendPoints(path2.fromEnd(), path2.rend());
+	reversed.appendPoints(path1.fromEnd(), path1.rend());
+
+	i = reversed.fromStart();
+
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 4.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 4.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 3.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 3.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 2.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 2.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 1.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 1.0);
+
+	OpenPath mixed;
+	mixed.appendPoints(path1.fromStart(), path1.end());
+	mixed.appendPoints(path2.fromEnd(), path2.rend());
+
+	i = mixed.fromStart();
+
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 1.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 1.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 2.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 2.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 4.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 4.0);
+
+	++i;
+	point = *i;
+	CPPUNIT_ASSERT_EQUAL(point.x, 3.0);
+	CPPUNIT_ASSERT_EQUAL(point.y, 3.0);
+	
 }
 
 void LoopPathTestCase::testOpenToLoopPathJoin() {
