@@ -128,10 +128,13 @@ void LoopPathTestCase::testLoopBasic() {
 	CPPUNIT_ASSERT_EQUAL(seg.squaredLength(), 8.0);
 
 	cout << "Testing entry points" << endl;
-	int count = 1;
+	int count = 0;
 	Loop::entry_iterator entry = loop.entryBegin();
-	for (;	entry != loop.entryEnd(); entry++)
-		count++;
+	for (;	entry != loop.entryEnd(); entry++){
+		cout << "Entry " << count << "\t" << entry->x 
+				<< ", " << entry->y << endl;
+		++count;
+	}
 
 	CPPUNIT_ASSERT_EQUAL(count, 3);
 
