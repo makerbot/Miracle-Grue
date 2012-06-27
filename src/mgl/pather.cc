@@ -20,7 +20,7 @@ Pather::Pather(ProgressBar * progress)
 }
 
 
-void Pather::generatePaths(const Tomograph &tomograph,
+void Pather::generatePaths(const LayerLoops &layerloops,
 					const Regions &skeleton,
 					std::vector<SliceData> &slices,
 					int sfirstSliceIdx,  // =-1
@@ -57,46 +57,64 @@ void Pather::generatePaths(const Tomograph &tomograph,
 		direction = !direction;
 		SliceData& slice = slices[i];
 
-		Scalar z = tomograph.layerMeasure.sliceIndexToHeight(currentSlice);
+		Scalar z = layerloops.layerMeasure.sliceIndexToHeight(currentSlice);
 		currentSlice ++;
 
 		slice.updatePosition(z, i);
-		slice.extruderSlices.resize(1);
+		slice.extruderSlices.resize(1); //TODO: this blocks dualstrusion
 
 		ExtruderSlice &extruderSlice = slice.extruderSlices[0];
 
-		const libthing::Insets &insetsSegments = skeleton.insets[i];
-		const libthing::SegmentTable &outlineSegments = tomograph.outlines[i];
+		vector<LoopList> &insetLoops = skeleton.insets[i];
+		LoopList &outlineLoops = tomograph.outlines[i];
 
-		outlines(outlineSegments, extruderSlice.boundary);
+		outlines(outlineLoops, extruderSlice.boundaryPaths);
 
-        PolygonsGroup &insetPolys = extruderSlice.insetLoopsList;
-		this->insets(insetsSegments, insetPolys );
+        vector<LoopPathList> &insetPaths = extruderSlice.insetPaths;
+		this->insets(insetLoops, insetPaths );
 
 		const GridRanges &infillRanges = skeleton.infills[i];
 
-		Polygons &infillsPolygons = extruderSlice.infills;
-		this->infills(infillRanges, tomograph.grid, outlineSegments,
-					  direction, infillsPolygons);
+		OpenPathList &infillPaths = extruderSlice.infills;
+		this->infills(infillRanges, tomograph.grid, outlineLoops,
+					  direction, infillPaths);
 	}
 }
 
-void Pather::outlines(const libthing::SegmentTable& outlinesSegments, Polygons &boundary)
+
+void Pather::outlines(LoopList& outlineLoops, LoopPathList &boundaryPaths)
 {
-	createPolysFromloopSegments(outlinesSegments, boundary);
+	//using a indeterminate start point for the beginning of the LoopPathList
+	//as that's what the old Polygon logic did
+
+	for (LoopList::iterator i = outlineLoops.begin();
+		 i != outlineLoops.end(); ++i) {
+		boundary.push_back(LoopPath(*i, i->clockwise(), i->counterClockwise()));
+	}
 }
 
-void Pather::insets(const libthing::Insets& insetsForSlice, PolygonsGroup &insetPolys)
+void Pather::insets(vector<LoopList>& insetsForSlice,
+					vector<LoopPathList> &insetPaths)
 {
-	size_t nbOfShells = insetsForSlice.size();
-	polygonsFromLoopSegmentTables(nbOfShells, insetsForSlice, insetPolys);
+	for (vector<LoopList>::iterator i = insetsForSlice.begin();
+		 i != insetsForSlice.end(); ++i) {
+
+		insetPaths.push_back(LoopPathList());
+		LoopPathList &lp_list = insetPathList.back();
+
+		for (LoopList::iterator j = i->begin(); j != i->end(); ++j) {
+			lp_list.push_back(LoopPath(*j, j->clockwise(),
+									   j->counterClockwise()));
+		}
+	}
 }
+
 
 void Pather::infills(const GridRanges &infillRanges,
 					 const Grid &grid,
-					 const libthing::SegmentTable &outline,
+					 const LoopList &outlines,
 					 bool direction,
-					 Polygons &infills)
+					 OpenPathList &infills)
 {
-	grid.polygonsFromRanges(infillRanges, outline, direction, infills);
+	grid.pathsFromRanges(infillRanges, outlines, direction, infills);
 }

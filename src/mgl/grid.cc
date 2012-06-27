@@ -196,8 +196,8 @@ typedef enum {X_AXIS, Y_AXIS} axis_e;
 void polygonsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 										const std::vector<Scalar> &values, // the opposite axis values for each line
 										axis_e axis,
-										const libthing::SegmentTable &outline,
-										Polygons &polygons)  // the output
+										const LoopList &outlines,
+										OpenPathList &paths)  // the output
 {
 	if (rays.size() == 0) return;
 
@@ -760,20 +760,20 @@ void Grid::subSample(const GridRanges &gridRanges, size_t skipCount, GridRanges 
 	}
 }
 
-void Grid::polygonsFromRanges(const GridRanges &gridRanges,
-							  const libthing::SegmentTable &outline,
-							  bool xDirection, Polygons &polys) const
+void Grid::pathsFromRanges(const GridRanges &gridRanges,
+						   const LoopList &outlines,
+						   bool xDirection, OpenPathList &paths) const
 {
 	assert(polys.size() == 0);
 	if(xDirection)
 	{
 		polygonsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS,
-										  outline, polys);
+										  outlines, paths);
 	}
 	else
 	{
 		polygonsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS,
-										  outline, polys);
+										  outlines, paths);
 	}
 }
 

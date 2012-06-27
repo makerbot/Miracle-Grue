@@ -27,12 +27,12 @@ class ExtruderSlice
 {
 public:
 
-	Polygons boundary;  // boundary loops for areas of this slice of a print.
-	Polygons infills; // list of all lines that create infill for this layer
+	LoopList boundary;  // boundary loops for areas of this slice of a print.
+	OpenPathList infills; // list of all lines that create infill for this layer
 
-	PolygonsGroup  insetLoopsList;  /// a list, each entry of which is a Polygons
-							/// object. Each inset[i] is all shell polygons
-							/// for the matching loops[i] boundary for this layer
+	InsetList insetLoopsList;  /// a list, each entry of which is a LoopList
+	                        /// object. Each inset[i] is all shell Loops
+						    /// for the matching loops[i] boundary for this layer
 
 };
 
