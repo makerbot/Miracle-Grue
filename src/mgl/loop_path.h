@@ -426,7 +426,7 @@ public:
 	 */
 	template <typename ITER>
 	cw_iterator insertPoint(const PointType &point, ITER after){
-		typename ITER::iterator afterbase = &after;
+		typename ITER::iterator afterbase = &(++after);
 		afterbase = pointNormals.insert(afterbase, point);
 		return cw_iterator(afterbase, pointNormals.begin(), pointNormals.end());
 	}
@@ -572,16 +572,21 @@ class LoopPath {
 	class iterator_gen {
 	public:
 		typedef BASE iterator;
-		iterator_gen(iterator i, LoopPath &p) : base(i), parent(p) {};
+		iterator_gen(iterator i, LoopPath &p) : base(i), parent(p), 
+				hasLooped(false) {};
 
 		const PointType& operator*() { return base->getPoint(); }
 		const PointType* operator->() { return &(**this); }
 		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
-			++base;
-			if (parent.isBegin(base)) {
+			if(hasLooped) {
 				base = base.makeEnd();
+			} else {
+				++base;
+				if (parent.isBegin(base)) {
+					hasLooped = true;
+				}
 			}
 			return *this;
 		}
@@ -613,6 +618,7 @@ class LoopPath {
 
 	private:
 		iterator base;
+		bool hasLooped;
 		LoopPath &parent;
 	};
 public:

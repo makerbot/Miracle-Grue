@@ -110,13 +110,13 @@ void LoopPathTestCase::testLoopBasic() {
 	
 	++i;
 	second = *i;
-	CPPUNIT_ASSERT_EQUAL(second.x, 4.0);
-	CPPUNIT_ASSERT_EQUAL(second.y, 5.0);
+	CPPUNIT_ASSERT_EQUAL(second.x, 2.0);
+	CPPUNIT_ASSERT_EQUAL(second.y, 3.0);
 
 	++i;
 	Vector2 third = *i;
-	CPPUNIT_ASSERT_EQUAL(third.x, 2.0);
-	CPPUNIT_ASSERT_EQUAL(third.y, 3.0);
+	CPPUNIT_ASSERT_EQUAL(third.x, 4.0);
+	CPPUNIT_ASSERT_EQUAL(third.y, 5.0);
 
 	++i;
 	Vector2 fourth = *i;
@@ -125,7 +125,8 @@ void LoopPathTestCase::testLoopBasic() {
 	
 	cout << "Testing segmentAfterPoint" << endl;
 	LineSegment2 seg = loop.segmentAfterPoint(i);
-	CPPUNIT_ASSERT_EQUAL(seg.squaredLength(), 8.0);
+	CPPUNIT_ASSERT_EQUAL(seg.squaredLength(), 
+			LineSegment2(Vector2(6,7), Vector2(2,3)).squaredLength());
 
 	cout << "Testing entry points" << endl;
 	int count = 0;
@@ -155,6 +156,13 @@ void LoopPathTestCase::testLoopPathBasic() {
 	CPPUNIT_ASSERT(ccwstart != loop.counterClockwiseEnd());
 	cout << "Finding iterators works!" << endl;
 	LoopPath lp(loop, cwstart, ccwstart);
+	
+	cout << "Loop Path:" << endl;
+	for(LoopPath::iterator i = lp.fromStart(); 
+			i != lp.end(); 
+			++i) {
+		cout << *i << endl;
+	}
 
 	LoopPath::iterator i = lp.fromStart();
 	Vector2 first = *i;
@@ -165,6 +173,11 @@ void LoopPathTestCase::testLoopPathBasic() {
 	Vector2 second = *i;
 	CPPUNIT_ASSERT_EQUAL(second.x, 3.0);
 	CPPUNIT_ASSERT_EQUAL(second.y, 4.0);
+	
+	++i;
+	Vector2 third = *i;
+	CPPUNIT_ASSERT_EQUAL(third.x, 1.0);
+	CPPUNIT_ASSERT_EQUAL(third.y, 2.0);
 
 	++i;
 	bool res = i == lp.end();
@@ -301,7 +314,26 @@ void LoopPathTestCase::testOpenToLoopPathJoin() {
 	OpenPath joined;
 	joined.appendPoints(open.fromStart(), open.end());
 	joined.appendPoints(lp.fromStart(), lp.end());
-
+	
+	cout << "Open Path:" << endl;
+	for(OpenPath::iterator i = open.fromStart(); 
+			i != open.end(); 
+			++i) {
+		cout << *i << endl;
+	}
+	cout << "Loop:" << endl;
+	bool moved = false;
+	for(Loop::cw_iterator i = loop.clockwise(Vector2(3,3)); 
+			i != loop.clockwise(Vector2(3,3)) || !moved; 
+			++i, moved = true) {
+		cout << *i << endl;
+	}
+	cout << "Joined Path:" << endl;
+	for(OpenPath::iterator i = joined.fromStart(); 
+			i != joined.end(); 
+			++i) {
+		cout << *i << endl;
+	}
 	OpenPath::iterator i = joined.fromStart();
 
 	Vector2 point = *i;
