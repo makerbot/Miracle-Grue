@@ -30,11 +30,22 @@ class OpenPath {
 	template <typename BASE>
 	class iterator_gen {
 	public:
+		
+		template <typename OTHERBASE>
+		friend class iterator_gen;
+		
 		typedef BASE iterator;
+		typedef typename iterator::value_type value_type;
+		typedef typename iterator::reference reference;
+		typedef typename iterator::pointer pointer;
+		
 		iterator_gen(BASE b) : base(b) {};
+		template <typename OTHERBASE>
+		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
+				base(orig.iterator_gen<OTHERBASE>::base) {}
 
-		PointType& operator*() { return *base; }
-		PointType* operator->() { return &*base; }
+		reference operator*() { return *base; }
+		pointer operator->() { return &*base; }
 		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
@@ -85,17 +96,26 @@ class OpenPath {
 
 public:
 	typedef iterator_gen<PointList::iterator> iterator;
+	typedef iterator_gen<PointList::const_iterator> const_iterator;
 	typedef iterator_gen<PointList::reverse_iterator> reverse_iterator;
+	typedef iterator_gen<PointList::const_reverse_iterator> const_reverse_iterator;
 	typedef iterator entry_iterator;
+	typedef const_iterator const_entry_iterator;
 
 	OpenPath() : endpoints(2) {};
 	/*! Get an iterator from the first point of the path */
 	iterator fromStart() { return iterator(points.begin()); };
+	const_iterator fromStart() const { return const_iterator(points.begin()); }
 	/*! Get an iterator from the last point of the path	 */
 	reverse_iterator fromEnd() { return reverse_iterator(points.rbegin()); };
+	const_reverse_iterator fromEnd() const { 
+		return const_reverse_iterator(points.rbegin()); 
+	}
 
 	iterator end() { return iterator(points.end()); };
+	const_iterator end() const { return const_iterator(points.end()); };
 	reverse_iterator rend() { return reverse_iterator(points.rend()); };
+	const_reverse_iterator rend() const { return const_reverse_iterator(points.rend()); };
 
 	/*! Add points to the end of a path.  This makes copies of the points.
 	 *  /param first iterator to the first point to append
@@ -156,10 +176,28 @@ public:
 	 */
 	entry_iterator getEntryPoints() {
 		setEndPoints();
-		return iterator(endpoints.begin());
+		return entry_iterator(endpoints.begin());
+	}
+	
+	const_entry_iterator getEntryPoints() const {
+		setEndPoints();
+		return const_entry_iterator(endpoints.begin());
 	}
 
 	PointType& getExitPoint(PointType entry) {
+		setEndPoints();
+		if (endpoints[0] == entry) {
+			return endpoints[1];
+		}
+		else if (endpoints[1] == entry) {
+			return endpoints[0];
+		}
+		else {
+			throw Exception("Not a valid entry point");
+		}
+	}
+	
+	const PointType& getExitPoint(PointType entry) const {
 		setEndPoints();
 		if (endpoints[0] == entry) {
 			return endpoints[1];
@@ -178,23 +216,29 @@ public:
 	            retrieves all points
 	 */
 	iterator getSuspendedPoints() { return fromStart(); }; //stub
+	const_iterator getSuspendedPoints() const { return fromStart(); }; //stub
 	
 private:
 	bool isEnd(iterator i) {
 		return i == end();
 	}
-
 	bool isEnd(reverse_iterator i) {
 		return i == rend();
 	}
+	bool isEnd(const_iterator i) const {
+		return i == end();
+	}
+	bool isEnd(const_reverse_iterator i) const {
+		return i == rend();
+	}
 
-	void setEndPoints() {
+	void setEndPoints() const {
 		endpoints[0] = points.front();
 		endpoints[1] = points.back();
 	}		
 
 	PointList points;
-	PointList endpoints;
+	mutable PointList endpoints;
 };
 
 //std::ostream& operator<<(std::ostream& out, OpenPath& openpath) {
@@ -210,6 +254,7 @@ private:
  *  A 2d path that has no beginning or end, connects around to itself, and has
  *  an interior.
  */
+
 class Loop {
 public:
 	class PointNormal;
@@ -218,19 +263,30 @@ private:
 	template <typename BASE>
 	class iterator_gen {
 	public:
+		
+		template <typename OTHERBASE>
+		friend class iterator_gen;
+		
 		typedef BASE iterator;
+		typedef typename iterator::value_type value_type;
+		typedef typename iterator::reference reference;
+		typedef typename iterator::pointer pointer;
+		
 		iterator_gen(iterator i, iterator b, iterator e) : 
 				base(i), begin(b), end(e) {};
-		iterator_gen(const iterator_gen& orig) : 
-				base(orig.base), begin(orig.begin), end(orig.end) {}
+		template <typename OTHERBASE>
+		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
+				base(orig.iterator_gen<OTHERBASE>::base), 
+				begin(orig.iterator_gen<OTHERBASE>::begin), 
+				end(orig.iterator_gen<OTHERBASE>::end) {}
 		iterator_gen<BASE>& operator=(const iterator_gen<BASE>& orig) {
 			base = orig.base;
 			begin = orig.begin;
 			end = orig.end;
 		}
 		
-		PointNormal& operator*() { return *base; }
-		PointNormal* operator->() { return &*base; }
+		reference operator*() { return *base; }
+		pointer operator->() { return &*base; }
 		iterator operator&() const { return base; }
 		// ++iterator
 		iterator_gen<BASE>& operator++() {
@@ -269,11 +325,12 @@ private:
 		iterator_gen<BASE> makeEnd() { 
 			return iterator_gen(end, begin, end); 
 		}
-		
-		bool operator==(const iterator_gen& other) const {
-			return base == other.base;
+		template <typename OTHERBASE>
+		bool operator==(const iterator_gen<OTHERBASE>& other) const {
+			return base == other.iterator_gen<OTHERBASE>::base;
 		}
-		bool operator!=(const iterator_gen& other) const {
+		template <typename OTHERBASE>
+		bool operator!=(const iterator_gen<OTHERBASE>& other) const {
 			return !(*this == other);
 		}
 		bool isBegin() const { return base == begin; }
@@ -290,9 +347,22 @@ private:
 	template <typename BASE>
 	class iterator_entry_gen : public iterator_gen<BASE> {
 		typedef typename iterator_gen<BASE>::iterator iterator;
+		typedef typename iterator_gen<BASE>::reference reference;
+		typedef typename iterator_gen<BASE>::pointer pointer;
+		typedef typename iterator_gen<BASE>::value_type value_type;
 	public:
+		
+		template <typename OTHERBASE>
+		friend class iterator_entry_gen;
+		
 		iterator_entry_gen(iterator i, iterator b, iterator e) : 
 				iterator_gen<BASE>(i, b, e) {}
+		template <typename OTHERBASE>
+		explicit iterator_entry_gen(const iterator_entry_gen<OTHERBASE>& orig) : 
+				iterator_gen<BASE>(
+				orig.iterator_entry_gen<OTHERBASE>::base, 
+				orig.iterator_entry_gen<OTHERBASE>::begin, 
+				orig.iterator_entry_gen<OTHERBASE>::end) {}
 		const PointType& operator*() { 
 			return iterator_gen<BASE>::base->getPoint(); 
 		}
@@ -353,6 +423,12 @@ public:
 			delete myIteratorPointer;
 		}
 		operator PointType() const { return point; }
+		bool operator==(const PointNormal& rhs) const {
+			return static_cast<PointType>(*this) == static_cast<PointType>(rhs);
+		}
+		bool operator!=(const PointNormal& rhs) const {
+			return !(*this == rhs);
+		}
 		const PointType& getPoint() const { return point; }
 		const PointType& getNormal() const { 
 			if(normalDirty)
@@ -423,6 +499,9 @@ public:
 	typedef iterator_gen<PointNormalList::iterator> cw_iterator;
 	typedef iterator_gen<PointNormalList::reverse_iterator> ccw_iterator;
 	typedef iterator_entry_gen<PointNormalList::iterator> entry_iterator;
+	typedef iterator_gen<PointNormalList::const_iterator> const_cw_iterator;
+	typedef iterator_gen<PointNormalList::const_reverse_iterator> const_ccw_iterator;
+	typedef iterator_entry_gen<PointNormalList::const_iterator> const_entry_iterator;
 
 	Loop() { }
 	Loop(const PointType &first) { pointNormals.push_back(first); }
@@ -454,6 +533,15 @@ public:
 		}
 		return clockwiseEnd();
 	}
+	const_cw_iterator clockwise(const PointType &startpoint) const {
+		for (PointNormalList::const_iterator i = pointNormals.begin();
+			 i != pointNormals.end(); i++) {
+			if (static_cast<PointType>(*i) == startpoint)
+				return const_cw_iterator(i, pointNormals.begin(), 
+						pointNormals.end());
+		}
+		return clockwiseEnd();
+	}
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
 	 *  around the loop indefinitely.
@@ -462,7 +550,11 @@ public:
 	cw_iterator clockwise() { 
 		return cw_iterator(pointNormals.begin(), pointNormals.begin(), 
 				pointNormals.end());
-	};
+	}
+	const_cw_iterator clockwise() const { 
+		return const_cw_iterator(pointNormals.begin(), pointNormals.begin(), 
+				pointNormals.end());
+	}
 	
 	/*! Get an iterator that represents an end of the loop.
 	 *  This is not a point on the loop, but is returned upon failure to
@@ -471,6 +563,9 @@ public:
 	 */
 	cw_iterator clockwiseEnd() { return cw_iterator(pointNormals.end(), 
 			pointNormals.begin(), pointNormals.end()); };
+	const_cw_iterator clockwiseEnd() const { return const_cw_iterator(
+			pointNormals.end(), pointNormals.begin(), pointNormals.end()); 
+	}
 
 	/*! Get an iterator that traverses around the loop counter clockwise.
 	 *  There is no end, the iterator will continue around the loop
@@ -487,6 +582,15 @@ public:
 		}
 		return counterClockwiseEnd();
 	}
+	const_ccw_iterator counterClockwise(const PointType& startpoint) const {
+		for (PointNormalList::const_reverse_iterator i = pointNormals.rbegin();
+			 i != pointNormals.rend(); i++) {
+			if (static_cast<PointType>(*i) == startpoint)
+				return const_ccw_iterator(i, pointNormals.rbegin(), 
+						pointNormals.rend());
+		}
+		return counterClockwiseEnd();
+	}
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
 	 *  arbitrary start point. There is no end, the iterator will continue
@@ -496,7 +600,11 @@ public:
 	ccw_iterator counterClockwise() {
 		return ccw_iterator(pointNormals.rbegin(), pointNormals.rbegin(), 
 				pointNormals.rend());
-	};
+	}
+	const_ccw_iterator counterClockwise() const {
+		return const_ccw_iterator(pointNormals.rbegin(), pointNormals.rbegin(), 
+				pointNormals.rend());
+	}
 	
 	/*! Get an iterator that represents an end of the loop.
 	 *  This is not a point on the loop, but is returned upon failure to
@@ -504,7 +612,11 @@ public:
 	 *  /return ccw_iterator representing the "end"
 	 */
 	ccw_iterator counterClockwiseEnd() { return ccw_iterator(pointNormals.rend(), 
-			pointNormals.rbegin(), pointNormals.rend()); };
+			pointNormals.rbegin(), pointNormals.rend()); }
+	const_ccw_iterator counterClockwiseEnd() const { 
+		return const_ccw_iterator(pointNormals.rend(), 
+			pointNormals.rbegin(), pointNormals.rend()); 
+	}
 
 	/*! Retrieve the LineSegment2 in the path that starts with a provided point.
 	 *  This creates a new LineSegment2 value
@@ -534,12 +646,20 @@ public:
 		return entry_iterator(pointNormals.begin(), 
 				pointNormals.begin(), pointNormals.end());
 	};
+	const_entry_iterator entryBegin() const {
+		return const_entry_iterator(pointNormals.begin(), 
+				pointNormals.begin(), pointNormals.end());
+	};
 	
 	/*! Get an iterator that represents the end of entry points
 	 *  /return entry_iterator representing the "end".
 	 */
 	entry_iterator entryEnd() {
 		return entry_iterator(pointNormals.end(), 
+				pointNormals.begin(), pointNormals.end());
+	};
+	const_entry_iterator entryEnd() const {
+		return const_entry_iterator(pointNormals.end(), 
 				pointNormals.begin(), pointNormals.end());
 	};
 	
@@ -549,12 +669,18 @@ public:
 	PointType getExitPoint(entry_iterator entry) {
 		return *entry;
 	}
+	PointType getExitPoint(const_entry_iterator entry) const {
+		return *entry;
+	}
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
 	 *  /return An iterator to retrieve all suspended points, currently
 	            retrieves all points
 	 */
 	cw_iterator getSuspendedPoints() { 
+		return clockwise(pointNormals.front()); 
+	};
+	const_cw_iterator getSuspendedPoints() const { 
 		return clockwise(pointNormals.front()); 
 	};
 
@@ -593,9 +719,18 @@ class LoopPath {
 	template <typename BASE>
 	class iterator_gen {
 	public:
+		
+		template <typename OTHERBASE>
+		friend class iterator_gen;
+		
 		typedef BASE iterator;
-		iterator_gen(iterator i, LoopPath &p) : base(i), parent(p), 
+		iterator_gen(const iterator& i, const LoopPath &p) : base(i), parent(p), 
 				hasLooped(false) {};
+		template <typename OTHERBASE>
+		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
+				base(orig.iterator_gen<OTHERBASE>::base), 
+				parent(orig.iterator_gen<OTHERBASE>::parent), 
+				hasLooped(orig.iterator_gen<OTHERBASE>::hasLooped) {}
 
 		const PointType& operator*() { return base->getPoint(); }
 		const PointType* operator->() { return &(**this); }
@@ -641,11 +776,13 @@ class LoopPath {
 	private:
 		iterator base;
 		bool hasLooped;
-		LoopPath &parent;
+		const LoopPath &parent;
 	};
 public:
 	typedef iterator_gen<Loop::cw_iterator> iterator;
 	typedef iterator_gen<Loop::ccw_iterator> reverse_iterator;
+	typedef iterator_gen<Loop::const_cw_iterator> const_iterator;
+	typedef iterator_gen<Loop::const_ccw_iterator> const_reverse_iterator;
 
 	/*! Constructor, every LoopPath has a Loop and a start point.
 	 *  /param parent The Loop this LoopPath follows
@@ -653,42 +790,57 @@ public:
 	 *  /param rstart The same start point, counter clockwise
 	 */
 	LoopPath(Loop &p, Loop::cw_iterator s, Loop::ccw_iterator r)
-        : parent(p), start(s), rstart(r) {};
+        : parent(p), start(s), rstart(r) {}
 
 	/*! Iterator after the end of the list. */
 	iterator end() {
 		return iterator(parent.clockwiseEnd(),
-						*this); };
+						*this); }
+	const_iterator end() const {
+		return const_iterator(const_cast<const Loop&>(parent).clockwiseEnd(),
+						*this); }
 
 	/*! Reverse iterator after the end of the list. */
 	reverse_iterator rend() {
 		return reverse_iterator(parent.counterClockwiseEnd(),
-								*this); };
-
+								*this); }
+	const_reverse_iterator rend() const {
+		return const_reverse_iterator(
+				const_cast<const Loop&>(parent).counterClockwiseEnd(),
+								*this); }
 	/*! Get an iterator from the start point
 	 *  Will proceed clockwise and end at the same point
 	 */
 	iterator fromStart() { return iterator(start, *this); };
+	const_iterator fromStart() const { 
+		return const_iterator(iterator(start, *this)); 
+	}
 
 	/*! Get an iterator from the start point
 	 *  Will proceed counter clockwise and end at the same point
 	 */
 	reverse_iterator fromEnd() { return reverse_iterator(rstart, *this); }
+	const_reverse_iterator fromEnd() const { 
+		return const_reverse_iterator(reverse_iterator(rstart, *this)); 
+	}
 
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
 	 *  /return An iterator to retrieve all suspended points, currently
 	            retrieves all points
 	 */
-	iterator getSuspendedPoints() { return fromStart(); }; //stub
+	iterator getSuspendedPoints() { return fromStart(); } //stub
+	const_iterator getSuspendedPoints() const { return fromStart(); } //stub
 
 private:
 	Loop &parent;
 	Loop::cw_iterator start;
 	Loop::ccw_iterator rstart;
 
-	bool isBegin(Loop::cw_iterator i) { return i == start; };
-	bool isBegin(Loop::ccw_iterator i) { return i == rstart; };
+	bool isBegin(Loop::cw_iterator i) const { return i == start; }
+	bool isBegin(Loop::const_cw_iterator i) const { return i == start; }
+	bool isBegin(Loop::ccw_iterator i) const { return i == rstart; }
+	bool isBegin(Loop::const_ccw_iterator i) const { return i == rstart; }
 };
 
 }

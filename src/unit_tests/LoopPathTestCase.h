@@ -12,6 +12,9 @@ class LoopPathTestCase : public CPPUNIT_NS::TestFixture{
 	CPPUNIT_TEST( testLoopPathBasic );
 	CPPUNIT_TEST( testOpenPathJoin );
 	CPPUNIT_TEST( testOpenToLoopPathJoin );
+	CPPUNIT_TEST( testConstPath );
+	CPPUNIT_TEST( testConstLoop );
+	CPPUNIT_TEST( testConstLoopPath );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -23,6 +26,9 @@ protected:
 	void testLoopPathBasic();
 	void testOpenPathJoin();
 	void testOpenToLoopPathJoin();
+	void testConstPath();
+	void testConstLoop();
+	void testConstLoopPath();
 };
 
 

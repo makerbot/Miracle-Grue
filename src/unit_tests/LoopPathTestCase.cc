@@ -368,3 +368,65 @@ void LoopPathTestCase::testOpenToLoopPathJoin() {
 	++i;
 	CPPUNIT_ASSERT(i == joined.end());
 }
+
+void LoopPathTestCase::testConstPath() {
+	OpenPath path;
+	const OpenPath& constpath = path;
+	
+	for(Scalar x = 0.0; x < 10.0; ++x)
+		path.appendPoint(PointType(x,x));
+	
+	OpenPath::iterator regular = path.end();
+	OpenPath::const_iterator consted = constpath.end();
+	
+	for(regular = path.fromStart(), consted = constpath.fromStart(); 
+			regular != path.end() && 
+			consted != constpath.end(); 
+			++regular, ++consted){
+		cout << "Normal : " << *regular << endl;
+		cout << "Consted: " << *consted << endl;
+		CPPUNIT_ASSERT_EQUAL(*regular, *consted);
+	}
+}
+
+void LoopPathTestCase::testConstLoop() {
+	Loop loop;
+	const Loop& constloop = loop;
+	Loop::cw_iterator iter = loop.clockwise();
+	for(Scalar x = 1.0; x < 10.0; ++x)
+		iter = loop.insertPoint(PointType(x,x), iter);
+	
+	Loop::cw_iterator regulariter = ++loop.clockwise();
+	Loop::const_cw_iterator constiter = ++constloop.clockwise();
+	
+	for(; regulariter != loop.clockwise() && 
+			constiter != constloop.clockwise();
+			++regulariter, ++constiter){
+		cout << "Normal : " << *regulariter << endl;
+		cout << "Consted: " << *constiter << endl;
+		CPPUNIT_ASSERT_EQUAL(*regulariter, *constiter);
+	}
+}
+
+void LoopPathTestCase::testConstLoopPath() {
+	Loop loop;
+	Loop::cw_iterator iter = loop.clockwiseEnd();
+	for(Scalar x = 1.0; x < 10.0; ++x)
+		iter = loop.insertPoint(PointType(x,x), iter);
+	
+	LoopPath looppath(loop, loop.clockwise(*loop.clockwise()), 
+			loop.counterClockwise(*loop.clockwise()));
+	const LoopPath& constlooppath = looppath;
+	
+	LoopPath::iterator regular = looppath.fromStart();
+	LoopPath::const_iterator consted = constlooppath.fromStart();
+	
+	for(; regular != looppath.end() && consted != constlooppath.end(); 
+			++regular, ++consted){
+		cout << "Normal : " << *regular << endl;
+		cout << "Consted: " << *consted << endl;
+		CPPUNIT_ASSERT_EQUAL(*regular, *consted);
+	}
+}
+
+

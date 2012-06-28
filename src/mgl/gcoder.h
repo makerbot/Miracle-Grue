@@ -308,7 +308,9 @@ void GCoder::writePath(std::ostream& ss,
 		const Extruder& extruder, 
 		const Extrusion& extrusion, 
 		const PATH& path) {
-	Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
+	//Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
+	
+	
 }
 
 
