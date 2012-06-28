@@ -45,8 +45,14 @@ public:
 	
 	class Layer{
 	public:
-		std::list<LoopPath> insetPaths;
-		std::list<OpenPath> infillPaths;
+		typedef std::list<LoopPath> InsetList;
+		typedef std::list<OpenPath> InfillList;
+		typedef InsetList::iterator inset_iterator;
+		typedef InfillList::iterator infill_iterator;
+		typedef InsetList::const_iterator const_inset_iterator;
+		typedef InfillList::const_iterator const_infill_iterator;
+		InsetList insetPaths;
+		InfillList infillPaths;
 	};
 	
 	layer_iterator begin();

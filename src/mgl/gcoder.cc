@@ -12,8 +12,8 @@
 #include "gcoder.h"
 
 #include "log.h"
-#include "submodule/toolpathviz/gcodeviewapplication.h"
 #include <math.h>
+#include <string>
 
 namespace mgl {
 
@@ -408,27 +408,70 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
 	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
-
-void GCoder::calcInSetExtrusion (   unsigned int extruderId,
-                                    unsigned int sliceId,
-                                    unsigned int , // insetId,
-                                    unsigned int , // insetCount,
-                                    Extrusion &extrusion) const
-{
-	string profileName;
-	if(sliceId == 0)
-	{
-		profileName = gcoderCfg.extruders[extruderId].firstLayerExtrusionProfile;
+void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths, 
+		unsigned int extruderId, 
+		LayerPaths::const_layer_iterator layerId, 
+		Extrusion& extrusionParams) const {
+	string profileName = layerId == layerpaths.begin() ? 
+			gcoderCfg.extruders[extruderId].firstLayerExtrusionProfile :
+			gcoderCfg.extruders[extruderId].infillsExtrusionProfile;
+	
+	const std::map<std::string, Extrusion>::const_iterator it = 
+			gcoderCfg.extrusionProfiles.find(profileName);
+	if(it == gcoderCfg.extrusionProfiles.end()){
+		Log::severe() << "Failed to find extrusion profile <name>" << 
+				profileName  << "</name>" << endl;
+	} else {
+		extrusionParams = it->second;
 	}
-	else
-	{
+	extrusionParams.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
+	extrusionParams.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
+}
+
+void GCoder::calcInSetExtrusion(unsigned int extruderId,
+		unsigned int sliceId,
+		unsigned int, // insetId,
+		unsigned int, // insetCount,
+		Extrusion &extrusion) const {
+	string profileName;
+	if (sliceId == 0) {
+		profileName = gcoderCfg.extruders[extruderId].firstLayerExtrusionProfile;
+	} else {
 		profileName = gcoderCfg.extruders[extruderId].insetsExtrusionProfile;
 	}
 
-	const std::map<std::string, Extrusion>::const_iterator &it = gcoderCfg.extrusionProfiles.find(profileName);
+	const std::map<std::string, Extrusion>::const_iterator &it = 
+			gcoderCfg.extrusionProfiles.find(profileName);
+	if(it == gcoderCfg.extrusionProfiles.end()){
+		Log::severe() << "Failed to find extrusion profile <name>" << 
+				profileName  << "</name>" << endl;
+	} else {
+		extrusion = it->second;
+	}
 	extrusion = it->second;
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
 	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
+}
+
+void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths, 
+		unsigned int extruderId, 
+		LayerPaths::const_layer_iterator layerId, 
+		LayerPaths::Layer::const_inset_iterator insetId, 
+		Extrusion& extrusionParams) const {
+	string profileName = layerId == layerpaths.begin() ? 
+			gcoderCfg.extruders[extruderId].firstLayerExtrusionProfile :
+			gcoderCfg.extruders[extruderId].infillsExtrusionProfile;
+	
+	const std::map<std::string, Extrusion>::const_iterator it = 
+			gcoderCfg.extrusionProfiles.find(profileName);
+	if(it == gcoderCfg.extrusionProfiles.end()){
+		Log::severe() << "Failed to find extrusion profile <name>" << 
+				profileName  << "</name>" << endl;
+	} else {
+		extrusionParams = it->second;
+	}
+	extrusionParams.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
+	extrusionParams.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
@@ -489,7 +532,24 @@ void GCoder::writeGcodeFile(const LayerPaths& layerpaths,
 		const std::string& title, 
 		LayerPaths::const_layer_iterator begin, 
 		LayerPaths::const_layer_iterator end) {
-	
+	writeStartDotGCode(gout, title.c_str());
+	size_t sliceCount = 0;
+	for(LayerPaths::const_layer_iterator it = begin; 
+			it != end;
+			++it, ++sliceCount);
+	initProgress("gcode", sliceCount);
+	size_t codeSlice = 0;
+	size_t layerIndex = 0;
+	for(LayerPaths::const_layer_iterator it = layerpaths.begin(); 
+			it != begin;
+			++it, ++layerIndex);
+	for(LayerPaths::const_layer_iterator it = begin; 
+			it != end; ++it, ++codeSlice, ++layerIndex){
+		tick();
+		const LayerPaths::Layer& currentLayer = *it;
+		Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
+		writeSlice(gout, currentLayer, layerIndex, z);
+	}
 }
 
 Vector2 GCoder::startPoint(const SliceData& sliceData) {
@@ -651,6 +711,13 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
 		extruderId ++;
 	}
+}
+
+void GCoder::writeSlice(std::ostream& ss, 
+		const LayerPaths::Layer& currentLayer, 
+		size_t layerIndex, 
+		Scalar layerZ) {
+	
 }
 
 Scalar Extrusion::crossSectionArea(Scalar height) const {

@@ -211,14 +211,27 @@ public:
 
     ///  returns extrusionParams set based on the extruder id, and where you
     /// are in the model
-    void calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
-		Extrusion &extrusionParams) const;
+    void calcInfillExtrusion(unsigned int extruderId,
+			unsigned int sliceId,
+			Extrusion &extrusionParams) const;
+	void calcInfillExtrusion(const LayerPaths& layerpaths, 
+			unsigned int extruderId, 
+			LayerPaths::const_layer_iterator layerId, 
+			Extrusion& extrusionParams) const;
 
     ///  returns extrusionParams set based on the extruder id, and where you
     /// are in the model
-    void calcInSetExtrusion(unsigned int extruderId, unsigned int sliceId,
-    		unsigned int insetId,	 unsigned int insetCount,
-    		Extrusion &extrusionParams) const;
+    void calcInSetExtrusion(unsigned int extruderId,
+			unsigned int sliceId,
+			unsigned int insetId,
+			unsigned int insetCount,
+			Extrusion &extrusionParams) const;
+	void calcInSetExtrusion(const LayerPaths& layerpaths, 
+			unsigned int extruderId, 
+			LayerPaths::const_layer_iterator layerId, 
+			LayerPaths::Layer::const_inset_iterator insetId, 
+			Extrusion& extrusionParams) const;
+	
 
     /// Writes the start.gcode file, otherwise generates a
     /// start.gcode if needed
@@ -235,7 +248,12 @@ public:
         return gcoderCfg.extruders;
     }
 
-    void writeSlice(std::ostream & ss, const mgl::SliceData & pathData);
+    void writeSlice(std::ostream & ss, 
+			const mgl::SliceData & pathData);
+	void writeSlice(std::ostream& ss, 
+	const LayerPaths::Layer& currentLayer, 
+			size_t layerIndex,
+			Scalar layerZ);
 
 private:
 
