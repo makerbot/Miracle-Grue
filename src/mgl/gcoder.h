@@ -229,7 +229,7 @@ public:
 	void calcInSetExtrusion(const LayerPaths& layerpaths, 
 			unsigned int extruderId, 
 			LayerPaths::const_layer_iterator layerId, 
-			LayerPaths::Layer::const_inset_iterator insetId, 
+			LayerPaths::Layer::ExtruderLayer::const_inset_iterator insetId, 
 			Extrusion& extrusionParams) const;
 	
 

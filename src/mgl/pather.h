@@ -45,14 +45,32 @@ public:
 	
 	class Layer{
 	public:
-		typedef std::list<LoopPath> InsetList;
-		typedef std::list<OpenPath> InfillList;
-		typedef InsetList::iterator inset_iterator;
-		typedef InfillList::iterator infill_iterator;
-		typedef InsetList::const_iterator const_inset_iterator;
-		typedef InfillList::const_iterator const_infill_iterator;
-		InsetList insetPaths;
-		InfillList infillPaths;
+		class ExtruderLayer;
+		typedef std::list<ExtruderLayer> ExtruderList;
+		typedef ExtruderList::iterator extruder_iterator;
+		typedef ExtruderList::const_iterator const_extruder_iterator;
+		class ExtruderLayer{
+		public:
+			typedef std::list<LoopPath> InsetList;
+			typedef std::list<OpenPath> InfillList;
+			typedef std::list<LoopPath> OutlineList;
+			typedef InsetList::iterator inset_iterator;
+			typedef InfillList::iterator infill_iterator;
+			typedef OutlineList::iterator outline_iterator;
+			typedef InsetList::const_iterator const_inset_iterator;
+			typedef InfillList::const_iterator const_infill_iterator;
+			typedef OutlineList::const_iterator const_outline_iterator;
+			ExtruderLayer(size_t exId = 0) : extruderId(exId) {}
+			InsetList insetPaths;
+			InfillList infillPaths;
+			OutlineList outlinePaths;
+			size_t extruderId;
+		};
+		Layer(size_t lId = 0) : layerZ(0), layerHeight(0.27), layerId(lId) {}
+		ExtruderList extruders;
+		Scalar layerZ;		//vertical coordinate
+		Scalar layerHeight;	//thickness
+		size_t layerId;
 	};
 	
 	layer_iterator begin();
