@@ -308,6 +308,30 @@ void GCoder::writePath(std::ostream& ss,
 		const Extruder& extruder, 
 		const Extrusion& extrusion, 
 		const PATH& path) {
+	if(path.fromStart() == path.end()){
+		GcoderException mixup("Attempted to write path with no points");
+		throw mixup;
+	}
+	typename PATH::const_iterator current = path.fromStart();
+	// rapid move into position
+	gantry.g1(ss, extruder, extrusion,
+			current->x, current->y, z,
+			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
+			"move into position");
+	PointType last = *current;
+	++current;
+	gantry.squirt(ss, extruder, extrusion);
+	for(; current!=path.end(); last = *current, ++current){
+		PointType relative = (*current)-last;
+		std::stringstream comment;
+		Scalar distance = relative.magnitude();
+		comment << "d: " << distance;
+		gantry.g1(ss, extruder, extrusion, 
+				current->x, current->y, z, 
+				extrusion.feedrate, comment.str().c_str());
+	}
+	gantry.snort(ss, extruder, extrusion);
+	ss << std::endl;
 	//Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
 	
 	
