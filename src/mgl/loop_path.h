@@ -2,6 +2,7 @@
 #define LOOP_PATH_H
 
 #include <vector>
+#include <ostream>
 #include "libthing/Vector2.h"
 #include "libthing/LineSegment2.h"
 
@@ -195,6 +196,14 @@ private:
 	PointList points;
 	PointList endpoints;
 };
+
+//std::ostream& operator<<(std::ostream& out, OpenPath& openpath) {
+//	for(OpenPath::iterator it = openpath.fromStart(); 
+//			it != openpath.end(); 
+//			++it)
+//		out << *it << std::endl;
+//	return out;
+//}
 
 
 /*! /brief A closed loop
@@ -450,7 +459,10 @@ public:
 	 *  around the loop indefinitely.
 	 *  /return clockwise iterator from the start point
 	 */
-	cw_iterator clockwise() { return clockwise(pointNormals.front()); };
+	cw_iterator clockwise() { 
+		return cw_iterator(pointNormals.begin(), pointNormals.begin(), 
+				pointNormals.end());
+	};
 	
 	/*! Get an iterator that represents an end of the loop.
 	 *  This is not a point on the loop, but is returned upon failure to
@@ -482,7 +494,8 @@ public:
 	 *  /return counter clockwise iterator from the start point
 	 */
 	ccw_iterator counterClockwise() {
-		return counterClockwise(pointNormals.front());
+		return ccw_iterator(pointNormals.rbegin(), pointNormals.rbegin(), 
+				pointNormals.rend());
 	};
 	
 	/*! Get an iterator that represents an end of the loop.
@@ -562,6 +575,15 @@ private:
 	VectorList normals;
 	PointNormalList pointNormals;
 };
+
+//std::ostream& operator<<(std::ostream& out, Loop& loop) {
+//	bool moved = false;
+//	for(Loop::cw_iterator it = loop.clockwise(); 
+//			!it.isBegin() || !moved; 
+//			++it, moved = true)
+//		out << *it << std::endl;
+//	return out;
+//}
 
 /*! /brief Adapter to make a Loop look like an OpenPath
  *  Provides an interface to a loop that functions similar to the read only

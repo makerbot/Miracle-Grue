@@ -416,10 +416,7 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 			if(bestSegmentIt != segments.end())
 			{
 				// Swap the segments, because the best is the closest segment to the current one
-				LineSegment2 tmp(*startIt);
-				LineSegment2 best(*bestSegmentIt);
-				*startIt = best;
-				*bestSegmentIt = tmp;
+				swap(*startIt, *bestSegmentIt);
 				distances.push_back(distance);
 
 			}
@@ -440,8 +437,8 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 
 		loop.push_back(*i);
 
-		i++;
-		hopIt++;
+		++i;
+		++hopIt;
 		if(i == segments.end())
 		{
 			// this is sad ... a loop with a single segment
@@ -457,8 +454,8 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 			if(distance < tol)
 			{
 				loop.push_back(*i);
-				i++;
-				hopIt ++;
+				++i;
+				++hopIt;
 			}
 			else
 			{
@@ -472,7 +469,7 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 	}
 
 	// sanity check
-    for(unsigned int i=0; i < loops.size(); i++)
+    for(unsigned int i=0; i < loops.size(); ++i)
     {
     	const std::vector<LineSegment2 > &loop = loops[i];
     	if (loop.size() < 2)
@@ -484,7 +481,7 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 
 void mgl::translateLoops(SegmentTable &loops, Vector2 p)
 {
-	for(unsigned int i=0; i < loops.size(); i++)
+	for(unsigned int i=0; i < loops.size(); ++i)
 	{
 		translateSegments(loops[i],p);
 	}
@@ -492,7 +489,7 @@ void mgl::translateLoops(SegmentTable &loops, Vector2 p)
 
 void mgl::translatePolygons(Polygons &polygons, Vector2 p)
 {
-	for(size_t i=0; i < polygons.size(); i++)
+	for(size_t i=0; i < polygons.size(); ++i)
 	{
 		translatePolygon(polygons[i],p);
 	}
@@ -500,7 +497,7 @@ void mgl::translatePolygons(Polygons &polygons, Vector2 p)
 
 void mgl::translatePolygon(Polygon &polygon, Vector2 p)
 {
-	for(size_t i=0; i < polygon.size(); i++)
+	for(size_t i=0; i < polygon.size(); ++i)
 	{
 		polygon[i] += p;
 	}
