@@ -16,24 +16,54 @@
 
 #include "insets.h"
 #include "regioner.h"
+#include <list>
 
-namespace mgl
-{
+namespace mgl {
 
 
 
 // slice data for an extruder
-class ExtruderSlice
-{
+
+class ExtruderSlice {
 public:
 
-	Polygons boundary;  // boundary loops for areas of this slice of a print.
+	Polygons boundary; // boundary loops for areas of this slice of a print.
 	Polygons infills; // list of all lines that create infill for this layer
 
-	PolygonsGroup  insetLoopsList;  /// a list, each entry of which is a Polygons
-							/// object. Each inset[i] is all shell polygons
-							/// for the matching loops[i] boundary for this layer
+	PolygonsGroup insetLoopsList; /// a list, each entry of which is a Polygons
+	/// object. Each inset[i] is all shell polygons
+	/// for the matching loops[i] boundary for this layer
 
+};
+
+class LayerPaths{
+public:
+	class Layer;
+	typedef std::list<Layer> LayerList;
+	typedef LayerList::iterator layer_iterator;
+	typedef LayerList::const_iterator const_layer_iterator;
+	
+	class Layer{
+	public:
+		std::list<LoopPath> insetPaths;
+		std::list<OpenPath> infillPaths;
+	};
+	
+	layer_iterator begin();
+	const_layer_iterator begin() const;
+	layer_iterator end();
+	const_layer_iterator end() const;
+	void push_back(const Layer& value);
+	void push_front(const Layer& value);
+	void pop_back();
+	void pop_front();
+	layer_iterator insert(layer_iterator at, const Layer& value);
+	layer_iterator erase(layer_iterator at);
+	layer_iterator erase(layer_iterator from, layer_iterator to);
+	bool empty() const;
+	
+private:
+	LayerList layers;
 };
 
 ::std::ostream& operator<<(::std::ostream& os, const ExtruderSlice& x);

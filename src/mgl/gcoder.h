@@ -193,11 +193,21 @@ public:
 	/// @param firstSliceIdx: starting slice index, -1 if you want the whole model
 	/// @param lastSliceIdx: ending slice index, -1 if you want the whole model
 	void writeGcodeFile(std::vector <SliceData>& slices,
-			const mgl::LayerMeasure& layerMeasure,
-			std::ostream &gout,
+			const LayerMeasure& layerMeasure,
+			std::ostream& gout,
 			const char *title,
 			int firstSliceIdx=-1,
 			int lastSliceIdx=-1);
+	void writeGcodeFile(const LayerPaths& layerpaths, 
+			const LayerMeasure& layerMeasure, 
+			std::ostream& gout, 
+			const std::string& title);
+	void writeGcodeFile(const LayerPaths& layerpaths, 
+			const LayerMeasure& layerMeasure, 
+			std::ostream& gout, 
+			const std::string& title,
+			LayerPaths::const_layer_iterator begin,
+			LayerPaths::const_layer_iterator end);
 
     ///  returns extrusionParams set based on the extruder id, and where you
     /// are in the model

@@ -12,6 +12,7 @@
 #include "gcoder.h"
 
 #include "log.h"
+#include "submodule/toolpathviz/gcodeviewapplication.h"
 #include <math.h>
 
 namespace mgl {
@@ -431,20 +432,19 @@ void GCoder::calcInSetExtrusion (   unsigned int extruderId,
 }
 
 void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
-                             const mgl::LayerMeasure& layerMeasure,
-                                std::ostream &gout,
-                                    const char* title,
-                                        int iFirstSliceIdx,
-                                            int iLastSliceIdx)
-{
-    writeStartDotGCode(gout, title);
+		const mgl::LayerMeasure& layerMeasure,
+		std::ostream &gout,
+		const char* title,
+		int iFirstSliceIdx,
+		int iLastSliceIdx) {
+	writeStartDotGCode(gout, title);
 
-    size_t sliceCount = slices.size();
-    size_t firstSliceIdx = 0;
-    size_t lastSliceIdx = sliceCount-1;
+	size_t sliceCount = slices.size();
+	size_t firstSliceIdx = 0;
+	size_t lastSliceIdx = sliceCount - 1;
 
-    if(iFirstSliceIdx > 0) firstSliceIdx = (size_t) iFirstSliceIdx;
-    if(iLastSliceIdx  < 0) lastSliceIdx  = (size_t) iLastSliceIdx;
+	if (iFirstSliceIdx > 0) firstSliceIdx = (size_t) iFirstSliceIdx;
+	if (iLastSliceIdx < 0) lastSliceIdx = (size_t) iLastSliceIdx;
 
 	Extruder &extruder = gcoderCfg.extruders[0];
 	Extrusion extrusion;
@@ -452,26 +452,44 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
 	Vector2 start = startPoint(slices[0]);
 	gantry.squirt(gout, start, extruder, extrusion);
 	gantry.g1(gout, extruder, extrusion, start.x, start.y,
-						gantry.get_z(), extrusion.feedrate,
-						"Extrude into position");
+			gantry.get_z(), extrusion.feedrate,
+			"Extrude into position");
 
-    initProgress("gcode", sliceCount);
-    size_t codeSlice = 0;
+	initProgress("gcode", sliceCount);
+	size_t codeSlice = 0;
 
-    for(size_t sliceId=0; sliceId < sliceCount; sliceId++)
-    {
-        tick();
-        if(sliceId < firstSliceIdx) continue;
-        if(sliceId > lastSliceIdx) break;
+	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
+		tick();
+		if (sliceId < firstSliceIdx) continue;
+		if (sliceId > lastSliceIdx) break;
 
-        Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
-        SliceData &slice = slices[sliceId];
-        slice.updatePosition(z, sliceId);
-        writeSlice(gout, slice);
-        codeSlice ++;
-    }
+		Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
+		SliceData &slice = slices[sliceId];
+		slice.updatePosition(z, sliceId);
+		writeSlice(gout, slice);
+		codeSlice++;
+	}
 
 	writeEndDotGCode(gout);
+}
+void GCoder::writeGcodeFile(const LayerPaths& layerpaths, 
+		const LayerMeasure& layerMeasure, 
+		std::ostream& gout, 
+		const std::string& title) {
+	writeGcodeFile(layerpaths, 
+			layerMeasure,
+			gout, 
+			title, 
+			layerpaths.begin(), 
+			layerpaths.end());
+}
+void GCoder::writeGcodeFile(const LayerPaths& layerpaths, 
+		const LayerMeasure& layerMeasure, 
+		std::ostream& gout, 
+		const std::string& title, 
+		LayerPaths::const_layer_iterator begin, 
+		LayerPaths::const_layer_iterator end) {
+	
 }
 
 Vector2 GCoder::startPoint(const SliceData& sliceData) {
