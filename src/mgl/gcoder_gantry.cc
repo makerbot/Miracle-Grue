@@ -26,7 +26,7 @@ Scalar Gantry::get_a() const { return a; }
 Scalar Gantry::get_b() const { return b; }
 Scalar Gantry::get_feed() const { return feed; }
 bool Gantry::get_extruding() const { return extruding; }
-unsigned char Gantry::get_current_extruder_index() const { return ab; }
+unsigned char Gantry::get_current_extruder_code() const { return ab; }
 
 void Gantry::set_x(Scalar nx) { x = nx; }
 void Gantry::set_y(Scalar ny) { y = ny; }
@@ -50,7 +50,7 @@ void Gantry::init_to_start(){
 /// get axis value of the current extruder in(mm)
 /// (aka mm of feedstock since the last reset this print)
 Scalar Gantry::getCurrentE() const {
-	switch(get_current_extruder_index()){
+	switch(get_current_extruder_code()){
 	case 'A':
 		return get_a();
 		break;
@@ -60,7 +60,7 @@ Scalar Gantry::getCurrentE() const {
 	default:
 	{
 		string msg("Illegal extruder index ");
-		msg.push_back(get_current_extruder_index());
+		msg.push_back(get_current_extruder_code());
 		throw GcoderException(msg.c_str());
 		return 0;
 		break;
@@ -68,7 +68,7 @@ Scalar Gantry::getCurrentE() const {
 	}
 }
 void Gantry::setCurrentE(Scalar e) {
-	switch(get_current_extruder_index()){
+	switch(get_current_extruder_code()){
 	case 'A':
 		set_a(e);
 		break;
@@ -78,7 +78,7 @@ void Gantry::setCurrentE(Scalar e) {
 	default:
 	{
 		string msg("Illegal extruder index ");
-		msg.push_back(get_current_extruder_index());
+		msg.push_back(get_current_extruder_code());
 		throw GcoderException(msg.c_str());
 		break;
 	}
@@ -208,7 +208,7 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 
 	unsigned char ss_axis = 
 			(gantryCfg.get_use_e_axis() ? 'E' : 
-				get_current_extruder_index());
+				get_current_extruder_code());
 	
 	ss << "G1";
 	if(doX) ss << " X" << mx;

@@ -131,7 +131,7 @@ void GCoderTestCase::setUp()
 
 
 
-void rectangle(Polygon& poly, double lower_x, double lower_y, double dx, double dy)
+void rectangle(mgl::Polygon& poly, double lower_x, double lower_y, double dx, double dy)
 {
 	Vector2 p0(lower_x, lower_y);
 	Vector2 p1(p0.x, p0.y + dy);
@@ -159,9 +159,9 @@ void initSimplePath(SliceData &d)
 
 	for (int i=0; i< 4; i++)
 	{
-		polys.push_back(Polygon());
+		polys.push_back(mgl::Polygon());
 		size_t index= polys.size()-1;
-		Polygon &poly = polys[index];
+		mgl::Polygon &poly = polys[index];
 
 		double lower_x = -40 + 20 * i;
 		double lower_y = -30;
@@ -377,9 +377,9 @@ void initHorizontalGridPath(SliceData &d, double lowerX, double lowerY, double d
 	bool flip = false;
 	for (int i=0; i< lineCount; i++)
 	{
-		polys.push_back(Polygon());
+		polys.push_back(mgl::Polygon());
 		size_t index= polys.size()-1;
-		Polygon &poly = polys[index];
+		mgl::Polygon &poly = polys[index];
 
 		double y = lowerY + i * dy / lineCount;
 		Vector2 p0 (lowerX, y);
@@ -407,9 +407,9 @@ void initVerticalGridPath(SliceData &d, double lowerX, double lowerY, double dx,
 
 	for (int i=0; i< lineCount; i++)
 	{
-		polys.push_back(Polygon());
+		polys.push_back(mgl::Polygon());
 		size_t index= polys.size()-1;
-		Polygon &poly = polys[index];
+		mgl::Polygon &poly = polys[index];
 
 		double x = lowerX + i * dx / lineCount;
 		Vector2 p0 (x, lowerY);

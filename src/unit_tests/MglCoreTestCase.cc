@@ -218,7 +218,7 @@ void MglCoreTestCase::testTequalsPolygon()
 	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
 	Vector2 v4(0,0.04);
 
-	Polygon p1,p2,p3;
+	mgl::Polygon p1,p2,p3;
 	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
 	p2.push_back(v0);	p2.push_back(v1);	p2.push_back(v2);
 	p3.push_back(v0);
@@ -232,7 +232,7 @@ void MglCoreTestCase::testTequalsPolygon()
 	CPPUNIT_ASSERT(same == true);
 
 	Vector2 v5(0,0),v6(0,1),v7(1,0), v8(SCALAR_EPSILON*2,1);
-	Polygon p4;
+	mgl::Polygon p4;
 	p4.push_back(v5);	p4.push_back(v6);	p2.push_back(v7);
 	same = tequalsPolygonCompare(p1,p4, SCALAR_EPSILON);
 	CPPUNIT_ASSERT(same == false);
@@ -244,7 +244,7 @@ void MglCoreTestCase::testTequalsPolygons()
 	Vector2 v0(0,0),v1(0,1),v2(1,0), v3(0,1);
 	Vector2 v4(0,0.04);
 
-	Polygon p1,p2,p3;
+	mgl::Polygon p1,p2,p3;
 	p1.push_back(v0);	p1.push_back(v1);	p1.push_back(v2);
 	p2.push_back(v1);	p2.push_back(v1);	p2.push_back(v2);
 

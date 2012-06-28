@@ -19,6 +19,7 @@
 
 
 #include "gcoder_gantry.h"
+#include "log.h"
 
 namespace mgl
 {
@@ -198,16 +199,16 @@ public:
 			const char *title,
 			int firstSliceIdx=-1,
 			int lastSliceIdx=-1);
-	void writeGcodeFile(const LayerPaths& layerpaths, 
+	void writeGcodeFile(LayerPaths& layerpaths, 
 			const LayerMeasure& layerMeasure, 
 			std::ostream& gout, 
 			const std::string& title);
-	void writeGcodeFile(const LayerPaths& layerpaths, 
+	void writeGcodeFile(LayerPaths& layerpaths, 
 			const LayerMeasure& layerMeasure, 
 			std::ostream& gout, 
 			const std::string& title,
-			LayerPaths::const_layer_iterator begin,
-			LayerPaths::const_layer_iterator end);
+			LayerPaths::layer_iterator begin,
+			LayerPaths::layer_iterator end);
 
     ///  returns extrusionParams set based on the extruder id, and where you
     /// are in the model
@@ -251,9 +252,8 @@ public:
     void writeSlice(std::ostream & ss, 
 			const mgl::SliceData & pathData);
 	void writeSlice(std::ostream& ss, 
-	const LayerPaths::Layer& currentLayer, 
-			size_t layerIndex,
-			Scalar layerZ);
+			LayerPaths& layerpaths, 
+			LayerPaths::layer_iterator layerId);
 
 private:
 
@@ -264,21 +264,52 @@ private:
 //    void writeHomingSequence(std::ostream & ss);
 //    void writeWarmupSequence(std::ostream & ss);
 //    void writeAnchor(std::ostream & ss);
+	void writeInfills(std::ostream& ss, 
+			Scalar z, 
+			size_t sliceId, 
+			const Extruder& extruder, 
+			const LayerPaths::Layer::ExtruderLayer& paths);
+	void writeInsets(std::ostream& ss, 
+			Scalar z, 
+			size_t sliceId, 
+			const Extruder& extruder, 
+			const LayerPaths& layerpaths,
+			LayerPaths::layer_iterator layerId, 
+			const LayerPaths::Layer::ExtruderLayer& paths);
+	void writeOutlines(std::ostream& ss, 
+			Scalar z, 
+			size_t sliceId, 
+			const Extruder& extruder, 
+			const LayerPaths::Layer::ExtruderLayer& paths);
     void writePolygons(std::ostream& ss,
 			Scalar z,
 			const Extruder &extruder,
 			const Extrusion &extrusion,
 			const Polygons &paths);
-
     void writePolygon(std::ostream & ss,
 			Scalar z,
 			const Extruder &extruder,
 			const Extrusion &extrusion,
 			const Polygon & polygon);
+	template <typename PATH>
+	void writePath(std::ostream& ss, 
+			Scalar z,
+			const Extruder& extruder,
+			const Extrusion& extrusion, 
+			const PATH& path);
 
 	libthing::Vector2 startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
 };
+
+template <typename PATH>
+void GCoder::writePath(std::ostream& ss, 
+		Scalar z, 
+		const Extruder& extruder, 
+		const Extrusion& extrusion, 
+		const PATH& path) {
+	Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
+}
 
 
 }

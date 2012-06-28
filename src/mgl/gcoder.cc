@@ -14,6 +14,7 @@
 #include "log.h"
 #include <math.h>
 #include <string>
+#include <list>
 
 namespace mgl {
 
@@ -303,64 +304,58 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
 //	ss << endl;
 //}
 
+void GCoder::writePolygon(std::ostream & ss,
+		double z,
+		const Extruder &extruder,
+		const Extrusion &extrusion,
+		const Polygon & polygon) {
+	Vector2 start(0, 0), stop(0, 0);
 
-void GCoder::writePolygon(	std::ostream & ss,
-							double z,
-							const Extruder &extruder,
-							const Extrusion &extrusion,
-							const Polygon & polygon) {
-    Vector2 start(0, 0), stop(0, 0);
+	polygonLeadInAndLeadOut(polygon, extruder, extrusion.leadIn, extrusion.leadOut, start, stop);
 
-    polygonLeadInAndLeadOut(polygon, extruder, extrusion.leadIn, extrusion.leadOut, start, stop);
+	// rapid move into position
+	gantry.g1(ss, extruder, extrusion,
+			start.x, start.y, z,
+			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
+			"move into position");
 
-    // rapid move into position
-    gantry.g1(ss, extruder, extrusion,
-						start.x, start.y, z,
-						gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
-						"move into position");
-
-    // start extruding ahead of time while moving towards the first point
-    gantry.squirt(ss, polygon[0], extruder, extrusion);
+	// start extruding ahead of time while moving towards the first point
+	gantry.squirt(ss, polygon[0], extruder, extrusion);
 
 	Vector2 last = start;
-   // for all other points in the polygon
-    for(size_t i=1; i < polygon.size(); i++)
-	{
-    	// move towards the point
+	// for all other points in the polygon
+	for (size_t i = 1; i < polygon.size(); i++) {
+		// move towards the point
 		const Vector2 &p = polygon[i];
 		Scalar dist = LineSegment2(last, p).length();
 		stringstream comment;
 		comment << "d: " << dist;
 
 		gantry.g1(ss, extruder, extrusion, p.x, p.y, z,
-							extrusion.feedrate, comment.str().c_str());
+				extrusion.feedrate, comment.str().c_str());
 	}
-    //ss << "(STOP!)" << endl;
-    gantry.snort(ss, stop, extruder, extrusion);
-    //ss << "(!STOP)" << endl;
-    ss << endl;
+	//ss << "(STOP!)" << endl;
+	gantry.snort(ss, stop, extruder, extrusion);
+	//ss << "(!STOP)" << endl;
+	ss << endl;
 
 }
 
-
 void GCoder::writePolygons(std::ostream& ss,
-						   Scalar z,
-						   const Extruder &extruder,
-						   const Extrusion &extrusion,
-						   const Polygons &paths)
-{
+		Scalar z,
+		const Extruder &extruder,
+		const Extrusion &extrusion,
+		const Polygons &paths) {
 	unsigned int pathCount = paths.size();
-	for (unsigned int i = 0 ; i < pathCount;  i ++)
-	{
+	for (unsigned int i = 0; i < pathCount; i++) {
 
 		const Polygon &polygon = paths[i];
-		ss << "(  path " << i << "/" << pathCount << ", " << polygon.size() << " points, "  << " )" << endl;
+		ss << "(  path " << i << "/" << pathCount << ", " << polygon.size() << " points, " << " )" << endl;
 
 		unsigned int pointCount = polygon.size();
-		if(pointCount < 2)
-		{
+		if (pointCount < 2) {
 			stringstream ss;
-			ss << "Can't generate gcode for polygon " << i <<" with " << pointCount << " points.";
+			ss << "Can't generate gcode for polygon " << i << " with " << pointCount << " points.";
 			GcoderException mixup(ss.str().c_str());
 			throw mixup;
 		}
@@ -369,16 +364,93 @@ void GCoder::writePolygons(std::ostream& ss,
 	}
 }
 
-void GCoder::moveZ(ostream & ss, Scalar z, unsigned int  , Scalar zFeedrate)
-{
-    bool doX = false;
-    bool doY = false;
-    bool doZ = true;
+void GCoder::writeInfills(std::ostream& ss, 
+		Scalar z, 
+		size_t sliceId, 
+		const Extruder& extruder,  
+		const LayerPaths::Layer::ExtruderLayer& paths) {
+	try {
+		ss << "(infills: "  << paths.infillPaths.size() << ")"<< endl;
+		Extrusion extrusion;
+		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		for(LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter = 
+				paths.infillPaths.begin(); 
+				iter != paths.infillPaths.end(); 
+				++iter){
+			writePath(ss, z, extruder, extrusion, *iter);
+		}
+	} catch (GcoderException& mixup) {
+		Log::info() << "ERROR writing infills in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+		Log::severe() << "ERROR writing infills in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+	}
+}
+
+void GCoder::writeInsets(std::ostream& ss, 
+		Scalar z, 
+		size_t sliceId, 
+		const Extruder& extruder, 
+		const LayerPaths& layerpaths, 
+		LayerPaths::layer_iterator layerId, 
+		const LayerPaths::Layer::ExtruderLayer& paths) {
+	try {
+		ss << "(insets: "  << paths.insetPaths.size() << ")"<< endl;
+		Extrusion extrusion;
+		for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator iter = 
+				paths.insetPaths.begin(); 
+				iter != paths.insetPaths.end(); 
+				++iter){
+			calcInSetExtrusion(layerpaths, extruder.id, layerId, iter, 
+					extrusion);
+			writePath(ss, z, extruder, extrusion, *iter);
+		}
+	} catch (GcoderException& mixup) {
+		Log::info() << "ERROR writing insets in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+		Log::severe() << "ERROR writing insets in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+	} 
+}
+
+void GCoder::writeOutlines(std::ostream& ss, 
+		Scalar z, 
+		size_t sliceId, 
+		const Extruder& extruder,  
+		const LayerPaths::Layer::ExtruderLayer& paths) {
+	try {
+		ss << "(outlines: "  << paths.outlinePaths.size() << ")"<< endl;
+		Extrusion extrusion;
+		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		for(LayerPaths::Layer::ExtruderLayer::const_outline_iterator iter = 
+				paths.outlinePaths.begin(); 
+				iter != paths.outlinePaths.end(); 
+				++iter){
+			writePath(ss, z, extruder, extrusion, *iter);
+		}
+	} catch (GcoderException& mixup) {
+		Log::info() << "ERROR writing outlines in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+		Log::severe() << "ERROR writing outlines in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+	}
+}
+
+void GCoder::moveZ(ostream & ss, Scalar z, unsigned int, Scalar zFeedrate) {
+	bool doX = false;
+	bool doY = false;
+	bool doZ = true;
 	bool doE = false;
-    bool doFeed = true;
+	bool doFeed = true;
 
 
-    gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
+	gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
 
 }
 
@@ -515,7 +587,7 @@ void GCoder::writeGcodeFile(std::vector <SliceData>& slices,
 
 	writeEndDotGCode(gout);
 }
-void GCoder::writeGcodeFile(const LayerPaths& layerpaths, 
+void GCoder::writeGcodeFile(LayerPaths& layerpaths, 
 		const LayerMeasure& layerMeasure, 
 		std::ostream& gout, 
 		const std::string& title) {
@@ -526,12 +598,12 @@ void GCoder::writeGcodeFile(const LayerPaths& layerpaths,
 			layerpaths.begin(), 
 			layerpaths.end());
 }
-void GCoder::writeGcodeFile(const LayerPaths& layerpaths, 
+void GCoder::writeGcodeFile(LayerPaths& layerpaths, 
 		const LayerMeasure& layerMeasure, 
 		std::ostream& gout, 
 		const std::string& title, 
-		LayerPaths::const_layer_iterator begin, 
-		LayerPaths::const_layer_iterator end) {
+		LayerPaths::layer_iterator begin, 
+		LayerPaths::layer_iterator end) {
 	writeStartDotGCode(gout, title.c_str());
 	size_t sliceCount = 0;
 	for(LayerPaths::const_layer_iterator it = begin; 
@@ -543,13 +615,16 @@ void GCoder::writeGcodeFile(const LayerPaths& layerpaths,
 	for(LayerPaths::const_layer_iterator it = layerpaths.begin(); 
 			it != begin;
 			++it, ++layerIndex);
-	for(LayerPaths::const_layer_iterator it = begin; 
+	for(LayerPaths::layer_iterator it = begin; 
 			it != end; ++it, ++codeSlice, ++layerIndex){
 		tick();
-		const LayerPaths::Layer& currentLayer = *it;
+		LayerPaths::Layer& currentLayer = *it;
 		Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
-		writeSlice(gout, currentLayer, layerIndex, z);
+		currentLayer.layerZ = z;
+		currentLayer.layerId = layerIndex;
+		writeSlice(gout, layerpaths, it);
 	}
+	writeEndDotGCode(gout);
 }
 
 Vector2 GCoder::startPoint(const SliceData& sliceData) {
@@ -582,7 +657,8 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 	unsigned int sliceIndex = sliceData.getIndex();
 	unsigned int extruderCount = sliceData.extruderSlices.size();
 
-	ss << "(Slice " << sliceIndex << ", " << extruderCount << " " << plural("Extruder", extruderCount) << ")"<< endl;
+	ss << "(Slice " << sliceIndex << ", " << extruderCount << 
+			" " << plural("Extruder", extruderCount) << ")"<< endl;
 	if(gcoderCfg.doPrintLayerMessages){
 		ss << "M70 P20 (Layer: " << sliceIndex << ")" << endl;
 	}
@@ -595,13 +671,12 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 	    Scalar z = layerZ + gcoderCfg.extruders[extruderId].nozzleZ;
 		Extruder &extruder = gcoderCfg.extruders[extruderId];
 
-		try
-		{
-		    moveZ(ss, z, extruderId, zFeedrate);
-		}
-		catch(GcoderException &mixup)
-		{
-                    Log::info() << "ERROR writing Z move in slice " << sliceIndex  << " for extruder " << extruderId << " : " << mixup.error << endl;
+		try {
+			moveZ(ss, z, extruderId, zFeedrate);
+		} catch (GcoderException &mixup) {
+			Log::info() << "ERROR writing Z move in slice " <<
+					sliceIndex << " for extruder " << extruderId <<
+					" : " << mixup.error << endl;
 		}
 
 	  	ss << "(   Extruder " <<  extruderId << ")" << endl;
@@ -611,22 +686,17 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
                 // Log::often() << endl <<  "Slice " << sliceData.sliceIndex << endl;
 
-		try
-		{
-			if (extruderCount > 0)
-			{
+		try {
+			if (extruderCount > 0) {
 				gantry.writeSwitchExtruder(ss, extruder);
 			}
-			if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst)
-			{
+			if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
 				Extrusion extrusion;
 				calcInfillExtrusion(extruderId, sliceIndex, extrusion);
 				ss << "(infills: "  << infills.size() << ")"<< endl;
 				writePolygons(ss, z, extruder, extrusion, infills);
 			}
-		}
-		catch(GcoderException &mixup)
-		{
+		} catch(GcoderException &mixup)	{
 			Log::info() << "ERROR writing infills in slice " << 
 					sliceIndex  << " for extruder " << 
 					extruderId << " : " << mixup.error << endl;
@@ -676,13 +746,11 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 
 				}
 			}
-		}
-		catch(GcoderException &mixup)
-		{
-            Log::info() << "ERROR writing infills in slice " << 
+		} catch(GcoderException &mixup) {
+            Log::info() << "ERROR writing insets in slice " << 
 					sliceIndex  << " for extruder " << 
 					extruderId << " : " << mixup.error << endl;
-			cerr << "ERROR writing infills in slice " << 
+			cerr << "ERROR writing insets in slice " << 
 					sliceIndex  << " for extruder " << 
 					extruderId << " : " << mixup.error << endl;
 		}
@@ -714,10 +782,51 @@ void GCoder::writeSlice(ostream& ss, const SliceData& sliceData )
 }
 
 void GCoder::writeSlice(std::ostream& ss, 
-		const LayerPaths::Layer& currentLayer, 
-		size_t layerIndex, 
-		Scalar layerZ) {
-	
+		LayerPaths& layerpaths, 
+		LayerPaths::layer_iterator layerId) {
+	LayerPaths::Layer& currentLayer = *layerId;
+	unsigned int sliceIndex = currentLayer.layerId;
+	unsigned int extruderCount = currentLayer.extruders.size();
+	ss << "(Slice " << sliceIndex << ", " << extruderCount << 
+			" " << plural("Extruder", extruderCount) << ")"<< endl;
+	if(gcoderCfg.doPrintLayerMessages){
+		//print layer message to printer screen if config enabled
+		ss << "M70 P20 (Layer: " << sliceIndex << ")" << endl;
+	}
+	//iterate over all extruders invoked in this layer
+	for(LayerPaths::Layer::const_extruder_iterator it = 
+			currentLayer.extruders.begin(); 
+			it != currentLayer.extruders.end(); 
+			++it){
+		//this is the current extruder
+		Extruder& currentExtruder = gcoderCfg.extruders[it->extruderId];
+		//this is the current extruder's zFeedrate
+		Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() * 
+				currentExtruder.zFeedRate;
+		try {
+			moveZ(ss, currentLayer.layerZ, currentExtruder.id, zFeedrate);
+		} catch(GcoderException& mixup) {
+			Log::info() << "ERROR writing Z move in slice " <<
+					sliceIndex << " for extruder " << currentExtruder.id <<
+					" : " << mixup.error << endl;
+		}
+		if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
+			writeInfills(ss, currentLayer.layerZ, currentLayer.layerId, 
+					currentExtruder, *it);
+		}
+		if(gcoderCfg.doOutlines) {
+			writeOutlines(ss, currentLayer.layerZ, currentLayer.layerId, 
+					currentExtruder, *it);
+		}
+		if(gcoderCfg.doInsets) {
+			writeInsets(ss, currentLayer.layerZ, currentLayer.layerId, 
+					currentExtruder, layerpaths, layerId, *it);			
+		}
+		if(gcoderCfg.doInfills && !gcoderCfg.doInfillsFirst) {
+			writeInfills(ss, currentLayer.layerZ, currentLayer.layerId, 
+					currentExtruder, *it);
+		}
+	}
 }
 
 Scalar Extrusion::crossSectionArea(Scalar height) const {

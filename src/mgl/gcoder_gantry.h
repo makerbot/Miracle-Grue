@@ -86,7 +86,7 @@ public:
 	Scalar get_b() const;
 	Scalar get_feed() const;
 	bool get_extruding() const;
-	unsigned char get_current_extruder_index() const;
+	unsigned char get_current_extruder_code() const;
 	
 	void set_x(Scalar nx);
 	void set_y(Scalar ny);

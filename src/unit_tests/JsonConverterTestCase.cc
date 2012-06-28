@@ -131,7 +131,7 @@ void fillJsonWithPolygon(Json::Value& value,
 	value.append(v2);
 }
 
-bool fillPolygon(Polygon& poly, int baseX=0, int baseY=0, int delta=1)
+bool fillPolygon(mgl::Polygon& poly, int baseX=0, int baseY=0, int delta=1)
 {
 	Vector2 v0(baseX+0,baseY+0),v1(baseX+0,baseY+1),v2(baseX+1,baseY+1);
 	poly.push_back(v0); poly.push_back(v1); poly.push_back(v2);
@@ -144,7 +144,7 @@ void JsonConverterTestCase::testPolygonToJson()
 {
 	JsonConverter converter;
 
-	Polygon polyTest;
+	mgl::Polygon polyTest;
 	fillPolygon(polyTest);
 	Value value;
 	//cout << value << endl;
@@ -167,7 +167,7 @@ void JsonConverterTestCase::testJsonToPolygon( )
 {
 	JsonConverter converter;
 	Json::Value v0,v1;
-	Polygon expected, converted0,converted1;
+	mgl::Polygon expected, converted0,converted1;
 	fillJsonWithPolygon(v0,0.0,0.0);
 	fillJsonWithPolygon(v1,0.2,1.0);
 	bool ok = fillPolygon(expected);
@@ -191,7 +191,7 @@ inline bool fillPolygons(Polygons& polys, int baseX=0, int baseY=0, int delta=1)
 {
 	Vector2 v0(baseX+0,baseY+0),v1(baseX+0,baseY+1),v2(baseX+1,baseY+1);
 	Vector2 v3(baseX+1,baseY+0),v4(baseX+1,baseY+1),v5(baseX+2,baseY+1);
-	Polygon p0,p1;
+	mgl::Polygon p0,p1;
 	p0.push_back(v0); p0.push_back(v1); p0.push_back(v2);
 	p1.push_back(v3); p1.push_back(v4); p1.push_back(v5);
 	polys.push_back(p0);	polys.push_back(p1);
@@ -241,7 +241,7 @@ void JsonConverterTestCase::testPolygonsToJson()
 	JsonConverter converter;
 	Vector2 v0(0,0),v1(0,1),v2(1,1);
 	Vector2 v3(1,0),v4(1,1),v5(2,1);
-	Polygon p0,p1;
+	mgl::Polygon p0,p1;
 	p0.push_back(v0); p0.push_back(v1); p0.push_back(v2);
 	p1.push_back(v3); p1.push_back(v4); p1.push_back(v5);
 	Polygons polyTest;
