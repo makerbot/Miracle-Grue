@@ -549,6 +549,18 @@ public:
 		afterbase = pointNormals.insert(afterbase, point);
 		return cw_iterator(afterbase, pointNormals.begin(), pointNormals.end());
 	}
+	/*! Insert points into the loop at a specific location.
+	 *  The iterator passed to position is not guaranteed valid when this
+	 *  operation is done
+	 *  /param iterator location for this to be inserted at
+	 *  /return iterator for the new position
+	 */
+	template <typename ITER, typename OTHERITER>
+	ITER insertPoints(ITER position, OTHERITER first, OTHERITER last) {
+		typename ITER::iterator at = &position;
+		typename ITER::iterator ret = pointNormals.insert(at, &first, &last);
+		return ITER(ret, position.makeBegin(), position.makeEnd());
+	}
 
 	/*! Get an iterator that traverses around the loop clockwise.  There is no
 	 *  end, the iterator will continue around the loop indefinitely.

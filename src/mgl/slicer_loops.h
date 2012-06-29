@@ -17,7 +17,6 @@ namespace mgl {
 
 class LayerLoops{	
 public:
-	class Layer;
 	typedef std::list<Loop> LoopList;
 	typedef LoopList Layer;
 	typedef std::list<Layer> LayerList;
@@ -39,6 +38,8 @@ public:
 	layer_iterator erase(layer_iterator at);
 	layer_iterator erase(layer_iterator from, layer_iterator to);
 	bool empty() const;
+	
+	const LayerList& readLayers() const;
 	
 	Grid grid;
 	LayerMeasure layerMeasure;

@@ -45,6 +45,10 @@ LayerLoops::layer_iterator LayerLoops::erase(layer_iterator from,
 }
 bool LayerLoops::empty() const { return layers.empty(); }
 
+const LayerLoops::LayerList& LayerLoops::readLayers() const {
+	return layers;
+}
+
 
 
 
