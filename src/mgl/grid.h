@@ -190,8 +190,8 @@ public:
     /// Takes a gridRange and converts that into Polygons that can be used to generate
     /// gcode.
     void pathsFromRanges(const GridRanges &gridRanges,
-						 LoopList &outline,
-						 bool xDirection, OpenPathList &paths) const;
+						 const LoopList &outline,
+						 const bool xDirection, OpenPathList &paths) const;
 
     /// joins a/b grid ranges into
     void gridRangeUnion(const GridRanges& a, const GridRanges &b, 

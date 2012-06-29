@@ -21,8 +21,8 @@ Pather::Pather(ProgressBar * progress)
 }
 
 
-void Pather::generatePaths( LayerLoops &layerloops,
-							/*const*/ Regions &skeleton,
+void Pather::generatePaths(const LayerLoops &layerloops,
+						   const Regions &skeleton,
 						   LayerPaths &layerpaths,
 						   int sfirstSliceIdx,  // =-1
 						   int slastSliceIdx )  //
@@ -45,7 +45,7 @@ void Pather::generatePaths( LayerLoops &layerloops,
 
 	initProgress("Path generation", layerpaths.layerCount());
 
-	for(/*const*/LayerLoops::layer_iterator i = layerloops.begin();
+	for(/*const*/LayerLoops::const_layer_iterator i = layerloops.begin();
 		i != layerloops.end(); ++i)
 	{
 		tick();
@@ -54,7 +54,7 @@ void Pather::generatePaths( LayerLoops &layerloops,
 		if(currentSlice > lastSliceIdx) break;
 
 		direction = !direction;
-		LoopList& outline_loops = *i;
+		const LoopList& outline_loops = *i;
 
 		Scalar z = layerloops.layerMeasure.sliceIndexToHeight(currentSlice);
 
@@ -68,7 +68,7 @@ void Pather::generatePaths( LayerLoops &layerloops,
 		LayerPaths::Layer::ExtruderLayer extruderlayer =
 			lp_layer.extruders.back();
 
-		/*const*/ std::list<LoopList> &insetLoops = skeleton.insetLoops[currentSlice];
+		const std::list<LoopList> &insetLoops = skeleton.insetLoops[currentSlice];
 
 		outlines(outline_loops, extruderlayer.outlinePaths);
 
@@ -84,29 +84,29 @@ void Pather::generatePaths( LayerLoops &layerloops,
 }
 
 
-void Pather::outlines(/*const*/ LoopList& outline_loops,
+void Pather::outlines(const LoopList& outline_loops,
 					  LoopPathList &boundary_paths)
 {
 	//using a indeterminate start point for the beginning of the LoopPathList
 	//as that's what the old Polygon logic did
 
-	for (LoopList::iterator i = outline_loops.begin();
+	for (LoopList::const_iterator i = outline_loops.begin();
 		 i != outline_loops.end(); ++i) {
 		boundary_paths.push_back(LoopPath(*i, i->clockwise(),
 										  i->counterClockwise()));
 	}
 }
 
-void Pather::insets(/*const*/ list<LoopList>& inset_loops,
+void Pather::insets(const list<LoopList>& inset_loops,
 					list<LoopPathList> &inset_paths)
 {
-	for (list<LoopList>::iterator i = inset_loops.begin();
+	for (list<LoopList>::const_iterator i = inset_loops.begin();
 		 i != inset_loops.end(); ++i) {
 
 		inset_paths.push_back(LoopPathList());
 		LoopPathList& lp_list = inset_paths.back();
 
-		for (LoopList::iterator j = i->begin(); j != i->end(); ++j) {
+		for (LoopList::const_iterator j = i->begin(); j != i->end(); ++j) {
 			lp_list.push_back(LoopPath(*j, j->clockwise(),
 									   j->counterClockwise()));
 		}
@@ -116,8 +116,8 @@ void Pather::insets(/*const*/ list<LoopList>& inset_loops,
 
 void Pather::infills(const GridRanges &infillRanges,
 					 const Grid &grid,
-					 /*const*/ LoopList &outlines,
-					 bool direction,
+					 const LoopList &outlines,
+					 const bool direction,
 					 OpenPathList &infills)
 {
 	grid.pathsFromRanges(infillRanges, outlines, direction, infills);
