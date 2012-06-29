@@ -572,12 +572,6 @@ public:
 		}
 		return clockwiseEnd();
 	}
-	finite_cw_iterator clockwiseFinite(const PointType& startpoint) {
-		return finite_cw_iterator(clockwise(startpoint));
-	}
-	const_finite_cw_iterator clockwiseFinite(const PointType& startpoint) const {
-		return const_finite_cw_iterator(clockwise(startpoint));
-	}
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
 	 *  around the loop indefinitely.
@@ -632,13 +626,6 @@ public:
 						pointNormals.rend());
 		}
 		return counterClockwiseEnd();
-	}
-	finite_ccw_iterator counterClockwiseFinite(const PointType& startpoint) {
-		return finite_ccw_iterator(counterClockwise(startpoint));
-	}
-	const_finite_ccw_iterator counterClockwiseFinite(const PointType& startpoint
-			) const {
-		return const_finite_ccw_iterator(counterClockwise(startpoint));
 	}
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
