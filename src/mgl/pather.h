@@ -16,11 +16,12 @@
 
 #include "insets.h"
 #include "regioner.h"
+#include "loop_path.h"
 #include <list>
 
 namespace mgl {
 
-
+typedef std::vector<LoopList> InsetVector; // TODO: make this a smarter object
 
 // slice data for an extruder
 
@@ -29,11 +30,9 @@ public:
 
 	Polygons boundary; // boundary loops for areas of this slice of a print.
 	Polygons infills; // list of all lines that create infill for this layer
-
 	PolygonsGroup insetLoopsList; /// a list, each entry of which is a Polygons
 	/// object. Each inset[i] is all shell polygons
 	/// for the matching loops[i] boundary for this layer
-
 };
 
 class LayerPaths{
@@ -51,7 +50,7 @@ public:
 		typedef ExtruderList::const_iterator const_extruder_iterator;
 		class ExtruderLayer{
 		public:
-			typedef std::list<LoopPath> InsetList;
+			typedef std::list<LoopPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
 			typedef std::list<LoopPath> OutlineList;
 			typedef InsetList::iterator inset_iterator;
@@ -66,6 +65,8 @@ public:
 			OutlineList outlinePaths;
 			size_t extruderId;
 		};
+		Layer(Scalar z, Scalar layerh, size_t id)
+			: layerZ(z), layerHeight(layerh), layerId(id) {}
 		Layer(size_t lId = 0) : layerZ(0), layerHeight(0.27), layerId(lId) {}
 		ExtruderList extruders;
 		Scalar layerZ;		//vertical coordinate
@@ -85,7 +86,8 @@ public:
 	layer_iterator erase(layer_iterator at);
 	layer_iterator erase(layer_iterator from, layer_iterator to);
 	bool empty() const;
-	
+	size_t layerCount() const;
+	Layer& back();
 private:
 	LayerList layers;
 };
@@ -138,23 +140,25 @@ public:
 	Pather(ProgressBar * progress = NULL);
 
 
-	void generatePaths(const Tomograph &tomograph,
-						const Regions &skeleton,
-						std::vector<SliceData> &slices,
+	void generatePaths(/*const*/LayerLoops &layerloops,
+					   /*const*/ Regions &skeleton,
+						LayerPaths &slices,
 						int sfirstSliceIdx=-1,
 						int slastSliceIdx=-1);
 
 
-	void outlines(const libthing::SegmentTable& outlinesSegments, Polygons &boundary);
+	void outlines(LayerLoops::Layer& outline_loops,
+				  LoopPathList &boundary_paths);
 
-	void insets(const libthing::Insets& insetsForSlice, PolygonsGroup &insetPolys);
+	void insets(std::list<LoopList>& insetsForSlice,
+				std::list<LoopPathList> &insetPaths);
 
 	void infills(const GridRanges &infillRanges,
 				 const Grid &grid,
-				 const libthing::SegmentTable &outline,
+				 /*const*/ LayerLoops::Layer &outlines,
 				 bool direction,
-				 Polygons &infills);
-
+				 OpenPathList &infills);
+	
 
 };
 

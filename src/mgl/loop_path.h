@@ -2,6 +2,7 @@
 #define LOOP_PATH_H
 
 #include <vector>
+#include <list>
 #include <ostream>
 #include "libthing/Vector2.h"
 #include "libthing/LineSegment2.h"
@@ -850,5 +851,11 @@ private:
 	bool isBegin(Loop::const_ccw_iterator i) const { return i == rstart; }
 };
 
+typedef std::list<OpenPath> OpenPathList;
+typedef std::list<Loop> LoopList;
+typedef std::list<LoopPath> LoopPathList;
+
 }
+
+
 #endif
