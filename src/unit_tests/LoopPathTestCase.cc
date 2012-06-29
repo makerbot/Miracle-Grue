@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <list>
 
 using namespace std;
 using namespace mgl;
@@ -426,6 +427,37 @@ void LoopPathTestCase::testConstLoopPath() {
 		cout << "Normal : " << *regular << endl;
 		cout << "Consted: " << *consted << endl;
 		CPPUNIT_ASSERT_EQUAL(*regular, *consted);
+	}
+}
+
+void LoopPathTestCase::testFiniteSegment() {
+	Loop loop;
+	Loop::cw_iterator iter = loop.clockwiseEnd();
+	std::list<LineSegment2> lines;
+	for(Scalar x = 1.0; x < 10.0; ++x){
+		PointType current(x,x);
+		iter = loop.insertPoint(current, iter);
+	}
+	lines.push_back(LineSegment2(PointType(2,2), PointType(3,3)));
+	lines.push_back(LineSegment2(PointType(3,3), PointType(4,4)));
+	lines.push_back(LineSegment2(PointType(4,4), PointType(5,5)));
+	lines.push_back(LineSegment2(PointType(5,5), PointType(6,6)));
+	lines.push_back(LineSegment2(PointType(6,6), PointType(7,7)));
+	lines.push_back(LineSegment2(PointType(7,7), PointType(8,8)));
+	lines.push_back(LineSegment2(PointType(8,8), PointType(9,9)));
+	lines.push_back(LineSegment2(PointType(9,9), PointType(1,1)));
+	lines.push_back(LineSegment2(PointType(1,1), PointType(2,2)));
+	std::list<LineSegment2>::iterator liter;
+	for(iter = loop.clockwiseFinite(), 
+			liter = lines.begin(); 
+			iter != loop.clockwiseEnd() && liter != lines.end(); 
+			++iter, ++liter) {
+		LineSegment2 line = loop.segmentAfterPoint(iter);
+		//cout << "Point: \t" << *iter << endl;
+		cout << "Actual Line:   \t" << line.a << line.b << endl;
+		cout << "Expected Line: \t" << liter->a << liter->b << endl;
+		CPPUNIT_ASSERT_EQUAL(liter->a, line.a);
+		CPPUNIT_ASSERT_EQUAL(liter->b, line.b);
 	}
 }
 

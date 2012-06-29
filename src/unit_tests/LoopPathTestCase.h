@@ -15,6 +15,7 @@ class LoopPathTestCase : public CPPUNIT_NS::TestFixture{
 	CPPUNIT_TEST( testConstPath );
 	CPPUNIT_TEST( testConstLoop );
 	CPPUNIT_TEST( testConstLoopPath );
+	CPPUNIT_TEST( testFiniteSegment );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -29,6 +30,7 @@ protected:
 	void testConstPath();
 	void testConstLoop();
 	void testConstLoopPath();
+	void testFiniteSegment();
 };
 
 
