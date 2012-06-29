@@ -39,10 +39,15 @@ class OpenPath {
 		typedef typename iterator::reference reference;
 		typedef typename iterator::pointer pointer;
 		
-		iterator_gen(BASE b) : base(b) {};
+		iterator_gen(BASE b = BASE()) : base(b) {};
 		template <typename OTHERBASE>
 		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
 				base(orig.iterator_gen<OTHERBASE>::base) {}
+		template <typename OTHERBASE>
+		iterator_gen<BASE>& operator=(const iterator_gen<OTHERBASE>& orig) {
+			base = orig.iterator_gen<OTHERBASE>::base;
+			return *this;
+		}
 
 		reference operator*() { return *base; }
 		pointer operator->() { return &*base; }
@@ -83,15 +88,17 @@ class OpenPath {
 		iterator_gen<BASE> operator-(int off) {
 			return *this + (-off);
 		}
-		bool operator==(const iterator_gen<BASE>& other) {
-			return base == other.base;
+		template <typename OTHERBASE>
+		bool operator==(const iterator_gen<OTHERBASE>& other) {
+			return base == other.iterator_gen<OTHERBASE>::base;
 		}
-		bool operator!=(const iterator_gen<BASE>& other) {
+		template <typename OTHERBASE>
+		bool operator!=(const iterator_gen<OTHERBASE>& other) {
 			return !(*this==other);
 		}
 
 	private:
-		BASE base;
+		iterator base;
 	};
 
 public:

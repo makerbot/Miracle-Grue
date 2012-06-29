@@ -16,7 +16,7 @@ string inputsDir;
 
 
 void SlicerOutputTestCase::setUp() {
-	cout << "\nNo Setup" << endl;
+	cout << "\nSetting up inputs path" << endl;
 	MyComputer computer;
 	char pathsep = computer.fileSystem.getPathSeparatorCharacter();
 	inputsDir = string("inputs") + pathsep;
