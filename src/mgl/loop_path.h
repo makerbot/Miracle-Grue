@@ -268,11 +268,18 @@ public:
 	typedef std::vector<PointNormal> PointNormalList;
 private:
 	template <typename BASE>
+	class iterator_gen;
+	template <typename BASE>
+	class iterator_finite_gen;
+	
+	template <typename BASE>
 	class iterator_gen {
 	public:
 		
 		template <typename OTHERBASE>
 		friend class iterator_gen;
+		template <typename OTHERBASE>
+		friend class iterator_finite_gen;
 		
 		typedef BASE iterator;
 		typedef typename iterator::value_type value_type;
@@ -352,7 +359,7 @@ private:
 	 *
 	 */
 	template <typename BASE>
-	class iterator_entry_gen : public iterator_gen<BASE> {
+	class iterator_finite_gen : public iterator_gen<BASE> {
 		typedef typename iterator_gen<BASE>::iterator iterator;
 		typedef typename iterator_gen<BASE>::reference reference;
 		typedef typename iterator_gen<BASE>::pointer pointer;
@@ -360,16 +367,28 @@ private:
 	public:
 		
 		template <typename OTHERBASE>
-		friend class iterator_entry_gen;
+		friend class iterator_finite_gen;
+		template <typename OTHERBASE>
+		friend class iterator_gen;
 		
-		iterator_entry_gen(iterator i, iterator b, iterator e) : 
+		iterator_finite_gen(iterator i, iterator b, iterator e) : 
 				iterator_gen<BASE>(i, b, e) {}
 		template <typename OTHERBASE>
-		explicit iterator_entry_gen(const iterator_entry_gen<OTHERBASE>& orig) : 
+		explicit iterator_finite_gen(const iterator_gen<OTHERBASE>& orig) : 
 				iterator_gen<BASE>(
-				orig.iterator_entry_gen<OTHERBASE>::base, 
-				orig.iterator_entry_gen<OTHERBASE>::begin, 
-				orig.iterator_entry_gen<OTHERBASE>::end) {}
+				orig.iterator_gen<OTHERBASE>::base, 
+				orig.iterator_gen<OTHERBASE>::begin, 
+				orig.iterator_gen<OTHERBASE>::end) {}
+		template <typename OTHERBASE>
+		iterator_finite_gen<BASE>& operator=(
+				const iterator_gen<OTHERBASE>& orig) {
+			iterator_gen<BASE>::base = 
+					orig.iterator_gen<OTHERBASE>::base;
+			iterator_gen<BASE>::begin = 
+					orig.iterator_gen<OTHERBASE>::begin;
+			iterator_gen<BASE>::end = 
+					orig.iterator_gen<OTHERBASE>::end;
+		}
 		const PointType& operator*() { 
 			return iterator_gen<BASE>::base->getPoint(); 
 		}
@@ -377,23 +396,23 @@ private:
 			return &(**this);
 		}
 		// ++iterator	
-		iterator_entry_gen<BASE>& operator++() {
+		iterator_finite_gen<BASE>& operator++() {
 			++iterator_gen<BASE>::base;
 			return *this;
 		}
 		// iterator++
-		iterator_entry_gen<BASE> operator++(int) {
-			iterator_entry_gen<BASE> iter_copy = *this;
+		iterator_finite_gen<BASE> operator++(int) {
+			iterator_finite_gen<BASE> iter_copy = *this;
 			++*this;
 			return iter_copy;
 		}
 		// --iterator
-		iterator_entry_gen<BASE>& operator--() {
+		iterator_finite_gen<BASE>& operator--() {
 			--iterator_gen<BASE>::base;
 			return *this;
 		}
-		iterator_entry_gen<BASE>& operator--(int) {
-			iterator_entry_gen<BASE> iter_copy = *this;
+		iterator_finite_gen<BASE>& operator--(int) {
+			iterator_finite_gen<BASE> iter_copy = *this;
 			--*this;
 			return iter_copy;
 		}
@@ -505,10 +524,14 @@ public:
 	
 	typedef iterator_gen<PointNormalList::iterator> cw_iterator;
 	typedef iterator_gen<PointNormalList::reverse_iterator> ccw_iterator;
-	typedef iterator_entry_gen<PointNormalList::iterator> entry_iterator;
+	typedef iterator_finite_gen<PointNormalList::iterator> entry_iterator;
+	typedef iterator_finite_gen<PointNormalList::iterator> finite_cw_iterator;
+	typedef iterator_finite_gen<PointNormalList::reverse_iterator> finite_ccw_iterator;
 	typedef iterator_gen<PointNormalList::const_iterator> const_cw_iterator;
 	typedef iterator_gen<PointNormalList::const_reverse_iterator> const_ccw_iterator;
-	typedef iterator_entry_gen<PointNormalList::const_iterator> const_entry_iterator;
+	typedef iterator_finite_gen<PointNormalList::const_iterator> const_entry_iterator;
+	typedef iterator_finite_gen<PointNormalList::const_iterator> const_finite_cw_iterator;
+	typedef iterator_finite_gen<PointNormalList::const_reverse_iterator> const_finite_ccw_iterator;
 
 	Loop() { }
 	Loop(const PointType &first) { pointNormals.push_back(first); }
@@ -549,6 +572,12 @@ public:
 		}
 		return clockwiseEnd();
 	}
+	finite_cw_iterator clockwiseFinite(const PointType& startpoint) {
+		return finite_cw_iterator(clockwise(startpoint));
+	}
+	const_finite_cw_iterator clockwiseFinite(const PointType& startpoint) const {
+		return const_finite_cw_iterator(clockwise(startpoint));
+	}
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
 	 *  around the loop indefinitely.
@@ -561,6 +590,12 @@ public:
 	const_cw_iterator clockwise() const { 
 		return const_cw_iterator(pointNormals.begin(), pointNormals.begin(), 
 				pointNormals.end());
+	}
+	finite_cw_iterator clockwiseFinite() {
+		return finite_cw_iterator(clockwise());
+	}
+	const_finite_cw_iterator clockwiseFinite() const {
+		return const_finite_cw_iterator(clockwise());
 	}
 	
 	/*! Get an iterator that represents an end of the loop.
@@ -598,6 +633,13 @@ public:
 		}
 		return counterClockwiseEnd();
 	}
+	finite_ccw_iterator counterClockwiseFinite(const PointType& startpoint) {
+		return finite_ccw_iterator(counterClockwise(startpoint));
+	}
+	const_finite_ccw_iterator counterClockwiseFinite(const PointType& startpoint
+			) const {
+		return const_finite_ccw_iterator(counterClockwise(startpoint));
+	}
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
 	 *  arbitrary start point. There is no end, the iterator will continue
@@ -611,6 +653,12 @@ public:
 	const_ccw_iterator counterClockwise() const {
 		return const_ccw_iterator(pointNormals.rbegin(), pointNormals.rbegin(), 
 				pointNormals.rend());
+	}
+	finite_ccw_iterator counterClockwiseFinite() {
+		return finite_ccw_iterator(counterClockwise());
+	}
+	const_finite_ccw_iterator counterClockwiseFinite() const {
+		return const_finite_ccw_iterator(counterClockwise());
 	}
 	
 	/*! Get an iterator that represents an end of the loop.
@@ -631,11 +679,16 @@ public:
 	 *  /return The line segment starting with the point at location
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint(ITER location){
+	libthing::LineSegment2 segmentAfterPoint (ITER location) const {
 		ITER second = location;
 		++second;
 		return libthing::LineSegment2(*location, *second);
 	}
+	template <typename BASE>
+	libthing::LineSegment2 segmentAfterPoint (iterator_finite_gen<BASE> location) const {
+		return segmentAfterPoint(static_cast<iterator_gen<BASE> >(location));
+	}
+	
 
 	/*! Retrieve the normal vector in a loop at a provided point.
 	 *  Normals point toward the interior of a loop.
@@ -643,7 +696,12 @@ public:
 	 *  /return The normal vector at this location
 	 */
 	template <typename ITER>
-	PointType normalAfterPoint(ITER location);
+	PointType normalAfterPoint(ITER location) const {
+		ITER second = location;
+		++second;
+		PointType normals = (location->getNormal() + second->getNormal());
+		return(normals.unit());
+	}
 
 	/*! Find points you can start extrusion on for this path.  For a
 	 *  Loop, this gives you every point in the loop.
