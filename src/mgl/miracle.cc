@@ -48,7 +48,8 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 
 	Pather pather(progress);
 
-	pather.generatePaths(tomograph, regions, slices);
+	LayerPaths layers;
+	pather.generatePaths(layerloops, regions, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);

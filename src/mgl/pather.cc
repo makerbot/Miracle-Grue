@@ -10,6 +10,7 @@
 */
 
 #include "pather.h"
+#include "limits.h"
 
 using namespace mgl;
 using namespace std;
@@ -20,16 +21,14 @@ Pather::Pather(ProgressBar * progress)
 }
 
 
-void Pather::generatePaths(const Tomograph &tomograph,
-					const Regions &skeleton,
-					std::vector<SliceData> &slices,
-					int sfirstSliceIdx,  // =-1
-					int slastSliceIdx )  //
+void Pather::generatePaths( LayerLoops &layerloops,
+							/*const*/ Regions &skeleton,
+						   LayerPaths &layerpaths,
+						   int sfirstSliceIdx,  // =-1
+						   int slastSliceIdx )  //
 {
-
-	size_t sliceCount = tomograph.outlines.size();
 	size_t firstSliceIdx = 0;
-	size_t lastSliceIdx  = sliceCount-1;
+	size_t lastSliceIdx = INT_MAX;
 
 	if(sfirstSliceIdx > 0 )
 	{
@@ -41,62 +40,85 @@ void Pather::generatePaths(const Tomograph &tomograph,
 		lastSliceIdx = (size_t)slastSliceIdx;
 	}
 
-	slices.resize(sliceCount);
 	bool direction = false;
 	unsigned int currentSlice = 0;
 
-	initProgress("Path generation", sliceCount);
+	initProgress("Path generation", layerpaths.layerCount());
 
-	for(size_t i=0; i < sliceCount; i++)
+	for(/*const*/LayerLoops::layer_iterator i = layerloops.begin();
+		i != layerloops.end(); ++i)
 	{
 		tick();
 
-        if(i < firstSliceIdx) continue;
-		if(i > lastSliceIdx) break;
+        if(currentSlice < firstSliceIdx) continue;
+		if(currentSlice > lastSliceIdx) break;
 
 		direction = !direction;
-		SliceData& slice = slices[i];
+		LoopList& outline_loops = *i;
 
-		Scalar z = tomograph.layerMeasure.sliceIndexToHeight(currentSlice);
-		currentSlice ++;
+		Scalar z = layerloops.layerMeasure.sliceIndexToHeight(currentSlice);
 
-		slice.updatePosition(z, i);
-		slice.extruderSlices.resize(1);
+		layerpaths.push_back(LayerPaths::Layer(z,
+						   layerloops.layerMeasure.getLayerH(), currentSlice));
 
-		ExtruderSlice &extruderSlice = slice.extruderSlices[0];
+		LayerPaths::Layer& lp_layer = layerpaths.back();
+		
+		//TODO: this blocks dualstrusion
+		lp_layer.extruders.push_back(LayerPaths::Layer::ExtruderLayer(0));
+		LayerPaths::Layer::ExtruderLayer extruderlayer =
+			lp_layer.extruders.back();
 
-		const libthing::Insets &insetsSegments = skeleton.insets[i];
-		const libthing::SegmentTable &outlineSegments = tomograph.outlines[i];
+		/*const*/ std::list<LoopList> &insetLoops = skeleton.insetLoops[currentSlice];
 
-		outlines(outlineSegments, extruderSlice.boundary);
+		outlines(outline_loops, extruderlayer.outlinePaths);
 
-        PolygonsGroup &insetPolys = extruderSlice.insetLoopsList;
-		this->insets(insetsSegments, insetPolys );
+		insets(insetLoops, extruderlayer.insetPaths);
 
-		const GridRanges &infillRanges = skeleton.infills[i];
+		const GridRanges &infillRanges = skeleton.infills[currentSlice];
 
-		Polygons &infillsPolygons = extruderSlice.infills;
-		this->infills(infillRanges, tomograph.grid, outlineSegments,
-					  direction, infillsPolygons);
+		this->infills(infillRanges, layerloops.grid, outline_loops,
+					  direction, extruderlayer.infillPaths);
+
+		currentSlice++;
 	}
 }
 
-void Pather::outlines(const libthing::SegmentTable& outlinesSegments, Polygons &boundary)
+
+void Pather::outlines(/*const*/ LoopList& outline_loops,
+					  LoopPathList &boundary_paths)
 {
-	createPolysFromloopSegments(outlinesSegments, boundary);
+	//using a indeterminate start point for the beginning of the LoopPathList
+	//as that's what the old Polygon logic did
+
+	for (LoopList::iterator i = outline_loops.begin();
+		 i != outline_loops.end(); ++i) {
+		boundary_paths.push_back(LoopPath(*i, i->clockwise(),
+										  i->counterClockwise()));
+	}
 }
 
-void Pather::insets(const libthing::Insets& insetsForSlice, PolygonsGroup &insetPolys)
+void Pather::insets(/*const*/ list<LoopList>& inset_loops,
+					list<LoopPathList> &inset_paths)
 {
-	size_t nbOfShells = insetsForSlice.size();
-	polygonsFromLoopSegmentTables(nbOfShells, insetsForSlice, insetPolys);
+	for (list<LoopList>::iterator i = inset_loops.begin();
+		 i != inset_loops.end(); ++i) {
+
+		inset_paths.push_back(LoopPathList());
+		LoopPathList& lp_list = inset_paths.back();
+
+		for (LoopList::iterator j = i->begin(); j != i->end(); ++j) {
+			lp_list.push_back(LoopPath(*j, j->clockwise(),
+									   j->counterClockwise()));
+		}
+	}
 }
+
 
 void Pather::infills(const GridRanges &infillRanges,
 					 const Grid &grid,
-					 const libthing::SegmentTable &outline,
+					 /*const*/ LoopList &outlines,
 					 bool direction,
-					 Polygons &infills)
+					 OpenPathList &infills)
 {
-	grid.polygonsFromRanges(infillRanges, outline, direction, infills);
+	grid.pathsFromRanges(infillRanges, outlines, direction, infills);
 }

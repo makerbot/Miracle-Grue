@@ -252,15 +252,19 @@ void castRaysOnSliceAlongY(const std::list<Loop> &outlineLoops,
 	}
 }
 
-bool crossesOutline(const LineSegment2 &seg,
-		const libthing::SegmentTable &outline) {
-	for (libthing::SegmentTable::const_iterator loop = outline.begin();
-			loop != outline.end(); loop++) {
-		for (vector<libthing::LineSegment2>::const_iterator border
-				= loop->begin();
-				border != loop->end(); border++) {
+
+bool crossesOutlines(const LineSegment2 &seg,
+					 LoopList &outlines) {
+	for (LoopList::iterator loop = outlines.begin();
+		 loop != outlines.end(); loop++) {
+
+		//this is bad but it works for now
+		LoopPath lp(*loop, loop->clockwise(), loop->counterClockwise());
+		for (LoopPath::iterator point = lp.fromStart();
+			 point != lp.end(); point++) {
+			LineSegment2 border = loop->segmentAfterPoint(point);
 			Vector2 intersection;
-			if (segmentSegmentIntersection(seg, *border, intersection))
+			if (segmentSegmentIntersection(seg, border, intersection))
 				return true;
 		}
 	}
@@ -276,11 +280,11 @@ typedef enum {
 	X_AXIS, Y_AXIS
 } axis_e;
 
-void polygonsFromScalarRangesAlongAxis(const ScalarRangeTable &rays, // the ranges along this axis, multiple per lines
-		const std::vector<Scalar> &values, // the opposite axis values for each line
-		axis_e axis,
-		const libthing::SegmentTable &outline,
-		Polygons &polygons) // the output
+void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
+									 const std::vector<Scalar> &values, // the opposite axis values for each line
+									 axis_e axis,
+									 LoopList &outlines,
+									 OpenPathList &paths)  // the output
 {
 	if (rays.size() == 0) return;
 
@@ -317,7 +321,7 @@ void polygonsFromScalarRangesAlongAxis(const ScalarRangeTable &rays, // the rang
 
 	int endpoint = points_remaining.begin()->first;
 
-	polygons.push_back(mgl::Polygon());
+	paths.push_back(OpenPath());
 
 	while (!points_remaining.empty()) {
 		points_remaining.erase(endpoint);
@@ -343,16 +347,17 @@ void polygonsFromScalarRangesAlongAxis(const ScalarRangeTable &rays, // the rang
 			}
 		}
 
-		if (crossesOutline(LineSegment2(points[endpoint], points[closest]),
-				outline)) {
-			polygons.push_back(mgl::Polygon());
+
+		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
+							outlines)) {
+			paths.push_back(OpenPath());
 		}
 
-		mgl::Polygon &poly = polygons.back();
+		OpenPath &path = paths.back();
 
 		int connected = points_remaining[closest];
-		poly.push_back(points[closest]);
-		poly.push_back(points[connected]);
+		path.appendPoint(points[closest]);
+		path.appendPoint(points[connected]);
 		endpoint = points_remaining[closest];
 		points_remaining.erase(closest);
 	}
@@ -793,16 +798,20 @@ void Grid::subSample(const GridRanges &gridRanges,
 	}
 }
 
-void Grid::polygonsFromRanges(const GridRanges &gridRanges,
-		const libthing::SegmentTable &outline,
-		bool xDirection, Polygons &polys) const {
-	assert(polys.size() == 0);
-	if (xDirection) {
-		polygonsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS,
-				outline, polys);
-	} else {
-		polygonsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS,
-				outline, polys);
+void Grid::pathsFromRanges(const GridRanges &gridRanges,
+						   LoopList &outlines,
+						   bool xDirection, OpenPathList &paths) const
+{
+	assert(paths.size() == 0);
+	if(xDirection)
+	{
+		pathsFromScalarRangesAlongAxis(gridRanges.xRays, yValues, X_AXIS,
+									   outlines, paths);
+	}
+	else
+	{
+		pathsFromScalarRangesAlongAxis(gridRanges.yRays, xValues, Y_AXIS,
+										  outlines, paths);
 	}
 }
 

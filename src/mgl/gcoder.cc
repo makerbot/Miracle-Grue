@@ -248,13 +248,16 @@ void GCoder::writeInsets(std::ostream& ss,
 	try {
 		ss << "(insets: "  << paths.insetPaths.size() << ")"<< endl;
 		Extrusion extrusion;
-		for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator iter = 
+		for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator i = 
 				paths.insetPaths.begin(); 
-				iter != paths.insetPaths.end(); 
-				++iter){
-			calcInSetExtrusion(layerpaths, extruder.id, layerId, iter, 
+				i != paths.insetPaths.end(); 
+				++i){
+			calcInSetExtrusion(layerpaths, extruder.id, layerId, i, 
 					extrusion);
-			writePath(ss, z, extruder, extrusion, *iter);
+			for (LoopPathList::const_iterator j = i->begin();
+				 j != i->end(); ++j) {
+				writePath(ss, z, extruder, extrusion, *j);
+			}
 		}
 	} catch (GcoderException& mixup) {
 		Log::info() << "ERROR writing insets in slice " <<
