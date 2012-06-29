@@ -140,22 +140,22 @@ public:
 	Pather(ProgressBar * progress = NULL);
 
 
-	void generatePaths(/*const*/LayerLoops &layerloops,
-					   /*const*/ Regions &skeleton,
-						LayerPaths &slices,
-						int sfirstSliceIdx=-1,
-						int slastSliceIdx=-1);
+	void generatePaths(const LayerLoops &layerloops,
+					   const Regions &skeleton,
+					   LayerPaths &slices,
+					   int sfirstSliceIdx=-1,
+					   int slastSliceIdx=-1);
 
 
-	void outlines(LayerLoops::Layer& outline_loops,
+	void outlines(const LayerLoops::Layer& outline_loops,
 				  LoopPathList &boundary_paths);
 
-	void insets(std::list<LoopList>& insetsForSlice,
+	void insets(const std::list<LoopList>& insetsForSlice,
 				std::list<LoopPathList> &insetPaths);
 
 	void infills(const GridRanges &infillRanges,
 				 const Grid &grid,
-				 /*const*/ LayerLoops::Layer &outlines,
+				 const LayerLoops::Layer &outlines,
 				 bool direction,
 				 OpenPathList &infills);
 	

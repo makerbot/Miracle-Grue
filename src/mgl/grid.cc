@@ -254,8 +254,8 @@ void castRaysOnSliceAlongY(const std::list<Loop> &outlineLoops,
 
 
 bool crossesOutlines(const LineSegment2 &seg,
-					 LoopList &outlines) {
-	for (LoopList::iterator loop = outlines.begin();
+					 const LoopList &outlines) {
+	for (LoopList::const_iterator loop = outlines.begin();
 		 loop != outlines.end(); loop++) {
 
 		//this is bad but it works for now
@@ -282,8 +282,8 @@ typedef enum {
 
 void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 									 const std::vector<Scalar> &values, // the opposite axis values for each line
-									 axis_e axis,
-									 LoopList &outlines,
+									 const axis_e axis,
+									 const LoopList &outlines,
 									 OpenPathList &paths)  // the output
 {
 	if (rays.size() == 0) return;
@@ -799,8 +799,8 @@ void Grid::subSample(const GridRanges &gridRanges,
 }
 
 void Grid::pathsFromRanges(const GridRanges &gridRanges,
-						   LoopList &outlines,
-						   bool xDirection, OpenPathList &paths) const
+						   const LoopList &outlines,
+						   const bool xDirection, OpenPathList &paths) const
 {
 	assert(paths.size() == 0);
 	if(xDirection)

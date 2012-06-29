@@ -68,7 +68,8 @@ void GCoderRefactorTestCase::testPathGcode() {
 	//construct the data structures
 	//lowest layer: boundary
 	oneExSlice.boundary.push_back(onePoly);
-	LoopPath lp(oneLoop, oneLoop.clockwise(), oneLoop.counterClockwise());
+	LoopPath lp(oneLoop, oneLoop.clockwise(),
+				oneLoop.counterClockwise());
 	oneExtruder.outlinePaths.push_back(lp);
 	//next layer: slice/layer
 	slice.extruderSlices.push_back(oneExSlice);
