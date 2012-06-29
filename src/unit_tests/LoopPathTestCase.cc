@@ -151,8 +151,8 @@ void LoopPathTestCase::testLoopPathBasic() {
 	Loop::cw_iterator last = loop.insertPoint(Vector2(3, 4), loop.clockwise());
 	
 	cout << "Check that we are properly finding iterators" << endl;
-	Loop::cw_iterator cwstart = loop.clockwise(Vector2(1,2));
-	Loop::ccw_iterator ccwstart = loop.counterClockwise(Vector2(1,2));
+	Loop::const_cw_iterator cwstart(loop.clockwise(Vector2(1,2)));
+	Loop::const_ccw_iterator ccwstart(loop.counterClockwise(Vector2(1,2)));
 	CPPUNIT_ASSERT(cwstart != loop.clockwiseEnd());
 	CPPUNIT_ASSERT(ccwstart != loop.counterClockwiseEnd());
 	cout << "Finding iterators works!" << endl;

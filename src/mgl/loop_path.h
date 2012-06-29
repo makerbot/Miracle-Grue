@@ -586,6 +586,7 @@ public:
 		return const_cw_iterator(pointNormals.begin(), pointNormals.begin(), 
 				pointNormals.end());
 	}
+
 	finite_cw_iterator clockwiseFinite() {
 		return finite_cw_iterator(clockwise());
 	}
@@ -642,6 +643,7 @@ public:
 		return const_ccw_iterator(pointNormals.rbegin(), pointNormals.rbegin(), 
 				pointNormals.rend());
 	}
+		
 	finite_ccw_iterator counterClockwiseFinite() {
 		return finite_ccw_iterator(counterClockwise());
 	}
@@ -832,8 +834,8 @@ class LoopPath {
 		const LoopPath &parent;
 	};
 public:
-	typedef iterator_gen<Loop::cw_iterator> iterator;
-	typedef iterator_gen<Loop::ccw_iterator> reverse_iterator;
+	typedef iterator_gen<Loop::const_cw_iterator> iterator;
+	typedef iterator_gen<Loop::const_ccw_iterator> reverse_iterator;
 	typedef iterator_gen<Loop::const_cw_iterator> const_iterator;
 	typedef iterator_gen<Loop::const_ccw_iterator> const_reverse_iterator;
 
@@ -842,8 +844,12 @@ public:
 	 *  /param start The clockwise start point
 	 *  /param rstart The same start point, counter clockwise
 	 */
+	LoopPath(const Loop &p, Loop::const_cw_iterator s, Loop::const_ccw_iterator r)
+        : parent(p), start(s), rstart(r) {}
+
 	LoopPath(Loop &p, Loop::cw_iterator s, Loop::ccw_iterator r)
         : parent(p), start(s), rstart(r) {}
+
 
 	/*! Iterator after the end of the list. */
 	iterator end() {
@@ -886,9 +892,9 @@ public:
 	const_iterator getSuspendedPoints() const { return fromStart(); } //stub
 
 private:
-	Loop &parent;
-	Loop::cw_iterator start;
-	Loop::ccw_iterator rstart;
+	const Loop &parent;
+	Loop::const_cw_iterator start;
+	Loop::const_ccw_iterator rstart;
 
 	bool isBegin(Loop::cw_iterator i) const { return i == start; }
 	bool isBegin(Loop::const_cw_iterator i) const { return i == start; }
