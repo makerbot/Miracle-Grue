@@ -17,6 +17,8 @@
 #include "obj_limits.h"
 #include "libthing/LineSegment2.h"
 #include "segment.h"
+#include "loop_path.h"
+#include <list>
 
 namespace mgl
 {
@@ -99,7 +101,17 @@ void rayCastAlongX(const libthing::SegmentTable &outlineLoops,
 		Scalar xMin,
 		Scalar xMax,
 		std::vector<ScalarRange> &ranges);
+void rayCastAlongX(const std::list<Loop>& outlineLoops,
+		Scalar y,
+		Scalar xMin,
+		Scalar xMax,
+		std::vector<ScalarRange> &ranges);
 void rayCastAlongY(const libthing::SegmentTable &outlineLoops,
+		Scalar x,
+		Scalar yMin,
+		Scalar yMax,
+		std::vector<ScalarRange> &ranges);
+void rayCastAlongY(const std::list<Loop>& outlineLoops,
 		Scalar x,
 		Scalar yMin,
 		Scalar yMax,
@@ -109,7 +121,17 @@ void castRaysOnSliceAlongX(const libthing::SegmentTable &outlineLoops,
 		Scalar xMin,
 		Scalar xMax,
 		ScalarRangeTable &rangeTable);
+void castRaysOnSliceAlongX(const std::list<Loop>& outlineLoops,
+		const std::vector<Scalar> &yValues,
+		Scalar xMin,
+		Scalar xMax,
+		ScalarRangeTable &rangeTable);
 void castRaysOnSliceAlongY(const libthing::SegmentTable &outlineLoops,
+		const std::vector<Scalar> &values, // x
+		Scalar min,
+		Scalar max,
+		ScalarRangeTable &rangeTable);
+void castRaysOnSliceAlongY(const std::list<Loop>& outlineLoops,
 		const std::vector<Scalar> &values, // x
 		Scalar min,
 		Scalar max,
@@ -152,14 +174,18 @@ public:
     /// idealized grid based on our segments in segments.
     /// @param loops: a SegmentTable containing segments specifying
     ///		exactly one layer outline to use to 'cookie cutter' out gridlines
-    void createGridRanges(const libthing::SegmentTable &loops, GridRanges &outGridRanges) const;
+    void createGridRanges(const libthing::SegmentTable &loops, 
+			GridRanges &outGridRanges) const;
+	void createGridRanges(const std::list<Loop>& loops, 
+			GridRanges& outGridRanges) const;
 
     /// The grid starts out at 100% infill, this function selectlviy removes filament
     /// based on a skip count to reduce density
     /// @param srcGridRanges: input grid range to sub-sample
     /// @param skipCount : number if infill lines to skip. infill_ration = (1/skipCount) -1
     /// @param result: returned grid post-subsampling
-    void subSample(const GridRanges &srcGridRanges, size_t skipCount, GridRanges &result) const;
+    void subSample(const GridRanges &srcGridRanges, size_t skipCount, 
+			GridRanges &result) const;
 
     /// Takes a gridRange and converts that into Polygons that can be used to generate
     /// gcode.
@@ -168,17 +194,21 @@ public:
 							bool xDirection, Polygons &polys) const;
 
     /// joins a/b grid ranges into
-    void gridRangeUnion(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
+    void gridRangeUnion(const GridRanges& a, const GridRanges &b, 
+			GridRanges &result) const;
 
 	/// subtracts GridRagne diff from GridRange src to return result grid range
-    void gridRangeDifference(const GridRanges& src, const GridRanges &diff, GridRanges &result) const;
+    void gridRangeDifference(const GridRanges& src, const GridRanges &diff, 
+			GridRanges &result) const;
 
 	/// returns a gridrange that is the interesction of a/b
-    void gridRangeIntersection(const GridRanges& a, const GridRanges &b, GridRanges &result) const;
+    void gridRangeIntersection(const GridRanges& a, const GridRanges &b, 
+			GridRanges &result) const;
 
     /// removes all grid ranges shorter than toleranne 'cutOff', returns a new
     /// simplified grid range
-    void trimGridRange(const GridRanges& src, Scalar cutOff, GridRanges &result) const;
+    void trimGridRange(const GridRanges& src, Scalar cutOff, 
+			GridRanges &result) const;
 
 };
 

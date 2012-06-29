@@ -38,7 +38,8 @@ double mgl::doubleCheck(const Json::Value &value, const char *name)
 	if(value.isNull())
 	{
 		stringstream ss;
-		ss << "Missing required floating point field \""<< name << "\" in configuration file";
+		ss << "Missing required floating point field \"" << 
+				name << "\" in configuration file";
 		ConfigException mixup(ss.str().c_str());
 		throw mixup;
 	}
