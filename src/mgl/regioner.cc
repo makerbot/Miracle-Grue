@@ -24,21 +24,21 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 }
 
-void Regioner::generateSkeleton(const Tomograph &tomograph, 
-		Regions & regions) {
-
-	insets(tomograph.outlines, regions.insets);
-	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
-	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
-	flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
-	infills(regions.flatSurfaces,
-			tomograph.grid,
-			regions.roofings,
-			regions.floorings,
-			regions.solids,
-			regions.sparses,
-			regions.infills);
-}
+//void Regioner::generateSkeleton(const Tomograph &tomograph, 
+//		Regions & regions) {
+//
+//	insets(tomograph.outlines, regions.insets);
+//	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
+//	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
+//	flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
+//	infills(regions.flatSurfaces,
+//			tomograph.grid,
+//			regions.roofings,
+//			regions.floorings,
+//			regions.solids,
+//			regions.sparses,
+//			regions.infills);
+//}
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops, 
 		Regions& regions) {
@@ -76,13 +76,22 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 
 	libthing::SegmentTable sliceOutlinesOld;
 	libthing::Insets sliceInsetsOld;
+	
+	/*
+	 This function makes use of inshelligence, which indirectly makes use of 
+	 clipper.cc, a machine translated Delphi library designed to make use of 
+	 SegmentTables. As it is currently not practical to quickly convert this 
+	 library to use the new Loop type, we instead elected to simply convert 
+	 the resulting SegmentTables into Loops
+	 */
 
-	//fill in outlines
+	//convert outline Loops into equivalent SegmentTables
 	for (LoopList::const_iterator iter = sliceOutlines.begin();
 			iter != sliceOutlines.end();
 			++iter) {
 		sliceOutlinesOld.push_back(std::vector<libthing::LineSegment2 > ());
 		const Loop& currentLoop = *iter;
+		//Convert current loop to a vector of segments
 		for (Loop::const_finite_cw_iterator loopiter =
 				currentLoop.clockwiseFinite();
 				loopiter != currentLoop.clockwiseEnd();
@@ -91,6 +100,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		}
 	}
 
+	//call the function with the equivalent SegmentTables
 	bool writeDebugScadFiles = false;
 	inshelligence(sliceOutlinesOld,
 			slicerCfg.nbOfShells,
@@ -100,12 +110,13 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 			writeDebugScadFiles,
 			sliceInsetsOld);
 
-	//dump sliceInsetsOld into sliceInsets
+	//Recover loops from the resulting SegmentTable
 	for (libthing::Insets::const_iterator iter = sliceInsetsOld.begin();
 			iter != sliceInsetsOld.end();
 			++iter) {
 		sliceInsets.push_back(LoopList());
 		LoopList& currentLoopList = sliceInsets.back();
+		//Convert each group of insets into a list of Loops
 		for (libthing::SegmentTable::const_iterator setIter = iter->begin();
 				setIter != iter->end();
 				++setIter) {
@@ -113,34 +124,37 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 			const std::vector<libthing::LineSegment2>& currentPoly = *setIter;
 			Loop& currentLoop = currentLoopList.back();
 			Loop::cw_iterator loopIter = currentLoop.clockwiseEnd();
+			//Convert each individual inset to a Loop
+			//Insert points 1 - N
 			for (std::vector<libthing::LineSegment2>::const_iterator polyIter =
 					currentPoly.begin();
 					polyIter != currentPoly.end();
 					++polyIter) {
 				loopIter = currentLoop.insertPoint(polyIter->b, loopIter);
 			}
+			//Insert point 0
 			if (!currentPoly.empty())
 				loopIter = currentLoop.insertPoint(currentPoly.begin()->a, loopIter);
 		}
 	}
 }
 
-void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
-		std::vector<libthing::Insets> & insets) {
-
-	unsigned int sliceCount = outlinesSegments.size();
-	initProgress("insets", sliceCount);
-	insets.resize(sliceCount);
-
-	// slice id must be adjusted for
-	for (size_t i = 0; i < sliceCount; i++) {
-		tick();
-		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
-		libthing::Insets & sliceInsets = insets[i];
-
-		insetsForSlice(sliceOutlines, sliceInsets);
-	}
-}
+//void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
+//		std::vector<libthing::Insets> & insets) {
+//
+//	unsigned int sliceCount = outlinesSegments.size();
+//	initProgress("insets", sliceCount);
+//	insets.resize(sliceCount);
+//
+//	// slice id must be adjusted for
+//	for (size_t i = 0; i < sliceCount; i++) {
+//		tick();
+//		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
+//		libthing::Insets & sliceInsets = insets[i];
+//
+//		insetsForSlice(sliceOutlines, sliceInsets);
+//	}
+//}
 
 void Regioner::insets(const std::list<LoopList>& outlinesLoops,
 		std::vector<std::list<LoopList> >& insets) {
@@ -154,21 +168,6 @@ void Regioner::insets(const std::list<LoopList>& outlinesLoops,
 		std::list<LoopList> currentInsets;
 		insetsForSlice(currentOutlines, currentInsets, NULL);
 		insets.push_back(currentInsets);
-	}
-}
-
-void Regioner::flatSurfaces(const std::vector<libthing::Insets> & insets,
-		const Grid & grid,
-		std::vector<GridRanges> & gridRanges) {
-	assert(gridRanges.size() == 0);
-	unsigned int sliceCount = insets.size();
-	initProgress("flat surfaces", sliceCount);
-	gridRanges.resize(sliceCount);
-	for (size_t i = 0; i < sliceCount; i++) {
-		tick();
-		const libthing::Insets & allInsetsForSlice = insets[i];
-		GridRanges& surface = gridRanges[i];
-		gridRangesForSlice(allInsetsForSlice, grid, surface);
 	}
 }
 
@@ -343,13 +342,6 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 
 	}
 
-}
-
-void Regioner::gridRangesForSlice(const libthing::Insets &allInsetsForSlice,
-		const Grid &grid,
-		GridRanges & surface) {
-	const libthing::SegmentTable &innerMostLoops = allInsetsForSlice.back();
-	grid.createGridRanges(innerMostLoops, surface);
 }
 
 void Regioner::gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice,

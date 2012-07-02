@@ -193,12 +193,6 @@ public:
 	/// @param title: name of the model to write?
 	/// @param firstSliceIdx: starting slice index, -1 if you want the whole model
 	/// @param lastSliceIdx: ending slice index, -1 if you want the whole model
-	void writeGcodeFile(std::vector <SliceData>& slices,
-			const LayerMeasure& layerMeasure,
-			std::ostream& gout,
-			const char *title,
-			int firstSliceIdx=-1,
-			int lastSliceIdx=-1);
 	void writeGcodeFile(LayerPaths& layerpaths, 
 			const LayerMeasure& layerMeasure, 
 			std::ostream& gout, 
@@ -248,9 +242,6 @@ public:
     {
         return gcoderCfg.extruders;
     }
-
-    void writeSlice(std::ostream & ss, 
-			const mgl::SliceData & pathData);
 	void writeSlice(std::ostream& ss, 
 			LayerPaths& layerpaths, 
 			LayerPaths::layer_iterator layerId);
@@ -281,16 +272,6 @@ private:
 			size_t sliceId, 
 			const Extruder& extruder, 
 			const LayerPaths::Layer::ExtruderLayer& paths);
-    void writePolygons(std::ostream& ss,
-			Scalar z,
-			const Extruder &extruder,
-			const Extrusion &extrusion,
-			const Polygons &paths);
-    void writePolygon(std::ostream & ss,
-			Scalar z,
-			const Extruder &extruder,
-			const Extrusion &extrusion,
-			const Polygon & polygon);
 	template <typename PATH>
 	void writePath(std::ostream& ss, 
 			Scalar z,

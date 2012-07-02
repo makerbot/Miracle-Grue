@@ -59,14 +59,9 @@ public:
 			std::list<LoopList>& sliceInsets,
 			const char* scadFile = NULL);
 
-	void insets(const std::vector<libthing::SegmentTable> & outlinesSegments, 
-			std::vector<libthing::Insets> & insets);
 	void insets(const std::list<LoopList>& outlinesLoops, 
 			std::vector<std::list<LoopList> >& insets);
-	
-	void flatSurfaces(const std::vector<libthing::Insets> & insets,
-			const Grid & grid,
-			std::vector<GridRanges> & gridRanges);
+
 	void flatSurfaces(const std::vector<std::list<LoopList> >& insets,
 			const Grid & grid,
 			std::vector<GridRanges> & gridRanges);
@@ -93,9 +88,6 @@ public:
 			std::vector<GridRanges> &solids,
 			std::vector<GridRanges> &sparses,
 			std::vector<GridRanges> &infills);
-	void gridRangesForSlice(const libthing::Insets &allInsetsForSlice,
-			const Grid &grid,
-			GridRanges &surface);
 	void gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice, 
 			const Grid& grid, 
 			GridRanges& surface);

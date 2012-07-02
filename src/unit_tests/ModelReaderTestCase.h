@@ -47,7 +47,7 @@ protected:
   void testMeshyCycleMin();
   void testMeshyCycle();
 
-  void testSlicySimple();
+//  void testSlicySimple();
 
   void testLayerSplit();
   void testMeshySimple();
@@ -56,7 +56,7 @@ protected:
 
   void testMeshyLoad();
   void testLargeMeshy();
-  void testSlicyWater();
+//  void testSlicyWater();
 
   // cutting a triangle along z line
   void testCutTriangle();
