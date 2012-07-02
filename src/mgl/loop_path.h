@@ -392,10 +392,10 @@ private:
 			iterator_gen<BASE>::end = 
 					orig.iterator_gen<OTHERBASE>::end;
 		}
-		const PointType& operator*() { 
-			return iterator_gen<BASE>::base->getPoint(); 
+		reference operator*() { 
+			return *iterator_gen<BASE>::base; 
 		}
-		const PointType* operator->() { 
+		pointer* operator->() { 
 			return &(**this);
 		}
 		// ++iterator	
@@ -527,12 +527,11 @@ public:
 	
 	typedef iterator_gen<PointNormalList::iterator> cw_iterator;
 	typedef iterator_gen<PointNormalList::reverse_iterator> ccw_iterator;
-	typedef iterator_finite_gen<PointNormalList::iterator> entry_iterator;
+	typedef iterator_finite_gen<PointNormalList::const_iterator> entry_iterator;
 	typedef iterator_finite_gen<PointNormalList::iterator> finite_cw_iterator;
 	typedef iterator_finite_gen<PointNormalList::reverse_iterator> finite_ccw_iterator;
 	typedef iterator_gen<PointNormalList::const_iterator> const_cw_iterator;
 	typedef iterator_gen<PointNormalList::const_reverse_iterator> const_ccw_iterator;
-	typedef iterator_finite_gen<PointNormalList::const_iterator> const_entry_iterator;
 	typedef iterator_finite_gen<PointNormalList::const_iterator> const_finite_cw_iterator;
 	typedef iterator_finite_gen<PointNormalList::const_reverse_iterator> const_finite_ccw_iterator;
 
@@ -711,34 +710,23 @@ public:
 	 *  Loop, this gives you every point in the loop.
 	 *  /return iterator for all the valid staring points
 	 */
-	entry_iterator entryBegin() {
+	entry_iterator entryBegin() const {
 		return entry_iterator(pointNormals.begin(), 
-				pointNormals.begin(), pointNormals.end());
-	};
-	const_entry_iterator entryBegin() const {
-		return const_entry_iterator(pointNormals.begin(), 
 				pointNormals.begin(), pointNormals.end());
 	};
 	
 	/*! Get an iterator that represents the end of entry points
 	 *  /return entry_iterator representing the "end".
 	 */
-	entry_iterator entryEnd() {
+	entry_iterator entryEnd() const {
 		return entry_iterator(pointNormals.end(), 
-				pointNormals.begin(), pointNormals.end());
-	};
-	const_entry_iterator entryEnd() const {
-		return const_entry_iterator(pointNormals.end(), 
 				pointNormals.begin(), pointNormals.end());
 	};
 	
 	/*! Get an exit point for a given entry point
 	 *  /return PointType representing the "end".
 	 */
-	PointType getExitPoint(entry_iterator entry) {
-		return *entry;
-	}
-	PointType getExitPoint(const_entry_iterator entry) const {
+	PointType getExitPoint(entry_iterator entry) const {
 		return *entry;
 	}
 	/*! Find points that are suspended by material underneath.
