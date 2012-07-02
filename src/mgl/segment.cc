@@ -22,7 +22,7 @@ using namespace std;
 using namespace libthing;
 
 #include "log.h"
-
+#include "loop_path.h"
 
 
 void mgl::segments2polygon(const std::vector<LineSegment2> & segments, mgl::Polygon &loop)
@@ -53,6 +53,16 @@ void mgl::createPolysFromloopSegments(const SegmentTable &segmentTable,
 		loops.push_back(Polygon());
 		Polygon &loop = loops[loops.size()-1];
 	    segments2polygon(segments, loop);
+	}
+}
+
+void mgl::rotateLoops(LoopList &loops, Scalar angle) {
+	for (LoopList::iterator loop = loops.begin();
+		 loop != loops.end(); ++loop) {
+		for (Loop::finite_cw_iterator point = loop->clockwiseFinite();
+			 point != loop->clockwiseEnd(); ++point) {
+			point->rotate2d(angle);
+		}
 	}
 }
 
@@ -477,6 +487,30 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
             Log::info() << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
     	}
     }
+}
+
+void mgl::translateLoops(LoopList &loops, Vector2 p) {
+	for (LoopList::iterator loop = loops.begin();
+		 loop != loops.end(); ++loop) {
+		Loop::cw_iterator begin = loop->clockwise();
+		begin->setPoint(begin->getPoint() + p);
+
+		Loop::cw_iterator point = begin;
+		
+		for (++point; point != begin; ++point) {
+			point->setPoint(point->getPoint() + p);
+		}
+	}
+}
+
+void mgl::translateOpenPaths(OpenPathList &paths, Vector2 p) {
+	for (OpenPathList::iterator path = paths.begin();
+		 path != paths.end(); ++path) {
+		for (OpenPath::iterator point = path->fromStart();
+			 point != path->end(); ++point) {
+			*point += p;
+		}
+	}
 }
 
 void mgl::translateLoops(SegmentTable &loops, Vector2 p)

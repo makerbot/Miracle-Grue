@@ -21,6 +21,7 @@
 //
 
 
+#include "loop_path.h"
 
 namespace mgl
 {
@@ -54,6 +55,9 @@ void translateSegments(std::vector<libthing::LineSegment2> &segments, libthing::
 void translatePolygon(Polygon &polygon, libthing::Vector2 p);
 void translatePolygons(Polygons &polygons, libthing::Vector2 p);
 
+void rotateLoops(LoopList& loops, Scalar angle);
+void translateLoops(LoopList& loops, libthing::Vector2 p);
+void translateOpenPaths(OpenPathList &paths, libthing::Vector2 p);
 void rotatePolygon(Polygon& polygon, Scalar angle);
 void rotatePolygons(Polygons& polygons, Scalar angle);
 
