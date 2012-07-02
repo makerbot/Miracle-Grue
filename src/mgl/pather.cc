@@ -9,6 +9,8 @@
 
 */
 
+#include <list>
+
 #include "pather.h"
 #include "limits.h"
 
@@ -43,7 +45,7 @@ void Pather::generatePaths(const LayerLoops &layerloops,
 	bool direction = false;
 	unsigned int currentSlice = 0;
 
-	initProgress("Path generation", layerpaths.layerCount());
+	initProgress("Path generation", layerloops.readLayers().size());
 
 	for(/*const*/LayerLoops::const_layer_iterator i = layerloops.begin();
 		i != layerloops.end(); ++i)
