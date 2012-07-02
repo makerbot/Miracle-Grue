@@ -395,7 +395,7 @@ private:
 		reference operator*() { 
 			return *iterator_gen<BASE>::base; 
 		}
-		pointer* operator->() { 
+		pointer operator->() { 
 			return &(**this);
 		}
 		// ++iterator	

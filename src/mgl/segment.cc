@@ -60,8 +60,9 @@ void mgl::rotateLoops(LoopList &loops, Scalar angle) {
 	for (LoopList::iterator loop = loops.begin();
 		 loop != loops.end(); ++loop) {
 		for (Loop::finite_cw_iterator point = loop->clockwiseFinite();
-			 point != loop->clockwiseEnd(); ++point) {
-			point->rotate2d(angle);
+			point != loop->clockwiseEnd(); ++point) {
+			//point->rotate2d(angle);
+			point->setPoint(point->getPoint().rotate2d(angle));
 		}
 	}
 }
