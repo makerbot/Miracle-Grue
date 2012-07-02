@@ -41,7 +41,7 @@ private:
 //        CPPUNIT_TEST(test3dKnotPlatform);
 //        CPPUNIT_TEST(testDiffBug1);
 
-		CPPUNIT_TEST(testUnionSurfaces);
+		//CPPUNIT_TEST(testUnionSurfaces);
     CPPUNIT_TEST_SUITE_END();
 
 
