@@ -40,6 +40,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	initProgress("outlines", sliceCount);
 	
 	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
+		tick();
 		LayerLoops::Layer currentLayer;
 		libthing::SegmentTable segments;
 		outlinesForSlice(seg, sliceId, segments);
