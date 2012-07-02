@@ -198,7 +198,8 @@ libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
 
 
 
-mgl_cc = ['src/mgl/Edge.cc',
+mgl_cc = [
+#         'src/mgl/Edge.cc',
           'src/mgl/ScadDebugFile.cc',
           'src/mgl/abstractable.cc',
           'src/mgl/clipper.cc',
