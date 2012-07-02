@@ -103,22 +103,24 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
 			++j) {
 		const Loop& currentLoop = *j;
 		//iterate over each line segment in the loop
-		for(Loop::const_finite_cw_iterator iter(currentLoop.clockwiseFinite()); 
-				iter != currentLoop.clockwiseEnd(); 
-				++iter) {
-			LineSegment2 segment = currentLoop.segmentAfterPoint(iter);
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(xMin,
-					y,
-					xMax,
-					y,
-					segment.a.x,
-					segment.a.y,
-					segment.b.x,
-					segment.b.y,
-					intersectionX,
-					intersectionY)) {
-				lineCuts.insert(intersectionX);
+		if(!currentLoop.empty()) {
+			for(Loop::const_finite_cw_iterator iter(currentLoop.clockwiseFinite()); 
+					iter != currentLoop.clockwiseEnd(); 
+					++iter) {
+				LineSegment2 segment = currentLoop.segmentAfterPoint(iter);
+				Scalar intersectionX, intersectionY;
+				if (segmentSegmentIntersection(xMin,
+						y,
+						xMax,
+						y,
+						segment.a.x,
+						segment.a.y,
+						segment.b.x,
+						segment.b.y,
+						intersectionX,
+						intersectionY)) {
+					lineCuts.insert(intersectionX);
+				}
 			}
 		}
 	}
@@ -170,22 +172,24 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 			j != outlineLoops.end(); 
 			++j) {
 		const Loop& currentLoop = *j;
-		for (Loop::const_finite_cw_iterator it(currentLoop.clockwiseFinite()); 
-				it != currentLoop.clockwiseEnd(); 
-				it++) {
-			LineSegment2 segment = currentLoop.segmentAfterPoint(it);
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(x,
-					yMin,
-					x,
-					yMax,
-					segment.a.x,
-					segment.a.y,
-					segment.b.x,
-					segment.b.y,
-					intersectionX,
-					intersectionY)) {
-				lineCuts.insert(intersectionY);
+		if(!currentLoop.empty()){
+			for (Loop::const_finite_cw_iterator it(currentLoop.clockwiseFinite()); 
+					it != currentLoop.clockwiseEnd(); 
+					it++) {
+				LineSegment2 segment = currentLoop.segmentAfterPoint(it);
+				Scalar intersectionX, intersectionY;
+				if (segmentSegmentIntersection(x,
+						yMin,
+						x,
+						yMax,
+						segment.a.x,
+						segment.a.y,
+						segment.b.x,
+						segment.b.y,
+						intersectionX,
+						intersectionY)) {
+					lineCuts.insert(intersectionY);
+				}
 			}
 		}
 	}

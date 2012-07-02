@@ -152,7 +152,7 @@ void Regioner::insets(const std::list<LoopList>& outlinesLoops,
 		tick();
 		const LoopList& currentOutlines = *iter;
 		std::list<LoopList> currentInsets;
-		//insetsForSlice(currentOutlines, currentInsets, NULL);
+		insetsForSlice(currentOutlines, currentInsets, NULL);
 		insets.push_back(currentInsets);
 	}
 }

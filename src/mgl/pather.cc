@@ -65,10 +65,10 @@ void Pather::generatePaths(const LayerLoops &layerloops,
 		
 		//TODO: this blocks dualstrusion
 		lp_layer.extruders.push_back(LayerPaths::Layer::ExtruderLayer(0));
-		LayerPaths::Layer::ExtruderLayer extruderlayer =
+		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 			lp_layer.extruders.back();
 
-		const std::list<LoopList> &insetLoops = skeleton.insetLoops[currentSlice];
+		const std::list<LoopList>& insetLoops = skeleton.insetLoops[currentSlice];
 
 		outlines(outline_loops, extruderlayer.outlinePaths);
 
@@ -79,7 +79,7 @@ void Pather::generatePaths(const LayerLoops &layerloops,
 		this->infills(infillRanges, layerloops.grid, outline_loops,
 					  direction, extruderlayer.infillPaths);
 
-		currentSlice++;
+		++currentSlice;
 	}
 }
 

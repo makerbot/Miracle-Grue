@@ -226,6 +226,8 @@ public:
 	iterator getSuspendedPoints() { return fromStart(); }; //stub
 	const_iterator getSuspendedPoints() const { return fromStart(); }; //stub
 	
+	bool empty() const { return points.empty(); }
+	
 private:
 	bool isEnd(iterator i) {
 		return i == end();
@@ -750,6 +752,8 @@ public:
 	const_cw_iterator getSuspendedPoints() const { 
 		return clockwise(pointNormals.front()); 
 	};
+	
+	bool empty() const { return pointNormals.empty(); }
 
 	friend class LoopPath;
 private:
@@ -817,7 +821,8 @@ class LoopPath {
 		// iterator++
 		iterator_gen<BASE> operator++(int) {
 			iterator_gen<BASE> iter_copy = *this;
-			return ++iter_copy;
+			++*this;
+			return iter_copy;
 		}
 		// --iterator
 		iterator_gen<BASE>& operator--() {
@@ -831,7 +836,8 @@ class LoopPath {
 		// iterator--
 		iterator_gen<BASE> operator--(int) {
 			iterator_gen<BASE> iter_copy = *this;
-			return --iter_copy;
+			--*this;
+			return iter_copy;
 		}
 		bool operator==(const iterator_gen<BASE>& other) {
 			return base == other.base;
@@ -902,6 +908,8 @@ public:
 	 */
 	iterator getSuspendedPoints() { return fromStart(); } //stub
 	const_iterator getSuspendedPoints() const { return fromStart(); } //stub
+	
+	bool empty() const { return parent.empty(); }
 
 private:
 	const Loop &parent;
