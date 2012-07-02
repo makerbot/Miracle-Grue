@@ -24,21 +24,21 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 }
 
-void Regioner::generateSkeleton(const Tomograph &tomograph, 
-		Regions & regions) {
-
-	insets(tomograph.outlines, regions.insets);
-	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
-	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
-	flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
-	infills(regions.flatSurfaces,
-			tomograph.grid,
-			regions.roofings,
-			regions.floorings,
-			regions.solids,
-			regions.sparses,
-			regions.infills);
-}
+//void Regioner::generateSkeleton(const Tomograph &tomograph, 
+//		Regions & regions) {
+//
+//	insets(tomograph.outlines, regions.insets);
+//	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
+//	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
+//	flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
+//	infills(regions.flatSurfaces,
+//			tomograph.grid,
+//			regions.roofings,
+//			regions.floorings,
+//			regions.solids,
+//			regions.sparses,
+//			regions.infills);
+//}
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops, 
 		Regions& regions) {
@@ -139,22 +139,22 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	}
 }
 
-void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
-		std::vector<libthing::Insets> & insets) {
-
-	unsigned int sliceCount = outlinesSegments.size();
-	initProgress("insets", sliceCount);
-	insets.resize(sliceCount);
-
-	// slice id must be adjusted for
-	for (size_t i = 0; i < sliceCount; i++) {
-		tick();
-		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
-		libthing::Insets & sliceInsets = insets[i];
-
-		insetsForSlice(sliceOutlines, sliceInsets);
-	}
-}
+//void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
+//		std::vector<libthing::Insets> & insets) {
+//
+//	unsigned int sliceCount = outlinesSegments.size();
+//	initProgress("insets", sliceCount);
+//	insets.resize(sliceCount);
+//
+//	// slice id must be adjusted for
+//	for (size_t i = 0; i < sliceCount; i++) {
+//		tick();
+//		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
+//		libthing::Insets & sliceInsets = insets[i];
+//
+//		insetsForSlice(sliceOutlines, sliceInsets);
+//	}
+//}
 
 void Regioner::insets(const std::list<LoopList>& outlinesLoops,
 		std::vector<std::list<LoopList> >& insets) {
@@ -168,21 +168,6 @@ void Regioner::insets(const std::list<LoopList>& outlinesLoops,
 		std::list<LoopList> currentInsets;
 		insetsForSlice(currentOutlines, currentInsets, NULL);
 		insets.push_back(currentInsets);
-	}
-}
-
-void Regioner::flatSurfaces(const std::vector<libthing::Insets> & insets,
-		const Grid & grid,
-		std::vector<GridRanges> & gridRanges) {
-	assert(gridRanges.size() == 0);
-	unsigned int sliceCount = insets.size();
-	initProgress("flat surfaces", sliceCount);
-	gridRanges.resize(sliceCount);
-	for (size_t i = 0; i < sliceCount; i++) {
-		tick();
-		const libthing::Insets & allInsetsForSlice = insets[i];
-		GridRanges& surface = gridRanges[i];
-		gridRangesForSlice(allInsetsForSlice, grid, surface);
 	}
 }
 
@@ -357,13 +342,6 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 
 	}
 
-}
-
-void Regioner::gridRangesForSlice(const libthing::Insets &allInsetsForSlice,
-		const Grid &grid,
-		GridRanges & surface) {
-	const libthing::SegmentTable &innerMostLoops = allInsetsForSlice.back();
-	grid.createGridRanges(innerMostLoops, surface);
 }
 
 void Regioner::gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice,

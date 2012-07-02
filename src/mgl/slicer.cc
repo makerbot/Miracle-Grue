@@ -13,28 +13,6 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 	layerCfg.layerW = slicerCfg.layerW;
 	layerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
 }
-
-void Slicer::tomographyze(Segmenter& seg, Tomograph &tomograph) {
-	// grid.init(mesh.limits, slicerCfg.layerW);
-	unsigned int sliceCount = seg.readSliceTable().size();
-	tomograph.outlines.resize(sliceCount);
-
-	initProgress("outlines", sliceCount);
-
-
-	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
-		tick();
-		//cout << sliceId << "/" << sliceCount << " outlines" << endl;
-		libthing::SegmentTable &segments = tomograph.outlines[sliceId];
-		outlinesForSlice(seg, sliceId, segments);
-	}
-
-	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
-	Limits limits = seg.readLimits();
-	tomograph.grid.init(limits, gridSpacing);
-	tomograph.layerMeasure = seg.readLayerMeasure();
-}
-
 void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	unsigned int sliceCount = seg.readSliceTable().size();
 	initProgress("outlines", sliceCount);

@@ -96,40 +96,20 @@ void rangeTableIntersection(const ScalarRangeTable &a,
 void rangeTableUnion(const ScalarRangeTable &a,
 		const ScalarRangeTable &b,
 		ScalarRangeTable &result);
-void rayCastAlongX(const libthing::SegmentTable &outlineLoops,
-		Scalar y,
-		Scalar xMin,
-		Scalar xMax,
-		std::vector<ScalarRange> &ranges);
 void rayCastAlongX(const std::list<Loop>& outlineLoops,
 		Scalar y,
 		Scalar xMin,
 		Scalar xMax,
-		std::vector<ScalarRange> &ranges);
-void rayCastAlongY(const libthing::SegmentTable &outlineLoops,
-		Scalar x,
-		Scalar yMin,
-		Scalar yMax,
 		std::vector<ScalarRange> &ranges);
 void rayCastAlongY(const std::list<Loop>& outlineLoops,
 		Scalar x,
 		Scalar yMin,
 		Scalar yMax,
 		std::vector<ScalarRange> &ranges);
-void castRaysOnSliceAlongX(const libthing::SegmentTable &outlineLoops,
-		const std::vector<Scalar> &yValues,
-		Scalar xMin,
-		Scalar xMax,
-		ScalarRangeTable &rangeTable);
 void castRaysOnSliceAlongX(const std::list<Loop>& outlineLoops,
 		const std::vector<Scalar> &yValues,
 		Scalar xMin,
 		Scalar xMax,
-		ScalarRangeTable &rangeTable);
-void castRaysOnSliceAlongY(const libthing::SegmentTable &outlineLoops,
-		const std::vector<Scalar> &values, // x
-		Scalar min,
-		Scalar max,
 		ScalarRangeTable &rangeTable);
 void castRaysOnSliceAlongY(const std::list<Loop>& outlineLoops,
 		const std::vector<Scalar> &values, // x
@@ -174,8 +154,6 @@ public:
     /// idealized grid based on our segments in segments.
     /// @param loops: a SegmentTable containing segments specifying
     ///		exactly one layer outline to use to 'cookie cutter' out gridlines
-    void createGridRanges(const libthing::SegmentTable &loops, 
-			GridRanges &outGridRanges) const;
 	void createGridRanges(const std::list<Loop>& loops, 
 			GridRanges& outGridRanges) const;
 

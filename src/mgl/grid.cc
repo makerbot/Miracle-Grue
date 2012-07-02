@@ -57,39 +57,6 @@ void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector
 	}
 }
 
-void rayCastAlongX(const SegmentTable &outlineLoops,
-		Scalar y,
-		Scalar xMin,
-		Scalar xMax,
-		std::vector<ScalarRange> &ranges) {
-	std::set<Scalar> lineCuts;
-
-	// go through all the segments in every loop
-	for (unsigned int j = 0; j < outlineLoops.size(); j++) {
-		const std::vector<LineSegment2> &outlineLineSegment2s =
-				outlineLoops[j];
-		for (std::vector<LineSegment2>::const_iterator it =
-				outlineLineSegment2s.begin();
-				it != outlineLineSegment2s.end();
-				it++) {
-			const LineSegment2 &segment = *it;
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(xMin,
-					y,
-					xMax,
-					y,
-					segment.a.x,
-					segment.a.y,
-					segment.b.x,
-					segment.b.y,
-					intersectionX,
-					intersectionY)) {
-				lineCuts.insert(intersectionX);
-			}
-		}
-	}
-	scalarRangesFromIntersections(lineCuts, ranges);
-}
 void rayCastAlongX(const std::list<Loop>& outlineLoops,
 		Scalar y,
 		Scalar xMin,
@@ -121,39 +88,6 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
 						intersectionY)) {
 					lineCuts.insert(intersectionX);
 				}
-			}
-		}
-	}
-	scalarRangesFromIntersections(lineCuts, ranges);
-}
-
-void rayCastAlongY(const SegmentTable &outlineLoops,
-		Scalar x,
-		Scalar yMin,
-		Scalar yMax,
-		std::vector<ScalarRange> &ranges) {
-	std::set<Scalar> lineCuts;
-
-	// go through all the segments in every loop
-	for (unsigned int j = 0; j < outlineLoops.size(); j++) {
-		const std::vector<LineSegment2> &outlineLineSegment2s = outlineLoops[j];
-		for (std::vector<LineSegment2>::const_iterator it = 
-				outlineLineSegment2s.begin(); 
-				it != outlineLineSegment2s.end(); 
-				it++) {
-			const LineSegment2 &segment = *it;
-			Scalar intersectionX, intersectionY;
-			if (segmentSegmentIntersection(x,
-					yMin,
-					x,
-					yMax,
-					segment.a.x,
-					segment.a.y,
-					segment.b.x,
-					segment.b.y,
-					intersectionX,
-					intersectionY)) {
-				lineCuts.insert(intersectionY);
 			}
 		}
 	}
@@ -196,21 +130,6 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 	scalarRangesFromIntersections(lineCuts, ranges);
 }
 
-void castRaysOnSliceAlongX(const SegmentTable &outlineLoops,
-		const std::vector<Scalar> &yValues,
-		Scalar xMin,
-		Scalar xMax,
-		ScalarRangeTable &rangeTable) {
-	assert(rangeTable.size() == 0);
-	rangeTable.resize(yValues.size());
-
-	for (size_t i = 0; i < rangeTable.size(); i++) {
-		Scalar y = yValues[i];
-		std::vector<ScalarRange> &ranges = rangeTable[i];
-		rayCastAlongX(outlineLoops, y, xMin, xMax, ranges);
-	}
-}
-
 void castRaysOnSliceAlongX(const std::list<Loop> &outlineLoops,
 		const std::vector<Scalar> &yValues,
 		Scalar xMin,
@@ -223,21 +142,6 @@ void castRaysOnSliceAlongX(const std::list<Loop> &outlineLoops,
 		Scalar y = yValues[i];
 		std::vector<ScalarRange> &ranges = rangeTable[i];
 		rayCastAlongX(outlineLoops, y, xMin, xMax, ranges);
-	}
-}
-
-void castRaysOnSliceAlongY(const SegmentTable &outlineLoops,
-		const std::vector<Scalar> &values, // x
-		Scalar min,
-		Scalar max,
-		ScalarRangeTable &rangeTable) {
-	assert(rangeTable.size() == 0);
-	rangeTable.resize(values.size());
-
-	for (size_t i = 0; i < rangeTable.size(); i++) {
-		Scalar value = values[i];
-		std::vector<ScalarRange> &ranges = rangeTable[i];
-		rayCastAlongY(outlineLoops, value, min, max, ranges);
 	}
 }
 
@@ -760,16 +664,16 @@ void Grid::init(const Limits &limits, Scalar gridSpacing) {
 	}
 }
 
-void Grid::createGridRanges(const SegmentTable &loops,
-		GridRanges &outGridRanges) const {
-	Scalar xMin = xValues[0];
-	Scalar xMax = xValues.back();
-	castRaysOnSliceAlongX(loops, yValues, xMin, xMax, outGridRanges.xRays);
-
-	Scalar yMin = yValues[0];
-	Scalar yMax = yValues.back();
-	castRaysOnSliceAlongY(loops, xValues, yMin, yMax, outGridRanges.yRays);
-}
+//void Grid::createGridRanges(const SegmentTable &loops,
+//		GridRanges &outGridRanges) const {
+//	Scalar xMin = xValues[0];
+//	Scalar xMax = xValues.back();
+//	castRaysOnSliceAlongX(loops, yValues, xMin, xMax, outGridRanges.xRays);
+//
+//	Scalar yMin = yValues[0];
+//	Scalar yMax = yValues.back();
+//	castRaysOnSliceAlongY(loops, xValues, yMin, yMax, outGridRanges.yRays);
+//}
 
 void Grid::createGridRanges(const std::list<Loop>& loops,
 		GridRanges& outGridRanges) const {

@@ -267,7 +267,7 @@ void GCoderTestCase::testSimplePath() {
 		SliceData &slice = slices[i];
 		Scalar z = 0.27 * i;
 		slice.updatePosition(z, i);
-		gcoder.writeSlice(gout, slice);
+		//gcoder.writeSlice(gout, slice);
 	}
 
 	gcoder.writeEndDotGCode(gout);

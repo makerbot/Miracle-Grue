@@ -96,17 +96,18 @@ public:
 	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress =NULL);
 
 	/// TBD
-	void tomographyze( Segmenter& seg, Tomograph &tomograph);
 	void generateLoops(const Segmenter& seg, LayerLoops& layerloops);
 
 	/// TBD
-    void outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::SegmentTable & segments);
+    void outlinesForSlice(const Segmenter& seg, 
+			size_t sliceId, 
+			libthing::SegmentTable & segments);
 
 	/// TBD
-	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments,
-			Scalar tol, libthing::SegmentTable & segments);
 	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& 
-			unorderedSegments, Scalar tol, LayerLoops::Layer layer);
+			unorderedSegments,
+			Scalar tol, 
+			libthing::SegmentTable & segments);
 };
 
 }
