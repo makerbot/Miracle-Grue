@@ -76,13 +76,22 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 
 	libthing::SegmentTable sliceOutlinesOld;
 	libthing::Insets sliceInsetsOld;
+	
+	/*
+	 This function makes use of inshelligence, which indirectly makes use of 
+	 clipper.cc, a machine translated Delphi library designed to make use of 
+	 SegmentTables. As it is currently not practical to quickly convert this 
+	 library to use the new Loop type, we instead elected to simply convert 
+	 the resulting SegmentTables into Loops
+	 */
 
-	//fill in outlines
+	//convert outline Loops into equivalent SegmentTables
 	for (LoopList::const_iterator iter = sliceOutlines.begin();
 			iter != sliceOutlines.end();
 			++iter) {
 		sliceOutlinesOld.push_back(std::vector<libthing::LineSegment2 > ());
 		const Loop& currentLoop = *iter;
+		//Convert current loop to a vector of segments
 		for (Loop::const_finite_cw_iterator loopiter =
 				currentLoop.clockwiseFinite();
 				loopiter != currentLoop.clockwiseEnd();
@@ -91,6 +100,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		}
 	}
 
+	//call the function with the equivalent SegmentTables
 	bool writeDebugScadFiles = false;
 	inshelligence(sliceOutlinesOld,
 			slicerCfg.nbOfShells,
@@ -100,12 +110,13 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 			writeDebugScadFiles,
 			sliceInsetsOld);
 
-	//dump sliceInsetsOld into sliceInsets
+	//Recover loops from the resulting SegmentTable
 	for (libthing::Insets::const_iterator iter = sliceInsetsOld.begin();
 			iter != sliceInsetsOld.end();
 			++iter) {
 		sliceInsets.push_back(LoopList());
 		LoopList& currentLoopList = sliceInsets.back();
+		//Convert each group of insets into a list of Loops
 		for (libthing::SegmentTable::const_iterator setIter = iter->begin();
 				setIter != iter->end();
 				++setIter) {
@@ -113,12 +124,15 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 			const std::vector<libthing::LineSegment2>& currentPoly = *setIter;
 			Loop& currentLoop = currentLoopList.back();
 			Loop::cw_iterator loopIter = currentLoop.clockwiseEnd();
+			//Convert each individual inset to a Loop
+			//Insert points 1 - N
 			for (std::vector<libthing::LineSegment2>::const_iterator polyIter =
 					currentPoly.begin();
 					polyIter != currentPoly.end();
 					++polyIter) {
 				loopIter = currentLoop.insertPoint(polyIter->b, loopIter);
 			}
+			//Insert point 0
 			if (!currentPoly.empty())
 				loopIter = currentLoop.insertPoint(currentPoly.begin()->a, loopIter);
 		}

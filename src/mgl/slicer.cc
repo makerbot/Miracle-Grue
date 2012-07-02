@@ -43,21 +43,35 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 		tick();
 		LayerLoops::Layer currentLayer;
 		libthing::SegmentTable segments;
+		/*
+		 Function outlinesForSlice is designed to use segmentTable rather than
+		 the new Loop class. It makes use of clipper.cc, which was machine 
+		 translated from Delphi, and is not currently practical to quickly 
+		 convert to using new types. For this reason, we elected to 
+		 use this function as is, and to convert its resulting SegmentTables
+		 into lists of loops.
+		 */
 		outlinesForSlice(seg, sliceId, segments);
+		//convert all SegmentTables into loops
 		for(libthing::SegmentTable::iterator it = segments.begin();
 				it != segments.end();
 				++it){
 			Loop currentLoop;
 			Loop::cw_iterator iter = currentLoop.clockwiseEnd();
+			//convert current SegmentTable into a loop
 			for(std::vector<libthing::LineSegment2>::iterator it2 = it->begin(); 
 					it2 != it->end(); 
 					++it2){
+				//add points 1 - N
 				iter = currentLoop.insertPoint(it2->b, iter);
 			}
 			if(!it->empty())
+				//add point 0
 				iter = currentLoop.insertPoint(it->begin()->a, iter);
+			//add the loop to the current layer
 			currentLayer.push_back(currentLoop);
 		}
+		//finally, add the loop layer to the new data structure
 		layerloops.push_back(currentLayer);
 	}
 	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
