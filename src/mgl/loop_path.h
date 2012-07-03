@@ -850,28 +850,40 @@ public:
 	 *  /param start The clockwise start point
 	 *  /param rstart The same start point, counter clockwise
 	 */
-	LoopPath(const Loop &p, Loop::const_cw_iterator s, Loop::const_ccw_iterator r)
-        : parent(p), start(s), rstart(r) {}
+	LoopPath(const Loop& p, Loop::const_cw_iterator s, Loop::const_ccw_iterator r)
+        : parent(&p), start(s), rstart(r) {}
 
-	LoopPath(Loop &p, Loop::cw_iterator s, Loop::ccw_iterator r)
-        : parent(p), start(s), rstart(r) {}
+	LoopPath(const Loop& p, Loop::cw_iterator s, Loop::ccw_iterator r)
+        : parent(&p), start(s), rstart(r) {}
+	
+	LoopPath(const LoopPath& orig) 
+		: parent(orig.parent), start(orig.start), rstart(orig.rstart) {}
+	
+	LoopPath& operator=(const LoopPath& orig) {
+		if(this != &orig) {
+			parent = orig.parent;
+			start = orig.start;
+			rstart = orig.rstart;
+		}
+		return *this;
+	}
 
 
 	/*! Iterator after the end of the list. */
 	iterator end() {
-		return iterator(parent.clockwiseEnd(),
+		return iterator(parent->clockwiseEnd(),
 						*this); }
 	const_iterator end() const {
-		return const_iterator(const_cast<const Loop&>(parent).clockwiseEnd(),
+		return const_iterator(parent->clockwiseEnd(),
 						*this); }
 
 	/*! Reverse iterator after the end of the list. */
 	reverse_iterator rend() {
-		return reverse_iterator(parent.counterClockwiseEnd(),
+		return reverse_iterator(parent->counterClockwiseEnd(),
 								*this); }
 	const_reverse_iterator rend() const {
 		return const_reverse_iterator(
-				const_cast<const Loop&>(parent).counterClockwiseEnd(),
+				parent->counterClockwiseEnd(),
 								*this); }
 	/*! Get an iterator from the start point
 	 *  Will proceed clockwise and end at the same point
@@ -897,10 +909,10 @@ public:
 	iterator getSuspendedPoints() { return fromStart(); } //stub
 	const_iterator getSuspendedPoints() const { return fromStart(); } //stub
 	
-	bool empty() const { return parent.empty(); }
+	bool empty() const { return parent->empty(); }
 
 private:
-	const Loop &parent;
+	const Loop* parent;
 	Loop::const_cw_iterator start;
 	Loop::const_ccw_iterator rstart;
 
