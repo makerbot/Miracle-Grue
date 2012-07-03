@@ -21,6 +21,11 @@ AddOption('--unit_tests', default=None, dest='unit_test')
 build_unit_tests = False
 run_unit_tests = False
 testmode = GetOption('unit_test')
+
+AddOption('--test', action='store_true', dest='test')
+if GetOption('test'):
+    testmode = 'run'
+
 if testmode is not None:
     if testmode == 'run':
         build_unit_tests = True
@@ -28,8 +33,11 @@ if testmode is not None:
     elif testmode == 'build':
         build_unit_tests = True
 
+
 AddOption('--gui', action='store_true', dest='gui')
 build_gui = GetOption('gui')
+
+print 'Targets: '+', '.join(BUILD_TARGETS)
 
 def detectLatestQtDir(operating_system, compiler_type):
     if os.environ.get('QTDIR') is not None:
@@ -294,8 +302,9 @@ if build_unit_tests:
 
 if run_unit_tests:
     for testname in tests:
-        print "Running "+testname
-        runThisTest(testname)
+        testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
+        testEnv.Command('runtest_'+testname, testfile, testfile)
+
 
 
 
