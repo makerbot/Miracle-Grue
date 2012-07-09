@@ -826,7 +826,7 @@ typedef std::list<LoopPath> LoopPathList;
 
 }
 
-#include "loop_path_impl.h"
+#include "loop_path_iter_impl.h"
 
 
 #endif
