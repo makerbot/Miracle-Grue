@@ -50,6 +50,200 @@ OpenPath::iterator_gen<BASE> OpenPath::iterator_gen<BASE>::operator ++(int) {
 	return iter_copy;
 }
 
+template <typename BASE>
+OpenPath::iterator_gen<BASE>& OpenPath::iterator_gen<BASE>::operator --() {
+	--base;
+	return *this;
+}
+
+template <typename BASE>
+OpenPath::iterator_gen<BASE> OpenPath::iterator_gen<BASE>::operator --(int) {
+	iterator_gen<BASE> iter_copy = *this;
+	--*this;
+	return iter_copy;
+}
+
+template <typename BASE>
+OpenPath::iterator_gen<BASE>& OpenPath::iterator_gen<BASE>::operator +=(int off) {
+	iterator_gen<BASE> iter_copy = *this;
+	return iter_copy+=off;
+}
+
+template <typename BASE>
+OpenPath::iterator_gen<BASE> OpenPath::iterator_gen<BASE>::operator +(int off) {
+	iterator_gen<BASE> iter_copy = *this;
+	return iter_copy+=off;
+}
+
+template <typename BASE>
+OpenPath::iterator_gen<BASE>& OpenPath::iterator_gen<BASE>::operator -=(int off) {
+	return base += (-off);
+}
+
+template <typename BASE>
+OpenPath::iterator_gen<BASE> OpenPath::iterator_gen<BASE>::operator -(int off) {
+	return *this + (-off);
+}
+
+template <typename BASE> template <typename OTHERBASE>
+bool OpenPath::iterator_gen<BASE>::operator ==(
+		const iterator_gen<OTHERBASE>& other) const {
+	return base == other.iterator_gen<OTHERBASE>::base;
+}
+
+template <typename BASE> template <typename OTHERBASE>
+bool OpenPath::iterator_gen<BASE>::operator !=(
+		const iterator_gen<OTHERBASE>& other) const {
+	return !(*this==other);
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE>::iterator_gen(iterator i, iterator b, iterator e) : 
+		base(i), begin(b), end(e) {}
+
+template <typename BASE> template <typename OTHERBASE>
+Loop::iterator_gen<BASE>::iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
+				base(orig.iterator_gen<OTHERBASE>::base), 
+				begin(orig.iterator_gen<OTHERBASE>::begin), 
+				end(orig.iterator_gen<OTHERBASE>::end) {}
+
+template <typename BASE>
+Loop::iterator_gen<BASE>& Loop::iterator_gen<BASE>::operator =(
+		const iterator_gen<BASE>& orig) {
+	base = orig.base;
+	begin = orig.begin;
+	end = orig.end;
+}
+
+template <typename BASE>
+typename Loop::iterator_gen<BASE>::reference 
+		Loop::iterator_gen<BASE>::operator *() {
+	return *base;
+}
+
+template <typename BASE>
+typename Loop::iterator_gen<BASE>::pointer 
+		Loop::iterator_gen<BASE>::operator ->() {
+	return &*base;
+}
+
+template <typename BASE>
+typename Loop::iterator_gen<BASE>::iterator 
+		Loop::iterator_gen<BASE>::operator &() const {
+	return base;
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE>& Loop::iterator_gen<BASE>::operator ++() {
+	if(base != end) {
+		++base;
+		if (base == end) {
+			base = begin;
+		}
+	}
+	return *this;
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE> Loop::iterator_gen<BASE>::operator ++(int) {
+	iterator_gen<BASE> iter_copy = *this;
+	return ++iter_copy;
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE>& Loop::iterator_gen<BASE>::operator --() {
+	if(base != end) {
+		if(base == begin){
+			base = end;
+		}
+		--base;
+	}
+	return *this;
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE> Loop::iterator_gen<BASE>::operator --(int) {
+	iterator_gen<BASE> iter_copy = *this;
+	return --iter_copy;
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE> Loop::iterator_gen<BASE>::makeBegin() const {
+	return iterator_gen(begin, begin, end); 
+}
+
+template <typename BASE>
+Loop::iterator_gen<BASE> Loop::iterator_gen<BASE>::makeEnd() const {
+	return iterator_gen(end, begin, end); 
+}
+
+template <typename BASE> template <typename OTHERBASE>
+bool Loop::iterator_gen<BASE>::operator ==(
+		const iterator_gen<OTHERBASE>& other) const {
+	return base == other.iterator_gen<OTHERBASE>::base;
+}
+
+template <typename BASE> template <typename OTHERBASE>
+bool Loop::iterator_gen<BASE>::operator !=(
+		const iterator_gen<OTHERBASE>& other) const {
+	return !(*this == other);
+}
+
+template <typename BASE>
+bool Loop::iterator_gen<BASE>::isBegin() const { return base == begin; }
+
+template <typename BASE>
+bool Loop::iterator_gen<BASE>::isEnd() const { return base == end; }
+
+template <typename BASE>
+Loop::iterator_finite_gen<BASE>::iterator_finite_gen(iterator i, 
+		iterator b, iterator e) : 
+		iterator_gen<BASE>(i, b, e) {}
+
+template <typename BASE> template <typename OTHERBASE>
+Loop::iterator_finite_gen<BASE>::iterator_finite_gen(
+		const iterator_gen<OTHERBASE>& orig) : 
+		iterator_gen<BASE>(
+		orig.iterator_gen<OTHERBASE>::base, 
+		orig.iterator_gen<OTHERBASE>::begin, 
+		orig.iterator_gen<OTHERBASE>::end) {}
+
+template <typename BASE> template <typename OTHERBASE>
+Loop::iterator_finite_gen<BASE>& Loop::iterator_finite_gen<BASE>::operator =( 
+		const iterator_gen<OTHERBASE>& orig) {
+	iterator_gen<BASE>::base = 
+			orig.iterator_gen<OTHERBASE>::base;
+	iterator_gen<BASE>::begin = 
+			orig.iterator_gen<OTHERBASE>::begin;
+	iterator_gen<BASE>::end = 
+			orig.iterator_gen<OTHERBASE>::end;
+}
+
+template <typename BASE>
+Loop::iterator_finite_gen<BASE>& Loop::iterator_finite_gen<BASE>::operator ++() {
+	++iterator_gen<BASE>::base;
+	return *this;
+}
+
+template <typename BASE>
+Loop::iterator_finite_gen<BASE> Loop::iterator_finite_gen<BASE>::operator ++(int) {
+	iterator_finite_gen<BASE> iter_copy = *this;
+	++*this;
+	return iter_copy;
+}
+
+template <typename BASE>
+Loop::iterator_finite_gen<BASE>& Loop::iterator_finite_gen<BASE>::operator --() {
+	--iterator_gen<BASE>::base;
+	return *this;
+}
+
+template <typename BASE>
+Loop::iterator_finite_gen<BASE> Loop::iterator_finite_gen<BASE>::operator --(int) {
+	iterator_finite_gen<BASE> iter_copy = *this;
+	--*this;
+	return iter_copy;
+}
 
 }
 
