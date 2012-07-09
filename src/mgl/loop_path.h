@@ -571,7 +571,7 @@ public:
 	cw_iterator clockwise(const PointType &startpoint) {
 		for (PointNormalList::iterator i = pointNormals.begin();
 			 i != pointNormals.end(); i++) {
-			if (static_cast<PointType>(*i) == startpoint)
+			if (i->getPoint() == startpoint)
 				return cw_iterator(i, pointNormals.begin(), 
 						pointNormals.end());
 		}
@@ -580,7 +580,7 @@ public:
 	const_cw_iterator clockwise(const PointType &startpoint) const {
 		for (PointNormalList::const_iterator i = pointNormals.begin();
 			 i != pointNormals.end(); i++) {
-			if (static_cast<PointType>(*i) == startpoint)
+			if (i->getPoint() == startpoint)
 				return const_cw_iterator(i, pointNormals.begin(), 
 						pointNormals.end());
 		}
@@ -627,7 +627,7 @@ public:
 	ccw_iterator counterClockwise(const PointType &startpoint) {
 		for (PointNormalList::reverse_iterator i = pointNormals.rbegin();
 			 i != pointNormals.rend(); i++) {
-			if (static_cast<PointType>(*i) == startpoint)
+			if (i->getPoint() == startpoint)
 				return ccw_iterator(i, pointNormals.rbegin(), 
 						pointNormals.rend());
 		}
@@ -636,7 +636,7 @@ public:
 	const_ccw_iterator counterClockwise(const PointType& startpoint) const {
 		for (PointNormalList::const_reverse_iterator i = pointNormals.rbegin();
 			 i != pointNormals.rend(); i++) {
-			if (static_cast<PointType>(*i) == startpoint)
+			if (i->getPoint() == startpoint)
 				return const_ccw_iterator(i, pointNormals.rbegin(), 
 						pointNormals.rend());
 		}
