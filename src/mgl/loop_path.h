@@ -681,56 +681,23 @@ class LoopPath {
 		friend class iterator_gen;
 		
 		typedef BASE iterator;
-		iterator_gen(const iterator& i, const LoopPath &p) : base(i), parent(p), 
-				hasLooped(false) {};
+		iterator_gen(const iterator& i, const LoopPath &p);
 		template <typename OTHERBASE>
-		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
-				base(orig.iterator_gen<OTHERBASE>::base), 
-				parent(orig.iterator_gen<OTHERBASE>::parent), 
-				hasLooped(orig.iterator_gen<OTHERBASE>::hasLooped) {}
+		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig);
 
-		const PointType& operator*() { return base->getPoint(); }
-		const PointType* operator->() { return &(**this); }
-		iterator operator&() const { return base; }
+		const PointType& operator*();
+		const PointType* operator->();
+		iterator operator&() const;
 		// ++iterator
-		iterator_gen<BASE>& operator++() {
-			if(hasLooped) {
-				base = base.makeEnd();
-			} else {
-				++base;
-				if (parent.isBegin(base)) {
-					hasLooped = true;
-				}
-			}
-			return *this;
-		}
+		iterator_gen<BASE>& operator++();
 		// iterator++
-		iterator_gen<BASE> operator++(int) {
-			iterator_gen<BASE> iter_copy = *this;
-			++*this;
-			return iter_copy;
-		}
+		iterator_gen<BASE> operator++(int);
 		// --iterator
-		iterator_gen<BASE>& operator--() {
-			if(parent.isBegin(base)) {
-				base = end;
-			} else {
-				--base;
-			}
-			return *this;
-		}
+		iterator_gen<BASE>& operator--();
 		// iterator--
-		iterator_gen<BASE> operator--(int) {
-			iterator_gen<BASE> iter_copy = *this;
-			--*this;
-			return iter_copy;
-		}
-		bool operator==(const iterator_gen<BASE>& other) {
-			return base == other.base;
-		}
-		bool operator!=(const iterator_gen<BASE>& other) {
-			return !((*this)==other);
-		}
+		iterator_gen<BASE> operator--(int);
+		bool operator==(const iterator_gen<BASE>& other) const;
+		bool operator!=(const iterator_gen<BASE>& other) const;
 
 	private:
 		iterator base;

@@ -245,6 +245,81 @@ Loop::iterator_finite_gen<BASE> Loop::iterator_finite_gen<BASE>::operator --(int
 	return iter_copy;
 }
 
+template <typename BASE>
+LoopPath::iterator_gen<BASE>::iterator_gen(const BASE& i, const LoopPath& p) : 
+		base(i), parent(p), hasLooped(false) {}
+
+template <typename BASE> template <typename OTHERBASE>
+LoopPath::iterator_gen<BASE>::iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
+		base(orig.iterator_gen<OTHERBASE>::base), 
+		parent(orig.iterator_gen<OTHERBASE>::parent), 
+		hasLooped(orig.iterator_gen<OTHERBASE>::hasLooped) {}
+
+template <typename BASE>
+const PointType& LoopPath::iterator_gen<BASE>::operator *() {
+	return base->getPoint();
+}
+
+template <typename BASE>
+const PointType* LoopPath::iterator_gen<BASE>::operator ->() {
+	return &(**this);
+}
+
+template <typename BASE>
+typename LoopPath::iterator_gen<BASE>::iterator 
+		LoopPath::iterator_gen<BASE>::operator &() const {
+	return base;
+}
+
+template <typename BASE>
+LoopPath::iterator_gen<BASE>& LoopPath::iterator_gen<BASE>::operator ++() {
+	if(hasLooped) {
+		base = base.makeEnd();
+	} else {
+		++base;
+		if (parent.isBegin(base)) {
+			hasLooped = true;
+		}
+	}
+	return *this;
+}
+
+template <typename BASE>
+LoopPath::iterator_gen<BASE> LoopPath::iterator_gen<BASE>::operator ++(int) {
+	iterator_gen<BASE> iter_copy = *this;
+	++*this;
+	return iter_copy;
+}
+
+template <typename BASE>
+LoopPath::iterator_gen<BASE>& LoopPath::iterator_gen<BASE>::operator --() {
+	if(parent.isBegin(base)) {
+		base = end();
+	} else {
+		--base;
+	}
+	return *this;
+}
+
+template <typename BASE>
+LoopPath::iterator_gen<BASE> LoopPath::iterator_gen<BASE>::operator --(int) {
+	iterator_gen<BASE> iter_copy = *this;
+	--*this;
+	return iter_copy;
+}
+
+template <typename BASE>
+bool LoopPath::iterator_gen<BASE>::operator ==(
+		const iterator_gen<BASE>& other) const {
+	return base == other.base;
+}
+
+template <typename BASE>
+bool LoopPath::iterator_gen<BASE>::operator !=(
+		const iterator_gen<BASE>& other) const {
+	return !((*this)==other);
+}
+
 }
 
 
