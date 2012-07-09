@@ -199,10 +199,8 @@ libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
 		LIBTHING_SRC+'Vector2.cc', 
 		LIBTHING_SRC+'Vector3.cc',
 		LIBTHING_SRC+'Triangle3.cc',
-		LIBTHING_SRC+"LineSegment2.cc",
-		LIBTHING_SRC+"Mesh.cc",
-		LIBTHING_SRC+'StlReader.cc',
-		LIBTHING_SRC+'StlWriter.cc']
+		LIBTHING_SRC+"LineSegment2.cc"
+]
 
 
 
