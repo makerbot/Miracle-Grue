@@ -23,7 +23,11 @@ QT4 is only used by the miracle_gui interface.  If you only want to use the comm
 -Install Python. Version 2.7 and up should work. Add python.exe to your PATH variable.
 -Install the Qt SDK. Add the included QtSDK/mingw/bin directory as well as QtSDK/Desktop/Qt/<Version>/mingw/bin directories to your path.
 -For unit tests to compile, download CppUnit from sourceforge.net/apps/mediawiki/cppunit/
-	-configure, make, make install, then move the created bin, lib, and include directory to QtSDK/mingw
+	1. Follow the download link on this page http://sourceforge.net/apps/mediawiki/cppunit/index.php?title=Main_Page. Download and extract the CPPUNIT source files.
+	2. Navigate to the directory where you extracted the source files using a terminal. It should contain a file named "configure"
+	3. Issue the command "sh configure --prefix=PATH". Replace PATH with the directory where you wish the files to be built. Use / instead of \. Example: sh configure --prefix=C:/FOLDER_WTIH_CPPUNIT_BINARIES/
+	4. Issue the command "make install". This should generate the necessary files in the directory you specified.
+	5. Copy the contents of your install directory (that you specified in step 3) into C:\MinGW
     
 -Scons: http://www.scons.org/ Scons requires python so install after that is set up
     	 
