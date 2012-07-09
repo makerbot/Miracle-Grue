@@ -40,30 +40,19 @@ class OpenPath {
 		typedef typename iterator::reference reference;
 		typedef typename iterator::pointer pointer;
 		
-		iterator_gen(BASE b = BASE()) : base(b) {};
+		iterator_gen(BASE b = BASE());
 		template <typename OTHERBASE>
-		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig) : 
-				base(orig.iterator_gen<OTHERBASE>::base) {}
+		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig);
 		template <typename OTHERBASE>
-		iterator_gen<BASE>& operator=(const iterator_gen<OTHERBASE>& orig) {
-			base = orig.iterator_gen<OTHERBASE>::base;
-			return *this;
-		}
+		iterator_gen<BASE>& operator=(const iterator_gen<OTHERBASE>& orig);
 
-		reference operator*() { return *base; }
-		pointer operator->() { return &*base; }
-		iterator operator&() const { return base; }
+		reference operator*();
+		pointer operator->();
+		iterator operator&() const;
 		// ++iterator
-		iterator_gen<BASE>& operator++() {
-			++base;
-			return *this;
-		}
+		iterator_gen<BASE>& operator++();
 		// iterator++
-		iterator_gen<BASE> operator++(int) {
-			iterator_gen<BASE> iter_copy = *this;
-			++*this;
-			return iter_copy;
-		}
+		iterator_gen<BASE> operator++(int);
 		iterator_gen<BASE>& operator+=(int off) {
 			base += off;
 			return *this;
@@ -927,6 +916,8 @@ typedef std::list<Loop> LoopList;
 typedef std::list<LoopPath> LoopPathList;
 
 }
+
+#include "loop_path_impl.h"
 
 
 #endif
