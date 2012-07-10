@@ -68,13 +68,16 @@ void testModel(const char *model, const char* configFile)
 	GCoderConfig gcoderCfg;
 	loadGCoderConfigFromFile(config, gcoderCfg);
 
+	ExtruderConfig extruderCfg;
+	loadExtruderConfigFromFile(config, extruderCfg);
+
 	Tomograph tomograph;
 	Regions skeleton;
 	std::vector< SliceData >  slices;
 	
 	std::ofstream gcodeFileStream(gcodeFile.c_str());
 	try{
-		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(), NULL,
+		miracleGrue(gcoderCfg, slicerCfg, extruderCfg, modelFile.c_str(), NULL,
 					gcodeFileStream, -1, -1,
 					tomograph,
 					skeleton,
