@@ -27,6 +27,7 @@ public:
 
 	class Layer{
 	public:
+		Layer(layer_index_t ind = 0);
 		loop_iterator begin();
 		const_loop_iterator begin() const;
 		loop_iterator end();
@@ -39,8 +40,8 @@ public:
 		loop_iterator erase(loop_iterator at);
 		loop_iterator erase(loop_iterator from, loop_iterator to);
 		bool empty() const;
-		
 		const LoopList& readLoops() const;
+		layer_index_t getIndex() const;
 	private:
 		LoopList loops;
 		layer_index_t index;

@@ -71,7 +71,7 @@ public:
 		ExtruderList extruders;
 		Scalar layerZ;		//vertical coordinate
 		Scalar layerHeight;	//thickness
-		size_t layerId;
+		layer_index_t layerId;
 	};
 	
 	layer_iterator begin();

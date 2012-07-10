@@ -361,18 +361,14 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
 			it != end;
 			++it, ++sliceCount);
 	initProgress("gcode", sliceCount);
-	size_t codeSlice = 0;
-	size_t layerIndex = 0;
 	for(LayerPaths::const_layer_iterator it = layerpaths.begin(); 
 			it != begin;
-			++it, ++layerIndex);
+			++it);
 	for(LayerPaths::layer_iterator it = begin; 
-			it != end; ++it, ++codeSlice, ++layerIndex){
+			it != end; ++it){
 		tick();
 		LayerPaths::Layer& currentLayer = *it;
-		Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
-		currentLayer.layerZ = z;
-		currentLayer.layerId = layerIndex;
+		//Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
 		writeSlice(gout, layerpaths, it);
 	}
 	writeEndDotGCode(gout);

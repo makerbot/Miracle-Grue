@@ -102,11 +102,19 @@ public:
 	};
 
 	typedef std::map<layer_index_t, LayerAttributes> attributesMap;
+	/* Old interface */
 	LayerMeasure(Scalar firstLayerZ, Scalar layerH);
 	layer_index_t zToLayerAbove(Scalar z) const;
 	Scalar sliceIndexToHeight(layer_index_t layerIndex) const;
 	Scalar getLayerH() const;
-	Scalar getLayerH(layer_index_t layerIndex) const;
+	
+	/* New interface */
+	LayerAttributes getLayerAttributes(layer_index_t layerIndex) const;
+	Scalar getLayerPosition(layer_index_t layerIndex) const;
+	Scalar getLayerThickness(layer_index_t layerIndex) const;
+	void setLayerAttributes(layer_index_t layerIndex, 
+			const LayerAttributes& attribs);
+	
 
 private:
 

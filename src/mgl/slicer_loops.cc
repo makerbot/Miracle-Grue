@@ -4,7 +4,7 @@
 
 namespace mgl {
 
-
+LayerLoops::Layer::Layer(layer_index_t ind) : index(ind) {}
 LayerLoops::loop_iterator LayerLoops::Layer::begin(){
 	return loops.begin();
 }
@@ -43,6 +43,9 @@ LayerLoops::loop_iterator LayerLoops::Layer::erase(loop_iterator from,
 bool LayerLoops::Layer::empty() const { return loops.empty(); }
 const LayerLoops::LoopList& LayerLoops::Layer::readLoops() const {
 	return loops;
+}
+layer_index_t LayerLoops::Layer::getIndex() const {
+	return index;
 }
 
 LayerLoops::LayerLoops(Scalar firstLayerZ, Scalar layerH) : 

@@ -52,16 +52,18 @@ void Pather::generatePaths(const LayerLoops &layerloops,
 	{
 		tick();
 
-        if(currentSlice < firstSliceIdx) continue;
-		if(currentSlice > lastSliceIdx) break;
+        //if(currentSlice < firstSliceIdx) continue;
+		if(i->getIndex() < firstSliceIdx) continue;
+		//if(currentSlice > lastSliceIdx) break;
+		if(i->getIndex() > lastSliceIdx) break;
 
 		direction = !direction;
 		const LoopList& outline_loops = i->readLoops();
 
-		Scalar z = layerloops.layerMeasure.sliceIndexToHeight(currentSlice);
+		Scalar z = layerloops.layerMeasure.getLayerPosition(i->getIndex());
+		Scalar h = layerloops.layerMeasure.getLayerThickness(i->getIndex());
 
-		layerpaths.push_back(LayerPaths::Layer(z,
-						   layerloops.layerMeasure.getLayerH(), currentSlice));
+		layerpaths.push_back(LayerPaths::Layer(z, h, i->getIndex()));
 
 		LayerPaths::Layer& lp_layer = layerpaths.back();
 		
