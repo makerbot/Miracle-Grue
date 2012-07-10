@@ -2,12 +2,13 @@
 #include "meshy.h"
 #include "mgl.h"
 
-#include<iostream>
-#include<algorithm>
-#include<string>
-#include<stdint.h>
-#include<cstring>
+#include <iostream>
+#include <algorithm>
+#include <string>
+#include <stdint.h>
+#include <cstring>
 #include <list>
+#include <sstream>
 
 #include "log.h"
 
@@ -286,15 +287,16 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 		/// Throw removed to continue coding progress. We may not expect all
 		/// triangles to load, depending on situation. Needs debugging/revision
 		if (this->triangleCount() != tricount) {
-			string msg = "Warning: triangle count err in \"";
-			msg += stlFilename;
-			msg += "\".  Expected: ";
-			msg += stringify((size_t) tricount);
-			msg += ", Read:";
-			msg += stringify(this->triangleCount());
-			msg += ", faced:";
-			msg += stringify(facecount);
-			Log::info() << msg;
+			stringstream msg;
+			msg << "Warning: triangle count err in \"";
+			msg << stlFilename;
+			msg << "\".  Expected: ";
+			msg << tricount;
+			msg << ", Read:";
+			msg << triangleCount();
+			msg << ", faced:";
+			msg << facecount;
+			Log::info() << msg.str();
 			//			MeshyException problem(msg.c_str());
 			//			throw (problem);
 		}

@@ -143,19 +143,6 @@ typedef std::vector<Polygons> PolygonsGroup;
 
 std::ostream& operator<<(std::ostream& os, const Polygon& v);
 
-
-std::string stringify(double x);
-std::string stringify(size_t x);
-
-template <typename T>
-std::string stringify(const T& x) {
-	std::ostringstream o;
-	if (!(o << x))
-		throw Exception("stringify(generic)");
-	return o.str();
-}
-
-
 } // namespace
 
 #endif

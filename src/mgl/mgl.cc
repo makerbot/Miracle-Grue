@@ -84,9 +84,9 @@ LayerMeasure::LayerAttributes
 		LayerMeasure::getLayerAttributes(layer_index_t layerIndex) const {
 	attributesMap::const_iterator iter = attributes.find(layerIndex);
 	if(iter == attributes.end()){
-		LayerException mixup = 
-				string("Unable to find attributes for layer index ") + 
-				stringify(layerIndex);
+		stringstream msg;
+		msg << "Unable to find attributes for layer index " << layerIndex;
+		LayerException mixup = msg.str();
 		throw mixup;
 	}
 	return iter->second;
@@ -111,20 +111,6 @@ ostream& operator<<(ostream& os, const Limits& l) {
 ostream& operator <<(ostream &os, const Vector2 &pt) {
 	os << "[" << pt.x << ", " << pt.y << "]";
 	return os;
-}
-
-string stringify(Scalar x) {
-	ostringstream o;
-	if (!(o << x))
-		throw Exception("stringify(Scalar)");
-	return o.str();
-}
-
-string stringify(size_t x) {
-	ostringstream o;
-	if (!(o << x))
-		throw Exception("stringify(double)");
-	return o.str();
 }
 
 #if defined WIN32 && defined _MSVC_VER
