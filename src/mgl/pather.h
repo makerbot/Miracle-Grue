@@ -24,6 +24,11 @@ namespace mgl {
 typedef std::vector<LoopList> InsetVector; // TODO: make this a smarter object
 
 // slice data for an extruder
+class ExtruderConfig {
+public:
+	unsigned int defaultExtruder;
+};
+
 
 class ExtruderSlice {
 public:
@@ -140,7 +145,8 @@ public:
 	Pather(ProgressBar * progress = NULL);
 
 
-	void generatePaths(const LayerLoops &layerloops,
+	void generatePaths(const ExtruderConfig &extruderCfg,
+					   const LayerLoops &layerloops,
 					   const Regions &skeleton,
 					   LayerPaths &slices,
 					   int sfirstSliceIdx=-1,

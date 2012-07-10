@@ -421,6 +421,7 @@ void GCoder::writeSlice(std::ostream& ss,
 			++it){
 		//this is the current extruder
 		Extruder& currentExtruder = gcoderCfg.extruders[it->extruderId];
+		gantry.set_current_extruder_index(currentExtruder.code);
 		//this is the current extruder's zFeedrate
 		Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() * 
 				currentExtruder.zFeedRate;

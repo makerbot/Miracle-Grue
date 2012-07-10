@@ -23,7 +23,8 @@ Pather::Pather(ProgressBar * progress)
 }
 
 
-void Pather::generatePaths(const LayerLoops &layerloops,
+void Pather::generatePaths(const ExtruderConfig &extruderCfg,
+						   const LayerLoops &layerloops,
 						   const Regions &skeleton,
 						   LayerPaths &layerpaths,
 						   int sfirstSliceIdx,  // =-1
@@ -65,8 +66,10 @@ void Pather::generatePaths(const LayerLoops &layerloops,
 
 		LayerPaths::Layer& lp_layer = layerpaths.back();
 		
-		//TODO: this blocks dualstrusion
-		lp_layer.extruders.push_back(LayerPaths::Layer::ExtruderLayer(0));
+		//TODO: this only handles the case where the user specifies the extruder
+		// it does not handle a dualstrusion print
+		lp_layer.extruders.push_back(
+				 LayerPaths::Layer::ExtruderLayer(extruderCfg.defaultExtruder));
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 			lp_layer.extruders.back();
 

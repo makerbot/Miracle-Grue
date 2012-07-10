@@ -79,9 +79,10 @@ struct Arg: public option::Arg
 };
 
 // all ID's of the options we expect
-enum optionIndex {UNKNOWN, HELP, CONFIG, FIRST_Z,LAYER_H,LAYER_W, FILL_ANGLE, FILL_DENSITY,
-				 N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX, DEBUG_ME, DEBUG_LAYER, 
-				 START_GCODE, END_GCODE, OUT_FILENAME};
+enum optionIndex {UNKNOWN, HELP, CONFIG, FIRST_Z,LAYER_H,LAYER_W, FILL_ANGLE,
+				  FILL_DENSITY, N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX,
+				  DEBUG_ME, DEBUG_LAYER, START_GCODE, END_GCODE,
+				  DEFAULT_EXTRUDER, OUT_FILENAME};
 // options descriptor table
 const option::Descriptor usageDescriptor[] =
 {
@@ -114,7 +115,9 @@ const option::Descriptor usageDescriptor[] =
 			"  -s \tstart gcode file" },
 	{ END_GCODE, 	13, "e", "footer", Arg::NonEmpty,
 			"  -e \tend gcode file" },
-	{ OUT_FILENAME, 	14, "o", "outFilename", Arg::NonEmpty,
+	{ DEFAULT_EXTRUDER, 14, "x", "defaultExtruder", Arg::Numeric,
+	        "  -x \tindex of extruder to use on a single material print (1 is lowest)" },
+	{ OUT_FILENAME, 	15, "o", "outFilename", Arg::NonEmpty,
 			"  -o \twrite gcode to specific filename (defaults to <model>.gcode)" },
 	{0,0,0,0,0,0},
 };
@@ -197,6 +200,8 @@ int newParseArgs( Configuration &config,
 				break;
 			case  START_GCODE:
 			case  END_GCODE:
+		    case  DEFAULT_EXTRUDER:
+				config["extruder"][opt.desc->longopt] = atoi(opt.arg);
 			case  OUT_FILENAME:
 				config["gcoder"][opt.desc->longopt] = opt.arg;
 				break;
@@ -315,6 +320,9 @@ int main(int argc, char *argv[], char *[]) // envp
 		SlicerConfig slicerCfg;
 		loadSlicerConfigFromFile(config, slicerCfg);
 
+		ExtruderConfig extruderCfg;
+		loadExtruderConfigFromFile(config, extruderCfg);
+
 		const char* scad = NULL;
 
 		if (scadFile.size() > 0 )
@@ -329,7 +337,7 @@ int main(int argc, char *argv[], char *[]) // envp
 		std::ofstream gcodeFileStream(gcodeFile.c_str());
 
 		ProgressLog log;
-		miracleGrue(gcoderCfg, slicerCfg, modelFile.c_str(),
+		miracleGrue(gcoderCfg, slicerCfg, extruderCfg, modelFile.c_str(),
 					scad,
 					gcodeFileStream,
 					firstSliceIdx,

@@ -162,6 +162,7 @@ public:
     std::string header;
     std::string footer;
 
+	unsigned int defaultExtruder;
 };
 
 
