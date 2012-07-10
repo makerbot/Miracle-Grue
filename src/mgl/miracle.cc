@@ -1,6 +1,6 @@
 
 
-#include "JsonConverter.h"
+#include "configuration.h"
 #include <json/writer.h>
 
 // #include "abstractable.h"
@@ -16,6 +16,7 @@ using namespace libthing;
 
 void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		const SlicerConfig &slicerCfg,
+ 	    const ExtruderConfig &extruderCfg,
 		const char *modelFile,
 		const char *, // scadFileStr,
 		ostream& gcodeFile,
@@ -52,7 +53,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Pather pather(progress);
 
 	LayerPaths layers;
-	pather.generatePaths(layerloops, regions, layers);
+	pather.generatePaths(extruderCfg, layerloops, regions, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);
