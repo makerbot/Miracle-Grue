@@ -244,7 +244,8 @@ public:
     }
 	void writeSlice(std::ostream& ss, 
 			LayerPaths& layerpaths, 
-			LayerPaths::layer_iterator layerId);
+			LayerPaths::layer_iterator layerIter, 
+			size_t layerSequence);
 
 private:
 

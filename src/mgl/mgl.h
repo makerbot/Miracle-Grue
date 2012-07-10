@@ -52,7 +52,7 @@ typedef std::vector<index_t> TriangleIndices;
 /// that specified slice.
 typedef std::vector<TriangleIndices> SliceTable;
 
-typedef int layer_index_t;
+typedef int layer_measure_index_t;
 
 
 // Bring over from mgl.cc
@@ -101,18 +101,18 @@ public:
 		//Scalar width;		// Width of filament
 	};
 
-	typedef std::map<layer_index_t, LayerAttributes> attributesMap;
+	typedef std::map<layer_measure_index_t, LayerAttributes> attributesMap;
 	/* Old interface */
 	LayerMeasure(Scalar firstLayerZ, Scalar layerH);
-	layer_index_t zToLayerAbove(Scalar z) const;
-	Scalar sliceIndexToHeight(layer_index_t layerIndex) const;
+	layer_measure_index_t zToLayerAbove(Scalar z) const;
+	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;
 	
 	/* New interface */
-	LayerAttributes getLayerAttributes(layer_index_t layerIndex) const;
-	Scalar getLayerPosition(layer_index_t layerIndex) const;
-	Scalar getLayerThickness(layer_index_t layerIndex) const;
-	void setLayerAttributes(layer_index_t layerIndex, 
+	LayerAttributes getLayerAttributes(layer_measure_index_t layerIndex) const;
+	Scalar getLayerPosition(layer_measure_index_t layerIndex) const;
+	Scalar getLayerThickness(layer_measure_index_t layerIndex) const;
+	void setLayerAttributes(layer_measure_index_t layerIndex, 
 			const LayerAttributes& attribs);
 	
 

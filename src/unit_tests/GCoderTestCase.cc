@@ -515,8 +515,9 @@ void GCoderTestCase::testGridPath() {
 		LayerPaths::Layer& currentLayer = *iter;
 		Scalar z = 0.27 * lid;
 		currentLayer.layerZ = z;
-		currentLayer.layerId = lid++;
-		gcoder.writeSlice(gout, layerpaths, iter);
+		currentLayer.measure_index = lid;
+		gcoder.writeSlice(gout, layerpaths, iter, lid);
+		++lid;
 	}
 
 	gcoder.writeEndDotGCode(gout);
@@ -590,9 +591,10 @@ void GCoderTestCase::testMultiGrid() {
 			iter != layerpaths.end();
 			++iter) {
 		LayerPaths::Layer& currentLayer = *iter;
-		currentLayer.layerId = lid;
-		currentLayer.layerZ = firstLayerH + lid++ * layerH;
-		gcoder.writeSlice(gout, layerpaths, iter);
+		currentLayer.measure_index = lid;
+		currentLayer.layerZ = firstLayerH + lid * layerH;
+		gcoder.writeSlice(gout, layerpaths, iter, lid);
+		++lid;
 	}
 
 	gcoder.writeEndDotGCode(gout);

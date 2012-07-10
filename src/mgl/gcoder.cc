@@ -361,15 +361,12 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
 			it != end;
 			++it, ++sliceCount);
 	initProgress("gcode", sliceCount);
-	for(LayerPaths::const_layer_iterator it = layerpaths.begin(); 
-			it != begin;
-			++it);
+	size_t layerSequence = 0;
 	for(LayerPaths::layer_iterator it = begin; 
-			it != end; ++it){
+			it != end; ++it, ++layerSequence){
 		tick();
-		LayerPaths::Layer& currentLayer = *it;
 		//Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
-		writeSlice(gout, layerpaths, it);
+		writeSlice(gout, layerpaths, it, layerSequence);
 	}
 	writeEndDotGCode(gout);
 }
@@ -400,15 +397,15 @@ Vector2 GCoder::startPoint(const SliceData& sliceData) {
 
 void GCoder::writeSlice(std::ostream& ss, 
 		LayerPaths& layerpaths, 
-		LayerPaths::layer_iterator layerId) {
-	LayerPaths::Layer& currentLayer = *layerId;
-	unsigned int sliceIndex = currentLayer.layerId;
+		LayerPaths::layer_iterator layerIter, 
+		size_t layerSequence) {
+	LayerPaths::Layer& currentLayer = *layerIter;
 	unsigned int extruderCount = currentLayer.extruders.size();
-	ss << "(Slice " << sliceIndex << ", " << extruderCount << 
+	ss << "(Slice " << layerSequence << ", " << extruderCount << 
 			" " << plural("Extruder", extruderCount) << ")"<< endl;
 	if(gcoderCfg.doPrintLayerMessages){
 		//print layer message to printer screen if config enabled
-		ss << "M70 P20 (Layer: " << sliceIndex << ")" << endl;
+		ss << "M70 P20 (Layer: " << layerSequence << ")" << endl;
 	}
 	//iterate over all extruders invoked in this layer
 	for(LayerPaths::Layer::const_extruder_iterator it = 
@@ -424,23 +421,23 @@ void GCoder::writeSlice(std::ostream& ss,
 			moveZ(ss, currentLayer.layerZ, currentExtruder.id, zFeedrate);
 		} catch(GcoderException& mixup) {
 			Log::info() << "ERROR writing Z move in slice " <<
-					sliceIndex << " for extruder " << currentExtruder.id <<
+					layerSequence << " for extruder " << currentExtruder.id <<
 					" : " << mixup.error << endl;
 		}
 		if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, currentLayer.layerId, 
+			writeInfills(ss, currentLayer.layerZ, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doOutlines) {
-			writeOutlines(ss, currentLayer.layerZ, currentLayer.layerId, 
+			writeOutlines(ss, currentLayer.layerZ, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doInsets) {
-			writeInsets(ss, currentLayer.layerZ, currentLayer.layerId, 
-					currentExtruder, layerpaths, layerId, *it);			
+			writeInsets(ss, currentLayer.layerZ, layerSequence, 
+					currentExtruder, layerpaths, layerIter, *it);			
 		}
 		if(gcoderCfg.doInfills && !gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, currentLayer.layerId, 
+			writeInfills(ss, currentLayer.layerZ, layerSequence, 
 					currentExtruder, *it);
 		}
 	}

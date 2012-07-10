@@ -63,17 +63,17 @@ LayerMeasure::LayerAttributes::LayerAttributes(Scalar p, Scalar t)
 		: position(p), thickness(t) {}
 LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) :
 firstLayerZ(firstLayerZ), layerH(layerH) {}
-layer_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
+layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
 
 	if (libthing::tlower(z, firstLayerZ, tol))
 		return 0;
 
 	Scalar const layer = (z + tol - firstLayerZ) / layerH;
-	return static_cast<layer_index_t> (ceil(layer));
+	return static_cast<layer_measure_index_t> (ceil(layer));
 }
 
-Scalar LayerMeasure::sliceIndexToHeight(layer_index_t sliceIndex) const {
+Scalar LayerMeasure::sliceIndexToHeight(layer_measure_index_t sliceIndex) const {
 	return firstLayerZ + sliceIndex * layerH;
 }
 
@@ -81,7 +81,7 @@ Scalar LayerMeasure::getLayerH() const {
 	return layerH;
 }
 LayerMeasure::LayerAttributes 
-		LayerMeasure::getLayerAttributes(layer_index_t layerIndex) const {
+		LayerMeasure::getLayerAttributes(layer_measure_index_t layerIndex) const {
 	attributesMap::const_iterator iter = attributes.find(layerIndex);
 	if(iter == attributes.end()){
 		stringstream msg;
@@ -91,13 +91,13 @@ LayerMeasure::LayerAttributes
 	}
 	return iter->second;
 }
-Scalar LayerMeasure::getLayerPosition(layer_index_t layerIndex) const {
+Scalar LayerMeasure::getLayerPosition(layer_measure_index_t layerIndex) const {
 	return getLayerAttributes(layerIndex).position;
 }
-Scalar LayerMeasure::getLayerThickness(layer_index_t layerIndex) const {
+Scalar LayerMeasure::getLayerThickness(layer_measure_index_t layerIndex) const {
 	return getLayerAttributes(layerIndex).thickness;
 }
-void LayerMeasure::setLayerAttributes(layer_index_t layerIndex, 
+void LayerMeasure::setLayerAttributes(layer_measure_index_t layerIndex, 
 		const LayerAttributes& attribs) {
 	attributes[layerIndex] = attribs;
 }

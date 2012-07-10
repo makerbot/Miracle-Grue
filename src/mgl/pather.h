@@ -65,13 +65,14 @@ public:
 			OutlineList outlinePaths;
 			size_t extruderId;
 		};
-		Layer(Scalar z, Scalar layerh, size_t id)
-			: layerZ(z), layerHeight(layerh), layerId(id) {}
-		Layer(size_t lId = 0) : layerZ(0), layerHeight(0.27), layerId(lId) {}
+		Layer(Scalar z, Scalar layerh, layer_measure_index_t mind)
+				: layerZ(z), layerHeight(layerh), measure_index(mind) {}
+		Layer(layer_measure_index_t mind = 0) 
+				: layerZ(0), layerHeight(0.27), measure_index(mind) {}
 		ExtruderList extruders;
 		Scalar layerZ;		//vertical coordinate
 		Scalar layerHeight;	//thickness
-		layer_index_t layerId;
+		layer_measure_index_t measure_index;
 	};
 	
 	layer_iterator begin();
