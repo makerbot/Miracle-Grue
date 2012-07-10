@@ -17,9 +17,15 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	unsigned int sliceCount = seg.readSliceTable().size();
 	initProgress("outlines", sliceCount);
 	
+	layerloops.layerMeasure = seg.readLayerMeasure();
+	
 	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
 		tick();
-		LayerLoops::Layer currentLayer;
+		LayerLoops::Layer currentLayer(layerloops.layerMeasure.issueIndex());
+		layerloops.layerMeasure.setLayerAttributes(currentLayer.getIndex(), 
+				LayerMeasure::LayerAttributes(currentLayer.getIndex(), 
+				layerloops.layerMeasure.sliceIndexToHeight(sliceId), 
+				layerloops.layerMeasure.getLayerH()));
 		libthing::SegmentTable segments;
 		/*
 		 Function outlinesForSlice is designed to use segmentTable rather than
@@ -55,7 +61,6 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
 	Limits limits = seg.readLimits();
 	layerloops.grid.init(limits, gridSpacing);
-	layerloops.layerMeasure = seg.readLayerMeasure();
 }
 
 

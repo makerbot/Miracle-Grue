@@ -95,13 +95,15 @@ public:
 
 	class LayerAttributes {
 	public:
-		LayerAttributes(Scalar p = 0., Scalar t = 0.27);
-		Scalar position; // Z position
+		LayerAttributes(layer_measure_index_t i = 0, Scalar d = 0., Scalar t = 0.27);
+		bool isAbsolute() const;
+		Scalar delta; // Z position
 		Scalar thickness; // Height of filament
 		//Scalar width;		// Width of filament
+		layer_measure_index_t myIndex;
+		layer_measure_index_t base;
 	};
 
-	typedef std::map<layer_measure_index_t, LayerAttributes> attributesMap;
 	/* Old interface */
 	LayerMeasure(Scalar firstLayerZ, Scalar layerH);
 	layer_measure_index_t zToLayerAbove(Scalar z) const;
@@ -115,13 +117,24 @@ public:
 	void setLayerAttributes(layer_measure_index_t layerIndex, 
 			const LayerAttributes& attribs);
 	
+	layer_measure_index_t issueIndex() const;
+	
 
 private:
+	
+	class InternalAttributes {
+	public:
+		
+	};
+	
+	typedef std::map<layer_measure_index_t, LayerAttributes> attributesMap;
 
 	Scalar firstLayerZ;
 	Scalar layerH;
 
 	attributesMap attributes;
+	
+	mutable layer_measure_index_t issuedIndex;
 };
 
 /// A polygon is an arbitarty collection of 2d points

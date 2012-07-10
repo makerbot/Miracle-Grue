@@ -61,9 +61,6 @@ void Segmenter::updateSlicesTriangle(size_t newTriangleId){
 	for (size_t i = minSliceIndex; i <= maxSliceIndex; i++) {
 		TriangleIndices &trianglesForSlice = sliceTable[i];
 		trianglesForSlice.push_back(newTriangleId);
-		zTapeMeasure.setLayerAttributes(i, 
-				LayerMeasure::LayerAttributes(zTapeMeasure.sliceIndexToHeight(i), 
-				zTapeMeasure.getLayerH()));
 		//			Log::often() << "   !adding triangle " << newTriangleId << " to layer " << i  << " (size = " << trianglesForSlice.size() << ")" << std::endl;
 	}
 }

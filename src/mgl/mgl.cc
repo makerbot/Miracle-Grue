@@ -59,10 +59,14 @@ void rotatePolygons(Polygons& polygons, Scalar angle) {
 	}
 }
 
-LayerMeasure::LayerAttributes::LayerAttributes(Scalar p, Scalar t) 
-		: position(p), thickness(t) {}
+LayerMeasure::LayerAttributes::LayerAttributes(layer_measure_index_t i, 
+		Scalar d, Scalar t) 
+		:myIndex(i), base(i), delta(d), thickness(t) {}
+bool LayerMeasure::LayerAttributes::isAbsolute() const {
+	return base == myIndex;
+}
 LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) :
-firstLayerZ(firstLayerZ), layerH(layerH) {}
+firstLayerZ(firstLayerZ), layerH(layerH), issuedIndex(255) {}
 layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
 
@@ -92,7 +96,15 @@ LayerMeasure::LayerAttributes
 	return iter->second;
 }
 Scalar LayerMeasure::getLayerPosition(layer_measure_index_t layerIndex) const {
-	return getLayerAttributes(layerIndex).position;
+	Scalar accum = 0;
+	LayerAttributes current;
+	do {
+		current = getLayerAttributes(layerIndex);
+		accum += current.delta;
+		layerIndex = current.base;
+	} while (!current.isAbsolute());
+	
+	return accum;
 }
 Scalar LayerMeasure::getLayerThickness(layer_measure_index_t layerIndex) const {
 	return getLayerAttributes(layerIndex).thickness;
@@ -100,6 +112,9 @@ Scalar LayerMeasure::getLayerThickness(layer_measure_index_t layerIndex) const {
 void LayerMeasure::setLayerAttributes(layer_measure_index_t layerIndex, 
 		const LayerAttributes& attribs) {
 	attributes[layerIndex] = attribs;
+}
+layer_measure_index_t LayerMeasure::issueIndex() const {
+	return ++issuedIndex;
 }
 
 ostream& operator<<(ostream& os, const Limits& l) {
