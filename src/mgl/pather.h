@@ -147,7 +147,7 @@ public:
 					   int slastSliceIdx=-1);
 
 
-	void outlines(const LayerLoops::Layer& outline_loops,
+	void outlines(const LoopList& outline_loops,
 				  LoopPathList &boundary_paths);
 
 	void insets(const std::list<LoopList>& insetsForSlice,
@@ -155,7 +155,7 @@ public:
 
 	void infills(const GridRanges &infillRanges,
 				 const Grid &grid,
-				 const LayerLoops::Layer &outlines,
+				 const LoopList& outlines,
 				 bool direction,
 				 OpenPathList &infills);
 	

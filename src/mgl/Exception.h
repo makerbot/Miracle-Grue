@@ -1,28 +1,30 @@
 
-#ifndef EXCEPTION_H_
-#define EXCEPTION_H_ (1)
+#ifndef MGL_EXCEPTION_H_
+#define MGL_EXCEPTION_H_ (1)
 
 #include <string>
 
-namespace mgl
-{
+namespace mgl {
 
 /**
  * base class for all MGL Exceptions
  */
-class Exception
-{
-
+class Exception : public std::exception {
 public:
 	std::string error;
-	Exception(const char *msg) :error(msg)
-	{
+
+	Exception(const char *msg) throw() : error(msg) {
 		//	std::cerr << std::endl << msg << std::endl;
 		// fprintf(stderr, "%s", msg);
 	}
+	Exception(const std::string& msg) throw() : error(msg) {}
+	const char* what() const throw() {
+		return error.c_str();
+	}
+	~Exception() throw() {}
 
 };
 
 } /*end namespace mgl; */
 
-#endif //EXCEPTION_H_
+#endif //MGL_EXCEPTION_H_

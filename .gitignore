@@ -23,6 +23,9 @@ Makefile.*
 
 #ignore generated gcode files
 /*.gcode
+inputs/*.gcode
+ezlogger.txt
+
 
 #ignore unit tests
 /*UnitTest

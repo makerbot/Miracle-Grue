@@ -7,7 +7,7 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
 
-*/
+ */
 
 #include <iomanip>
 #include <set>
@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <cstring>
+#include <map>
 
 #include "meshy.h"
 #include "shrinky.h"
@@ -28,100 +29,96 @@ namespace mgl {
 using namespace std;
 using namespace libthing;
 
-string getMiracleGrueVersionStr()
-{
-    return  "v 0.04 alpha";
+string getMiracleGrueVersionStr() {
+	return "v 0.04 alpha";
 }
 
-ostream& operator<<(ostream& os, const Vector3& v)
-{
+ostream& operator<<(ostream& os, const Vector3& v) {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
 }
 
-ostream& operator<<(std::ostream& os, const Polygon& polygon)
-{
-	for(unsigned int i=0; i< polygon.size(); i++)
-	{
+ostream& operator<<(std::ostream& os, const Polygon& polygon) {
+	for (unsigned int i = 0; i < polygon.size(); i++) {
 		os << i << ") " << polygon[i] << endl;
 	}
 	return os;
 }
 
-
-
-void rotatePolygon(Polygon& polygon, Scalar angle)
-{
-	for(unsigned int i=0; i<polygon.size(); i++)
-	{
+void rotatePolygon(Polygon& polygon, Scalar angle) {
+	for (unsigned int i = 0; i < polygon.size(); i++) {
 		const Vector2 &p = polygon[i];
 		polygon[i] = p.rotate2d(angle);
 	}
 }
 
-void rotatePolygons(Polygons& polygons, Scalar angle)
-{
-	for(unsigned int i=0; i<polygons.size(); i++)
-	{
+void rotatePolygons(Polygons& polygons, Scalar angle) {
+	for (unsigned int i = 0; i < polygons.size(); i++) {
 		Polygon& polygon = polygons[i];
 		rotatePolygon(polygon, angle);
 	}
 }
 
-LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) : 
-		firstLayerZ(firstLayerZ), layerH(layerH) {}
-unsigned int LayerMeasure::zToLayerAbove(const Scalar z) const {
+LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) :
+firstLayerZ(firstLayerZ), layerH(layerH) {
+}
+
+layer_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
 
 	if (libthing::tlower(z, firstLayerZ, tol))
 		return 0;
 
-	Scalar const layer = (z+tol-firstLayerZ) / layerH;
-	return static_cast<unsigned int>(ceil(layer));
+	Scalar const layer = (z + tol - firstLayerZ) / layerH;
+	return static_cast<layer_index_t> (ceil(layer));
 }
-Scalar LayerMeasure::sliceIndexToHeight(unsigned int sliceIndex) const {
+
+Scalar LayerMeasure::sliceIndexToHeight(layer_index_t sliceIndex) const {
 	return firstLayerZ + sliceIndex * layerH;
 }
+
 Scalar LayerMeasure::getLayerH() const {
 	return layerH;
 }
+Scalar LayerMeasure::getLayerH(layer_index_t layerIndex) const {
+	attributesMap::const_iterator iter = attributes.find(layerIndex);
+	if(iter == attributes.end()){
+		LayerException mixup = 
+				string("Unable to find attributes for layer index ") + 
+				stringify(layerIndex);
+		throw mixup;
+	}
+	return iter->second.thickness;
+}
 
-
-ostream& operator<<(ostream& os, const Limits& l)
-{
-	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" << l.xMax << ", " << l.yMax << ", "<< l.zMax  << "]";
+ostream& operator<<(ostream& os, const Limits& l) {
+	os << "[" << l.xMin << ", " << l.yMin << ", " << l.zMin << "] [" 
+			<< l.xMax << ", " << l.yMax << ", " << l.zMax << "]";
 	return os;
 }
 
-ostream& operator <<(ostream &os,const Vector2 &pt)
-{
-    os << "[" << pt.x << ", " << pt.y << "]";
-    return os;
+ostream& operator <<(ostream &os, const Vector2 &pt) {
+	os << "[" << pt.x << ", " << pt.y << "]";
+	return os;
 }
 
-
-
-string stringify(Scalar x)
-{
-  ostringstream o;
-  if (!(o << x))
-    throw Exception("stringify(Scalar)");
-  return o.str();
+string stringify(Scalar x) {
+	ostringstream o;
+	if (!(o << x))
+		throw Exception("stringify(Scalar)");
+	return o.str();
 }
 
-string stringify(size_t x)
-{
-  ostringstream o;
-  if (!(o << x))
-    throw Exception("stringify(double)");
-  return o.str();
+string stringify(size_t x) {
+	ostringstream o;
+	if (!(o << x))
+		throw Exception("stringify(double)");
+	return o.str();
 }
 
 #if defined WIN32 && defined _MSVC_VER
 #pragma warning(disable:4996)
 #endif
-
-
 
 /**
  * Assuming the 2d points are on a plane, and that point order indicates a
@@ -130,23 +127,20 @@ string stringify(size_t x)
  * Ex: ((0,0)(0,1)(1,0))  returns -1 (normal points negative Z out of plane)
  * Ex: ((1,0)(0,0)(0,1))  returns 1 (normal points positive Z out of plane)
  */
-Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c)
-{
+Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c) {
 	Scalar area2;
-    area2 = (b[0] - a[0] ) * (Scalar)( c[1] - a[1]) -
-            (c[0] - a[0] ) * (Scalar)( b[1] - a[1]);
+	area2 = (b[0] - a[0]) * (Scalar) (c[1] - a[1]) -
+			(c[0] - a[0]) * (Scalar) (b[1] - a[1]);
 
-    return area2;
+	return area2;
 }
-
 
 /**
  * @returns true if the triangle of these vectors has a negative index,
  * false otherwise
  */
-bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
-{
-	return AreaSign(i,j,k) < 0;
+bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k) {
+	return AreaSign(i, j, k) < 0;
 }
 
 //std::ostream& mgl::operator << (std::ostream &os, const LineSegment2 &s)
@@ -159,8 +153,7 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k)
  * @returns true if the passed line segments are colinear within the tolerance tol
  */
 bool collinear(const LineSegment2 &prev, const LineSegment2 &current,
-		Scalar tol, Vector2 &mid)
-{
+		Scalar tol, Vector2 &mid) {
 
 	Scalar x1 = prev.a[0];
 	Scalar y1 = prev.a[1];
@@ -178,15 +171,15 @@ bool collinear(const LineSegment2 &prev, const LineSegment2 &current,
 
 /// Verifies each Vector2 in the passed Polygon are in tolerance
 // tol
-bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
-{
-	if( poly1.size() != poly2.size())
+
+bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol) {
+	if (poly1.size() != poly2.size())
 		return false;
-	if( (void*)&poly1 == (void*)&poly2 )
+	if ((void*) &poly1 == (void*) &poly2)
 		return true;
-	size_t size =  poly1.size();
-	for(size_t i = 0; i < size; i++ ) {
-		if (false == poly1[i].tequals(poly2[i],tol) )
+	size_t size = poly1.size();
+	for (size_t i = 0; i < size; i++) {
+		if (false == poly1[i].tequals(poly2[i], tol))
 			return false;
 	}
 	return true;
@@ -194,19 +187,19 @@ bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol)
 
 
 /// Verifies each Polygon in the passed Polygons are in tolerance
-bool tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol)
-{
-	if( polys1.size() != polys2.size())
+
+bool tequalsPolygonsCompare(Polygons& polys1, Polygons& polys2, Scalar tol) {
+	if (polys1.size() != polys2.size())
 		return false;
-	if( (void*)&polys1 == (void*)&polys2 )
+	if ((void*) &polys1 == (void*) &polys2)
 		return true;
-	size_t size =  polys1.size();
-	for(size_t i = 0; i < size; i++ ) {
+	size_t size = polys1.size();
+	for (size_t i = 0; i < size; i++) {
 		Polygon p0 = polys1[i];
 		Polygon p1 = polys2[i];
 
-		bool same = tequalsPolygonCompare(p0,p1,tol);
-		if ( !same  )
+		bool same = tequalsPolygonCompare(p0, p1, tol);
+		if (!same)
 			return false;
 	}
 	return true;

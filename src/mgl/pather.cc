@@ -56,7 +56,7 @@ void Pather::generatePaths(const LayerLoops &layerloops,
 		if(currentSlice > lastSliceIdx) break;
 
 		direction = !direction;
-		const LoopList& outline_loops = *i;
+		const LoopList& outline_loops = i->readLoops();
 
 		Scalar z = layerloops.layerMeasure.sliceIndexToHeight(currentSlice);
 

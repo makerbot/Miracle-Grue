@@ -59,7 +59,7 @@ public:
 			std::list<LoopList>& sliceInsets,
 			const char* scadFile = NULL);
 
-	void insets(const std::list<LoopList>& outlinesLoops, 
+	void insets(const LayerLoops& outlinesLoops, 
 			std::vector<std::list<LoopList> >& insets);
 
 	void flatSurfaces(const std::vector<std::list<LoopList> >& insets,

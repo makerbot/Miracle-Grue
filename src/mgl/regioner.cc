@@ -42,7 +42,7 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops, 
 		Regions& regions) {
-	insets(layerloops.readLayers(), regions.insetLoops);
+	insets(layerloops, regions.insetLoops);
 	flatSurfaces(regions.insetLoops, layerloops.grid, regions.flatSurfaces);
 	roofing(regions.flatSurfaces, layerloops.grid, regions.roofings);
 	flooring(regions.flatSurfaces, layerloops.grid, regions.floorings);
@@ -156,15 +156,15 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //	}
 //}
 
-void Regioner::insets(const std::list<LoopList>& outlinesLoops,
+void Regioner::insets(const LayerLoops& outlinesLoops,
 		std::vector<std::list<LoopList> >& insets) {
-	size_t sliceCount = outlinesLoops.size();
+	size_t sliceCount = outlinesLoops.readLayers().size();
 	initProgress("insets", sliceCount);
-	for (std::list<LoopList>::const_iterator iter = outlinesLoops.begin();
+	for (LayerLoops::const_layer_iterator iter = outlinesLoops.begin();
 			iter != outlinesLoops.end();
 			++iter) {
 		tick();
-		const LoopList& currentOutlines = *iter;
+		const LoopList& currentOutlines = iter->readLoops();
 		std::list<LoopList> currentInsets;
 		insetsForSlice(currentOutlines, currentInsets, NULL);
 		insets.push_back(currentInsets);
