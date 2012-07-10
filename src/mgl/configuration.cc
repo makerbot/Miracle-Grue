@@ -177,6 +177,10 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 	}
 }
 
+void mgl::loadExtruderConfigFromFile(const Configuration& conf,
+									 ExtruderConfig &extruderCfg) {
+	extruderCfg.defaultExtruder = uintCheck(conf.root["extruder"]["defaultExtruder"], "extruder.defaultExtruder");
+}
 
 void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcoderCfg)
 {
@@ -221,7 +225,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
 
 	loadExtrusionProfileData(conf, gcoderCfg);
 
-	if(conf.root["extruders"].size() ==0)
+	if(conf.root["extruderProfiles"].size() ==0)
 	{
 		stringstream ss;
 		ss << "No extruder defined in the configuration file";
@@ -230,11 +234,11 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcod
         return;
 	}
 
-	int x = conf.root["extruders"].size();
+	int x = conf.root["extruderProfiles"].size();
 	unsigned int extruderCount = (unsigned int)x;
 	for(unsigned int i=0; i < extruderCount; i++)
 	{
-		const Json::Value &value = conf.root["extruders"][i];
+		const Json::Value &value = conf.root["extruderProfiles"][i];
 
 		stringstream ss;
 		ss << "extruders[" << i << "].";

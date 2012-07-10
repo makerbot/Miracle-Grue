@@ -25,6 +25,7 @@ namespace mgl
 
 void miracleGrue(const GCoderConfig &gcoderCfg,
                       const SlicerConfig &slicerCfg,
+				      const ExtruderConfig &extruderCfg,
                       const char *modelFile,
                       const char *scadFile,
                       std::ostream& gcodeFile,
