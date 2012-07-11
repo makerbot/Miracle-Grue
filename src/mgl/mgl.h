@@ -95,13 +95,12 @@ public:
 
 	class LayerAttributes {
 	public:
-		LayerAttributes(layer_measure_index_t i = 0, Scalar d = 0., Scalar t = 0.27);
+		LayerAttributes(Scalar d = 0., Scalar t = 0.27);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
 		Scalar thickness; // Height of filament
 		//Scalar width;		// Width of filament
-		layer_measure_index_t myIndex;
-		layer_measure_index_t base;
+		layer_measure_index_t base;	// Layer to which delta is relative
 	};
 
 	/* Old interface */
@@ -111,13 +110,13 @@ public:
 	Scalar getLayerH() const;
 	
 	/* New interface */
-	LayerAttributes getLayerAttributes(layer_measure_index_t layerIndex) const;
+	const LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex) const;
+	LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex);
 	Scalar getLayerPosition(layer_measure_index_t layerIndex) const;
 	Scalar getLayerThickness(layer_measure_index_t layerIndex) const;
-	void setLayerAttributes(layer_measure_index_t layerIndex, 
-			const LayerAttributes& attribs);
-	
-	layer_measure_index_t issueIndex() const;
+		
+	layer_measure_index_t createAttributes(
+			const LayerAttributes& attribs = LayerAttributes());
 	
 
 private:
@@ -134,7 +133,7 @@ private:
 
 	attributesMap attributes;
 	
-	mutable layer_measure_index_t issuedIndex;
+	layer_measure_index_t issuedIndex;
 };
 
 /// A polygon is an arbitarty collection of 2d points
