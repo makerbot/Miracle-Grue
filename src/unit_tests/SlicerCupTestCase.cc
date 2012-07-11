@@ -38,8 +38,6 @@ void SlicerCupTestCase::setUp()
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir2.c_str());
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(inputDir.c_str());
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(inputDir2.c_str());
-	mkDebugPath(outputDir.c_str());
-	mkDebugPath(outputDir2.c_str());
 }
 
 

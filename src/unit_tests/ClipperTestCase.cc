@@ -42,7 +42,6 @@ void ClipperTestCase::setUp()
 	outputDir = string("outputs") + pathsep + string("test_cases") + 
 		pathsep + string("ClipperTestCase") + pathsep;
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
-	mkDebugPath(outputDir.c_str());
 }
 
 void ClipperTestCase::test_conversion()

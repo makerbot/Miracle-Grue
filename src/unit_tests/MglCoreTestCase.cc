@@ -35,7 +35,6 @@ void MglCoreTestCase::setUp()
 	outputDir = string("outputs") + pathsep + string("test_cases ") + 
 			pathsep + string("mglCoreTestCase") + pathsep;
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
-	mkDebugPath(outputDir.c_str());
 }
 
 void throwsException(){
