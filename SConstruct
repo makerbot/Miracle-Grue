@@ -216,6 +216,7 @@ mgl_cc = [
           'src/mgl/grid.cc',
           'src/mgl/insets.cc',
           'src/mgl/log.cc',
+          'src/mgl/loop_path_openpath_impl.cc',
           'src/mgl/meshy.cc',
           'src/mgl/mgl.cc',
           'src/mgl/miracle.cc',

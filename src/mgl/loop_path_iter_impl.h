@@ -1,7 +1,7 @@
 #ifndef LOOP_PATH_IMPL_H
 #define	LOOP_PATH_IMPL_H
 
-#include "loop_path.h"
+#include "loop_path_decl.h"
 
 namespace mgl {
 
