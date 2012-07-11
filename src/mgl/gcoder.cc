@@ -94,7 +94,7 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName)
 		ifstream header_in(header_file.c_str(), ifstream::in);
 
 		if (header_in.fail()) 
-			throw GcoderException((string("Unable to open header file [") +
+			throw GcoderException((string("Unable to open gcode header file [") +
 								   header_file + "]").c_str());
 
 		gout << "(header [" << header_file << "] begin)" << endl;
@@ -107,7 +107,7 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName)
 		}
 
 		if (header_in.fail() && !header_in.eof())
-			throw GcoderException((string("Error reading header file [") +
+			throw GcoderException((string("Error reading gcode header file [") +
 								   header_file + "]").c_str());
 
 		gout << "(header [" << header_file << "] end)" << endl << endl;
