@@ -59,20 +59,20 @@ void rotatePolygons(Polygons& polygons, Scalar angle) {
 	}
 }
 
-LayerMeasure::LayerAttributes::LayerAttributes(layer_measure_index_t i, 
-		Scalar d, Scalar t) 
-		:myIndex(i), base(i), delta(d), thickness(t) {}
+LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t) 
+		: delta(d), thickness(t), base(0) {}
 bool LayerMeasure::LayerAttributes::isAbsolute() const {
-	return base == myIndex;
+	return base < 0;
 }
 LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) :
-firstLayerZ(firstLayerZ), layerH(layerH), issuedIndex(255) {}
+firstLayerZ(firstLayerZ), layerH(layerH), issuedIndex(256) {
+	attributes[0] = LayerAttributes(0, 0);
+	attributes[0].base = -1;
+}
 layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
-
 	if (libthing::tlower(z, firstLayerZ, tol))
 		return 0;
-
 	Scalar const layer = (z + tol - firstLayerZ) / layerH;
 	return static_cast<layer_measure_index_t> (ceil(layer));
 }
@@ -84,8 +84,8 @@ Scalar LayerMeasure::sliceIndexToHeight(layer_measure_index_t sliceIndex) const 
 Scalar LayerMeasure::getLayerH() const {
 	return layerH;
 }
-LayerMeasure::LayerAttributes 
-		LayerMeasure::getLayerAttributes(layer_measure_index_t layerIndex) const {
+const LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
+		layer_measure_index_t layerIndex) const {
 	attributesMap::const_iterator iter = attributes.find(layerIndex);
 	if(iter == attributes.end()){
 		stringstream msg;
@@ -95,26 +95,30 @@ LayerMeasure::LayerAttributes
 	}
 	return iter->second;
 }
+LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
+		layer_measure_index_t layerIndex) {
+	attributesMap::iterator iter = attributes.find(layerIndex);
+	if(iter == attributes.end()){
+		stringstream msg;
+		msg << "Unable to find attributes for layer index " << layerIndex;
+		LayerException mixup = msg.str();
+		throw mixup;
+	}
+	return iter->second;
+}
 Scalar LayerMeasure::getLayerPosition(layer_measure_index_t layerIndex) const {
-	Scalar accum = 0;
-	LayerAttributes current;
-	do {
-		current = getLayerAttributes(layerIndex);
-		accum += current.delta;
-		layerIndex = current.base;
-	} while (!current.isAbsolute());
-	
-	return accum;
+	if(layerIndex < 0)
+		return 0.0;
+	const LayerAttributes& currentAttribs = getLayerAttributes(layerIndex);
+	return currentAttribs.delta + getLayerPosition(currentAttribs.base);
 }
 Scalar LayerMeasure::getLayerThickness(layer_measure_index_t layerIndex) const {
 	return getLayerAttributes(layerIndex).thickness;
 }
-void LayerMeasure::setLayerAttributes(layer_measure_index_t layerIndex, 
+layer_measure_index_t LayerMeasure::createAttributes(
 		const LayerAttributes& attribs) {
-	attributes[layerIndex] = attribs;
-}
-layer_measure_index_t LayerMeasure::issueIndex() const {
-	return ++issuedIndex;
+	attributes[issuedIndex] = attribs;
+	return issuedIndex++;
 }
 
 ostream& operator<<(ostream& os, const Limits& l) {

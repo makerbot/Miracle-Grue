@@ -21,11 +21,11 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	
 	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
 		tick();
-		LayerLoops::Layer currentLayer(layerloops.layerMeasure.issueIndex());
-		layerloops.layerMeasure.setLayerAttributes(currentLayer.getIndex(), 
-				LayerMeasure::LayerAttributes(currentLayer.getIndex(), 
+		LayerLoops::Layer currentLayer(layerloops.layerMeasure.createAttributes());
+		layerloops.layerMeasure.getLayerAttributes(currentLayer.getIndex()) = 
+				LayerMeasure::LayerAttributes(
 				layerloops.layerMeasure.sliceIndexToHeight(sliceId), 
-				layerloops.layerMeasure.getLayerH()));
+				layerloops.layerMeasure.getLayerH());
 		libthing::SegmentTable segments;
 		/*
 		 Function outlinesForSlice is designed to use segmentTable rather than
