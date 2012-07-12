@@ -61,7 +61,7 @@ void GCoderRefactorTestCase::testPathGcode() {
 	for(piter = onePoly.begin(), opiter = onePath.fromStart(); 
 			piter != onePoly.end() && opiter != onePath.end(); 
 			++piter, ++opiter) {
-		liter = oneLoop.insertPoint(*opiter, liter);
+		liter = oneLoop.insertPointAfter(*opiter, liter);
 		cout << *piter << "  \t" << *opiter << "  \t" << *liter << endl;
 		CPPUNIT_ASSERT_EQUAL(*piter, *opiter);
 	}

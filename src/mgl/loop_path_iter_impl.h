@@ -98,6 +98,10 @@ bool OpenPath::iterator_gen<BASE>::operator !=(
 }
 
 template <typename BASE>
+Loop::iterator_gen<BASE>::iterator_gen() 
+		: base(iterator()), begin(iterator()), end(iterator()) {}
+
+template <typename BASE>
 Loop::iterator_gen<BASE>::iterator_gen(iterator i, iterator b, iterator e) : 
 		base(i), begin(b), end(e) {}
 
@@ -194,6 +198,10 @@ bool Loop::iterator_gen<BASE>::isBegin() const { return base == begin; }
 
 template <typename BASE>
 bool Loop::iterator_gen<BASE>::isEnd() const { return base == end; }
+
+template <typename BASE>
+Loop::iterator_finite_gen<BASE>::iterator_finite_gen() : 
+		iterator_gen<BASE>() {}
 
 template <typename BASE>
 Loop::iterator_finite_gen<BASE>::iterator_finite_gen(iterator i, 

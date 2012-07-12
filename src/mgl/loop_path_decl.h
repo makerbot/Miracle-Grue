@@ -13,8 +13,10 @@
 #include <vector>
 #include <list>
 #include <ostream>
+#include <algorithm>
 #include "libthing/Vector2.h"
 #include "libthing/LineSegment2.h"
+#include "mgl.h"
 
 namespace mgl {
 
@@ -22,6 +24,18 @@ typedef libthing::Vector2 PointType;
 
 typedef std::vector<PointType> PointList;
 typedef std::vector<PointType> VectorList;
+
+namespace loop_path_utils{
+class AngleFunctor {
+public:
+	AngleFunctor(PointType ref) : reference(ref) {}
+	bool operator () (const PointType& l, const PointType& r) const {
+		return (l-reference).crossProduct(r - reference) < 0.0;
+	}
+private:
+	PointType reference;
+};
+}
 
 
 /*!
@@ -218,6 +232,7 @@ private:
 		typedef typename iterator::reference reference;
 		typedef typename iterator::pointer pointer;
 		
+		iterator_gen();
 		iterator_gen(iterator i, iterator b, iterator e);
 		template <typename OTHERBASE>
 		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig);
@@ -264,6 +279,7 @@ private:
 		template <typename OTHERBASE>
 		friend class iterator_gen;
 		
+		iterator_finite_gen();
 		iterator_finite_gen(iterator i, iterator b, iterator e);
 		template <typename OTHERBASE>
 		explicit iterator_finite_gen(const iterator_gen<OTHERBASE>& orig);
@@ -404,10 +420,16 @@ public:
 	 *  /return iterator for the location of the new point
 	 */
 	template <typename ITER>
-	cw_iterator insertPoint(const PointType &point, ITER after){
+	cw_iterator insertPointAfter(const PointType &point, ITER after){
 		typename ITER::iterator afterbase = &(++after);
 		afterbase = pointNormals.insert(afterbase, point);
 		return cw_iterator(afterbase, pointNormals.begin(), pointNormals.end());
+	}
+	template <typename ITER>
+	cw_iterator insertPointBefore(const PointType &point, ITER before){
+		typename ITER::iterator beforebase = &before;
+		beforebase = pointNormals.insert(beforebase, point);
+		return cw_iterator(beforebase, pointNormals.begin(), pointNormals.end());
 	}
 	/*! Insert points into the loop at a specific location.
 	 *  The iterator passed to position is not guaranteed valid when this
@@ -747,6 +769,62 @@ private:
 	bool isBegin(Loop::ccw_iterator i) const { return i == rstart; }
 	bool isBegin(Loop::const_ccw_iterator i) const { return i == rstart; }
 };
+
+template <template <class, class> class COLLECTION, class ALLOC>
+Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){	
+	std::vector<PointType> points;
+	size_t extremeIndex = 0;
+	/* Assemble all points in a vector, also choose the bottom left */
+	for(typename COLLECTION<Loop, ALLOC>::const_iterator iter = input.begin(); 
+			iter != input.end(); 
+			++iter) {
+		for(Loop::const_finite_cw_iterator loopiter = iter->clockwiseFinite(); 
+				loopiter != iter->clockwiseEnd(); 
+				++loopiter) {
+			points.push_back(*loopiter);
+			if(loopiter->getPoint().y < points[extremeIndex].y || 
+					loopiter->getPoint().x < points[extremeIndex].x) {
+				extremeIndex = points.size()-1;
+			}
+		}
+	}
+	/* Place the bottom left point in index 0 */
+	std::swap(points[0], points[extremeIndex]);
+	extremeIndex = 0;
+	
+	/* Sort in a counterclockwise way */
+	std::vector<PointType>::iterator beginIter = points.begin();
+	++beginIter;
+	std::vector<PointType>::iterator endIter = points.end();
+	std::sort(beginIter, endIter, 
+			loop_path_utils::AngleFunctor(points[extremeIndex]));
+	
+	Loop retLoop;
+	
+	for(size_t i = 0; i < points.size(); ++i) {
+		if(i < 2) {
+			retLoop.insertPointBefore(points[i], retLoop.clockwiseEnd());
+			continue;
+		}
+		Loop::finite_cw_iterator last1(retLoop.clockwiseEnd());
+		--last1;
+		Loop::finite_cw_iterator last2 = last1;
+		--last2;
+		/* Here is where we fill the loop with the points, 
+		 optionally dropping some */
+		PointType currentPoint = points[i];
+		if(loop_path_utils::AngleFunctor(last2->getPoint())(
+				currentPoint, last1->getPoint())) {
+			/* point at last1 was not on the convex loop */
+			last1->setPoint(currentPoint);
+		} else {
+			/* point at last1 was valid, next we will check currentPoint */
+			retLoop.insertPointBefore(currentPoint, retLoop.clockwiseEnd());
+		}
+	}
+	
+	return retLoop;
+}
 
 typedef std::list<OpenPath> OpenPathList;
 typedef std::list<Loop> LoopList;

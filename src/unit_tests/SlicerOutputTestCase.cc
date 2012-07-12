@@ -34,15 +34,15 @@ void SlicerOutputTestCase::testLoopLayer(){
 	
 	Loop expected;
 	Loop::cw_iterator iter = expected.clockwiseEnd();
-	iter = expected.insertPoint(PointType(10,9.8), iter);
-	iter = expected.insertPoint(PointType(10,-10), iter);
-	iter = expected.insertPoint(PointType(9.8,-10), iter);
-	iter = expected.insertPoint(PointType(-10,-10), iter);
-	iter = expected.insertPoint(PointType(-10,-9.8), iter);
-	iter = expected.insertPoint(PointType(-10,10), iter);
-	iter = expected.insertPoint(PointType(-9.8,10), iter);
-	iter = expected.insertPoint(PointType(10,10), iter);
-	iter = expected.insertPoint(PointType(10,10), iter);
+	iter = expected.insertPointAfter(PointType(10,9.8), iter);
+	iter = expected.insertPointAfter(PointType(10,-10), iter);
+	iter = expected.insertPointAfter(PointType(9.8,-10), iter);
+	iter = expected.insertPointAfter(PointType(-10,-10), iter);
+	iter = expected.insertPointAfter(PointType(-10,-9.8), iter);
+	iter = expected.insertPointAfter(PointType(-10,10), iter);
+	iter = expected.insertPointAfter(PointType(-9.8,10), iter);
+	iter = expected.insertPointAfter(PointType(10,10), iter);
+	iter = expected.insertPointAfter(PointType(10,10), iter);
 	
 	CPPUNIT_ASSERT_MESSAGE("No layers in layerloops", 
 			!layerloops.empty());

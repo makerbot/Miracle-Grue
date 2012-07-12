@@ -47,11 +47,11 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 					it2 != it->end(); 
 					++it2){
 				//add points 1 - N
-				iter = currentLoop.insertPoint(it2->b, iter);
+				iter = currentLoop.insertPointAfter(it2->b, iter);
 			}
 			if(!it->empty())
 				//add point 0
-				iter = currentLoop.insertPoint(it->begin()->a, iter);
+				iter = currentLoop.insertPointAfter(it->begin()->a, iter);
 			//add the loop to the current layer
 			currentLayer.push_back(currentLoop);
 		}

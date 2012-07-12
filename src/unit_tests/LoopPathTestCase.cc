@@ -87,7 +87,7 @@ void LoopPathTestCase::testLoopBasic() {
 	CPPUNIT_ASSERT_EQUAL(second.y, 3.0);
 
 	cout << "Testing two point loop" << endl;
-	i = loop.insertPoint(Vector2(4, 5), i);
+	i = loop.insertPointAfter(Vector2(4, 5), i);
 	first = *i;
 	CPPUNIT_ASSERT_EQUAL(first.x, 4.0);
 	CPPUNIT_ASSERT_EQUAL(first.y, 5.0);
@@ -103,7 +103,7 @@ void LoopPathTestCase::testLoopBasic() {
 	CPPUNIT_ASSERT_EQUAL(first.y, 5.0);
 
 	cout << "Testing three point loop" << endl;
-	i = loop.insertPoint(Vector2(6, 7), i);
+	i = loop.insertPointAfter(Vector2(6, 7), i);
 	Loop::ccw_iterator j = loop.counterClockwise(*i);
 	first = *i;
 	CPPUNIT_ASSERT_EQUAL(first.x, 6.0);
@@ -148,7 +148,7 @@ void LoopPathTestCase::testLoopBasic() {
 void LoopPathTestCase::testLoopPathBasic() {
 	Loop loop(Vector2(1, 2));
 
-	Loop::cw_iterator last = loop.insertPoint(Vector2(3, 4), loop.clockwise());
+	Loop::cw_iterator last = loop.insertPointAfter(Vector2(3, 4), loop.clockwise());
 	
 	cout << "Check that we are properly finding iterators" << endl;
 	Loop::const_cw_iterator cwstart(loop.clockwise(Vector2(1,2)));
@@ -306,8 +306,8 @@ void LoopPathTestCase::testOpenToLoopPathJoin() {
 
 	Loop loop(Vector2(3, 3));
 	Loop::cw_iterator insert = loop.clockwise();
-	insert = loop.insertPoint(Vector2(3, 4), insert);
-	insert = loop.insertPoint(Vector2(4, 3), insert);
+	insert = loop.insertPointAfter(Vector2(3, 4), insert);
+	insert = loop.insertPointAfter(Vector2(4, 3), insert);
 
 	LoopPath lp(loop, loop.clockwise(Vector2(3, 3)),
 				loop.counterClockwise(Vector2(3, 3)));
@@ -395,7 +395,7 @@ void LoopPathTestCase::testConstLoop() {
 	const Loop& constloop = loop;
 	Loop::cw_iterator iter = loop.clockwise();
 	for(Scalar x = 1.0; x < 10.0; ++x)
-		iter = loop.insertPoint(PointType(x,x), iter);
+		iter = loop.insertPointAfter(PointType(x,x), iter);
 	
 	Loop::cw_iterator regulariter = ++loop.clockwise();
 	Loop::const_cw_iterator constiter = ++constloop.clockwise();
@@ -413,7 +413,7 @@ void LoopPathTestCase::testConstLoopPath() {
 	Loop loop;
 	Loop::cw_iterator iter = loop.clockwiseEnd();
 	for(Scalar x = 1.0; x < 10.0; ++x)
-		iter = loop.insertPoint(PointType(x,x), iter);
+		iter = loop.insertPointAfter(PointType(x,x), iter);
 	
 	LoopPath looppath(loop, loop.clockwise(*loop.clockwise()), 
 			loop.counterClockwise(*loop.clockwise()));
@@ -436,7 +436,7 @@ void LoopPathTestCase::testFiniteSegment() {
 	std::list<LineSegment2> lines;
 	for(Scalar x = 1.0; x < 10.0; ++x){
 		PointType current(x,x);
-		iter = loop.insertPoint(current, iter);
+		iter = loop.insertPointAfter(current, iter);
 	}
 	lines.push_back(LineSegment2(PointType(2,2), PointType(3,3)));
 	lines.push_back(LineSegment2(PointType(3,3), PointType(4,4)));
@@ -458,6 +458,53 @@ void LoopPathTestCase::testFiniteSegment() {
 		cout << "Expected Line: \t" << liter->a << liter->b << endl;
 		CPPUNIT_ASSERT_EQUAL(liter->a, line.a);
 		CPPUNIT_ASSERT_EQUAL(liter->b, line.b);
+	}
+}
+
+void LoopPathTestCase::testConvex() {
+	std::list<Loop> looplist;
+	cout << endl;
+	for(Scalar x = 0; x < 4; x+=2) for(Scalar y = 0; y < 4; y+=2) {
+		Loop currentLoop;
+		cout << endl;
+		PointType currentPoint;
+		currentPoint = PointType(x + 0, y + 0);
+		cout << currentPoint << endl;
+		currentLoop.insertPointBefore(currentPoint, currentLoop.clockwiseEnd());
+		currentPoint = PointType(x + 0, y + 1);
+		cout << currentPoint << endl;
+		currentLoop.insertPointBefore(currentPoint, currentLoop.clockwiseEnd());
+		currentPoint = PointType(x + 1, y + 1);
+		cout << currentPoint << endl;
+		currentLoop.insertPointBefore(currentPoint, currentLoop.clockwiseEnd());
+		currentPoint = PointType(x + 1, y + 0);
+		cout << currentPoint << endl;
+		currentLoop.insertPointBefore(currentPoint, currentLoop.clockwiseEnd());
+		
+		looplist.push_back(currentLoop);
+	}
+	Loop convexLoop = createConvexLoop(looplist);
+	Loop expectedLoop;
+	expectedLoop.insertPointBefore(PointType(0,0), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(0,1), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(0,2), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(0,3), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(1,3), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(2,3), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(3,3), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(3,2), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(3,1), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(3,0), expectedLoop.clockwiseEnd());
+	
+	cout << endl;
+	
+	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(), 
+			iterExpected = expectedLoop.clockwiseFinite(); 
+			iter != convexLoop.clockwiseEnd() && 
+			iterExpected != expectedLoop.clockwiseEnd();
+			++iter, ++iterExpected) {
+		cout << iter->getPoint() << endl;
+		CPPUNIT_ASSERT_EQUAL(iterExpected->getPoint(), iter->getPoint());
 	}
 }
 

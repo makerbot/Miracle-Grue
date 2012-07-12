@@ -130,11 +130,11 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 					currentPoly.begin();
 					polyIter != currentPoly.end();
 					++polyIter) {
-				loopIter = currentLoop.insertPoint(polyIter->b, loopIter);
+				loopIter = currentLoop.insertPointAfter(polyIter->b, loopIter);
 			}
 			//Insert point 0
 			if (!currentPoly.empty())
-				loopIter = currentLoop.insertPoint(currentPoly.begin()->a, loopIter);
+				loopIter = currentLoop.insertPointAfter(currentPoly.begin()->a, loopIter);
 		}
 	}
 }
