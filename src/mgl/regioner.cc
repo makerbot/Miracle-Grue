@@ -228,6 +228,9 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 		GridRanges & flooring = current->flooring;
 
 		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+
+		++below;
+		++current;
 	}
 
 	tick();
@@ -261,7 +264,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		RegionList::iterator lastRoof = current;
 		for (int i = 0; i < slicerCfg.roofLayerCount &&
-				        lastRoof != regionsEnd; i++)
+				        lastRoof != regionsEnd - 1; i++)
 			++lastRoof;
 
 		//combine floors
