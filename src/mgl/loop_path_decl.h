@@ -799,6 +799,15 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 	std::sort(beginIter, endIter, 
 			loop_path_utils::AngleFunctor(points[extremeIndex]));
 	
+	/* Remove duplicates */
+	for(std::vector<PointType>::iterator iter = points.begin() + 1; 
+			iter != points.end(); 
+			++iter) {
+		if(*iter == *(iter - 1)){
+			iter = points.erase(iter);
+		}
+	}
+	
 	Loop retLoop;
 	
 	for(size_t i = 0; i < points.size(); ++i) {
