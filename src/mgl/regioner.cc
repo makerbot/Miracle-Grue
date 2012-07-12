@@ -41,10 +41,20 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 //}
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops, 
-		Regions& regions) {
-	insets(layerloops, regions.insetLoops);
-	flatSurfaces(regions.insetLoops, layerloops.grid, regions.flatSurfaces);
-	roofing(regions.flatSurfaces, layerloops.grid, regions.roofings);
+		RegionList& regionlist) {
+	int sliceCount = initRegionList(layerloops, regionlist);
+
+	RegionList::iterator firstModelRegion = regionlist.begin();
+	initProgress("insets", sliceCount);
+	insets(layerloops.begin() layerloops.end(),
+		   firstModelLayer, regionlist.end());
+
+	initProgress("flat surfaces", sliceCount);
+	flatSurfaces(firstModelRegion, regionlist.end, layerloops.grid);
+
+	initProgress("roofing", sliceCount);
+	roofing(firstModelRegion, regionlist.end(), layerloops.grid);
+
 	flooring(regions.flatSurfaces, layerloops.grid, regions.floorings);
 	infills(regions.flatSurfaces, 
 			layerloops.grid,
@@ -55,20 +65,12 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 			regions.infills);
 }
 
-void Regioner::insetsForSlice(const libthing::SegmentTable &sliceOutlines,
-		libthing::Insets& sliceInsets,
-		const char* scadFile) {
-
-
-	bool writeDebugScadFiles = false;
-	inshelligence(sliceOutlines,
-			slicerCfg.nbOfShells,
-			slicerCfg.layerW,
-			slicerCfg.insetDistanceMultiplier,
-			scadFile,
-			writeDebugScadFiles,
-			sliceInsets);
+void Regioner::initRegionList(const LayerLoops& layerloops,
+							  RegionList &regionlist) {
+	//TODO: take into account raft layers in the number of regions
+	regionlist.resize(layerloops.size());
 }
+
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		std::list<LoopList>& sliceInsets,
@@ -156,34 +158,35 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //	}
 //}
 
-void Regioner::insets(const LayerLoops& outlinesLoops,
-		std::vector<std::list<LoopList> >& insets) {
+void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
+					  const LayerLoops::const_layer_iterator outlinesEnd,
+					  RegionList::iterator regionsBegin,
+					  RegionList::iterator regionsEnd) {
+
 	size_t sliceCount = outlinesLoops.readLayers().size();
-	initProgress("insets", sliceCount);
-	for (LayerLoops::const_layer_iterator iter = outlinesLoops.begin();
-			iter != outlinesLoops.end();
-			++iter) {
+
+	LayerLoops::const_layer_iterator outline = outlinesBegin;
+	RegionList::iterator region = regionsBegin;
+	while(outline != outlinesBegin && region != regionsBegin) {
 		tick();
-		const LoopList& currentOutlines = iter->readLoops();
-		std::list<LoopList> currentInsets;
-		insetsForSlice(currentOutlines, currentInsets, NULL);
-		insets.push_back(currentInsets);
+		const LoopList& currentOutlines = outline->readLoops();
+
+		insetsForSlice(currentOutlines, region->insetLoops, NULL);
+
+		++outline;
+		++region;
 	}
 }
 
-void Regioner::flatSurfaces(const std::vector<std::list<LoopList> >& insets,
-		const Grid& grid,
-		std::vector<GridRanges>& gridRanges) {
-	size_t sliceCount = insets.size();
-	initProgress("flat surfaces", sliceCount);
-	for (std::vector<std::list<LoopList> >::const_iterator iter = insets.begin();
-			iter != insets.end();
-			++iter) {
+void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
+							RegionList::iterator regionsEnd,
+							const Grid& grid) {
+	for (RegionList::iterator regions = regionsBegin;
+		 regions != regionsEnd; iter++) {
 		tick();
-		const std::list<LoopList>& currentInsets = *iter;
+		const std::list<LoopList>& currentInsets = regions->insets;
 		GridRanges currentSurface;
-		gridRangesForSlice(currentInsets, grid, currentSurface);
-		gridRanges.push_back(currentSurface);
+		gridRangesForSlice(currentInsets, grid, regions->flatSurfaces);
 	}
 }
 
@@ -206,7 +209,6 @@ void Regioner::roofing(const std::vector<GridRanges> & flatSurfaces, const Grid 
 	assert(flatSurfaces.size() > 0);
 	assert(roofings.size() == 0);
 	unsigned int sliceCount = flatSurfaces.size();
-	initProgress("roofing", sliceCount);
 
 	roofings.resize(sliceCount);
 	for (size_t i = 0; i < sliceCount - 1; i++) {
