@@ -22,8 +22,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		ostream& gcodeFile,
 		int firstSliceIdx,
 		int lastSliceIdx,
-		Tomograph &tomograph,
-		Regions &regions,
+		RegionList &regions,
 		std::vector< SliceData > &slices,
 		ProgressBar *progress) {
 

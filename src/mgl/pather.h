@@ -148,7 +148,7 @@ public:
 
 	void generatePaths(const ExtruderConfig &extruderCfg,
 					   const LayerLoops &layerloops,
-					   const Regions &skeleton,
+					   const RegionList &skeleton,
 					   LayerPaths &slices,
 					   int sfirstSliceIdx=-1,
 					   int slastSliceIdx=-1);
