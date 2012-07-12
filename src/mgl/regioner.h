@@ -20,22 +20,26 @@
 
 namespace mgl {
 
-class Regions {
+class LayerRegions {
 public:
-	std::vector<libthing::Insets> insets;
-	std::vector<std::list<LoopList> > insetLoops;
-	std::vector<GridRanges> flatSurfaces; // # number of slices + roofCount * 2
-	std::vector<GridRanges> roofings;
-	std::vector<GridRanges> floorings;
+	std::list<LoopList> insetLoops;
+	LoopList supportLoops;
+	LoopList interiorLoops;
 
+	GridRanges flatSurfaces; // # number of slices + roofCount * 2
+	GridRanges roofings;
+	GridRanges floorings;
+	GridRanges supports;
 
-	std::vector<GridRanges> infills;
+	GridRanges infills;
 
-	std::vector<GridRanges> solids;
-	std::vector<GridRanges> sparses;
+	GridRanges solids;
+	GridRanges sparses;
+
+	size_t layerMeasureId;
 };
 
-
+typedef vector<LayerRegions> RegionList;
 
 //// Class to calculate regions of a model
 ///
