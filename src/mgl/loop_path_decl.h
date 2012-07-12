@@ -440,7 +440,7 @@ public:
 	template <typename ITER, typename OTHERITER>
 	ITER insertPoints(ITER position, OTHERITER first, OTHERITER last) {
 		typename ITER::iterator at = &position;
-		typename ITER::iterator ret = pointNormals.insert(at, &first, &last);
+		typename ITER::iterator ret = pointNormals.insert(at, first, last);
 		return ITER(ret, position.makeBegin(), position.makeEnd());
 	}
 

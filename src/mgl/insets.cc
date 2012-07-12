@@ -123,21 +123,9 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	}
 }
 
-
-
-class ClipperInsetter {
-
-public:
-	ClipperInsetter(){}
-	virtual ~ClipperInsetter(){}
-	void inset( const SegmentVector & inputPolys,
-				Scalar insetDist,
-				SegmentVector & outputPolys);
-};
-
-void ClipperInsetter::inset( const SegmentVector &inputPolys,
+void ClipperInsetter::inset( const libthing::SegmentVector &inputPolys,
 							 Scalar insetDist,
-							 SegmentVector& outputPolys)
+							 libthing::SegmentVector& outputPolys)
 {
 
 	ClipperLib::Polygons in_polys, out_polys;

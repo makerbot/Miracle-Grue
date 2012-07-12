@@ -9,6 +9,7 @@
 #include "mgl/abstractable.h"
 #include "mgl/clipper.h"
 #include "mgl/ScadDebugFile.h"
+#include "mgl/insets.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ClipperTestCase );
 
@@ -25,15 +26,6 @@ void clipperToMgl(const ClipperLib::Polygons &polys, SegmentVector& outlinesSegm
 void mglToClipper(const SegmentVector &segmentTable, ClipperLib::Polygons &out_polys );
 void dumpSegmentTable(const char* name, const SegmentTable & outTable);
 void dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys);
-
-class ClipperInsetter
-{
-
-public:
-	void inset( const SegmentVector & inputPolys,
-				Scalar insetDist,
-				SegmentVector & outputPolys);
-};
 
 void ClipperTestCase::setUp()
 {
@@ -154,7 +146,6 @@ void ClipperTestCase::testSimpleInset()
 	ScadDebugFile::segment3(cout, "", "in_segments", segs, 0, 0);
 
 	SegmentTable outTable;
-
 	ClipperInsetter insetter;
 	insetter.inset(table, -1, outTable);
 	cout << "outTable_size = " << outTable.size() << ";" << endl;
