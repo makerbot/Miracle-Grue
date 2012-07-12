@@ -26,15 +26,15 @@ public:
 	LoopList supportLoops;
 	LoopList interiorLoops;
 
-	GridRanges flatSurfaces; // # number of slices + roofCount * 2
-	GridRanges roofings;
-	GridRanges floorings;
-	GridRanges supports;
+	GridRanges flatSurface; // # number of slices + roofCount * 2
+	GridRanges roofing;
+	GridRanges flooring;
+	GridRanges support;
 
-	GridRanges infills;
+	GridRanges infill;
 
-	GridRanges solids;
-	GridRanges sparses;
+	GridRanges solid;
+	GridRanges sparse;
 
 	size_t layerMeasureId;
 };
