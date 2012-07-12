@@ -20,22 +20,26 @@
 
 namespace mgl {
 
-class Regions {
+class LayerRegions {
 public:
-	std::vector<libthing::Insets> insets;
-	std::vector<std::list<LoopList> > insetLoops;
-	std::vector<GridRanges> flatSurfaces; // # number of slices + roofCount * 2
-	std::vector<GridRanges> roofings;
-	std::vector<GridRanges> floorings;
+	std::list<LoopList> insetLoops;
+	LoopList supportLoops;
+	LoopList interiorLoops;
 
+	GridRanges flatSurface; // # number of slices + roofCount * 2
+	GridRanges roofing;
+	GridRanges flooring;
+	GridRanges support;
 
-	std::vector<GridRanges> infills;
+	GridRanges infill;
 
-	std::vector<GridRanges> solids;
-	std::vector<GridRanges> sparses;
+	GridRanges solid;
+	GridRanges sparse;
+
+	size_t layerMeasureId;
 };
 
-
+typedef std::vector<LayerRegions> RegionList;
 
 //// Class to calculate regions of a model
 ///
@@ -49,8 +53,10 @@ public:
 	Regioner(const SlicerConfig &slicerCfg,
 			ProgressBar *progress = NULL);
 
-	void generateSkeleton(const Tomograph& tomograph, Regions &regions);
-	void generateSkeleton(const LayerLoops& layerloops, Regions &regions);
+	void generateSkeleton(const LayerLoops& layerloops, RegionList &regions);
+
+	size_t initRegionList(const LayerLoops& layerloops,
+						  RegionList &regionlist);
 
 	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
 			libthing::Insets &sliceInsets,
@@ -59,35 +65,37 @@ public:
 			std::list<LoopList>& sliceInsets,
 			const char* scadFile = NULL);
 
-	void insets(const LayerLoops& outlinesLoops, 
-			std::vector<std::list<LoopList> >& insets);
+	void insets(const LayerLoops::const_layer_iterator outlinesBegin,
+				const LayerLoops::const_layer_iterator outlinesEnd,
+				RegionList::iterator regionsBegin,
+				RegionList::iterator regionsEnd);
 
-	void flatSurfaces(const std::vector<std::list<LoopList> >& insets,
-			const Grid & grid,
-			std::vector<GridRanges> & gridRanges);
+	void flatSurfaces(RegionList::iterator regionsBegin,
+					  RegionList::iterator regionsEnd,
+					  const Grid& grid);
 
 	void floorForSlice(const GridRanges & currentSurface, 
-			const GridRanges & surfaceBelow, 
-			const Grid & grid,
-			GridRanges & flooring);
+					   const GridRanges & surfaceBelow, 
+					   const Grid & grid,
+					   GridRanges & flooring);
 
-	void roofing(const std::vector<GridRanges> & flatSurfaces, 
-			const Grid & grid, 
-			std::vector<GridRanges> & roofings);
+	void roofing(RegionList::iterator regionsBegin,
+				 RegionList::iterator regionsEnd,
+				 const Grid& grid);
+
 	void roofForSlice(const GridRanges & currentSurface, 
 			const GridRanges & surfaceAbove, 
 			const Grid & grid, 
 			GridRanges & roofing);
-	void flooring(const std::vector<GridRanges> & flatSurfaces, 
-			const Grid & grid, 
-			std::vector<GridRanges> & floorings);
-	void infills(const std::vector<GridRanges> &flatSurfaces,
-			const Grid &grid,
-			const std::vector<GridRanges> &roofings,
-			const std::vector<GridRanges> &floorings,
-			std::vector<GridRanges> &solids,
-			std::vector<GridRanges> &sparses,
-			std::vector<GridRanges> &infills);
+
+	void flooring(RegionList::iterator regionsBegin,
+				  RegionList::iterator regionsEnd,
+				  const Grid &grid);
+
+	void infills(RegionList::iterator regionsBegin,
+				 RegionList::iterator regionsEnd,
+				 const Grid &grid);
+
 	void gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice, 
 			const Grid& grid, 
 			GridRanges& surface);
