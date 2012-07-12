@@ -149,7 +149,7 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 
 	LayerLoops::const_layer_iterator outline = outlinesBegin;
 	RegionList::iterator region = regionsBegin;
-	while(outline != outlinesBegin && region != regionsBegin) {
+	while(outline != outlinesEnd && region != regionsEnd) {
 		tick();
 		const LoopList& currentOutlines = outline->readLoops();
 
