@@ -24,51 +24,37 @@ Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
 
 }
 
-//void Regioner::generateSkeleton(const Tomograph &tomograph, 
-//		Regions & regions) {
-//
-//	insets(tomograph.outlines, regions.insets);
-//	flatSurfaces(regions.insets, tomograph.grid, regions.flatSurfaces);
-//	roofing(regions.flatSurfaces, tomograph.grid, regions.roofings);
-//	flooring(regions.flatSurfaces, tomograph.grid, regions.floorings);
-//	infills(regions.flatSurfaces,
-//			tomograph.grid,
-//			regions.roofings,
-//			regions.floorings,
-//			regions.solids,
-//			regions.sparses,
-//			regions.infills);
-//}
-
 void Regioner::generateSkeleton(const LayerLoops& layerloops, 
-		Regions& regions) {
-	insets(layerloops, regions.insetLoops);
-	flatSurfaces(regions.insetLoops, layerloops.grid, regions.flatSurfaces);
-	roofing(regions.flatSurfaces, layerloops.grid, regions.roofings);
-	flooring(regions.flatSurfaces, layerloops.grid, regions.floorings);
-	infills(regions.flatSurfaces, 
-			layerloops.grid,
-			regions.roofings,
-			regions.floorings,
-			regions.solids,
-			regions.sparses,
-			regions.infills);
+		RegionList& regionlist) {
+	int sliceCount = initRegionList(layerloops, regionlist);
+
+	//this is to facilitate eventually operating on part of the layer list
+	RegionList::iterator firstModelRegion = regionlist.begin();
+
+	initProgress("insets", sliceCount);
+	insets(layerloops.begin(), layerloops.end(),
+		   firstModelRegion, regionlist.end());
+
+	initProgress("flat surfaces", sliceCount);
+	flatSurfaces(firstModelRegion, regionlist.end(), layerloops.grid);
+
+	initProgress("roofing", sliceCount);
+	roofing(firstModelRegion, regionlist.end(), layerloops.grid);
+
+	initProgress("flooring", sliceCount);
+	flooring(firstModelRegion, regionlist.end(), layerloops.grid);
+
+	initProgress("infills", sliceCount);
+	infills(firstModelRegion, regionlist.end(),	layerloops.grid);
 }
 
-void Regioner::insetsForSlice(const libthing::SegmentTable &sliceOutlines,
-		libthing::Insets& sliceInsets,
-		const char* scadFile) {
-
-
-	bool writeDebugScadFiles = false;
-	inshelligence(sliceOutlines,
-			slicerCfg.nbOfShells,
-			slicerCfg.layerW,
-			slicerCfg.insetDistanceMultiplier,
-			scadFile,
-			writeDebugScadFiles,
-			sliceInsets);
+size_t Regioner::initRegionList(const LayerLoops& layerloops,
+							  RegionList &regionlist) {
+	//TODO: take into account raft layers in the number of regions
+	regionlist.resize(layerloops.size());
+	return regionlist.size();
 }
+
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		std::list<LoopList>& sliceInsets,
@@ -156,34 +142,33 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //	}
 //}
 
-void Regioner::insets(const LayerLoops& outlinesLoops,
-		std::vector<std::list<LoopList> >& insets) {
-	size_t sliceCount = outlinesLoops.readLayers().size();
-	initProgress("insets", sliceCount);
-	for (LayerLoops::const_layer_iterator iter = outlinesLoops.begin();
-			iter != outlinesLoops.end();
-			++iter) {
+void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
+					  const LayerLoops::const_layer_iterator outlinesEnd,
+					  RegionList::iterator regionsBegin,
+					  RegionList::iterator regionsEnd) {
+
+	LayerLoops::const_layer_iterator outline = outlinesBegin;
+	RegionList::iterator region = regionsBegin;
+	while(outline != outlinesEnd && region != regionsEnd) {
 		tick();
-		const LoopList& currentOutlines = iter->readLoops();
-		std::list<LoopList> currentInsets;
-		insetsForSlice(currentOutlines, currentInsets, NULL);
-		insets.push_back(currentInsets);
+		const LoopList& currentOutlines = outline->readLoops();
+
+		insetsForSlice(currentOutlines, region->insetLoops, NULL);
+
+		++outline;
+		++region;
 	}
 }
 
-void Regioner::flatSurfaces(const std::vector<std::list<LoopList> >& insets,
-		const Grid& grid,
-		std::vector<GridRanges>& gridRanges) {
-	size_t sliceCount = insets.size();
-	initProgress("flat surfaces", sliceCount);
-	for (std::vector<std::list<LoopList> >::const_iterator iter = insets.begin();
-			iter != insets.end();
-			++iter) {
+void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
+							RegionList::iterator regionsEnd,
+							const Grid& grid) {
+	for (RegionList::iterator regions = regionsBegin;
+		 regions != regionsEnd; regions++) {
 		tick();
-		const std::list<LoopList>& currentInsets = *iter;
+		const std::list<LoopList>& currentInsets = regions->insetLoops;
 		GridRanges currentSurface;
-		gridRangesForSlice(currentInsets, grid, currentSurface);
-		gridRanges.push_back(currentSurface);
+		gridRangesForSlice(currentInsets, grid, regions->flatSurface);
 	}
 }
 
@@ -202,92 +187,66 @@ void Regioner::roofForSlice(const GridRanges & currentSurface, const GridRanges 
 	grid.trimGridRange(roof, this->roofLengthCutOff, roofing);
 }
 
-void Regioner::roofing(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & roofings) {
-	assert(flatSurfaces.size() > 0);
-	assert(roofings.size() == 0);
-	unsigned int sliceCount = flatSurfaces.size();
-	initProgress("roofing", sliceCount);
+void Regioner::roofing(RegionList::iterator regionsBegin,
+					   RegionList::iterator regionsEnd,
+					   const Grid& grid) {
 
-	roofings.resize(sliceCount);
-	for (size_t i = 0; i < sliceCount - 1; i++) {
+	RegionList::iterator current = regionsBegin;
+	RegionList::iterator above = current;
+	++above;
+
+	while (above != regionsEnd) {
 		tick();
-		const GridRanges & currentSurface = flatSurfaces[i];
-		const GridRanges & surfaceAbove = flatSurfaces[i + 1];
-		GridRanges & roofing = roofings[i];
+		const GridRanges & currentSurface = current->flatSurface;
+		const GridRanges & surfaceAbove = above->flatSurface;
+		GridRanges & roofing = current->roofing;
 
 		GridRanges roof;
 		roofForSlice(currentSurface, surfaceAbove, grid, roof);
 
 		grid.trimGridRange(roof, this->roofLengthCutOff, roofing);
 
+		++current;
+		++above;
 	}
-	tick();
-	roofings[sliceCount - 1] = flatSurfaces[sliceCount - 1];
 
+	tick();
+	current->roofing = current->flatSurface;
 }
 
-void Regioner::flooring(const std::vector<GridRanges> & flatSurfaces, const Grid & grid, std::vector<GridRanges> & floorings) {
-	assert(flatSurfaces.size() > 0);
-	assert(floorings.size() == 0);
-	unsigned int sliceCount = flatSurfaces.size();
-	initProgress("flooring", sliceCount);
+void Regioner::flooring(RegionList::iterator regionsBegin,
+						RegionList::iterator regionsEnd,
+						const Grid &grid) {
+	RegionList::iterator below = regionsBegin;
+	RegionList::iterator current = below;
+	current++;
 
-	floorings.resize(sliceCount);
-	for (size_t i = 1; i < sliceCount; i++) {
+	while (current != regionsEnd) {
 		tick();
-		const GridRanges & currentSurface = flatSurfaces[i];
-		const GridRanges & surfaceBelow = flatSurfaces[i - 1];
-		GridRanges & flooring = floorings[i];
+		const GridRanges & currentSurface = current->flatSurface;
+		const GridRanges & surfaceBelow = below->flatSurface;
+		GridRanges & flooring = current->flooring;
+
 		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+
+		++below;
+		++current;
 	}
+
 	tick();
-	floorings[0] = flatSurfaces[0];
+	regionsBegin->flooring = regionsBegin->flatSurface;
 
 }
 
-void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
-		const Grid &grid,
-		const std::vector<GridRanges> &roofings,
-		const std::vector<GridRanges> &floorings,
-		std::vector<GridRanges> &solids,
-		std::vector<GridRanges> &sparses,
-		std::vector<GridRanges> &infills) {
+void Regioner::infills(RegionList::iterator regionsBegin,
+					   RegionList::iterator regionsEnd,
+					   const Grid &grid) {
+	
+	for (RegionList::iterator current = regionsBegin;
+		 current != regionsEnd; current++) {
 
-
-	assert(flatSurfaces.size() > 0);
-	assert(roofings.size() > 0);
-
-	unsigned int sliceCount = flatSurfaces.size();
-
-	assert(infills.size() == 0);
-	infills.resize(sliceCount);
-
-	assert(sparses.size() == 0);
-	sparses.resize(sliceCount);
-
-	assert(solids.size() == 0);
-	solids.resize(sliceCount);
-
-	initProgress("infills", sliceCount);
-
-
-	for (size_t i = 0; i < sliceCount; i++) {
-		const GridRanges &surface = flatSurfaces[i];
+		const GridRanges &surface = current->flatSurface;
 		tick();
-		//		{
-		//			const GridRanges &surface = flatSurfaces[i];
-		//			const GridRanges &roofing = roofings[i];
-		//			const GridRanges &flooring = floorings[i];
-		//			GridRanges sparseInfill;
-		//
-		//			size_t infillSkipCount = (int)(1/slicerCfg.infillDensity) - 1;
-		//			grid.subSample(surface, infillSkipCount, sparseInfill);
-		//
-		//			GridRanges roofed;
-		//			grid.gridRangeUnion(sparseInfill, roofing, roofed);
-		//			GridRanges &infill = infills[i];
-		//			grid.gridRangeUnion(roofed, flooring, infill);
-		//		}
 
 		// Solids
 		GridRanges combinedSolid;
@@ -295,50 +254,52 @@ void Regioner::infills(const std::vector<GridRanges> &flatSurfaces,
 		combinedSolid.xRays.resize(surface.xRays.size());
 		combinedSolid.yRays.resize(surface.yRays.size());
 
-		size_t firstFloor = 0;
-		int f = i - this->slicerCfg.floorLayerCount;
-		if (f > 0) firstFloor = (size_t) f;
+		//TODO: no reason to get bounds separately from the combination
 
-		size_t lastRoof = i + this->slicerCfg.roofLayerCount;
-		if (lastRoof > (sliceCount - 1)) lastRoof = sliceCount - 1;
+		//find the bounds we will be combinging regions across
+		RegionList::iterator firstFloor = current;
+		for (int i = 0; i < slicerCfg.floorLayerCount &&
+   				        firstFloor != regionsBegin; i++)
+			--firstFloor;
 
-		//cout << "Solid [" << i << "]  = sum (";
-		//cout << " floor(";
-		for (size_t j = (size_t) firstFloor; j <= i; j++) {
+		RegionList::iterator lastRoof = current;
+		for (int i = 0; i < slicerCfg.roofLayerCount &&
+				        lastRoof != regionsEnd - 1; i++)
+			++lastRoof;
+
+		//combine floors
+		for (RegionList::iterator floor = firstFloor;
+			 floor <= current; ++floor) {
 			GridRanges multiFloor;
-			//cout << j << ", ";
-			const GridRanges &floor = floorings[j];
-			grid.gridRangeUnion(combinedSolid, floor, multiFloor);
+
+			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
 			combinedSolid = multiFloor;
 		}
-		//cout << "), roof(";
-		for (size_t j = i; j <= lastRoof; j++) {
+
+		//combine roofs
+		for (RegionList::iterator roof = current;
+			 roof <= lastRoof; ++roof) {
 			GridRanges multiRoof;
-			const GridRanges &roofing = roofings[j];
-			grid.gridRangeUnion(combinedSolid, roofing, multiRoof);
-			//cout << j << ", ";
+
+			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
 			combinedSolid = multiRoof;
 		}
 
 		// solid now contains the combination of combinedSolid regions from
 		// multiple slices. We need to extract the perimeter from it
 
-		GridRanges& solid = solids[i];
-		grid.gridRangeIntersection(surface, combinedSolid, solid);
+		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
 
-		// solid = combinedSolid;
-		// solids[i] = solid;
-
-		// todo move me to the slicer
+		// TODO: move me to the slicer
 		GridRanges sparseInfill;
 		size_t infillSkipCount = (int) (1 / slicerCfg.infillDensity) - 1;
 		grid.subSample(surface, infillSkipCount, sparseInfill);
 
-		GridRanges &infill = infills[i];
-		grid.gridRangeUnion(solid, sparseInfill, infill);
+		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
 
-		GridRanges &sparse = sparses[i];
-		sparse = infills[i];
+		//TODO: this doesn't seem right, but its what it was doing before I
+		//converted to iterators
+		current->sparse = current->infill;
 
 	}
 
