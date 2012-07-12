@@ -33,7 +33,6 @@ void SlicerSplitTestCase::setUp()
 	outputDir = string("outputs") + pathsep + string("test_cases") + pathsep + 
 			string("SlicerSplitTestCase") + pathsep;
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
-	mkDebugPath(outputDir.c_str());
 }
 
 void SlicerSplitTestCase::test_m()

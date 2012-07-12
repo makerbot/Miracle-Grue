@@ -54,7 +54,10 @@ int FileSystemAbstractor::guarenteeDirectoryExists(const char* pathname)
 
 #else //WIN32
         // mode_t does not work under QT
-        mode_t mode =  (S_IREAD|S_IWRITE |S_IRGRP|S_IWGRP |S_IROTH);
+        mode_t mode =  (S_IREAD|S_IWRITE
+						|S_IRWXU
+						|S_IRGRP|S_IXGRP
+						|S_IROTH|S_IXOTH);
 
 		struct stat st;
 		if(stat(pathname,&st) != 0){

@@ -118,8 +118,7 @@ void GCoderTestCase::setUp() {
 	MyComputer computer;
 
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(testdir.c_str());
-
-	mkDebugPath(outputDir.c_str());
+	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputDir.c_str());
 	std::cout << "Setup for :" << __FUNCTION__ << " Done" << endl;
 }
 

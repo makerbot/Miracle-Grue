@@ -49,8 +49,6 @@ void ModelReaderTestCase::setUp()
 	
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(outputsDir.c_str());
 	computer.fileSystem.guarenteeDirectoryExistsRecursive(inputsDir.c_str());
-	
-	mkDebugPath(outputsDir.c_str());
 }
 
 
