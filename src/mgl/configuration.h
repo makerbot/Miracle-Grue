@@ -104,11 +104,17 @@ private:
 
 class GCoderConfig;
 class SlicerConfig;
+class RegionerConfig;
 class ExtruderConfig;
 
-void loadGCoderConfigFromFile(const Configuration& conf, GCoderConfig &gcoder);
-void loadSlicerConfigFromFile( const Configuration &config, SlicerConfig &slicer);
-void loadExtruderConfigFromFile( const Configuration &config, ExtruderConfig &extruderCfg);
+void loadGCoderConfigFromFile(const Configuration& conf, 
+		GCoderConfig &gcoder);
+void loadSlicerConfigFromFile(const Configuration &config, 
+		SlicerConfig &slicer);
+void loadExtruderConfigFromFile(const Configuration &config, 
+		ExtruderConfig &extruderCfg);
+void loadRegionerConfigFromFile(const Configuration& config, 
+		RegionerConfig& regionerCfg);
 
 }
 #endif /* CONFIGURATION_H_ */

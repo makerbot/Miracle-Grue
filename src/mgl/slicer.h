@@ -7,7 +7,7 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
 
-*/
+ */
 
 #ifndef __SLICER_H_
 #define __SLICER_H_
@@ -19,33 +19,34 @@
 #include "segmenter.h"
 #include "slicer_loops.h"
 
-namespace mgl
-{
+namespace mgl {
 
 //// Slicer configuration data
-struct SlicerConfig
-{
-	SlicerConfig()
-	:layerH(0.27),
-	 firstLayerZ(0.1),
-	 tubeSpacing(1),
-	 //angle(1.570796326794897),
-	 nbOfShells(2),
-	 layerW(0.4),
-	 infillShrinkingMultiplier(0.25),
-	 insetDistanceMultiplier(0.9),
-	 insetCuttOffMultiplier(0.01),
-	 writeDebugScadFiles(false),
-	 roofLayerCount(0),
-	 floorLayerCount(0),
-         // infillSkipCount(2),
-	 gridSpacingMultiplier(0.95)
-	{}
 
+class SlicerConfig {
+public:
+	SlicerConfig()
+			: layerH(0.27),
+			firstLayerZ(0.1),
+			tubeSpacing(1),
+			//angle(1.570796326794897),
+			nbOfShells(2),
+			layerW(0.4),
+			infillShrinkingMultiplier(0.25),
+			insetDistanceMultiplier(0.9),
+			insetCuttOffMultiplier(0.01),
+			writeDebugScadFiles(false),
+			roofLayerCount(0),
+			floorLayerCount(0),
+			// infillSkipCount(2),
+			gridSpacingMultiplier(0.95) {}
+
+	// These are relevant to slicer
 	Scalar layerH; //< z height of layers 1+ 9(mm)
 	Scalar firstLayerZ; //< z height of 0th layer (mm)
+	// These are relevant to regioner
 	Scalar tubeSpacing; //< distance in between infill (mm)
-	Scalar angle;	//< angle of infill
+	Scalar angle; //< angle of infill
 	unsigned int nbOfShells; //< shell count of model
 	Scalar layerW; //< TBD
 	Scalar infillShrinkingMultiplier; //< TBD
@@ -57,11 +58,11 @@ struct SlicerConfig
 	unsigned int floorLayerCount; // number of solid layers for floors
 	//unsigned int infillSkipCount; //< TBD
 	Scalar infillDensity; // the density of the infill patterns (0 to 1)
-	Scalar gridSpacingMultiplier; // interference between 2 grid lines ( 0 to 1, for adhesion)
+	Scalar gridSpacingMultiplier;	// interference between 2 grid lines 
+									//( 0 to 1, for adhesion)
 };
 
-struct LayerConfig
-{
+struct LayerConfig {
 	Scalar firstLayerZ; //z height of 0th layer(mm)
 	Scalar layerH; //z height of 1+ layer (mm)
 	Scalar layerW; // width of layer (mm)
@@ -73,11 +74,13 @@ struct LayerConfig
 /// infill, etc.  All of the outlines of the model for every slice,
 /// slicer output.
 ///
-struct Tomograph
-{
-	Tomograph():layerMeasure(0,0){}
 
-	std::vector<libthing::SegmentTable>   outlines;
+struct Tomograph {
+
+	Tomograph() : layerMeasure(0, 0) {
+	}
+
+	std::vector<libthing::SegmentTable> outlines;
 	Grid grid;
 	LayerMeasure layerMeasure;
 };
@@ -85,28 +88,28 @@ struct Tomograph
 
 /// This class contains the slice processes that are run on
 /// input
-class Slicer : public Progressive
-{
+
+class Slicer : public Progressive {
 	LayerConfig layerCfg;
 
 public:
 	/// Constructor for a slicer
 	/// @param slicerCfg slicer config!
 	/// @param progress Optional Progress Bar
-	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress =NULL);
+	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress = NULL);
 
 	/// TBD
 	void generateLoops(const Segmenter& seg, LayerLoops& layerloops);
 
 	/// TBD
-    void outlinesForSlice(const Segmenter& seg, 
-			size_t sliceId, 
+	void outlinesForSlice(const Segmenter& seg,
+			size_t sliceId,
 			libthing::SegmentTable & segments);
 
 	/// TBD
-	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>& 
+	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>&
 			unorderedSegments,
-			Scalar tol, 
+			Scalar tol,
 			libthing::SegmentTable & segments);
 };
 

@@ -17,11 +17,27 @@
 using namespace mgl;
 using namespace std;
 
-Regioner::Regioner(const SlicerConfig &slicerCfg, ProgressBar *progress)
-: Progressive(progress), slicerCfg(slicerCfg) {
+Regioner::Regioner(const SlicerConfig &slicerConf, ProgressBar *progress)
+		: Progressive(progress), slicerCfg(slicerConf) {
 	// move that to its own config element?
-	roofLengthCutOff = 0.5 * slicerCfg.layerH;
-
+	roofLengthCutOff = 0.5 * slicerCfg.layerW;
+	
+	regionerCfg.tubeSpacing = slicerCfg.tubeSpacing;
+	regionerCfg.angle = slicerCfg.angle;
+	regionerCfg.nbOfShells = slicerCfg.nbOfShells;
+	regionerCfg.layerW = slicerCfg.layerW;
+	regionerCfg.infillShrinkingMultiplier = slicerCfg.infillShrinkingMultiplier;
+	regionerCfg.insetDistanceMultiplier = slicerCfg.insetDistanceMultiplier;
+	regionerCfg.insetCuttOffMultiplier = slicerCfg.insetCuttOffMultiplier;
+	regionerCfg.writeDebugScadFiles = slicerCfg.writeDebugScadFiles;
+	regionerCfg.roofLayerCount = slicerCfg.roofLayerCount;
+	regionerCfg.floorLayerCount = slicerCfg.floorLayerCount;
+	regionerCfg.infillDensity = slicerCfg.infillDensity;
+	regionerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
+}
+Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
+		: Progressive(progress), regionerCfg(regionerConf) {
+	roofLengthCutOff = 0.5 * regionerCfg.layerW;
 }
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops, 
@@ -89,9 +105,9 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	//call the function with the equivalent SegmentTables
 	bool writeDebugScadFiles = false;
 	inshelligence(sliceOutlinesOld,
-			slicerCfg.nbOfShells,
-			slicerCfg.layerW,
-			slicerCfg.insetDistanceMultiplier,
+			regionerCfg.nbOfShells,
+			regionerCfg.layerW,
+			regionerCfg.insetDistanceMultiplier,
 			scadFile,
 			writeDebugScadFiles,
 			sliceInsetsOld);
@@ -204,7 +220,7 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 		GridRanges roof;
 		roofForSlice(currentSurface, surfaceAbove, grid, roof);
 
-		grid.trimGridRange(roof, this->roofLengthCutOff, roofing);
+		grid.trimGridRange(roof, roofLengthCutOff, roofing);
 
 		++current;
 		++above;
@@ -258,12 +274,12 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		//find the bounds we will be combinging regions across
 		RegionList::iterator firstFloor = current;
-		for (int i = 0; i < slicerCfg.floorLayerCount &&
+		for (int i = 0; i < regionerCfg.floorLayerCount &&
    				        firstFloor != regionsBegin; ++i)
 			--firstFloor;
 
 		RegionList::iterator lastRoof = current;
-		for (int i = 0; i < slicerCfg.roofLayerCount &&
+		for (int i = 0; i < regionerCfg.roofLayerCount &&
 				        lastRoof != regionsEnd - 1; ++i)
 			++lastRoof;
 
@@ -292,7 +308,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		// TODO: move me to the slicer
 		GridRanges sparseInfill;
-		size_t infillSkipCount = (int) (1 / slicerCfg.infillDensity) - 1;
+		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
 		grid.subSample(surface, infillSkipCount, sparseInfill);
 
 		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
