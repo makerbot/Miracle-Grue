@@ -66,6 +66,8 @@ public:
 	LoopList interiorLoops;
 
 	GridRanges flatSurface; // # number of slices + roofCount * 2
+	GridRanges supportSurface; //flat surface outside of the actual object
+
 	GridRanges roofing;
 	GridRanges flooring;
 	GridRanges support;
@@ -74,6 +76,8 @@ public:
 
 	GridRanges solid;
 	GridRanges sparse;
+
+	GridRanges support;
 
 	layer_measure_index_t layerMeasureId;
 };
