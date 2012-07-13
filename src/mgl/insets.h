@@ -41,9 +41,7 @@ void inshelligence( const libthing::SegmentTable & outlinesSegments,
 class ClipperInsetter {
 
 public:
-	ClipperInsetter() {
-		setTolerance(0.10);
-	}
+	ClipperInsetter() {	}
 	virtual ~ClipperInsetter(){}
 	void inset( const libthing::SegmentVector & inputPolys,
 				Scalar insetDist,

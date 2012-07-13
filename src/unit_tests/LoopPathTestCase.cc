@@ -5,6 +5,7 @@
 
 #include "mgl/loop_path.h"
 #include "mgl/insets.h"
+#include "mgl/loop_utils.h"
 
 #include <iostream>
 #include <sstream>

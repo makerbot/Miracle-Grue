@@ -42,7 +42,7 @@
 
 namespace ClipperLib {
 
-static long double TOLERANCE = (1e-40;
+static long double TOLERANCE = (1e-40);
 
 enum ClipType { ctIntersection, ctUnion, ctDifference, ctXor };
 enum PolyType { ptSubject, ptClip };

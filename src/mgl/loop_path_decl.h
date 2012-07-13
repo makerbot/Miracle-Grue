@@ -25,19 +25,6 @@ typedef libthing::Vector2 PointType;
 typedef std::vector<PointType> PointList;
 typedef std::vector<PointType> VectorList;
 
-namespace loop_path_utils{
-class AngleFunctor {
-public:
-	AngleFunctor(PointType ref) : reference(ref) {}
-	bool operator () (const PointType& l, const PointType& r) const {
-		return (l-reference).crossProduct(r - reference) < 0.0;
-	}
-private:
-	PointType reference;
-};
-}
-
-
 /*!
  * /brief An open ended path
  * A 2d path of points with a defined beginning and end, with no assumption of
@@ -611,71 +598,6 @@ private:
 	bool isBegin(Loop::ccw_iterator i) const { return i == rstart; }
 	bool isBegin(Loop::const_ccw_iterator i) const { return i == rstart; }
 };
-
-template <template <class, class> class COLLECTION, class ALLOC>
-Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){	
-	std::vector<PointType> points;
-	size_t extremeIndex = 0;
-	/* Assemble all points in a vector, also choose the bottom left */
-	for(typename COLLECTION<Loop, ALLOC>::const_iterator iter = input.begin(); 
-			iter != input.end(); 
-			++iter) {
-		for(Loop::const_finite_cw_iterator loopiter = iter->clockwiseFinite(); 
-				loopiter != iter->clockwiseEnd(); 
-				++loopiter) {
-			points.push_back(*loopiter);
-			if(loopiter->getPoint().y < points[extremeIndex].y || 
-					loopiter->getPoint().x < points[extremeIndex].x) {
-				extremeIndex = points.size()-1;
-			}
-		}
-	}
-	/* Place the bottom left point in index 0 */
-	std::swap(points[0], points[extremeIndex]);
-	extremeIndex = 0;
-	
-	/* Sort in a counterclockwise way */
-	std::vector<PointType>::iterator beginIter = points.begin();
-	++beginIter;
-	std::vector<PointType>::iterator endIter = points.end();
-	std::sort(beginIter, endIter, 
-			loop_path_utils::AngleFunctor(points[extremeIndex]));
-	
-	/* Remove duplicates */
-	for(std::vector<PointType>::iterator iter = points.begin() + 1; 
-			iter != points.end(); 
-			++iter) {
-		if(*iter == *(iter - 1)){
-			iter = points.erase(iter);
-		}
-	}
-	
-	Loop retLoop;
-	
-	for(size_t i = 0; i < points.size(); ++i) {
-		if(i < 2) {
-			retLoop.insertPointBefore(points[i], retLoop.clockwiseEnd());
-			continue;
-		}
-		Loop::finite_cw_iterator last1(retLoop.clockwiseEnd());
-		--last1;
-		Loop::finite_cw_iterator last2 = last1;
-		--last2;
-		/* Here is where we fill the loop with the points, 
-		 optionally dropping some */
-		PointType currentPoint = points[i];
-		if(loop_path_utils::AngleFunctor(last2->getPoint())(
-				currentPoint, last1->getPoint())) {
-			/* point at last1 was not on the convex loop */
-			last1->setPoint(currentPoint);
-		} else {
-			/* point at last1 was valid, next we will check currentPoint */
-			retLoop.insertPointBefore(currentPoint, retLoop.clockwiseEnd());
-		}
-	}
-	
-	return retLoop;
-}
 
 typedef std::list<OpenPath> OpenPathList;
 typedef std::list<Loop> LoopList;
