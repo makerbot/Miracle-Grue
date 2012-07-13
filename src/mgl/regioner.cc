@@ -259,12 +259,12 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		//find the bounds we will be combinging regions across
 		RegionList::iterator firstFloor = current;
 		for (int i = 0; i < slicerCfg.floorLayerCount &&
-   				        firstFloor != regionsBegin; i++)
+   				        firstFloor != regionsBegin; ++i)
 			--firstFloor;
 
 		RegionList::iterator lastRoof = current;
 		for (int i = 0; i < slicerCfg.roofLayerCount &&
-				        lastRoof != regionsEnd - 1; i++)
+				        lastRoof != regionsEnd - 1; ++i)
 			++lastRoof;
 
 		//combine floors
