@@ -71,7 +71,8 @@ GCoder::GCoder(const GCoderConfig &gCoderCfg,
 		ProgressBar* progress) : 
 		Progressive(progress), 
 		gcoderCfg(gCoderCfg), 
-		gantry(gCoderCfg.gantryCfg) {
+		gantry(gCoderCfg.gantryCfg), 
+		distanceTol(0.05){
 	gantry.init_to_start();
 }
 
@@ -261,11 +262,11 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 
 	const std::map<std::string, Extrusion>::const_iterator it = gcoderCfg.extrusionProfiles.find(profileName);
 	if(it == gcoderCfg.extrusionProfiles.end()){
-		Log::severe() << "Failed to find extrusion profile <name>" << 
-				profileName  << "</name>" << endl;
-//		GcoderException mixup((string("Failed to find extrusion profile ") + 
-//				profileName).c_str());
-//		throw mixup;
+//		Log::severe() << "Failed to find extrusion profile <name>" << 
+//				profileName  << "</name>" << endl;
+		GcoderException mixup((string("Failed to find extrusion profile ") + 
+				profileName).c_str());
+		throw mixup;
 	} else {
 		extrusion = it->second;
 	}
@@ -283,8 +284,10 @@ void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths,
 	const std::map<std::string, Extrusion>::const_iterator it = 
 			gcoderCfg.extrusionProfiles.find(profileName);
 	if(it == gcoderCfg.extrusionProfiles.end()){
-		Log::severe() << "Failed to find extrusion profile <name>" << 
-				profileName  << "</name>" << endl;
+//		Log::severe() << "Failed to find extrusion profile <name>" << 
+//				profileName  << "</name>" << endl;
+		GcoderException mixup((string("Failed to find extrusion profile ") + 
+				profileName).c_str());
 	} else {
 		extrusionParams = it->second;
 	}
@@ -307,8 +310,10 @@ void GCoder::calcInSetExtrusion(unsigned int extruderId,
 	const std::map<std::string, Extrusion>::const_iterator &it = 
 			gcoderCfg.extrusionProfiles.find(profileName);
 	if(it == gcoderCfg.extrusionProfiles.end()){
-		Log::severe() << "Failed to find extrusion profile <name>" << 
-				profileName  << "</name>" << endl;
+//		Log::severe() << "Failed to find extrusion profile <name>" << 
+//				profileName  << "</name>" << endl;
+		GcoderException mixup((string("Failed to find extrusion profile ") + 
+				profileName).c_str());
 	} else {
 		extrusion = it->second;
 	}
@@ -329,8 +334,10 @@ void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths,
 	const std::map<std::string, Extrusion>::const_iterator it = 
 			gcoderCfg.extrusionProfiles.find(profileName);
 	if(it == gcoderCfg.extrusionProfiles.end()){
-		Log::severe() << "Failed to find extrusion profile <name>" << 
-				profileName  << "</name>" << endl;
+//		Log::severe() << "Failed to find extrusion profile <name>" << 
+//				profileName  << "</name>" << endl;
+		GcoderException mixup((string("Failed to find extrusion profile ") + 
+				profileName).c_str());
 	} else {
 		extrusionParams = it->second;
 	}

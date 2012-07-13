@@ -1,7 +1,11 @@
+#include <vector>
+
 #include "UnitTestUtils.h"
 #include "LoopPathTestCase.h"
 
 #include "mgl/loop_path.h"
+#include "mgl/insets.h"
+#include "mgl/loop_utils.h"
 
 #include <iostream>
 #include <sstream>
@@ -484,26 +488,50 @@ void LoopPathTestCase::testConvex() {
 		looplist.push_back(currentLoop);
 	}
 	Loop convexLoop = createConvexLoop(looplist);
+	
+	SegmentTable outsetSegs;
+	outsetSegs.push_back(std::vector<LineSegment2>());
+	
+	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(); 
+			iter != convexLoop.clockwiseEnd(); 
+			++iter) {
+		outsetSegs.back().push_back(convexLoop.segmentAfterPoint(iter));
+	}
+	
+	ClipperInsetter().inset(outsetSegs, -0.2, outsetSegs);
+	
+	convexLoop = Loop();
+	
+	for(std::vector<LineSegment2>::const_iterator iter = 
+			outsetSegs.back().begin(); 
+			iter != outsetSegs.back().end(); 
+			++iter) {
+		convexLoop.insertPointBefore(iter->b, convexLoop.clockwiseEnd());
+	}
+	
+	
+	
+	
+	
 	Loop expectedLoop;
-	expectedLoop.insertPointBefore(PointType(0,0), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(0,1), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(0,2), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(0,3), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(1,3), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(2,3), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(3,3), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(3,2), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(3,1), expectedLoop.clockwiseEnd());
-	expectedLoop.insertPointBefore(PointType(3,0), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(3.2,3.2), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(3.2,-0.2), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(-0.2,-0.2), expectedLoop.clockwiseEnd());
+	expectedLoop.insertPointBefore(PointType(-0.2,3.2), expectedLoop.clockwiseEnd());
 	
 	cout << endl;
+	
+	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(); 
+			iter != convexLoop.clockwiseEnd(); 
+			++iter) {
+		cout << iter->getPoint() << endl;
+	}
 	
 	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(), 
 			iterExpected = expectedLoop.clockwiseFinite(); 
 			iter != convexLoop.clockwiseEnd() && 
 			iterExpected != expectedLoop.clockwiseEnd();
 			++iter, ++iterExpected) {
-		cout << iter->getPoint() << endl;
 		CPPUNIT_ASSERT_EQUAL(iterExpected->getPoint(), iter->getPoint());
 	}
 }

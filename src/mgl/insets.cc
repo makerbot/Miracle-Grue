@@ -123,21 +123,9 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	}
 }
 
-
-
-class ClipperInsetter {
-
-public:
-	ClipperInsetter(){}
-	virtual ~ClipperInsetter(){}
-	void inset( const SegmentVector & inputPolys,
-				Scalar insetDist,
-				SegmentVector & outputPolys);
-};
-
-void ClipperInsetter::inset( const SegmentVector &inputPolys,
+void ClipperInsetter::inset( const libthing::SegmentVector &inputPolys,
 							 Scalar insetDist,
-							 SegmentVector& outputPolys)
+							 libthing::SegmentVector& outputPolys)
 {
 
 	ClipperLib::Polygons in_polys, out_polys;
@@ -151,6 +139,10 @@ void ClipperInsetter::inset( const SegmentVector &inputPolys,
 	ClipperLib::OffsetPolygons(in_polys, out_polys, delta, jointype, miterLimit);
 	//dumpClipperPolys(out_polys);
 	clipperToMgl(out_polys, outputPolys);
+}
+
+void ClipperInsetter::setTolerance(long double toler) {
+	ClipperLib::TOLERANCE = toler * DBLTOINT;
 }
 
 /// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,

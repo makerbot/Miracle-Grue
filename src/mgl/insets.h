@@ -38,6 +38,17 @@ void inshelligence( const libthing::SegmentTable & outlinesSegments,
 					bool writeDebugScadFiles,
 					libthing::Insets &insetsForLoops);
 
+class ClipperInsetter {
+
+public:
+	ClipperInsetter() {	}
+	virtual ~ClipperInsetter(){}
+	void inset( const libthing::SegmentVector & inputPolys,
+				Scalar insetDist,
+				libthing::SegmentVector & outputPolys);
+	static void setTolerance(long double toler);
+};
+
 
 }
 
