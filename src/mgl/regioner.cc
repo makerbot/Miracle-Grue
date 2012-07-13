@@ -26,8 +26,13 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		RegionList& regionlist) {
 	int sliceCount = initRegionList(layerloops, regionlist);
 
+
+	initProgress("rafts", regionerCfg.raftLayers + 2);
+	rafts(layerloops.front(), layerloops.layerMeasure, regionlist);
+
 	//this is to facilitate eventually operating on part of the layer list
-	RegionList::iterator firstModelRegion = regionlist.begin();
+	RegionList::iterator firstModelRegion =
+		regionlist.begin() + regionerCfg.raftLayers;
 
 	initProgress("insets", sliceCount);
 	insets(layerloops.begin(), layerloops.end(),
@@ -53,6 +58,37 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 	return regionlist.size();
 }
 
+void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
+					 LayerMeasure &layerMeasure,
+					 RegionList &regionlist) {
+	//make convex hull of the bottom layer
+	Loop convexLoop = createConvexLoop(bottomLayer);
+	tick();
+
+	SegmentTable outsetSegs;
+	outsetSegs.push_back(std::vector<LineSegment2>());
+	
+	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(); 
+		iter != convexLoop.clockwiseEnd(); ++iter) {
+
+		outsetSegs.back().push_back(convexLoop.segmentAfterPoint(iter));
+	}
+	
+	ClipperInsetter().inset(outsetSegs, -regionerCfg.raftOutset, outsetSegs);
+	tick();
+
+	Loop raftLoop;
+	for(std::vector<LineSegment2>::const_iterator iter = 
+			outsetSegs.back().begin(); 
+		iter != outsetSegs.back().end(); 
+		++iter) {
+		raftLoop.insertPointBefore(iter->b, convexLoop.clockwiseEnd());
+	}
+	tick();
+
+	
+
+}
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		std::list<LoopList>& sliceInsets,
