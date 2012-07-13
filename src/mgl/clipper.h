@@ -42,6 +42,8 @@
 
 namespace ClipperLib {
 
+static long double TOLERANCE = (1e-40;
+
 enum ClipType { ctIntersection, ctUnion, ctDifference, ctXor };
 enum PolyType { ptSubject, ptClip };
 //By far the most widely used winding rules for polygon filling are

@@ -545,14 +545,9 @@ public:
 	 *  /param start The clockwise start point
 	 *  /param rstart The same start point, counter clockwise
 	 */
-	LoopPath(const Loop& p, Loop::const_cw_iterator s, Loop::const_ccw_iterator r)
-        : parent(&p), start(s), rstart(r) {}
-
-	LoopPath(const Loop& p, Loop::cw_iterator s, Loop::ccw_iterator r)
-        : parent(&p), start(s), rstart(r) {}
-	
-	LoopPath(const LoopPath& orig) 
-		: parent(orig.parent), start(orig.start), rstart(orig.rstart) {}
+	LoopPath(const Loop& p, Loop::const_cw_iterator s, Loop::const_ccw_iterator r);
+	LoopPath(const Loop& p, Loop::cw_iterator s, Loop::ccw_iterator r);
+	LoopPath(const LoopPath& orig);
 	
 	LoopPath& operator=(const LoopPath& orig) {
 		if(this != &orig) {

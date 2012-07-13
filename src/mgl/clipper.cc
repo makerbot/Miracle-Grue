@@ -56,7 +56,6 @@ enum Direction { dRightToLeft, dLeftToRight };
 enum RangeTest { rtLo, rtHi, rtError };
 
 #define HORIZONTAL (-1.0E+40)
-#define TOLERANCE (1.0e-20)
 #define NEAR_ZERO(val) (((val) > -TOLERANCE) && ((val) < TOLERANCE))
 #define NEAR_EQUAL(a, b) NEAR_ZERO((a) - (b))
 

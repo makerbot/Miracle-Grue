@@ -103,7 +103,7 @@ Scalar Gantry::volumetricE(	const Extruder &extruder,
 	Scalar feed_cross_area = extruder.feedCrossSectionArea();
 
 	Scalar feed_len = seg_volume / feed_cross_area;
-
+	
 	return feed_len + getCurrentE();
 }
 /*if extruder and extrusion are null we don't extrude*/

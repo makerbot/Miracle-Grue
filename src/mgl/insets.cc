@@ -141,6 +141,10 @@ void ClipperInsetter::inset( const libthing::SegmentVector &inputPolys,
 	clipperToMgl(out_polys, outputPolys);
 }
 
+void ClipperInsetter::setTolerance(long double toler) {
+	ClipperLib::TOLERANCE = toler * DBLTOINT;
+}
+
 /// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
 // and counter clockwise for holes)
 /// b) creates nbOfShells insets for each

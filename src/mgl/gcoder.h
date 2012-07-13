@@ -179,6 +179,7 @@ public:
 
 	GCoderConfig gcoderCfg;
 	Gantry gantry;
+	Scalar distanceTol;
 
 	GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL);
 
@@ -304,14 +305,26 @@ void GCoder::writePath(std::ostream& ss,
 	PointType last = *current;
 	++current;
 	gantry.squirt(ss, extruder, extrusion);
-	for(; current!=path.end(); last = *current, ++current){
+	for(; current!=path.end(); ++current){
 		PointType relative = (*current)-last;
-		std::stringstream comment;
-		Scalar distance = relative.magnitude();
-		comment << "d: " << distance;
-		gantry.g1(ss, extruder, extrusion, 
-				current->x, current->y, z, 
-				extrusion.feedrate, comment.str().c_str());
+		typename PATH::const_iterator nextIter = current;
+		++nextIter;
+		// if the next point is far enough or the last one
+		if(nextIter == path.end() || 
+				relative.magnitude() > distanceTol) {
+			//the output the point
+			std::stringstream comment;
+			Scalar distance = relative.magnitude();
+			comment << "d: " << distance;
+			gantry.g1(ss, extruder, extrusion, 
+					current->x, current->y, z, 
+					extrusion.feedrate, comment.str().c_str());
+			last = *current;
+		} else {
+			// otherwise don't
+			//Log::severe() << "Attempt to extrude segment of length " 
+			//		<< relative.magnitude() << std::endl;
+		}
 	}
 	gantry.snort(ss, extruder, extrusion);
 	ss << std::endl;
