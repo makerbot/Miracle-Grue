@@ -65,6 +65,7 @@ public:
 	Grid grid;
 	LayerMeasure layerMeasure;
 
+	size_t size() const { return layers.size(); }
 private:
 	LayerList layers;
 };

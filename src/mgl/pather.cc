@@ -25,7 +25,7 @@ Pather::Pather(ProgressBar * progress)
 
 void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 						   const LayerLoops &layerloops,
-						   const Regions &skeleton,
+						   const RegionList &skeleton,
 						   LayerPaths &layerpaths,
 						   int sfirstSliceIdx,  // =-1
 						   int slastSliceIdx )  //
@@ -48,23 +48,23 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 
 	initProgress("Path generation", layerloops.readLayers().size());
 
-	for(/*const*/LayerLoops::const_layer_iterator i = layerloops.begin();
-		i != layerloops.end(); ++i)
+	// TODO: incrementing regions and loops in lockstep will break with raft
+	RegionList::const_iterator layer_regions = skeleton.begin();
+	for(LayerLoops::const_layer_iterator loops = layerloops.begin();
+		loops != layerloops.end(); ++loops)
 	{
 		tick();
 
-        //if(currentSlice < firstSliceIdx) continue;
-		if(i->getIndex() < firstSliceIdx) continue;
-		//if(currentSlice > lastSliceIdx) break;
-		if(i->getIndex() > lastSliceIdx) break;
+		if(loops->getIndex() < firstSliceIdx) continue;
+		if(loops->getIndex() > lastSliceIdx) break;
 
 		direction = !direction;
-		const LoopList& outline_loops = i->readLoops();
+		const LoopList& outline_loops = loops->readLoops();
 
-		Scalar z = layerloops.layerMeasure.getLayerPosition(i->getIndex());
-		Scalar h = layerloops.layerMeasure.getLayerThickness(i->getIndex());
+		Scalar z = layerloops.layerMeasure.getLayerPosition(loops->getIndex());
+		Scalar h = layerloops.layerMeasure.getLayerThickness(loops->getIndex());
 
-		layerpaths.push_back(LayerPaths::Layer(z, h, i->getIndex()));
+		layerpaths.push_back(LayerPaths::Layer(z, h, loops->getIndex()));
 
 		LayerPaths::Layer& lp_layer = layerpaths.back();
 		
@@ -75,18 +75,19 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 			lp_layer.extruders.back();
 
-		const std::list<LoopList>& insetLoops = skeleton.insetLoops[currentSlice];
+		const std::list<LoopList>& insetLoops = layer_regions->insetLoops;
 
 		outlines(outline_loops, extruderlayer.outlinePaths);
 
 		insets(insetLoops, extruderlayer.insetPaths);
 
-		const GridRanges &infillRanges = skeleton.infills[currentSlice];
+		const GridRanges &infillRanges = layer_regions->infill;
 
 		this->infills(infillRanges, layerloops.grid, outline_loops,
 					  direction, extruderlayer.infillPaths);
 
 		++currentSlice;
+		++layer_regions;
 	}
 }
 

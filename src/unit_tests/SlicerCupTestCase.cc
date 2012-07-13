@@ -69,15 +69,13 @@ void testModel(const char *model, const char* configFile)
 	ExtruderConfig extruderCfg;
 	loadExtruderConfigFromFile(config, extruderCfg);
 
-	Tomograph tomograph;
-	Regions skeleton;
+	RegionList skeleton;
 	std::vector< SliceData >  slices;
 	
 	std::ofstream gcodeFileStream(gcodeFile.c_str());
 	try{
 		miracleGrue(gcoderCfg, slicerCfg, extruderCfg, modelFile.c_str(), NULL,
 					gcodeFileStream, -1, -1,
-					tomograph,
 					skeleton,
 					slices);
 	} catch (mgl::Exception mgle) {

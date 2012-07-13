@@ -328,10 +328,7 @@ int main(int argc, char *argv[], char *[]) // envp
 		if (scadFile.size() > 0 )
 			scad = scadFile.c_str();
 
-        // a tomograph is "a machine for making an x-ray of a single plane of the body"
-        // here it is used to slice triangles
-		Tomograph tomograph;
-		Regions regions;
+		RegionList regions;
 		std::vector<mgl::SliceData> slices;
 		
 		std::ofstream gcodeFileStream(gcodeFile.c_str());
@@ -342,7 +339,6 @@ int main(int argc, char *argv[], char *[]) // envp
 					gcodeFileStream,
 					firstSliceIdx,
 					lastSliceIdx,
-					tomograph,
 					regions,
 					slices,
 					&log);
