@@ -31,8 +31,7 @@ void miracleGrue(const GCoderConfig &gcoderCfg,
                       std::ostream& gcodeFile,
                       int firstSliceIdx,
                       int lastSliceIdx,
-                      Tomograph &tomograph,
-                      Regions &regions,
+                      RegionList &regions,
                       std::vector< SliceData >  &slices,
                       ProgressBar* progress = NULL);
 
