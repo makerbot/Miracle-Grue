@@ -86,12 +86,8 @@ typedef std::vector<LayerRegions> RegionList;
 class Regioner : public Progressive {
 	Scalar roofLengthCutOff;
 public:
-	SlicerConfig slicerCfg;
 	RegionerConfig regionerCfg;
 
-
-	Regioner(const SlicerConfig &slicerCfg,
-			ProgressBar *progress = NULL);
 	Regioner(const RegionerConfig &regionerCfg, 
 			ProgressBar *progress = NULL);
 

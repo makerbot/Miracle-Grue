@@ -16,6 +16,7 @@ using namespace libthing;
 
 void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		const SlicerConfig &slicerCfg,
+		const RegionerConfig& regionerCfg, 
  	    const ExtruderConfig &extruderCfg,
 		const char *modelFile,
 		const char *, // scadFileStr,
@@ -42,7 +43,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	slicer.generateLoops(segmenter, layerloops);
 
 
-	Regioner regioner(slicerCfg, progress);
+	Regioner regioner(regionerCfg, progress);
 
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);

@@ -17,24 +17,6 @@
 using namespace mgl;
 using namespace std;
 
-Regioner::Regioner(const SlicerConfig &slicerConf, ProgressBar *progress)
-		: Progressive(progress), slicerCfg(slicerConf) {
-	// move that to its own config element?
-	roofLengthCutOff = 0.5 * slicerCfg.layerW;
-	
-	regionerCfg.tubeSpacing = slicerCfg.tubeSpacing;
-	regionerCfg.angle = slicerCfg.angle;
-	regionerCfg.nbOfShells = slicerCfg.nbOfShells;
-	regionerCfg.layerW = slicerCfg.layerW;
-	regionerCfg.infillShrinkingMultiplier = slicerCfg.infillShrinkingMultiplier;
-	regionerCfg.insetDistanceMultiplier = slicerCfg.insetDistanceMultiplier;
-	regionerCfg.insetCuttOffMultiplier = slicerCfg.insetCuttOffMultiplier;
-	regionerCfg.writeDebugScadFiles = slicerCfg.writeDebugScadFiles;
-	regionerCfg.roofLayerCount = slicerCfg.roofLayerCount;
-	regionerCfg.floorLayerCount = slicerCfg.floorLayerCount;
-	regionerCfg.infillDensity = slicerCfg.infillDensity;
-	regionerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
-}
 Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
 		: Progressive(progress), regionerCfg(regionerConf) {
 	roofLengthCutOff = 0.5 * regionerCfg.layerW;

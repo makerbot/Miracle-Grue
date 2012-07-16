@@ -28,38 +28,14 @@ public:
 	SlicerConfig()
 			: layerH(0.27),
 			firstLayerZ(0.1),
-			tubeSpacing(1),
-			//angle(1.570796326794897),
-			nbOfShells(2),
-			layerW(0.4),
-			infillShrinkingMultiplier(0.25),
-			insetDistanceMultiplier(0.9),
-			insetCuttOffMultiplier(0.01),
-			writeDebugScadFiles(false),
-			roofLayerCount(0),
-			floorLayerCount(0),
-			// infillSkipCount(2),
+			layerW(0.4), 
 			gridSpacingMultiplier(0.95) {}
 
 	// These are relevant to slicer
 	Scalar layerH; //< z height of layers 1+ 9(mm)
 	Scalar firstLayerZ; //< z height of 0th layer (mm)
-	// These are relevant to regioner
-	Scalar tubeSpacing; //< distance in between infill (mm)
-	Scalar angle; //< angle of infill
-	unsigned int nbOfShells; //< shell count of model
 	Scalar layerW; //< TBD
-	Scalar infillShrinkingMultiplier; //< TBD
-	Scalar insetDistanceMultiplier; //< TBD
-	Scalar insetCuttOffMultiplier; //< TBD
-	bool writeDebugScadFiles; //< true if we want to output debug scad files
-
-	unsigned int roofLayerCount; // number of solid layers for roofs
-	unsigned int floorLayerCount; // number of solid layers for floors
-	//unsigned int infillSkipCount; //< TBD
-	Scalar infillDensity; // the density of the infill patterns (0 to 1)
-	Scalar gridSpacingMultiplier;	// interference between 2 grid lines 
-									//( 0 to 1, for adhesion)
+	Scalar gridSpacingMultiplier; /// TBD:w
 };
 
 struct LayerConfig {

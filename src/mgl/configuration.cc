@@ -348,35 +348,11 @@ void loadSlicerConfigFromFile(const Configuration &config,
 			"slicer.layerH");
 	slicerCfg.firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], 
 			"slicer.firstLayerZ");
-	
-	//Relevant to regioner
-	slicerCfg.infillDensity = doubleCheck(config["slicer"]["infillDensity"], 
-			"slicer.infillDensity");
-	//slicerCfg.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
-	slicerCfg.nbOfShells = uintCheck(config["slicer"]["nbOfShells"], 
-			"slicer.nbOfShells");
 	slicerCfg.layerW = doubleCheck(config["slicer"]["layerW"], 
 			"slicer.layerW");
-	slicerCfg.infillShrinkingMultiplier = 
-			doubleCheck(config["slicer"]["infillShrinkingMultiplier"], 
-			"slicer.infillShrinkingMultiplier");
-	slicerCfg.insetDistanceMultiplier = 
-			doubleCheck(config["slicer"]["insetDistanceMultiplier"], 
-			"slicer.insetDistanceMultiplier");
-	slicerCfg.insetCuttOffMultiplier = 
-			doubleCheck(config["slicer"]["insetCuttOffMultiplier"], 
-			"slicer.insetCuttOffMultiplier");
-
-	slicerCfg.roofLayerCount = 
-			doubleCheck(config["slicer"]["roofLayerCount"], 
-			"slicer.roofLayerCount");
-	slicerCfg.floorLayerCount = 
-			doubleCheck(config["slicer"]["roofLayerCount"], 
-			"slicer.floorLayerCount");
-
-	slicerCfg.writeDebugScadFiles = 
-			boolCheck(config["slicer"]["writeDebugScadFiles"], 
-			"slicer.writeDebugScadFiles", false);
+	slicerCfg.gridSpacingMultiplier = doubleCheck(
+			config["slicer"]["gridSpacingMultiplier"], 
+			"slicer.gridSpacingMultiplier", slicerCfg.gridSpacingMultiplier);
 }
 
 void loadRegionerConfigFromFile(const Configuration& config, 
