@@ -26,7 +26,8 @@ void SlicerOutputTestCase::testLoopLayer(){
 	Meshy mesh;
 	mesh.readStlFile((inputsDir + "20mm_Calibration_Box.stl").c_str());
 	SlicerConfig slicerCfg;
-	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH, 
+			slicerCfg.layerW);
 	Slicer slicer(slicerCfg, NULL);
 	segmenter.tablaturize(mesh);
 	LayerLoops layerloops(slicerCfg.firstLayerZ, slicerCfg.layerH);

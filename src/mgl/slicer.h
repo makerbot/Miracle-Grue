@@ -53,7 +53,7 @@ struct LayerConfig {
 
 struct Tomograph {
 
-	Tomograph() : layerMeasure(0, 0) {
+	Tomograph() : layerMeasure(0, 0, 1) {
 	}
 
 	std::vector<libthing::SegmentTable> outlines;

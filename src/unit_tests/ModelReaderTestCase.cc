@@ -102,7 +102,7 @@ void ModelReaderTestCase::testMeshySimple()
 	cout << __FUNCTION__ << endl;
 	Scalar zH = 1.0;
 	Meshy mesh;
-	Segmenter seg(zH, zH);
+	Segmenter seg(zH, zH, 1.0);
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
@@ -156,12 +156,12 @@ void ModelReaderTestCase::testLayerSplit()
 	cout << endl;
 
 	Meshy mesh;
-	Segmenter seg(0.35, 0.35);
+	Segmenter seg(0.35, 0.35, 0.35);
 	unsigned int t0, t1;
 	t0 = clock();
 
 	Meshy mesh3;
-	Segmenter seg3(0.35, 0.35);
+	Segmenter seg3(0.35, 0.35, 0.35);
 	string inputFile = inputsDir + "Water.stl";
 	mesh.readStlFile(inputFile.c_str() );
 	t1=clock()-t0;
@@ -182,7 +182,7 @@ void ModelReaderTestCase::testLargeMeshy()
 	unsigned int t0,t1;
 	cout << "Light saber" << endl;
 	Meshy mesh;
-	Segmenter seg(0.35, 0.35);
+	Segmenter seg(0.35, 0.35, 0.35);
 	t0=clock();
 	string inputFile = inputsDir + "lightsaber.stl";
 	mesh.readStlFile(inputFile.c_str() );
@@ -197,7 +197,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	unsigned int t0,t1;
 	cout << "Water" << endl;
 	Meshy mesh;
-	Segmenter seg(0.35, 0.35);
+	Segmenter seg(0.35, 0.35, 0.35);
 	t0=clock();
 	string inputFile = inputsDir + "Water.stl";
 	mesh.readStlFile(inputFile.c_str() );
@@ -209,7 +209,7 @@ void ModelReaderTestCase::testMeshyLoad()
 
 	cout << "Land" << endl;
 	Meshy mesh2;
-	Segmenter seg2(0.35, 0.35);
+	Segmenter seg2(0.35, 0.35, 0.35);
 
 	t0=clock();
 	string inputFile2 = inputsDir + "Land.stl";
@@ -230,7 +230,7 @@ void ModelReaderTestCase::testMeshyCycle()
 
 	cout << "Reading test file:"  << target << endl;
 	Meshy mesh3;
-	Segmenter seg3(0.35, 0.35);
+	Segmenter seg3(0.35, 0.35, 0.35);
 	t0=clock();
 	mesh3.readStlFile(target.c_str());
 	t1=clock()-t0;
@@ -243,7 +243,7 @@ void ModelReaderTestCase::testMeshyCycle()
 
 	cout << "Reload test, reloading file: "  << drop << endl;
 	Meshy mesh4;
-	Segmenter seg4(0.35, 0.35);
+	Segmenter seg4(0.35, 0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
 	t1=clock()-t0;
@@ -265,7 +265,7 @@ void ModelReaderTestCase::testMeshyCycleNull()
 
 	cout << "Reading test file:"  << target << endl;
 	Meshy mesh3;
-	Segmenter seg3(0.35, 0.35);
+	Segmenter seg3(0.35, 0.35, 0.5);
 	t0=clock();
 	mesh3.readStlFile(target.c_str());
 	t1=clock()-t0;
@@ -278,7 +278,7 @@ void ModelReaderTestCase::testMeshyCycleNull()
 
 	cout << "Reload test, reloading file: "  << drop << endl;
 	Meshy mesh4;
-	Segmenter seg4(0.35, 0.35);
+	Segmenter seg4(0.35, 0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
 	t1=clock()-t0;
@@ -299,7 +299,7 @@ void ModelReaderTestCase::testMeshyCycleMin()
 
 	cout << "Reading test file:"  << target << endl;
 	Meshy mesh3;
-	Segmenter seg3(0.35, 0.35);
+	Segmenter seg3(0.35, 0.35, 0.35);
 	t0=clock();
 	mesh3.readStlFile( target.c_str() );
 	t1=clock()-t0;
@@ -312,7 +312,7 @@ void ModelReaderTestCase::testMeshyCycleMin()
 
 	cout << "Reload test, reloading file: "  << drop << endl;
 	Meshy mesh4;
-	Segmenter seg4(0.35, 0.35);
+	Segmenter seg4(0.35, 0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
 	t1=clock()-t0;
@@ -497,7 +497,7 @@ void batchProcess(	Scalar firstLayerZ,
 
 		Scalar angle = M_PI*0.5;
 		Meshy mesh;
-		Segmenter seg(firstLayerZ, layerH);
+		Segmenter seg(firstLayerZ, layerH, 0.43);
 		mesh.readStlFile( modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
 		std::vector< SliceData > slices;
@@ -662,10 +662,10 @@ void ModelReaderTestCase::fixContourProblem()
 	double layerH = 0.35;
 	int layerIndex = 30;
 
-	LayerMeasure zTapeMeasure(firstZ, layerH);
+	LayerMeasure zTapeMeasure(firstZ, layerH, 0.43);
 
 	Meshy mesh;
-	Segmenter seg(firstZ, layerH); // 0.35
+	Segmenter seg(firstZ, layerH, 0.43); // 0.35
 	cout << "LOADING... " << endl;
 	mesh.readStlFile( "inputs/3D_Knot.stl");
 
@@ -716,7 +716,7 @@ void ModelReaderTestCase::testLayerMeasure()
 {
 	cout << endl;
 	double tol = 0.000000001;
-	LayerMeasure n(0.11, 0.35 ); // n is for nozzle
+	LayerMeasure n(0.11, 0.35, 0.43); // n is for nozzle
 
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.11, n.sliceIndexToHeight(0), tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.46, n.sliceIndexToHeight(1), tol);
@@ -780,7 +780,7 @@ void ModelReaderTestCase::testAlignToPlate() {
 	cout << endl << "Testing object above the bed" << endl;
 	string above_file = inputsDir + "above.stl";
 	Meshy above;
-	Segmenter segabove(.5, .5);
+	Segmenter segabove(.5, .5, 0.43);
 	//10mm cube one mm above the bed
 	above.readStlFile(above_file.c_str());
 
@@ -800,7 +800,7 @@ void ModelReaderTestCase::testAlignToPlate() {
 	cout << endl << "Testing object below the bed" << endl;
 	string below_file = inputsDir + "below.stl";
 	Meshy below;
-	Segmenter segbelow(.5, .5);
+	Segmenter segbelow(.5, .5, 0.43);
 	//10mm cube one mm below the bed
 	below.readStlFile(below_file.c_str());
 

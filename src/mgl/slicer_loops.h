@@ -46,7 +46,7 @@ public:
 		LoopList loops;
 		layer_measure_index_t measure_index;
 	};
-	LayerLoops(Scalar firstLayerZ = 0.33, Scalar layerH = 0.27);
+	LayerLoops(Scalar firstLayerZ = 0.33, Scalar layerH = 0.27, Scalar layerW = 0.43);
 	layer_iterator begin();
 	const_layer_iterator begin() const;
 	layer_iterator end();

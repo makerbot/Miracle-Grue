@@ -31,7 +31,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
 
-	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH, slicerCfg.layerW);
 	segmenter.tablaturize(mesh);
 
 	Slicer slicer(slicerCfg, progress);
