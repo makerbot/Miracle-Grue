@@ -13,24 +13,27 @@
 #include <vector>
 
 #include "regioner.h"
+#include "loop_utils.h"
 
 using namespace mgl;
 using namespace std;
+using namespace libthing;
+
 
 Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
 		: Progressive(progress), regionerCfg(regionerConf) {
 	roofLengthCutOff = 0.5 * regionerCfg.layerW;
 }
 
-void Regioner::generateSkeleton(const LayerLoops& layerloops, 
-		RegionList& regionlist) {
+void Regioner::generateSkeleton(const LayerLoops& layerloops,
+								LayerMeasure &layerMeasure,
+								RegionList& regionlist) {
 	int sliceCount = initRegionList(layerloops, regionlist);
 
 
 	initProgress("rafts", regionerCfg.raftLayers + 2);
-	rafts(layerloops.front(), layerloops.layerMeasure, regionlist);
+	rafts(*(layerloops.begin()), layerMeasure, regionlist);
 
-	//this is to facilitate eventually operating on part of the layer list
 	RegionList::iterator firstModelRegion =
 		regionlist.begin() + regionerCfg.raftLayers;
 
@@ -39,7 +42,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		   firstModelRegion, regionlist.end());
 
 	initProgress("flat surfaces", sliceCount);
-	flatSurfaces(firstModelRegion, regionlist.end(), layerloops.grid);
+	flatSurfaces(regionlist.begin(), regionlist.end(), layerloops.grid);
 
 	initProgress("roofing", sliceCount);
 	roofing(firstModelRegion, regionlist.end(), layerloops.grid);
@@ -48,7 +51,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	flooring(firstModelRegion, regionlist.end(), layerloops.grid);
 
 	initProgress("infills", sliceCount);
-	infills(firstModelRegion, regionlist.end(),	layerloops.grid);
+	infills(regionlist.begin(), regionlist.end(),	layerloops.grid);
 }
 
 size_t Regioner::initRegionList(const LayerLoops& layerloops,
@@ -62,7 +65,7 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 					 LayerMeasure &layerMeasure,
 					 RegionList &regionlist) {
 	//make convex hull of the bottom layer
-	Loop convexLoop = createConvexLoop(bottomLayer);
+	Loop convexLoop = createConvexLoop(bottomLayer.readLoops());
 	tick();
 
 	SegmentTable outsetSegs;
@@ -99,12 +102,12 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	for (int raftnum = regionerCfg.raftLayers - 1; raftnum > 0; raftnum--) {
 		layer_measure_index_t raftIndex = layerMeasure.createAttributes();
 		LayerMeasure::LayerAttributes &raftAttr =
-			layerMeasure.getLayerAttributes(raft_index);
-		raftAttr.delta = (raftnum - 1) * regionerCfg.raftThickness;
-		raftAttr.thickness = regionerCfg.raftThickness;
+			layerMeasure.getLayerAttributes(raftIndex);
+		raftAttr.delta = (raftnum - 1) * regionerCfg.raftInterfaceThickness;
+		raftAttr.thickness = regionerCfg.raftInterfaceThickness;
 		raftAttr.base = baseIndex;
 
-		regionlist.push_front(LayerRegions());
+		regionlist.insert(regionlist.begin(), LayerRegions());
 		LayerRegions &raftRegions = regionlist.front();
 		raftRegions.supportLoops.push_back(raftLoop);
 		raftRegions.layerMeasureId = raftIndex;
@@ -113,13 +116,13 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	}		
 	
 	//add the actual regionlist for the base layer
-	regionlist.push_front(LayerRegions());
+	regionlist.insert(regionlist.begin(), LayerRegions());
 	LayerRegions &baseRegions = regionlist.front();
 	baseRegions.supportLoops.push_back(raftLoop);
 	baseRegions.layerMeasureId = baseIndex;
 
 	//make the first layer of the model relative to the last raft layer
-	layerMeasure.getAttributes(bottomLayer.getIndex()).base =
+	layerMeasure.getLayerAttributes(bottomLayer.getIndex()).base =
 		regionlist[regionerCfg.raftLayers - 1].layerMeasureId;
 
 	tick();
