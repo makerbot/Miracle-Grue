@@ -55,7 +55,8 @@ public:
 	Scalar gridSpacingMultiplier;	// interference between 2 grid lines 
 									//( 0 to 1, for adhesion)
 	unsigned int raftLayers; //< nb of raft layers
-	Scalar raftBaseThickness; //< thickness of each raft layer (mm)
+	Scalar raftBaseThickness; //< thickness of first raft layer (mm)
+	Scalar raftInterfaceThickness; //< thickness of other raft layers (mm)
 	Scalar raftOutset; //< How far to outset rafts (mm)
 };
 
@@ -77,8 +78,6 @@ public:
 	GridRanges solid;
 	GridRanges sparse;
 
-	GridRanges support;
-
 	layer_measure_index_t layerMeasureId;
 };
 
@@ -95,10 +94,15 @@ public:
 	Regioner(const RegionerConfig &regionerCfg, 
 			ProgressBar *progress = NULL);
 
-	void generateSkeleton(const LayerLoops& layerloops, RegionList &regions);
+	void generateSkeleton(const LayerLoops& layerloops, 
+						  LayerMeasure &layerMeasure, RegionList &regions);
 
 	size_t initRegionList(const LayerLoops& layerloops,
 						  RegionList &regionlist);
+
+	void rafts(const LayerLoops::Layer &bottomLayer,
+			   LayerMeasure &layerMeasure,
+			   RegionList &regionlist);
 
 	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
 			libthing::Insets &sliceInsets,
