@@ -21,7 +21,8 @@
 #include "abstractable.h"
 #include "regioner.h"
 
-using namespace mgl;
+namespace mgl {
+
 using namespace std;
 
 string Configuration::defaultFilename() {
@@ -34,7 +35,7 @@ string Configuration::defaultFilename() {
 		return string("miracle.config");
 }
 
-double mgl::doubleCheck(const Json::Value &value, const char *name) {
+double doubleCheck(const Json::Value &value, const char *name) {
 	if (value.isNull()) {
 		stringstream ss;
 		ss << "Missing required floating point field \"" <<
@@ -45,7 +46,16 @@ double mgl::doubleCheck(const Json::Value &value, const char *name) {
 	return value.asDouble();
 }
 
-unsigned int mgl::uintCheck(const Json::Value &value, const char *name) {
+double doubleCheck(const Json::Value &value, const char *name, 
+		const double defaultVal) {
+	if (value.isNull()) {
+		return defaultVal;
+	} else {
+		return doubleCheck(value, name);
+	}
+}
+
+unsigned int uintCheck(const Json::Value &value, const char *name) {
 	if (value.isNull()) {
 		stringstream ss;
 		ss << "Missing required unsigned integer field \"" << 
@@ -56,7 +66,16 @@ unsigned int mgl::uintCheck(const Json::Value &value, const char *name) {
 	return value.asUInt();
 }
 
-string mgl::pathCheck(const Json::Value &value, const char *name,
+unsigned int uintCheck(const Json::Value &value, const char *name, 
+		const unsigned int defaultVal) {
+	if (value.isNull()) {
+		return defaultVal;
+	} else {
+		return uintCheck(value, name);
+	}
+}
+
+string pathCheck(const Json::Value &value, const char *name,
 		const std::string &defaultval) {
 	if (value.isNull())
 		return defaultval;
@@ -64,7 +83,7 @@ string mgl::pathCheck(const Json::Value &value, const char *name,
 		return pathCheck(value, name);
 }
 
-string mgl::pathCheck(const Json::Value &value, const char *name) {
+string pathCheck(const Json::Value &value, const char *name) {
 	string result = stringCheck(value, name);
 	if (result.substr(0, 10) == "default://") {
 		MyComputer computer;
@@ -74,7 +93,7 @@ string mgl::pathCheck(const Json::Value &value, const char *name) {
 	return result;
 }
 
-string mgl::stringCheck(const Json::Value &value, const char *name) {
+string stringCheck(const Json::Value &value, const char *name) {
 	if (value.isNull()) {
 		stringstream ss;
 		ss << "Missing required string field \"" << 
@@ -85,7 +104,7 @@ string mgl::stringCheck(const Json::Value &value, const char *name) {
 	return value.asString();
 }
 
-bool mgl::boolCheck(const Json::Value &value, const char *name,
+bool boolCheck(const Json::Value &value, const char *name,
 		const bool defaultval) {
 	if (value.isNull())
 		return defaultval;
@@ -93,7 +112,7 @@ bool mgl::boolCheck(const Json::Value &value, const char *name,
 		return boolCheck(value, name);
 }
 
-bool mgl::boolCheck(const Json::Value &value, const char *name) {
+bool boolCheck(const Json::Value &value, const char *name) {
 	if (value.isNull()) {
 		stringstream ss;
 		ss << "Missing required string field \"" << 
@@ -178,14 +197,14 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 	}
 }
 
-void mgl::loadExtruderConfigFromFile(const Configuration& conf,
+void loadExtruderConfigFromFile(const Configuration& conf,
 		ExtruderConfig &extruderCfg) {
 	extruderCfg.defaultExtruder = 
 			uintCheck(conf.root["extruder"]["defaultExtruder"], 
 			"extruder.defaultExtruder");
 }
 
-void mgl::loadGCoderConfigFromFile(const Configuration& conf, 
+void loadGCoderConfigFromFile(const Configuration& conf, 
 		GCoderConfig &gcoderCfg) {
 
 	gcoderCfg.programName = stringCheck(conf.root["programName"], 
@@ -322,7 +341,7 @@ void mgl::loadGCoderConfigFromFile(const Configuration& conf,
 
 }
 
-void mgl::loadSlicerConfigFromFile(const Configuration &config, 
+void loadSlicerConfigFromFile(const Configuration &config, 
 		SlicerConfig &slicerCfg) {
 	//Relevant to slicer
 	slicerCfg.layerH = doubleCheck(config["slicer"]["layerH"], 
@@ -360,7 +379,7 @@ void mgl::loadSlicerConfigFromFile(const Configuration &config,
 			"slicer.writeDebugScadFiles", false);
 }
 
-void mgl::loadRegionerConfigFromFile(const Configuration& config, 
+void loadRegionerConfigFromFile(const Configuration& config, 
 		RegionerConfig& regionerCfg) {
 	//Relevant to regioner
 	regionerCfg.infillDensity = doubleCheck(config["regioner"]["infillDensity"], 
@@ -390,8 +409,19 @@ void mgl::loadRegionerConfigFromFile(const Configuration& config,
 	regionerCfg.writeDebugScadFiles = 
 			boolCheck(config["regioner"]["writeDebugScadFiles"], 
 			"regioner.writeDebugScadFiles", false);
+	//Rafting Configuration
+	regionerCfg.raftLayers = uintCheck(config["regioner"]["raftLayers"], 
+			"regioner.raftLayers", regionerCfg.raftLayers);
+	regionerCfg.raftBaseThickness = doubleCheck(
+			config["regioner"]["raftBaseThickness"], 
+			"regioner.raftBaseThickness", regionerCfg.raftBaseThickness);
+	regionerCfg.raftOutset = doubleCheck(
+			config["regioner"]["raftOutset"], 
+			"regioner.raftOutset", regionerCfg.raftOutset);
+	
 }
 
 
+}
 
 

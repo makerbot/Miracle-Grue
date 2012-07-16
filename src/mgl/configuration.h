@@ -35,7 +35,11 @@ class ConfigException : public Exception {public: ConfigException(const char *ms
 
 // checks that the value exist before returning it
 double doubleCheck(const Json::Value &value, const char *name);
+double doubleCheck(const Json::Value &value, const char *name, 
+		const double defaultVal);
 unsigned int uintCheck(const Json::Value &value, const char *name);
+unsigned int uintCheck(const Json::Value &value, const char *name, 
+		const unsigned int defaultVal);
 std::string stringCheck(const Json::Value &value, const char *name);
 std::string pathCheck(const Json::Value &value, const char *name,
 					  const std::string &defaultval);

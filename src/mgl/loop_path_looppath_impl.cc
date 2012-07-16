@@ -14,6 +14,8 @@ LoopPath::LoopPath(const Loop& p, Loop::cw_iterator s,
 LoopPath::LoopPath(const LoopPath& orig) 
 		: parent(orig.parent), start(orig.start), rstart(orig.rstart) {}
 
+
+
 }
 
 

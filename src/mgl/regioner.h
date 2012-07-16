@@ -34,7 +34,10 @@ public:
 			roofLayerCount(0),
 			floorLayerCount(0),
 			// infillSkipCount(2),
-			gridSpacingMultiplier(0.95){}
+			gridSpacingMultiplier(0.95), 
+			raftLayers(0), 
+			raftBaseThickness(0.5), 
+			raftOutset(6) {}
 	// These are relevant to regioner
 	Scalar tubeSpacing; //< distance in between infill (mm)
 	Scalar angle; //< angle of infill
@@ -51,6 +54,9 @@ public:
 	Scalar infillDensity; // the density of the infill patterns (0 to 1)
 	Scalar gridSpacingMultiplier;	// interference between 2 grid lines 
 									//( 0 to 1, for adhesion)
+	unsigned int raftLayers; //< nb of raft layers
+	Scalar raftBaseThickness; //< thickness of each raft layer (mm)
+	Scalar raftOutset; //< How far to outset rafts (mm)
 };
 
 class LayerRegions {
