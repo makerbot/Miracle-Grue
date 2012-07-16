@@ -536,55 +536,35 @@ public:
 	LoopPath(const Loop& p, Loop::cw_iterator s, Loop::ccw_iterator r);
 	LoopPath(const LoopPath& orig);
 	
-	LoopPath& operator=(const LoopPath& orig) {
-		if(this != &orig) {
-			parent = orig.parent;
-			start = orig.start;
-			rstart = orig.rstart;
-		}
-		return *this;
-	}
+	LoopPath& operator=(const LoopPath& orig);
 
 
 	/*! Iterator after the end of the list. */
-	iterator end() {
-		return iterator(parent->clockwiseEnd(),
-						*this); }
-	const_iterator end() const {
-		return const_iterator(parent->clockwiseEnd(),
-						*this); }
+	iterator end();
+	const_iterator end() const;
 
 	/*! Reverse iterator after the end of the list. */
-	reverse_iterator rend() {
-		return reverse_iterator(parent->counterClockwiseEnd(),
-								*this); }
-	const_reverse_iterator rend() const {
-		return const_reverse_iterator(
-				parent->counterClockwiseEnd(),
-								*this); }
+	reverse_iterator rend();
+	const_reverse_iterator rend() const;
 	/*! Get an iterator from the start point
 	 *  Will proceed clockwise and end at the same point
 	 */
-	iterator fromStart() { return iterator(start, *this); };
-	const_iterator fromStart() const { 
-		return const_iterator(iterator(start, *this)); 
-	}
+	iterator fromStart();
+	const_iterator fromStart() const;
 
 	/*! Get an iterator from the start point
 	 *  Will proceed counter clockwise and end at the same point
 	 */
-	reverse_iterator fromEnd() { return reverse_iterator(rstart, *this); }
-	const_reverse_iterator fromEnd() const { 
-		return const_reverse_iterator(reverse_iterator(rstart, *this)); 
-	}
+	reverse_iterator fromEnd();
+	const_reverse_iterator fromEnd() const;
 
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
 	 *  /return An iterator to retrieve all suspended points, currently
 	            retrieves all points
 	 */
-	iterator getSuspendedPoints() { return fromStart(); } //stub
-	const_iterator getSuspendedPoints() const { return fromStart(); } //stub
+	iterator getSuspendedPoints(); //stub
+	const_iterator getSuspendedPoints() const; //stub
 	
 	bool empty() const { return parent->empty(); }
 
