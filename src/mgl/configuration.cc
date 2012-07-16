@@ -391,6 +391,10 @@ void loadRegionerConfigFromFile(const Configuration& config,
 	regionerCfg.raftBaseThickness = doubleCheck(
 			config["regioner"]["raftBaseThickness"], 
 			"regioner.raftBaseThickness", regionerCfg.raftBaseThickness);
+	regionerCfg.raftInterfaceThickness = doubleCheck(
+			config["regioner"]["raftInterfaceThickness"], 
+			"regioner.raftInterfaceThickness",
+			regionerCfg.raftInterfaceThickness);
 	regionerCfg.raftOutset = doubleCheck(
 			config["regioner"]["raftOutset"], 
 			"regioner.raftOutset", regionerCfg.raftOutset);
