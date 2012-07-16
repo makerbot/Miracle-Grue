@@ -616,6 +616,15 @@ void rangeTableUnion(const ScalarRangeTable &a,
 	size_t lineCount = a.size();
 	// cout << " rangeTableUnion " << lineCount << " vs " << b.size() << endl;
 
+	if (a.size() == 0) {
+		result = b;
+		return;
+	}
+	else if (b.size() == 0) {
+		result = a;
+		return;
+	}
+
 	assert(lineCount == b.size());
 	result.resize(lineCount);
 
