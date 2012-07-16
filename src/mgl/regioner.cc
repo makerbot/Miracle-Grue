@@ -89,7 +89,7 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 			outsetSegs.back().begin(); 
 		iter != outsetSegs.back().end(); 
 		++iter) {
-		raftLoop.insertPointBefore(iter->b, convexLoop.clockwiseEnd());
+		raftLoop.insertPointBefore(iter->b, raftLoop.clockwiseEnd());
 	}
 	tick();
 
