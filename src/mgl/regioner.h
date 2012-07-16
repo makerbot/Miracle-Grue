@@ -143,8 +143,11 @@ public:
 				 const Grid &grid);
 
 	void gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice, 
-			const Grid& grid, 
-			GridRanges& surface);
+							const Grid& grid, 
+							GridRanges& surface);
+	void gridRangesForSlice(const LoopList& innerMostLoops, 
+							const Grid& grid, 
+							GridRanges& surface);
 
 private:
 

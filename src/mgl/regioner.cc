@@ -68,17 +68,20 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	Loop convexLoop = createConvexLoop(bottomLayer.readLoops());
 	tick();
 
-	SegmentTable outsetSegs;
-	outsetSegs.push_back(std::vector<LineSegment2>());
+	SegmentTable convexSegs;
+	convexSegs.push_back(std::vector<LineSegment2>());
 	
 	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(); 
 		iter != convexLoop.clockwiseEnd(); ++iter) {
 
-		outsetSegs.back().push_back(convexLoop.segmentAfterPoint(iter));
+		convexSegs.back().push_back(convexLoop.segmentAfterPoint(iter));
 	}
 
+	SegmentTable outsetSegs;
+	outsetSegs.push_back(std::vector<LineSegment2>());
+
 	//outset the convex hull by the configured distance
-	ClipperInsetter().inset(outsetSegs, -regionerCfg.raftOutset, outsetSegs);
+	ClipperInsetter().inset(convexSegs, -regionerCfg.raftOutset, outsetSegs);
 	tick();
 
 	Loop raftLoop;
@@ -390,6 +393,11 @@ void Regioner::gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice,
 	grid.createGridRanges(innerMostLoops, surface);
 }
 
+void Regioner::gridRangesForSlice(const LoopList& innerMostLoops,
+		const Grid& grid,
+		GridRanges & surface) {
+	grid.createGridRanges(innerMostLoops, surface);
+}
 
 
 
