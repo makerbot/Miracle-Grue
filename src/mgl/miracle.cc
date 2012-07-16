@@ -48,7 +48,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);
 	//new interface
-	regioner.generateSkeleton(layerloops, regions);
+	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions);
 
 	Pather pather(progress);
 
