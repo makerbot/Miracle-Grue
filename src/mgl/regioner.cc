@@ -73,7 +73,8 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 
 		outsetSegs.back().push_back(convexLoop.segmentAfterPoint(iter));
 	}
-	
+
+	//outset the convex hull by the configured distance
 	ClipperInsetter().inset(outsetSegs, -regionerCfg.raftOutset, outsetSegs);
 	tick();
 
@@ -86,8 +87,42 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	}
 	tick();
 
-	
+	//create a first layer measure with absolute positioning
+    layer_measure_index_t baseIndex = layerMeasure.createAttributes();
+	LayerMeasure::LayerAttributes &baseAttr =
+		layerMeasure.getLayerAttributes(baseIndex);
+	baseAttr.delta = 0;
+	baseAttr.thickness = regionerCfg.raftBaseThickness;
+	baseAttr.base = -1;
 
+	//add interface raft layers in reverse order to the beginning of the list
+	for (int raftnum = regionerCfg.raftLayers - 1; raftnum > 0; raftnum--) {
+		layer_measure_index_t raftIndex = layerMeasure.createAttributes();
+		LayerMeasure::LayerAttributes &raftAttr =
+			layerMeasure.getLayerAttributes(raft_index);
+		raftAttr.delta = (raftnum - 1) * regionerCfg.raftThickness;
+		raftAttr.thickness = regionerCfg.raftThickness;
+		raftAttr.base = baseIndex;
+
+		regionlist.push_front(LayerRegions());
+		LayerRegions &raftRegions = regionlist.front();
+		raftRegions.supportLoops.push_back(raftLoop);
+		raftRegions.layerMeasureId = raftIndex;
+
+		tick();
+	}		
+	
+	//add the actual regionlist for the base layer
+	regionlist.push_front(LayerRegions());
+	LayerRegions &baseRegions = regionlist.front();
+	baseRegions.supportLoops.push_back(raftLoop);
+	baseRegions.layerMeasureId = baseIndex;
+
+	//make the first layer of the model relative to the last raft layer
+	layerMeasure.getAttributes(bottomLayer.getIndex()).base =
+		regionlist[regionerCfg.raftLayers - 1].layerMeasureId;
+
+	tick();
 }
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
@@ -203,6 +238,7 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 		const std::list<LoopList>& currentInsets = regions->insetLoops;
 		GridRanges currentSurface;
 		gridRangesForSlice(currentInsets, grid, regions->flatSurface);
+		gridRangesForSlice(regions->supportLoops, grid, regions->support);
 	}
 }
 
@@ -325,11 +361,16 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
 
 		// TODO: move me to the slicer
+		GridRanges sparseSupport;
 		GridRanges sparseInfill;
+		GridRanges all;
 		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
-		grid.subSample(surface, infillSkipCount, sparseInfill);
 
-		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
+		grid.subSample(surface, infillSkipCount, sparseInfill);
+		grid.subSample(current->support, infillSkipCount, sparseSupport);
+
+		grid.gridRangeUnion(current->solid, sparseInfill, all);
+		grid.gridRangeUnion(current->support, all, current->infill);
 
 		//TODO: this doesn't seem right, but its what it was doing before I
 		//converted to iterators
