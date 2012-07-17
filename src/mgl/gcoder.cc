@@ -201,12 +201,12 @@ void GCoder::writeInsets(std::ostream& ss,
 			}
 		}
 	} catch (GcoderException& mixup) {
-		Log::info() << "ERROR writing insets in slice " <<
-				sliceId << " for extruder " <<
+		stringstream errormsg;
+		errormsg << "\nERROR writing insets in slice " << 
+				sliceId << " for extruder " << 
 				extruder.id << " : " << mixup.error << endl;
-		Log::severe() << "ERROR writing insets in slice " <<
-				sliceId << " for extruder " <<
-				extruder.id << " : " << mixup.error << endl;
+		Log::info() << errormsg.str();
+		Log::severe() << errormsg.str();
 	} 
 }
 
@@ -226,12 +226,12 @@ void GCoder::writeOutlines(std::ostream& ss,
 			writePath(ss, z, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
-		Log::info() << "ERROR writing outlines in slice " <<
-				sliceId << " for extruder " <<
+		stringstream errormsg;
+		errormsg << "\nERROR writing outlines in slice " << 
+				sliceId << " for extruder " << 
 				extruder.id << " : " << mixup.error << endl;
-		Log::severe() << "ERROR writing outlines in slice " <<
-				sliceId << " for extruder " <<
-				extruder.id << " : " << mixup.error << endl;
+		Log::info() << errormsg.str();
+		Log::severe() << errormsg.str();
 	}
 }
 
