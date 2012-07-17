@@ -67,6 +67,7 @@ public:
 			ExtruderLayer(size_t exId = 0) : extruderId(exId) {}
 			InsetList insetPaths;
 			InfillList infillPaths;
+			InfillList supportPaths;
 			OutlineList outlinePaths;
 			size_t extruderId;
 		};
@@ -147,8 +148,9 @@ public:
 
 
 	void generatePaths(const ExtruderConfig &extruderCfg,
-					   const LayerLoops &layerloops,
 					   const RegionList &skeleton,
+					   const LayerMeasure &layerMeasure,
+					   const Grid &grid,
 					   LayerPaths &slices,
 					   int sfirstSliceIdx=-1,
 					   int slastSliceIdx=-1);

@@ -179,6 +179,32 @@ void GCoder::writeInfills(std::ostream& ss,
 	}
 }
 
+void GCoder::writeSupport(std::ostream &ss, 
+						  Scalar z,
+						  size_t sliceId,
+						  const Extruder &extruder,
+						  const LayerPaths::Layer::ExtruderLayer& paths) {
+	try {
+		ss << "(support: "  << paths.supportPaths.size() << ")"<< endl;
+		Extrusion extrusion;
+		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		for(LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter = 
+				paths.supportPaths.begin(); 
+				iter != paths.supportPaths.end(); 
+				++iter){
+			writePath(ss, z, extruder, extrusion, *iter);
+		}
+	} catch (GcoderException& mixup) {
+		Log::info() << "ERROR writing support in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+		Log::severe() << "ERROR writing support in slice " <<
+				sliceId << " for extruder " <<
+				extruder.id << " : " << mixup.error << endl;
+	}
+}
+						  
+
 void GCoder::writeInsets(std::ostream& ss, 
 		Scalar z, 
 		size_t sliceId, 
@@ -448,7 +474,11 @@ void GCoder::writeSlice(std::ostream& ss,
 			writeInfills(ss, currentLayer.layerZ, layerSequence, 
 					currentExtruder, *it);
 		}
-	}
+		if(gcoderCfg.doSupport) {
+			writeSupport(ss, currentLayer.layerZ, layerSequence, 
+						 currentExtruder, *it);
+		}
+   	}
 }
 
 Scalar Extrusion::crossSectionArea(Scalar height) const {

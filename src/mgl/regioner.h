@@ -62,6 +62,7 @@ public:
 
 class LayerRegions {
 public:
+	LoopList outlines;
 	std::list<LoopList> insetLoops;
 	LoopList supportLoops;
 	LoopList interiorLoops;

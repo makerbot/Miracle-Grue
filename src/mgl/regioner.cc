@@ -230,6 +230,8 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 
 		insetsForSlice(currentOutlines, region->insetLoops, NULL);
 
+		region->outlines = currentOutlines;
+
 		++outline;
 		++region;
 	}
@@ -244,7 +246,8 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 		const std::list<LoopList>& currentInsets = regions->insetLoops;
 		GridRanges currentSurface;
 		gridRangesForSlice(currentInsets, grid, regions->flatSurface);
-		gridRangesForSlice(regions->supportLoops, grid, regions->support);
+		gridRangesForSlice(regions->supportLoops, grid,
+						   regions->supportSurface);
 	}
 }
 
@@ -373,11 +376,11 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
-		grid.subSample(current->support, infillSkipCount, sparseSupport);
+		grid.subSample(current->supportSurface, infillSkipCount,
+					   current->support);
 
 		grid.gridRangeUnion(current->solid, sparseInfill, all);
-		grid.gridRangeUnion(current->support, all, current->infill);
-
+		
 		//TODO: this doesn't seem right, but its what it was doing before I
 		//converted to iterators
 		current->sparse = current->infill;

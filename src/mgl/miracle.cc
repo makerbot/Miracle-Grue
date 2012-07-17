@@ -53,7 +53,8 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Pather pather(progress);
 
 	LayerPaths layers;
-	pather.generatePaths(extruderCfg, layerloops, regions, layers);
+	pather.generatePaths(extruderCfg, regions,
+						 layerloops.layerMeasure, layerloops.grid, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);
