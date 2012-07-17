@@ -332,6 +332,8 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 			"gcoder.infillFirst");
 	gcoderCfg.doInfills = boolCheck(conf.root["gcoder"]["infills"], 
 			"gcoder.infills");
+	gcoderCfg.doSupport = boolCheck(conf.root["gcoder"]["support"],
+									"gcoder.support");
 	gcoderCfg.doPrintLayerMessages = boolCheck(
 			conf.root["gcoder"]["printLayerMessages"],
 			"gcoder.printLayerMessages", false);
