@@ -5,7 +5,7 @@
 
 namespace mgl {
 
-Loop::PointNormal::PointNormal(const PointType& point)
+Loop::PointNormal::PointNormal(const PointTypeSuspended& point)
 		: point(point), normalDirty(true), myIteratorPointer(NULL) {}
 
 Loop::PointNormal::PointNormal()
@@ -37,7 +37,7 @@ Loop::PointNormal::operator PointType() const {
 	return point;
 }
 
-const PointType& Loop::PointNormal::getPoint() const {
+const PointTypeSuspended& Loop::PointNormal::getPoint() const {
 	return point;
 }
 
@@ -47,7 +47,7 @@ const PointType& Loop::PointNormal::getNormal() const {
 	return normal;
 }
 
-void Loop::PointNormal::setPoint(const PointType& npoint) {
+void Loop::PointNormal::setPoint(const PointTypeSuspended& npoint) {
 	point = npoint;
 	normalDirty = true;
 	if(myIteratorPointer){
@@ -212,7 +212,7 @@ Loop::entry_iterator Loop::entryBegin() const  {
 			pointNormals.begin(), pointNormals.end());
 }
 
-PointType Loop::getExitPoint(entry_iterator entry) const {
+const Loop::PointNormal& Loop::getExitPoint(entry_iterator entry) const {
 	return *entry;
 }
 

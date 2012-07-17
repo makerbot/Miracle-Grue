@@ -42,11 +42,11 @@ OpenPath::const_reverse_iterator OpenPath::rend() const {
 	return const_reverse_iterator(points.rend());
 }
 
-void OpenPath::appendPoint(const PointType& point) {
+void OpenPath::appendPoint(const PointTypeSuspended& point) {
 	points.insert(points.end(), point);
 }
 
-void OpenPath::prependPoint(const PointType& point) {
+void OpenPath::prependPoint(const PointTypeSuspended& point) {
 	points.insert(points.begin(), point);
 }
 
@@ -60,7 +60,7 @@ OpenPath::const_entry_iterator OpenPath::getEntryPoints() const {
 	return const_entry_iterator(endpoints.begin());
 }
 
-PointType& OpenPath::getExitPoint(PointType entry) {
+PointTypeSuspended& OpenPath::getExitPoint(const PointTypeSuspended& entry) {
 	setEndPoints();
 	if (endpoints[0] == entry) {
 		return endpoints[1];
@@ -73,7 +73,8 @@ PointType& OpenPath::getExitPoint(PointType entry) {
 	}
 }
 
-const PointType& OpenPath::getExitPoint(PointType entry) const {
+const PointTypeSuspended& OpenPath::getExitPoint(
+		const PointTypeSuspended& entry) const {
 	setEndPoints();
 	if (endpoints[0] == entry) {
 		return endpoints[1];

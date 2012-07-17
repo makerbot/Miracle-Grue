@@ -255,9 +255,10 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 			}
 		}
 
-
+		//in the event of a boundary crossing, interrupt current path
 		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
 							outlines)) {
+			//but save it if it's not just a single point
 			if(currentPath.size() > 1)
 				paths.push_back(currentPath);
 			currentPath.clear();
@@ -269,7 +270,9 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 		endpoint = points_remaining[closest];
 		points_remaining.erase(closest);
 	}
+	//last path had no boundary crossings,
 	if(currentPath.size() > 1) 
+		//so we save it if it's a real extrusion
 		paths.push_back(currentPath);
 
 }

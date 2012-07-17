@@ -18,11 +18,11 @@
 #include "libthing/LineSegment2.h"
 #include "mgl.h"
 
+#include "loop_path_point_type.h"
+
 namespace mgl {
 
-typedef libthing::Vector2 PointType;
-
-typedef std::vector<PointType> PointList;
+typedef std::vector<PointTypeSuspended> PointList;
 typedef std::vector<PointType> VectorList;
 
 /*!
@@ -114,7 +114,7 @@ public:
 	/*! Add a single point to the end of a path. This copies the point
 	 *  /param point value to be appended
 	 */
-	void appendPoint(const PointType &point);
+	void appendPoint(const PointTypeSuspended &point);
 
 	/*! Add points to the beginning of a path. This makes coppies of the points.
 	 *  /param first iterator to the first point to append
@@ -129,7 +129,7 @@ public:
 	/*! Add a single point to the beginning of a path. This copies the point
 	 *  /param point value to be appended
 	 */
-	void prependPoint(const PointType &point);
+	void prependPoint(const PointTypeSuspended &point);
 
 	/*! Retrieve the LineSegment2 in the path that starts with a provided point.
 	 *  This creates a new LineSegment2 value
@@ -156,8 +156,8 @@ public:
 	 */
 	entry_iterator getEntryPoints();
 	const_entry_iterator getEntryPoints() const;
-	PointType& getExitPoint(PointType entry);
-	const PointType& getExitPoint(PointType entry) const;
+	PointTypeSuspended& getExitPoint(const PointTypeSuspended& entry);
+	const PointTypeSuspended& getExitPoint(const PointTypeSuspended& entry) const;
 
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
@@ -292,22 +292,22 @@ public:
 	public:
 		
 		typedef iterator_gen<PointNormalList::iterator> myIteratorType;
-		PointNormal(const PointType& point);
+		PointNormal(const PointTypeSuspended& point);
 		PointNormal();
 		PointNormal(const PointNormal& orig);
 		PointNormal& operator=(const PointNormal& orig);
 		~PointNormal();
 		operator PointType() const;
-		const PointType& getPoint() const;
+		const PointTypeSuspended& getPoint() const;
 		const PointType& getNormal() const;
-		void setPoint(const PointType& npoint);
+		void setPoint(const PointTypeSuspended& npoint);
 		void setIterator(const myIteratorType& iter);
 		
 	private:
 		void recalculateNormal() const;
 		void recalculateNormal(const PointNormal& A, 
 				const PointNormal& C) const;
-		PointType point;
+		PointTypeSuspended point;
 		//true when need to recalculate normal
 		mutable bool normalDirty;
 		mutable PointType normal;
@@ -334,13 +334,13 @@ public:
 	 *  /return iterator for the location of the new point
 	 */
 	template <typename ITER>
-	cw_iterator insertPointAfter(const PointType &point, ITER after){
+	cw_iterator insertPointAfter(const PointTypeSuspended &point, ITER after){
 		typename ITER::iterator afterbase = &(++after);
 		afterbase = pointNormals.insert(afterbase, point);
 		return cw_iterator(afterbase, pointNormals.begin(), pointNormals.end());
 	}
 	template <typename ITER>
-	cw_iterator insertPointBefore(const PointType &point, ITER before){
+	cw_iterator insertPointBefore(const PointTypeSuspended &point, ITER before){
 		typename ITER::iterator beforebase = &before;
 		beforebase = pointNormals.insert(beforebase, point);
 		return cw_iterator(beforebase, pointNormals.begin(), pointNormals.end());
@@ -455,7 +455,7 @@ public:
 	/*! Get an exit point for a given entry point
 	 *  /return PointType representing the "end".
 	 */
-	PointType getExitPoint(entry_iterator entry) const;
+	const PointNormal& getExitPoint(entry_iterator entry) const;
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
 	 *  /return An iterator to retrieve all suspended points, currently
@@ -508,8 +508,8 @@ class LoopPath {
 		template <typename OTHERBASE>
 		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig);
 
-		const PointType& operator*();
-		const PointType* operator->();
+		const PointTypeSuspended& operator*();
+		const PointTypeSuspended* operator->();
 		iterator operator&() const;
 		// ++iterator
 		iterator_gen<BASE>& operator++();

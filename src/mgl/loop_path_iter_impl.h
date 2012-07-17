@@ -264,12 +264,12 @@ LoopPath::iterator_gen<BASE>::iterator_gen(const iterator_gen<OTHERBASE>& orig) 
 		hasLooped(orig.iterator_gen<OTHERBASE>::hasLooped) {}
 
 template <typename BASE>
-const PointType& LoopPath::iterator_gen<BASE>::operator *() {
+const PointTypeSuspended& LoopPath::iterator_gen<BASE>::operator *() {
 	return base->getPoint();
 }
 
 template <typename BASE>
-const PointType* LoopPath::iterator_gen<BASE>::operator ->() {
+const PointTypeSuspended* LoopPath::iterator_gen<BASE>::operator ->() {
 	return &(**this);
 }
 
