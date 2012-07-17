@@ -89,7 +89,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		infills(layerRegions->support, grid, layerRegions->supportLoops,
 				direction, extruderlayer.supportPaths);
 
-		++layerRegions;
+		++currentSlice;
 	}
 }
 
