@@ -58,6 +58,20 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 							  RegionList &regionlist) {
 	//TODO: take into account raft layers in the number of regions
 	regionlist.resize(layerloops.size());
+
+	//to start, copy the outline loops and layer index to their respective
+	//regions
+	LayerLoops::const_layer_iterator layer = layerloops.begin();
+	RegionList::iterator regions = regionlist.begin();
+
+	while (layer != layerloops.end() && regions != regionlist.end()) {
+		regions->outlines = layer->readLoops();
+		regions->layerMeasureId = layer->getIndex();
+
+		++layer;
+		++regions;
+	}
+
 	return regionlist.size();
 }
 
@@ -229,8 +243,6 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		const LoopList& currentOutlines = outline->readLoops();
 
 		insetsForSlice(currentOutlines, region->insetLoops, NULL);
-
-		region->outlines = currentOutlines;
 
 		++outline;
 		++region;
