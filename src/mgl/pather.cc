@@ -55,8 +55,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 	{
 		tick();
 
-		if(loops->getIndex() < firstSliceIdx) continue;
-		if(loops->getIndex() > lastSliceIdx) break;
+		if(int(loops->getIndex()) < int(firstSliceIdx)) continue;
+		if(int(loops->getIndex()) > int(lastSliceIdx)) break;
 
 		direction = !direction;
 		const LoopList& outline_loops = loops->readLoops();

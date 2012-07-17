@@ -325,7 +325,7 @@ void GCoder::calcInSetExtrusion(unsigned int extruderId,
 void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths, 
 		unsigned int extruderId, 
 		LayerPaths::const_layer_iterator layerId, 
-		LayerPaths::Layer::ExtruderLayer::const_inset_iterator insetId, 
+		LayerPaths::Layer::ExtruderLayer::const_inset_iterator, // insetId, 
 		Extrusion& extrusionParams) const {
 	string profileName = layerId == layerpaths.begin() ? 
 			gcoderCfg.extruders[extruderId].firstLayerExtrusionProfile :
@@ -338,6 +338,7 @@ void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths,
 //				profileName  << "</name>" << endl;
 		GcoderException mixup((string("Failed to find extrusion profile ") + 
 				profileName).c_str());
+		throw mixup;
 	} else {
 		extrusionParams = it->second;
 	}
@@ -357,7 +358,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
 			layerpaths.end());
 }
 void GCoder::writeGcodeFile(LayerPaths& layerpaths, 
-		const LayerMeasure& layerMeasure, 
+		const LayerMeasure&, // layerMeasure, 
 		std::ostream& gout, 
 		const std::string& title, 
 		LayerPaths::layer_iterator begin, 

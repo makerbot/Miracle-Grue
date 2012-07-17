@@ -27,6 +27,7 @@ Loop::PointNormal& Loop::PointNormal::operator =(const PointNormal& orig) {
 	delete myIteratorPointer;
 	if (orig.myIteratorPointer)
 		myIteratorPointer = new myIteratorType(*orig.myIteratorPointer);
+	return *this;
 }
 
 Loop::PointNormal::~PointNormal() {

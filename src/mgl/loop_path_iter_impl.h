@@ -117,6 +117,7 @@ Loop::iterator_gen<BASE>& Loop::iterator_gen<BASE>::operator =(
 	base = orig.base;
 	begin = orig.begin;
 	end = orig.end;
+	return *this;
 }
 
 template <typename BASE>
@@ -255,7 +256,7 @@ Loop::iterator_finite_gen<BASE> Loop::iterator_finite_gen<BASE>::operator --(int
 
 template <typename BASE>
 LoopPath::iterator_gen<BASE>::iterator_gen(const BASE& i, const LoopPath& p) : 
-		base(i), parent(p), hasLooped(false) {}
+		base(i), hasLooped(false), parent(p) {}
 
 template <typename BASE> template <typename OTHERBASE>
 LoopPath::iterator_gen<BASE>::iterator_gen(const iterator_gen<OTHERBASE>& orig) : 

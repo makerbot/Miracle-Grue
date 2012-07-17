@@ -21,10 +21,10 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		const char *modelFile,
 		const char *, // scadFileStr,
 		ostream& gcodeFile,
-		int firstSliceIdx,
-		int lastSliceIdx,
+		int, // firstSliceIdx,
+		int, // lastSliceIdx,
 		RegionList &regions,
-		std::vector< SliceData > &slices,
+		std::vector< SliceData >&, // slices,
 		ProgressBar *progress) {
 
 	Meshy mesh;

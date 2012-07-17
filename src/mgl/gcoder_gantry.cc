@@ -94,7 +94,7 @@ void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
 }
 Scalar Gantry::volumetricE(	const Extruder &extruder,
 		const Extrusion &extrusion,
-		Scalar vx, Scalar vy, Scalar vz ) const {
+		Scalar vx, Scalar vy, Scalar /*vz*/ ) const {
 	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
 	//segments get extruded
 	LineSegment2 seg(Vector2(get_x(), get_y()), Vector2(vx, vy));

@@ -256,12 +256,12 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		//find the bounds we will be combinging regions across
 		RegionList::iterator firstFloor = current;
-		for (int i = 0; i < regionerCfg.floorLayerCount &&
+		for (unsigned int i = 0; i < regionerCfg.floorLayerCount &&
    				        firstFloor != regionsBegin; ++i)
 			--firstFloor;
 
 		RegionList::iterator lastRoof = current;
-		for (int i = 0; i < regionerCfg.roofLayerCount &&
+		for (unsigned int i = 0; i < regionerCfg.roofLayerCount &&
 				        lastRoof != regionsEnd - 1; ++i)
 			++lastRoof;
 
