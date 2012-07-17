@@ -153,81 +153,54 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
 	}
 }
 
-
-void GCoder::writeInfills(std::ostream& ss, 
-		Scalar z, 
-		size_t sliceId, 
-		const Extruder& extruder,  
-		const LayerPaths::Layer::ExtruderLayer& paths) {
-	try {
-		ss << "(infills: "  << paths.infillPaths.size() << ")"<< endl;
-		Extrusion extrusion;
-		calcInfillExtrusion(extruder.id, sliceId, extrusion);
-		for(LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter = 
-				paths.infillPaths.begin(); 
-				iter != paths.infillPaths.end(); 
-				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
-		}
-	} catch (GcoderException& mixup) {
-		stringstream errormsg;
-		errormsg << "\nERROR writing infills in slice " << 
-				sliceId << " for extruder " << 
-				extruder.id << " : " << mixup.error << endl;
-		Log::info() << errormsg.str();
-		Log::severe() << errormsg.str();
-	}
-}
-
-void GCoder::writeInsets(std::ostream& ss, 
+void GCoder::writePathtype(std::ostream& ss, 
 		Scalar z, 
 		size_t sliceId, 
 		const Extruder& extruder, 
-		const LayerPaths& layerpaths, 
-		LayerPaths::layer_iterator layerId, 
-		const LayerPaths::Layer::ExtruderLayer& paths) {
+		const LayerPaths::Layer::ExtruderLayer& paths, 
+		PATHTYPE type) {
+	string writetype;
 	try {
-		ss << "(insets: "  << paths.insetPaths.size() << ")"<< endl;
 		Extrusion extrusion;
-		for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator i = 
-				paths.insetPaths.begin(); 
-				i != paths.insetPaths.end(); 
-				++i){
-			calcInSetExtrusion(layerpaths, extruder.id, layerId, i, 
-					extrusion);
-			for (LoopPathList::const_iterator j = i->begin();
-				 j != i->end(); ++j) {
-				writePath(ss, z, extruder, extrusion, *j);
+		switch(type) {
+		case PATH_INFILL:
+			writetype = "infills";
+			ss << "(" << writetype << " : " << paths.infillPaths.size() << 
+				")" << endl;
+			calcInfillExtrusion(extruder.id, sliceId, extrusion);
+			writePaths(ss, z, extruder, extrusion, paths.infillPaths);
+			break;
+		case PATH_INSET: {
+			size_t insetid = 0;
+			writetype = "insets";
+			ss << "(" << writetype << " : " << paths.insetPaths.size() << 
+				")" << endl;
+			for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator iter = 
+					paths.insetPaths.begin(); 
+					iter != paths.insetPaths.end(); 
+					++iter, ++insetid){
+				ss << "(inset " << insetid << " of " 
+						<< paths.insetPaths.size() << ")" << endl;
+				calcInSetExtrusion(extruder.id, sliceId, insetid, 
+						paths.insetPaths.size(), extrusion);
+				writePaths(ss, z, extruder, extrusion, *iter);
 			}
+			break;
+		}
+		case PATH_OUTLINE:
+			writetype = "outlines";
+			ss << "(" << writetype << " : " << paths.insetPaths.size() << 
+				")" << endl;
+			calcInfillExtrusion(extruder.id, sliceId, extrusion);
+			writePaths(ss, z, extruder, extrusion, paths.outlinePaths);
+			break;
+		case PATH_INVALID:
+			throw GcoderException("Attempted to write invalid path type");
+			break;
 		}
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
-		errormsg << "\nERROR writing insets in slice " << 
-				sliceId << " for extruder " << 
-				extruder.id << " : " << mixup.error << endl;
-		Log::info() << errormsg.str();
-		Log::severe() << errormsg.str();
-	} 
-}
-
-void GCoder::writeOutlines(std::ostream& ss, 
-		Scalar z, 
-		size_t sliceId, 
-		const Extruder& extruder,  
-		const LayerPaths::Layer::ExtruderLayer& paths) {
-	try {
-		ss << "(outlines: "  << paths.outlinePaths.size() << ")"<< endl;
-		Extrusion extrusion;
-		calcInfillExtrusion(extruder.id, sliceId, extrusion);
-		for(LayerPaths::Layer::ExtruderLayer::const_outline_iterator iter = 
-				paths.outlinePaths.begin(); 
-				iter != paths.outlinePaths.end(); 
-				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
-		}
-	} catch (GcoderException& mixup) {
-		stringstream errormsg;
-		errormsg << "\nERROR writing outlines in slice " << 
+		errormsg << "\nERROR writing " << writetype << " in slice " << 
 				sliceId << " for extruder " << 
 				extruder.id << " : " << mixup.error << endl;
 		Log::info() << errormsg.str();
@@ -433,20 +406,20 @@ void GCoder::writeSlice(std::ostream& ss,
 					" : " << mixup.error << endl;
 		}
 		if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, layerSequence, 
-					currentExtruder, *it);
+			writePathtype(ss, currentLayer.layerZ, layerSequence, 
+					currentExtruder, *it, PATH_INFILL);
 		}
 		if(gcoderCfg.doOutlines) {
-			writeOutlines(ss, currentLayer.layerZ, layerSequence, 
-					currentExtruder, *it);
+			writePathtype(ss, currentLayer.layerZ, layerSequence, 
+					currentExtruder, *it, PATH_OUTLINE);
 		}
 		if(gcoderCfg.doInsets) {
-			writeInsets(ss, currentLayer.layerZ, layerSequence, 
-					currentExtruder, layerpaths, layerIter, *it);			
+			writePathtype(ss, currentLayer.layerZ, layerSequence, 
+					currentExtruder, *it, PATH_INSET);
 		}
 		if(gcoderCfg.doInfills && !gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, layerSequence, 
-					currentExtruder, *it);
+			writePathtype(ss, currentLayer.layerZ, layerSequence, 
+					currentExtruder, *it, PATH_INFILL);
 		}
 	}
 }
