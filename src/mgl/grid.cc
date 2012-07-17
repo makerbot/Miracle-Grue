@@ -228,8 +228,8 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 	if (points.size() == 0) return;
 
 	int endpoint = points_remaining.begin()->first;
-
-	paths.push_back(OpenPath());
+	
+	OpenPath currentPath;
 
 	while (!points_remaining.empty()) {
 		points_remaining.erase(endpoint);
@@ -258,17 +258,19 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 
 		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
 							outlines)) {
-			paths.push_back(OpenPath());
+			if(currentPath.size() > 1)
+				paths.push_back(currentPath);
+			currentPath.clear();
 		}
 
-		OpenPath &path = paths.back();
-
 		int connected = points_remaining[closest];
-		path.appendPoint(points[closest]);
-		path.appendPoint(points[connected]);
+		currentPath.appendPoint(points[closest]);
+		currentPath.appendPoint(points[connected]);
 		endpoint = points_remaining[closest];
 		points_remaining.erase(closest);
 	}
+	if(currentPath.size() > 1) 
+		paths.push_back(currentPath);
 
 }
 

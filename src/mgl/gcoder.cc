@@ -170,12 +170,12 @@ void GCoder::writeInfills(std::ostream& ss,
 			writePath(ss, z, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
-		Log::info() << "ERROR writing infills in slice " <<
-				sliceId << " for extruder " <<
+		stringstream errormsg;
+		errormsg << "\nERROR writing infills in slice " << 
+				sliceId << " for extruder " << 
 				extruder.id << " : " << mixup.error << endl;
-		Log::severe() << "ERROR writing infills in slice " <<
-				sliceId << " for extruder " <<
-				extruder.id << " : " << mixup.error << endl;
+		Log::info() << errormsg.str();
+		Log::severe() << errormsg.str();
 	}
 }
 
