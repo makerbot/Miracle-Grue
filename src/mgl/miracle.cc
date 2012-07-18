@@ -37,18 +37,15 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Slicer slicer(slicerCfg, progress);
 	LayerLoops layerloops(slicerCfg.firstLayerZ, slicerCfg.layerH);
 
-	//old interface
-	//slicer.tomographyze(segmenter, tomograph);
-	//new interface
 	slicer.generateLoops(segmenter, layerloops);
 
 
 	Regioner regioner(regionerCfg, progress);
 
-	//old interface
-	//regioner.generateSkeleton(tomograph, regions);
-	//new interface
-	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions);
+	Limits limits = mesh.readLimits();
+	Grid grid;
+	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, limits,
+							  grid, regions);
 
 	Pather pather(progress);
 

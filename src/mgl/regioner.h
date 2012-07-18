@@ -96,13 +96,15 @@ public:
 			ProgressBar *progress = NULL);
 
 	void generateSkeleton(const LayerLoops& layerloops, 
-						  LayerMeasure &layerMeasure, RegionList &regions);
+						  LayerMeasure &layerMeasure, Limits &limits,
+						  Grid &grid, RegionList &regions);
 
 	size_t initRegionList(const LayerLoops& layerloops,
 						  RegionList &regionlist);
 
 	void rafts(const LayerLoops::Layer &bottomLayer,
 			   LayerMeasure &layerMeasure,
+			   Limits &limits,
 			   RegionList &regionlist);
 
 	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
