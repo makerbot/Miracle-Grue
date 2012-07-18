@@ -79,11 +79,12 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		RegionList::iterator iter = regionlist.begin();
 		for(size_t raftidx = 0; raftidx < regionerCfg.raftLayers; 
 				++raftidx, ++iter) {
-			iter->layerMeasureId = layermeasure.createAttributes();
+			iter->layerMeasureId = layermeasure.createAttributes(
+					LayerMeasure::LayerAttributes(0, 0, -1));
 		}
 		//make bottom real layer be relative to top raft
-		layermeasure.getLayerAttributes((iter--)->layerMeasureId).base = 
-				iter->layerMeasureId;
+		layermeasure.getLayerAttributes(0).base = 
+				(--iter)->layerMeasureId;
 	}
 	
 	//initialize ALL the grids
@@ -140,7 +141,7 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	baseAttr.thickness = regionerCfg.raftBaseThickness;
 
 	tick();
-	//add interface raft layers in reverse order to the beginning of the list
+	//add interface raft layers in correct order to the beginning of the list
 	for (int raftnum = 1; raftnum < regionerCfg.raftLayers; ++raftnum) {
 		layer_measure_index_t raftIndex = regionlist[raftnum].layerMeasureId;
 		LayerMeasure::LayerAttributes &raftAttr =

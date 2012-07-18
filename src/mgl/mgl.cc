@@ -59,8 +59,9 @@ void rotatePolygons(Polygons& polygons, Scalar angle) {
 	}
 }
 
-LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t) 
-		: delta(d), thickness(t), base(0) {}
+LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t, 
+		layer_measure_index_t b) 
+		: delta(d), thickness(t), base(b) {}
 bool LayerMeasure::LayerAttributes::isAbsolute() const {
 	return base < 0;
 }

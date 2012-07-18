@@ -88,7 +88,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		size_t sx = supportRanges.xRaysCount(), 
 				sy = supportRanges.yRaysCount();
 		
-		cout << "[" << sx << ", " << sy <<"]" << endl;
+		//cout << "[" << sx << ", " << sy <<"]" << endl;
 
 		infills(infillRanges, grid, layerRegions->outlines,
 				direction, extruderlayer.infillPaths);
