@@ -25,11 +25,25 @@ Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
 	roofLengthCutOff = 0.5 * regionerCfg.layerW;
 }
 
-void Regioner::generateSkeleton(const LayerLoops& layerloops,
-								LayerMeasure &layerMeasure,
-								RegionList& regionlist) {
+void Regioner::generateSkeleton(const LayerLoops& layerloops, 
+		LayerMeasure& layerMeasure, 
+		RegionList& regionlist, 
+		Limits& limits, 
+		Grid& grid) {
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
-
+	
+	limits.inflate(regionerCfg.raftOutset + 10, 
+			regionerCfg.raftOutset + 10, 
+			0);
+	//optionally inflate if rafts present
+	if(regionerCfg.raftLayers > 0) {
+		limits.inflate(0, 0, 
+				regionerCfg.raftBaseThickness + 
+				regionerCfg.raftInterfaceThickness * 
+				(regionerCfg.raftLayers - 1));
+	}
+	
+	grid.init(limits, regionerCfg.layerW * regionerCfg.gridSpacingMultiplier);
 
 	initProgress("rafts", regionerCfg.raftLayers + 4);
 	rafts(*(layerloops.begin()), layerMeasure, regionlist);
@@ -44,16 +58,16 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		   firstModelRegion, regionlist.end());
 
 	initProgress("flat surfaces", sliceCount);
-	flatSurfaces(regionlist.begin(), regionlist.end(), layerloops.grid);
+	flatSurfaces(regionlist.begin(), regionlist.end(), grid);
 
 	initProgress("roofing", sliceCount);
-	roofing(firstModelRegion, regionlist.end(), layerloops.grid);
+	roofing(firstModelRegion, regionlist.end(), grid);
 
 	initProgress("flooring", sliceCount);
-	flooring(firstModelRegion, regionlist.end(), layerloops.grid);
+	flooring(firstModelRegion, regionlist.end(), grid);
 
 	initProgress("infills", sliceCount);
-	infills(regionlist.begin(), regionlist.end(), layerloops.grid);
+	infills(regionlist.begin(), regionlist.end(), grid);
 }
 
 size_t Regioner::initRegionList(const LayerLoops& layerloops,

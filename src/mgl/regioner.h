@@ -96,7 +96,10 @@ public:
 			ProgressBar *progress = NULL);
 
 	void generateSkeleton(const LayerLoops& layerloops, 
-						  LayerMeasure &layerMeasure, RegionList &regions);
+						  LayerMeasure &layerMeasure, 
+						  RegionList &regionlist, 
+						  Limits& limits, //updated to reflect outsets
+						  Grid& grid);	//initialized here
 
 	size_t initRegionList(const LayerLoops& layerloops,
 						  RegionList &regionlist, 

@@ -58,17 +58,19 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 		//finally, add the loop layer to the new data structure
 		layerloops.push_back(currentLayer);
 	}
-	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
-	Limits limits = seg.readLimits();
-	Scalar xSpan = limits.xMax - limits.xMin;
-	Scalar ySpan = limits.yMax - limits.yMin;
-	Scalar xCenter = (limits.xMax + limits.xMin) * 0.5;
-	Scalar yCenter = (limits.yMax + limits.yMin) * 0.5;
-	limits.xMin = xCenter - xSpan;
-	limits.xMax = xCenter + xSpan;
-	limits.yMin = yCenter - ySpan;
-	limits.yMax = yCenter + ySpan;
-	layerloops.grid.init(limits, gridSpacing);
+//	Scalar gridSpacing = layerCfg.layerW * layerCfg.gridSpacingMultiplier;
+//	Limits limits = seg.readLimits();
+////	Scalar xSpan = limits.xMax - limits.xMin;
+////	Scalar ySpan = limits.yMax - limits.yMin;
+////	Scalar xCenter = (limits.xMax + limits.xMin) * 0.5;
+////	Scalar yCenter = (limits.yMax + limits.yMin) * 0.5;
+////	limits.xMin = xCenter - xSpan;
+////	limits.xMax = xCenter + xSpan;
+////	limits.yMin = yCenter - ySpan;
+////	limits.yMax = yCenter + ySpan;
+//	
+//	limits.inflate(100.0, 100.0, 0);
+//	layerloops.grid.init(limits, gridSpacing);
 }
 
 
