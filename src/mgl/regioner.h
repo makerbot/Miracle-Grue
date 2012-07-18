@@ -99,7 +99,8 @@ public:
 						  LayerMeasure &layerMeasure, RegionList &regions);
 
 	size_t initRegionList(const LayerLoops& layerloops,
-						  RegionList &regionlist);
+						  RegionList &regionlist, 
+						  LayerMeasure& layermeasure);
 
 	void rafts(const LayerLoops::Layer &bottomLayer,
 			   LayerMeasure &layerMeasure,

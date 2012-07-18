@@ -28,11 +28,13 @@ Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 								LayerMeasure &layerMeasure,
 								RegionList& regionlist) {
-	int sliceCount = initRegionList(layerloops, regionlist);
+	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
 
 
-	initProgress("rafts", regionerCfg.raftLayers + 2);
+	initProgress("rafts", regionerCfg.raftLayers + 4);
 	rafts(*(layerloops.begin()), layerMeasure, regionlist);
+	
+	/* And where do we fill regionlist with regions that are not rafts? */
 
 	RegionList::iterator firstModelRegion =
 		regionlist.begin() + regionerCfg.raftLayers;
@@ -51,26 +53,47 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	flooring(firstModelRegion, regionlist.end(), layerloops.grid);
 
 	initProgress("infills", sliceCount);
-	infills(regionlist.begin(), regionlist.end(),	layerloops.grid);
+	infills(regionlist.begin(), regionlist.end(), layerloops.grid);
 }
 
 size_t Regioner::initRegionList(const LayerLoops& layerloops,
-							  RegionList &regionlist) {
-	//TODO: take into account raft layers in the number of regions
-	regionlist.resize(layerloops.size());
-
-	//to start, copy the outline loops and layer index to their respective
-	//regions
-	LayerLoops::const_layer_iterator layer = layerloops.begin();
-	RegionList::iterator regions = regionlist.begin();
-
-	while (layer != layerloops.end() && regions != regionlist.end()) {
-		regions->outlines = layer->readLoops();
-		regions->layerMeasureId = layer->getIndex();
-
-		++layer;
-		++regions;
+							  RegionList &regionlist, 
+								LayerMeasure& layermeasure) {
+	//copy over data from layerloops
+	for(LayerLoops::const_layer_iterator iter = layerloops.begin(); 
+			iter != layerloops.end(); 
+			++iter) {
+		LayerRegions currentRegions;
+		currentRegions.outlines = iter->readLoops();
+		currentRegions.layerMeasureId = iter->getIndex();
+		
+		regionlist.push_back(currentRegions);
 	}
+	
+	//if we do rafts
+	if(regionerCfg.raftLayers) {
+		//insert appropriate number of raft layers at start
+		regionlist.insert(regionlist.begin(), regionerCfg.raftLayers, 
+				LayerRegions());
+		//for each raft create an entry in layermeasure
+		RegionList::iterator iter = regionlist.begin();
+		for(size_t raftidx = 0; raftidx < regionerCfg.raftLayers; 
+				++raftidx, ++iter) {
+			iter->layerMeasureId = layermeasure.createAttributes();
+		}
+		//make bottom real layer be relative to top raft
+		layermeasure.getLayerAttributes((iter--)->layerMeasureId).base = 
+				iter->layerMeasureId;
+	}
+	
+	//initialize ALL the grids
+	
+	for(RegionList::iterator iter = regionlist.begin(); 
+			iter != regionlist.end(); 
+			++iter) {
+		
+	}
+	
 
 	return regionlist.size();
 }
@@ -108,39 +131,49 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	tick();
 
 	//create a first layer measure with absolute positioning
-    layer_measure_index_t baseIndex = layerMeasure.createAttributes();
+	//already done when regionlist initialized
+    //layer_measure_index_t baseIndex = layerMeasure.createAttributes();
+	layer_measure_index_t baseIndex = regionlist.front().layerMeasureId;
 	LayerMeasure::LayerAttributes &baseAttr =
 		layerMeasure.getLayerAttributes(baseIndex);
 	baseAttr.delta = 0;
 	baseAttr.thickness = regionerCfg.raftBaseThickness;
-	baseAttr.base = -1;
 
+	tick();
 	//add interface raft layers in reverse order to the beginning of the list
-	for (int raftnum = regionerCfg.raftLayers - 1; raftnum > 0; raftnum--) {
-		layer_measure_index_t raftIndex = layerMeasure.createAttributes();
+	for (int raftnum = 1; raftnum < regionerCfg.raftLayers; ++raftnum) {
+		layer_measure_index_t raftIndex = regionlist[raftnum].layerMeasureId;
 		LayerMeasure::LayerAttributes &raftAttr =
 			layerMeasure.getLayerAttributes(raftIndex);
-		raftAttr.delta = (raftnum - 1) * regionerCfg.raftInterfaceThickness;
+		raftAttr.delta = regionerCfg.raftBaseThickness + 
+				(raftnum - 1) * regionerCfg.raftInterfaceThickness;
 		raftAttr.thickness = regionerCfg.raftInterfaceThickness;
 		raftAttr.base = baseIndex;
 
-		regionlist.insert(regionlist.begin(), LayerRegions());
-		LayerRegions &raftRegions = regionlist.front();
+		LayerRegions &raftRegions = regionlist[raftnum];
 		raftRegions.supportLoops.push_back(raftLoop);
-		raftRegions.layerMeasureId = raftIndex;
 
 		tick();
 	}		
 	
 	//add the actual regionlist for the base layer
-	regionlist.insert(regionlist.begin(), LayerRegions());
-	LayerRegions &baseRegions = regionlist.front();
-	baseRegions.supportLoops.push_back(raftLoop);
-	baseRegions.layerMeasureId = baseIndex;
+	//already done in init of regionlist
+//	regionlist.insert(regionlist.begin(), LayerRegions());
+//	LayerRegions &baseRegions = regionlist.front();
+//	baseRegions.supportLoops.push_back(raftLoop);
+//	baseRegions.layerMeasureId = baseIndex;
 
 	//make the first layer of the model relative to the last raft layer
-	layerMeasure.getLayerAttributes(bottomLayer.getIndex()).base =
-		regionlist[regionerCfg.raftLayers - 1].layerMeasureId;
+	//already done in init of regionlist
+//	layerMeasure.getLayerAttributes(bottomLayer.getIndex()).base =
+//		regionlist[regionerCfg.raftLayers - 1].layerMeasureId;
+	
+	//to the rafts, add the raftloop
+	RegionList::iterator iter = regionlist.begin();
+	for(size_t raftidx = 0; raftidx < regionerCfg.raftLayers; 
+			++raftidx, ++iter){
+		iter->supportLoops.push_back(raftLoop);
+	}
 
 	tick();
 }
@@ -252,14 +285,13 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 							RegionList::iterator regionsEnd,
 							const Grid& grid) {
-	for (RegionList::iterator regions = regionsBegin;
-		 regions != regionsEnd; regions++) {
+	for (; regionsBegin != regionsEnd; ++regionsBegin) {
 		tick();
-		const std::list<LoopList>& currentInsets = regions->insetLoops;
-		GridRanges currentSurface;
-		gridRangesForSlice(currentInsets, grid, regions->flatSurface);
-		gridRangesForSlice(regions->supportLoops, grid,
-						   regions->supportSurface);
+		const std::list<LoopList>& currentInsets = regionsBegin->insetLoops;
+		//GridRanges currentSurface;
+		gridRangesForSlice(currentInsets, grid, regionsBegin->flatSurface);
+		gridRangesForSlice(regionsBegin->supportLoops, grid,
+						   regionsBegin->supportSurface);
 	}
 }
 
@@ -396,6 +428,9 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		//TODO: this doesn't seem right, but its what it was doing before I
 		//converted to iterators
 		current->sparse = current->infill;
+		
+		current->infill = all;
+		//current->support = current->supportSurface;
 
 	}
 
@@ -403,7 +438,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 void Regioner::gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice,
 		const Grid& grid,
-		GridRanges & surface) {
+		GridRanges& surface) {
 	const LoopList& innerMostLoops = allInsetsForSlice.back();
 	grid.createGridRanges(innerMostLoops, surface);
 }

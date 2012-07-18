@@ -10,6 +10,7 @@
 */
 
 #include <list>
+#include <vector>
 
 #include "pather.h"
 #include "limits.h"
@@ -81,14 +82,20 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 
 		insets(insetLoops, extruderlayer.insetPaths);
 
-		const GridRanges &infillRanges = layerRegions->infill;
+		const GridRanges& infillRanges = layerRegions->infill;
+		const GridRanges& supportRanges = layerRegions->support;
+		
+		size_t sx = supportRanges.xRaysCount(), 
+				sy = supportRanges.yRaysCount();
+		
+		cout << "[" << sx << ", " << sy <<"]" << endl;
 
 		infills(infillRanges, grid, layerRegions->outlines,
 				direction, extruderlayer.infillPaths);
-
-		infills(layerRegions->support, grid, layerRegions->supportLoops,
+		
+		infills(supportRanges, grid, layerRegions->supportLoops,
 				direction, extruderlayer.supportPaths);
-
+		
 		++currentSlice;
 	}
 }
