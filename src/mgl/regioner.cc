@@ -384,14 +384,14 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		// TODO: move me to the slicer
 		GridRanges sparseSupport;
 		GridRanges sparseInfill;
-		GridRanges all;
+
 		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
 		grid.subSample(current->supportSurface, infillSkipCount,
 					   current->support);
 
-		grid.gridRangeUnion(current->solid, sparseInfill, all);
+		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
 		
 		//TODO: this doesn't seem right, but its what it was doing before I
 		//converted to iterators
