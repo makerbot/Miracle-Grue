@@ -26,7 +26,7 @@ public:
 			: tubeSpacing(1),
 			//angle(1.570796326794897),
 			nbOfShells(2),
-			layerW(0.4),
+			layerWidthRatio(1.7),
 			infillShrinkingMultiplier(0.25),
 			insetDistanceMultiplier(0.9),
 			insetCuttOffMultiplier(0.01),
@@ -42,7 +42,7 @@ public:
 	Scalar tubeSpacing; //< distance in between infill (mm)
 	Scalar angle; //< angle of infill
 	unsigned int nbOfShells; //< shell count of model
-	Scalar layerW; //< TBD
+	Scalar layerWidthRatio; //< TBD
 	Scalar infillShrinkingMultiplier; //< TBD
 	Scalar insetDistanceMultiplier; //< TBD
 	Scalar insetCuttOffMultiplier; //< TBD
@@ -114,12 +114,14 @@ public:
 			const char* scadFile = NULL);
 	void insetsForSlice(const LoopList& sliceOutlines,
 			std::list<LoopList>& sliceInsets,
+			LayerMeasure& layermeasure, 
 			const char* scadFile = NULL);
 
 	void insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				const LayerLoops::const_layer_iterator outlinesEnd,
 				RegionList::iterator regionsBegin,
-				RegionList::iterator regionsEnd);
+				RegionList::iterator regionsEnd,
+				LayerMeasure& layermeasure);
 
 	void flatSurfaces(RegionList::iterator regionsBegin,
 					  RegionList::iterator regionsEnd,

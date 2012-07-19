@@ -57,7 +57,7 @@ public:
 	void set_scaling_Factor(Scalar sf);
 	
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
-			libthing::LineSegment2 &segment) const;
+			libthing::LineSegment2 &segment, Scalar h, Scalar w) const;
 
 private:
 	Scalar rapidMoveFeedRateXY;
@@ -104,7 +104,8 @@ public:
 	void g1Motion(std::ostream &ss,
 				  Scalar mx, Scalar my, Scalar mz,
 				  Scalar me,
-				  Scalar mfeed,
+				  Scalar mfeed, 
+				  Scalar h, Scalar w, 
 				  const char *comment,
 				  bool doX, bool doY, bool doZ,
 				  bool doE,
@@ -139,6 +140,8 @@ public:
 			Scalar gy,
 			Scalar gz,
 			Scalar gfeed,
+			Scalar h, 
+			Scalar w, 
 			const char *comment);
 
 	/// g1 public overloaded methods to make interface simpler
@@ -147,8 +150,10 @@ public:
 			Scalar gy,
 			Scalar gz,
 			Scalar gfeed,
+			Scalar h, 
+			Scalar w, 
 			const char *comment) {
-		g1(ss, NULL, NULL, gx, gy, gz, gfeed, comment);
+		g1(ss, NULL, NULL, gx, gy, gz, gfeed, h, w, comment);
 	};
 
 	/// g1 public overloaded methods to make interface simpler
@@ -159,12 +164,14 @@ public:
 			Scalar gy,
 			Scalar gz,
 			Scalar gfeed,
+			Scalar h, 
+			Scalar w, 
 			const char *comment) {
-		g1(ss, &extruder, &extrusion, gx, gy, gz, gfeed, comment);
+		g1(ss, &extruder, &extrusion, gx, gy, gz, gfeed, h, w, comment);
 	};
 	
 	Scalar volumetricE(const Extruder &extruder, const Extrusion &extrusion,
-			Scalar vx, Scalar vy, Scalar vz) const;
+			Scalar vx, Scalar vy, Scalar vz, Scalar h, Scalar w) const;
 
 	/// get axis value of the current extruder in(mm)
 	/// (aka mm of feedstock since the last reset this print)

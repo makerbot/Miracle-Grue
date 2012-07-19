@@ -58,10 +58,11 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				layerRegions->layerMeasureId;
 
 		//adding these should be handled in gcoder
+		const Scalar z = layerMeasure.getLayerPosition(layerMeasureId);
 		const Scalar h = layerMeasure.getLayerThickness(layerMeasureId);
-		const Scalar z = layerMeasure.getLayerPosition(layerMeasureId) + h;
+		const Scalar w = layerMeasure.getLayerWidth(layerMeasureId);
 
-		layerpaths.push_back(LayerPaths::Layer(z, h, layerMeasureId));
+		layerpaths.push_back(LayerPaths::Layer(z, h, w, layerMeasureId));
 
 		LayerPaths::Layer& lp_layer = layerpaths.back();
 
@@ -87,8 +88,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		infills(supportRanges, grid, layerRegions->supportLoops,
 				direction, extruderlayer.supportPaths);
 
-		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
-				layerRegions->layerMeasureId) << endl;
+//		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
+//				layerRegions->layerMeasureId) << endl;
 
 		++currentSlice;
 	}

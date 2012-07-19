@@ -13,8 +13,8 @@ namespace mgl{
 using namespace std;
 using namespace libthing;
 
-Segmenter::Segmenter(Scalar firstSliceZ, Scalar layerH, Scalar layerRatio) : 
-		zTapeMeasure(firstSliceZ, layerH, layerRatio) {}
+Segmenter::Segmenter(Scalar firstSliceZ, Scalar layerH) : 
+		zTapeMeasure(firstSliceZ, layerH) {}
 const SliceTable& Segmenter::readSliceTable() const{
 	return sliceTable;
 }

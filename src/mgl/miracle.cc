@@ -34,7 +34,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Limits limits = mesh.readLimits();
 	Grid grid;
 
-	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH, slicerCfg.layerW);
+	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
 	segmenter.tablaturize(mesh);
 
 	Slicer slicer(slicerCfg, progress);

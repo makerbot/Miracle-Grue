@@ -173,9 +173,6 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 		extrusion.restartExtraDistance = 
 				doubleCheck(value["restartExtraDistance"], 
 				(prefix + "restartExtraDistance").c_str());
-		extrusion.extrudedDimensionsRatio =
-				doubleCheck(conf.root["slicer"]["layerW"], "slicer.layerW") /
-				doubleCheck(conf.root["slicer"]["layerH"], "slicer.layerH");
 
 		extrusion.flow = doubleCheck(value["flow"], 
 				(prefix + "flow").c_str());
@@ -350,11 +347,6 @@ void loadSlicerConfigFromFile(const Configuration &config,
 			"slicer.layerH");
 	slicerCfg.firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], 
 			"slicer.firstLayerZ");
-	slicerCfg.layerW = doubleCheck(config["slicer"]["layerW"], 
-			"slicer.layerW");
-	slicerCfg.gridSpacingMultiplier = doubleCheck(
-			config["slicer"]["gridSpacingMultiplier"], 
-			"slicer.gridSpacingMultiplier", slicerCfg.gridSpacingMultiplier);
 }
 
 void loadRegionerConfigFromFile(const Configuration& config, 
@@ -365,8 +357,8 @@ void loadRegionerConfigFromFile(const Configuration& config,
 	//slicerCfg.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
 	regionerCfg.nbOfShells = uintCheck(config["regioner"]["nbOfShells"], 
 			"regioner.nbOfShells");
-	regionerCfg.layerW = doubleCheck(config["regioner"]["layerW"], 
-			"regioner.layerW");
+	regionerCfg.layerWidthRatio = doubleCheck(config["regioner"]["layerWidthRatio"], 
+			"regioner.layerWidthRatio");
 	regionerCfg.infillShrinkingMultiplier = 
 			doubleCheck(config["regioner"]["infillShrinkingMultiplier"], 
 			"regioner.infillShrinkingMultiplier");

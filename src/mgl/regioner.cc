@@ -19,33 +19,34 @@ using namespace mgl;
 using namespace std;
 using namespace libthing;
 
-
 Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
-		: Progressive(progress), regionerCfg(regionerConf) {
-	roofLengthCutOff = 0.5 * regionerCfg.layerW;
+: Progressive(progress), regionerCfg(regionerConf) {
 }
 
-void Regioner::generateSkeleton(const LayerLoops& layerloops, 
-		LayerMeasure& layerMeasure, 
-		RegionList& regionlist, 
-		Limits& limits, 
+void Regioner::generateSkeleton(const LayerLoops& layerloops,
+		LayerMeasure& layerMeasure,
+		RegionList& regionlist,
+		Limits& limits,
 		Grid& grid) {
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
-	
-	limits.inflate(regionerCfg.raftOutset + 10, 
-			regionerCfg.raftOutset + 10, 
+	layerMeasure.setLayerWidthRatio(regionerCfg.layerWidthRatio);
+	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
+
+	limits.inflate(regionerCfg.raftOutset + 10,
+			regionerCfg.raftOutset + 10,
 			0);
 	//optionally inflate if rafts present
-	if(regionerCfg.raftLayers > 0) {
-		limits.inflate(0, 0, 
-				regionerCfg.raftBaseThickness + 
-				regionerCfg.raftInterfaceThickness * 
+	if (regionerCfg.raftLayers > 0) {
+		limits.inflate(0, 0,
+				regionerCfg.raftBaseThickness +
+				regionerCfg.raftInterfaceThickness *
 				(regionerCfg.raftLayers - 1));
 	}
-	
-	grid.init(limits, regionerCfg.layerW * regionerCfg.gridSpacingMultiplier);
 
-	if(regionerCfg.raftLayers > 0) {
+	grid.init(limits, layerMeasure.getLayerW() *
+			regionerCfg.gridSpacingMultiplier);
+
+	if (regionerCfg.raftLayers > 0) {
 		initProgress("rafts", regionerCfg.raftLayers + 4);
 		rafts(*(layerloops.begin()), layerMeasure, regionlist);
 	}
@@ -53,11 +54,12 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	//LayerRegions &raftlayer = regionlist.front();
 
 	RegionList::iterator firstModelRegion =
-		regionlist.begin() + regionerCfg.raftLayers;
+			regionlist.begin() + regionerCfg.raftLayers;
 
 	initProgress("insets", sliceCount);
 	insets(layerloops.begin(), layerloops.end(),
-		   firstModelRegion, regionlist.end());
+			firstModelRegion, regionlist.end(),
+			layerMeasure);
 
 	initProgress("flat surfaces", sliceCount);
 	flatSurfaces(regionlist.begin(), regionlist.end(), grid);
@@ -73,27 +75,27 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 }
 
 size_t Regioner::initRegionList(const LayerLoops& layerloops,
-							  RegionList &regionlist, 
-								LayerMeasure& layermeasure) {
+		RegionList &regionlist,
+		LayerMeasure& layermeasure) {
 	//copy over data from layerloops
-	for(LayerLoops::const_layer_iterator iter = layerloops.begin(); 
-			iter != layerloops.end(); 
+	for (LayerLoops::const_layer_iterator iter = layerloops.begin();
+			iter != layerloops.end();
 			++iter) {
 		LayerRegions currentRegions;
 		currentRegions.outlines = iter->readLoops();
 		currentRegions.layerMeasureId = iter->getIndex();
-		
+
 		regionlist.push_back(currentRegions);
 	}
-	
+
 	//if we do rafts
-	if(regionerCfg.raftLayers) {
+	if (regionerCfg.raftLayers) {
 		//insert appropriate number of raft layers at start
-		regionlist.insert(regionlist.begin(), regionerCfg.raftLayers, 
+		regionlist.insert(regionlist.begin(), regionerCfg.raftLayers,
 				LayerRegions());
 		//for each raft create an entry in layermeasure
 		RegionList::iterator iter = regionlist.begin();
-		for(size_t raftidx = 0; raftidx < regionerCfg.raftLayers; 
+		for (size_t raftidx = 0; raftidx < regionerCfg.raftLayers;
 				++raftidx, ++iter) {
 			iter->layerMeasureId = layermeasure.createAttributes(
 					LayerMeasure::LayerAttributes(0, 0, 0));
@@ -103,15 +105,15 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		RegionList::iterator iterModel = iter;
 		++iterModel;
 		//make the bottom model layer relative to top raft
-		LayerMeasure::LayerAttributes& bottomAttribs = 
+		LayerMeasure::LayerAttributes& bottomAttribs =
 				layermeasure.getLayerAttributes(iterModel->layerMeasureId);
 		bottomAttribs.base = iter->layerMeasureId;
 		bottomAttribs.delta = regionerCfg.raftInterfaceThickness;
 		//and the rest relative to it
 		++iter;
 		++iterModel;
-		for(; iterModel != regionlist.end(); ++iterModel){
-			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base = 
+		for (; iterModel != regionlist.end(); ++iterModel) {
+			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base =
 					iter->layerMeasureId;
 		}
 	}
@@ -120,44 +122,44 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 }
 
 void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
-					 LayerMeasure &layerMeasure,
-					 RegionList &regionlist) {
+		LayerMeasure &layerMeasure,
+		RegionList &regionlist) {
 
 	//make convex hull of the bottom layer
 	Loop convexLoop = createConvexLoop(bottomLayer.readLoops());
 	tick();
 
 	SegmentTable convexSegs;
-	convexSegs.push_back(std::vector<LineSegment2>());
-	
-	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(); 
-		iter != convexLoop.clockwiseEnd(); ++iter) {
+	convexSegs.push_back(std::vector<LineSegment2 > ());
+
+	for (Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite();
+			iter != convexLoop.clockwiseEnd(); ++iter) {
 
 		convexSegs.back().push_back(convexLoop.segmentAfterPoint(iter));
 	}
 
 	SegmentTable outsetSegs;
-	outsetSegs.push_back(std::vector<LineSegment2>());
+	outsetSegs.push_back(std::vector<LineSegment2 > ());
 
 	//outset the convex hull by the configured distance
 	ClipperInsetter().inset(convexSegs, -regionerCfg.raftOutset, outsetSegs);
 	tick();
 
 	Loop raftLoop;
-	for(std::vector<LineSegment2>::const_iterator iter = 
-			outsetSegs.back().begin(); 
-		iter != outsetSegs.back().end(); 
-		++iter) {
+	for (std::vector<LineSegment2>::const_iterator iter =
+			outsetSegs.back().begin();
+			iter != outsetSegs.back().end();
+			++iter) {
 		raftLoop.insertPointBefore(iter->b, raftLoop.clockwiseEnd());
 	}
 	tick();
 
 	//create a first layer measure with absolute positioning
 	//already done when regionlist initialized
-    //layer_measure_index_t baseIndex = layerMeasure.createAttributes();
+	//layer_measure_index_t baseIndex = layerMeasure.createAttributes();
 	layer_measure_index_t baseIndex = regionlist.front().layerMeasureId;
 	LayerMeasure::LayerAttributes &baseAttr =
-		layerMeasure.getLayerAttributes(baseIndex);
+			layerMeasure.getLayerAttributes(baseIndex);
 	baseAttr.delta = 0;
 	baseAttr.thickness = regionerCfg.raftBaseThickness;
 
@@ -166,8 +168,8 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 	for (unsigned raftnum = 1; raftnum < regionerCfg.raftLayers; ++raftnum) {
 		layer_measure_index_t raftIndex = regionlist[raftnum].layerMeasureId;
 		LayerMeasure::LayerAttributes &raftAttr =
-			layerMeasure.getLayerAttributes(raftIndex);
-		raftAttr.delta = regionerCfg.raftBaseThickness + 
+				layerMeasure.getLayerAttributes(raftIndex);
+		raftAttr.delta = regionerCfg.raftBaseThickness +
 				(raftnum - 1) * regionerCfg.raftInterfaceThickness;
 		raftAttr.thickness = regionerCfg.raftInterfaceThickness;
 		raftAttr.base = baseIndex;
@@ -176,24 +178,24 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 		raftRegions.supportLoops.push_back(raftLoop);
 
 		tick();
-	}		
-	
+	}
+
 	//add the actual regionlist for the base layer
 	//already done in init of regionlist
-//	regionlist.insert(regionlist.begin(), LayerRegions());
-//	LayerRegions &baseRegions = regionlist.front();
-//	baseRegions.supportLoops.push_back(raftLoop);
-//	baseRegions.layerMeasureId = baseIndex;
+	//	regionlist.insert(regionlist.begin(), LayerRegions());
+	//	LayerRegions &baseRegions = regionlist.front();
+	//	baseRegions.supportLoops.push_back(raftLoop);
+	//	baseRegions.layerMeasureId = baseIndex;
 
 	//make the first layer of the model relative to the last raft layer
 	//already done in init of regionlist
-//	layerMeasure.getLayerAttributes(bottomLayer.getIndex()).base =
-//		regionlist[regionerCfg.raftLayers - 1].layerMeasureId;
-	
+	//	layerMeasure.getLayerAttributes(bottomLayer.getIndex()).base =
+	//		regionlist[regionerCfg.raftLayers - 1].layerMeasureId;
+
 	//to the rafts, add the raftloop
 	RegionList::iterator iter = regionlist.begin();
-	for(size_t raftidx = 0; raftidx < regionerCfg.raftLayers; 
-			++raftidx, ++iter){
+	for (size_t raftidx = 0; raftidx < regionerCfg.raftLayers;
+			++raftidx, ++iter) {
 		iter->supportLoops.push_back(raftLoop);
 	}
 
@@ -202,11 +204,12 @@ void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		std::list<LoopList>& sliceInsets,
+		LayerMeasure& layermeasure,
 		const char* scadFile) {
 
 	libthing::SegmentTable sliceOutlinesOld;
 	libthing::Insets sliceInsetsOld;
-	
+
 	/*
 	 This function makes use of inshelligence, which indirectly makes use of 
 	 clipper.cc, a machine translated Delphi library designed to make use of 
@@ -234,7 +237,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	bool writeDebugScadFiles = false;
 	inshelligence(sliceOutlinesOld,
 			regionerCfg.nbOfShells,
-			regionerCfg.layerW,
+			layermeasure.getLayerW(),
 			regionerCfg.insetDistanceMultiplier,
 			scadFile,
 			writeDebugScadFiles,
@@ -287,17 +290,19 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //}
 
 void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
-					  const LayerLoops::const_layer_iterator outlinesEnd,
-					  RegionList::iterator regionsBegin,
-					  RegionList::iterator regionsEnd) {
+		const LayerLoops::const_layer_iterator outlinesEnd,
+		RegionList::iterator regionsBegin,
+		RegionList::iterator regionsEnd,
+		LayerMeasure& layermeasure) {
 
 	LayerLoops::const_layer_iterator outline = outlinesBegin;
 	RegionList::iterator region = regionsBegin;
-	while(outline != outlinesEnd && region != regionsEnd) {
+	while (outline != outlinesEnd && region != regionsEnd) {
 		tick();
 		const LoopList& currentOutlines = outline->readLoops();
 
-		insetsForSlice(currentOutlines, region->insetLoops, NULL);
+		insetsForSlice(currentOutlines, region->insetLoops,
+				layermeasure, NULL);
 
 		++outline;
 		++region;
@@ -305,15 +310,15 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 }
 
 void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
-							RegionList::iterator regionsEnd,
-							const Grid& grid) {
+		RegionList::iterator regionsEnd,
+		const Grid& grid) {
 	for (; regionsBegin != regionsEnd; ++regionsBegin) {
 		tick();
 		const std::list<LoopList>& currentInsets = regionsBegin->insetLoops;
 		//GridRanges currentSurface;
 		gridRangesForSlice(currentInsets, grid, regionsBegin->flatSurface);
 		gridRangesForSlice(regionsBegin->supportLoops, grid,
-						   regionsBegin->supportSurface);
+				regionsBegin->supportSurface);
 	}
 }
 
@@ -329,12 +334,12 @@ void Regioner::floorForSlice(const GridRanges & currentSurface,
 void Regioner::roofForSlice(const GridRanges & currentSurface, const GridRanges & surfaceAbove, const Grid & grid, GridRanges & roofing) {
 	GridRanges roof;
 	grid.gridRangeDifference(currentSurface, surfaceAbove, roof);
-	grid.trimGridRange(roof, this->roofLengthCutOff, roofing);
+	grid.trimGridRange(roof, roofLengthCutOff, roofing);
 }
 
 void Regioner::roofing(RegionList::iterator regionsBegin,
-					   RegionList::iterator regionsEnd,
-					   const Grid& grid) {
+		RegionList::iterator regionsEnd,
+		const Grid& grid) {
 
 	RegionList::iterator current = regionsBegin;
 	RegionList::iterator above = current;
@@ -360,8 +365,8 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 }
 
 void Regioner::flooring(RegionList::iterator regionsBegin,
-						RegionList::iterator regionsEnd,
-						const Grid &grid) {
+		RegionList::iterator regionsEnd,
+		const Grid &grid) {
 	RegionList::iterator below = regionsBegin;
 	RegionList::iterator current = below;
 	current++;
@@ -384,11 +389,11 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 }
 
 void Regioner::infills(RegionList::iterator regionsBegin,
-					   RegionList::iterator regionsEnd,
-					   const Grid &grid) {
-	
+		RegionList::iterator regionsEnd,
+		const Grid &grid) {
+
 	for (RegionList::iterator current = regionsBegin;
-		 current != regionsEnd; current++) {
+			current != regionsEnd; current++) {
 
 		const GridRanges &surface = current->flatSurface;
 		tick();
@@ -404,17 +409,17 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		//find the bounds we will be combinging regions across
 		RegionList::iterator firstFloor = current;
 		for (unsigned int i = 0; i < regionerCfg.floorLayerCount &&
-   				        firstFloor != regionsBegin; ++i)
+				firstFloor != regionsBegin; ++i)
 			--firstFloor;
 
 		RegionList::iterator lastRoof = current;
 		for (unsigned int i = 0; i < regionerCfg.roofLayerCount &&
-				        lastRoof != regionsEnd - 1; ++i)
+				lastRoof != regionsEnd - 1; ++i)
 			++lastRoof;
 
 		//combine floors
 		for (RegionList::iterator floor = firstFloor;
-			 floor <= current; ++floor) {
+				floor <= current; ++floor) {
 			GridRanges multiFloor;
 
 			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
@@ -423,7 +428,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		//combine roofs
 		for (RegionList::iterator roof = current;
-			 roof <= lastRoof; ++roof) {
+				roof <= lastRoof; ++roof) {
 			GridRanges multiRoof;
 
 			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
@@ -442,7 +447,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
 		grid.subSample(current->supportSurface, infillSkipCount,
-					   current->support);
+				current->support);
 
 		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
 	}

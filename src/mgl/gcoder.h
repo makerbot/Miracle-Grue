@@ -50,8 +50,7 @@ public:
 	Extrusion() : feedrate(2400),
 			retractDistance(0),
 			retractRate(3000),
-			restartExtraDistance(0),
-			extrudedDimensionsRatio(0),
+			restartExtraDistance(0), 
 			flow(2.8),
 			leadIn(0),
 			leadOut(0),
@@ -60,14 +59,13 @@ public:
 			squirtFlow(35),
 			squirtFeedrate(600)	{}
 
-	Scalar crossSectionArea(Scalar height) const;
+	Scalar crossSectionArea(Scalar height, Scalar width) const;
 
 	Scalar feedrate;
 
 	Scalar retractDistance;
 	Scalar retractRate;
 	Scalar restartExtraDistance;
-	Scalar extrudedDimensionsRatio;
 
 	Scalar flow; // RPM value for the extruder motor... not a real unit :-(
 
@@ -260,30 +258,30 @@ private:
 //    void writeWarmupSequence(std::ostream & ss);
 //    void writeAnchor(std::ostream & ss);
 	void writeInfills(std::ostream& ss, 
-					  Scalar z, 
+					  Scalar z, Scalar h, Scalar w, 
 					  size_t sliceId, 
 					  const Extruder& extruder, 
 					  const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeSupport(std::ostream& ss,
-					  Scalar z,
+					  Scalar z, Scalar h, Scalar w, 
 					  size_t sliceId,
 					  const Extruder& extruder, 
 					  const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeInsets(std::ostream& ss, 
-			Scalar z, 
+			Scalar z, Scalar h, Scalar w, 
 			size_t sliceId, 
 			const Extruder& extruder, 
 			const LayerPaths& layerpaths,
 			LayerPaths::layer_iterator layerId, 
 			const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeOutlines(std::ostream& ss, 
-			Scalar z, 
+			Scalar z, Scalar h, Scalar w, 
 			size_t sliceId, 
 			const Extruder& extruder, 
 			const LayerPaths::Layer::ExtruderLayer& paths);
 	template <typename PATH>
 	void writePath(std::ostream& ss, 
-			Scalar z,
+			Scalar z, Scalar h, Scalar w, 
 			const Extruder& extruder,
 			const Extrusion& extrusion, 
 			const PATH& path);
@@ -294,7 +292,7 @@ private:
 
 template <typename PATH>
 void GCoder::writePath(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		const Extruder& extruder, 
 		const Extrusion& extrusion, 
 		const PATH& path) {
@@ -305,8 +303,9 @@ void GCoder::writePath(std::ostream& ss,
 	typename PATH::const_iterator current = path.fromStart();
 	// rapid move into position
 	gantry.g1(ss, extruder, extrusion,
-			current->x, current->y, z,
-			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
+			current->x, current->y, z, 
+			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
+			0, 0, 
 			"move into position");
 	PointType last = *current;
 	++current;
@@ -324,7 +323,7 @@ void GCoder::writePath(std::ostream& ss,
 			comment << "d: " << distance;
 			gantry.g1(ss, extruder, extrusion, 
 					current->x, current->y, z, 
-					extrusion.feedrate, comment.str().c_str());
+					extrusion.feedrate, h, w, comment.str().c_str());
 			last = *current;
 		} else {
 			// otherwise don't

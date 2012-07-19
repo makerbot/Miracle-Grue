@@ -27,15 +27,11 @@ class SlicerConfig {
 public:
 	SlicerConfig()
 			: layerH(0.27),
-			firstLayerZ(0.1),
-			layerW(0.4), 
-			gridSpacingMultiplier(0.95) {}
+			firstLayerZ(0.1) {}
 
 	// These are relevant to slicer
 	Scalar layerH; //< z height of layers 1+ 9(mm)
 	Scalar firstLayerZ; //< z height of 0th layer (mm)
-	Scalar layerW; //< TBD
-	Scalar gridSpacingMultiplier; /// TBD:w
 };
 
 struct LayerConfig {

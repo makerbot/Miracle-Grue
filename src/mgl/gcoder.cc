@@ -155,7 +155,7 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
 
 
 void GCoder::writeInfills(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		size_t sliceId, 
 		const Extruder& extruder,  
 		const LayerPaths::Layer::ExtruderLayer& paths) {
@@ -167,7 +167,7 @@ void GCoder::writeInfills(std::ostream& ss,
 				paths.infillPaths.begin(); 
 				iter != paths.infillPaths.end(); 
 				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
+			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
@@ -180,7 +180,7 @@ void GCoder::writeInfills(std::ostream& ss,
 }
 
 void GCoder::writeSupport(std::ostream &ss, 
-						  Scalar z,
+						  Scalar z, Scalar h, Scalar w, 
 						  size_t sliceId,
 						  const Extruder &extruder,
 						  const LayerPaths::Layer::ExtruderLayer& paths) {
@@ -192,7 +192,7 @@ void GCoder::writeSupport(std::ostream &ss,
 				paths.supportPaths.begin(); 
 				iter != paths.supportPaths.end(); 
 				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
+			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
 		Log::info() << "ERROR writing support in slice " <<
@@ -206,7 +206,7 @@ void GCoder::writeSupport(std::ostream &ss,
 						  
 
 void GCoder::writeInsets(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		size_t sliceId, 
 		const Extruder& extruder, 
 		const LayerPaths& layerpaths, 
@@ -223,7 +223,7 @@ void GCoder::writeInsets(std::ostream& ss,
 					extrusion);
 			for (LoopPathList::const_iterator j = i->begin();
 				 j != i->end(); ++j) {
-				writePath(ss, z, extruder, extrusion, *j);
+				writePath(ss, z, h, w, extruder, extrusion, *j);
 			}
 		}
 	} catch (GcoderException& mixup) {
@@ -237,7 +237,7 @@ void GCoder::writeInsets(std::ostream& ss,
 }
 
 void GCoder::writeOutlines(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		size_t sliceId, 
 		const Extruder& extruder,  
 		const LayerPaths::Layer::ExtruderLayer& paths) {
@@ -249,7 +249,7 @@ void GCoder::writeOutlines(std::ostream& ss,
 				paths.outlinePaths.begin(); 
 				iter != paths.outlinePaths.end(); 
 				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
+			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
@@ -269,7 +269,8 @@ void GCoder::moveZ(ostream & ss, Scalar z, unsigned int, Scalar zFeedrate) {
 	bool doFeed = true;
 
 
-	gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
+	gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, 0, 0, 
+			"move Z", doX, doY, doZ, doE, doFeed);
 
 }
 
@@ -459,31 +460,34 @@ void GCoder::writeSlice(std::ostream& ss,
 					layerSequence << " for extruder " << currentExtruder.id <<
 					" : " << mixup.error << endl;
 		}
+		const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight;
+		const Scalar currentH = currentLayer.layerHeight;
+		const Scalar currentW = currentLayer.layerW;
 		if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, layerSequence, 
+			writeInfills(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doOutlines) {
-			writeOutlines(ss, currentLayer.layerZ, layerSequence, 
+			writeOutlines(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doInsets) {
-			writeInsets(ss, currentLayer.layerZ, layerSequence, 
+			writeInsets(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, layerpaths, layerIter, *it);			
 		}
 		if(gcoderCfg.doInfills && !gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, layerSequence, 
+			writeInfills(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doSupport) {
-			writeSupport(ss, currentLayer.layerZ, layerSequence, 
+			writeSupport(ss, currentZ, currentH, currentW, layerSequence, 
 						 currentExtruder, *it);
 		}
    	}
 }
 
-Scalar Extrusion::crossSectionArea(Scalar height) const {
-	Scalar width = height * extrudedDimensionsRatio;
+Scalar Extrusion::crossSectionArea(Scalar height, Scalar width) const {
+	
 
 	//two semicircles joined by a rectangle
 	Scalar radius = height / 2;

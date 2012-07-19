@@ -105,7 +105,7 @@ public:
 	};
 
 	/* Old interface */
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio);
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio = -1.0);
 	layer_measure_index_t zToLayerAbove(Scalar z) const;
 	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;

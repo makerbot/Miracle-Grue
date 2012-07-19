@@ -10,8 +10,6 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 {
 	layerCfg.firstLayerZ = slicerCfg.firstLayerZ;
 	layerCfg.layerH = slicerCfg.layerH;
-	layerCfg.layerW = slicerCfg.layerW;
-	layerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
 }
 void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	unsigned int sliceCount = seg.readSliceTable().size();
