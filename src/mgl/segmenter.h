@@ -18,7 +18,7 @@ namespace mgl{
 
 class Segmenter {
 public:
-	Segmenter(Scalar firstSliceZ, Scalar layerH, Scalar layerW);
+	Segmenter(Scalar firstSliceZ, Scalar layerH, Scalar layerRatio);
 	const SliceTable& readSliceTable() const;
 	const LayerMeasure& readLayerMeasure() const;
 	const std::vector<libthing::Triangle3>& readAllTriangles() const;

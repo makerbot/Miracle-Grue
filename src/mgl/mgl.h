@@ -110,6 +110,8 @@ public:
 	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;
 	Scalar getLayerW() const;
+	void setLayerH(Scalar h);
+	void setLayerWidthRatio(Scalar wr);
 	
 	/* New interface */
 	const LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex) const;

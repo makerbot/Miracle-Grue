@@ -102,20 +102,19 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		--iter;
 		RegionList::iterator iterModel = iter;
 		++iterModel;
+		//make the bottom model layer relative to top raft
+		LayerMeasure::LayerAttributes& bottomAttribs = 
+				layermeasure.getLayerAttributes(iterModel->layerMeasureId);
+		bottomAttribs.base = iter->layerMeasureId;
+		bottomAttribs.delta = regionerCfg.raftInterfaceThickness;
+		//and the rest relative to it
+		++iter;
+		++iterModel;
 		for(; iterModel != regionlist.end(); ++iterModel){
 			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base = 
 					iter->layerMeasureId;
 		}
 	}
-	
-	//initialize ALL the grids
-	
-	for(RegionList::iterator iter = regionlist.begin(); 
-			iter != regionlist.end(); 
-			++iter) {
-		
-	}
-	
 
 	return regionlist.size();
 }

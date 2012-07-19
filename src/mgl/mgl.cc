@@ -89,6 +89,12 @@ Scalar LayerMeasure::getLayerH() const {
 Scalar LayerMeasure::getLayerW() const {
 	return layerH * layerWidthRatio;
 }
+void LayerMeasure::setLayerH(Scalar h) {
+	layerH = h;
+}
+void LayerMeasure::setLayerWidthRatio(Scalar wr) {
+	layerWidthRatio = wr;
+}
 const LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
 		layer_measure_index_t layerIndex) const {
 	attributesMap::const_iterator iter = attributes.find(layerIndex);
