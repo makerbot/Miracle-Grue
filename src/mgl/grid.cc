@@ -782,6 +782,16 @@ void rangeTableTrim(const ScalarRangeTable &src,
 	}
 }
 
+void dumpRangeTable(const ScalarRangeTable &table) {
+	cout << "Rays " << table.size() << ":";
+	for (ScalarRangeTable::const_iterator ranges = table.begin();
+		 ranges != table.end(); ranges++) {
+		cout << ranges->size() << ", ";
+	}
+
+	cout << endl;
+}
+
 void Grid::trimGridRange(const GridRanges& src, 
 		Scalar cutOff, 
 		GridRanges &result) const {

@@ -206,6 +206,8 @@ public:
 
 };
 
+void dumpRangeTable(const ScalarRangeTable &table);
+
 }
 
 #endif
