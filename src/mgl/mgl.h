@@ -95,7 +95,8 @@ public:
 
 	class LayerAttributes {
 	public:
-		LayerAttributes(Scalar d = 0., Scalar t = 0.27);
+		LayerAttributes(Scalar d = 0., Scalar t = 0.27, 
+				layer_measure_index_t b = 0);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
 		Scalar thickness; // Height of filament

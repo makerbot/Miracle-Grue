@@ -153,6 +153,7 @@ public:
 
     bool doOutlines;
     bool doInsets;
+	bool doSupport;
     bool doInfills;
     bool doInfillsFirst;
 	bool doPrintLayerMessages;
@@ -259,10 +260,15 @@ private:
 //    void writeWarmupSequence(std::ostream & ss);
 //    void writeAnchor(std::ostream & ss);
 	void writeInfills(std::ostream& ss, 
-			Scalar z, 
-			size_t sliceId, 
-			const Extruder& extruder, 
-			const LayerPaths::Layer::ExtruderLayer& paths);
+					  Scalar z, 
+					  size_t sliceId, 
+					  const Extruder& extruder, 
+					  const LayerPaths::Layer::ExtruderLayer& paths);
+	void writeSupport(std::ostream& ss,
+					  Scalar z,
+					  size_t sliceId,
+					  const Extruder& extruder, 
+					  const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeInsets(std::ostream& ss, 
 			Scalar z, 
 			size_t sliceId, 

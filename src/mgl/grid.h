@@ -51,9 +51,25 @@ std::ostream& operator << (std::ostream &os, const ScalarRange &pt);
 typedef std::vector<std::vector<ScalarRange> > ScalarRangeTable;
 
 
-struct GridRanges {
+class GridRanges {
+public:
     ScalarRangeTable xRays;
     ScalarRangeTable yRays;
+	size_t xRaysCount() const {
+		size_t accum = 0;
+		for(size_t i=0; i<xRays.size(); ++i)
+			accum+=xRays[i].size();
+		return accum;
+	}
+	size_t yRaysCount() const {
+		size_t accum = 0;
+		for(size_t i=0; i<yRays.size(); ++i)
+			accum+=yRays[i].size();
+		return accum;
+	}
+	size_t raysCount() const {
+		return xRaysCount() + yRaysCount();
+	}
 };
 
 bool intersectRange(Scalar a, Scalar b, Scalar c, 
@@ -189,6 +205,8 @@ public:
 			GridRanges &result) const;
 
 };
+
+void dumpRangeTable(const ScalarRangeTable &table);
 
 }
 

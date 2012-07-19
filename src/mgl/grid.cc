@@ -600,6 +600,16 @@ void rangeTableIntersection(const ScalarRangeTable &a,
 		const ScalarRangeTable &b,
 		ScalarRangeTable &result) {
 	size_t lineCount = a.size();
+
+	if (a.size() == 0) {
+		result.resize(b.size());
+		return;
+	}
+	else if (b.size() == 0) {
+		result.resize(a.size());
+		return;
+	}
+	
 	assert(lineCount == b.size());
 	result.resize(lineCount);
 
@@ -617,6 +627,15 @@ void rangeTableUnion(const ScalarRangeTable &a,
 		ScalarRangeTable &result) {
 	size_t lineCount = a.size();
 	// cout << " rangeTableUnion " << lineCount << " vs " << b.size() << endl;
+
+	if (a.size() == 0) {
+		result = b;
+		return;
+	}
+	else if (b.size() == 0) {
+		result = a;
+		return;
+	}
 
 	assert(lineCount == b.size());
 	result.resize(lineCount);
@@ -773,6 +792,16 @@ void rangeTableTrim(const ScalarRangeTable &src,
 		vector<ScalarRange> &lineTrims = result[i];
 		rangeTrim(lineSrc, cutOff, lineTrims);
 	}
+}
+
+void dumpRangeTable(const ScalarRangeTable &table) {
+	cout << "Rays " << table.size() << ":";
+	for (ScalarRangeTable::const_iterator ranges = table.begin();
+		 ranges != table.end(); ranges++) {
+		cout << ranges->size() << ", ";
+	}
+
+	cout << endl;
 }
 
 void Grid::trimGridRange(const GridRanges& src, 
