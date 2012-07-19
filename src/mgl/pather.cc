@@ -62,8 +62,9 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		const layer_measure_index_t layerMeasureId =
 			layerRegions->layerMeasureId;
 
-		const Scalar z = layerMeasure.getLayerPosition(layerMeasureId);
+		//adding these should be handled in gcoder
 		const Scalar h = layerMeasure.getLayerThickness(layerMeasureId);
+		const Scalar z = layerMeasure.getLayerPosition(layerMeasureId) + h;
 
 		layerpaths.push_back(LayerPaths::Layer(z, h, layerMeasureId));
 
