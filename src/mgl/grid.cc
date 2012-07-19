@@ -228,8 +228,8 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 	if (points.size() == 0) return;
 
 	int endpoint = points_remaining.begin()->first;
-
-	paths.push_back(OpenPath());
+	
+	OpenPath currentPath;
 
 	while (!points_remaining.empty()) {
 		points_remaining.erase(endpoint);
@@ -258,17 +258,19 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 
 		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
 							outlines)) {
-			paths.push_back(OpenPath());
+			if(currentPath.size() > 1)
+				paths.push_back(currentPath);
+			currentPath.clear();
 		}
 
-		OpenPath &path = paths.back();
-
 		int connected = points_remaining[closest];
-		path.appendPoint(points[closest]);
-		path.appendPoint(points[connected]);
+		currentPath.appendPoint(points[closest]);
+		currentPath.appendPoint(points[connected]);
 		endpoint = points_remaining[closest];
 		points_remaining.erase(closest);
 	}
+	if(currentPath.size() > 1) 
+		paths.push_back(currentPath);
 
 }
 
@@ -598,6 +600,16 @@ void rangeTableIntersection(const ScalarRangeTable &a,
 		const ScalarRangeTable &b,
 		ScalarRangeTable &result) {
 	size_t lineCount = a.size();
+
+	if (a.size() == 0) {
+		result.resize(b.size());
+		return;
+	}
+	else if (b.size() == 0) {
+		result.resize(a.size());
+		return;
+	}
+	
 	assert(lineCount == b.size());
 	result.resize(lineCount);
 
@@ -615,6 +627,15 @@ void rangeTableUnion(const ScalarRangeTable &a,
 		ScalarRangeTable &result) {
 	size_t lineCount = a.size();
 	// cout << " rangeTableUnion " << lineCount << " vs " << b.size() << endl;
+
+	if (a.size() == 0) {
+		result = b;
+		return;
+	}
+	else if (b.size() == 0) {
+		result = a;
+		return;
+	}
 
 	assert(lineCount == b.size());
 	result.resize(lineCount);
@@ -771,6 +792,16 @@ void rangeTableTrim(const ScalarRangeTable &src,
 		vector<ScalarRange> &lineTrims = result[i];
 		rangeTrim(lineSrc, cutOff, lineTrims);
 	}
+}
+
+void dumpRangeTable(const ScalarRangeTable &table) {
+	cout << "Rays " << table.size() << ":";
+	for (ScalarRangeTable::const_iterator ranges = table.begin();
+		 ranges != table.end(); ranges++) {
+		cout << ranges->size() << ", ";
+	}
+
+	cout << endl;
 }
 
 void Grid::trimGridRange(const GridRanges& src, 

@@ -21,15 +21,18 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		const char *modelFile,
 		const char *, // scadFileStr,
 		ostream& gcodeFile,
-		int firstSliceIdx,
-		int lastSliceIdx,
+		int, // firstSliceIdx,
+		int, // lastSliceIdx,
 		RegionList &regions,
-		std::vector< SliceData > &slices,
+		std::vector< SliceData >&, // slices,
 		ProgressBar *progress) {
 
 	Meshy mesh;
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
+	
+	Limits limits = mesh.readLimits();
+	Grid grid;
 
 	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH, slicerCfg.layerW);
 	segmenter.tablaturize(mesh);
@@ -48,12 +51,14 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);
 	//new interface
-	regioner.generateSkeleton(layerloops, regions);
+	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions ,
+			limits, grid);
 
 	Pather pather(progress);
 
 	LayerPaths layers;
-	pather.generatePaths(extruderCfg, layerloops, regions, layers);
+	pather.generatePaths(extruderCfg, regions,
+						 layerloops.layerMeasure, grid, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);
@@ -64,7 +69,8 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//	gcoder.writeGcodeFile(slices, layerloops.layerMeasure, gcodeFile, 
 	//			modelFile, firstSliceIdx, lastSliceIdx);
 	//new interface
-	gcoder.writeGcodeFile(layers, layerloops.layerMeasure, gcodeFile, modelFile);
+	gcoder.writeGcodeFile(layers, layerloops.layerMeasure, 
+			gcodeFile, modelFile);
 
 	//gout.close();
 

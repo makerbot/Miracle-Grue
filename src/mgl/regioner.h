@@ -55,17 +55,21 @@ public:
 	Scalar gridSpacingMultiplier;	// interference between 2 grid lines 
 									//( 0 to 1, for adhesion)
 	unsigned int raftLayers; //< nb of raft layers
-	Scalar raftBaseThickness; //< thickness of each raft layer (mm)
+	Scalar raftBaseThickness; //< thickness of first raft layer (mm)
+	Scalar raftInterfaceThickness; //< thickness of other raft layers (mm)
 	Scalar raftOutset; //< How far to outset rafts (mm)
 };
 
 class LayerRegions {
 public:
+	LoopList outlines;
 	std::list<LoopList> insetLoops;
 	LoopList supportLoops;
 	LoopList interiorLoops;
 
 	GridRanges flatSurface; // # number of slices + roofCount * 2
+	GridRanges supportSurface; //flat surface outside of the actual object
+
 	GridRanges roofing;
 	GridRanges flooring;
 	GridRanges support;
@@ -75,7 +79,7 @@ public:
 	GridRanges solid;
 	GridRanges sparse;
 
-	size_t layerMeasureId;
+	layer_measure_index_t layerMeasureId;
 };
 
 typedef std::vector<LayerRegions> RegionList;
@@ -91,10 +95,19 @@ public:
 	Regioner(const RegionerConfig &regionerCfg, 
 			ProgressBar *progress = NULL);
 
-	void generateSkeleton(const LayerLoops& layerloops, RegionList &regions);
+	void generateSkeleton(const LayerLoops& layerloops, 
+						  LayerMeasure &layerMeasure, 
+						  RegionList &regionlist, 
+						  Limits& limits, //updated to reflect outsets
+						  Grid& grid);	//initialized here
 
 	size_t initRegionList(const LayerLoops& layerloops,
-						  RegionList &regionlist);
+						  RegionList &regionlist, 
+						  LayerMeasure& layermeasure);
+
+	void rafts(const LayerLoops::Layer &bottomLayer,
+			   LayerMeasure &layerMeasure,
+			   RegionList &regionlist);
 
 	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
 			libthing::Insets &sliceInsets,
@@ -135,8 +148,11 @@ public:
 				 const Grid &grid);
 
 	void gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice, 
-			const Grid& grid, 
-			GridRanges& surface);
+							const Grid& grid, 
+							GridRanges& surface);
+	void gridRangesForSlice(const LoopList& innerMostLoops, 
+							const Grid& grid, 
+							GridRanges& surface);
 
 private:
 

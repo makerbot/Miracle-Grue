@@ -7,7 +7,7 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
 
-*/
+ */
 
 
 #ifndef SLICY_H_
@@ -32,11 +32,7 @@
 namespace mgl // Miracle-Grue's geometry library
 {
 
-
-
-
-class Slicy
-{
+class Slicy {
 	// config info
 	Scalar layerW;
 	const char* scadFile;
@@ -60,40 +56,40 @@ class Slicy
 
 
 
-    void openScadFile(const char *scadFile, Scalar layerW, Scalar layerH, size_t sliceCount);
+	void openScadFile(const char *scadFile, Scalar layerW, Scalar layerH, size_t sliceCount);
 	void writeScadSlice(const TriangleIndices & trianglesForSlice,
-						const Polygons & loopsPolys,
-						const Polygons & infillsPolys,
-						const std::vector<Polygons> & insetsPolys,
-						Scalar zz,
-						unsigned int sliceId );
+			const Polygons & loopsPolys,
+			const Polygons & infillsPolys,
+			const std::vector<Polygons> & insetsPolys,
+			Scalar zz,
+			unsigned int sliceId);
 
 	void closeScadFile();
 
 
 
 public:
-	Slicy(	const std::vector<libthing::Triangle3> &allTriangles,
+	Slicy(const std::vector<libthing::Triangle3> &allTriangles,
 			const Limits& limits,
 			Scalar layerW,
 			Scalar layerH,
 			unsigned int sliceCount,
-			const char* scadFile=NULL);
+			const char* scadFile = NULL);
 
 	~Slicy();
 
 
-	bool slice( const TriangleIndices & trianglesForSlice,
-				unsigned int sliceId,
-				unsigned int extruderId,
-				Scalar tubeSpacing,
-				Scalar sliceAngle,
-				unsigned int nbOfShells,
-				Scalar cutoffLength,
-				Scalar infillShrinking,
-				Scalar insetDistanceFactor,
-				bool writeDebugScadFiles,
-				SliceData &slice);
+	bool slice(const TriangleIndices & trianglesForSlice,
+			unsigned int sliceId,
+			unsigned int extruderId,
+			Scalar tubeSpacing,
+			Scalar sliceAngle,
+			unsigned int nbOfShells,
+			Scalar cutoffLength,
+			Scalar infillShrinking,
+			Scalar insetDistanceFactor,
+			bool writeDebugScadFiles,
+			SliceData &slice);
 
 
 

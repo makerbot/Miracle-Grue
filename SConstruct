@@ -187,6 +187,7 @@ if  multi_thread:
     env.Append(LINKFLAGS = '-fopenmp')    
        
 
+env.Append(CCFLAGS = ['-Wall', '-Wextra'])
 #if qt:
 #	print "OS: ", operating_system
 #	print " ** QT version check:",  commands.getoutput("moc -v")

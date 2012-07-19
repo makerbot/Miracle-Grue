@@ -167,7 +167,10 @@ public:
 	iterator getSuspendedPoints() { return fromStart(); }; //stub
 	const_iterator getSuspendedPoints() const { return fromStart(); }; //stub
 	
+	void clear() { points.clear(); endpoints.clear(); }
+	
 	bool empty() const;
+	size_t size() const { return points.size(); };
 	
 private:
 	bool isEnd(iterator i);
@@ -461,7 +464,10 @@ public:
 	cw_iterator getSuspendedPoints();
 	const_cw_iterator getSuspendedPoints() const;
 	
+	void clear() { pointNormals.clear(); }
+	
 	bool empty() const;
+	size_t size() const { return pointNormals.size(); }
 
 	friend class LoopPath;
 private:
@@ -567,6 +573,7 @@ public:
 	const_iterator getSuspendedPoints() const; //stub
 	
 	bool empty() const { return parent->empty(); }
+	size_t size() const { return parent->size(); }
 
 private:
 	const Loop* parent;

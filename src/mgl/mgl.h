@@ -95,7 +95,8 @@ public:
 
 	class LayerAttributes {
 	public:
-		LayerAttributes(Scalar d = 0., Scalar t = 0.27, Scalar wr = 1.7);
+		LayerAttributes(Scalar d = 0., Scalar t = 1.0, Scalar wr = 1.0, 
+				layer_measure_index_t b = 0);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
 		Scalar thickness; // Height of filament
@@ -104,7 +105,7 @@ public:
 	};
 
 	/* Old interface */
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar layerW);
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio);
 	layer_measure_index_t zToLayerAbove(Scalar z) const;
 	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;

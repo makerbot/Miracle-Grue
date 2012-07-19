@@ -59,14 +59,15 @@ void rotatePolygons(Polygons& polygons, Scalar angle) {
 	}
 }
 
-LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t, Scalar wr) 
-		: delta(d), thickness(t), widthRatio(wr), base(0) {}
+LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t, Scalar wr ,
+		layer_measure_index_t b) 
+		: delta(d), thickness(t), widthRatio(wr), base(b) {}
 bool LayerMeasure::LayerAttributes::isAbsolute() const {
 	return base < 0;
 }
-LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar layerW) 
+LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio) 
 		: firstLayerZ(firstLayerZ), layerH(layerH), 
-		layerWidthRatio(layerW/layerH), issuedIndex(256) {
+		layerWidthRatio(widthRatio), issuedIndex(256) {
 	attributes[0] = LayerAttributes(0, 0);
 	attributes[0].base = -1;
 }

@@ -170,14 +170,40 @@ void GCoder::writeInfills(std::ostream& ss,
 			writePath(ss, z, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
-		Log::info() << "ERROR writing infills in slice " <<
+		stringstream errormsg;
+		errormsg << "\nERROR writing infills in slice " << 
+				sliceId << " for extruder " << 
+				extruder.id << " : " << mixup.error << endl;
+		Log::info() << errormsg.str();
+		Log::severe() << errormsg.str();
+	}
+}
+
+void GCoder::writeSupport(std::ostream &ss, 
+						  Scalar z,
+						  size_t sliceId,
+						  const Extruder &extruder,
+						  const LayerPaths::Layer::ExtruderLayer& paths) {
+	try {
+		ss << "(support: "  << paths.supportPaths.size() << ")"<< endl;
+		Extrusion extrusion;
+		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		for(LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter = 
+				paths.supportPaths.begin(); 
+				iter != paths.supportPaths.end(); 
+				++iter){
+			writePath(ss, z, extruder, extrusion, *iter);
+		}
+	} catch (GcoderException& mixup) {
+		Log::info() << "ERROR writing support in slice " <<
 				sliceId << " for extruder " <<
 				extruder.id << " : " << mixup.error << endl;
-		Log::severe() << "ERROR writing infills in slice " <<
+		Log::severe() << "ERROR writing support in slice " <<
 				sliceId << " for extruder " <<
 				extruder.id << " : " << mixup.error << endl;
 	}
 }
+						  
 
 void GCoder::writeInsets(std::ostream& ss, 
 		Scalar z, 
@@ -201,12 +227,12 @@ void GCoder::writeInsets(std::ostream& ss,
 			}
 		}
 	} catch (GcoderException& mixup) {
-		Log::info() << "ERROR writing insets in slice " <<
-				sliceId << " for extruder " <<
+		stringstream errormsg;
+		errormsg << "\nERROR writing insets in slice " << 
+				sliceId << " for extruder " << 
 				extruder.id << " : " << mixup.error << endl;
-		Log::severe() << "ERROR writing insets in slice " <<
-				sliceId << " for extruder " <<
-				extruder.id << " : " << mixup.error << endl;
+		Log::info() << errormsg.str();
+		Log::severe() << errormsg.str();
 	} 
 }
 
@@ -226,12 +252,12 @@ void GCoder::writeOutlines(std::ostream& ss,
 			writePath(ss, z, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
-		Log::info() << "ERROR writing outlines in slice " <<
-				sliceId << " for extruder " <<
+		stringstream errormsg;
+		errormsg << "\nERROR writing outlines in slice " << 
+				sliceId << " for extruder " << 
 				extruder.id << " : " << mixup.error << endl;
-		Log::severe() << "ERROR writing outlines in slice " <<
-				sliceId << " for extruder " <<
-				extruder.id << " : " << mixup.error << endl;
+		Log::info() << errormsg.str();
+		Log::severe() << errormsg.str();
 	}
 }
 
@@ -325,7 +351,7 @@ void GCoder::calcInSetExtrusion(unsigned int extruderId,
 void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths, 
 		unsigned int extruderId, 
 		LayerPaths::const_layer_iterator layerId, 
-		LayerPaths::Layer::ExtruderLayer::const_inset_iterator insetId, 
+		LayerPaths::Layer::ExtruderLayer::const_inset_iterator, // insetId, 
 		Extrusion& extrusionParams) const {
 	string profileName = layerId == layerpaths.begin() ? 
 			gcoderCfg.extruders[extruderId].firstLayerExtrusionProfile :
@@ -338,6 +364,7 @@ void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths,
 //				profileName  << "</name>" << endl;
 		GcoderException mixup((string("Failed to find extrusion profile ") + 
 				profileName).c_str());
+		throw mixup;
 	} else {
 		extrusionParams = it->second;
 	}
@@ -357,7 +384,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
 			layerpaths.end());
 }
 void GCoder::writeGcodeFile(LayerPaths& layerpaths, 
-		const LayerMeasure& layerMeasure, 
+		const LayerMeasure&, // layerMeasure, 
 		std::ostream& gout, 
 		const std::string& title, 
 		LayerPaths::layer_iterator begin, 
@@ -448,7 +475,11 @@ void GCoder::writeSlice(std::ostream& ss,
 			writeInfills(ss, currentLayer.layerZ, layerSequence, 
 					currentExtruder, *it);
 		}
-	}
+		if(gcoderCfg.doSupport) {
+			writeSupport(ss, currentLayer.layerZ, layerSequence, 
+						 currentExtruder, *it);
+		}
+   	}
 }
 
 Scalar Extrusion::crossSectionArea(Scalar height) const {
