@@ -45,10 +45,12 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	
 	grid.init(limits, regionerCfg.layerW * regionerCfg.gridSpacingMultiplier);
 
-	initProgress("rafts", regionerCfg.raftLayers + 4);
-	rafts(*(layerloops.begin()), layerMeasure, regionlist);
-	
-	/* And where do we fill regionlist with regions that are not rafts? */
+	if(regionerCfg.raftLayers > 0) {
+		initProgress("rafts", regionerCfg.raftLayers + 4);
+		rafts(*(layerloops.begin()), layerMeasure, regionlist);
+	}
+
+	LayerRegions &raftlayer = regionlist.front();
 
 	RegionList::iterator firstModelRegion =
 		regionlist.begin() + regionerCfg.raftLayers;
@@ -116,6 +118,7 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 void Regioner::rafts(const LayerLoops::Layer &bottomLayer,
 					 LayerMeasure &layerMeasure,
 					 RegionList &regionlist) {
+
 	//make convex hull of the bottom layer
 	Loop convexLoop = createConvexLoop(bottomLayer.readLoops());
 	tick();
@@ -431,22 +434,13 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		// TODO: move me to the slicer
 		GridRanges sparseSupport;
 		GridRanges sparseInfill;
-		GridRanges all;
 		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
 		grid.subSample(current->supportSurface, infillSkipCount,
 					   current->support);
 
-		grid.gridRangeUnion(current->solid, sparseInfill, all);
-		
-		//TODO: this doesn't seem right, but its what it was doing before I
-		//converted to iterators
-		current->sparse = current->infill;
-		
-		current->infill = all;
-		//current->support = current->supportSurface;
-
+		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
 	}
 
 }
@@ -454,6 +448,9 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 void Regioner::gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice,
 		const Grid& grid,
 		GridRanges& surface) {
+	if (allInsetsForSlice.size() == 0)
+		return;
+
 	const LoopList& innerMostLoops = allInsetsForSlice.back();
 	grid.createGridRanges(innerMostLoops, surface);
 }
