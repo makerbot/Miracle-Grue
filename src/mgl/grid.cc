@@ -598,6 +598,16 @@ void rangeTableIntersection(const ScalarRangeTable &a,
 		const ScalarRangeTable &b,
 		ScalarRangeTable &result) {
 	size_t lineCount = a.size();
+
+	if (a.size() == 0) {
+		result.resize(b.size());
+		return;
+	}
+	else if (b.size() == 0) {
+		result.resize(a.size());
+		return;
+	}
+	
 	assert(lineCount == b.size());
 	result.resize(lineCount);
 
