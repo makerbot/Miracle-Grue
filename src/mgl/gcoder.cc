@@ -493,7 +493,7 @@ Scalar Extrusion::crossSectionArea(Scalar height, Scalar width) const {
 
 	//two semicircles joined by a rectangle
 	Scalar radius = height / 2;
-	return (M_TAU / 2) * radius * radius + height * (width - height);
+	return (M_TAU / 2) * (radius * radius) + height * (width - height);
 	//LONG LIVE TAU!
 }
 
