@@ -95,10 +95,12 @@ public:
 		}
 	}
 	void addPath(const OpenPath& path){
-		myPaths.push_back(path);
+		if(path.size() > 1)
+			myPaths.push_back(path);
 	}
 	void addPath(const Loop& loop) {
-		myLoops.push_back(loop);
+		if(loop.size() > 2)
+			myLoops.push_back(loop);
 	}
 	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
 	void addBoundaries(const PATHS<PATH, ALLOC>& paths) {

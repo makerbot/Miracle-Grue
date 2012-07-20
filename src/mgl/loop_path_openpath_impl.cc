@@ -8,7 +8,9 @@
 
 namespace mgl {
 
-OpenPath::OpenPath() : endpoints(2) {}
+OpenPath::OpenPath() {
+	endpoints.resize(2);
+}
 
 OpenPath::iterator OpenPath::fromStart() { 
 	return iterator(points.begin()); 
@@ -117,6 +119,7 @@ bool OpenPath::isEnd(const_reverse_iterator i) const {
 }
 
 void OpenPath::setEndPoints() const {
+	endpoints.resize(2);
 	endpoints[0] = points.front();
 	endpoints[1] = points.back();
 }
