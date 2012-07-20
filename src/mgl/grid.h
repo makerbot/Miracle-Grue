@@ -23,6 +23,10 @@
 namespace mgl
 {
 
+typedef enum {
+	X_AXIS, Y_AXIS
+} axis_e;
+
 class ScalarRange {
 public:
 	Scalar min;
@@ -204,6 +208,10 @@ public:
     void trimGridRange(const GridRanges& src, Scalar cutOff, 
 			GridRanges &result) const;
 
+	void gridRangesToOpenPaths(const ScalarRangeTable &rays,
+							   const std::vector<Scalar> &values,
+							   const axis_e axis,
+							   OpenPathList &paths);
 };
 
 void dumpRangeTable(const ScalarRangeTable &table);
