@@ -50,14 +50,24 @@ void OpenPath::prependPoint(const PointType& point) {
 	points.insert(points.begin(), point);
 }
 
-OpenPath::entry_iterator OpenPath::getEntryPoints() {
+OpenPath::entry_iterator OpenPath::entryBegin() {
 	setEndPoints();
 	return entry_iterator(endpoints.begin());
 }
 
-OpenPath::const_entry_iterator OpenPath::getEntryPoints() const {
+OpenPath::const_entry_iterator OpenPath::entryBegin() const {
 	setEndPoints();
 	return const_entry_iterator(endpoints.begin());
+}
+
+OpenPath::entry_iterator OpenPath::entryEnd() {
+	setEndPoints();
+	return entry_iterator(endpoints.end());
+}
+
+OpenPath::const_entry_iterator OpenPath::entryEnd() const {
+	setEndPoints();
+	return const_entry_iterator(endpoints.end());
 }
 
 PointType& OpenPath::getExitPoint(PointType entry) {

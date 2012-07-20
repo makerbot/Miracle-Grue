@@ -138,7 +138,7 @@ public:
 	 *          length segment if this is the last point in the path
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint(ITER &beginning) {
+	libthing::LineSegment2 segmentAfterPoint(ITER &beginning) const{
 		ITER endpoint = beginning;
 		++endpoint;
 
@@ -154,8 +154,10 @@ public:
 	 *  OpenPath, this gives you the endpoints.
 	 *  /return iterator for all the valid staring points
 	 */
-	entry_iterator getEntryPoints();
-	const_entry_iterator getEntryPoints() const;
+	entry_iterator entryBegin();
+	const_entry_iterator entryBegin() const;
+	entry_iterator entryEnd();
+	const_entry_iterator entryEnd() const;
 	PointType& getExitPoint(PointType entry);
 	const PointType& getExitPoint(PointType entry) const;
 

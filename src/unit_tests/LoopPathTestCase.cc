@@ -54,7 +54,7 @@ void LoopPathTestCase::testOpenPathBasic() {
 	LineSegment2 seg = path.segmentAfterPoint(i);
 	CPPUNIT_ASSERT_EQUAL(seg.length(), 1.0);
 
-	OpenPath::entry_iterator entry = path.getEntryPoints();
+	OpenPath::entry_iterator entry = path.entryBegin();
 	Vector2 first_entry = *entry;
 	Vector2 start = *(path.fromStart());
 	CPPUNIT_ASSERT_EQUAL(first_entry.x, start.x);

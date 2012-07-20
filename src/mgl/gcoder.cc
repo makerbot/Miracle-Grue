@@ -221,7 +221,7 @@ void GCoder::writeInsets(std::ostream& ss,
 				++i){
 			calcInSetExtrusion(layerpaths, extruder.id, layerId, i, 
 					extrusion);
-			for (LoopPathList::const_iterator j = i->begin();
+			for (OpenPathList::const_iterator j = i->begin();
 				 j != i->end(); ++j) {
 				writePath(ss, z, h, w, extruder, extrusion, *j);
 			}

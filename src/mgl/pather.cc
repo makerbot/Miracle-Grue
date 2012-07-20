@@ -14,6 +14,7 @@
 
 #include "pather.h"
 #include "limits.h"
+#include "pather_optimizer.h"
 
 using namespace mgl;
 using namespace std;
@@ -72,12 +73,29 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				LayerPaths::Layer::ExtruderLayer(extruderCfg.defaultExtruder));
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
+		
+		pather_optimizer optimizer;
+		optimizer.linkPaths = true;
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 
-		outlines(layerRegions->outlines, extruderlayer.outlinePaths);
-
-		insets(insetLoops, extruderlayer.insetPaths);
+		//outlines(layerRegions->outlines, extruderlayer.outlinePaths);
+		
+		optimizer.addPaths(layerRegions->outlines);
+		optimizer.optimize(extruderlayer.outlinePaths);
+		
+		optimizer.addBoundaries(layerRegions->outlines);
+		
+		//insets(insetLoops, extruderlayer.insetPaths);
+		
+		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
+				listIter != insetLoops.end(); 
+				++listIter) {
+			optimizer.addPaths(*listIter);
+		}
+		
+		extruderlayer.insetPaths.push_back(OpenPathList());
+		optimizer.optimize(extruderlayer.insetPaths.back());
 
 		const GridRanges& infillRanges = layerRegions->infill;
 		const GridRanges& supportRanges = layerRegions->support;
