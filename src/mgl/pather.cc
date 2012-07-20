@@ -109,15 +109,56 @@ void Pather::outlines(const LoopList& outline_loops,
 
 void Pather::insets(const list<LoopList>& inset_loops,
 		list<LoopPathList> &inset_paths) {
+	std::list<const Loop*> flat_insets;
 	for (list<LoopList>::const_iterator i = inset_loops.begin();
 			i != inset_loops.end(); ++i) {
 
-		inset_paths.push_back(LoopPathList());
-		LoopPathList& lp_list = inset_paths.back();
+//		inset_paths.push_back(LoopPathList());
+//		LoopPathList& lp_list = inset_paths.back();
 
 		for (LoopList::const_iterator j = i->begin(); j != i->end(); ++j) {
-			lp_list.push_back(LoopPath(*j, j->clockwise(),
-					j->counterClockwise()));
+//			lp_list.push_back(LoopPath(*j, j->clockwise(),
+//					j->counterClockwise()));
+			flat_insets.push_back(&*j);
+		}
+	}
+	inset_paths.push_back(LoopPathList());
+	LoopPathList& onlyList = inset_paths.back();
+	while(!flat_insets.empty()) {
+		if(onlyList.empty()) {
+			onlyList.push_back(LoopPath(*flat_insets.front(), 
+					flat_insets.front()->clockwise(), 
+					flat_insets.front()->counterClockwise(
+					*(flat_insets.front()->clockwise()))));
+			flat_insets.pop_front();
+		} else {
+			PointType current_exit = *onlyList.back().fromEnd();
+			std::list<const Loop*>::iterator closestLoop = flat_insets.begin();
+			Loop::entry_iterator closestEntry = flat_insets.front()->entryBegin();
+			Scalar closestDistance = (closestEntry->getPoint() - 
+					current_exit).magnitude();
+			//find the closest entry
+			for(std::list<const Loop*>::iterator loopIter = flat_insets.begin(); 
+					loopIter != flat_insets.end(); 
+					++loopIter) {
+				for(Loop::entry_iterator entryIter = (*loopIter)->entryBegin(); 
+						entryIter != (*loopIter)->entryEnd(); 
+						++entryIter) {
+					Scalar distance = (entryIter->getPoint() - 
+							current_exit).magnitude();
+					if(distance < closestDistance) {
+						closestLoop = loopIter;
+						closestEntry = entryIter;
+						closestDistance = distance;
+					}
+				}
+			}
+			//add its loopPath
+			onlyList.push_back(LoopPath(*(*closestLoop), 
+					(*closestLoop)->clockwise(*closestEntry), 
+					(*closestLoop)->counterClockwise(*closestEntry)));
+			//remove from list
+			flat_insets.erase(closestLoop);
 		}
 	}
 }
