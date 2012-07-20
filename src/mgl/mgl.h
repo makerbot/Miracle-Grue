@@ -95,7 +95,7 @@ public:
 
 	class LayerAttributes {
 	public:
-		LayerAttributes(Scalar d = 0., Scalar t = 1.0, Scalar wr = 1.0, 
+		LayerAttributes(Scalar d = 0., Scalar t = -1.0, Scalar wr = -1.0, 
 				layer_measure_index_t b = 0);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
@@ -110,6 +110,7 @@ public:
 	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;
 	Scalar getLayerW() const;
+	Scalar getLayerWidthRatio() const;
 	void setLayerH(Scalar h);
 	void setLayerWidthRatio(Scalar wr);
 	

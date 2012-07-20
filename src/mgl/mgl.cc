@@ -89,6 +89,9 @@ Scalar LayerMeasure::getLayerH() const {
 Scalar LayerMeasure::getLayerW() const {
 	return layerH * layerWidthRatio;
 }
+Scalar LayerMeasure::getLayerWidthRatio() const {
+	return layerWidthRatio;
+}
 void LayerMeasure::setLayerH(Scalar h) {
 	layerH = h;
 }
