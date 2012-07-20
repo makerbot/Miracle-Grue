@@ -224,6 +224,7 @@ mgl_cc = [
           'src/mgl/mgl.cc',
           'src/mgl/miracle.cc',
           'src/mgl/pather.cc',
+          'src/mgl/pather_optimizer.cc',
           'src/mgl/pather_layerpaths.cc',
           'src/mgl/regioner.cc',
           'src/mgl/segment.cc',

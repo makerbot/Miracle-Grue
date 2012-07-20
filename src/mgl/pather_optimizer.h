@@ -17,7 +17,7 @@ namespace mgl {
 class pather_optimizer {
 public:
 	bool linkPaths;
-	pather_optimizer(bool lp = false) : linkPaths(lp) {}
+	pather_optimizer(bool lp = false);
 	
 	template <template<class, class> class PATHS, typename ALLOC>
 	void optimize(PATHS<OpenPath, ALLOC>& paths) {
@@ -83,6 +83,7 @@ public:
 				paths.push_back(closestPath(closestPathIter, closestEntry));
 			}
 		}
+		//if moves don't cross boundaries, ok to extrude them
 		if(linkPaths)
 			link(paths);
 	}
@@ -94,14 +95,8 @@ public:
 			addPath(*iter);
 		}
 	}
-	void addPath(const OpenPath& path){
-		if(path.size() > 1)
-			myPaths.push_back(path);
-	}
-	void addPath(const Loop& loop) {
-		if(loop.size() > 2)
-			myLoops.push_back(loop);
-	}
+	void addPath(const OpenPath& path);
+	void addPath(const Loop& loop);
 	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
 	void addBoundaries(const PATHS<PATH, ALLOC>& paths) {
 		for(typename PATHS<PATH, ALLOC>::const_iterator iter = paths.begin(); 
@@ -110,51 +105,18 @@ public:
 			addBoundary(*iter);
 		}
 	}
-	void addBoundary(const OpenPath& path) {
-		for(OpenPath::const_iterator iter = path.fromStart(); 
-				iter != path.end(); 
-				++iter) {
-			boundaries.push_back(path.segmentAfterPoint(iter));
-		}
-	}
-	void addBoundary(const Loop& loop) {
-		for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
-				iter != loop.clockwiseEnd(); 
-				++iter) {
-			boundaries.push_back(loop.segmentAfterPoint(iter));
-		}
-	}
-	void clearBoundaries() {
-		boundaries.clear();
-	}
-	void clearPaths() {
-		myLoops.clear();
-		myPaths.clear();
-	}
+	void addBoundary(const OpenPath& path);
+	void addBoundary(const Loop& loop);
+	void clearBoundaries();
+	void clearPaths();
 private:
 	OpenPath closestLoop(LoopList::iterator loopIter, 
-			Loop::entry_iterator entryIter) {
-		OpenPath ret;
-		LoopPath lp(*loopIter, 
-				loopIter->clockwise(*entryIter), 
-				loopIter->counterClockwise(*entryIter));
-		ret.appendPoints(lp.fromStart(), lp.end());
-		myLoops.erase(loopIter);
-		return ret;
-	}
+			Loop::entry_iterator entryIter);
 	OpenPath closestPath(OpenPathList::iterator pathIter, 
-			OpenPath::entry_iterator entryIter) {
-		OpenPath ret;
-		if(*entryIter == *(pathIter->fromStart())) {
-			ret = *pathIter;
-		} else {
-			ret.appendPoints(pathIter->fromEnd(), pathIter->rend());
-		}
-		myPaths.erase(pathIter);
-		return ret;
-	}
+			OpenPath::entry_iterator entryIter);
 	template <template<class, class> class PATHS, typename ALLOC>
 	void link(PATHS<OpenPath, ALLOC>& paths) {
+		//connect paths if between them the movement not crosses boundaries
 		typedef typename PATHS<OpenPath, ALLOC>::iterator iterator;
 		for(iterator iter = paths.begin(); 
 				iter != paths.end(); 
@@ -173,16 +135,7 @@ private:
 			}
 		}
 	}
-	bool crossesBoundaries(const libthing::LineSegment2& seg) {
-		for(std::list<libthing::LineSegment2>::const_iterator iter = 
-				boundaries.begin(); 
-				iter != boundaries.end(); 
-				++iter) {
-			if(seg.intersects(*iter))
-				return true;
-		}
-		return false;
-	}
+	bool crossesBoundaries(const libthing::LineSegment2& seg);
 	std::list<libthing::LineSegment2> boundaries;
 	LoopList myLoops;
 	OpenPathList myPaths;
