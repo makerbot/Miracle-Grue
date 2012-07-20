@@ -16,6 +16,7 @@
 #include "log.h"
 #include <limits>
 #include <list>
+#include <vector>
 
 namespace mgl {
 
@@ -183,14 +184,16 @@ bool crossesOutlines(const LineSegment2 &seg,
 void Grid::gridRangesToOpenPaths(const ScalarRangeTable &rays,
 								 const std::vector<Scalar> &values,
 								 const axis_e axis,
-								 OpenPathList &paths) {
+								 OpenPathList &paths) const {
 
 	std::vector<Scalar>::const_iterator value = values.begin();
+	ScalarRangeTable::const_iterator ray = rays.begin();
 
-	for (ScalarRangeTable::const_iterator ray = rays.begin();
-		 ray != rays.end(); ray++) {
+	for (;
+		 ray != rays.end() && value != values.end(); 
+		 ++value, ++ray) {
 		for (vector<ScalarRange>::const_iterator range = ray->begin();
-			 range != ray->end(); ray++) {
+			 range != ray->end(); ++range) {
 			paths.push_back(OpenPath());
 
 			OpenPath &path = paths.back();

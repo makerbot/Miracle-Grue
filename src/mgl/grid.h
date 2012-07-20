@@ -211,7 +211,7 @@ public:
 	void gridRangesToOpenPaths(const ScalarRangeTable &rays,
 							   const std::vector<Scalar> &values,
 							   const axis_e axis,
-							   OpenPathList &paths);
+							   OpenPathList &paths) const;
 };
 
 void dumpRangeTable(const ScalarRangeTable &table);
