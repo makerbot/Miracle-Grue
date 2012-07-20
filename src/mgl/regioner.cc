@@ -28,8 +28,8 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		RegionList& regionlist,
 		Limits& limits,
 		Grid& grid) {
-	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
 	layerMeasure.setLayerWidthRatio(regionerCfg.layerWidthRatio);
+	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
 	limits.inflate(regionerCfg.raftOutset + 10,
@@ -84,7 +84,11 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		LayerRegions currentRegions;
 		currentRegions.outlines = iter->readLoops();
 		currentRegions.layerMeasureId = iter->getIndex();
-
+		
+		//set an appropriate ratio
+		layermeasure.getLayerAttributes(currentRegions.layerMeasureId).widthRatio = 
+				layermeasure.getLayerWidthRatio();
+		
 		regionlist.push_back(currentRegions);
 	}
 
@@ -98,7 +102,8 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		for (size_t raftidx = 0; raftidx < regionerCfg.raftLayers;
 				++raftidx, ++iter) {
 			iter->layerMeasureId = layermeasure.createAttributes(
-					LayerMeasure::LayerAttributes(0, 0, 0));
+					LayerMeasure::LayerAttributes(0, 0, 
+					layermeasure.getLayerWidthRatio()));
 		}
 		//make all model layers be relative to top raft
 		--iter;

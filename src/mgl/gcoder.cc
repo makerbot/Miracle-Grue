@@ -437,7 +437,9 @@ void GCoder::writeSlice(std::ostream& ss,
 	LayerPaths::Layer& currentLayer = *layerIter;
 	unsigned int extruderCount = currentLayer.extruders.size();
 	ss << "(Slice " << layerSequence << ", " << extruderCount << 
-			" " << plural("Extruder", extruderCount) << ")"<< endl;
+			" " << plural("Extruder", extruderCount) << ") "<< endl;
+	ss << "(Layer Height: \t" << layerIter->layerHeight << ")" << endl;
+	ss << "(Layer Width: \t" << layerIter->layerW << ")" << endl;
 	if(gcoderCfg.doPrintLayerMessages){
 		//print layer message to printer screen if config enabled
 		ss << "M70 P20 (Layer: " << layerSequence << ")" << endl;
