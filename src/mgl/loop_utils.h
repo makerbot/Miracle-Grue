@@ -9,7 +9,11 @@ class AngleFunctor {
 public:
 	AngleFunctor(PointType ref) : reference(ref) {}
 	bool operator () (const PointType& l, const PointType& r) const {
-		return (l-reference).crossProduct(r - reference) < 0.0;
+		Scalar sinl = (l-reference).unit().crossProduct((r-reference).unit());
+		Scalar cosl = (l-reference).unit().dotProduct((r-reference).unit());
+		Scalar ret = atan2(sinl, cosl);
+		//std::cout << ret << std::endl;
+		return ret < 0;
 	}
 private:
 	PointType reference;
@@ -64,26 +68,34 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 	Loop retLoop;
 	
 	for(size_t i = 0; i < pointsUnique.size(); ++i) {
-		if(i < 2) {
-			retLoop.insertPointBefore(pointsUnique[i], retLoop.clockwiseEnd());
-			continue;
-		}
-		Loop::finite_cw_iterator last1(retLoop.clockwiseEnd());
-		--last1;
-		Loop::finite_cw_iterator last2 = last1;
-		--last2;
-		/* Here is where we fill the loop with the points, 
-		 optionally dropping some */
-		PointType currentPoint = pointsUnique[i];
-		if(AngleFunctor(last2->getPoint())(
-				currentPoint, last1->getPoint())) {
-			/* point at last1 was not on the convex loop */
-			last1->setPoint(currentPoint);
-		} else {
-			/* point at last1 was valid, next we will check currentPoint */
-			retLoop.insertPointBefore(currentPoint, retLoop.clockwiseEnd());
-		}
+		retLoop.insertPointBefore(pointsUnique[i], retLoop.clockwiseEnd());
 	}
+	
+	bool seenConCave = false;
+	do {
+		seenConCave = false;
+		bool init = false;
+		for(Loop::cw_iterator iter = retLoop.clockwise(); 
+				iter != retLoop.clockwise() || !init;  
+				++iter, init = true) {
+			Loop::cw_iterator left = iter;
+			Loop::cw_iterator right = iter;
+			--left;
+			++right;
+			if(AngleFunctor(*iter).operator ()(*left, *right)) {
+				Loop tmp;
+				for(Loop::finite_cw_iterator iter2 = retLoop.clockwiseFinite(); 
+						iter2 != retLoop.clockwiseEnd(); 
+						++iter2) {
+					if(iter2 != iter)
+						tmp.insertPointBefore(*iter2, tmp.clockwiseEnd());
+				}
+				retLoop = tmp;
+				iter = retLoop.clockwise();
+				seenConCave = true;
+			}
+		}
+	} while(seenConCave);
 	
 	return retLoop;
 }
