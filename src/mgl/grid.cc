@@ -180,13 +180,37 @@ bool crossesOutlines(const LineSegment2 &seg,
 	return false;
 }
 
+void Grid::gridRangesToOpenPaths(const ScalarRangeTable &rays,
+								 const std::vector<Scalar> &values,
+								 const axis_e axis,
+								 OpenPathList &paths) {
+
+	std::vector<Scalar>::const_iterator value = values.begin();
+
+	for (ScalarRangeTable::const_iterator ray = rays.begin();
+		 ray != rays.end(); ray++) {
+		for (vector<ScalarRange>::const_iterator range = ray->begin();
+			 range != ray->end(); ray++) {
+			paths.push_back(OpenPath());
+
+			OpenPath &path = paths.back();
+
+			if (axis == X_AXIS) {
+				path.appendPoint(Vector2(range->min, *value));
+				path.appendPoint(Vector2(range->max, *value));
+			} else {
+				path.appendPoint(Vector2(*value, range->min));
+				path.appendPoint(Vector2(*value, range->max));
+			}
+		}
+		value++;
+	}
+}
+
 
 typedef map<int, int> PointMap;
 typedef PointMap::iterator PointIter;
 
-typedef enum {
-	X_AXIS, Y_AXIS
-} axis_e;
 
 void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 									 const std::vector<Scalar> &values, // the opposite axis values for each line
