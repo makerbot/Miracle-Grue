@@ -8,7 +8,9 @@
 
 namespace mgl {
 
-OpenPath::OpenPath() : endpoints(2) {}
+OpenPath::OpenPath() {
+	endpoints.resize(2);
+}
 
 OpenPath::iterator OpenPath::fromStart() { 
 	return iterator(points.begin()); 
@@ -50,14 +52,24 @@ void OpenPath::prependPoint(const PointType& point) {
 	points.insert(points.begin(), point);
 }
 
-OpenPath::entry_iterator OpenPath::getEntryPoints() {
+OpenPath::entry_iterator OpenPath::entryBegin() {
 	setEndPoints();
 	return entry_iterator(endpoints.begin());
 }
 
-OpenPath::const_entry_iterator OpenPath::getEntryPoints() const {
+OpenPath::const_entry_iterator OpenPath::entryBegin() const {
 	setEndPoints();
 	return const_entry_iterator(endpoints.begin());
+}
+
+OpenPath::entry_iterator OpenPath::entryEnd() {
+	setEndPoints();
+	return entry_iterator(endpoints.end());
+}
+
+OpenPath::const_entry_iterator OpenPath::entryEnd() const {
+	setEndPoints();
+	return const_entry_iterator(endpoints.end());
 }
 
 PointType& OpenPath::getExitPoint(PointType entry) {
@@ -107,6 +119,7 @@ bool OpenPath::isEnd(const_reverse_iterator i) const {
 }
 
 void OpenPath::setEndPoints() const {
+	endpoints.resize(2);
 	endpoints[0] = points.front();
 	endpoints[1] = points.back();
 }

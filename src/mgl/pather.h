@@ -55,9 +55,9 @@ public:
 		typedef ExtruderList::const_iterator const_extruder_iterator;
 		class ExtruderLayer{
 		public:
-			typedef std::list<LoopPathList> InsetList;
+			typedef std::list<OpenPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
-			typedef std::list<LoopPath> OutlineList;
+			typedef std::list<OpenPath> OutlineList;
 			typedef InsetList::iterator inset_iterator;
 			typedef InfillList::iterator infill_iterator;
 			typedef OutlineList::iterator outline_iterator;

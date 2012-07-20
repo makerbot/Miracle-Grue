@@ -14,6 +14,7 @@
 
 #include "pather.h"
 #include "limits.h"
+#include "pather_optimizer.h"
 
 using namespace mgl;
 using namespace std;
@@ -72,21 +73,74 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				LayerPaths::Layer::ExtruderLayer(extruderCfg.defaultExtruder));
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
+		
+		pather_optimizer optimizer;
+		optimizer.linkPaths = true;
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
+		//const std::list<LoopList>& supportLoops = LayerRegions->supportLoops;
 
-		outlines(layerRegions->outlines, extruderlayer.outlinePaths);
-
-		insets(insetLoops, extruderlayer.insetPaths);
+		//outlines(layerRegions->outlines, extruderlayer.outlinePaths);
+		
+		optimizer.addPaths(layerRegions->outlines);
+		optimizer.optimize(extruderlayer.outlinePaths);
+		
+		optimizer.addBoundaries(layerRegions->outlines);
+		
+		//insets(insetLoops, extruderlayer.insetPaths);
+		
+		
+		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
+				listIter != insetLoops.end(); 
+				++listIter) {
+			optimizer.addPaths(*listIter);
+		}
+		
+		extruderlayer.insetPaths.push_back(OpenPathList());
+		optimizer.optimize(extruderlayer.insetPaths.back());
 
 		const GridRanges& infillRanges = layerRegions->infill;
 		const GridRanges& supportRanges = layerRegions->support;
 
-		infills(infillRanges, grid, layerRegions->outlines,
+		const std::vector<Scalar>& values = 
+				direction ? grid.getXValues() : grid.getYValues();
+		axis_e axis = direction ? X_AXIS : Y_AXIS;
+		
+		
+		OpenPathList infillPaths;
+		OpenPathList supportPaths;
+		grid.gridRangesToOpenPaths(
+				direction ? infillRanges.xRays : infillRanges.yRays,  
+				values, 
+				axis, 
+				infillPaths);
+		
+		grid.gridRangesToOpenPaths(
+				direction ? supportRanges.xRays : supportRanges.yRays, 
+				values, 
+				axis, 
+				supportPaths);
+		
+//		optimizer.addPaths(infillPaths);
+//		optimizer.optimize(extruderlayer.infillPaths);
+//		
+//		optimizer.addPaths(supportPaths);
+//		optimizer.optimize(extruderlayer.supportPaths);
+		
+		infills(infillRanges, grid, layerRegions->outlines, 
 				direction, extruderlayer.infillPaths);
-
-		infills(supportRanges, grid, layerRegions->supportLoops,
+		
+		infills(supportRanges, grid, layerRegions->outlines, 
 				direction, extruderlayer.supportPaths);
+		
+		optimizer.clearPaths();
+		optimizer.addPaths(extruderlayer.infillPaths);
+		extruderlayer.infillPaths.clear();
+		optimizer.optimize(extruderlayer.infillPaths);
+		
+		optimizer.addPaths(extruderlayer.supportPaths);
+		extruderlayer.supportPaths.clear();
+		optimizer.optimize(extruderlayer.supportPaths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;
