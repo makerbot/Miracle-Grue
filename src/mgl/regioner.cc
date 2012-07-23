@@ -401,17 +401,15 @@ void Regioner::support(RegionList::iterator regionsBegin,
 					   const Grid &grid) {
 	RegionList::iterator above = regionsEnd;
 	RegionList::iterator current = above;
-	current--;
 
-	LoopManip manip;
-
-	while (current !+ regionsBegin) {
+	while (above != regionsBegin) {
+		current--;
 		LoopList &support current->supportLoops;
 
 		if (above->supportLoops.empty()) {
 			//beginning of new support
 			support.insert(support.begin(),
-						   above->floorLoops.begin(), above->floorLoops.end());
+						   above->oulines.begin(), above->outlines.end());
 		}
 		else {
 			//start with a projection of support from the layer above
@@ -420,14 +418,19 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 			if (!above->floorLoops.empty()) {
 				//expand support with floors from above
-				manip.loopUnion(support, above->floorLoops);
+				loopUnion(support, above->outlines);
 			}
 		}
 
 		if (!support.empty()) {
 			//subtract outlines from the support loops to keep support from
 			//overlapping the object
-			manip.loopSubtract(support, current->outlines);
+			loopSubtract(support, current->outlines);
+		}
+
+		above--;
+	}
+}
 
 void Regioner::infills(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
