@@ -70,6 +70,9 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	initProgress("flooring", sliceCount);
 	flooring(firstModelRegion, regionlist.end(), grid);
 
+	initProgress("support", sliceCount);
+	support(firstModelRegion, regionlist.end(), grid);
+
 	initProgress("infills", sliceCount);
 	infills(regionlist.begin(), regionlist.end(), grid);
 }
@@ -392,6 +395,39 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 	regionsBegin->flooring = regionsBegin->flatSurface;
 
 }
+
+void Regioner::support(RegionList::iterator regionsBegin,
+					   RegionList::iterator regionsEnd,
+					   const Grid &grid) {
+	RegionList::iterator above = regionsEnd;
+	RegionList::iterator current = above;
+	current--;
+
+	LoopManip manip;
+
+	while (current !+ regionsBegin) {
+		LoopList &support current->supportLoops;
+
+		if (above->supportLoops.empty()) {
+			//beginning of new support
+			support.insert(support.begin(),
+						   above->floorLoops.begin(), above->floorLoops.end());
+		}
+		else {
+			//start with a projection of support from the layer above
+			support.insert(support.begin(),
+						   above->support.begin(), above->support.end());
+
+			if (!above->floorLoops.empty()) {
+				//expand support with floors from above
+				manip.loopUnion(support, above->floorLoops);
+			}
+		}
+
+		if (!support.empty()) {
+			//subtract outlines from the support loops to keep support from
+			//overlapping the object
+			manip.loopSubtract(support, current->outlines);
 
 void Regioner::infills(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
