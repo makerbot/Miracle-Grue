@@ -485,6 +485,9 @@ void GCoder::writeSlice(std::ostream& ss,
 			writeSupport(ss, currentZ, currentH, currentW, layerSequence, 
 						 currentExtruder, *it);
 		}
+		
+		writePaths(ss, currentZ, currentH, currentW, layerSequence, 
+				currentExtruder, it->paths);
    	}
 }
 

@@ -24,7 +24,11 @@
 namespace mgl
 {
 
-class GcoderException : public Exception {	public: GcoderException(const char *msg) :Exception(msg){} };
+class GcoderException : public Exception {	
+public: 
+	GcoderException(const char *msg) 
+			: Exception(msg){} 
+};
 
 
 /// Properties of a print platform
@@ -285,6 +289,12 @@ private:
 			const Extruder& extruder,
 			const Extrusion& extrusion, 
 			const PATH& path);
+	template <template <class, class> class LABELEDPATHS, class ALLOC>
+	void writePaths(std::ostream& ss, 
+			Scalar z, Scalar h, Scalar w, 
+			size_t layerSequence, 
+			const Extruder& extruder, 
+			const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
 	libthing::Vector2 startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
@@ -334,8 +344,46 @@ void GCoder::writePath(std::ostream& ss,
 	gantry.snort(ss, extruder, extrusion);
 	ss << std::endl;
 	//Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
-	
-	
+}
+
+template <template <class, class> class LABELEDPATHS, class ALLOC>
+void GCoder::writePaths(std::ostream& ss, 
+		Scalar z, Scalar h, Scalar w, 
+		size_t layerSequence, 
+		const Extruder& extruder, 
+		const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
+	typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
+			const_iterator;
+	for(const_iterator iter = labeledPaths.begin(); 
+			iter != labeledPaths.end(); 
+			++iter) {
+		const LabeledOpenPath& currentLP = *iter;
+		Extrusion extrusion;
+		switch(currentLP.myLabel.myType) {
+		case PathLabel::TYP_OUTLINE:
+			if(!gcoderCfg.doOutlines)
+				continue;
+			calcInSetExtrusion(extruder.id, layerSequence, 
+					currentLP.myLabel.myValue, -1, extrusion);
+			break;
+		case PathLabel::TYP_INSET:
+			if(!gcoderCfg.doInsets)
+				continue;
+			calcInSetExtrusion(extruder.id, layerSequence, 
+					currentLP.myLabel.myValue, -1, extrusion);
+			break;
+		case PathLabel::TYP_INFILL:
+			if(!gcoderCfg.doInfills)
+				continue;
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			break;
+		default:
+			GcoderException mixup("Invalid path label type");
+			throw mixup;
+			break;
+		}
+		writePath(ss, z, h, w, extruder, extrusion, currentLP.myPath);
+	}
 }
 
 
