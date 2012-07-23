@@ -199,14 +199,14 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() + extrusion.retractDistance
 				+ extrusion.restartExtraDistance, extrusion.retractRate,
-				0, 0,
+				FLUID_H, FLUID_W,
 				"squirt", false, false, false, true, true); //only E and F
 	} else {
 		ss << "M108 R" << extrusion.squirtFlow << " (squirt)" << endl;
 		ss << "M101" << endl;
 		g1(ss, extruder, extrusion,
 				lineStart.x, lineStart.y, z, extrusion.squirtFeedrate, 
-				0, 0, NULL);
+				FLUID_H, FLUID_W, NULL);
 		ss << "M108 R" << extrusion.flow << " (good to go)" << endl;
 	}
 
@@ -218,13 +218,13 @@ void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() - extrusion.retractDistance,
-				extrusion.retractRate, 0, 0, "snort",
+				extrusion.retractRate, FLUID_H, FLUID_W, "snort",
 				false, false, false, true, true); //only E and F
 	} else {
 		ss << "M108 R" << extrusion.snortFlow << "  (snort)" << endl;
 		ss << "M102" << endl;
 		g1(ss, extruder, extrusion, lineEnd.x, lineEnd.y, z,
-				extrusion.snortFeedrate, 0, 0, NULL);
+				extrusion.snortFeedrate, FLUID_H, FLUID_W, NULL);
 		ss << "M103" << endl;
 	}
 

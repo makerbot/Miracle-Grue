@@ -97,7 +97,6 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		}
 		
 		extruderlayer.insetPaths.push_back(OpenPathList());
-		optimizer.optimize(extruderlayer.insetPaths.back());
 
 		const GridRanges& infillRanges = layerRegions->infill;
 		const GridRanges& supportRanges = layerRegions->support;
@@ -133,14 +132,11 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		infills(supportRanges, grid, layerRegions->outlines, 
 				direction, extruderlayer.supportPaths);
 		
-		optimizer.clearPaths();
 		optimizer.addPaths(extruderlayer.infillPaths);
-		extruderlayer.infillPaths.clear();
-		optimizer.optimize(extruderlayer.infillPaths);
-		
 		optimizer.addPaths(extruderlayer.supportPaths);
+		extruderlayer.infillPaths.clear();
 		extruderlayer.supportPaths.clear();
-		optimizer.optimize(extruderlayer.supportPaths);
+		optimizer.optimize(extruderlayer.insetPaths.back());
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;
