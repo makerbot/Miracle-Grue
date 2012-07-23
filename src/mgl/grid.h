@@ -23,10 +23,6 @@
 namespace mgl
 {
 
-typedef enum {
-	X_AXIS, Y_AXIS
-} axis_e;
-
 class ScalarRange {
 public:
 	Scalar min;

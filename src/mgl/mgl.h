@@ -54,6 +54,11 @@ typedef std::vector<TriangleIndices> SliceTable;
 
 typedef int layer_measure_index_t;
 
+enum axis_e {
+	X_AXIS, 
+	Y_AXIS
+};
+
 
 // Bring over from mgl.cc
 Scalar AreaSign(const libthing::Vector2& a,
