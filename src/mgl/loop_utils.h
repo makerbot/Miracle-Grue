@@ -16,8 +16,6 @@ public:
 			return false;
 		PointType lvec = (l-reference).unit();
 		PointType rvec = (r-reference).unit();
-//		Scalar lang = atan2f(lvec.y, lvec.x);
-//		Scalar rang = atan2f(rvec.y, rvec.x);
 		return my_compare(rvec.crossProduct(lvec), 0);
 	}
 private:
@@ -39,8 +37,6 @@ public:
 			return l.y == r.y ? my_compare(l.x, r.x) : my_compare(l.y, r.y);
 			break;
 		default:
-//			Exception mixup("Invalid axis enumeration in Axis Functor");
-//			throw mixup;
 			return false;
 		}
 	}
@@ -86,14 +82,6 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 	/* Sort on X */
 	std::sort(points.begin(), points.end(), AxisFunctor(Y_AXIS));
 	
-//	std::cout << "Point Count: " << points.size() << std::endl;
-//	for(std::vector<PointType>::iterator iter = points.begin(); 
-//			iter != points.end(); 
-//			++iter) {
-//		std::cout << "Point: " << *iter << std::endl;
-//	}
-//	std::cout << std::endl;
-	
 	Loop retLoop;
 		
 	std::vector<PointType>::iterator startIter = points.begin();
@@ -106,26 +94,17 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 		++bestIter;
 		if(bestIter == points.end())
 			bestIter = points.begin();
-//		std::cout << "Last Point:  " << *lastIter << std::endl;
 		for(std::vector<PointType>::iterator iter = points.begin(); 
 				iter != points.end(); 
 				++iter ){
 			if(AngleFunctor(*lastIter).operator ()(
 					*bestIter, *iter)) {
-//				std::cout << *iter << " \t better than " << *bestIter << std::endl;
 				bestIter = iter;
-			} else {
-//				std::cout << *iter << " \t worse  than " << *bestIter << std::endl;
 			}
-//			retLoop.insertPointBefore(*iter, retLoop.clockwiseEnd());
 		}
-//		std::cout << "Best Point:  " << *bestIter << std::endl;
-//		std::cout << "Start Point: " << *startIter << std::endl;
 		lastIter = bestIter;
 		retLoop.insertPointBefore(*lastIter, retLoop.clockwiseEnd());
 	} while(lastIter != startIter);
-	
-//	std::cout << "RetLoop Contents: " << retLoop.size() << std::endl;
 	return retLoop;
 }
 
