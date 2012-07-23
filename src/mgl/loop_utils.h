@@ -86,13 +86,13 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 	/* Sort on X */
 	std::sort(points.begin(), points.end(), AxisFunctor(Y_AXIS));
 	
-	std::cout << "Point Count: " << points.size() << std::endl;
-	for(std::vector<PointType>::iterator iter = points.begin(); 
-			iter != points.end(); 
-			++iter) {
-		std::cout << "Point: " << *iter << std::endl;
-	}
-	std::cout << std::endl;
+//	std::cout << "Point Count: " << points.size() << std::endl;
+//	for(std::vector<PointType>::iterator iter = points.begin(); 
+//			iter != points.end(); 
+//			++iter) {
+//		std::cout << "Point: " << *iter << std::endl;
+//	}
+//	std::cout << std::endl;
 	
 	Loop retLoop;
 		
@@ -106,26 +106,26 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 		++bestIter;
 		if(bestIter == points.end())
 			bestIter = points.begin();
-		std::cout << "Last Point:  " << *lastIter << std::endl;
+//		std::cout << "Last Point:  " << *lastIter << std::endl;
 		for(std::vector<PointType>::iterator iter = points.begin(); 
 				iter != points.end(); 
 				++iter ){
 			if(AngleFunctor(*lastIter).operator ()(
 					*bestIter, *iter)) {
-				std::cout << *iter << " \t better than " << *bestIter << std::endl;
+//				std::cout << *iter << " \t better than " << *bestIter << std::endl;
 				bestIter = iter;
 			} else {
-				std::cout << *iter << " \t worse  than " << *bestIter << std::endl;
+//				std::cout << *iter << " \t worse  than " << *bestIter << std::endl;
 			}
 //			retLoop.insertPointBefore(*iter, retLoop.clockwiseEnd());
 		}
-		std::cout << "Best Point:  " << *bestIter << std::endl;
-		std::cout << "Start Point: " << *startIter << std::endl;
+//		std::cout << "Best Point:  " << *bestIter << std::endl;
+//		std::cout << "Start Point: " << *startIter << std::endl;
 		lastIter = bestIter;
 		retLoop.insertPointBefore(*lastIter, retLoop.clockwiseEnd());
 	} while(lastIter != startIter);
 	
-	std::cout << "RetLoop Contents: " << retLoop.size() << std::endl;
+//	std::cout << "RetLoop Contents: " << retLoop.size() << std::endl;
 	return retLoop;
 }
 
