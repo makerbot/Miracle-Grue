@@ -102,11 +102,11 @@ bool OpenPath::empty() const {
 	return points.empty();
 }
 
-bool OpenPath::isEnd(iterator i) {
+bool OpenPath::isEnd(iterator i) const {
 	return i == end();
 }
 
-bool OpenPath::isEnd(reverse_iterator i) {
+bool OpenPath::isEnd(reverse_iterator i) const {
 	return i == rend();
 }
 

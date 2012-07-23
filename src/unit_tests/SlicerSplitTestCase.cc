@@ -78,7 +78,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	cout << fixed;
 
 	Meshy mesh;
-	Segmenter seg(firstLayerZ, layerH, layerW);
+	Segmenter seg(firstLayerZ, layerH);
 
 	string inputFile = inputDir + "ultimate_calibration_test.stl";
 	mesh.readStlFile(inputFile.c_str());
