@@ -161,8 +161,7 @@ void SlicerTestCase::testSlicyKnot_44()
     initConfig(config);
 	Meshy mesh;
 	Segmenter seg(config["slicer"]["firstLayerZ"].asDouble(), 
-			config["slicer"]["layerH"].asDouble(), 
-			config["slicer"]["layerW"].asDouble()); // 0.35
+			config["slicer"]["layerH"].asDouble()); // 0.35
 	mesh.readStlFile( modelFile.c_str());
 	seg.tablaturize(mesh);
 	

@@ -175,8 +175,8 @@ public:
 	size_t size() const { return points.size(); };
 	
 private:
-	bool isEnd(iterator i);
-	bool isEnd(reverse_iterator i);
+	bool isEnd(iterator i) const;
+	bool isEnd(reverse_iterator i) const;
 	bool isEnd(const_iterator i) const;
 	bool isEnd(const_reverse_iterator i) const;
 
