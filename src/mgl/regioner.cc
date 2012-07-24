@@ -32,6 +32,9 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
+	initProgress("support", sliceCount);
+	support(regionlist.begin(), regionlist.end());
+
 	limits.inflate(regionerCfg.raftOutset + 10,
 			regionerCfg.raftOutset + 10,
 			0);
@@ -69,9 +72,6 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 
 	initProgress("flooring", sliceCount);
 	flooring(firstModelRegion, regionlist.end(), grid);
-
-	initProgress("support", sliceCount);
-	support(firstModelRegion, regionlist.end(), grid);
 
 	initProgress("infills", sliceCount);
 	infills(regionlist.begin(), regionlist.end(), grid);
@@ -397,35 +397,35 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 }
 
 void Regioner::support(RegionList::iterator regionsBegin,
-					   RegionList::iterator regionsEnd,
-					   const Grid &grid) {
+					   RegionList::iterator regionsEnd) {
 	RegionList::iterator above = regionsEnd;
 	RegionList::iterator current = above;
 
 	while (above != regionsBegin) {
 		current--;
-		LoopList &support current->supportLoops;
+		LoopList &support = current->supportLoops;
 
 		if (above->supportLoops.empty()) {
 			//beginning of new support
 			support.insert(support.begin(),
-						   above->oulines.begin(), above->outlines.end());
+						   above->outlines.begin(), above->outlines.end());
 		}
 		else {
 			//start with a projection of support from the layer above
 			support.insert(support.begin(),
-						   above->support.begin(), above->support.end());
+						   above->supportLoops.begin(),
+						   above->supportLoops.end());
 
-			if (!above->floorLoops.empty()) {
+			//if (!above->floorLoops.empty()) {
 				//expand support with floors from above
-				loopUnion(support, above->outlines);
-			}
+				loopsUnion(support, above->outlines);
+				//}
 		}
 
 		if (!support.empty()) {
 			//subtract outlines from the support loops to keep support from
 			//overlapping the object
-			loopSubtract(support, current->outlines);
+			loopsDifference(support, current->outlines);
 		}
 
 		above--;

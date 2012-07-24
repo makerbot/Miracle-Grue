@@ -145,6 +145,10 @@ public:
 				  RegionList::iterator regionsEnd,
 				  const Grid &grid);
 
+	void support(RegionList::iterator regionsBegin,
+				 RegionList::iterator regionsEnd);
+
+
 	void infills(RegionList::iterator regionsBegin,
 				 RegionList::iterator regionsEnd,
 				 const Grid &grid);
