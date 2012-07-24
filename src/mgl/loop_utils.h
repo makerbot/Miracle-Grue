@@ -108,6 +108,21 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 	return retLoop;
 }
 
+void loopsUnion(LoopList &subject, const LoopList &apply);
+void loopsUnion(LoopList &dest,
+				const LoopList &subject, const LoopList &apply);
+
+void loopsDifference(LoopList &subject, const LoopList &apply);
+void loopsDifference(LoopList &dest,
+					 const LoopList &subject, const LoopList &apply);
+
+void loopsIntersection(LoopList &subject, const LoopList &apply);
+void loopsIntersection(LoopList &dest,
+					   const LoopList &subject, const LoopList &apply);
+
+void loopsXOR(LoopList &subject, const LoopList &apply);
+void loopsXOR(LoopList &dest,
+			  const LoopList &subject, const LoopList &apply);
 }
 
 

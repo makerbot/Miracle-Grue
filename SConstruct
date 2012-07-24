@@ -232,7 +232,8 @@ mgl_cc = [
           'src/mgl/shrinky.cc',
           'src/mgl/slicer.cc',
           'src/mgl/slicer_loops.cc',
-          'src/mgl/slicy.cc']
+          'src/mgl/slicy.cc',
+          'src/mgl/loop_utils.cc']
 
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
