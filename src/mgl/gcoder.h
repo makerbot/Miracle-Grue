@@ -311,15 +311,18 @@ void GCoder::writePath(std::ostream& ss,
 		throw mixup;
 	}
 	typename PATH::const_iterator current = path.fromStart();
-	// rapid move into position
-	gantry.g1(ss, extruder, extrusion,
-			current->x, current->y, z, 
-			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
-			0, 0, 
-			"move into position");
 	PointType last = *current;
 	++current;
-	gantry.squirt(ss, extruder, extrusion);
+	// rapid move into position
+	if(gantry.get_x() != last.x || gantry.get_y() != last.y) {
+		gantry.snort(ss, extruder, extrusion);
+		gantry.g1(ss, extruder, extrusion,
+				last.x, last.y, z, 
+				gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
+				0, 0, 
+				"move into position");
+		gantry.squirt(ss, extruder, extrusion);
+	}
 	for(; current!=path.end(); ++current){
 		PointType relative = (*current)-last;
 		typename PATH::const_iterator nextIter = current;

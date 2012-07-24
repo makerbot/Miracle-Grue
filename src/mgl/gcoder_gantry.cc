@@ -195,6 +195,8 @@ void Gantry::g1(std::ostream &ss,
 
 void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		const Extruder &extruder, const Extrusion &extrusion) {
+	if(get_extruding())
+		return;
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() + extrusion.retractDistance
@@ -215,6 +217,8 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 
 void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 		const Extruder &extruder, const Extrusion &extrusion) {
+	if(!get_extruding())
+		return;
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() - extrusion.retractDistance,
