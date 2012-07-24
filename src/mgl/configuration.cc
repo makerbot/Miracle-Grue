@@ -392,6 +392,9 @@ void loadRegionerConfigFromFile(const Configuration& config,
 	regionerCfg.raftOutset = doubleCheck(
 			config["regioner"]["raftOutset"], 
 			"regioner.raftOutset", regionerCfg.raftOutset);
+	regionerCfg.raftModelSpacing = doubleCheck(
+			config["regioner"]["raftModelSpacing"], 
+			"regioner.raftModelSpacing", regionerCfg.raftModelSpacing);
 	
 }
 

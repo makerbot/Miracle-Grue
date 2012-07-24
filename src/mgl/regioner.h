@@ -37,7 +37,9 @@ public:
 			gridSpacingMultiplier(0.95), 
 			raftLayers(0), 
 			raftBaseThickness(0.5), 
-			raftOutset(6) {}
+			raftInterfaceThickness(0.27), 
+			raftOutset(6), 
+			raftModelSpacing(0) {}
 	// These are relevant to regioner
 	Scalar tubeSpacing; //< distance in between infill (mm)
 	Scalar angle; //< angle of infill
@@ -58,6 +60,7 @@ public:
 	Scalar raftBaseThickness; //< thickness of first raft layer (mm)
 	Scalar raftInterfaceThickness; //< thickness of other raft layers (mm)
 	Scalar raftOutset; //< How far to outset rafts (mm)
+	Scalar raftModelSpacing; //< Distance between top raft and model
 };
 
 class LayerRegions {

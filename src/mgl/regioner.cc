@@ -113,7 +113,8 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		LayerMeasure::LayerAttributes& bottomAttribs =
 				layermeasure.getLayerAttributes(iterModel->layerMeasureId);
 		bottomAttribs.base = iter->layerMeasureId;
-		bottomAttribs.delta = regionerCfg.raftInterfaceThickness;
+		bottomAttribs.delta = regionerCfg.raftInterfaceThickness + 
+				regionerCfg.raftModelSpacing;
 		//and the rest relative to it
 		++iter;
 		++iterModel;
