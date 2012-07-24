@@ -86,7 +86,7 @@ LabeledOpenPath pather_optimizer::closestLoop(
 	//turn into into a path
 	retLabeled.myPath.appendPoints(lp.fromStart(), lp.end());
 	retLabeled.myLabel = loopIter->myLabel;
-	if(retLabeled.myPath.size() < 2) {
+	if(retLabeled.myPath.size() < 3) {
 		std::stringstream msg;
 		msg << "Degenerate path of size " <<retLabeled.myPath.size() << 
 				" from loop of size " << loopIter->myPath.size() << std::endl;
@@ -112,7 +112,7 @@ LabeledOpenPath pather_optimizer::closestPath(
 				pathIter->myPath.fromEnd(), pathIter->myPath.rend());
 	}
 	retLabeled.myLabel = pathIter->myLabel;
-	if(retLabeled.myPath.size() < 3) {
+	if(retLabeled.myPath.size() < 2) {
 		std::stringstream msg;
 		msg << "Degenerate path of size " <<retLabeled.myPath.size() << 
 				" from path of size " << pathIter->myPath.size() << std::endl;
