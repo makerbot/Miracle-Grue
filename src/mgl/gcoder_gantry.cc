@@ -170,6 +170,8 @@ void Gantry::g1(std::ostream &ss,
 	bool doFeed = true;
 	bool doE = false;
 	Scalar me = getCurrentE();
+	
+	PointType relativeVector(gx - get_x(), gy - get_y());
 
 	if (!libthing::tequals(get_x(), gx, SAMESAME_TOL)) {
 		doX = true;
@@ -187,8 +189,10 @@ void Gantry::g1(std::ostream &ss,
 			extruder->isVolumetric()) {
 		doE = true;
 		me = volumetricE(*extruder, *extrusion, gx, gy, gz, h, w);
+		if(libthing::tequals(me, getCurrentE(), 0.01) || 
+				relativeVector.magnitude() < gantryCfg.get_coarseness())
+			return;
 	}
-
 	g1Motion(ss, gx, gy, gz, me, gfeed, h, w, comment,
 			doX, doY, doZ, doE, doFeed);
 }
@@ -301,6 +305,7 @@ GantryConfig::GantryConfig() {
 	set_xy_max_homing(true);
 	set_z_max_homing(false);
 	set_scaling_Factor(1.0);
+	set_coarseness(0.05);
 }
 
 Scalar GantryConfig::get_start_x() const {
@@ -383,6 +388,10 @@ Scalar GantryConfig::get_scaling_factor() const {
 	return scalingFactor;
 }
 
+Scalar GantryConfig::get_coarseness() const {
+	return coarseness;
+}
+
 Scalar GantryConfig::segmentVolume(const Extruder &, // extruder,
 		const Extrusion &extrusion,
 		LineSegment2 &segment, Scalar h, Scalar w) const {
@@ -421,6 +430,10 @@ void GantryConfig::set_layer_h(Scalar lh) {
 
 void GantryConfig::set_scaling_Factor(Scalar sf) {
 	scalingFactor = sf;
+}
+
+void GantryConfig::set_coarseness(Scalar c) {
+	coarseness = c;
 }
 
 

@@ -39,8 +39,30 @@ public:
 			}
 		}
 		//if moves don't cross boundaries, ok to extrude them
-		if(linkPaths)
-			link(paths);
+		if(linkPaths) {
+			link(paths); 
+		}
+	}
+	template <template <class, class> class LABELEDPATHS, typename ALLOC>
+	void optimize(LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledpaths) {
+		PointType lastPoint;
+		LabeledOpenPath currentClosest;
+		if(!myLoops.empty())
+			lastPoint = *(myLoops.begin()->myPath.entryBegin());
+		while(!myLoops.empty() || !myPaths.empty()) {
+			try {
+				while(closest(lastPoint, currentClosest)) {
+					lastPoint = *(currentClosest.myPath.fromEnd());
+					labeledpaths.push_back(currentClosest);
+				}
+			} catch(Exception mixup) {
+				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+			}
+		}
+		//if moves don't cross boundaries, ok to extrude them
+		if(linkPaths) {
+			link(labeledpaths);
+		}
 	}
 	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
 	void addPaths(const PATHS<PATH, ALLOC>& paths) {
@@ -108,6 +130,41 @@ private:
 				lastIter->appendPoints(iter->fromStart(), iter->end());
 				iter = paths.erase(iter);
 				--iter;
+			}
+		}
+	}
+	template <template <class, class> class LABELEDPATHS, typename ALLOC>
+	void link(LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledpaths) {
+		//connect paths if between them the movement not crosses boundaries
+		typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::iterator iterator;
+		for(iterator iter = labeledpaths.begin(); 
+				iter != labeledpaths.end(); 
+				++iter) {
+			iterator lastIter;
+			if(iter != labeledpaths.begin()) {
+				lastIter= iter;
+				--lastIter;
+				LabeledOpenPath& last = *lastIter;
+				LabeledOpenPath& current = *iter;
+				PointType lastPoint = *(last.myPath.fromEnd());
+				PointType currentPoint = *(current.myPath.fromStart());
+				if(current.myLabel.myType == PathLabel::TYP_CONNECTION || 
+						last.myLabel.myType == PathLabel::TYP_CONNECTION)
+					continue;
+				if(lastPoint == currentPoint)
+					continue;
+				libthing::LineSegment2 transition(lastPoint, currentPoint);
+				if(crossesBoundaries(transition))
+					continue;
+				LabeledOpenPath connection;
+				connection.myPath.appendPoint(lastPoint);
+				connection.myPath.appendPoint(currentPoint);
+				connection.myLabel.myType = PathLabel::TYP_CONNECTION;
+				iter = labeledpaths.insert(iter, connection);
+//				last.myPath.appendPoints(current.myPath.fromStart(), 
+//						current.myPath.end());
+//				iter = labeledpaths.erase(iter);
+//				--iter;
 			}
 		}
 	}

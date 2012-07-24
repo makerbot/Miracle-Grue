@@ -20,6 +20,7 @@ public:
 		TYP_INFILL,
 		TYP_INSET,
 		TYP_OUTLINE,
+		TYP_CONNECTION,
 		TYP_INVALID
 	};
 	//this can and should change, not used by gcoder in this release

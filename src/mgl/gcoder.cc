@@ -71,8 +71,7 @@ GCoder::GCoder(const GCoderConfig &gCoderCfg,
 		ProgressBar* progress) : 
 		Progressive(progress), 
 		gcoderCfg(gCoderCfg), 
-		gantry(gCoderCfg.gantryCfg), 
-		distanceTol(0.05){
+		gantry(gCoderCfg.gantryCfg){
 	gantry.init_to_start();
 }
 
