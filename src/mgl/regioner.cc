@@ -399,6 +399,7 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 void Regioner::support(RegionList::iterator regionsBegin,
 					   RegionList::iterator regionsEnd) {
 	RegionList::iterator above = regionsEnd;
+	--above; //work from the highest layer down
 	RegionList::iterator current = above;
 
 	while (above != regionsBegin) {
@@ -407,28 +408,24 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support.insert(support.begin(),
-						   above->outlines.begin(), above->outlines.end());
+			support = above->outlines;
 		}
 		else {
 			//start with a projection of support from the layer above
-			support.insert(support.begin(),
-						   above->supportLoops.begin(),
-						   above->supportLoops.end());
+			support = above->supportLoops;
 
-			//if (!above->floorLoops.empty()) {
-				//expand support with floors from above
-				loopsUnion(support, above->outlines);
-				//}
+			//add the outlines of layer above
+			loopsUnion(support, above->outlines);
 		}
 
 		if (!support.empty()) {
-			//subtract outlines from the support loops to keep support from
-			//overlapping the object
+			//subtract current outlines from the support loops to keep support
+			//from overlapping the object
 			loopsDifference(support, current->outlines);
 		}
 
 		above--;
+		tick();
 	}
 }
 
