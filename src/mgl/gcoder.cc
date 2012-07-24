@@ -170,6 +170,7 @@ void GCoder::writeInfills(std::ostream& ss,
 				++iter){
 			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
+		gantry.snort(ss, Extruder, extrusion);
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
 		errormsg << "\nERROR writing infills in slice " << 
@@ -196,6 +197,7 @@ void GCoder::writeSupport(std::ostream &ss,
 				++iter){
 			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
+		gantry.snort(ss, Extruder, extrusion);
 	} catch (GcoderException& mixup) {
 		Log::info() << "ERROR writing support in slice " <<
 				sliceId << " for extruder " <<
@@ -217,18 +219,23 @@ void GCoder::writeInsets(std::ostream& ss,
 	try {
 		ss << "(insets: "  << paths.insetPaths.size() << ")"<< endl;
 		Extrusion extrusion;
+		calcInSetExtrusion(layerpaths, extruder.id, layerId, 0, 
+					extrusion);
+		gantry.snort(ss, Extruder, extrusion);
 		for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator i = 
 				paths.insetPaths.begin(); 
 				i != paths.insetPaths.end(); 
 				++i){
 			calcInSetExtrusion(layerpaths, extruder.id, layerId, i, 
 					extrusion);
-			gantry.snort(ss, Extruder, extrusion);
 			for (OpenPathList::const_iterator j = i->begin();
 				 j != i->end(); ++j) {
 				writePath(ss, z, h, w, extruder, extrusion, *j);
 			}
 		}
+		calcInSetExtrusion(layerpaths, extruder.id, layerId, 0, 
+					extrusion);
+		gantry.snort(ss, Extruder, extrusion);
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
 		errormsg << "\nERROR writing insets in slice " << 

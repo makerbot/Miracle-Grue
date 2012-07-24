@@ -357,6 +357,9 @@ void GCoder::writePaths(std::ostream& ss,
 		const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
 	typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
 			const_iterator;
+	Extrusion fluidstrusion;
+	calcInfillExtrusion(extruder.id, layerSequence, fluidstrusion);
+	gantry.snort(ss, extruder, fluidstrusion);
 	for(const_iterator iter = labeledPaths.begin(); 
 			iter != labeledPaths.end(); 
 			++iter) {
@@ -387,6 +390,7 @@ void GCoder::writePaths(std::ostream& ss,
 		}
 		writePath(ss, z, h, w, extruder, extrusion, currentLP.myPath);
 	}
+	gantry.snort(ss, extruder, fluidstrusion);
 }
 
 
