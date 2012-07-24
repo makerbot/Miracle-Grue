@@ -9,32 +9,50 @@ pather_optimizer::pather_optimizer(bool lp) : linkPaths(lp) {}
 
 void pather_optimizer::addPath(const OpenPath& path, const PathLabel& label) {
 	//we don't consider paths of a single point
-	if(path.size() > 1)
+	if(path.size() > 1) {
 		myPaths.push_back(LabeledOpenPath(label, path));
+	} else {
+		Exception mixup("Attempted to add degenerate path to optimizer");
+		throw mixup;
+	}
 }
 
 void pather_optimizer::addPath(const Loop& loop, const PathLabel& label) {
 	//we only consider loops that are polygons, not lines or points
-	if(loop.size() > 2)
+	if(loop.size() > 2) {
 		myLoops.push_back(LabeledLoop(label, loop));
+	} else {
+		Exception mixup("Attempted to add degenerate loop to optimizer");
+		throw mixup;
+	}
 }
 
 void pather_optimizer::addBoundary(const OpenPath& path) {
 	//boundaries are broken down into linesegments
-	for(OpenPath::const_iterator iter = path.fromStart(); 
-			iter != path.end(); 
-			++iter) {
-		boundaries.push_back(path.segmentAfterPoint(iter));
+	if(path.size() > 1) {
+		for(OpenPath::const_iterator iter = path.fromStart(); 
+				iter != path.end(); 
+				++iter) {
+			boundaries.push_back(path.segmentAfterPoint(iter));
+		}
+	} else {
+		Exception mixup("Attempted to add degenerate path to optimizer boundary");
+		throw mixup;
 	}
 }
 
 void pather_optimizer::addBoundary(const Loop& loop) {
 		//boundaries are broken down into linesegments
+	if(loop.size() > 2) {
 		for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
 				iter != loop.clockwiseEnd(); 
 				++iter) {
 			boundaries.push_back(loop.segmentAfterPoint(iter));
 		}
+	} else {
+		Exception mixup("Attempted to add degenerate loop to optimizer boundary");
+		throw mixup;
+	}
 }
 
 void pather_optimizer::clearBoundaries() {
@@ -46,38 +64,51 @@ void pather_optimizer::clearPaths() {
 	myPaths.clear();
 }
 
-OpenPath pather_optimizer::closestLoop(std::list<LabeledLoop>::iterator loopIter, 
+LabeledOpenPath pather_optimizer::closestLoop( 
+		std::list<LabeledLoop>::iterator loopIter, 
 		Loop::entry_iterator entryIter) {
 	//we have found a closest loop
-	OpenPath ret;
+	LabeledOpenPath retLabeled;
 	LoopPath lp(loopIter->myPath, 
 			loopIter->myPath.clockwise(*entryIter), 
 			loopIter->myPath.counterClockwise(*entryIter));
 	//turn into into a path
-	ret.appendPoints(lp.fromStart(), lp.end());
+	retLabeled.myPath.appendPoints(lp.fromStart(), lp.end());
+	retLabeled.myLabel = loopIter->myLabel;
+	if(retLabeled.myPath.size() < 2) {
+		Exception mixup("Degenerate path in pather_optimizer!");
+		throw mixup;
+	}
 	//remove it from our "things to optimize"
 	myLoops.erase(loopIter);
-	return ret;
+	return retLabeled;
 }
 
-OpenPath pather_optimizer::closestPath(std::list<LabeledOpenPath>::iterator pathIter, 
+LabeledOpenPath pather_optimizer::closestPath( 
+		std::list<LabeledOpenPath>::iterator pathIter, 
 		OpenPath::entry_iterator entryIter) {
 	//we have found a closest path
-	OpenPath ret;
+	LabeledOpenPath retLabeled;
 	//extract it in the right order
 	if(*entryIter == *(pathIter->myPath.fromStart())) {
-		ret = pathIter->myPath;
+		retLabeled.myPath = pathIter->myPath;
 	} else {
-		ret.appendPoints(pathIter->myPath.fromEnd(), pathIter->myPath.rend());
+		retLabeled.myPath.appendPoints(
+				pathIter->myPath.fromEnd(), pathIter->myPath.rend());
+	}
+	retLabeled.myLabel = pathIter->myLabel;
+	if(retLabeled.myPath.size() < 3) {
+		Exception mixup("Degenerate loop in pather_optimizer!");
+		throw mixup;
 	}
 	//remove it from our "things to optimize"
 	myPaths.erase(pathIter);
-	return ret;
+	return retLabeled;
 }
 
 void pather_optimizer::findClosestLoop(const PointType& point, 
-		std::list<LabeledLoop>::iterator loopIter, 
-		Loop::entry_iterator entryIter) {
+		std::list<LabeledLoop>::iterator& loopIter, 
+		Loop::entry_iterator& entryIter) {
 	
 	if(myLoops.empty()) {
 		loopIter = myLoops.end();
@@ -106,8 +137,8 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 }
 
 void pather_optimizer::findClosestPath(const PointType& point, 
-		std::list<LabeledOpenPath>::iterator pathIter, 
-		OpenPath::entry_iterator entryIter) {
+		std::list<LabeledOpenPath>::iterator& pathIter, 
+		OpenPath::entry_iterator& entryIter) {
 	if(myPaths.empty()) {
 		pathIter = myPaths.end();
 		return;
@@ -132,6 +163,38 @@ void pather_optimizer::findClosestPath(const PointType& point,
 			}
 		}
 	}
+}
+
+bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) {
+	std::list<LabeledLoop>::iterator loopIter;
+	Loop::entry_iterator loopEntry;
+	std::list<LabeledOpenPath>::iterator pathIter;
+	OpenPath::entry_iterator pathEntry;
+	
+	findClosestLoop(point, loopIter, loopEntry);
+	findClosestPath(point, pathIter, pathEntry);
+
+	if(loopIter != myLoops.end() && pathIter != myPaths.end()) {
+		//pick best
+		Scalar loopDistance = (point - *loopEntry).magnitude();
+		Scalar pathDistance = (point - *pathEntry).magnitude();
+		if(loopDistance < pathDistance) {
+			//loop wins
+			result = closestLoop(loopIter, loopEntry);
+		} else {
+			result = closestPath(pathIter, pathEntry);
+		}
+	} else if(loopIter != myLoops.end()) {
+		//pick loop
+		result = closestLoop(loopIter, loopEntry);
+	} else if(pathIter != myPaths.end()) {
+		//pick path
+		result = closestPath(pathIter, pathEntry);
+	} else {
+		return false;
+	}
+	std::cout << "Size of closest thing: " << result.myPath.size() << std::endl;
+	return true;
 }
 
 bool pather_optimizer::crossesBoundaries(const libthing::LineSegment2& seg) {
