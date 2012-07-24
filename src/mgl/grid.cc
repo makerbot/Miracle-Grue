@@ -206,7 +206,6 @@ void Grid::gridRangesToOpenPaths(const ScalarRangeTable &rays,
 				path.appendPoint(Vector2(*value, range->max));
 			}
 		}
-		value++;
 	}
 }
 
