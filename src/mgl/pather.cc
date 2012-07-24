@@ -83,7 +83,6 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		//outlines(layerRegions->outlines, extruderlayer.outlinePaths);
 		
 		optimizer.addPaths(layerRegions->outlines);
-		cout << "Optimizing boundaries for slice " << currentSlice << endl;
 		optimizer.optimize(extruderlayer.outlinePaths);
 		
 		optimizer.addBoundaries(layerRegions->outlines);
@@ -131,7 +130,6 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		optimizer.addPaths(extruderlayer.supportPaths);
 		extruderlayer.infillPaths.clear();
 		extruderlayer.supportPaths.clear();
-		cout << "Optimizing model for slice " << currentSlice << endl;
 		optimizer.optimize(extruderlayer.insetPaths.back());
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(

@@ -26,29 +26,21 @@ public:
 		//this will empty all the internal containers
 		PointType lastPoint;
 		LabeledOpenPath currentClosest;
-		std::cout << "Optimizing " << myLoops.size() << " loops and " 
-				<< myPaths.size() << " paths" << std::endl;
-		std::cout << "Sizes of Loops: " << std::endl;
-		for(std::list<LabeledLoop>::iterator iter = myLoops.begin(); 
-				iter != myLoops.end(); 
-				++iter) {
-			std::cout << iter->myPath.size() << std::endl;
-		}
-		std::cout << "Sizes of Paths: " << std::endl;
-		for(std::list<LabeledOpenPath>::iterator iter = myPaths.begin(); 
-				iter != myPaths.end(); 
-				++iter) {
-			std::cout << iter->myPath.size() << std::endl;
-		}
-		while(closest(lastPoint, currentClosest)) {
-			std::cout << "Size of current closest path: " << 
-					currentClosest.myPath.size() << std::endl;
-			lastPoint = *(currentClosest.myPath.fromEnd());
-			paths.push_back(currentClosest.myPath);
+		if(!myLoops.empty())
+			lastPoint = *(myLoops.begin()->myPath.entryBegin());
+		while(!myLoops.empty() || !myPaths.empty()) {
+			try {
+				while(closest(lastPoint, currentClosest)) {
+					lastPoint = *(currentClosest.myPath.fromEnd());
+					paths.push_back(currentClosest.myPath);
+				}
+			} catch(Exception mixup) {
+				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+			}
 		}
 		//if moves don't cross boundaries, ok to extrude them
-		//if(linkPaths)
-		//	link(paths);
+		if(linkPaths)
+			link(paths);
 	}
 	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
 	void addPaths(const PATHS<PATH, ALLOC>& paths) {

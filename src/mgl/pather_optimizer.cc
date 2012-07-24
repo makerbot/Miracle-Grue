@@ -1,5 +1,6 @@
 #include <list>
 #include <limits.h>
+#include <string>
 
 #include "pather_optimizer.h"
 
@@ -69,14 +70,28 @@ LabeledOpenPath pather_optimizer::closestLoop(
 		Loop::entry_iterator entryIter) {
 	//we have found a closest loop
 	LabeledOpenPath retLabeled;
+	Loop::cw_iterator cwIter = loopIter->myPath.clockwise(*entryIter);
+	Loop::ccw_iterator ccwIter = loopIter->myPath.counterClockwise(*entryIter);
+	if(cwIter == loopIter->myPath.clockwiseEnd() || 
+			ccwIter == loopIter->myPath.counterClockwiseEnd()) {
+		std::stringstream msg;
+		msg << "Invalid entryIterator in pather_optimizer::closestLoop" 
+				<< std::endl;
+		Exception mixup(msg.str());
+		throw mixup;
+	}
 	LoopPath lp(loopIter->myPath, 
-			loopIter->myPath.clockwise(*entryIter), 
-			loopIter->myPath.counterClockwise(*entryIter));
+			cwIter, 
+			ccwIter);
 	//turn into into a path
 	retLabeled.myPath.appendPoints(lp.fromStart(), lp.end());
 	retLabeled.myLabel = loopIter->myLabel;
 	if(retLabeled.myPath.size() < 2) {
-		Exception mixup("Degenerate path in pather_optimizer!");
+		std::stringstream msg;
+		msg << "Degenerate path of size " <<retLabeled.myPath.size() << 
+				" from loop of size " << loopIter->myPath.size() << std::endl;
+		Exception mixup(msg.str());
+		myLoops.erase(loopIter);
 		throw mixup;
 	}
 	//remove it from our "things to optimize"
@@ -98,7 +113,11 @@ LabeledOpenPath pather_optimizer::closestPath(
 	}
 	retLabeled.myLabel = pathIter->myLabel;
 	if(retLabeled.myPath.size() < 3) {
-		Exception mixup("Degenerate loop in pather_optimizer!");
+		std::stringstream msg;
+		msg << "Degenerate path of size " <<retLabeled.myPath.size() << 
+				" from path of size " << pathIter->myPath.size() << std::endl;
+		Exception mixup(msg.str().c_str());
+		myPaths.erase(pathIter);
 		throw mixup;
 	}
 	//remove it from our "things to optimize"
@@ -129,7 +148,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 					*(currentEntry)).magnitude();
 			if(distance < closestDistance) {
 				closestDistance = distance;
-				entryIter = entryIter;
+				entryIter = currentEntry;
 				loopIter = currentIter;
 			}
 		}
@@ -158,7 +177,7 @@ void pather_optimizer::findClosestPath(const PointType& point,
 					*(currentEntry)).magnitude();
 			if(distance < closestDistance) {
 				closestDistance = distance;
-				entryIter = entryIter;
+				entryIter = currentEntry;
 				pathIter = currentIter;
 			}
 		}
@@ -173,7 +192,7 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 	
 	findClosestLoop(point, loopIter, loopEntry);
 	findClosestPath(point, pathIter, pathEntry);
-
+	
 	if(loopIter != myLoops.end() && pathIter != myPaths.end()) {
 		//pick best
 		Scalar loopDistance = (point - *loopEntry).magnitude();
@@ -193,7 +212,6 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 	} else {
 		return false;
 	}
-	std::cout << "Size of closest thing: " << result.myPath.size() << std::endl;
 	return true;
 }
 
