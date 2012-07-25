@@ -163,11 +163,15 @@ private:
 				connection.myPath.appendPoint(currentPoint);
 				connection.myLabel.myType = PathLabel::TYP_CONNECTION;
 				if(last.myLabel == current.myLabel && false) {
-				last.myPath.appendPoints(current.myPath.fromStart(), 
-						current.myPath.end());
-				iter = labeledpaths.erase(iter);
-				--iter;
+					//naive case
+					//concatenate paths of same label
+					last.myPath.appendPoints(current.myPath.fromStart(), 
+							current.myPath.end());
+					iter = labeledpaths.erase(iter);
+					--iter;
 				} else {
+					//smart case
+					//properly identify this as connectivity
 					iter = labeledpaths.insert(iter, connection);
 				}
 			}
