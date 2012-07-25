@@ -131,7 +131,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 //		extruderlayer.infillPaths.clear();
 //		extruderlayer.supportPaths.clear();
 		optimizer.addPaths(infillPaths, PathLabel::TYP_INFILL);
-		optimizer.addPaths(supportPaths, PathLabel::TYP_INFILL);
+		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+				PathLabel::OWN_SUPPORT, 0));
 		optimizer.optimize(extruderlayer.paths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(

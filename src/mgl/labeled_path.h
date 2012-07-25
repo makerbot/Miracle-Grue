@@ -37,6 +37,21 @@ public:
 	return myType == r.myType && 
 			myOwner == r.myOwner;
 	}
+	bool isInfill() const {
+		return myType == TYP_INFILL;
+	}
+	bool isInset() const {
+		return myType == TYP_INSET;
+	}
+	bool isOutline() const {
+		return myType == TYP_OUTLINE;
+	}
+	bool isConnection() const {
+		return myType == TYP_CONNECTION;
+	}
+	bool isSupport() const {
+		return myOwner == OWN_SUPPORT;
+	}
 	//what type of extrusion this is
 	TYPE myType;
 	//is this model or support?

@@ -85,9 +85,16 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		currentRegions.outlines = iter->readLoops();
 		currentRegions.layerMeasureId = iter->getIndex();
 		
+		LayerMeasure::LayerAttributes& currentAttribs = 
+				layermeasure.getLayerAttributes(currentRegions.layerMeasureId);
+		
 		//set an appropriate ratio
-		layermeasure.getLayerAttributes(currentRegions.layerMeasureId).widthRatio = 
-				layermeasure.getLayerWidthRatio();
+		currentAttribs.widthRatio = layermeasure.getLayerWidthRatio();
+		
+		if(iter != layerloops.begin()) {
+			//this is not the first layer, make it relative to first
+			currentAttribs.base = regionlist.front().layerMeasureId;
+		}
 		
 		regionlist.push_back(currentRegions);
 	}
@@ -116,12 +123,13 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		bottomAttribs.delta = regionerCfg.raftInterfaceThickness + 
 				regionerCfg.raftModelSpacing;
 		//and the rest relative to it
-		++iter;
-		++iterModel;
-		for (; iterModel != regionlist.end(); ++iterModel) {
-			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base =
-					iter->layerMeasureId;
-		}
+		//the rest are already relative to it
+//		++iter;
+//		++iterModel;
+//		for (; iterModel != regionlist.end(); ++iterModel) {
+//			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base =
+//					iter->layerMeasureId;
+//		}
 	}
 
 	return regionlist.size();

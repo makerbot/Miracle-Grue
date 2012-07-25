@@ -352,40 +352,37 @@ void GCoder::writePaths(std::ostream& ss,
 			++iter) {
 		const LabeledOpenPath& currentLP = *iter;
 		Extrusion extrusion;
-		switch(currentLP.myLabel.myType) {
-		case PathLabel::TYP_OUTLINE:
+		if(currentLP.myLabel.isOutline()) {
 			if(!gcoderCfg.doOutlines)
 				continue;
 			calcInSetExtrusion(extruder.id, layerSequence, 
 					currentLP.myLabel.myValue, -1, extrusion);
 			ss << "(outline path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
-			break;
-		case PathLabel::TYP_INSET:
+		} else if(currentLP.myLabel.isInset()) {
 			if(!gcoderCfg.doInsets)
 				continue;
 			calcInSetExtrusion(extruder.id, layerSequence, 
 					currentLP.myLabel.myValue, -1, extrusion);
 			ss << "(inset path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
-			break;
-		case PathLabel::TYP_INFILL:
+		} else if(currentLP.myLabel.isInfill()) {
 			if(!gcoderCfg.doInfills)
 				continue;
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
 			ss << "(infill path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
-			break;
-		case PathLabel::TYP_CONNECTION:
-			//continue;
+		} else if(currentLP.myLabel.isSupport()) {
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(support path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isConnection()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
 			ss << "(connection path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
-			break;
-		default:
+		} else {
 			GcoderException mixup("Invalid path label type");
 			throw mixup;
-			break;
 		}
 		writePath(ss, z, h, w, extruder, extrusion, currentLP.myPath);
 	}

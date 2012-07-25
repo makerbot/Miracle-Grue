@@ -16,6 +16,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	initProgress("outlines", sliceCount);
 	
 	layerloops.layerMeasure = seg.readLayerMeasure();
+	layerloops.layerMeasure.getLayerAttributes(0).delta = layerCfg.firstLayerZ;
 	
 	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
 		tick();
