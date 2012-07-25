@@ -65,12 +65,14 @@ public:
 		}
 	}
 	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
-	void addPaths(const PATHS<PATH, ALLOC>& paths) {
+	void addPaths(const PATHS<PATH, ALLOC>& paths, 
+			const PathLabel& label = 
+			PathLabel(PathLabel::TYP_INSET, PathLabel::OWN_MODEL, 0)) {
 		for(typename PATHS<PATH, ALLOC>::const_iterator iter = paths.begin(); 
 				iter != paths.end(); 
 				++iter) {
 			try {
-				addPath(*iter); 
+				addPath(*iter, label); 
 			} catch(Exception mixup) {
 				Log::severe() << "ERROR: " << mixup.what() << std::endl;
 			}
@@ -160,11 +162,14 @@ private:
 				connection.myPath.appendPoint(lastPoint);
 				connection.myPath.appendPoint(currentPoint);
 				connection.myLabel.myType = PathLabel::TYP_CONNECTION;
-				iter = labeledpaths.insert(iter, connection);
-//				last.myPath.appendPoints(current.myPath.fromStart(), 
-//						current.myPath.end());
-//				iter = labeledpaths.erase(iter);
-//				--iter;
+				if(last.myLabel == current.myLabel && false) {
+				last.myPath.appendPoints(current.myPath.fromStart(), 
+						current.myPath.end());
+				iter = labeledpaths.erase(iter);
+				--iter;
+				} else {
+					iter = labeledpaths.insert(iter, connection);
+				}
 			}
 		}
 	}

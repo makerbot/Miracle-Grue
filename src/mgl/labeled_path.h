@@ -33,6 +33,10 @@ public:
 			OWN own = OWN_INVALID, 
 			int val = -1) 
 			: myType(typ), myOwner(own), myValue(val) {}
+	bool operator==(const PathLabel& r) {
+	return myType == r.myType && 
+			myOwner == r.myOwner;
+	}
 	//what type of extrusion this is
 	TYPE myType;
 	//is this model or support?

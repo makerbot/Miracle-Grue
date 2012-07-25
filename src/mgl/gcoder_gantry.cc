@@ -189,8 +189,8 @@ void Gantry::g1(std::ostream &ss,
 			extruder->isVolumetric()) {
 		doE = true;
 		me = volumetricE(*extruder, *extrusion, gx, gy, gz, h, w);
-		if(libthing::tequals(me, getCurrentE(), 0.01) || 
-				relativeVector.magnitude() < gantryCfg.get_coarseness())
+		if(libthing::tequals(me, getCurrentE(), 0.0) || 
+				relativeVector.magnitude() <= gantryCfg.get_coarseness())
 			return;
 	}
 	g1Motion(ss, gx, gy, gz, me, gfeed, h, w, comment,

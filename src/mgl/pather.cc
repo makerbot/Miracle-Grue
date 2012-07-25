@@ -82,7 +82,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 
 		//outlines(layerRegions->outlines, extruderlayer.outlinePaths);
 		
-		optimizer.addPaths(layerRegions->outlines);
+		optimizer.addPaths(layerRegions->outlines, 
+				PathLabel(PathLabel::TYP_OUTLINE));
 		optimizer.optimize(extruderlayer.outlinePaths);
 		
 		optimizer.addBoundaries(layerRegions->outlines);
@@ -93,14 +94,15 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
-			optimizer.addPaths(*listIter);
+			optimizer.addPaths(*listIter, 
+					PathLabel(PathLabel::TYP_INSET));
 		}
 
 		const GridRanges& infillRanges = layerRegions->infill;
 		const GridRanges& supportRanges = layerRegions->support;
 
 		const std::vector<Scalar>& values = 
-				direction ? grid.getXValues() : grid.getYValues();
+				!direction ? grid.getXValues() : grid.getYValues();
 		axis_e axis = direction ? X_AXIS : Y_AXIS;
 		
 		
@@ -118,16 +120,18 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				axis, 
 				supportPaths);
 		
-		infills(infillRanges, grid, layerRegions->outlines, 
-				direction, extruderlayer.infillPaths);
-		
-		infills(supportRanges, grid, layerRegions->outlines, 
-				direction, extruderlayer.supportPaths);
-		
-		optimizer.addPaths(extruderlayer.infillPaths);
-		optimizer.addPaths(extruderlayer.supportPaths);
-		extruderlayer.infillPaths.clear();
-		extruderlayer.supportPaths.clear();
+//		infills(infillRanges, grid, layerRegions->outlines, 
+//				direction, extruderlayer.infillPaths);
+//		
+//		infills(supportRanges, grid, layerRegions->outlines, 
+//				direction, extruderlayer.supportPaths);
+//		
+//		optimizer.addPaths(extruderlayer.infillPaths);
+//		optimizer.addPaths(extruderlayer.supportPaths);
+//		extruderlayer.infillPaths.clear();
+//		extruderlayer.supportPaths.clear();
+		optimizer.addPaths(infillPaths, PathLabel::TYP_INFILL);
+		optimizer.addPaths(supportPaths, PathLabel::TYP_INFILL);
 		optimizer.optimize(extruderlayer.paths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(

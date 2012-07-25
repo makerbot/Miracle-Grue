@@ -334,7 +334,6 @@ void GCoder::writePath(std::ostream& ss,
 				extrusion.feedrate, h, w, comment.str().c_str());
 		last = *current;
 	}
-	ss << std::endl;
 }
 
 template <template <class, class> class LABELEDPATHS, class ALLOC>
@@ -391,6 +390,7 @@ void GCoder::writePaths(std::ostream& ss,
 		writePath(ss, z, h, w, extruder, extrusion, currentLP.myPath);
 	}
 	gantry.snort(ss, extruder, fluidstrusion);
+	ss << std::endl << std::endl;
 }
 
 
