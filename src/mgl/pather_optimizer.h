@@ -19,6 +19,9 @@ namespace mgl {
 
 class pather_optimizer {
 public:
+	
+	static Scalar DISTANCE_THRESHOLD;
+	
 	bool linkPaths;
 	pather_optimizer(bool lp = false);
 	typedef std::list<libthing::LineSegment2> BoundaryList;
@@ -32,6 +35,8 @@ public:
 		LabeledOpenPath currentClosest;
 		if(!myLoops.empty())
 			lastPoint = *(myLoops.begin()->myPath.entryBegin());
+		else if(!myPaths.empty())
+			lastPoint = *(myPaths.begin()->myPath.entryBegin());
 		while(!myLoops.empty() || !myPaths.empty()) {
 			try {
 				while(closest(lastPoint, currentClosest)) {
@@ -53,6 +58,8 @@ public:
 		LabeledOpenPath currentClosest;
 		if(!myLoops.empty())
 			lastPoint = *(myLoops.begin()->myPath.entryBegin());
+		else if(!myPaths.empty())
+			lastPoint = *(myPaths.begin()->myPath.entryBegin());
 		while(!myLoops.empty() || !myPaths.empty()) {
 			try {
 				while(closest(lastPoint, currentClosest)) {

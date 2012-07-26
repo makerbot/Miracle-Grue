@@ -6,6 +6,8 @@
 
 namespace mgl {
 
+Scalar pather_optimizer::DISTANCE_THRESHOLD = 0.2;
+
 pather_optimizer::pather_optimizer(bool lp) : linkPaths(lp) {}
 
 void pather_optimizer::addPath(const OpenPath& path, const PathLabel& label) {
@@ -146,7 +148,8 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 				++currentEntry) {
 			Scalar distance = (point - 
 					*(currentEntry)).magnitude();
-			if(distance < closestDistance) {
+			if(libthing::tlower(distance, closestDistance, 
+					DISTANCE_THRESHOLD)) {
 				closestDistance = distance;
 				entryIter = currentEntry;
 				loopIter = currentIter;
@@ -175,7 +178,8 @@ void pather_optimizer::findClosestPath(const PointType& point,
 				++currentEntry) {
 			Scalar distance = (point - 
 					*(currentEntry)).magnitude();
-			if(distance < closestDistance) {
+			if(libthing::tlower(distance, closestDistance, 
+					DISTANCE_THRESHOLD)) {
 				closestDistance = distance;
 				entryIter = currentEntry;
 				pathIter = currentIter;
@@ -197,7 +201,8 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 		//pick best
 		Scalar loopDistance = (point - *loopEntry).magnitude();
 		Scalar pathDistance = (point - *pathEntry).magnitude();
-		if(loopDistance < pathDistance) {
+		if(libthing::tlower(loopDistance, pathDistance, 
+				DISTANCE_THRESHOLD)) {
 			//loop wins
 			result = closestLoop(loopIter, loopEntry);
 		} else {
