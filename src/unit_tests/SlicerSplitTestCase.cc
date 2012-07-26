@@ -73,7 +73,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 {
 	Scalar firstLayerZ = 0.1;
 	Scalar layerH = 0.27;
-	Scalar layerW = 0.4;
+	//Scalar layerW = 0.4;
 	cout << endl;
 	cout << fixed;
 
@@ -93,7 +93,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	cout  << "z="<< z << endl;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 
-	int count =0;
+	//int count =0;
 	cout << "polyhedron ( points = [ "<< endl;
 
 
@@ -421,8 +421,8 @@ void SlicerSplitTestCase::test_ultimate_59()
 {
 	cout << endl;
 	std::vector<LineSegment2> segs;
-	Scalar x = 0;
-	Scalar y = 0;
+	//Scalar x = 0;
+	//Scalar y = 0;
 
 	segs.push_back(LineSegment2(Vector2(22.0, 18.86667), Vector2(22.0, 21.65)));
 	segs.push_back(LineSegment2(Vector2(22.0, 21.65), Vector2(22.0, 30.0)));
