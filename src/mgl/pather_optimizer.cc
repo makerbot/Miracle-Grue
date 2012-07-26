@@ -66,7 +66,7 @@ void pather_optimizer::clearPaths() {
 }
 
 LabeledOpenPath pather_optimizer::closestLoop( 
-		std::list<LabeledLoop>::iterator loopIter, 
+		LabeledLoopList::iterator loopIter, 
 		Loop::entry_iterator entryIter) {
 	//we have found a closest loop
 	LabeledOpenPath retLabeled;
@@ -100,7 +100,7 @@ LabeledOpenPath pather_optimizer::closestLoop(
 }
 
 LabeledOpenPath pather_optimizer::closestPath( 
-		std::list<LabeledOpenPath>::iterator pathIter, 
+		LabeledPathList::iterator pathIter, 
 		OpenPath::entry_iterator entryIter) {
 	//we have found a closest path
 	LabeledOpenPath retLabeled;
@@ -126,7 +126,7 @@ LabeledOpenPath pather_optimizer::closestPath(
 }
 
 void pather_optimizer::findClosestLoop(const PointType& point, 
-		std::list<LabeledLoop>::iterator& loopIter, 
+		LabeledLoopList::iterator& loopIter, 
 		Loop::entry_iterator& entryIter) {
 	
 	if(myLoops.empty()) {
@@ -137,7 +137,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 	entryIter = loopIter->myPath.entryBegin();
 	Scalar closestDistance = (point - *entryIter).magnitude();
 	
-	for(std::list<LabeledLoop>::iterator currentIter = myLoops.begin(); 
+	for(LabeledLoopList::iterator currentIter = myLoops.begin(); 
 			currentIter != myLoops.end(); 
 			++currentIter) {
 		for(Loop::entry_iterator currentEntry = 
@@ -156,7 +156,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 }
 
 void pather_optimizer::findClosestPath(const PointType& point, 
-		std::list<LabeledOpenPath>::iterator& pathIter, 
+		LabeledPathList::iterator& pathIter, 
 		OpenPath::entry_iterator& entryIter) {
 	if(myPaths.empty()) {
 		pathIter = myPaths.end();
@@ -166,7 +166,7 @@ void pather_optimizer::findClosestPath(const PointType& point,
 	entryIter = pathIter->myPath.entryBegin();
 	Scalar closestDistance = (point - *entryIter).magnitude();
 	
-	for(std::list<LabeledOpenPath>::iterator currentIter = myPaths.begin(); 
+	for(LabeledPathList::iterator currentIter = myPaths.begin(); 
 			currentIter != myPaths.end(); 
 			++currentIter) {
 		for(OpenPath::entry_iterator currentEntry = 
@@ -185,9 +185,9 @@ void pather_optimizer::findClosestPath(const PointType& point,
 }
 
 bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) {
-	std::list<LabeledLoop>::iterator loopIter;
+	LabeledLoopList::iterator loopIter;
 	Loop::entry_iterator loopEntry;
-	std::list<LabeledOpenPath>::iterator pathIter;
+	LabeledPathList::iterator pathIter;
 	OpenPath::entry_iterator pathEntry;
 	
 	findClosestLoop(point, loopIter, loopEntry);
@@ -217,11 +217,12 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 
 bool pather_optimizer::crossesBoundaries(const libthing::LineSegment2& seg) {
 	//test if this linesegment crosses any boundaries
-	for(std::list<libthing::LineSegment2>::const_iterator iter = 
+	for(BoundaryList::const_iterator iter = 
 			boundaries.begin(); 
 			iter != boundaries.end(); 
 			++iter) {
-		if(seg.intersects(*iter))
+		const libthing::LineSegment2& currentBoundary = *iter;
+		if(seg.intersects(currentBoundary))
 			return true;
 	}
 	return false;
