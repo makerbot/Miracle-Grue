@@ -67,6 +67,30 @@ void pather_optimizer::clearPaths() {
 	myPaths.clear();
 }
 
+void pather_optimizer::optimizeInternal(
+		abstract_optimizer::LabeledOpenPaths& labeledpaths) {
+	PointType lastPoint;
+	LabeledOpenPath currentClosest;
+	if(!myLoops.empty())
+		lastPoint = *(myLoops.begin()->myPath.entryBegin());
+	else if(!myPaths.empty())
+		lastPoint = *(myPaths.begin()->myPath.entryBegin());
+	while(!myLoops.empty() || !myPaths.empty()) {
+		try {
+			while(closest(lastPoint, currentClosest)) {
+				lastPoint = *(currentClosest.myPath.fromEnd());
+				labeledpaths.push_back(currentClosest);
+			}
+		} catch(Exception mixup) {
+			Log::severe() << "ERROR: " << mixup.what() << std::endl;
+		}
+	}
+	//if moves don't cross boundaries, ok to extrude them
+	if(linkPaths) {
+		link(labeledpaths);
+	}
+}
+
 LabeledOpenPath pather_optimizer::closestLoop( 
 		LabeledLoopList::iterator loopIter, 
 		Loop::entry_iterator entryIter) {
@@ -231,6 +255,49 @@ bool pather_optimizer::crossesBoundaries(const libthing::LineSegment2& seg) {
 			return true;
 	}
 	return false;
+}
+
+void pather_optimizer::link(
+		abstract_optimizer::LabeledOpenPaths& labeledpaths) {
+	//connect paths if between them the movement not crosses boundaries
+	typedef abstract_optimizer::LabeledOpenPaths::iterator iterator;
+	for(iterator iter = labeledpaths.begin(); 
+			iter != labeledpaths.end(); 
+			++iter) {
+		iterator lastIter;
+		if(iter != labeledpaths.begin()) {
+			lastIter= iter;
+			--lastIter;
+			LabeledOpenPath& last = *lastIter;
+			LabeledOpenPath& current = *iter;
+			PointType lastPoint = *(last.myPath.fromEnd());
+			PointType currentPoint = *(current.myPath.fromStart());
+			if(current.myLabel.myType == PathLabel::TYP_CONNECTION || 
+					last.myLabel.myType == PathLabel::TYP_CONNECTION)
+				continue;
+			if(lastPoint == currentPoint)
+				continue;
+			libthing::LineSegment2 transition(lastPoint, currentPoint);
+			if(crossesBoundaries(transition))
+				continue;
+			LabeledOpenPath connection;
+			connection.myPath.appendPoint(lastPoint);
+			connection.myPath.appendPoint(currentPoint);
+			connection.myLabel.myType = PathLabel::TYP_CONNECTION;
+			if(last.myLabel == current.myLabel && false) {
+				//naive case
+				//concatenate paths of same label
+				last.myPath.appendPoints(current.myPath.fromStart(), 
+						current.myPath.end());
+				iter = labeledpaths.erase(iter);
+				--iter;
+			} else {
+				//smart case
+				//properly identify this as connectivity
+				iter = labeledpaths.insert(iter, connection);
+			}
+		}
+	}
 }
 
 }
