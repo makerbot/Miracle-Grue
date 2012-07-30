@@ -38,9 +38,8 @@ public:
 			raftLayers(0), 
 			raftBaseThickness(0.5), 
                         raftOutset(6),
-                        doSupport(false) {}
+                        doSupport(false),
 			raftInterfaceThickness(0.27), 
-			raftOutset(6), 
 			raftModelSpacing(0) {}
 
 	// These are relevant to regioner
