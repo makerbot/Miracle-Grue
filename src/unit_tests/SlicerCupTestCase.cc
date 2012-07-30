@@ -86,7 +86,7 @@ void testModel(const char *model, const char* configFile) {
 
 void testModels(vector<string>& models, const char* configFile) {
 
-	for (int i = 0; i < models.size(); i++) {
+	for (unsigned i = 0; i < models.size(); i++) {
 		cout << endl;
 		cout << endl;
 		cout << endl;

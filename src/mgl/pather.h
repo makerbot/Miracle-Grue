@@ -17,6 +17,8 @@
 #include "insets.h"
 #include "regioner.h"
 #include "loop_path.h"
+#include "labeled_path.h"
+
 #include <list>
 
 namespace mgl {
@@ -58,17 +60,21 @@ public:
 			typedef std::list<OpenPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
 			typedef std::list<OpenPath> OutlineList;
+			typedef std::list<LabeledOpenPath> LabeledPathList;
 			typedef InsetList::iterator inset_iterator;
 			typedef InfillList::iterator infill_iterator;
 			typedef OutlineList::iterator outline_iterator;
+			typedef LabeledPathList::iterator path_iterator;
 			typedef InsetList::const_iterator const_inset_iterator;
 			typedef InfillList::const_iterator const_infill_iterator;
 			typedef OutlineList::const_iterator const_outline_iterator;
+			typedef LabeledPathList::const_iterator const_path_iterator;
 			ExtruderLayer(size_t exId = 0) : extruderId(exId) {}
 			InsetList insetPaths;
 			InfillList infillPaths;
 			InfillList supportPaths;
 			OutlineList outlinePaths;
+			LabeledPathList paths;
 			size_t extruderId;
 		};
 		Layer(Scalar z, Scalar layerh, Scalar layerw, layer_measure_index_t mind)

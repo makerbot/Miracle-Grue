@@ -24,7 +24,11 @@
 namespace mgl
 {
 
-class GcoderException : public Exception {	public: GcoderException(const char *msg) :Exception(msg){} };
+class GcoderException : public Exception {	
+public: 
+	GcoderException(const char *msg) 
+			: Exception(msg){} 
+};
 
 
 /// Properties of a print platform
@@ -178,7 +182,6 @@ public:
 
 	GCoderConfig gcoderCfg;
 	Gantry gantry;
-	Scalar distanceTol;
 
 	GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL);
 
@@ -285,6 +288,12 @@ private:
 			const Extruder& extruder,
 			const Extrusion& extrusion, 
 			const PATH& path);
+	template <template <class, class> class LABELEDPATHS, class ALLOC>
+	void writePaths(std::ostream& ss, 
+			Scalar z, Scalar h, Scalar w, 
+			size_t layerSequence, 
+			const Extruder& extruder, 
+			const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
 	libthing::Vector2 startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
@@ -301,41 +310,84 @@ void GCoder::writePath(std::ostream& ss,
 		throw mixup;
 	}
 	typename PATH::const_iterator current = path.fromStart();
-	// rapid move into position
-	gantry.g1(ss, extruder, extrusion,
-			current->x, current->y, z, 
-			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
-			0, 0, 
-			"move into position");
 	PointType last = *current;
 	++current;
+	// rapid move into position
+	PointType gantryPos(gantry.get_x(), gantry.get_y());
+	if((gantryPos - last).magnitude() >= gcoderCfg.gantryCfg.get_coarseness()) {
+		gantry.snort(ss, extruder, extrusion);
+		gantry.g1(ss, extruder, extrusion,
+				last.x, last.y, z, 
+				gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
+				0, 0, 
+				"move into position");
+	} 
 	gantry.squirt(ss, extruder, extrusion);
 	for(; current!=path.end(); ++current){
 		PointType relative = (*current)-last;
-		typename PATH::const_iterator nextIter = current;
-		++nextIter;
-		// if the next point is far enough or the last one
-		if(nextIter == path.end() || 
-				relative.magnitude() > distanceTol) {
-			//the output the point
-			std::stringstream comment;
-			Scalar distance = relative.magnitude();
-			comment << "d: " << distance;
-			gantry.g1(ss, extruder, extrusion, 
-					current->x, current->y, z, 
-					extrusion.feedrate, h, w, comment.str().c_str());
-			last = *current;
-		} else {
-			// otherwise don't
-			//Log::severe() << "Attempt to extrude segment of length " 
-			//		<< relative.magnitude() << std::endl;
-		}
+		
+		std::stringstream comment;
+		Scalar distance = relative.magnitude();
+		comment << "d: " << distance;
+		gantry.g1(ss, extruder, extrusion, 
+				current->x, current->y, z, 
+				extrusion.feedrate, h, w, comment.str().c_str());
+		last = *current;
 	}
-	gantry.snort(ss, extruder, extrusion);
-	ss << std::endl;
-	//Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
-	
-	
+}
+
+template <template <class, class> class LABELEDPATHS, class ALLOC>
+void GCoder::writePaths(std::ostream& ss, 
+		Scalar z, Scalar h, Scalar w, 
+		size_t layerSequence, 
+		const Extruder& extruder, 
+		const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
+	typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
+			const_iterator;
+	Extrusion fluidstrusion;
+	calcInfillExtrusion(extruder.id, layerSequence, fluidstrusion);
+	gantry.snort(ss, extruder, fluidstrusion);
+	for(const_iterator iter = labeledPaths.begin(); 
+			iter != labeledPaths.end(); 
+			++iter) {
+		const LabeledOpenPath& currentLP = *iter;
+		Extrusion extrusion;
+		if(currentLP.myLabel.isOutline()) {
+			if(!gcoderCfg.doOutlines)
+				continue;
+			calcInSetExtrusion(extruder.id, layerSequence, 
+					currentLP.myLabel.myValue, -1, extrusion);
+			ss << "(outline path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isInset()) {
+			if(!gcoderCfg.doInsets)
+				continue;
+			calcInSetExtrusion(extruder.id, layerSequence, 
+					currentLP.myLabel.myValue, -1, extrusion);
+			ss << "(inset path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isInfill()) {
+			if(!gcoderCfg.doInfills)
+				continue;
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(infill path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isSupport()) {
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(support path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isConnection()) {
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(connection path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else {
+			GcoderException mixup("Invalid path label type");
+			throw mixup;
+		}
+		writePath(ss, z, h, w, extruder, extrusion, currentLP.myPath);
+	}
+	gantry.snort(ss, extruder, fluidstrusion);
+	ss << std::endl << std::endl;
 }
 
 

@@ -221,6 +221,9 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 	gcoderCfg.gantryCfg.set_scaling_Factor(doubleCheck(
 			conf.root["gantry"]["scalingFactor"],
 			"gantry.scalingFactor"));
+	gcoderCfg.gantryCfg.set_coarseness(doubleCheck(
+			conf.root["gantry"]["coarseness"],
+			"gantry.coarseness"));
 	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_xy(doubleCheck(
 			conf.root["gantry"]["rapidMoveFeedRateXY"],
 			"gantry.rapidMoveFeedRateXY"));
@@ -398,7 +401,9 @@ void loadRegionerConfigFromFile(const Configuration& config,
     regionerCfg.supportMargin = doubleCheck(config["regioner"]["supportMargin"],
                                             "regioner.supportMargin",
                                             regionerCfg.supportMargin);
-                                            
+	regionerCfg.raftModelSpacing = doubleCheck(
+			config["regioner"]["raftModelSpacing"], 
+			"regioner.raftModelSpacing", regionerCfg.raftModelSpacing);
 }
 
 
