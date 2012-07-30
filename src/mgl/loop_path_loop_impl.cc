@@ -234,6 +234,23 @@ bool Loop::empty() const {
 	return pointNormals.empty();
 }
 
+Scalar Loop::curl() const {
+	Scalar accum = 0;
+	for(const_finite_ccw_iterator curIter = counterClockwiseFinite(); 
+			curIter != counterClockwiseEnd(); 
+			++curIter) {
+		const_ccw_iterator curCcw(curIter);
+		const_ccw_iterator nextCcw(curIter);
+		++nextCcw;
+		libthing::LineSegment2 curSegment = segmentAfterPoint(curCcw);
+		libthing::LineSegment2 nextSegment = segmentAfterPoint(nextCcw);
+		PointType curRel = curSegment.b - curSegment.a;
+		PointType nextRel = nextSegment.b - nextSegment.a;
+		accum += curRel.crossProduct(nextRel);
+	}
+	return accum;
+}
+
 void Loop::refreshIteratorRefs() {
 	for(PointNormalList::iterator it = pointNormals.begin(); 
 			it != pointNormals.end(); 
