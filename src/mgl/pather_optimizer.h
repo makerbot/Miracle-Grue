@@ -10,135 +10,143 @@
 
 
 #include "loop_path.h"
+#include "labeled_path.h"
+#include "log.h"
 #include <list>
+#include <vector>
 
 namespace mgl {
 
-class pather_optimizer {
+class abstract_optimizer {
 public:
-	bool linkPaths;
-	pather_optimizer(bool lp = false);
-	
+	typedef std::list<LabeledOpenPath> LabeledOpenPaths;
+	//optimize everything you have accumulated
+	//calls to the internal optimize
 	template <template<class, class> class PATHS, typename ALLOC>
 	void optimize(PATHS<OpenPath, ALLOC>& paths) {
-		//this will empty all the internal containers
-		while(!myLoops.empty()) {
-			if(paths.empty()) {
-				paths.push_back(closestLoop(myLoops.begin(), 
-						myLoops.begin()->entryBegin()));
-			} else {
-				PointType lastPoint = *(paths.back().fromEnd());
-				LoopList::iterator closestLoopIter = myLoops.begin();
-				Loop::entry_iterator closestEntry = closestLoopIter->entryBegin();
-				Scalar closestDistance = (lastPoint - 
-						*(closestEntry)).magnitude();
-				//find the nearest possible thing
-				for(LoopList::iterator loopIter = myLoops.begin(); 
-						loopIter != myLoops.end(); 
-						++loopIter) {
-					for(Loop::entry_iterator entryIter = loopIter->entryBegin(); 
-							entryIter != loopIter->entryEnd(); 
-							++entryIter) {
-						Scalar distance = (lastPoint - 
-								*(entryIter)).magnitude();
-						if(distance < closestDistance) {
-							closestDistance = distance;
-							closestEntry = entryIter;
-							closestLoopIter = loopIter;
-						}
-					}
-				}
-				//add it
-				paths.push_back(closestLoop(closestLoopIter, closestEntry));
-				
-			}
+		LabeledOpenPaths result;
+		optimizeInternal(result);
+		for(LabeledOpenPaths::const_iterator iter = result.begin(); 
+				iter != result.end(); 
+				++iter) {
+			paths.push_back(iter->myPath);
 		}
-		while(!myPaths.empty()) {
-			if(paths.empty()) {
-				paths.push_back(closestPath(myPaths.begin(), 
-						myPaths.begin()->entryBegin()));
-			} else {
-				PointType lastPoint = *(paths.back().fromEnd());
-				OpenPathList::iterator closestPathIter = myPaths.begin();
-				OpenPath::entry_iterator closestEntry = closestPathIter->entryBegin();
-				Scalar closestDistance = (lastPoint - 
-						*(closestEntry)).magnitude();
-				//find the nearest possible thing
-				for(OpenPathList::iterator pathIter = myPaths.begin(); 
-						pathIter != myPaths.end(); 
-						++pathIter) {
-					for(OpenPath::entry_iterator entryIter = pathIter->entryBegin(); 
-							entryIter != pathIter->entryEnd(); 
-							++entryIter) {
-						Scalar distance = (lastPoint - 
-								*(entryIter)).magnitude();
-						if(distance < closestDistance) {
-							closestDistance = distance;
-							closestEntry = entryIter;
-							closestPathIter = pathIter;
-						}
-					}
-				}
-				//add it
-				paths.push_back(closestPath(closestPathIter, closestEntry));
-			}
-		}
-		//if moves don't cross boundaries, ok to extrude them
-		if(linkPaths)
-			link(paths);
 	}
-	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
-	void addPaths(const PATHS<PATH, ALLOC>& paths) {
+	template <template <class, class> class LABELEDPATHS, typename ALLOC>
+	void optimize(LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledpaths) {
+		LabeledOpenPaths result;
+		optimizeInternal(result);
+		labeledpaths.insert(labeledpaths.end(), result.begin(), result.end());
+	}
+	
+	//add paths to optimize
+	//one label for entire collection
+	template <template <class, class> class PATHS, typename PATH, typename ALLOC>
+	void addPaths(const PATHS<PATH, ALLOC>& paths, 
+			const PathLabel& label = 
+			PathLabel(PathLabel::TYP_INSET, PathLabel::OWN_MODEL, 0)) {
 		for(typename PATHS<PATH, ALLOC>::const_iterator iter = paths.begin(); 
 				iter != paths.end(); 
 				++iter) {
-			addPath(*iter);
+			try {
+				addPath(*iter, label); 
+			} catch(Exception mixup) {
+				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+			}
 		}
 	}
-	void addPath(const OpenPath& path);
-	void addPath(const Loop& loop);
+	//each element has its own label
+	template <template <class, class> class PATHS, typename PATH, typename ALLOC>
+	void addPaths(const PATHS<basic_labeled_path<PATH>, ALLOC>& paths) {
+		for(typename PATHS<basic_labeled_path<PATH>, ALLOC>::const_iterator 
+				iter = paths.begin(); 
+				iter != paths.end(); 
+				++iter) {
+			try {
+				addPath(*iter); 
+			} catch(Exception mixup) {
+				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+			}
+		}
+	}
+	//singular version of above
+	//convenience, calls one of the overloads
+	template <typename PATH>
+	void addPath(const basic_labeled_path<PATH>& labeledpath) {
+		addPath(labeledpath.myPath, labeledpath.myLabel);
+	}
+	virtual void addPath(const OpenPath& path, 
+			const PathLabel& label = 
+			PathLabel(PathLabel::TYP_INSET, PathLabel::OWN_MODEL, 0)) = 0;
+	virtual void addPath(const Loop& loop, 
+			const PathLabel& label = 
+			PathLabel(PathLabel::TYP_INSET, PathLabel::OWN_MODEL, 0)) = 0;
+	
+	//add boundaries
 	template <template<class, class> class PATHS, typename PATH, typename ALLOC>
 	void addBoundaries(const PATHS<PATH, ALLOC>& paths) {
 		for(typename PATHS<PATH, ALLOC>::const_iterator iter = paths.begin(); 
 				iter != paths.end(); 
 				++iter) {
-			addBoundary(*iter);
+			try {
+				addBoundary(*iter);
+			} catch(Exception mixup) {
+				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+			}
 		}
 	}
+	virtual void addBoundary(const OpenPath& path) = 0;
+	virtual void addBoundary(const Loop& loop) = 0;
+	
+	//clear internal containers
+	virtual void clearBoundaries() = 0;
+	virtual void clearPaths() = 0;
+protected:
+	
+	//labeledpaths is the output of optimization
+	virtual void optimizeInternal(LabeledOpenPaths& labeledpaths) = 0;
+};
+
+class pather_optimizer : public abstract_optimizer {
+public:
+	
+	static Scalar DISTANCE_THRESHOLD;
+	
+	bool linkPaths;
+	pather_optimizer(bool lp = false);
+	typedef std::list<libthing::LineSegment2> BoundaryList;
+	typedef std::list<LabeledOpenPath> LabeledPathList;
+	typedef std::list<LabeledLoop> LabeledLoopList;
+	
+	void addPath(const OpenPath& path, 
+			const PathLabel& label = 
+			PathLabel(PathLabel::TYP_INSET, PathLabel::OWN_MODEL, 0));
+	void addPath(const Loop& loop, 
+			const PathLabel& label = 
+			PathLabel(PathLabel::TYP_INSET, PathLabel::OWN_MODEL, 0));
 	void addBoundary(const OpenPath& path);
 	void addBoundary(const Loop& loop);
 	void clearBoundaries();
 	void clearPaths();
+protected:
+	void optimizeInternal(abstract_optimizer::LabeledOpenPaths& labeledpaths);
 private:
-	OpenPath closestLoop(LoopList::iterator loopIter, 
+	LabeledOpenPath closestLoop(std::list<LabeledLoop>::iterator loopIter, 
 			Loop::entry_iterator entryIter);
-	OpenPath closestPath(OpenPathList::iterator pathIter, 
+	LabeledOpenPath closestPath(std::list<LabeledOpenPath>::iterator pathIter, 
 			OpenPath::entry_iterator entryIter);
-	template <template<class, class> class PATHS, typename ALLOC>
-	void link(PATHS<OpenPath, ALLOC>& paths) {
-		//connect paths if between them the movement not crosses boundaries
-		typedef typename PATHS<OpenPath, ALLOC>::iterator iterator;
-		for(iterator iter = paths.begin(); 
-				iter != paths.end(); 
-				++iter) {
-			iterator lastIter;
-			if(iter != paths.begin()) {
-				lastIter= iter;
-				--lastIter;
-				libthing::LineSegment2 transition(*(lastIter->fromEnd()), 
-						*(iter->fromStart()));
-				if(crossesBoundaries(transition))
-					continue;
-				lastIter->appendPoints(iter->fromStart(), iter->end());
-				iter = paths.erase(iter);
-				--iter;
-			}
-		}
-	}
+	void findClosestLoop(const PointType& point, 
+			std::list<LabeledLoop>::iterator& loopIter, 
+			Loop::entry_iterator& entryIter);
+	void findClosestPath(const PointType& point, 
+			std::list<LabeledOpenPath>::iterator& pathIter, 
+			OpenPath::entry_iterator& entryIter);
+	bool closest(const PointType& point, LabeledOpenPath& result);
+	void link(abstract_optimizer::LabeledOpenPaths& labeledpaths);
 	bool crossesBoundaries(const libthing::LineSegment2& seg);
-	std::list<libthing::LineSegment2> boundaries;
-	LoopList myLoops;
-	OpenPathList myPaths;
+	BoundaryList boundaries;
+	LabeledLoopList myLoops;
+	LabeledPathList myPaths;
 };
 
 }

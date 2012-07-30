@@ -261,7 +261,7 @@ void GCoderTestCase::testSimplePath() {
 
 	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_WITH_PATH);
 	gcoder.writeEndDotGCode(gout);
-	for (int i = 0; i < slices.size(); i++) {
+	for (unsigned i = 0; i < slices.size(); i++) {
 		cout.flush();
 		SliceData &slice = slices[i];
 		Scalar z = 0.27 * i;
@@ -476,7 +476,7 @@ void GCoderTestCase::testGridPath() {
 	LayerPaths::Layer layer;
 
 	srand((unsigned int) time(NULL));
-	int lineCount = 20;
+	//int lineCount = 20;
 	double lowerX = -30 + 10.0 * ((double) rand()) / RAND_MAX;
 	double lowerY = -30 + 10.0 * ((double) rand()) / RAND_MAX;
 
@@ -544,7 +544,7 @@ void GCoderTestCase::testMultiGrid() {
 	LayerPaths layerpaths;
 	srand((unsigned int) time(NULL));
 
-	int lineCount = 20;
+	//int lineCount = 20;
 	double lowerX = -35 + random(-10, 20);
 	double lowerY = -35 + random(-10, 20); // 10.0 * ((double) rand()) / RAND_MAX;
 	double firstLayerH = 0.11;

@@ -39,6 +39,10 @@ public:
 			raftBaseThickness(0.5), 
                         raftOutset(6),
                         doSupport(false) {}
+			raftInterfaceThickness(0.27), 
+			raftOutset(6), 
+			raftModelSpacing(0) {}
+
 	// These are relevant to regioner
 	Scalar tubeSpacing; //< distance in between infill (mm)
 	Scalar angle; //< angle of infill
@@ -61,6 +65,7 @@ public:
 	Scalar raftOutset; //< How far to outset rafts (mm)
         bool doSupport;  //< do we generate support
         Scalar supportMargin; //< distance between side wall and support
+	Scalar raftModelSpacing; //< Distance between top raft and model
 };
 
 class LayerRegions {

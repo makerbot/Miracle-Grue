@@ -46,6 +46,7 @@ public:
 	bool get_use_e_axis() const;
 	Scalar get_layer_h() const;
 	Scalar get_scaling_factor() const;
+	Scalar get_coarseness() const;
 	
 	void set_rapid_move_feed_rate_xy(Scalar nxyr);
 	void set_rapid_move_feed_rate_z(Scalar nzr);
@@ -55,6 +56,7 @@ public:
 	void set_use_e_axis(bool uea);
 	void set_layer_h(Scalar lh);
 	void set_scaling_Factor(Scalar sf);
+	void set_coarseness(Scalar c);
 	
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
 			libthing::LineSegment2 &segment, Scalar h, Scalar w) const;
@@ -69,6 +71,7 @@ private:
 	bool zMaxHoming;
 	bool useEaxis;
 	Scalar scalingFactor;
+	Scalar coarseness;
 
 	Scalar sx, sy, sz, sa, sb, sfeed;	// start positions and feed
 };
@@ -76,6 +79,9 @@ private:
 
 class Gantry {
 public:
+	
+	static const Scalar FLUID_H = 0.3;
+	static const Scalar FLUID_W = 0.5;
 	
 	Gantry(const GantryConfig& gCfg);
 	

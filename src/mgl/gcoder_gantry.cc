@@ -170,6 +170,8 @@ void Gantry::g1(std::ostream &ss,
 	bool doFeed = true;
 	bool doE = false;
 	Scalar me = getCurrentE();
+	
+	PointType relativeVector(gx - get_x(), gy - get_y());
 
 	if (!libthing::tequals(get_x(), gx, SAMESAME_TOL)) {
 		doX = true;
@@ -187,26 +189,30 @@ void Gantry::g1(std::ostream &ss,
 			extruder->isVolumetric()) {
 		doE = true;
 		me = volumetricE(*extruder, *extrusion, gx, gy, gz, h, w);
+		if(libthing::tequals(me, getCurrentE(), 0.0) || 
+				relativeVector.magnitude() <= gantryCfg.get_coarseness())
+			return;
 	}
-
 	g1Motion(ss, gx, gy, gz, me, gfeed, h, w, comment,
 			doX, doY, doZ, doE, doFeed);
 }
 
 void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		const Extruder &extruder, const Extrusion &extrusion) {
+	if(get_extruding())
+		return;
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() + extrusion.retractDistance
 				+ extrusion.restartExtraDistance, extrusion.retractRate,
-				0, 0,
+				FLUID_H, FLUID_W,
 				"squirt", false, false, false, true, true); //only E and F
 	} else {
 		ss << "M108 R" << extrusion.squirtFlow << " (squirt)" << endl;
 		ss << "M101" << endl;
 		g1(ss, extruder, extrusion,
 				lineStart.x, lineStart.y, z, extrusion.squirtFeedrate, 
-				0, 0, NULL);
+				FLUID_H, FLUID_W, NULL);
 		ss << "M108 R" << extrusion.flow << " (good to go)" << endl;
 	}
 
@@ -215,16 +221,18 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 
 void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 		const Extruder &extruder, const Extrusion &extrusion) {
+	if(!get_extruding())
+		return;
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() - extrusion.retractDistance,
-				extrusion.retractRate, 0, 0, "snort",
+				extrusion.retractRate, FLUID_H, FLUID_W, "snort",
 				false, false, false, true, true); //only E and F
 	} else {
 		ss << "M108 R" << extrusion.snortFlow << "  (snort)" << endl;
 		ss << "M102" << endl;
 		g1(ss, extruder, extrusion, lineEnd.x, lineEnd.y, z,
-				extrusion.snortFeedrate, 0, 0, NULL);
+				extrusion.snortFeedrate, FLUID_H, FLUID_W, NULL);
 		ss << "M103" << endl;
 	}
 
@@ -297,6 +305,7 @@ GantryConfig::GantryConfig() {
 	set_xy_max_homing(true);
 	set_z_max_homing(false);
 	set_scaling_Factor(1.0);
+	set_coarseness(0.05);
 }
 
 Scalar GantryConfig::get_start_x() const {
@@ -379,6 +388,10 @@ Scalar GantryConfig::get_scaling_factor() const {
 	return scalingFactor;
 }
 
+Scalar GantryConfig::get_coarseness() const {
+	return coarseness;
+}
+
 Scalar GantryConfig::segmentVolume(const Extruder &, // extruder,
 		const Extrusion &extrusion,
 		LineSegment2 &segment, Scalar h, Scalar w) const {
@@ -417,6 +430,10 @@ void GantryConfig::set_layer_h(Scalar lh) {
 
 void GantryConfig::set_scaling_Factor(Scalar sf) {
 	scalingFactor = sf;
+}
+
+void GantryConfig::set_coarseness(Scalar c) {
+	coarseness = c;
 }
 
 

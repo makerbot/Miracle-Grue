@@ -100,7 +100,7 @@ const option::Descriptor usageDescriptor[] ={
 		"  -a \tinfill grid inter slice angle(radians)"},
 	{ FILL_DENSITY, 6, "p", "density", Arg::Numeric,
 		"  -p \tapprox infill density(percent), aka rho aka p"},
-	{ N_SHELLS, 7, "n", "nShells", Arg::Numeric,
+	{ N_SHELLS, 7, "n", "nbOfShells", Arg::Numeric,
 		"  -n \tnumber of shells per layer"},
 	{ BOTTOM_SLICE_IDX, 8, "b", "bottomIdx", Arg::Numeric,
 		"  -b \tbottom slice index"},
@@ -180,10 +180,14 @@ int newParseArgs(Configuration &config,
 		fprintf(stdout, "Argument #%d name %s is #%s\n", i, opt.desc->longopt, opt.arg);
 		switch (opt.index()) {
 		case LAYER_H:
+			config["slicer"][opt.desc->longopt] = atof(opt.arg);
+			break;
 		case LAYER_W:
 		case FILL_ANGLE:
 		case FILL_DENSITY:
 		case N_SHELLS:
+			config["regioner"][opt.desc->longopt] = atoi(opt.arg);
+			break;
 		case BOTTOM_SLICE_IDX:
 		case TOP_SLICE_IDX:
 		case FIRST_Z:
