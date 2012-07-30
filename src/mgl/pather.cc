@@ -75,7 +75,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				lp_layer.extruders.back();
 		
 		pather_optimizer optimizer;
-		optimizer.linkPaths = true;
+		optimizer.linkPaths = false;
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		//const std::list<LoopList>& supportLoops = LayerRegions->supportLoops;
@@ -83,12 +83,15 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		//outlines(layerRegions->outlines, extruderlayer.outlinePaths);
 		
 		optimizer.addPaths(layerRegions->outlines, 
-				PathLabel(PathLabel::TYP_OUTLINE));
+				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
+		optimizer.addPaths(layerRegions->supportLoops, 
+				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
 		optimizer.optimize(extruderlayer.outlinePaths);
 		
-		optimizer.addBoundaries(layerRegions->outlines);
+		optimizer.linkPaths = true;
 		
-		//insets(insetLoops, extruderlayer.insetPaths);
+		optimizer.addBoundaries(layerRegions->outlines);
+		optimizer.addBoundaries(layerRegions->supportLoops);
 		
 		
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
@@ -115,8 +118,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				infillPaths);
 		
 		grid.gridRangesToOpenPaths(
-				direction ? supportRanges.xRays : supportRanges.yRays, 
-				values, 
+				supportRanges.xRays, 
+				grid.getYValues(), 
 				axis, 
 				supportPaths);
 		
