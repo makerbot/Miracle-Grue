@@ -470,6 +470,8 @@ public:
 	
 	bool empty() const;
 	size_t size() const { return pointNormals.size(); }
+	
+	Scalar curl() const;
 
 	friend class LoopPath;
 private:
