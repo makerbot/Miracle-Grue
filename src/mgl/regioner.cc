@@ -32,8 +32,10 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
-	initProgress("support", sliceCount);
-	support(regionlist.begin(), regionlist.end());
+        if (regionerCfg.doSupport) {
+            initProgress("support", sliceCount);
+            support(regionlist.begin(), regionlist.end());
+        }
 
 	limits.inflate(regionerCfg.raftOutset + 10,
 			regionerCfg.raftOutset + 10,

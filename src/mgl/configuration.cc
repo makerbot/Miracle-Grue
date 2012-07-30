@@ -330,7 +330,7 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 	gcoderCfg.doInfills = boolCheck(conf.root["gcoder"]["infills"], 
 			"gcoder.infills");
 	gcoderCfg.doSupport = boolCheck(conf.root["gcoder"]["support"],
-									"gcoder.support");
+                                    "gcoder.support");
 	gcoderCfg.doPrintLayerMessages = boolCheck(
 			conf.root["gcoder"]["printLayerMessages"],
 			"gcoder.printLayerMessages", false);
@@ -392,7 +392,13 @@ void loadRegionerConfigFromFile(const Configuration& config,
 	regionerCfg.raftOutset = doubleCheck(
 			config["regioner"]["raftOutset"], 
 			"regioner.raftOutset", regionerCfg.raftOutset);
-	
+    regionerCfg.doSupport = boolCheck(config["regioner"]["doSupport"],
+                                      "regioner.doSupport", 
+                                      regionerCfg.doSupport);
+    regionerCfg.supportMargin = doubleCheck(config["regioner"]["supportMargin"],
+                                            "regioner.supportMargin",
+                                            regionerCfg.supportMargin);
+                                            
 }
 
 
