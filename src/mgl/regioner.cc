@@ -32,6 +32,11 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure);
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
+        if (regionerCfg.doSupport) {
+            initProgress("support", sliceCount * 2);
+            support(regionlist.begin(), regionlist.end());
+        }
+
 	limits.inflate(regionerCfg.raftOutset + 10,
 			regionerCfg.raftOutset + 10,
 			0);
@@ -391,6 +396,83 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 	tick();
 	regionsBegin->flooring = regionsBegin->flatSurface;
 
+}
+
+void Regioner::support(RegionList::iterator regionsBegin,
+					   RegionList::iterator regionsEnd) {
+	RegionList::iterator above = regionsEnd;
+	--above; //work from the highest layer down
+	RegionList::iterator current = above;
+
+	while (above != regionsBegin) {
+		current--;
+		LoopList &support = current->supportLoops;
+
+		if (above->supportLoops.empty()) {
+			//beginning of new support
+			support = above->outlines;
+		}
+		else {
+			//start with a projection of support from the layer above
+			support = above->supportLoops;
+
+			//add the outlines of layer above
+			loopsUnion(support, above->outlines);
+		}
+
+		if (!support.empty()) {
+			//subtract current outlines from the support loops to keep support
+			//from overlapping the object
+			loopsDifference(support, current->outlines);
+		}
+
+		above--;
+		tick();
+	}
+
+    //loop back over the layers subtracting a margin from the support loops
+    for (current = regionsBegin; current != regionsEnd; ++current) {
+        //first get an outset of the current outline loops
+
+        LoopList marginLoops;
+
+        //TODO: just like rafts, there's no reason to be converting to
+        //segments for an inset, fix this stupidity in insetter
+        for (LoopList::iterator outline = current->outlines.begin();
+             outline != current->outlines.end(); ++outline) {
+
+            SegmentTable outlineSegs;
+            outlineSegs.push_back(std::vector<LineSegment2 > ());
+
+            for (Loop::finite_cw_iterator pn = outline->clockwiseFinite();
+                 pn != outline->clockwiseEnd(); ++pn) {
+
+                outlineSegs.back().push_back(outline->segmentAfterPoint(pn));
+            }
+
+            SegmentTable outsetSegs;
+            outsetSegs.push_back(std::vector<LineSegment2 > ());
+
+            ClipperInsetter().inset(outlineSegs, -regionerCfg.supportMargin,
+                                    outsetSegs);
+            
+            marginLoops.push_back(Loop());
+            Loop &marginLoop = marginLoops.back();
+            for (std::vector<LineSegment2>::const_iterator pn =
+                     outsetSegs.back().begin();
+                 pn != outsetSegs.back().end(); ++pn) {
+
+                marginLoop.insertPointBefore(pn->b,
+                                             marginLoop.clockwiseEnd());
+            }
+        }
+
+        //Now that we finally have margin loops, subtract them from the
+        //current support loops
+        loopsDifference(current->supportLoops, marginLoops);
+
+        tick();
+    }
 }
 
 void Regioner::infills(RegionList::iterator regionsBegin,
