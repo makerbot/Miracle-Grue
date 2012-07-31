@@ -120,20 +120,15 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		grid.gridRangesToOpenPaths(
 				supportRanges.xRays, 
 				grid.getYValues(), 
-				axis, 
+				X_AXIS, 
 				supportPaths);
 		
-//		infills(infillRanges, grid, layerRegions->outlines, 
-//				direction, extruderlayer.infillPaths);
-//		
-//		infills(supportRanges, grid, layerRegions->outlines, 
-//				direction, extruderlayer.supportPaths);
-//		
-//		optimizer.addPaths(extruderlayer.infillPaths);
-//		optimizer.addPaths(extruderlayer.supportPaths);
-//		extruderlayer.infillPaths.clear();
-//		extruderlayer.supportPaths.clear();
-		optimizer.addPaths(infillPaths, PathLabel::TYP_INFILL);
+		optimizer.addPaths(extruderlayer.infillPaths);
+		optimizer.addPaths(extruderlayer.supportPaths);
+		extruderlayer.infillPaths.clear();
+		extruderlayer.supportPaths.clear();
+		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
+				PathLabel::OWN_MODEL, 0));
 		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_SUPPORT, 0));
 		optimizer.optimize(extruderlayer.paths);

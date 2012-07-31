@@ -111,9 +111,10 @@ public:
 
 	size_t initRegionList(const LayerLoops& layerloops,
 						  RegionList &regionlist, 
-						  LayerMeasure& layermeasure);
+						  LayerMeasure& layermeasure,
+						  RegionList::iterator& firstmodellayer);
 
-	void rafts(const LayerLoops::Layer &bottomLayer,
+	void rafts(const LayerRegions& bottomLayer,
 			   LayerMeasure &layerMeasure,
 			   RegionList &regionlist);
 
