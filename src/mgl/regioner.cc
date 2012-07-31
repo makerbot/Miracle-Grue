@@ -35,7 +35,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
         if (regionerCfg.doSupport) {
-            initProgress("support", sliceCount * 2);
+            initProgress("support", sliceCount);
             support(firstmodellayer, regionlist.end());
         }
 
@@ -445,56 +445,49 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		if (!support.empty()) {
 			//subtract current outlines from the support loops to keep support
 			//from overlapping the object
-			loopsDifference(support, current->outlines);
+
+			//first get an outset of the current outline loops
+
+			LoopList marginLoops;
+
+			//TODO: just like rafts, there's no reason to be converting to
+			//segments for an inset, fix this stupidity in insetter
+			for (LoopList::iterator outline = current->outlines.begin();
+				 outline != current->outlines.end(); ++outline) {
+
+				SegmentTable outlineSegs;
+				outlineSegs.push_back(std::vector<LineSegment2 > ());
+
+				for (Loop::finite_cw_iterator pn = outline->clockwiseFinite();
+					 pn != outline->clockwiseEnd(); ++pn) {
+
+					outlineSegs.back().push_back(outline
+												   ->segmentAfterPoint(pn));
+				}
+
+				SegmentTable outsetSegs;
+				outsetSegs.push_back(std::vector<LineSegment2 > ());
+
+				ClipperInsetter().inset(outlineSegs, -regionerCfg.supportMargin,
+										outsetSegs);
+            
+				marginLoops.push_back(Loop());
+				Loop &marginLoop = marginLoops.back();
+				for (std::vector<LineSegment2>::const_iterator pn =
+						 outsetSegs.back().begin();
+					 pn != outsetSegs.back().end(); ++pn) {
+
+					marginLoop.insertPointBefore(pn->b,
+												 marginLoop.clockwiseEnd());
+				}
+			}
+
+			loopsDifference(support, marginLoops);
 		}
 
 		above--;
 		tick();
 	}
-
-    //loop back over the layers subtracting a margin from the support loops
-    for (current = regionsBegin; current != regionsEnd; ++current) {
-        //first get an outset of the current outline loops
-
-        LoopList marginLoops;
-
-        //TODO: just like rafts, there's no reason to be converting to
-        //segments for an inset, fix this stupidity in insetter
-        for (LoopList::iterator outline = current->outlines.begin();
-             outline != current->outlines.end(); ++outline) {
-
-            SegmentTable outlineSegs;
-            outlineSegs.push_back(std::vector<LineSegment2 > ());
-
-            for (Loop::finite_cw_iterator pn = outline->clockwiseFinite();
-                 pn != outline->clockwiseEnd(); ++pn) {
-
-                outlineSegs.back().push_back(outline->segmentAfterPoint(pn));
-            }
-
-            SegmentTable outsetSegs;
-            outsetSegs.push_back(std::vector<LineSegment2 > ());
-
-            ClipperInsetter().inset(outlineSegs, -regionerCfg.supportMargin,
-                                    outsetSegs);
-            
-            marginLoops.push_back(Loop());
-            Loop &marginLoop = marginLoops.back();
-            for (std::vector<LineSegment2>::const_iterator pn =
-                     outsetSegs.back().begin();
-                 pn != outsetSegs.back().end(); ++pn) {
-
-                marginLoop.insertPointBefore(pn->b,
-                                             marginLoop.clockwiseEnd());
-            }
-        }
-
-        //Now that we finally have margin loops, subtract them from the
-        //current support loops
-        loopsDifference(current->supportLoops, marginLoops);
-
-        tick();
-    }
 }
 
 void Regioner::infills(RegionList::iterator regionsBegin,
