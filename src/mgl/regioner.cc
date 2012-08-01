@@ -30,14 +30,14 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		Grid& grid) {
 	layerMeasure.setLayerWidthRatio(regionerCfg.layerWidthRatio);
 	RegionList::iterator firstmodellayer;
-	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure, 
+	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure,
 			firstmodellayer);
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
-        if (regionerCfg.doSupport) {
-            initProgress("support", sliceCount);
-            support(firstmodellayer, regionlist.end());
-        }
+	if (regionerCfg.doSupport) {
+		initProgress("support", sliceCount);
+		support(firstmodellayer, regionlist.end());
+	}
 
 	limits.inflate(regionerCfg.raftOutset + 10,
 			regionerCfg.raftOutset + 10,
@@ -83,7 +83,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 
 size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		RegionList &regionlist,
-		LayerMeasure& layermeasure, 
+		LayerMeasure& layermeasure,
 		RegionList::iterator& firstmodellayer) {
 	//copy over data from layerloops
 	for (LayerLoops::const_layer_iterator iter = layerloops.begin();
@@ -92,21 +92,21 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		LayerRegions currentRegions;
 		currentRegions.outlines = iter->readLoops();
 		currentRegions.layerMeasureId = iter->getIndex();
-		
-		LayerMeasure::LayerAttributes& currentAttribs = 
+
+		LayerMeasure::LayerAttributes& currentAttribs =
 				layermeasure.getLayerAttributes(currentRegions.layerMeasureId);
-		
+
 		//set an appropriate ratio
 		currentAttribs.widthRatio = layermeasure.getLayerWidthRatio();
-		
-		if(iter != layerloops.begin()) {
+
+		if (iter != layerloops.begin()) {
 			//this is not the first layer, make it relative to first
 			currentAttribs.base = regionlist.front().layerMeasureId;
 		}
-		
+
 		regionlist.push_back(currentRegions);
 	}
-	
+
 	firstmodellayer = regionlist.begin();
 
 	//if we do rafts
@@ -119,7 +119,7 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		for (size_t raftidx = 0; raftidx < regionerCfg.raftLayers;
 				++raftidx, ++iter) {
 			iter->layerMeasureId = layermeasure.createAttributes(
-					LayerMeasure::LayerAttributes(0, 0, 
+					LayerMeasure::LayerAttributes(0, 0,
 					layermeasure.getLayerWidthRatio()));
 		}
 		//make all model layers be relative to top raft
@@ -131,16 +131,16 @@ size_t Regioner::initRegionList(const LayerLoops& layerloops,
 		LayerMeasure::LayerAttributes& bottomAttribs =
 				layermeasure.getLayerAttributes(iterModel->layerMeasureId);
 		bottomAttribs.base = iter->layerMeasureId;
-		bottomAttribs.delta = regionerCfg.raftInterfaceThickness + 
+		bottomAttribs.delta = regionerCfg.raftInterfaceThickness +
 				regionerCfg.raftModelSpacing;
 		//and the rest relative to it
 		//the rest are already relative to it
-//		++iter;
-//		++iterModel;
-//		for (; iterModel != regionlist.end(); ++iterModel) {
-//			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base =
-//					iter->layerMeasureId;
-//		}
+		//		++iter;
+		//		++iterModel;
+		//		for (; iterModel != regionlist.end(); ++iterModel) {
+		//			layermeasure.getLayerAttributes(iterModel->layerMeasureId).base =
+		//					iter->layerMeasureId;
+		//		}
 	}
 
 	return regionlist.size();
@@ -152,9 +152,9 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	//assemble a list of all the loops to consider
 	LoopList raftSrcLoops;
 	//fill it with model loops and support loops
-	raftSrcLoops.insert(raftSrcLoops.end(), bottomLayer.outlines.begin(), 
+	raftSrcLoops.insert(raftSrcLoops.end(), bottomLayer.outlines.begin(),
 			bottomLayer.outlines.end());
-	raftSrcLoops.insert(raftSrcLoops.end(), bottomLayer.supportLoops.begin(), 
+	raftSrcLoops.insert(raftSrcLoops.end(), bottomLayer.supportLoops.begin(),
 			bottomLayer.supportLoops.end());
 	//make convex hull from all the things we consider
 	Loop convexLoop = createConvexLoop(raftSrcLoops);
@@ -347,7 +347,7 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 	for (; regionsBegin != regionsEnd; ++regionsBegin) {
 		tick();
 		//GridRanges currentSurface;
-		gridRangesForSlice(regionsBegin->insetLoops, grid, 
+		gridRangesForSlice(regionsBegin->insetLoops, grid,
 				regionsBegin->flatSurface);
 		gridRangesForSlice(regionsBegin->supportLoops, grid,
 				regionsBegin->supportSurface);
@@ -421,7 +421,7 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 }
 
 void Regioner::support(RegionList::iterator regionsBegin,
-					   RegionList::iterator regionsEnd) {
+		RegionList::iterator regionsEnd) {
 	RegionList::iterator above = regionsEnd;
 	--above; //work from the highest layer down
 	RegionList::iterator current = above;
@@ -433,8 +433,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		if (above->supportLoops.empty()) {
 			//beginning of new support
 			support = above->outlines;
-		}
-		else {
+		} else {
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
 
@@ -452,35 +451,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 			//TODO: just like rafts, there's no reason to be converting to
 			//segments for an inset, fix this stupidity in insetter
-			for (LoopList::iterator outline = current->outlines.begin();
-				 outline != current->outlines.end(); ++outline) {
-
-				SegmentTable outlineSegs;
-				outlineSegs.push_back(std::vector<LineSegment2 > ());
-
-				for (Loop::finite_cw_iterator pn = outline->clockwiseFinite();
-					 pn != outline->clockwiseEnd(); ++pn) {
-
-					outlineSegs.back().push_back(outline
-												   ->segmentAfterPoint(pn));
-				}
-
-				SegmentTable outsetSegs;
-				outsetSegs.push_back(std::vector<LineSegment2 > ());
-
-				ClipperInsetter().inset(outlineSegs, -regionerCfg.supportMargin,
-										outsetSegs);
-            
-				marginLoops.push_back(Loop());
-				Loop &marginLoop = marginLoops.back();
-				for (std::vector<LineSegment2>::const_iterator pn =
-						 outsetSegs.back().begin();
-					 pn != outsetSegs.back().end(); ++pn) {
-
-					marginLoop.insertPointBefore(pn->b,
-												 marginLoop.clockwiseEnd());
-				}
-			}
+			loopsOffset(marginLoops, current->outlines, 
+					regionerCfg.supportMargin);
 
 			loopsDifference(support, marginLoops);
 		}
