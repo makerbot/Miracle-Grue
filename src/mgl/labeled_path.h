@@ -58,6 +58,11 @@ public:
 	bool isValid() const {
 		return !isInvalid();
 	}
+	bool isRequired() const {
+		return myType == TYP_INFILL || 
+				myType == TYP_INSET || 
+				myType == TYP_OUTLINE;
+	}
 	//what type of extrusion this is
 	TYPE myType;
 	//is this model or support?

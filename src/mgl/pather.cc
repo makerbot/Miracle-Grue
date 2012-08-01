@@ -14,7 +14,7 @@
 
 #include "pather.h"
 #include "limits.h"
-#include "pather_optimizer.h"
+#include "pather_optimizer_graph.h"
 
 using namespace mgl;
 using namespace std;
@@ -74,31 +74,34 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
 		
-		pather_optimizer optimizer;
-		optimizer.linkPaths = false;
+		pather_optimizer_graph optimizer;
+		//optimizer.linkPaths = false;
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		//const std::list<LoopList>& supportLoops = LayerRegions->supportLoops;
 
 		//outlines(layerRegions->outlines, extruderlayer.outlinePaths);
 		
-		optimizer.addPaths(layerRegions->outlines, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
-		optimizer.addPaths(layerRegions->supportLoops, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
-		optimizer.optimize(extruderlayer.outlinePaths);
+//		optimizer.addPaths(layerRegions->outlines, 
+//				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
+//		optimizer.addPaths(layerRegions->supportLoops, 
+//				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
+//		optimizer.optimize(extruderlayer.outlinePaths);
 		
-		optimizer.linkPaths = true;
+		//optimizer.linkPaths = true;
 		
 		optimizer.addBoundaries(layerRegions->outlines);
 		optimizer.addBoundaries(layerRegions->supportLoops);
 		
 		
+		int currentShell = 1;
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
 			optimizer.addPaths(*listIter, 
-					PathLabel(PathLabel::TYP_INSET));
+					PathLabel(PathLabel::TYP_INSET, 
+					PathLabel::OWN_MODEL, currentShell));
+			++currentShell;
 		}
 
 		const GridRanges& infillRanges = layerRegions->infill;
@@ -123,10 +126,6 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				X_AXIS, 
 				supportPaths);
 		
-		optimizer.addPaths(extruderlayer.infillPaths);
-		optimizer.addPaths(extruderlayer.supportPaths);
-		extruderlayer.infillPaths.clear();
-		extruderlayer.supportPaths.clear();
 		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_MODEL, 0));
 		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 

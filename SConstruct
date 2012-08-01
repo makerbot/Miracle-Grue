@@ -177,6 +177,12 @@ if operating_system == "win32":
 
 if debug:
     env.Append(CCFLAGS = '-g')
+    #env.Append(CCFLAGS = '-pg')
+    #env.Append(CCFLAGS = '-fprofile-arcs')
+    #env.Append(LINKFLAGS = '-pg')
+    #env.Append(LINKFLAGS = '-fprofile-arcs')
+    #env.Append(LINKFLAGS = '-fprofile-arcs')
+    #env.Append(LIBS = 'gcov')
 else:
     env.Append(CCFLAGS = '-O2')
 
@@ -264,7 +270,8 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',
 
 default_libs.extend(['mgl', '_json', 'thing'])
 
-debug_libs = ['cppunit',]
+#debug_libs = ['cppunit', 'gcov']
+debug_libs = ['cppunit']
 debug_libs_path = ["", ]
 
 env.Append(CPPPATH = default_includes)

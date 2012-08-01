@@ -436,7 +436,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 				regionerCfg.supportMargin);
 		marginsList.push_back(currentMargins);
 	}
-	
+	int layerskip = regionerCfg.supportMargin;
 	RegionList::iterator above = regionsEnd;
 	std::list<LoopList>::const_iterator aboveMargins = marginsList.end();
 	--above; //work from the highest layer down
@@ -453,13 +453,13 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support = above->outlines;
+			support = *aboveMargins;
 		} else {
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
 
 			//add the outlines of layer above
-			loopsUnion(support, above->outlines);
+			loopsUnion(support, *aboveMargins);
 		}
 
 		if (!support.empty()) {
@@ -470,7 +470,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 			loopsDifference(support, *currentMargins);
 		}
 
-		above--;
+		--above;
+		--aboveMargins;
 		tick();
 	}
 }

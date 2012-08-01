@@ -9,6 +9,7 @@
 #define	TOPOLOGY_DECL_H
 
 #include <list>
+#include <vector>
 
 namespace topo {
 
@@ -35,13 +36,13 @@ public:
 	
 	link_template(node_type* f, node_type* t, CT c = 0) : 
 			from(f), to(t), cost(c) {}
-	virtual ~link_template() {}
-	virtual node_type* get_from() const;
-	virtual node_type* get_to() const;
-	virtual void set_from(node_type* f);
-	virtual void set_to(node_type* t);
-	virtual cost_type get_cost() const;
-	virtual void set_cost(cost_type c);
+	~link_template() {}
+	node_type* get_from() const;
+	node_type* get_to() const;
+	void set_from(node_type* f);
+	void set_to(node_type* t);
+	cost_type get_cost() const;
+	void set_cost(cost_type c);
 protected:
 	node_type* from;
 	node_type* to;
@@ -56,29 +57,32 @@ public:
 	typedef typename topo_template<CT, VT>::vector_type vector_type;
 	typedef typename topo_template<CT, VT>::link_type link_type;
 	
-	typedef std::list<link_type*> llp;
+	typedef std::vector<link_type*> llp;
 	typedef typename llp::iterator iterator;
 	typedef typename llp::const_iterator const_iterator;
 	
 	node_template(vector_type position = vector_type());
-	virtual ~node_template();
-	virtual link_type* connect(node_template* other, cost_type cost);
-	virtual void disconnect(node_template* other);
-	virtual vector_type get_position() const;
-	virtual void set_position(vector_type p);
+	~node_template();
+	link_type* connect(node_template* other, cost_type cost);
+	void disconnect(node_template* other);
+	vector_type get_position() const;
+	void set_position(vector_type p);
 	
-	virtual iterator inlinks_begin();
-	virtual const_iterator inlinks_begin() const;
-	virtual iterator outlinks_begin();
-	virtual const_iterator outlinks_begin() const;
-	virtual const_iterator inlinks_end() const;
-	virtual const_iterator outlinks_end() const;
+	iterator inlinks_begin();
+	const_iterator inlinks_begin() const;
+	iterator outlinks_begin();
+	const_iterator outlinks_begin() const;
+	const_iterator inlinks_end() const;
+	const_iterator outlinks_end() const;
 	
-	virtual void break_inlinks();
-	virtual void break_outlinks();
+	size_t inlinks_size() const;
+	size_t outlinks_size() const;
+	
+	void break_inlinks();
+	void break_outlinks();
 protected:
-	virtual void become_connected(link_type* l);
-	virtual void become_disconnected(link_type* l);
+	void become_connected(link_type* l);
+	void become_disconnected(link_type* l);
 	
 	vector_type position;
 	

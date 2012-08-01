@@ -9,6 +9,7 @@
 #define	TOPOLOGY_IMPL_H
 
 #include "topology_decl.h"
+#include <algorithm>
 
 namespace topo {
 
@@ -38,14 +39,14 @@ template<typename CT, typename VT>
 typename node_template<CT, VT>::link_type* 
 		node_template<CT, VT>::connect(node_template* other, cost_type cost){
 	//is there already such a connection?
-	for(iterator i = outlinks.begin(); i!=outlinks.end(); ++i){
-		link_type* lp = *i;
-		if(lp->get_to() == other){
-			//yes there is, update its cost
-			lp->set_cost(cost);
-			return lp;		//no duplicates allowed
-		}
-	}
+//	for(iterator i = outlinks.begin(); i!=outlinks.end(); ++i){
+//		link_type* lp = *i;
+//		if(lp->get_to() == other){
+//			//yes there is, update its cost
+//			lp->set_cost(cost);
+//			return lp;		//no duplicates allowed
+//		}
+//	}
 	//there is not such a connection existing
 	link_type* lp = new link_type(this, other, cost);
 	outlinks.push_back(lp);
@@ -61,7 +62,8 @@ void node_template<CT, VT>::disconnect(node_template* other){
 		if(lp->get_to() == other){
 			//remove it
 			other->become_disconnected(lp);
-			outlinks.erase(i);
+			*i = outlinks.back();
+			outlinks.pop_back();
 			delete lp;
 			return;		//no duplicates
 		}
@@ -102,7 +104,12 @@ void node_template<CT, VT>::become_connected(link_type* l){
 
 template<typename CT, typename VT>
 void node_template<CT, VT>::become_disconnected(link_type* l){
-	inlinks.remove(l);
+	//inlinks.remove(l);
+	iterator found = std::find(inlinks.begin(), inlinks.end(), l);
+	if(found!=inlinks.end()){
+		*found = inlinks.back();
+		inlinks.pop_back();
+	}
 }
 
 template<typename CT, typename VT>
@@ -138,6 +145,16 @@ template<typename CT, typename VT>
 typename node_template<CT, VT>::const_iterator 
 		node_template<CT, VT>::outlinks_end() const{
 	return outlinks.end();
+}
+
+template<typename CT, typename VT>
+size_t node_template<CT, VT>::inlinks_size() const {
+	return inlinks.size();
+}
+
+template<typename CT, typename VT>
+size_t node_template<CT, VT>::outlinks_size() const {
+	return outlinks.size();
 }
 
 template<typename CT, typename VT>
