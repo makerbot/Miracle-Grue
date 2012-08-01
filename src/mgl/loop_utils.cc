@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "loop_utils.h"
 #include "clipper.h"
 
@@ -20,8 +22,8 @@ void loopToClPolygon(const Loop &loop,
 					 ClipperLib::Polygon &clpoly) {
 	clpoly.clear();
 
-	for (Loop::const_finite_cw_iterator pn = loop.clockwiseFinite();
-		 pn != loop.clockwiseEnd(); ++pn) {
+	for (Loop::const_finite_ccw_iterator pn = loop.counterClockwiseFinite();
+		 pn != loop.counterClockwiseEnd(); ++pn) {
 		clpoly.push_back(ClipperLib::IntPoint());
 		ClipperLib::IntPoint &ip = clpoly.back();
 
@@ -45,8 +47,8 @@ void loopToClPolygon(const LoopList &loops,
 
 void ClPolygonToLoop(const ClipperLib::Polygon &clpoly,
 					 Loop &loop) {
-	for (ClipperLib::Polygon::const_iterator ip = clpoly.begin();
-		 ip != clpoly.end(); ++ip) {
+	for (ClipperLib::Polygon::const_reverse_iterator ip = clpoly.rbegin();
+		 ip != clpoly.rend(); ++ip) {
 		PointType pt;
 		IntPointToPointType(*ip, pt);
 
@@ -124,6 +126,14 @@ void loopsXOR(LoopList &dest,
 
 void loopsXOR(LoopList &subject, const LoopList &apply) {
 	loopsXOR(subject, subject, apply);
+}
+
+void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance) {
+	ClipperLib::Polygons subjectPolys, destPolys;
+	loopToClPolygon(subject, subjectPolys);
+	ClipperLib::OffsetPolygons(subjectPolys, destPolys, distance * DBLTOINT, 
+			ClipperLib::jtSquare, 2.0);
+	ClPolygonToLoop(destPolys, dest);
 }
 
 }

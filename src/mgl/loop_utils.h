@@ -123,6 +123,8 @@ void loopsIntersection(LoopList &dest,
 void loopsXOR(LoopList &subject, const LoopList &apply);
 void loopsXOR(LoopList &dest,
 			  const LoopList &subject, const LoopList &apply);
+
+void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance);
 }
 
 
