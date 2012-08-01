@@ -349,7 +349,11 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 		//GridRanges currentSurface;
 		gridRangesForSlice(regionsBegin->insetLoops, grid,
 				regionsBegin->flatSurface);
-		gridRangesForSlice(regionsBegin->supportLoops, grid,
+		//inset supportloops by a fraction of supportmargin
+		LoopList insetSupportLoops;
+		loopsOffset(insetSupportLoops, regionsBegin->supportLoops, 
+				-0.1 * regionerCfg.supportMargin);
+		gridRangesForSlice(insetSupportLoops, grid,
 				regionsBegin->supportSurface);
 	}
 }
@@ -422,12 +426,29 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 
 void Regioner::support(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd) {
+	std::list<LoopList> marginsList;
+	
+	for(RegionList::const_iterator iter = regionsBegin; 
+			iter != regionsEnd; 
+			++iter) {
+		LoopList currentMargins;
+		loopsOffset(currentMargins, iter->outlines, 
+				regionerCfg.supportMargin);
+		marginsList.push_back(currentMargins);
+	}
+	
 	RegionList::iterator above = regionsEnd;
+	std::list<LoopList>::const_iterator aboveMargins = marginsList.end();
 	--above; //work from the highest layer down
+	--aboveMargins;
+	
 	RegionList::iterator current = above;
-
+	std::list<LoopList>::const_iterator currentMargins = aboveMargins;
+	
 	while (above != regionsBegin) {
-		current--;
+		--current;
+		--currentMargins;
+		
 		LoopList &support = current->supportLoops;
 
 		if (above->supportLoops.empty()) {
@@ -444,17 +465,9 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		if (!support.empty()) {
 			//subtract current outlines from the support loops to keep support
 			//from overlapping the object
-
-			//first get an outset of the current outline loops
-
-			LoopList marginLoops;
-
-			//TODO: just like rafts, there's no reason to be converting to
-			//segments for an inset, fix this stupidity in insetter
-			loopsOffset(marginLoops, current->outlines, 
-					regionerCfg.supportMargin);
-
-			loopsDifference(support, marginLoops);
+			
+			//use margins computed up front
+			loopsDifference(support, *currentMargins);
 		}
 
 		above--;

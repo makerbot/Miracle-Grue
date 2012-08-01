@@ -52,6 +52,12 @@ public:
 	bool isSupport() const {
 		return myOwner == OWN_SUPPORT;
 	}
+	bool isInvalid() const {
+		return myType == TYP_INVALID || myOwner == OWN_INVALID;
+	}
+	bool isValid() const {
+		return !isInvalid();
+	}
 	//what type of extrusion this is
 	TYPE myType;
 	//is this model or support?
@@ -81,6 +87,31 @@ typedef basic_labeled_path<OpenPath> LabeledOpenPath;
 typedef basic_labeled_path<Loop> LabeledLoop;
 //don't use this one!
 //typedef basic_labeled_path<LoopPath> LabeledLoopPath;
+
+template <typename COMPARE = std::less<int> >
+class basic_labelvalue_comparator {
+public:
+	basic_labelvalue_comparator(const COMPARE& compare = COMPARE())
+			: myCompare(compare) {}
+	bool operator ()(const PathLabel& lhs, const PathLabel& rhs) const {
+		return myCompare(lhs.myValue, rhs.myValue);
+	}
+private:
+	COMPARE myCompare;
+};
+
+template <typename PATH, typename COMPARE = basic_labelvalue_comparator<std::less<int> > >
+class basic_labeled_path_comparator {
+public:
+	basic_labeled_path_comparator(const COMPARE& compare = COMPARE()) 
+			: myCompare(compare) {}
+	bool operator ()(const basic_labeled_path<PATH>& lhs, 
+			const basic_labeled_path<PATH>& rhs) const {
+		return myCompare(lhs.myLabel, rhs.myLabel);
+	}
+private:
+	COMPARE myCompare;
+};
 
 
 
