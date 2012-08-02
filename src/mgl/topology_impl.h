@@ -84,7 +84,7 @@ void node_template<CT, VT>::set_position(vector_type p){
 template<typename CT, typename VT>
 void node_template<CT, VT>::break_inlinks(){
 	while(!inlinks.empty()){
-		link_type* lp = inlinks.front();
+		link_type* lp = inlinks.back();
 		lp->get_from()->disconnect(this);
 	}
 }
@@ -92,7 +92,7 @@ void node_template<CT, VT>::break_inlinks(){
 template<typename CT, typename VT>
 void node_template<CT, VT>::break_outlinks(){
 	while(!outlinks.empty()){
-		link_type* lp = outlinks.front();
+		link_type* lp = outlinks.back();
 		disconnect(lp->get_to());
 	}
 }

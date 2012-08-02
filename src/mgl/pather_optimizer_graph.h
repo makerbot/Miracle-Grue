@@ -18,6 +18,8 @@ namespace mgl {
 class pather_optimizer_graph : public abstract_optimizer {
 public:
 	
+	pather_optimizer_graph() : boundariesSorted(false) {}
+	
 	typedef PathLabel CostType;
 	typedef topo::node_template<CostType, PointType> node;
 	typedef topo::link_template<CostType, PointType> link;
@@ -66,7 +68,7 @@ private:
 	void tryRemoveNode(node* n);
 	
 	bool crossesBoundaries(const libthing::LineSegment2& seg);
-	void connectEntry(node* n); //connects to other entries, you insert yourself
+	void connectEntry(node* n, std::list<nodePair>& entries);
 	
 	node* bruteForceNearestRequired(node* current) const;
 	
@@ -84,8 +86,7 @@ private:
 	NodeSetType nodeSet;
 	NodeSetType entryNodeSet;
 	BoundaryListType boundaries;
-	std::list<nodePair> entryConnects;
-	
+	bool boundariesSorted;
 };
 
 }

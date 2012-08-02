@@ -94,7 +94,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		optimizer.addBoundaries(layerRegions->supportLoops);
 		
 		
-		int currentShell = 1;
+		int currentShell = 10;
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
@@ -121,13 +121,13 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				infillPaths);
 		
 		grid.gridRangesToOpenPaths(
-				supportRanges.xRays, 
-				grid.getYValues(), 
-				X_AXIS, 
+				direction ? supportRanges.xRays : supportRanges.yRays, 
+				values, 
+				axis, 
 				supportPaths);
 		
 		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
-				PathLabel::OWN_MODEL, 0));
+				PathLabel::OWN_MODEL, 1));
 		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_SUPPORT, 0));
 		optimizer.optimize(extruderlayer.paths);

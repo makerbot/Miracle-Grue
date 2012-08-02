@@ -160,6 +160,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 	loopIter = myLoops.begin();
 	entryIter = loopIter->myPath.entryBegin();
 	Scalar closestDistance = (point - *entryIter).magnitude();
+	int closestValue = loopIter->myLabel.myValue;
 	
 	for(LabeledLoopList::iterator currentIter = myLoops.begin(); 
 			currentIter != myLoops.end(); 
@@ -170,11 +171,15 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 				++currentEntry) {
 			Scalar distance = (point - 
 					*(currentEntry)).magnitude();
-			if(libthing::tlower(distance, closestDistance, 
-					DISTANCE_THRESHOLD)) {
+			int value = currentIter->myLabel.myValue;
+			if(value > closestValue || 
+					(value == closestValue && 
+					libthing::tlower(distance, closestDistance, 
+					DISTANCE_THRESHOLD))) {
 				closestDistance = distance;
 				entryIter = currentEntry;
 				loopIter = currentIter;
+				closestValue = value;
 			}
 		}
 	}
@@ -190,6 +195,7 @@ void pather_optimizer::findClosestPath(const PointType& point,
 	pathIter = myPaths.begin();
 	entryIter = pathIter->myPath.entryBegin();
 	Scalar closestDistance = (point - *entryIter).magnitude();
+	int closestValue = pathIter->myLabel.myValue;
 	
 	for(LabeledPathList::iterator currentIter = myPaths.begin(); 
 			currentIter != myPaths.end(); 
@@ -200,8 +206,11 @@ void pather_optimizer::findClosestPath(const PointType& point,
 				++currentEntry) {
 			Scalar distance = (point - 
 					*(currentEntry)).magnitude();
-			if(libthing::tlower(distance, closestDistance, 
-					DISTANCE_THRESHOLD)) {
+			int value = currentIter->myLabel.myValue;
+			if(value > closestValue || 
+					(value == closestValue && 
+					libthing::tlower(distance, closestDistance, 
+					DISTANCE_THRESHOLD))) {
 				closestDistance = distance;
 				entryIter = currentEntry;
 				pathIter = currentIter;
@@ -219,12 +228,16 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 	findClosestLoop(point, loopIter, loopEntry);
 	findClosestPath(point, pathIter, pathEntry);
 	
+	int loopVal = loopIter->myLabel.myValue;
+	int pathVal = pathIter->myLabel.myValue;
+	
 	if(loopIter != myLoops.end() && pathIter != myPaths.end()) {
 		//pick best
 		Scalar loopDistance = (point - *loopEntry).magnitude();
 		Scalar pathDistance = (point - *pathEntry).magnitude();
-		if(libthing::tlower(loopDistance, pathDistance, 
-				DISTANCE_THRESHOLD)) {
+		if(loopVal > pathVal || (loopVal == pathVal && 
+				libthing::tlower(loopDistance, pathDistance, 
+				DISTANCE_THRESHOLD))) {
 			//loop wins
 			result = closestLoop(loopIter, loopEntry);
 		} else {

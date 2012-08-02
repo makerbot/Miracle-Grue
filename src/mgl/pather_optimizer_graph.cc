@@ -40,8 +40,6 @@ void pather_optimizer_graph::addPath(const OpenPath& path,
 		nodes.push_back(currentNode);
 	}
 	//connect entry points
-	connectEntry(nodes.front());
-	connectEntry(nodes.back());
 	entryNodeSet.insert(nodes.front());
 	entryNodeSet.insert(nodes.back());
 }
@@ -68,13 +66,6 @@ void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
 	nodes.front()->connect(nodes.back(), label);
 	nodes.back()->connect(nodes.front(), label);
 	
-	//connect them all to entry points
-	for(std::list<node*>::iterator iter = nodes.begin(); 
-			iter != nodes.end(); 
-			++iter) {
-		connectEntry(*iter);
-	}
-	
 	//add them all to entry points
 	for(std::list<node*>::iterator iter = nodes.begin(); 
 			iter != nodes.end(); 
@@ -84,6 +75,7 @@ void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
 }
 
 void pather_optimizer_graph::addBoundary(const OpenPath& path) {
+	boundariesSorted = false;
 	//boundaries are broken down into linesegments
 	if(path.size() > 1) {
 		for(OpenPath::const_iterator iter = path.fromStart(); 
@@ -98,7 +90,8 @@ void pather_optimizer_graph::addBoundary(const OpenPath& path) {
 }
 
 void pather_optimizer_graph::addBoundary(const Loop& loop) {
-		//boundaries are broken down into linesegments
+	boundariesSorted = false;
+	//boundaries are broken down into linesegments
 	if(loop.size() > 2) {
 		for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
 				iter != loop.clockwiseEnd(); 
@@ -127,24 +120,43 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 		labeledpaths) {
 	if(entryNodeSet.empty())
 		return;
-	std::list<nodePair> yescrosses;
-	std::list<nodePair> notcrosses;
-	bulkLineCrossings(entryConnects, notcrosses, yescrosses);
-	entryConnects.clear();
-	for(std::list<nodePair>::const_iterator iter = notcrosses.begin(); 
-			iter != notcrosses.end(); 
-			++iter) {
-		CostType cost(CostType::TYP_CONNECTION, 
-				CostType::OWN_MODEL, 0);
-		iter->first->connect(iter->second, cost);
-		iter->second->connect(iter->first, cost);
-	}
 	node* currentNode = *(entryNodeSet.begin());
 	currentNode = bruteForceNearestRequired(currentNode);
 	std::cout << "Current Number of total nodes: " 
 			<< nodeSet.size() << std::endl;
 	while(!nodeSet.empty()) {
-		if(currentNode->outlinks_begin() == currentNode->outlinks_end()) {
+		if(currentNode->outlinks_size() == 0) {
+			std::list<nodePair> input, yescross, nocross;
+			connectEntry(currentNode, input);
+			bulkLineCrossings(input, nocross, yescross);
+			CostType cost(CostType::TYP_CONNECTION, 
+					CostType::OWN_MODEL, 0);
+			if(!nocross.empty()) {
+				for(std::list<nodePair>::const_iterator iter = 
+						nocross.begin(); 
+						iter != nocross.end(); 
+						++iter) {
+					if(iter->first == currentNode)
+						iter->first->connect(iter->second, cost);
+					else
+						iter->second->connect(iter->first, cost);
+				}
+			} else if(!yescross.empty()) {
+				cost.myOwner = CostType::OWN_INVALID;
+				cost.myType = CostType::TYP_INVALID;
+				cost.myValue = -1;
+				for(std::list<nodePair>::const_iterator iter = 
+						yescross.begin(); 
+						iter != yescross.end(); 
+						++iter) {
+					if(iter->first == currentNode)
+						iter->first->connect(iter->second, cost);
+					else
+						iter->second->connect(iter->first, cost);
+				}
+			}
+		}
+		if(currentNode->outlinks_size() == 0) {
 			node* nextNode = bruteForceNearestRequired(currentNode);
 			tryRemoveNode(currentNode);
 			currentNode = nextNode;
@@ -152,6 +164,10 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 				return;
 //			Log::severe() << "ERROR: Pather painted himself into a corner" 
 //					<< std::endl;
+		}
+		if(currentNode->outlinks_size() > 1) {
+			std::cout << "Current number of links: " << currentNode->outlinks_size() 
+					<< std::endl;
 		}
 		link* currentChoice = *(currentNode->outlinks_begin());
 		for(node::iterator linkIter = currentNode->outlinks_begin(); 
@@ -207,11 +223,12 @@ bool pather_optimizer_graph::crossesBoundaries(const libthing::LineSegment2& seg
 	return false;
 }
 
-void pather_optimizer_graph::connectEntry(node* n) {
+void pather_optimizer_graph::connectEntry(node* n, std::list<nodePair>& entries) {
 	for(NodeSetType::const_iterator entryIter = entryNodeSet.begin(); 
 			entryIter != entryNodeSet.end(); 
 			++entryIter) {
-		entryConnects.push_back(nodePair(*entryIter, n));
+		if(n != *entryIter)
+			entries.push_back(nodePair(n, *entryIter));
 	}
 }
 
@@ -251,12 +268,15 @@ bool pather_optimizer_graph::isBetter(link* current, link* alternate) const {
 			alternate->get_to()->get_position()).magnitude();
 	CostType curCost = current->get_cost();
 	CostType altCost = alternate->get_cost();
+	int curVal = highestValue(current->get_to());
+	int altVal = highestValue(alternate->get_to());
 	
 	if(curCost.isInvalid()) {
 		if(altCost.isValid())
 			return true;
 		else
-			return altDist < curDist;
+			return altVal > curVal || 
+					(altVal == curVal && altDist < curDist);
 	} else {
 		if(altCost.isInvalid())
 			return false;
@@ -280,11 +300,13 @@ bool pather_optimizer_graph::isBetter(link* current, link* alternate) const {
 		if(altCost.isValid() && !altCost.isConnection())
 			return true;
 		else if(altCost.isConnection())
-			return altDist < curDist;
+			return altVal > curVal || 
+					(altVal == curVal && altDist < curDist);
 		else 
 			return false;
 	}
-	else return altDist < curDist;
+	else return altVal > curVal || 
+			(altVal == curVal && altDist < curDist);
 }
 
 int pather_optimizer_graph::highestValue(node* n) const {
@@ -450,11 +472,14 @@ void pather_optimizer_graph::bulkLineCrossings(
 		std::list<nodePair>& yescrossOut) {
 	//properly orient things
 	std::for_each(inputs.begin(), inputs.end(), orientNodepair);
-	std::for_each(boundaries.begin(), boundaries.end(), orientLineSegment);
+	if(!boundariesSorted)
+		std::for_each(boundaries.begin(), boundaries.end(), orientLineSegment);
 	//sort them on their starting x axis;
 	inputs.sort(compareOrientedNodepair);
-	std::sort(boundaries.begin(), boundaries.end(), 
-			compareOrientedLineSegment);
+	if(!boundariesSorted)
+		std::sort(boundaries.begin(), boundaries.end(), 
+				compareOrientedLineSegment);
+	boundariesSorted = true;
 	std::vector<nodePair> activeInputs;
 	std::vector<libthing::LineSegment2> activeBoundaries;
 	std::list<nodePair>::const_iterator currentInput = inputs.begin();
