@@ -111,9 +111,7 @@ class pather_optimizer : public abstract_optimizer {
 public:
 	
 	static Scalar DISTANCE_THRESHOLD;
-	
-	bool linkPaths;
-	pather_optimizer(bool lp = false);
+
 	typedef std::list<libthing::LineSegment2> BoundaryList;
 	typedef std::list<LabeledOpenPath> LabeledPathList;
 	typedef std::list<LabeledLoop> LabeledLoopList;

@@ -22,6 +22,8 @@ public:
 	typedef topo::node_template<CostType, PointType> node;
 	typedef topo::link_template<CostType, PointType> link;
 	
+	typedef std::pair<node*, node*> nodePair;
+	
 	virtual ~pather_optimizer_graph();
 
 	void addPath(const OpenPath& path, 
@@ -72,12 +74,17 @@ private:
 	
 	int highestValue(node* n) const;
 	
+	void bulkLineCrossings(std::list<std::pair<node*, node*> >& inputs, 
+			std::list<nodePair>& notcrossOut, 
+			std::list<nodePair>& yescrossOut);
+	
 	
 //	LinkSetType linkSet;
 //	LinkSetType requiredLinkSet;
 	NodeSetType nodeSet;
 	NodeSetType entryNodeSet;
 	BoundaryListType boundaries;
+	std::list<nodePair> entryConnects;
 	
 };
 

@@ -1,8 +1,10 @@
 #include <set>
 #include <list>
 #include <vector>
+#include <limits>
 
 #include "pather_optimizer_graph.h"
+#include "loop_utils.h"
 
 namespace mgl {
 
@@ -125,22 +127,22 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 		labeledpaths) {
 	if(entryNodeSet.empty())
 		return;
+	std::list<nodePair> yescrosses;
+	std::list<nodePair> notcrosses;
+	bulkLineCrossings(entryConnects, notcrosses, yescrosses);
+	entryConnects.clear();
+	for(std::list<nodePair>::const_iterator iter = notcrosses.begin(); 
+			iter != notcrosses.end(); 
+			++iter) {
+		CostType cost(CostType::TYP_CONNECTION, 
+				CostType::OWN_MODEL, 0);
+		iter->first->connect(iter->second, cost);
+		iter->second->connect(iter->first, cost);
+	}
 	node* currentNode = *(entryNodeSet.begin());
 	currentNode = bruteForceNearestRequired(currentNode);
-//	std::cout << "Current Number of required extrusions: " 
-//				<< requiredLinkSet.size() << std::endl;
 	std::cout << "Current Number of total nodes: " 
 			<< nodeSet.size() << std::endl;
-	size_t degreeAccum = 0;
-	for(NodeSetType::const_iterator iter = nodeSet.begin(); 
-			iter != nodeSet.end(); 
-			++iter) {
-		degreeAccum = std::max(degreeAccum, (*iter)->outlinks_size());
-	}
-	std::cout << "Maximum degree of the graph: "
-			<< degreeAccum << std::endl;
-	std::cout << "Average degree of the graph: "
-			<< double(degreeAccum) / nodeSet.size() << std::endl;
 	while(!nodeSet.empty()) {
 		if(currentNode->outlinks_begin() == currentNode->outlinks_end()) {
 			node* nextNode = bruteForceNearestRequired(currentNode);
@@ -173,44 +175,6 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 	}
 }
 
-//void pather_optimizer_graph::removeLink(link* l) {
-//	//find a link like this in our set
-//	LinkSetType::iterator found = linkSet.find(l);
-//	if(found != linkSet.end()) {
-//		//remove all that "match" it
-//		LinkSetType::iterator lower = found;
-//		LinkSetType::iterator upper = found;
-//		while(upper != linkSet.end() && 
-//				link_undirected_comparator::match(l, *upper))
-//			++upper;
-//		for(;lower != linkSet.begin(); --lower)
-//			if(!link_undirected_comparator::match(l, *lower))
-//				break;
-//		if(!link_undirected_comparator::match(l, *lower))
-//				++lower;
-//		linkSet.erase(lower, upper);
-//	}
-//	found = requiredLinkSet.find(l);
-//	if(found != requiredLinkSet.end()) {
-//		//remove all that "match" it
-//		LinkSetType::iterator lower = found;
-//		LinkSetType::iterator upper = found;
-//		while(upper != requiredLinkSet.end() && 
-//				link_undirected_comparator::match(l, *upper))
-//			++upper;
-//		for(;lower != requiredLinkSet.begin(); --lower)
-//			if(!link_undirected_comparator::match(l, *lower))
-//				break;
-//		if(!link_undirected_comparator::match(l, *lower))
-//				++lower;
-//		requiredLinkSet.erase(lower, upper);
-//	}
-//	//eradicate the connectivity from the underlying graph
-//	node* end1 = l->get_from();
-//	node* end2 = l->get_to();
-//	end1->disconnect(end2);
-//	end2->disconnect(end1);
-//}
 
 void pather_optimizer_graph::tryRemoveNode(node* n) {
 	for(node::iterator iter = n->outlinks_begin(); 
@@ -225,10 +189,6 @@ void pather_optimizer_graph::tryRemoveNode(node* n) {
 		if((*iter)->get_cost().isRequired())
 			return;
 	}
-//	while(n->outlinks_begin() != n->outlinks_end())
-//		removeLink(*(n->outlinks_begin()));
-//	while(n->inlinks_begin() != n->inlinks_begin())
-//		removeLink(*(n->inlinks_begin()));
 	nodeSet.erase(n);
 	entryNodeSet.erase(n);
 	delete n;
@@ -251,22 +211,7 @@ void pather_optimizer_graph::connectEntry(node* n) {
 	for(NodeSetType::const_iterator entryIter = entryNodeSet.begin(); 
 			entryIter != entryNodeSet.end(); 
 			++entryIter) {
-		libthing::LineSegment2 segment(n->get_position(), 
-				(*entryIter)->get_position());
-		CostType cost;
-		if(boundaries.empty() || crossesBoundaries(segment)) {
-			//make it invalid, meaning dry move
-			cost.myOwner = CostType::OWN_INVALID;
-			cost.myType = CostType::TYP_INVALID;
-			cost.myValue = -1;
-		} else {
-			//valid connectivity
-			cost.myOwner = CostType::OWN_MODEL;
-			cost.myType = CostType::TYP_CONNECTION;
-			cost.myValue = 0;
-			n->connect(*entryIter, cost);
-			(*entryIter)->connect(n, cost);
-		}
+		entryConnects.push_back(nodePair(*entryIter, n));
 	}
 }
 
@@ -382,6 +327,173 @@ bool pather_optimizer_graph::link_undirected_comparator::match(
 bool pather_optimizer_graph::link_undirected_comparator::match(
 		const link* lhs, const link* rhs) {
 	return match(*lhs, *rhs);
+}
+
+/* UTILITY functions used by bulkLineCrossings */
+
+void orientNodepair(pather_optimizer_graph::nodePair& np) {
+	if(np.first->get_position().x >= np.second->get_position().x)
+		std::swap(np.first, np.second);
+}
+
+void orientLineSegment(libthing::LineSegment2& ls) {
+	if(ls.a.x >= ls.b.x)
+		std::swap(ls.a, ls.b);
+}
+
+bool compareOrientedNodepair(const pather_optimizer_graph::nodePair& lhs, 
+		const pather_optimizer_graph::nodePair& rhs) {
+	return lhs.first->get_position().x < 
+			rhs.first->get_position().x;
+}
+
+bool compareOrientedLineSegment(const libthing::LineSegment2& lhs, 
+		const libthing::LineSegment2& rhs) {
+	return lhs.a.x < rhs.a.x;
+}
+
+class CheckBelowXnodepair {
+public:
+	CheckBelowXnodepair(Scalar nx, 
+			std::list<pather_optimizer_graph::nodePair>& dst) 
+			: myX(nx), myDest(dst) {}
+	bool operator ()(pather_optimizer_graph::nodePair& np) const {
+		bool ret = np.second->get_position().x < myX;
+		if(ret) {
+			myDest.push_back(np);
+		}
+		return ret;
+	}
+private:
+	Scalar myX;
+	std::list<pather_optimizer_graph::nodePair>& myDest;
+};
+
+void stripBeforeX(std::vector<pather_optimizer_graph::nodePair>& current, 
+		Scalar x, 
+		std::list<pather_optimizer_graph::nodePair>& dest) {
+	typedef std::vector<pather_optimizer_graph::nodePair>::iterator iterator;
+	
+	iterator ibegin = current.begin();
+	iterator iend = current.end();
+	
+	iterator goodEnd = std::remove_if(ibegin, 
+			iend, CheckBelowXnodepair(x, dest));
+	
+	current.erase(goodEnd, current.end());
+}
+
+class CheckBelowXlinesegment {
+public:
+	CheckBelowXlinesegment(Scalar nx) : myX(nx) {}
+	bool operator ()(const libthing::LineSegment2& ls) const {
+		return ls.b.x < myX;
+	}
+private:
+	Scalar myX;
+};
+
+void stripBeforeX(std::vector<libthing::LineSegment2>& current, 
+		Scalar x) {
+	typedef std::vector<libthing::LineSegment2>::iterator iterator;
+	
+	iterator ibegin = current.begin();
+	iterator iend = current.end();
+	
+	iterator goodEnd = std::remove_if(ibegin, 
+			iend, CheckBelowXlinesegment(x));
+	
+	current.erase(goodEnd, current.end());
+}
+
+class CheckNodepairIntersects {
+public:
+	CheckNodepairIntersects(const std::vector<libthing::LineSegment2>& bounds, 
+			std::list<pather_optimizer_graph::nodePair>& dest)
+			: myBounds(bounds), myDest(dest) {}
+	bool operator ()(const pather_optimizer_graph::nodePair& np) const {
+		typedef std::vector<libthing::LineSegment2>::const_iterator const_iterator;
+		libthing::LineSegment2 nodeSeg(np.first->get_position(), 
+				np.second->get_position());
+		for(const_iterator boundIter = myBounds.begin(); 
+				boundIter != myBounds.end(); 
+				++boundIter) {
+			if(boundIter->intersects(nodeSeg)) {
+				myDest.push_back(np);
+				return true;
+			}
+		}
+		return false;
+	}
+private:
+	const std::vector<libthing::LineSegment2>& myBounds;
+	std::list<pather_optimizer_graph::nodePair>& myDest;
+};
+
+void stripIntersects(
+		std::vector<pather_optimizer_graph::nodePair>& currentNodes, 
+		std::vector<libthing::LineSegment2>& currentBoundaries, 
+		std::list<pather_optimizer_graph::nodePair>& crossings) {
+	typedef std::vector<pather_optimizer_graph::nodePair>::iterator node_iterator;
+	
+	node_iterator goodEnd = std::remove_if(currentNodes.begin(), 
+			currentNodes.end(), 
+			CheckNodepairIntersects(currentBoundaries, crossings));
+	currentNodes.erase(goodEnd, currentNodes.end());
+}
+
+/* END UTILITY functions */
+
+void pather_optimizer_graph::bulkLineCrossings(
+		std::list<nodePair>& inputs, 
+		std::list<nodePair>& notcrossOut, 
+		std::list<nodePair>& yescrossOut) {
+	//properly orient things
+	std::for_each(inputs.begin(), inputs.end(), orientNodepair);
+	std::for_each(boundaries.begin(), boundaries.end(), orientLineSegment);
+	//sort them on their starting x axis;
+	inputs.sort(compareOrientedNodepair);
+	std::sort(boundaries.begin(), boundaries.end(), 
+			compareOrientedLineSegment);
+	std::vector<nodePair> activeInputs;
+	std::vector<libthing::LineSegment2> activeBoundaries;
+	std::list<nodePair>::const_iterator currentInput = inputs.begin();
+	//iterate through the ordered x coordinates
+	for(BoundaryListType::const_iterator boundaryIter = boundaries.begin(); 
+			boundaryIter != boundaries.end(); 
+			++boundaryIter) {
+		Scalar currentX = boundaryIter->a.x;
+		//remove from active boundaries everything that ends before this X
+		stripBeforeX(activeBoundaries, currentX);
+		//add to notcross things that haven't been eliminated
+		stripBeforeX(activeInputs, currentX, notcrossOut);
+		//add this boundary
+		activeBoundaries.push_back(*boundaryIter);
+		//add inputs before current x
+		while(currentInput != inputs.end() && 
+				currentInput->first->get_position().x < currentX) {
+			activeInputs.push_back(*currentInput);
+			++currentInput;
+		}
+		//check for intersections
+		stripIntersects(activeInputs, activeBoundaries, yescrossOut);
+	}
+	//insert remaining things
+	activeInputs.insert(activeInputs.end(), currentInput, 
+		static_cast<std::list<nodePair>::const_iterator>(inputs.end()));
+	stripIntersects(activeInputs, activeBoundaries, yescrossOut);
+	//final strip out noninters
+	notcrossOut.insert(notcrossOut.end(), activeInputs.begin(), 
+		activeInputs.end());
+	if(yescrossOut.size() + notcrossOut.size() != inputs.size()) {
+		Exception mixup("Line intersection algorithm lost/gained links!");
+		std::cout << "Input Size: " << inputs.size() << std::endl;
+		std::cout << "Cross Size: " << yescrossOut.size() << std::endl;
+		std::cout << "Valid Size: " << notcrossOut.size() << std::endl;
+		std::cout << "Total Size: " << yescrossOut.size() + notcrossOut.size() 
+				<< std::endl;
+		throw mixup;
+	}
 }
 
 }

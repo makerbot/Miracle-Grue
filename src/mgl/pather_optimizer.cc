@@ -8,8 +8,6 @@ namespace mgl {
 
 Scalar pather_optimizer::DISTANCE_THRESHOLD = 0.2;
 
-pather_optimizer::pather_optimizer(bool lp) : linkPaths(lp) {}
-
 void pather_optimizer::addPath(const OpenPath& path, const PathLabel& label) {
 	//we don't consider paths of a single point
 	if(path.size() > 1) {
@@ -86,7 +84,7 @@ void pather_optimizer::optimizeInternal(
 		}
 	}
 	//if moves don't cross boundaries, ok to extrude them
-	if(linkPaths) {
+	if(!boundaries.empty()) {
 		link(labeledpaths);
 	}
 }
