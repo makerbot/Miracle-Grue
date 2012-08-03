@@ -25,6 +25,12 @@ void pather_optimizer_graph::addPath(const OpenPath& path,
 	for(OpenPath::const_iterator iter = path.fromStart(); 
 			iter != path.end(); 
 			++iter) {
+		//bool canEnter = false;
+		//OpenPath::const_iterator test = iter;
+		//if(test == path.fromStart() || ++test == path.end()) {
+		//	if(nodePositions.find(*iter) != nodePositions.end())
+		//		canEnter = true;
+		//}
 		node* currentNode = tryCreateNode(*iter);
 		//connect to previous node if it exists
 		if(!nodes.empty() && currentNode != nodes.back()) {
@@ -32,12 +38,9 @@ void pather_optimizer_graph::addPath(const OpenPath& path,
 			nodes.back()->connect(currentNode, label);
 		}
 		nodes.push_back(currentNode);
+		//if(canEnter)
+			tryMarkEntry(currentNode);
 	}
-	//connect entry points
-	if(nodes.front()->inlinks_size() <= 1)
-		entryNodeSet.insert(nodes.front());
-	if(nodes.back()->outlinks_size() <= 1)
-		entryNodeSet.insert(nodes.back());
 }
 
 void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
@@ -63,14 +66,21 @@ void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
 	
 	//add them all to entry points
 	PointType lastEntry = nodes.front()->get_position();
+	int skip = 0;
+	static const int SKIP_MAX = 5;
+	static const Scalar SKIP_DIST = 10.0;
 	for(std::list<node*>::iterator iter = nodes.begin(); 
 			iter != nodes.end(); 
 			++iter) {
 		PointType currentEntry = (*iter)->get_position();
 		//don't add each one, but every 2mm
-		if((currentEntry - lastEntry).magnitude() > 2.0) {
+		if(iter == nodes.begin() || skip > SKIP_MAX ||
+				(currentEntry - lastEntry).magnitude() > SKIP_DIST) {
 			entryNodeSet.insert(*iter);
 			lastEntry = currentEntry;
+			skip = 0;
+		} else {
+			++skip;
 		}
 	}
 }
@@ -127,6 +137,8 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 	currentNode = bruteForceNearestRequired(currentNode);
 	std::cout << "Current Number of total nodes: " 
 			<< nodeSet.size() << std::endl;
+	std::cout << "Current Number of entry nodes: " 
+			<< entryNodeSet.size() << std::endl;
 	while(!nodeSet.empty()) {
 		if(currentNode->outlinks_size() == 0) {
 			std::list<nodePair> input, yescross, nocross;
@@ -241,6 +253,34 @@ void pather_optimizer_graph::tryRemoveNode(node* n) {
 	entryNodeSet.erase(n);
 	nodePositions.erase(n->get_position());
 	delete n;
+}
+
+void pather_optimizer_graph::tryMarkEntry(node* n) {
+	//count valid paths
+	int reqLinks = 0;
+	int valLinks = 0;
+	for(node::const_iterator initer = n->inlinks_begin(); 
+			initer != n->inlinks_end(); 
+			++initer) {
+		link* l = *initer;
+		CostType cost = l->get_cost();
+		if(cost.isRequired())
+			++reqLinks;
+		if(cost.isValid())
+			++valLinks;
+	}
+	for(node::const_iterator outiter = n->outlinks_begin(); 
+			outiter != n->outlinks_end(); 
+			++outiter) {
+		link* l = *outiter;
+		CostType cost = l->get_cost();
+		if(cost.isRequired())
+			++reqLinks;
+		if(cost.isValid())
+			++valLinks;
+	}
+	if(reqLinks <= 2 || valLinks <=4)
+		entryNodeSet.insert(n);
 }
 
 bool pather_optimizer_graph::crossesBoundaries(const libthing::LineSegment2& seg) {

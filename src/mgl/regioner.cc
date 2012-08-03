@@ -437,8 +437,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 				regionerCfg.supportMargin);
 		marginsList.push_back(currentMargins);
 	}
-	int layerskip = int(1 + regionerCfg.supportMargin / 
-			layermeasure.getLayerH());
+	int layerskip = std::min(int(1 + regionerCfg.supportMargin / 
+			layermeasure.getLayerH()), 2);
 	RegionList::iterator above = regionsEnd;
 	std::list<LoopList>::const_iterator aboveMargins = marginsList.end();
 	--above; //work from the highest layer down

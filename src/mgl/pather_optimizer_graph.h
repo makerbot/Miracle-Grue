@@ -81,6 +81,8 @@ private:
 	node* tryCreateNode(const PointType& pos);
 	void tryRemoveNode(node* n);
 	
+	void tryMarkEntry(node* n);
+	
 	bool crossesBoundaries(const libthing::LineSegment2& seg);
 	void connectEntry(node* n, std::list<nodePair>& entries);
 	

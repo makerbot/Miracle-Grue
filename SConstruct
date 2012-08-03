@@ -184,7 +184,7 @@ if debug:
     #env.Append(LINKFLAGS = '-fprofile-arcs')
     #env.Append(LIBS = 'gcov')
 else:
-    env.Append(CCFLAGS = '-O2')
+    env.Append(CCFLAGS = '-O3')
 
 #env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
 multi_thread = False
