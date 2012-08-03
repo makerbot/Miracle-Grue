@@ -2,6 +2,7 @@
 #include <list>
 #include <vector>
 #include <limits>
+#include <map>
 
 #include "pather_optimizer_graph.h"
 #include "loop_utils.h"
@@ -24,24 +25,19 @@ void pather_optimizer_graph::addPath(const OpenPath& path,
 	for(OpenPath::const_iterator iter = path.fromStart(); 
 			iter != path.end(); 
 			++iter) {
-		node* currentNode = new node(*iter);
-		nodeSet.insert(currentNode);
+		node* currentNode = tryCreateNode(*iter);
 		//connect to previous node if it exists
-		if(!nodes.empty()) {
-			//link* a = ;
+		if(!nodes.empty() && currentNode != nodes.back()) {
 			currentNode->connect(nodes.back(), label);
-			//link* b = ;
 			nodes.back()->connect(currentNode, label);
-//			linkSet.insert(a);
-//			linkSet.insert(b);
-//			requiredLinkSet.insert(a);
-//			requiredLinkSet.insert(b);
 		}
 		nodes.push_back(currentNode);
 	}
 	//connect entry points
-	entryNodeSet.insert(nodes.front());
-	entryNodeSet.insert(nodes.back());
+	if(nodes.front()->inlinks_size() <= 1)
+		entryNodeSet.insert(nodes.front());
+	if(nodes.back()->outlinks_size() <= 1)
+		entryNodeSet.insert(nodes.back());
 }
 
 void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
@@ -54,10 +50,9 @@ void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
 	for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
 			iter != loop.clockwiseEnd(); 
 			++iter) {
-		node* currentNode = new node(*iter);
-		nodeSet.insert(currentNode);
+		node* currentNode = tryCreateNode(*iter);
 		//connect to previous node if it exists
-		if(!nodes.empty()) {
+		if(!nodes.empty()  && currentNode != nodes.back()) {
 			currentNode->connect(nodes.back(), label);
 			nodes.back()->connect(currentNode, label);
 		}
@@ -67,10 +62,16 @@ void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
 	nodes.back()->connect(nodes.front(), label);
 	
 	//add them all to entry points
+	PointType lastEntry = nodes.front()->get_position();
 	for(std::list<node*>::iterator iter = nodes.begin(); 
 			iter != nodes.end(); 
 			++iter) {
-		entryNodeSet.insert(*iter);
+		PointType currentEntry = (*iter)->get_position();
+		//don't add each one, but every 2mm
+		if((currentEntry - lastEntry).magnitude() > 2.0) {
+			entryNodeSet.insert(*iter);
+			lastEntry = currentEntry;
+		}
 	}
 }
 
@@ -109,11 +110,13 @@ void pather_optimizer_graph::clearBoundaries() {
 }
 
 void pather_optimizer_graph::clearPaths() {
-	for(NodeSetType::iterator iter = nodeSet.begin(); 
+	for(NodeSet::iterator iter = nodeSet.begin(); 
 			iter != nodeSet.end(); 
 			++iter) {
 		delete *iter;
 	}
+	entryNodeSet.clear();
+	nodePositions.clear();
 }
 
 void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPaths& 
@@ -170,19 +173,13 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 					<< std::endl;
 		}
 		link* currentChoice = *(currentNode->outlinks_begin());
-		for(node::iterator linkIter = currentNode->outlinks_begin(); 
-				linkIter != currentNode->outlinks_end(); 
+		node::iterator linkIter = currentNode->outlinks_begin();
+		for(++linkIter; linkIter != currentNode->outlinks_end(); 
 				++linkIter) {
 			if(isBetter(currentChoice, *linkIter))
 				currentChoice = *linkIter;
 		}
-		if(currentChoice->get_cost().isValid()) {
-			LabeledOpenPath lp;
-			lp.myLabel = currentChoice->get_cost();
-			lp.myPath.appendPoint(currentChoice->get_from()->get_position());
-			lp.myPath.appendPoint(currentChoice->get_to()->get_position());
-			labeledpaths.push_back(lp);
-		}
+		appendMove(currentChoice, labeledpaths);
 		node* nextNode = currentChoice->get_to();
 		currentNode->disconnect(nextNode);
 		nextNode->disconnect(currentNode);
@@ -191,6 +188,41 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 	}
 }
 
+void pather_optimizer_graph::appendMove(link* l, 
+		LabeledOpenPaths& labeledpaths) {
+	if(l->get_cost().isValid()) {
+		if((!labeledpaths.empty()) && 
+				labeledpaths.back().myLabel == l->get_cost() && 
+				!labeledpaths.back().myPath.empty() && 
+				(*labeledpaths.back().myPath.fromEnd()) == 
+				l->get_from()->get_position()) {
+			labeledpaths.back().myPath.appendPoint(
+			l->get_to()->get_position());
+		} else {
+			LabeledOpenPath lp;
+			lp.myLabel = l->get_cost();
+			lp.myPath.appendPoint(l->get_from()->get_position());
+			lp.myPath.appendPoint(l->get_to()->get_position());
+			labeledpaths.push_back(lp);
+		}
+	}
+}
+
+pather_optimizer_graph::node* pather_optimizer_graph::tryCreateNode(
+		const PointType& pos) {
+	node* createdNode = NULL;
+	NodePositionMap::iterator mapped = nodePositions.find(pos);
+	if(mapped == nodePositions.end()) {
+		//no node at this exact position, create one
+		nodePositions.insert(std::pair<PointType, node*>(pos, 
+				createdNode = new node(pos)));
+		nodeSet.insert(createdNode);
+	} else {
+		//if we have a node at this EXACT position, just use it
+		createdNode = mapped->second;
+	}
+	return createdNode;
+}
 
 void pather_optimizer_graph::tryRemoveNode(node* n) {
 	for(node::iterator iter = n->outlinks_begin(); 
@@ -207,6 +239,7 @@ void pather_optimizer_graph::tryRemoveNode(node* n) {
 	}
 	nodeSet.erase(n);
 	entryNodeSet.erase(n);
+	nodePositions.erase(n->get_position());
 	delete n;
 }
 
@@ -224,7 +257,7 @@ bool pather_optimizer_graph::crossesBoundaries(const libthing::LineSegment2& seg
 }
 
 void pather_optimizer_graph::connectEntry(node* n, std::list<nodePair>& entries) {
-	for(NodeSetType::const_iterator entryIter = entryNodeSet.begin(); 
+	for(NodeSet::const_iterator entryIter = entryNodeSet.begin(); 
 			entryIter != entryNodeSet.end(); 
 			++entryIter) {
 		if(n != *entryIter)
@@ -241,7 +274,7 @@ pather_optimizer_graph::node*
 	Scalar closestDist = (closest->get_position() - 
 			current->get_position()).magnitude();
 	int closestVal = highestValue(closest);
-	for(NodeSetType::const_iterator iter = nodeSet.begin(); 
+	for(NodeSet::const_iterator iter = nodeSet.begin(); 
 		iter != nodeSet.end(); 
 		++iter){
 		Scalar dist = ((*iter)->get_position() - 
@@ -349,6 +382,16 @@ bool pather_optimizer_graph::link_undirected_comparator::match(
 bool pather_optimizer_graph::link_undirected_comparator::match(
 		const link* lhs, const link* rhs) {
 	return match(*lhs, *rhs);
+}
+
+bool pather_optimizer_graph::node_position_comparator::operator ()(
+		const node& lhs, const node& rhs) const {
+	return myCompare(lhs.get_position(), rhs.get_position());
+}
+
+bool pather_optimizer_graph::node_position_comparator::operator ()(
+		const node* lhs, const node* rhs) const {
+	return this->operator ()(*lhs, *rhs);
 }
 
 /* UTILITY functions used by bulkLineCrossings */

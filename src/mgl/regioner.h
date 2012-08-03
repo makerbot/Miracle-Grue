@@ -155,7 +155,8 @@ public:
 				  const Grid &grid);
 
 	void support(RegionList::iterator regionsBegin,
-				 RegionList::iterator regionsEnd);
+				 RegionList::iterator regionsEnd ,
+				 LayerMeasure& layermeasure);
 
 
 	void infills(RegionList::iterator regionsBegin,

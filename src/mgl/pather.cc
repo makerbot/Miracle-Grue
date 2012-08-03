@@ -74,6 +74,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
 		
+		
+		pather_optimizer preoptimizer;
 		pather_optimizer_graph optimizer;
 		//optimizer.linkPaths = false;
 
@@ -90,6 +92,9 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		
 		//optimizer.linkPaths = true;
 		
+		preoptimizer.addBoundaries(layerRegions->outlines);
+		preoptimizer.addBoundaries(layerRegions->supportLoops);
+		
 		optimizer.addBoundaries(layerRegions->outlines);
 		optimizer.addBoundaries(layerRegions->supportLoops);
 		
@@ -98,7 +103,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
-			optimizer.addPaths(*listIter, 
+			preoptimizer.addPaths(*listIter, 
 					PathLabel(PathLabel::TYP_INSET, 
 					PathLabel::OWN_MODEL, currentShell));
 			++currentShell;
@@ -126,11 +131,17 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 				axis, 
 				supportPaths);
 		
-		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
+		preoptimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_MODEL, 1));
-		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+		preoptimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_SUPPORT, 0));
+		std::list<LabeledOpenPath> preoptimized;
+		preoptimizer.optimize(preoptimized);
+		
+		optimizer.addPaths(preoptimized);
 		optimizer.optimize(extruderlayer.paths);
+//		extruderlayer.paths.insert(extruderlayer.paths.end(), 
+//				preoptimized.begin(), preoptimized.end());
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;

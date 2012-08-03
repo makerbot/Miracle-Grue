@@ -10,7 +10,9 @@
 
 #include "pather_optimizer.h"
 #include "topology.h"
+#include "loop_utils.h"
 #include <set>
+#include <map>
 #include <vector>
 
 namespace mgl {
@@ -45,14 +47,14 @@ protected:
 	
 private:
 	
-	class link_value_comparator{
+	class link_value_comparator {
 	public:
 		bool operator ()(const link& lhs, const link& rhs) const;
 	private:
 		basic_labelvalue_comparator<std::greater<int> > myCompare;
 	};
 	
-	class link_undirected_comparator{
+	class link_undirected_comparator {
 	public:
 		bool operator ()(const link& lhs, const link& rhs) const;
 		bool operator ()(const link* lhs, const link* rhs) const;
@@ -60,11 +62,23 @@ private:
 		static bool match(const link* lhs, const link* rhs);
 	};
 	
-	typedef std::set<link*, link_undirected_comparator> LinkSetType;
-	typedef std::set<node*> NodeSetType;
+	class node_position_comparator {
+	public:
+		bool operator ()(const node& lhs, const node& rhs) const;
+		bool operator ()(const node* lhs, const node* rhs) const;
+	private:
+		basic_axisfunctor<> myCompare;
+	};
+	
+	typedef std::set<link*, link_undirected_comparator> LinkSet;
+	typedef std::set<node*> NodeSet;
+	typedef std::map<PointType, node*, basic_axisfunctor<> > NodePositionMap;
 	typedef std::vector<libthing::LineSegment2> BoundaryListType;
 	
-//	void removeLink(link* l);
+
+	void appendMove(link* l, LabeledOpenPaths& labeledpaths);
+	
+	node* tryCreateNode(const PointType& pos);
 	void tryRemoveNode(node* n);
 	
 	bool crossesBoundaries(const libthing::LineSegment2& seg);
@@ -83,8 +97,9 @@ private:
 	
 //	LinkSetType linkSet;
 //	LinkSetType requiredLinkSet;
-	NodeSetType nodeSet;
-	NodeSetType entryNodeSet;
+	NodeSet nodeSet;
+	NodeSet entryNodeSet;
+	NodePositionMap nodePositions;
 	BoundaryListType boundaries;
 	bool boundariesSorted;
 };

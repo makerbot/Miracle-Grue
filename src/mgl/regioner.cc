@@ -36,7 +36,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 
 	if (regionerCfg.doSupport) {
 		initProgress("support", sliceCount);
-		support(firstmodellayer, regionlist.end());
+		support(firstmodellayer, regionlist.end(), layerMeasure);
 	}
 
 	limits.inflate(regionerCfg.raftOutset + 10,
@@ -425,7 +425,8 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 }
 
 void Regioner::support(RegionList::iterator regionsBegin,
-		RegionList::iterator regionsEnd) {
+		RegionList::iterator regionsEnd, 
+		LayerMeasure& layermeasure) {
 	std::list<LoopList> marginsList;
 	
 	for(RegionList::const_iterator iter = regionsBegin; 
@@ -436,7 +437,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 				regionerCfg.supportMargin);
 		marginsList.push_back(currentMargins);
 	}
-	int layerskip = regionerCfg.supportMargin;
+	int layerskip = int(1 + regionerCfg.supportMargin / 
+			layermeasure.getLayerH());
 	RegionList::iterator above = regionsEnd;
 	std::list<LoopList>::const_iterator aboveMargins = marginsList.end();
 	--above; //work from the highest layer down
@@ -448,6 +450,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	while (above != regionsBegin) {
 		--current;
 		--currentMargins;
+		
+		std::cout << "Layerskip is " << layerskip << std::endl;
 		
 		LoopList &support = current->supportLoops;
 
@@ -462,13 +466,18 @@ void Regioner::support(RegionList::iterator regionsBegin,
 			loopsUnion(support, *aboveMargins);
 		}
 
-		if (!support.empty()) {
-			//subtract current outlines from the support loops to keep support
-			//from overlapping the object
-			
-			//use margins computed up front
-			loopsDifference(support, *currentMargins);
+		RegionList::iterator inner = current;
+		std::list<LoopList>::const_iterator innerMargin = currentMargins;
+		for(int curInt = 0; curInt < 1 && inner != regionsEnd; 
+				++curInt, ++inner, ++innerMargin) {
+			loopsDifference(current->supportLoops, *innerMargin);
+			loopsDifference(inner->supportLoops, *currentMargins);
 		}
+		//subtract current outlines from the support loops to keep support
+		//from overlapping the object
+
+		//use margins computed up front
+		//loopsDifference(support, *currentMargins);
 
 		--above;
 		--aboveMargins;

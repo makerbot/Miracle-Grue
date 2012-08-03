@@ -295,6 +295,8 @@ void pather_optimizer::link(
 			connection.myPath.appendPoint(lastPoint);
 			connection.myPath.appendPoint(currentPoint);
 			connection.myLabel.myType = PathLabel::TYP_CONNECTION;
+			connection.myLabel.myOwner = PathLabel::OWN_MODEL;
+			connection.myLabel.myValue = 0;
 			if(last.myLabel == current.myLabel && false) {
 				//naive case
 				//concatenate paths of same label

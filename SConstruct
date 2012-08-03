@@ -176,13 +176,13 @@ if operating_system == "win32":
     default_libs_path = ['.\\bin\\lib']
 
 if debug:
-    #env.Append(CCFLAGS = '-g')
-    env.Append(CCFLAGS = '-pg')
-    env.Append(CCFLAGS = '-fprofile-arcs')
-    env.Append(LINKFLAGS = '-pg')
-    env.Append(LINKFLAGS = '-fprofile-arcs')
-    env.Append(LINKFLAGS = '-fprofile-arcs')
-    env.Append(LIBS = 'gcov')
+    env.Append(CCFLAGS = '-g')
+    #env.Append(CCFLAGS = '-pg')
+    #env.Append(CCFLAGS = '-fprofile-arcs')
+    #env.Append(LINKFLAGS = '-pg')
+    #env.Append(LINKFLAGS = '-fprofile-arcs')
+    #env.Append(LINKFLAGS = '-fprofile-arcs')
+    #env.Append(LIBS = 'gcov')
 else:
     env.Append(CCFLAGS = '-O2')
 
