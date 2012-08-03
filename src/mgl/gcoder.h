@@ -374,6 +374,9 @@ void GCoder::writePaths(std::ostream& ss,
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			w *= 0.5;
+			h *= 0.7;
+			extrusion.feedrate *= 2;
 			ss << "(support path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isConnection()) {
