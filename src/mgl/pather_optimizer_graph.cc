@@ -25,12 +25,6 @@ void pather_optimizer_graph::addPath(const OpenPath& path,
 	for(OpenPath::const_iterator iter = path.fromStart(); 
 			iter != path.end(); 
 			++iter) {
-		//bool canEnter = false;
-		//OpenPath::const_iterator test = iter;
-		//if(test == path.fromStart() || ++test == path.end()) {
-		//	if(nodePositions.find(*iter) != nodePositions.end())
-		//		canEnter = true;
-		//}
 		node* currentNode = tryCreateNode(*iter);
 		//connect to previous node if it exists
 		if(!nodes.empty() && currentNode != nodes.back()) {
@@ -38,9 +32,9 @@ void pather_optimizer_graph::addPath(const OpenPath& path,
 			nodes.back()->connect(currentNode, label);
 		}
 		nodes.push_back(currentNode);
-		//if(canEnter)
-			tryMarkEntry(currentNode);
 	}
+	tryMarkEntry(nodes.front());
+	tryMarkEntry(nodes.back());
 }
 
 void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
@@ -281,6 +275,8 @@ void pather_optimizer_graph::tryMarkEntry(node* n) {
 	}
 	if(reqLinks <= 2 || valLinks <=4)
 		entryNodeSet.insert(n);
+	else
+		std::cout << "FAIL to entrypoint" << std::endl;
 }
 
 bool pather_optimizer_graph::crossesBoundaries(const libthing::LineSegment2& seg) {
@@ -406,7 +402,8 @@ bool pather_optimizer_graph::link_undirected_comparator::operator ()(
 	return lmin == rmin ? lmax < rmax : lmin < rmin;
 }
 
-bool pather_optimizer_graph::link_undirected_comparator::operator ()(const link* lhs, const link* rhs) const {
+bool pather_optimizer_graph::link_undirected_comparator::operator ()(
+		const link* lhs, const link* rhs) const {
 	return this->operator ()(*lhs, *rhs);
 }
 
