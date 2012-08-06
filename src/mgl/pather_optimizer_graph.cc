@@ -129,10 +129,10 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 		return;
 	node* currentNode = *(entryNodeSet.begin());
 	currentNode = bruteForceNearestRequired(currentNode);
-	std::cout << "Current Number of total nodes: " 
-			<< nodeSet.size() << std::endl;
-	std::cout << "Current Number of entry nodes: " 
-			<< entryNodeSet.size() << std::endl;
+//	std::cout << "Current Number of total nodes: " 
+//			<< nodeSet.size() << std::endl;
+//	std::cout << "Current Number of entry nodes: " 
+//			<< entryNodeSet.size() << std::endl;
 	while(!nodeSet.empty()) {
 		if(currentNode->outlinks_size() == 0) {
 			std::list<nodePair> input, yescross, nocross;
@@ -174,10 +174,10 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 //			Log::severe() << "ERROR: Pather painted himself into a corner" 
 //					<< std::endl;
 		}
-		if(currentNode->outlinks_size() > 1) {
-			std::cout << "Current number of links: " << currentNode->outlinks_size() 
-					<< std::endl;
-		}
+//		if(currentNode->outlinks_size() > 1) {
+//			std::cout << "Current number of links: " << currentNode->outlinks_size() 
+//					<< std::endl;
+//		}
 		link* currentChoice = *(currentNode->outlinks_begin());
 		node::iterator linkIter = currentNode->outlinks_begin();
 		for(++linkIter; linkIter != currentNode->outlinks_end(); 
@@ -275,8 +275,8 @@ void pather_optimizer_graph::tryMarkEntry(node* n) {
 	}
 	if(reqLinks <= 2 || valLinks <=4)
 		entryNodeSet.insert(n);
-	else
-		std::cout << "FAIL to entrypoint" << std::endl;
+//	else
+//		std::cout << "FAIL to entrypoint" << std::endl;
 }
 
 bool pather_optimizer_graph::crossesBoundaries(const libthing::LineSegment2& seg) {

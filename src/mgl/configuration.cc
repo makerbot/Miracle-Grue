@@ -20,6 +20,7 @@
 #include "pather.h"
 #include "abstractable.h"
 #include "regioner.h"
+#include "pather.h"
 
 namespace mgl {
 
@@ -406,6 +407,14 @@ void loadRegionerConfigFromFile(const Configuration& config,
     regionerCfg.raftModelSpacing = doubleCheck(
                         config["regioner"]["raftModelSpacing"], 
 			"regioner.raftModelSpacing", regionerCfg.raftModelSpacing);
+}
+
+void loadPatherConfigFromFile(const Configuration& config, 
+		PatherConfig& patherCfg) {
+	patherCfg.doGraphOptimization = boolCheck(
+			config["pather"]["doGraphOptimization"], 
+			"pather.doGraphOptimization", 
+			patherCfg.doGraphOptimization);
 }
 
 

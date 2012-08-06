@@ -316,6 +316,9 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		RegionerConfig regionerCfg;
 		loadRegionerConfigFromFile(config, regionerCfg);
+		
+		PatherConfig patherCfg;
+		loadPatherConfigFromFile(config, patherCfg);
 
 		ExtruderConfig extruderCfg;
 		loadExtruderConfigFromFile(config, extruderCfg);
@@ -331,7 +334,7 @@ int main(int argc, char *argv[], char *[]) // envp
 		std::ofstream gcodeFileStream(gcodeFile.c_str());
 
 		ProgressLog log;
-		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, extruderCfg,
+		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, extruderCfg,
 				modelFile.c_str(),
 				scad,
 				gcodeFileStream,

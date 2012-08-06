@@ -19,9 +19,8 @@
 using namespace mgl;
 using namespace std;
 
-Pather::Pather(ProgressBar * progress)
-: Progressive(progress) {
-}
+Pather::Pather(const PatherConfig& pCfg, ProgressBar* progress) 
+		: Progressive(progress), patherCfg(pCfg) {}
 
 void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		const RegionList &skeleton,
@@ -133,8 +132,16 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		std::list<LabeledOpenPath> preoptimized;
 		preoptimizer.optimize(preoptimized);
 		
-		optimizer.addPaths(preoptimized);
-		optimizer.optimize(extruderlayer.paths);
+		if(patherCfg.doGraphOptimization) {
+			//run graph optimizations
+			optimizer.addPaths(preoptimized);
+			optimizer.optimize(extruderlayer.paths);
+		} else {
+			//don't run graph optimizations
+			//use naive result instead
+			extruderlayer.paths.insert(extruderlayer.paths.end(), 
+					preoptimized.begin(), preoptimized.end());
+		}
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;

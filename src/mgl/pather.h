@@ -23,6 +23,13 @@
 
 namespace mgl {
 
+class PatherConfig {
+public:
+	PatherConfig() 
+			: doGraphOptimization(true) {}
+	bool doGraphOptimization;
+};
+
 typedef std::vector<LoopList> InsetVector; // TODO: make this a smarter object
 
 // slice data for an extruder
@@ -148,11 +155,13 @@ public:
 
 class Pather : public Progressive
 {
+private:
+	PatherConfig patherCfg;
 
 public:
 
 
-	Pather(ProgressBar * progress = NULL);
+	Pather(const PatherConfig& pCfg, ProgressBar * progress = NULL);
 
 
 	void generatePaths(const ExtruderConfig &extruderCfg,
