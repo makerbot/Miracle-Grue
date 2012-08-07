@@ -463,21 +463,14 @@ void Regioner::support(RegionList::iterator regionsBegin,
 			support = above->supportLoops;
 
 			//add the outlines of layer above
-			loopsUnion(support, *aboveMargins);
+			loopsUnion(support, above->outlines);
 		}
 
-		RegionList::iterator inner = current;
-		std::list<LoopList>::const_iterator innerMargin = currentMargins;
-		for(int curInt = 0; curInt < 1 && inner != regionsEnd; 
-				++curInt, ++inner, ++innerMargin) {
-			loopsDifference(current->supportLoops, *innerMargin);
-			loopsDifference(inner->supportLoops, *currentMargins);
-		}
 		//subtract current outlines from the support loops to keep support
 		//from overlapping the object
 
 		//use margins computed up front
-		//loopsDifference(support, *currentMargins);
+		loopsDifference(support, *currentMargins);
 
 		--above;
 		--aboveMargins;
