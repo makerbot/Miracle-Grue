@@ -111,5 +111,57 @@ void PatherOptimizerTestCase::testBoundary() {
 	}
 }
 
+void PatherOptimizerTestCase::testCompleteness() {
+	//make a square +-1 both axes
+	Loop loop;
+	loop.insertPointBefore(PointType(-1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(PointType(1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(PointType(1,-1), loop.clockwiseEnd());
+	loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
+	
+	pather_optimizer optimizer(true);
+	
+	//make paths that cross boundary and don't
+	std::list<PointType> points;	//keeps track of points I expect to get out
+	
+	OpenPath insideBoundary;
+	insideBoundary.appendPoint(PointType(-0.5, 0));
+	points.push_back(PointType(-0.5, 0));
+	insideBoundary.appendPoint(PointType(0.5, 0));
+	points.push_back(PointType(0.5, 0));
+	OpenPath outsideBoundary;
+	outsideBoundary.appendPoint(PointType(-0.5, 2));
+	points.push_back(PointType(-0.5, 2));
+	outsideBoundary.appendPoint(PointType(0.5, 2));
+	points.push_back(PointType(0.5, 2));
+	
+	cout << "Adding simple square boundary to optimizer" << endl;
+	CPPUNIT_ASSERT_NO_THROW(optimizer.addBoundary(loop));
+	cout << "Adding various OpenPaths to optimizer" << endl;
+	CPPUNIT_ASSERT_NO_THROW(optimizer.addPath(insideBoundary));
+	CPPUNIT_ASSERT_NO_THROW(optimizer.addPath(outsideBoundary));
+	
+	//get back out a list of OpenPaths
+	std::list<OpenPath> optimizedList;
+	cout << "Optimizing paths" << endl;
+	optimizer.optimize(optimizedList);
+	
+	cout << "Make sure we get something not empty out" << endl;
+	CPPUNIT_ASSERT(!optimizedList.empty());
+	
+	cout << "Make sure we get everything out" << endl;
+	for(std::list<OpenPath>::const_iterator iter = optimizedList.begin(); 
+			iter != optimizedList.end(); 
+			++iter) {
+		const OpenPath& currentPath = *iter;
+		for(OpenPath::const_iterator pointIter = currentPath.fromStart(); 
+				pointIter != currentPath.end(); 
+				++pointIter) {
+			points.remove(*pointIter);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Not all points were traversed!", points.empty());
+}
+
 
 
