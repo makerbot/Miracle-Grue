@@ -278,8 +278,11 @@ env.Append(CPPPATH = default_includes)
 env.Append(LIBS = default_libs)
 env.Append(LIBPATH = default_libs_path)
 
+
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/miracle_grue/miracle_grue.cc'] ))
+
+target_list = [p]
 
 if build_gui:
     print "Building miracle_gui"
@@ -293,6 +296,7 @@ if build_gui:
     ui = qtEnv.Uic4(toolpathviz_ui)
     p = qtEnv.Program('bin/miracle_gui',
                     toolpathviz_cc)
+    target_list.append(p)
 
 gettestname = re.compile('^(.*)TestCase\.cc')
 tests = []
@@ -317,8 +321,10 @@ if run_unit_tests:
         testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
+DESTDIR=ARGUMENTS.get('DESTDIR','')+'/usr/bin'
 
-
+install_list = map(lambda x: env.Install(DESTDIR,x), target_list)
+env.Alias('install', install_list)
 
 
 
