@@ -28,13 +28,13 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		RegionList& regionlist,
 		Limits& limits,
 		Grid& grid) {
-	int debuglayer = 0;
-	for(LayerLoops::const_layer_iterator layerIter = layerloops.begin(); 
-			layerIter != layerloops.end(); 
-			++layerIter, ++debuglayer) {
-		std::cout << "Layer: " << debuglayer << " \tLoops: \t" 
-				<< layerIter->readLoops().size() << std::endl;
-	}
+//	int debuglayer = 0;
+//	for(LayerLoops::const_layer_iterator layerIter = layerloops.begin(); 
+//			layerIter != layerloops.end(); 
+//			++layerIter, ++debuglayer) {
+//		std::cout << "Layer: " << debuglayer << " \tLoops: \t" 
+//				<< layerIter->readLoops().size() << std::endl;
+//	}
 	layerMeasure.setLayerWidthRatio(regionerCfg.layerWidthRatio);
 	RegionList::iterator firstmodellayer;
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure,
@@ -433,7 +433,7 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 
 void Regioner::support(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd, 
-		LayerMeasure& layermeasure) {
+		LayerMeasure& /*layermeasure*/) {
 	std::list<LoopList> marginsList;
 	
 	for(RegionList::const_iterator iter = regionsBegin; 
@@ -457,8 +457,6 @@ void Regioner::support(RegionList::iterator regionsBegin,
 			aboveMargins != marginsList.end()) {
 		--current;
 		--currentMargins;
-		
-		std::cout << "Layerskip is " << layerskip << std::endl;
 		
 		LoopList &support = current->supportLoops;
 
@@ -494,8 +492,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	while(current != regionsEnd && 
 			currentMargins != marginsList.end()) {
 		int curskip = 0;
-		for(above = current, aboveMargins = currentMargins; 
-				curskip < layerskip && 
+		for(; curskip < layerskip && 
 				above != regionsEnd && aboveMargins != marginsList.end(); 
 				++above, ++aboveMargins, ++curskip) {
 			loopsDifference(above->supportLoops, current->outlines);
@@ -503,6 +500,10 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		}
 		++current;
 		++currentMargins;
+		above = current;
+		aboveMargins = currentMargins;
+		++above;
+		++aboveMargins;
 		tick();
 	}
 	
