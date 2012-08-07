@@ -352,6 +352,8 @@ void GCoder::writePaths(std::ostream& ss,
 			++iter) {
 		const LabeledOpenPath& currentLP = *iter;
 		Extrusion extrusion;
+		Scalar currentH = h;
+		Scalar currentW = w;
 		if(currentLP.myLabel.isOutline()) {
 			if(!gcoderCfg.doOutlines)
 				continue;
@@ -374,13 +376,13 @@ void GCoder::writePaths(std::ostream& ss,
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-//			w *= 0.9;
+			currentW /= 1.5;
 			extrusion.feedrate *= 1.5;
 			ss << "(support path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isConnection()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-//			w *= 0.9;
+			currentW /= 1.5;
 			extrusion.feedrate *= 1.5;
 			ss << "(connection path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
@@ -388,7 +390,7 @@ void GCoder::writePaths(std::ostream& ss,
 			GcoderException mixup("Invalid path label type");
 			throw mixup;
 		}
-		writePath(ss, z, h, w, extruder, extrusion, currentLP.myPath);
+		writePath(ss, z, currentH, currentW, extruder, extrusion, currentLP.myPath);
 	}
 	gantry.snort(ss, extruder, fluidstrusion);
 	ss << std::endl << std::endl;
