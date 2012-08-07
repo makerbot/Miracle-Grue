@@ -28,6 +28,13 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		RegionList& regionlist,
 		Limits& limits,
 		Grid& grid) {
+	int debuglayer = 0;
+	for(LayerLoops::const_layer_iterator layerIter = layerloops.begin(); 
+			layerIter != layerloops.end(); 
+			++layerIter, ++debuglayer) {
+		std::cout << "Layer: " << debuglayer << " \tLoops: \t" 
+				<< layerIter->readLoops().size() << std::endl;
+	}
 	layerMeasure.setLayerWidthRatio(regionerCfg.layerWidthRatio);
 	RegionList::iterator firstmodellayer;
 	int sliceCount = initRegionList(layerloops, regionlist, layerMeasure,
@@ -35,7 +42,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	roofLengthCutOff = 0.5 * layerMeasure.getLayerW();
 
 	if (regionerCfg.doSupport) {
-		initProgress("support", sliceCount);
+		initProgress("support", sliceCount*2);
 		support(firstmodellayer, regionlist.end(), layerMeasure);
 	}
 
@@ -437,8 +444,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 				regionerCfg.supportMargin);
 		marginsList.push_back(currentMargins);
 	}
-	int layerskip = std::min(int(1 + regionerCfg.supportMargin / 
-			layermeasure.getLayerH()), 2);
+	int layerskip = 1;
 	RegionList::iterator above = regionsEnd;
 	std::list<LoopList>::const_iterator aboveMargins = marginsList.end();
 	--above; //work from the highest layer down
@@ -447,7 +453,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	RegionList::iterator current = above;
 	std::list<LoopList>::const_iterator currentMargins = aboveMargins;
 	
-	while (above != regionsBegin) {
+	while (above != regionsBegin && 
+			aboveMargins != marginsList.end()) {
 		--current;
 		--currentMargins;
 		
@@ -463,7 +470,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 			support = above->supportLoops;
 
 			//add the outlines of layer above
-			loopsUnion(support, above->outlines);
+			loopsUnion(support, *aboveMargins);
 		}
 
 		//subtract current outlines from the support loops to keep support
@@ -476,6 +483,29 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		--aboveMargins;
 		tick();
 	}
+	
+	current = regionsBegin;
+	currentMargins = marginsList.begin();
+	above = current;
+	aboveMargins = currentMargins;
+	++above;
+	++aboveMargins;
+	
+	while(current != regionsEnd && 
+			currentMargins != marginsList.end()) {
+		int curskip = 0;
+		for(above = current, aboveMargins = currentMargins; 
+				curskip < layerskip && 
+				above != regionsEnd && aboveMargins != marginsList.end(); 
+				++above, ++aboveMargins, ++curskip) {
+			loopsDifference(above->supportLoops, current->outlines);
+			loopsDifference(current->supportLoops, above->outlines);
+		}
+		++current;
+		++currentMargins;
+		tick();
+	}
+	
 }
 
 void Regioner::infills(RegionList::iterator regionsBegin,
