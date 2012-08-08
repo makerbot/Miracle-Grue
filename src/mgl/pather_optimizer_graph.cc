@@ -183,7 +183,7 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 		node::iterator linkIter = currentNode->outlinks_begin();
 		for(++linkIter; linkIter != currentNode->outlinks_end(); 
 				++linkIter) {
-			if(isBetter(currentChoice, *linkIter))
+			if(isBetter(currentChoice, *linkIter, labeledpaths))
 				currentChoice = *linkIter;
 		}
 		appendMove(currentChoice, labeledpaths);
@@ -341,7 +341,8 @@ pather_optimizer_graph::node*
 	return closest;
 }
 
-bool pather_optimizer_graph::isBetter(link* current, link* alternate) const {
+bool pather_optimizer_graph::isBetter(link* current, 
+		link* alternate, const LabeledOpenPaths& labeledpaths) const {
 	Scalar curDist = (current->get_from()->get_position() - 
 			current->get_to()->get_position()).magnitude();
 	Scalar altDist = (alternate->get_from()->get_position() - 
@@ -350,6 +351,20 @@ bool pather_optimizer_graph::isBetter(link* current, link* alternate) const {
 	CostType altCost = alternate->get_cost();
 	int curVal = highestValue(current->get_to());
 	int altVal = highestValue(alternate->get_to());
+	PointType lastUnit;
+	if(!labeledpaths.empty() && labeledpaths.back().myPath.size() > 1) {
+		OpenPath::const_reverse_iterator iter = 
+				labeledpaths.back().myPath.fromEnd();
+		PointType last1 = *(iter++);
+		PointType last2 = *iter;
+		lastUnit = (last1 - last2).unit();
+	}
+	PointType curUnit = (current->get_from()->get_position() - 
+			current->get_to()->get_position()).unit();
+	PointType altUnit = (alternate->get_from()->get_position() - 
+			alternate->get_to()->get_position()).unit();
+	Scalar curDot = curUnit.dotProduct(lastUnit);
+	Scalar altDot = altUnit.dotProduct(lastUnit);
 	
 	if(curCost.isInvalid()) {
 		if(altCost.isValid())
@@ -366,7 +381,11 @@ bool pather_optimizer_graph::isBetter(link* current, link* alternate) const {
 		if(!altCost.isInset())
 			return false;
 		else
-			return altCost.myValue > curCost.myValue;
+			if(altCost.myValue == curCost.myValue) {
+				return altDot > curDot;
+			} else {
+				return altCost.myValue > curCost.myValue;
+			}
 	}
 	//we're not inset
 	if(curCost.isInfill()) {
