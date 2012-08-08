@@ -40,6 +40,7 @@ public:
 			raftInterfaceThickness(0.27), 
 			raftOutset(6),
 			doSupport(false),
+			skipSupportLayer(false), 
 			supportMargin(1.0), 
 			raftModelSpacing(0) {}
 
@@ -64,6 +65,7 @@ public:
 	Scalar raftInterfaceThickness; //< thickness of other raft layers (mm)
 	Scalar raftOutset; //< How far to outset rafts (mm)
 	bool doSupport;  //< do we generate support
+	bool skipSupportLayer;  //< do we skip a layer between support and model?
 	Scalar supportMargin; //< distance between side wall and support
 	Scalar raftModelSpacing; //< Distance between top raft and model
 };
