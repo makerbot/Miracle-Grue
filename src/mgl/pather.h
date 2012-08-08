@@ -28,7 +28,7 @@ public:
 	PatherConfig() 
 			: doGraphOptimization(true), 
 			coarseness(0.05), 
-			directionWeight(0.8){}
+			directionWeight(0.0){}
 	bool doGraphOptimization;
 	Scalar coarseness;
 	Scalar directionWeight;

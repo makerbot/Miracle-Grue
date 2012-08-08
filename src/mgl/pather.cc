@@ -271,6 +271,7 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 	//insert the first two points
 	cleanPath.appendPoint(*(current++));
 	cleanPath.appendPoint(*(current++));
+	Scalar cumulativeError = 0.0;
 	for(; current != path.end(); ++current) {
 		OpenPath::reverse_iterator last1 = cleanPath.fromEnd();
 		OpenPath::reverse_iterator last2 = cleanPath.fromEnd();
@@ -283,11 +284,13 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 		PointType landingPoint = *last1 + unit*component;
 		
 		Scalar deviation = (landingPoint - currentPoint).magnitude();
+		cumulativeError += deviation;
 		
-		addPoint = deviation > patherCfg.coarseness;
+		addPoint = cumulativeError > patherCfg.coarseness;
 		
 		if(addPoint) {
 			cleanPath.appendPoint(currentPoint);
+			cumulativeError = 0;
 		} else {
 			*last1 = landingPoint * (1.0 - patherCfg.directionWeight) + 
 					currentPoint * patherCfg.directionWeight;

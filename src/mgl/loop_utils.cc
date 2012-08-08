@@ -5,7 +5,7 @@
 
 namespace mgl {
 
-static const Scalar DBLTOINT = 1000;
+static const Scalar DBLTOINT = 20000;
 
 void PointTypeToIntPoint(const PointType pt, ClipperLib::IntPoint &ip) {
 	ip.X = pt.x * DBLTOINT;
