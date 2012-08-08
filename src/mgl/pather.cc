@@ -287,9 +287,9 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 		addPoint = deviation > patherCfg.coarseness;
 		
 		if(addPoint) {
-			cleanPath.appendPoint(*current);
+			cleanPath.appendPoint(currentPoint);
 		} else {
-			*last1 = landingPoint;
+			*last1 = (landingPoint + currentPoint)*0.5;
 		}
 	}
 	path = cleanPath;
