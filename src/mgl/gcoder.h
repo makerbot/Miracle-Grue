@@ -139,6 +139,10 @@ class GCoderConfig {
 public:
 	GCoderConfig() : programName(GRUE_PROGRAM_NAME), 
 			versionStr(GRUE_VERSION) {}
+	
+	static const Scalar SUPPORT_H_SCALE = 1.0;
+	static const Scalar SUPPORT_W_SCALE = 0.9;
+	static const Scalar SUPPORT_SPEED_SCALE = 1.1;
 
     std::string programName;
     std::string versionStr;
@@ -363,14 +367,16 @@ void GCoder::writePaths(std::ostream& ss,
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-			currentH /= 1.5;
-			extrusion.feedrate *= 1.5;
+			currentH *= gcoderCfg.SUPPORT_H_SCALE;
+			currentW *= gcoderCfg.SUPPORT_W_SCALE;
+			extrusion.feedrate *= gcoderCfg.SUPPORT_SPEED_SCALE;
 			ss << "(support path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isConnection()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-			currentH /= 1.5;
-			extrusion.feedrate *= 1.5;
+			currentH *= gcoderCfg.SUPPORT_H_SCALE;
+			currentW *= gcoderCfg.SUPPORT_W_SCALE;
+			extrusion.feedrate *= gcoderCfg.SUPPORT_SPEED_SCALE;
 			ss << "(connection path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInset()) {
