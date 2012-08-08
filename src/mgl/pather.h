@@ -26,8 +26,10 @@ namespace mgl {
 class PatherConfig {
 public:
 	PatherConfig() 
-			: doGraphOptimization(true) {}
+			: doGraphOptimization(true), 
+			coarseness(0.05) {}
 	bool doGraphOptimization;
+	Scalar coarseness;
 };
 
 typedef std::vector<LoopList> InsetVector; // TODO: make this a smarter object
@@ -184,6 +186,10 @@ public:
 				 const LoopList& outlines,
 				 bool direction,
 				 OpenPathList &infills);
+	
+	void directionalCoarsenessCleanup(
+		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths);
+	void directionalCoarsenessCleanup(LabeledOpenPath& labeledPath);
 	
 
 };

@@ -16,7 +16,7 @@
 #include "limits.h"
 #include "pather_optimizer_graph.h"
 
-using namespace mgl;
+namespace mgl {
 using namespace std;
 
 Pather::Pather(const PatherConfig& pCfg, ProgressBar* progress) 
@@ -164,6 +164,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 			extruderlayer.paths.insert(extruderlayer.paths.end(), 
 					presupport.begin(), presupport.end());
 		}
+		directionalCoarsenessCleanup(extruderlayer.paths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;
@@ -246,4 +247,54 @@ void Pather::infills(const GridRanges &infillRanges,
 		const bool direction,
 		OpenPathList &infills) {
 	grid.pathsFromRanges(infillRanges, outlines, direction, infills);
+}
+
+void Pather::directionalCoarsenessCleanup(
+		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths){
+	typedef LayerPaths::Layer::ExtruderLayer::LabeledPathList Paths;
+	for(Paths::iterator iter = labeledPaths.begin(); 
+			iter != labeledPaths.end(); 
+			++iter) {
+		directionalCoarsenessCleanup(*iter);
+	}
+}
+
+void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
+	if(patherCfg.coarseness == 0)
+		return;
+	OpenPath& path = labeledPath.myPath;
+	if(path.size() < 3)
+		return;
+	OpenPath cleanPath;
+	OpenPath::iterator current;
+	current = path.fromStart();
+	//insert the first two points
+	cleanPath.appendPoint(*(current++));
+	cleanPath.appendPoint(*(current++));
+	for(; current != path.end(); ++current) {
+		OpenPath::reverse_iterator last1 = cleanPath.fromEnd();
+		OpenPath::reverse_iterator last2 = cleanPath.fromEnd();
+		++last2;
+		bool addPoint = true;
+		
+		PointType currentPoint = *current;
+		PointType unit = PointType(*last1 - *last2).unit();
+		Scalar component = (currentPoint - *last1).dotProduct(unit);
+		PointType landingPoint = *last1 + unit*component;
+		
+		Scalar deviation = (landingPoint - currentPoint).magnitude();
+		
+		addPoint = deviation > patherCfg.coarseness;
+		
+		if(addPoint) {
+			cleanPath.appendPoint(*current);
+		} else {
+			*last1 = landingPoint;
+		}
+	}
+	path = cleanPath;
+}
+
+
+
 }

@@ -415,6 +415,10 @@ void loadPatherConfigFromFile(const Configuration& config,
 			config["pather"]["doGraphOptimization"], 
 			"pather.doGraphOptimization", 
 			patherCfg.doGraphOptimization);
+	patherCfg.coarseness = doubleCheck(
+			config["pather"]["coarseness"], 
+			"pather.coarseness", 
+			patherCfg.coarseness);
 }
 
 
