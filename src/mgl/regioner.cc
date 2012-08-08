@@ -498,8 +498,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 				above != regionsEnd && 
 				aboveMargins != marginsList.end(); 
 				++above, ++aboveMargins, ++curskip) {
-			loopsDifference(above->supportLoops, current->outlines);
-			loopsDifference(current->supportLoops, above->outlines);
+			loopsDifference(above->supportLoops, *currentMargins);
+			loopsDifference(current->supportLoops, *aboveMargins);
 		}
 		++current;
 		++currentMargins;
