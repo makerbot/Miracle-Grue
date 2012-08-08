@@ -27,9 +27,11 @@ class PatherConfig {
 public:
 	PatherConfig() 
 			: doGraphOptimization(true), 
-			coarseness(0.05) {}
+			coarseness(0.05), 
+			directionWeight(0.8){}
 	bool doGraphOptimization;
 	Scalar coarseness;
+	Scalar directionWeight;
 };
 
 typedef std::vector<LoopList> InsetVector; // TODO: make this a smarter object

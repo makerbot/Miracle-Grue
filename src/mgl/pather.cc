@@ -289,7 +289,8 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 		if(addPoint) {
 			cleanPath.appendPoint(currentPoint);
 		} else {
-			*last1 = (landingPoint + currentPoint)*0.5;
+			*last1 = landingPoint * (1.0 - patherCfg.directionWeight) + 
+					currentPoint * patherCfg.directionWeight;
 		}
 	}
 	path = cleanPath;

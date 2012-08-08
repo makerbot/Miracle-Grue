@@ -419,6 +419,10 @@ void loadPatherConfigFromFile(const Configuration& config,
 			config["pather"]["coarseness"], 
 			"pather.coarseness", 
 			patherCfg.coarseness);
+	patherCfg.directionWeight = doubleCheck(
+			config["pather"]["directionWeight"], 
+			"pather.directionWeight", 
+			patherCfg.directionWeight);
 }
 
 

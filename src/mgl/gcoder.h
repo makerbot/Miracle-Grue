@@ -309,7 +309,7 @@ void GCoder::writePath(std::ostream& ss,
 		const Extruder& extruder, 
 		const Extrusion& extrusion, 
 		const PATH& path) {
-	if(path.fromStart() == path.end()){
+	if(path.size() < 2){
 		GcoderException mixup("Attempted to write path with no points");
 		throw mixup;
 	}
@@ -351,6 +351,7 @@ void GCoder::writePaths(std::ostream& ss,
 	Extrusion fluidstrusion;
 	calcInfillExtrusion(extruder.id, layerSequence, fluidstrusion);
 	gantry.snort(ss, extruder, fluidstrusion);
+	bool didLastPath = true;
 	for(const_iterator iter = labeledPaths.begin(); 
 			iter != labeledPaths.end(); 
 			++iter) {
@@ -359,8 +360,10 @@ void GCoder::writePaths(std::ostream& ss,
 		Scalar currentH = h;
 		Scalar currentW = w;
 		if(currentLP.myLabel.isOutline()) {
-			if(!gcoderCfg.doOutlines)
+			if(!gcoderCfg.doOutlines) {
+				didLastPath = false;
 				continue;
+			}
 			calcInSetExtrusion(extruder.id, layerSequence, 
 					currentLP.myLabel.myValue, -1, extrusion);
 			ss << "(outline path, length: " << currentLP.myPath.size() 
@@ -373,6 +376,8 @@ void GCoder::writePaths(std::ostream& ss,
 			ss << "(support path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isConnection()) {
+			if(!didLastPath)
+				continue;
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
 			currentH *= gcoderCfg.SUPPORT_H_SCALE;
 			currentW *= gcoderCfg.SUPPORT_W_SCALE;
@@ -380,15 +385,19 @@ void GCoder::writePaths(std::ostream& ss,
 			ss << "(connection path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInset()) {
-			if(!gcoderCfg.doInsets)
+			if(!gcoderCfg.doInsets) {
+				didLastPath = false;
 				continue;
+			}
 			calcInSetExtrusion(extruder.id, layerSequence, 
 					currentLP.myLabel.myValue, -1, extrusion);
 			ss << "(inset path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInfill()) {
-			if(!gcoderCfg.doInfills)
+			if(!gcoderCfg.doInfills) {
+				didLastPath = false;
 				continue;
+			}
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
 			ss << "(infill path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
@@ -396,6 +405,7 @@ void GCoder::writePaths(std::ostream& ss,
 			GcoderException mixup("Invalid path label type");
 			throw mixup;
 		}
+		didLastPath = true;
 		writePath(ss, z, currentH, currentW, extruder, extrusion, currentLP.myPath);
 	}
 	gantry.snort(ss, extruder, fluidstrusion);
