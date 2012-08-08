@@ -462,13 +462,13 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support = above->outlines;
+			support = *aboveMargins;
 		} else {
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
 
 			//add the outlines of layer above
-			loopsUnion(support, above->outlines);
+			loopsUnion(support, *aboveMargins);
 		}
 
 		//subtract current outlines from the support loops to keep support
@@ -492,18 +492,17 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	while(current != regionsEnd && 
 			currentMargins != marginsList.end()) {
 		int curskip = 0;
-		for(; curskip < layerskip && 
-				above != regionsEnd && aboveMargins != marginsList.end(); 
+		for(above = current, aboveMargins = currentMargins, 
+				++above, ++aboveMargins; 
+				curskip < layerskip && 
+				above != regionsEnd && 
+				aboveMargins != marginsList.end(); 
 				++above, ++aboveMargins, ++curskip) {
 			loopsDifference(above->supportLoops, current->outlines);
 			loopsDifference(current->supportLoops, above->outlines);
 		}
 		++current;
 		++currentMargins;
-		above = current;
-		aboveMargins = currentMargins;
-		++above;
-		++aboveMargins;
 		tick();
 	}
 	
