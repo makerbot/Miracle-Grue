@@ -204,59 +204,20 @@ void loadExtruderConfigFromFile(const Configuration& conf,
 
 void loadGCoderConfigFromFile(const Configuration& conf, 
 		GCoderConfig &gcoderCfg) {
-
-	gcoderCfg.programName = stringCheck(conf.root["programName"], 
-			"programName");
-	gcoderCfg.versionStr = stringCheck(conf.root["versionStr"], 
-			"versionStr");
-	gcoderCfg.machineName = stringCheck(conf.root["machineName"], 
-			"machineName");
-	gcoderCfg.firmware = stringCheck(conf.root["firmware"], 
-			"firmware");
-
-
-	gcoderCfg.gantryCfg.set_xy_max_homing(boolCheck(
-			conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming"));
-	gcoderCfg.gantryCfg.set_z_max_homing(boolCheck(
-			conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming"));
-	gcoderCfg.gantryCfg.set_scaling_Factor(doubleCheck(
-			conf.root["gantry"]["scalingFactor"],
-			"gantry.scalingFactor"));
 	gcoderCfg.gantryCfg.set_coarseness(doubleCheck(
-			conf.root["gantry"]["coarseness"],
-			"gantry.coarseness"));
+			conf.root["coarseness"], "coarseness"));
 	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_xy(doubleCheck(
-			conf.root["gantry"]["rapidMoveFeedRateXY"],
-			"gantry.rapidMoveFeedRateXY"));
+			conf.root["rapidMoveFeedRateXY"], "rapidMoveFeedRateXY"));
 	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_z(doubleCheck(
-			conf.root["gantry"]["rapidMoveFeedRateZ"],
-			"gantry.rapidMoveFeedRateZ"));
-	gcoderCfg.gantryCfg.set_homing_feed_rate_z(doubleCheck(
-			conf.root["gantry"]["homingFeedRateZ"],
-			"gantry.homingFeedRateZ"));
+			conf.root["rapidMoveFeedRateZ"], "rapidMoveFeedRateZ"));
 	gcoderCfg.gantryCfg.set_layer_h(doubleCheck(
-			conf.root["slicer"]["layerH"], "slicer.layerH"));
+			conf.root["layerHeight"], "layerHeight"));
 	gcoderCfg.gantryCfg.set_start_x(doubleCheck(
-			conf.root["gantry"]["startX"], "gantry.startX"));
+			conf.root["startX"], "startX"));
 	gcoderCfg.gantryCfg.set_start_y(doubleCheck(
-			conf.root["gantry"]["startY"], "gantry.startY"));
+			conf.root["startY"], "startY"));
 	gcoderCfg.gantryCfg.set_start_z(doubleCheck(
-			conf.root["gantry"]["startZ"], "gantry.startZ"));
-
-
-	gcoderCfg.platform.temperature = 
-			doubleCheck(conf.root["platform"]["temperature"], 
-			"platform.temperature");
-	gcoderCfg.platform.automated = 
-			boolCheck(conf.root["platform"]["automated"], 
-			"platform.automated");
-
-	gcoderCfg.outline.enabled = 
-			boolCheck(conf.root["outline"]["enabled"], 
-			"outline.enabled");
-	gcoderCfg.outline.distance = 
-			doubleCheck(conf.root["outline"]["distance"], 
-			"outline.distance");
+			conf.root["startZ"], "startZ"));
 
 	loadExtrusionProfileData(conf, gcoderCfg);
 
@@ -278,16 +239,11 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 		string prefix = ss.str();
 
 		Extruder extruder;
-		extruder.coordinateSystemOffsetX = 
-				doubleCheck(value["coordinateSystemOffsetX"], 
-				(prefix + "coordinateSystemOffsetX").c_str());
-		extruder.extrusionTemperature = 
-				doubleCheck(value["extrusionTemperature"], 
-				(prefix + "extrusionTemperature").c_str());
-		extruder.nozzleZ = doubleCheck(value["nozzleZ"], 
-				(prefix + "nozzleZ").c_str());
-		extruder.zFeedRate = doubleCheck(value["zFeedRate"], 
-				(prefix + "zFeedRate").c_str());
+		// extruder.extrusionTemperature = 
+		// 		doubleCheck(value["extrusionTemperature"], 
+		// 		(prefix + "extrusionTemperature").c_str());
+		extruder.nozzleDiameter = doubleCheck(value["nozzleDiameter"], 
+				(prefix + "nozzleDiameter").c_str());
 
 		extruder.firstLayerExtrusionProfile = 
 				stringCheck(value["firstLayerExtrusionProfile"], 
