@@ -41,8 +41,6 @@ public:
 	Scalar get_rapid_move_feed_rate_xy() const;
 	Scalar get_rapid_move_feed_rate_z() const;
 	Scalar get_homing_feed_rate_z() const;
-	bool get_xy_max_homing() const;
-	bool get_z_max_homing() const;
 	bool get_use_e_axis() const;
 	Scalar get_layer_h() const;
 	Scalar get_scaling_factor() const;
@@ -50,12 +48,9 @@ public:
 	
 	void set_rapid_move_feed_rate_xy(Scalar nxyr);
 	void set_rapid_move_feed_rate_z(Scalar nzr);
-	void set_homing_feed_rate_z(Scalar nhfrz);
-	void set_xy_max_homing(bool mh);
-	void set_z_max_homing(bool mh);
 	void set_use_e_axis(bool uea);
 	void set_layer_h(Scalar lh);
-	void set_scaling_Factor(Scalar sf);
+	void set_scaling_factor(Scalar sf);
 	void set_coarseness(Scalar c);
 	
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
@@ -64,14 +59,11 @@ public:
 private:
 	Scalar rapidMoveFeedRateXY;
 	Scalar rapidMoveFeedRateZ;
-	Scalar homingFeedRateZ;
 	Scalar layerH;
 
-	bool xyMaxHoming;
-	bool zMaxHoming;
 	bool useEaxis;
-	Scalar scalingFactor;
 	Scalar coarseness;
+	Scalar scalingFactor;
 
 	Scalar sx, sy, sz, sa, sb, sfeed;	// start positions and feed
 };
@@ -187,10 +179,10 @@ public:
 	/// (aka mm of feedstock since the last reset this print)
 	void setCurrentE(Scalar e);// { if (ab == 'A') a = e; else b = e; };
 	
-private:
-	
 	const GantryConfig& gantryCfg;
 
+private:
+	
 	Scalar x,y,z,a,b,feed;     // current position and feed
 	unsigned char ab;
 	bool extruding;

@@ -139,16 +139,6 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
 								   footer_file + "]").c_str());
 
 		ss << "(footer [" << footer_file << "] end)" << endl << endl;
-	} else {
-		for (size_t i=0; i< gcoderCfg.extruders.size(); i++)
-		{
-			ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
-			ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
-		}
-
-		if(gcoderCfg.gantryCfg.get_z_max_homing())
-			ss << "G162 Z F500 (home Z axis maximum)" << endl;
-		ss << "(That's all folks!)" << endl;
 	}
 }
 
@@ -308,8 +298,8 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 		extrusion = it->second;
 	}
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
+
 void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths, 
 		unsigned int extruderId, 
 		LayerPaths::const_layer_iterator layerId, 
@@ -329,7 +319,6 @@ void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths,
 		extrusionParams = it->second;
 	}
 	extrusionParams.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusionParams.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::calcInSetExtrusion(unsigned int extruderId,
@@ -356,7 +345,6 @@ void GCoder::calcInSetExtrusion(unsigned int extruderId,
 	}
 	extrusion = it->second;
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths, 
@@ -380,7 +368,6 @@ void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths,
 		extrusionParams = it->second;
 	}
 	extrusionParams.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusionParams.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::writeGcodeFile(LayerPaths& layerpaths, 
@@ -417,10 +404,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
 }
 
 Vector2 GCoder::startPoint(const SliceData& sliceData) {
-	if (gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-		return sliceData.extruderSlices[0].infills[0][0];
-	}
-	else if (gcoderCfg.doOutlines) {
+	if (gcoderCfg.doOutlines) {
 		return sliceData.extruderSlices[0].boundary[0][0];
 	}
 	else if (gcoderCfg.doInsets) {
@@ -464,7 +448,7 @@ void GCoder::writeSlice(std::ostream& ss,
 		gantry.set_current_extruder_index(currentExtruder.code);
 		//this is the current extruder's zFeedrate
 		Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() * 
-				currentExtruder.zFeedRate;
+			gantry.gantryCfg.get_rapid_move_feed_rate_z();
 		try {
 			moveZ(ss, currentLayer.layerZ, currentExtruder.id, zFeedrate);
 		} catch(GcoderException& mixup) {
@@ -475,10 +459,7 @@ void GCoder::writeSlice(std::ostream& ss,
 		const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight;
 		const Scalar currentH = currentLayer.layerHeight;
 		const Scalar currentW = currentLayer.layerW;
-		if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentZ, currentH, currentW, layerSequence, 
-					currentExtruder, *it);
-		}
+
 		if(gcoderCfg.doOutlines) {
 			writeOutlines(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
@@ -487,7 +468,7 @@ void GCoder::writeSlice(std::ostream& ss,
 			writeInsets(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, layerpaths, layerIter, *it);			
 		}
-		if(gcoderCfg.doInfills && !gcoderCfg.doInfillsFirst) {
+		if(gcoderCfg.doInfills) {
 			writeInfills(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
 		}
@@ -538,20 +519,12 @@ void GCoder::writeGCodeConfig(std::ostream &ss, const char* title="unknown sourc
 			gcoderCfg.programName << " " << 
 			getMiracleGrueVersionStr() << ")"<< endl;
 	ss << "(" << indent << hal9000.clock.now() <<  ")" << endl;
-	ss << "(" << indent << "machine name: " << gcoderCfg.machineName << ")"<< endl;
-	ss << "(" << indent << "firmware revision:" << gcoderCfg.firmware << ")" << endl;
 	ss << "(" << indent << title << ")" << endl;
 
 	std::string plurial = gcoderCfg.extruders.size()? "":"s";
 	ss << "(" << indent << gcoderCfg.extruders.size() << " extruder" << plurial << ")" << endl;
 
 	ss << "(" << indent << "Extrude infills: " << gcoderCfg.doInfills <<  ")" << endl;
-	ss << "(" << indent;
-	if(gcoderCfg.doInfillsFirst )
-		ss << "first operation: Infill";
-	else
-		ss << "first operation: Insets";
-	ss << ")" << endl;
 	ss << "(" << indent << "Extrude insets: " << gcoderCfg.doInsets << ")" << endl;
 	ss << "(" << indent << "Extrude outlines: " << gcoderCfg.doOutlines << ")" << endl;
 	ss << endl;

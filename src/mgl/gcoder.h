@@ -31,55 +31,17 @@ public:
 };
 
 
-/// Properties of a print platform
-class Platform{
-public:
-	Platform() : temperature(100),
-			automated(false){}
-	
-	Scalar temperature;				// temperature of the platform during builds
-	bool automated;
-
-	// the wiper(s) are affixed to the platform
-//    Scalar waitingPositionX;
-//    Scalar waitingPositionY;
-//    Scalar waitingPositionZ;
-};
-
 /// Properties of an extrusion profile
 /// an extruder may have multiple extrusion profiles
 /// EG: large, fast, 'first layer'
 class Extrusion {
 public:
-	Extrusion() : feedrate(2400),
-			retractDistance(0),
-			retractRate(3000),
-			restartExtraDistance(0), 
-			flow(2.8),
-			leadIn(0),
-			leadOut(0),
-			snortFlow(35),
-			snortFeedrate(600),
-			squirtFlow(35),
-			squirtFeedrate(600)	{}
+	Extrusion() {}
 
 	Scalar crossSectionArea(Scalar height, Scalar width) const;
 
 	Scalar feedrate;
-
-	Scalar retractDistance;
-	Scalar retractRate;
-	Scalar restartExtraDistance;
-
-	Scalar flow; // RPM value for the extruder motor... not a real unit :-(
-
-	Scalar leadIn;
-	Scalar leadOut;
-
-	Scalar snortFlow;
-	Scalar snortFeedrate;
-	Scalar squirtFlow;
-	Scalar squirtFeedrate;
+	Scalar temperature;
 };
 
 
@@ -87,52 +49,25 @@ public:
 class Extruder {
 public:
 	
-	enum extrusionMode_t {
-		RPM_MODE, 
-		VOLUMETRIC_MODE
-	}; 
-
-	Extruder() : coordinateSystemOffsetX(0),
-			extrusionTemperature(220),
-			nozzleZ(0),
-			zFeedRate(100),
-			extrusionMode(VOLUMETRIC_MODE),
-			feedDiameter(3),
-			code('A'),
-			id(0) {}
+	Extruder() {}
 
 	Scalar feedCrossSectionArea() const;
-	bool isVolumetric() const { return  extrusionMode == VOLUMETRIC_MODE; };
 
+	Scalar isVolumetric() const { return true; };
 
-	Scalar coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
-	Scalar extrusionTemperature; 	 // the extrusion temperature in Celsius
-
-	// this determines the gap between the nozzle tip
-	// and the layer at position z (measured at the middle of the layer)
-	Scalar nozzleZ;
-	Scalar zFeedRate;
-	extrusionMode_t extrusionMode;
 	Scalar feedDiameter;
+	Scalar nozzleDiameter;
 	unsigned char code;
 	int id;
+
+	Scalar retractDistance;
+	Scalar retractRate;
+	Scalar restartExtraDistance;
 
 	std::string firstLayerExtrusionProfile;
 	std::string insetsExtrusionProfile;
 	std::string infillsExtrusionProfile;
 };
-
-
-//// a line around the print used as a print 'skirt'
-///
-class Outline {
-public:
-	Outline() : enabled(false), distance(3.0) {}
-	bool enabled;   // when true, a rectangular ouline of the part will be performed
-	Scalar distance; // the distance in mm  between the model and the rectangular outline
-};
-
-
 
 
 class GCoderConfig {
@@ -142,11 +77,7 @@ public:
 
     std::string programName;
     std::string versionStr;
-    std::string machineName;
-    std::string firmware;
 
-    Platform platform;
-    Outline outline;
     GantryConfig gantryCfg;
 
     std::map<std::string, Extrusion> extrusionProfiles;
@@ -157,7 +88,6 @@ public:
     bool doInsets;
 	bool doSupport;
     bool doInfills;
-    bool doInfillsFirst;
 	bool doPrintLayerMessages;
 
 	Scalar startX;
