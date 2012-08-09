@@ -281,9 +281,9 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 		PointType currentPoint = *current;
 		PointType unit = PointType(*last1 - *last2).unit();
 		Scalar component = (currentPoint - *last1).dotProduct(unit);
+		Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
 		PointType landingPoint = *last1 + unit*component;
 		
-		Scalar deviation = (landingPoint - currentPoint).magnitude();
 		cumulativeError += deviation;
 		
 		addPoint = cumulativeError > patherCfg.coarseness;
