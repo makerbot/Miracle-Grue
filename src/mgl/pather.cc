@@ -275,18 +275,23 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 	for(; current != path.end(); ++current) {
 		OpenPath::reverse_iterator last1 = cleanPath.fromEnd();
 		OpenPath::reverse_iterator last2 = cleanPath.fromEnd();
+        PointType currentPoint = *current;
+        PointType landingPoint = currentPoint;
 		++last2;
 		bool addPoint = true;
-		
-		PointType currentPoint = *current;
-		PointType unit = PointType(*last1 - *last2).unit();
-		Scalar component = (currentPoint - *last1).dotProduct(unit);
-		Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
-		PointType landingPoint = *last1 + unit*component;
-		
-		cumulativeError += deviation;
-		
-		addPoint = cumulativeError > patherCfg.coarseness;
+        try {
+            PointType unit = PointType(*last1 - *last2).unit();
+            Scalar component = (currentPoint - *last1).dotProduct(unit);
+            Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
+            landingPoint = *last1 + unit*component;
+
+            cumulativeError += deviation;
+
+            addPoint = cumulativeError > patherCfg.coarseness;
+        } catch(libthing::Exception mixup) {
+            //we expect this to be something like a bad normalization
+            Log::severe() << "ERROR: " << mixup.what() << std::endl;
+        }
 		
 		if(addPoint) {
 			cleanPath.appendPoint(currentPoint);
