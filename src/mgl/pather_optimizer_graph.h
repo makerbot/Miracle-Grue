@@ -89,7 +89,8 @@ private:
 	
 	node* bruteForceNearestRequired(node* current) const;
 	
-	bool isBetter(link* current, link* alternate) const;
+	bool isBetter(link* current, link* alternate, 
+			const LabeledOpenPaths& labeledpaths) const;
 	
 	int highestValue(node* n) const;
 	
