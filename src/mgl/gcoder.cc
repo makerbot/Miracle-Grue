@@ -315,6 +315,7 @@ void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths,
 //				profileName  << "</name>" << endl;
 		GcoderException mixup((string("Failed to find extrusion profile ") + 
 				profileName).c_str());
+        throw mixup;
 	} else {
 		extrusionParams = it->second;
 	}
@@ -340,6 +341,7 @@ void GCoder::calcInSetExtrusion(unsigned int extruderId,
 //				profileName  << "</name>" << endl;
 		GcoderException mixup((string("Failed to find extrusion profile ") + 
 				profileName).c_str());
+        throw mixup;
 	} else {
 		extrusion = it->second;
 	}
