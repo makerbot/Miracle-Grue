@@ -240,6 +240,9 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 		extruder.infillsExtrusionProfile = 
 				stringCheck(value["infillsExtrusionProfile"], 
 				(prefix + "infillsExtrusionProfile").c_str());
+        extruder.outlinesExtrusionProfile = 
+				stringCheck(value["outlinesExtrusionProfile"], 
+				(prefix + "outlinesExtrusionProfile").c_str());
 
 		extruder.id = i;
 		extruder.code = 'A' + i;
@@ -342,12 +345,12 @@ void loadPatherConfigFromFile(const Configuration& config,
 			config["doGraphOptimization"], "doGraphOptimization", 
 			patherCfg.doGraphOptimization);
 	patherCfg.coarseness = doubleCheck(
-			config["pather"]["coarseness"], 
-			"pather.coarseness", 
+			config["coarseness"], 
+			"coarseness", 
 			patherCfg.coarseness);
 	patherCfg.directionWeight = doubleCheck(
-			config["pather"]["directionWeight"], 
-			"pather.directionWeight", 
+			config["directionWeight"], 
+			"directionWeight", 
 			patherCfg.directionWeight);
 }
 

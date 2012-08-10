@@ -67,6 +67,7 @@ public:
 	std::string firstLayerExtrusionProfile;
 	std::string insetsExtrusionProfile;
 	std::string infillsExtrusionProfile;
+    std::string outlinesExtrusionProfile;
 };
 
 
