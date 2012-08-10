@@ -157,9 +157,11 @@ std::string Configuration::asJson(Json::StyledWriter writer) const {
 
 void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg) {
 	const Json::Value &extrusionsRoot = conf.root["extrusionProfiles"];
+
 	for (Json::ValueIterator itr = extrusionsRoot.begin(); 
 			itr != extrusionsRoot.end(); itr++) {
 		string profileName = itr.key().asString();
+
 		stringstream ss;
 		ss << "extrusionProfiles[\"" << profileName << "\"].";
 		string prefix = ss.str();
@@ -179,8 +181,8 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 void loadExtruderConfigFromFile(const Configuration& conf,
 		ExtruderConfig &extruderCfg) {
 	extruderCfg.defaultExtruder = 
-			uintCheck(conf.root["extruder"]["defaultExtruder"], 
-			"extruder.defaultExtruder");
+			uintCheck(conf.root["defaultExtruder"], 
+			"defaultExtruder");
 }
 
 void loadGCoderConfigFromFile(const Configuration& conf, 
