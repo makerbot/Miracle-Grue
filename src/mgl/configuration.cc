@@ -219,6 +219,9 @@ void loadGCoderConfigFromFile(const Configuration& conf,
             "gcoder.supportScaleW");
     gcoderCfg.supportScaleSpeed = doubleCheck(conf.root["gcoder"]["supportScaleSpeed"], 
             "gcoder.supportScaleSpeed");
+    gcoderCfg.outerShellScaleSpeed = doubleCheck( 
+            conf.root["gcoder"]["outerShellScaleSpeed"], 
+            "gcoder.outerShellScaleSpeed");
     
 
 

@@ -81,14 +81,16 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		
 		preoptimizer.addPaths(layerRegions->outlines, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
+				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL, 
+                LayerPaths::Layer::ExtruderLayer::OUTER_SHELL_VALUE));
 		preoptimizer.addPaths(layerRegions->supportLoops, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
+				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT, 
+                LayerPaths::Layer::ExtruderLayer::OUTER_SHELL_VALUE));
 		preoptimizer.optimize(extruderlayer.outlinePaths);
 		
 		preoptimizer.addBoundaries(layerRegions->outlines);	
 		
-		int currentShell = 10;
+		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTER_SHELL_VALUE;
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {

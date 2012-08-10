@@ -68,6 +68,7 @@ public:
 		typedef ExtruderList::const_iterator const_extruder_iterator;
 		class ExtruderLayer{
 		public:
+            static const int OUTER_SHELL_VALUE = 10;
 			typedef std::list<OpenPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
 			typedef std::list<OpenPath> OutlineList;

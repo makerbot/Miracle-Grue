@@ -141,7 +141,8 @@ public:
 			versionStr(GRUE_VERSION), 
             supportScaleH(BAD_SCALE), 
             supportScaleW(BAD_SCALE), 
-            supportScaleSpeed(BAD_SCALE){}
+            supportScaleSpeed(BAD_SCALE), 
+            outerShellScaleSpeed(BAD_SCALE){}
     
     static const Scalar BAD_SCALE = 999999;
 
@@ -153,6 +154,8 @@ public:
     Scalar supportScaleH;
 	Scalar supportScaleW;
 	Scalar supportScaleSpeed;
+    
+    Scalar outerShellScaleSpeed;
 
     Platform platform;
     Outline outline;
@@ -371,6 +374,7 @@ void GCoder::writePaths(std::ostream& ss,
 			}
 			calcInSetExtrusion(extruder.id, layerSequence, 
 					currentLP.myLabel.myValue, -1, extrusion);
+            extrusion.feedrate *= gcoderCfg.outerShellScaleSpeed;
 			ss << "(outline path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
@@ -396,6 +400,9 @@ void GCoder::writePaths(std::ostream& ss,
 			}
 			calcInSetExtrusion(extruder.id, layerSequence, 
 					currentLP.myLabel.myValue, -1, extrusion);
+            if(currentLP.myLabel.myValue == 
+                    LayerPaths::Layer::ExtruderLayer::OUTER_SHELL_VALUE)
+                extrusion.feedrate *= gcoderCfg.outerShellScaleSpeed;
 			ss << "(inset path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInfill()) {
