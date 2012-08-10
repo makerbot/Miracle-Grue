@@ -74,18 +74,14 @@ class GCoderConfig {
 public:
 	GCoderConfig() : programName(GRUE_PROGRAM_NAME), 
 			versionStr(GRUE_VERSION), 
-            supportScaleH(BAD_SCALE), 
-            supportScaleW(BAD_SCALE), 
-            supportScaleSpeed(BAD_SCALE){}
+            startX(BAD_SCALAR), 
+            startY(BAD_SCALAR){}
     
-    static const Scalar BAD_SCALE = 999999;
+    static const Scalar BAD_SCALAR = 999999;
 
     std::string programName;
     std::string versionStr;
-    
-    Scalar supportScaleH;
-	Scalar supportScaleW;
-	Scalar supportScaleSpeed;
+  
 
     GantryConfig gantryCfg;
 
@@ -305,18 +301,12 @@ void GCoder::writePaths(std::ostream& ss,
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-			currentH *= gcoderCfg.supportScaleH;
-			currentW *= gcoderCfg.supportScaleW;
-			extrusion.feedrate *= gcoderCfg.supportScaleSpeed;
 			ss << "(support path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isConnection()) {
 			if(!didLastPath)
 				continue;
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-			currentH *= gcoderCfg.supportScaleH;
-			currentW *= gcoderCfg.supportScaleW;
-			extrusion.feedrate *= gcoderCfg.supportScaleSpeed;
 			ss << "(connection path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInset()) {
