@@ -157,9 +157,11 @@ std::string Configuration::asJson(Json::StyledWriter writer) const {
 
 void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg) {
 	const Json::Value &extrusionsRoot = conf.root["extrusionProfiles"];
+
 	for (Json::ValueIterator itr = extrusionsRoot.begin(); 
 			itr != extrusionsRoot.end(); itr++) {
 		string profileName = itr.key().asString();
+
 		stringstream ss;
 		ss << "extrusionProfiles[\"" << profileName << "\"].";
 		string prefix = ss.str();
@@ -168,27 +170,8 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 		extrusion.feedrate = doubleCheck(value["feedrate"], 
 				(prefix + "feedrate").c_str());
 
-		extrusion.retractDistance = doubleCheck(value["retractDistance"], (prefix + "retractDistance").c_str());
-		extrusion.retractRate = uintCheck(value["retractRate"], 
-				(prefix + "retractRate").c_str());
-		extrusion.restartExtraDistance = 
-				doubleCheck(value["restartExtraDistance"], 
-				(prefix + "restartExtraDistance").c_str());
-
-		extrusion.flow = doubleCheck(value["flow"], 
-				(prefix + "flow").c_str());
-		extrusion.leadIn = doubleCheck(value["leadIn"], 
-				(prefix + "leadIn").c_str());
-		extrusion.leadOut = doubleCheck(value["leadOut"], 
-				(prefix + "leadOut").c_str());
-		extrusion.snortFeedrate = doubleCheck(value["snortFeedrate"], 
-				(prefix + "snortFeedrate").c_str());
-		extrusion.snortFlow = doubleCheck(value["snortFlow"], 
-				(prefix + "snortFlow").c_str());
-		extrusion.squirtFeedrate = doubleCheck(value["squirtFeedrate"], 
-				(prefix + "squirtFeedrate").c_str());
-		extrusion.squirtFlow = doubleCheck(value["squirtFlow"], 
-				(prefix + "squirtFlow").c_str());
+		extrusion.temperature = doubleCheck(value["temperature"],
+											(prefix + "temperature").c_str());
 
 		gcoderCfg.extrusionProfiles.insert(pair<std::string, 
 				Extrusion > (profileName, extrusion));
@@ -198,72 +181,29 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
 void loadExtruderConfigFromFile(const Configuration& conf,
 		ExtruderConfig &extruderCfg) {
 	extruderCfg.defaultExtruder = 
-			uintCheck(conf.root["extruder"]["defaultExtruder"], 
-			"extruder.defaultExtruder");
+			uintCheck(conf.root["defaultExtruder"], 
+			"defaultExtruder");
 }
 
 void loadGCoderConfigFromFile(const Configuration& conf, 
 		GCoderConfig &gcoderCfg) {
-
-	gcoderCfg.programName = stringCheck(conf.root["programName"], 
-			"programName");
-	gcoderCfg.versionStr = stringCheck(conf.root["versionStr"], 
-			"versionStr");
-	gcoderCfg.machineName = stringCheck(conf.root["machineName"], 
-			"machineName");
-	gcoderCfg.firmware = stringCheck(conf.root["firmware"], 
-			"firmware");
-    gcoderCfg.supportScaleH = doubleCheck(conf.root["gcoder"]["supportScaleH"], 
-            "gcoder.supportScaleH");
-    gcoderCfg.supportScaleW = doubleCheck(conf.root["gcoder"]["supportScaleW"], 
-            "gcoder.supportScaleW");
-    gcoderCfg.supportScaleSpeed = doubleCheck(conf.root["gcoder"]["supportScaleSpeed"], 
-            "gcoder.supportScaleSpeed");
-    
-
-
-	gcoderCfg.gantryCfg.set_xy_max_homing(boolCheck(
-			conf.root["gantry"]["xyMaxHoming"], "gantry.xyMaxHoming"));
-	gcoderCfg.gantryCfg.set_z_max_homing(boolCheck(
-			conf.root["gantry"]["zMaxHoming" ], "gantry.zMaxHoming"));
-	gcoderCfg.gantryCfg.set_scaling_Factor(doubleCheck(
-			conf.root["gantry"]["scalingFactor"],
-			"gantry.scalingFactor"));
 	gcoderCfg.gantryCfg.set_coarseness(doubleCheck(
-			conf.root["gantry"]["coarseness"],
-			"gantry.coarseness"));
+			conf.root["coarseness"], "coarseness"));
 	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_xy(doubleCheck(
-			conf.root["gantry"]["rapidMoveFeedRateXY"],
-			"gantry.rapidMoveFeedRateXY"));
+			conf.root["rapidMoveFeedRateXY"], "rapidMoveFeedRateXY"));
 	gcoderCfg.gantryCfg.set_rapid_move_feed_rate_z(doubleCheck(
-			conf.root["gantry"]["rapidMoveFeedRateZ"],
-			"gantry.rapidMoveFeedRateZ"));
-	gcoderCfg.gantryCfg.set_homing_feed_rate_z(doubleCheck(
-			conf.root["gantry"]["homingFeedRateZ"],
-			"gantry.homingFeedRateZ"));
+			conf.root["rapidMoveFeedRateZ"], "rapidMoveFeedRateZ"));
 	gcoderCfg.gantryCfg.set_layer_h(doubleCheck(
-			conf.root["slicer"]["layerH"], "slicer.layerH"));
+			conf.root["layerHeight"], "layerHeight"));
+	gcoderCfg.gantryCfg.set_scaling_factor(doubleCheck(
+				   conf.root["feedScalingFactor"], "feedScalingFactor", 60.0));
+
 	gcoderCfg.gantryCfg.set_start_x(doubleCheck(
-			conf.root["gantry"]["startX"], "gantry.startX"));
+			conf.root["startX"], "startX"));
 	gcoderCfg.gantryCfg.set_start_y(doubleCheck(
-			conf.root["gantry"]["startY"], "gantry.startY"));
+			conf.root["startY"], "startY"));
 	gcoderCfg.gantryCfg.set_start_z(doubleCheck(
-			conf.root["gantry"]["startZ"], "gantry.startZ"));
-
-
-	gcoderCfg.platform.temperature = 
-			doubleCheck(conf.root["platform"]["temperature"], 
-			"platform.temperature");
-	gcoderCfg.platform.automated = 
-			boolCheck(conf.root["platform"]["automated"], 
-			"platform.automated");
-
-	gcoderCfg.outline.enabled = 
-			boolCheck(conf.root["outline"]["enabled"], 
-			"outline.enabled");
-	gcoderCfg.outline.distance = 
-			doubleCheck(conf.root["outline"]["distance"], 
-			"outline.distance");
+			conf.root["startZ"], "startZ"));
 
 	loadExtrusionProfileData(conf, gcoderCfg);
 
@@ -285,16 +225,11 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 		string prefix = ss.str();
 
 		Extruder extruder;
-		extruder.coordinateSystemOffsetX = 
-				doubleCheck(value["coordinateSystemOffsetX"], 
-				(prefix + "coordinateSystemOffsetX").c_str());
-		extruder.extrusionTemperature = 
-				doubleCheck(value["extrusionTemperature"], 
-				(prefix + "extrusionTemperature").c_str());
-		extruder.nozzleZ = doubleCheck(value["nozzleZ"], 
-				(prefix + "nozzleZ").c_str());
-		extruder.zFeedRate = doubleCheck(value["zFeedRate"], 
-				(prefix + "zFeedRate").c_str());
+		// extruder.extrusionTemperature = 
+		// 		doubleCheck(value["extrusionTemperature"], 
+		// 		(prefix + "extrusionTemperature").c_str());
+		extruder.nozzleDiameter = doubleCheck(value["nozzleDiameter"], 
+				(prefix + "nozzleDiameter").c_str());
 
 		extruder.firstLayerExtrusionProfile = 
 				stringCheck(value["firstLayerExtrusionProfile"], 
@@ -309,118 +244,102 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 		extruder.id = i;
 		extruder.code = 'A' + i;
 
-		string extrusionMode = stringCheck(value["extrusionMode"], 
-				(prefix + "extrusionMode").c_str());
-		if (extrusionMode == "rpm") {
-			extruder.extrusionMode = Extruder::RPM_MODE;
-		} else if (extrusionMode == "volumetric") {
-			extruder.extrusionMode = Extruder::VOLUMETRIC_MODE;
-		} else {
-			stringstream ss;
-			ss << "Invalid extrusion mode [" << extrusionMode << "]";
-			ConfigException mixup(ss.str().c_str());
-			throw mixup;
-			return;
-		}
-
 		extruder.feedDiameter = doubleCheck(value["feedDiameter"], 
 				(prefix + "feedDiameter").c_str());
+		extruder.nozzleDiameter = doubleCheck(value["nozzleDiameter"],
+                                   (prefix + "nozzleDiameter").c_str());
+		extruder.retractDistance = doubleCheck(value["retractDistance"],
+                                   (prefix + "retractDistance").c_str());
+		extruder.retractRate = doubleCheck(value["retractRate"],
+                                   (prefix + "retractRate").c_str());
+		extruder.restartExtraDistance =
+			doubleCheck(value["restartExtraDistance"],
+						(prefix + "restartExtraDistance").c_str());
+       
 		gcoderCfg.extruders.push_back(extruder);
 	}
 
-	gcoderCfg.header = pathCheck(conf.root["gcoder"]["header"], 
-			"gcoder.header", "");
-	gcoderCfg.footer = pathCheck(conf.root["gcoder"]["footer"], 
-			"gcoder.footer", "");
-	gcoderCfg.doOutlines = boolCheck(conf.root["gcoder"]["outline"], 
-			"gcoder.outline");
-	gcoderCfg.doInsets = boolCheck(conf.root["gcoder"]["insets"], 
-			"gcoder.insets");
-	gcoderCfg.doInfillsFirst = boolCheck(conf.root["gcoder"]["infillFirst"], 
-			"gcoder.infillFirst");
-	gcoderCfg.doInfills = boolCheck(conf.root["gcoder"]["infills"], 
-			"gcoder.infills");
-	gcoderCfg.doSupport = boolCheck(conf.root["gcoder"]["support"],
-                                    "gcoder.support");
+	gcoderCfg.header = pathCheck(conf.root["startGcode"], 
+                                 "startGcode", "");
+	gcoderCfg.footer = pathCheck(conf.root["endGcode"], 
+                                 "endGcode", "");
+	gcoderCfg.doOutlines = boolCheck(conf.root["doOutlines"], 
+                                     "doOutlines", false);
+	gcoderCfg.doInsets = boolCheck(conf.root["insets"], 
+                                   "doInsets", true);
+	gcoderCfg.doInfills = boolCheck(conf.root["doInfills"], 
+                                    "doInfills", true);
+	gcoderCfg.doSupport = boolCheck(conf.root["doSupport"],
+                                    "doSupport", false);
 	gcoderCfg.doPrintLayerMessages = boolCheck(
-			conf.root["gcoder"]["printLayerMessages"],
-			"gcoder.printLayerMessages", false);
-	gcoderCfg.gantryCfg.set_use_e_axis(boolCheck(
-			conf.root["gcoder"]["useEAxis"],
-			"gcoder.useEAxis", false));
-
+            conf.root["printLayerMessages"],
+			"printLayerMessages", false);
+	gcoderCfg.gantryCfg.set_use_e_axis(boolCheck(conf.root["useEAxis"],
+                                                 "useEAxis", false));
 }
 
 void loadSlicerConfigFromFile(const Configuration &config, 
 		SlicerConfig &slicerCfg) {
 	//Relevant to slicer
-	slicerCfg.layerH = doubleCheck(config["slicer"]["layerH"], 
-			"slicer.layerH");
-	slicerCfg.firstLayerZ = doubleCheck(config["slicer"]["firstLayerZ"], 
-			"slicer.firstLayerZ");
+	slicerCfg.layerH = doubleCheck(config["layerHeight"], "layerHeight");
+	slicerCfg.firstLayerZ = doubleCheck(config["bedZOffset"], "bedZOffset");
 }
 
 void loadRegionerConfigFromFile(const Configuration& config, 
 		RegionerConfig& regionerCfg) {
 	//Relevant to regioner
-	regionerCfg.infillDensity = doubleCheck(config["regioner"]["infillDensity"], 
-			"regioner.infillDensity");
-	//slicerCfg.angle 		= doubleCheck(config["slicer"]["angle"], "slicer.angle");
-	regionerCfg.nbOfShells = uintCheck(config["regioner"]["nbOfShells"], 
-			"regioner.nbOfShells");
-	regionerCfg.layerWidthRatio = doubleCheck(config["regioner"]["layerWidthRatio"], 
-			"regioner.layerWidthRatio");
-	regionerCfg.infillShrinkingMultiplier = 
-			doubleCheck(config["regioner"]["infillShrinkingMultiplier"], 
-			"regioner.infillShrinkingMultiplier");
+	regionerCfg.infillDensity = doubleCheck(config["infillDensity"], 
+                                            "infillDensity");
+	regionerCfg.nbOfShells = uintCheck(config["numberOfShells"],
+                                       "numberOfShells");
+	regionerCfg.layerWidthRatio = doubleCheck(config["layerWidthRatio"], 
+                                              "layerWidthRatio");
 	regionerCfg.insetDistanceMultiplier = 
-			doubleCheck(config["regioner"]["insetDistanceMultiplier"], 
-			"regioner.insetDistanceMultiplier");
-	regionerCfg.insetCuttOffMultiplier = 
-			doubleCheck(config["regioner"]["insetCuttOffMultiplier"], 
-			"regioner.insetCuttOffMultiplier");
-
-	regionerCfg.roofLayerCount = 
-			doubleCheck(config["regioner"]["roofLayerCount"], 
-			"regioner.roofLayerCount");
+			doubleCheck(config["insetDistanceMultiplier"], 
+                        "insetDistanceMultiplier");
+	regionerCfg.roofLayerCount =
+      doubleCheck(config["roofLayerCount"], "roofLayerCount");
 	regionerCfg.floorLayerCount = 
-			doubleCheck(config["regioner"]["roofLayerCount"], 
-			"regioner.floorLayerCount");
+			doubleCheck(config["floorLayerCount"], "floorLayerCount");
 
-	regionerCfg.writeDebugScadFiles = 
-			boolCheck(config["regioner"]["writeDebugScadFiles"], 
-			"regioner.writeDebugScadFiles", false);
 	//Rafting Configuration
-	regionerCfg.raftLayers = uintCheck(config["regioner"]["raftLayers"], 
-			"regioner.raftLayers", regionerCfg.raftLayers);
-	regionerCfg.raftBaseThickness = doubleCheck(
-			config["regioner"]["raftBaseThickness"], 
-			"regioner.raftBaseThickness", regionerCfg.raftBaseThickness);
-	regionerCfg.raftInterfaceThickness = doubleCheck(
-			config["regioner"]["raftInterfaceThickness"], 
-			"regioner.raftInterfaceThickness",
-			regionerCfg.raftInterfaceThickness);
-	regionerCfg.raftOutset = doubleCheck(
-			config["regioner"]["raftOutset"], 
-			"regioner.raftOutset", regionerCfg.raftOutset);
+    regionerCfg.doRaft = boolCheck(config["doRaft"], "doRaft");
+    if (regionerCfg.doRaft) {
+        regionerCfg.raftLayers = uintCheck(config["raftLayers"],
+                                           "raftLayers");
 
-    regionerCfg.doSupport = boolCheck(config["regioner"]["doSupport"],
-                                      "regioner.doSupport", 
-                                      regionerCfg.doSupport);
-    regionerCfg.supportMargin = doubleCheck(config["regioner"]["supportMargin"],
-                                            "regioner.supportMargin",
-                                            regionerCfg.supportMargin);
+        regionerCfg.raftBaseThickness = doubleCheck(
+            config["raftBaseThickness"], "raftBaseThickness");
+
+        regionerCfg.raftInterfaceThickness = doubleCheck(
+			config["raftInterfaceThickness"], 
+			"raftInterfaceThickness");
+
+        regionerCfg.raftOutset = doubleCheck(
+            config["raftOutset"], "raftOutset");
+
+        regionerCfg.raftModelSpacing = doubleCheck(
+              config["raftModelSpacing"], "raftModelSpacing");
+
+        regionerCfg.raftModelSpacing = doubleCheck(
+              config["supportDensity"], "supportDensity");
+    }
+     
+    regionerCfg.doSupport = boolCheck(config["doSupport"], "doSupport");
+
+    if (regionerCfg.doSupport) {
+        regionerCfg.supportMargin = doubleCheck(config["supportMargin"],
+                                                "supportMargin");
                                             
-    regionerCfg.raftModelSpacing = doubleCheck(
-                        config["regioner"]["raftModelSpacing"], 
-			"regioner.raftModelSpacing", regionerCfg.raftModelSpacing);
+        regionerCfg.raftModelSpacing = doubleCheck(
+              config["supportDensity"], "supportDensity");
+    }
 }
 
 void loadPatherConfigFromFile(const Configuration& config, 
 		PatherConfig& patherCfg) {
 	patherCfg.doGraphOptimization = boolCheck(
-			config["pather"]["doGraphOptimization"], 
-			"pather.doGraphOptimization", 
+			config["doGraphOptimization"], "doGraphOptimization", 
 			patherCfg.doGraphOptimization);
 	patherCfg.coarseness = doubleCheck(
 			config["pather"]["coarseness"], 

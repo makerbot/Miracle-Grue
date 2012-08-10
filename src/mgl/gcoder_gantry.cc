@@ -203,17 +203,12 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 		return;
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
-				getCurrentE() + extrusion.retractDistance
-				+ extrusion.restartExtraDistance, extrusion.retractRate,
+				getCurrentE() + extruder.retractDistance
+				+ extruder.restartExtraDistance, extruder.retractRate,
 				FLUID_H, FLUID_W,
 				"squirt", false, false, false, true, true); //only E and F
 	} else {
-		ss << "M108 R" << extrusion.squirtFlow << " (squirt)" << endl;
-		ss << "M101" << endl;
-		g1(ss, extruder, extrusion,
-				lineStart.x, lineStart.y, z, extrusion.squirtFeedrate, 
-				FLUID_H, FLUID_W, NULL);
-		ss << "M108 R" << extrusion.flow << " (good to go)" << endl;
+		//we don't support RPM anymore
 	}
 
 	set_extruding(true);
@@ -225,15 +220,11 @@ void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 		return;
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
-				getCurrentE() - extrusion.retractDistance,
-				extrusion.retractRate, FLUID_H, FLUID_W, "snort",
+				getCurrentE() - extruder.retractDistance,
+				extruder.retractRate, FLUID_H, FLUID_W, "snort",
 				false, false, false, true, true); //only E and F
 	} else {
-		ss << "M108 R" << extrusion.snortFlow << "  (snort)" << endl;
-		ss << "M102" << endl;
-		g1(ss, extruder, extrusion, lineEnd.x, lineEnd.y, z,
-				extrusion.snortFeedrate, FLUID_H, FLUID_W, NULL);
-		ss << "M103" << endl;
+		//we don't support RPM anymore
 	}
 
 	set_extruding(false);
@@ -298,14 +289,6 @@ GantryConfig::GantryConfig() {
 	set_start_a(0);
 	set_start_b(0);
 	set_start_feed(0);
-	set_rapid_move_feed_rate_xy(5000);
-	set_rapid_move_feed_rate_z(1400);
-	set_homing_feed_rate_z(100);
-	set_layer_h(0.27);
-	set_xy_max_homing(true);
-	set_z_max_homing(false);
-	set_scaling_Factor(1.0);
-	set_coarseness(0.05);
 }
 
 Scalar GantryConfig::get_start_x() const {
@@ -364,18 +347,6 @@ Scalar GantryConfig::get_rapid_move_feed_rate_z() const {
 	return rapidMoveFeedRateZ;
 }
 
-Scalar GantryConfig::get_homing_feed_rate_z() const {
-	return homingFeedRateZ;
-}
-
-bool GantryConfig::get_xy_max_homing() const {
-	return xyMaxHoming;
-}
-
-bool GantryConfig::get_z_max_homing() const {
-	return zMaxHoming;
-}
-
 bool GantryConfig::get_use_e_axis() const {
 	return useEaxis;
 }
@@ -408,18 +379,6 @@ void GantryConfig::set_rapid_move_feed_rate_z(Scalar nzr) {
 	rapidMoveFeedRateZ = nzr;
 }
 
-void GantryConfig::set_homing_feed_rate_z(Scalar nhfrz) {
-	homingFeedRateZ = nhfrz;
-}
-
-void GantryConfig::set_xy_max_homing(bool mh) {
-	xyMaxHoming = mh;
-}
-
-void GantryConfig::set_z_max_homing(bool mh) {
-	zMaxHoming = mh;
-}
-
 void GantryConfig::set_use_e_axis(bool uea) {
 	useEaxis = uea;
 }
@@ -428,7 +387,7 @@ void GantryConfig::set_layer_h(Scalar lh) {
 	layerH = lh;
 }
 
-void GantryConfig::set_scaling_Factor(Scalar sf) {
+void GantryConfig::set_scaling_factor(Scalar sf) {
 	scalingFactor = sf;
 }
 
