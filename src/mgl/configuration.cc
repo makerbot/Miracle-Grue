@@ -213,6 +213,13 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 			"machineName");
 	gcoderCfg.firmware = stringCheck(conf.root["firmware"], 
 			"firmware");
+    gcoderCfg.supportScaleH = doubleCheck(conf.root["gcoder"]["supportScaleH"], 
+            "gcoder.supportScaleH");
+    gcoderCfg.supportScaleW = doubleCheck(conf.root["gcoder"]["supportScaleW"], 
+            "gcoder.supportScaleW");
+    gcoderCfg.supportScaleSpeed = doubleCheck(conf.root["gcoder"]["supportScaleSpeed"], 
+            "gcoder.supportScaleSpeed");
+    
 
 
 	gcoderCfg.gantryCfg.set_xy_max_homing(boolCheck(

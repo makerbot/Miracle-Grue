@@ -138,16 +138,21 @@ public:
 class GCoderConfig {
 public:
 	GCoderConfig() : programName(GRUE_PROGRAM_NAME), 
-			versionStr(GRUE_VERSION) {}
-	
-	static const Scalar SUPPORT_H_SCALE = 1.0;
-	static const Scalar SUPPORT_W_SCALE = 0.9;
-	static const Scalar SUPPORT_SPEED_SCALE = 1.1;
+			versionStr(GRUE_VERSION), 
+            supportScaleH(BAD_SCALE), 
+            supportScaleW(BAD_SCALE), 
+            supportScaleSpeed(BAD_SCALE){}
+    
+    static const Scalar BAD_SCALE = 999999;
 
     std::string programName;
     std::string versionStr;
     std::string machineName;
     std::string firmware;
+    
+    Scalar supportScaleH;
+	Scalar supportScaleW;
+	Scalar supportScaleSpeed;
 
     Platform platform;
     Outline outline;
@@ -370,18 +375,18 @@ void GCoder::writePaths(std::ostream& ss,
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-			currentH *= gcoderCfg.SUPPORT_H_SCALE;
-			currentW *= gcoderCfg.SUPPORT_W_SCALE;
-			extrusion.feedrate *= gcoderCfg.SUPPORT_SPEED_SCALE;
+			currentH *= gcoderCfg.supportScaleH;
+			currentW *= gcoderCfg.supportScaleW;
+			extrusion.feedrate *= gcoderCfg.supportScaleSpeed;
 			ss << "(support path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isConnection()) {
 			if(!didLastPath)
 				continue;
 			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-			currentH *= gcoderCfg.SUPPORT_H_SCALE;
-			currentW *= gcoderCfg.SUPPORT_W_SCALE;
-			extrusion.feedrate *= gcoderCfg.SUPPORT_SPEED_SCALE;
+			currentH *= gcoderCfg.supportScaleH;
+			currentW *= gcoderCfg.supportScaleW;
+			extrusion.feedrate *= gcoderCfg.supportScaleSpeed;
 			ss << "(connection path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInset()) {
