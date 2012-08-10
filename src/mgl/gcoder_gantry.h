@@ -41,33 +41,28 @@ public:
 	Scalar get_rapid_move_feed_rate_xy() const;
 	Scalar get_rapid_move_feed_rate_z() const;
 	Scalar get_homing_feed_rate_z() const;
-	bool get_xy_max_homing() const;
-	bool get_z_max_homing() const;
 	bool get_use_e_axis() const;
 	Scalar get_layer_h() const;
 	Scalar get_scaling_factor() const;
+	Scalar get_coarseness() const;
 	
 	void set_rapid_move_feed_rate_xy(Scalar nxyr);
 	void set_rapid_move_feed_rate_z(Scalar nzr);
-	void set_homing_feed_rate_z(Scalar nhfrz);
-	void set_xy_max_homing(bool mh);
-	void set_z_max_homing(bool mh);
 	void set_use_e_axis(bool uea);
 	void set_layer_h(Scalar lh);
-	void set_scaling_Factor(Scalar sf);
+	void set_scaling_factor(Scalar sf);
+	void set_coarseness(Scalar c);
 	
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
-			libthing::LineSegment2 &segment) const;
+			libthing::LineSegment2 &segment, Scalar h, Scalar w) const;
 
 private:
 	Scalar rapidMoveFeedRateXY;
 	Scalar rapidMoveFeedRateZ;
-	Scalar homingFeedRateZ;
 	Scalar layerH;
 
-	bool xyMaxHoming;
-	bool zMaxHoming;
 	bool useEaxis;
+	Scalar coarseness;
 	Scalar scalingFactor;
 
 	Scalar sx, sy, sz, sa, sb, sfeed;	// start positions and feed
@@ -76,6 +71,9 @@ private:
 
 class Gantry {
 public:
+	
+	static const Scalar FLUID_H = 0.3;
+	static const Scalar FLUID_W = 0.5;
 	
 	Gantry(const GantryConfig& gCfg);
 	
@@ -104,7 +102,8 @@ public:
 	void g1Motion(std::ostream &ss,
 				  Scalar mx, Scalar my, Scalar mz,
 				  Scalar me,
-				  Scalar mfeed,
+				  Scalar mfeed, 
+				  Scalar h, Scalar w, 
 				  const char *comment,
 				  bool doX, bool doY, bool doZ,
 				  bool doE,
@@ -139,6 +138,8 @@ public:
 			Scalar gy,
 			Scalar gz,
 			Scalar gfeed,
+			Scalar h, 
+			Scalar w, 
 			const char *comment);
 
 	/// g1 public overloaded methods to make interface simpler
@@ -147,8 +148,10 @@ public:
 			Scalar gy,
 			Scalar gz,
 			Scalar gfeed,
+			Scalar h, 
+			Scalar w, 
 			const char *comment) {
-		g1(ss, NULL, NULL, gx, gy, gz, gfeed, comment);
+		g1(ss, NULL, NULL, gx, gy, gz, gfeed, h, w, comment);
 	};
 
 	/// g1 public overloaded methods to make interface simpler
@@ -159,12 +162,14 @@ public:
 			Scalar gy,
 			Scalar gz,
 			Scalar gfeed,
+			Scalar h, 
+			Scalar w, 
 			const char *comment) {
-		g1(ss, &extruder, &extrusion, gx, gy, gz, gfeed, comment);
+		g1(ss, &extruder, &extrusion, gx, gy, gz, gfeed, h, w, comment);
 	};
 	
 	Scalar volumetricE(const Extruder &extruder, const Extrusion &extrusion,
-			Scalar vx, Scalar vy, Scalar vz) const;
+			Scalar vx, Scalar vy, Scalar vz, Scalar h, Scalar w) const;
 
 	/// get axis value of the current extruder in(mm)
 	/// (aka mm of feedstock since the last reset this print)
@@ -174,10 +179,10 @@ public:
 	/// (aka mm of feedstock since the last reset this print)
 	void setCurrentE(Scalar e);// { if (ab == 'A') a = e; else b = e; };
 	
-private:
-	
 	const GantryConfig& gantryCfg;
 
+private:
+	
 	Scalar x,y,z,a,b,feed;     // current position and feed
 	unsigned char ab;
 	bool extruding;

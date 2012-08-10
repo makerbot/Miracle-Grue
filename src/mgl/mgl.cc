@@ -59,14 +59,15 @@ void rotatePolygons(Polygons& polygons, Scalar angle) {
 	}
 }
 
-LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t, 
+LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t, Scalar wr ,
 		layer_measure_index_t b) 
-		: delta(d), thickness(t), base(b) {}
+		: delta(d), thickness(t), widthRatio(wr), base(b) {}
 bool LayerMeasure::LayerAttributes::isAbsolute() const {
 	return base < 0;
 }
-LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH) :
-firstLayerZ(firstLayerZ), layerH(layerH), issuedIndex(256) {
+LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio) 
+		: firstLayerZ(firstLayerZ), layerH(layerH), 
+		layerWidthRatio(widthRatio), issuedIndex(256) {
 	attributes[0] = LayerAttributes(0, 0);
 	attributes[0].base = -1;
 }
@@ -84,6 +85,18 @@ Scalar LayerMeasure::sliceIndexToHeight(layer_measure_index_t sliceIndex) const 
 
 Scalar LayerMeasure::getLayerH() const {
 	return layerH;
+}
+Scalar LayerMeasure::getLayerW() const {
+	return layerH * layerWidthRatio;
+}
+Scalar LayerMeasure::getLayerWidthRatio() const {
+	return layerWidthRatio;
+}
+void LayerMeasure::setLayerH(Scalar h) {
+	layerH = h;
+}
+void LayerMeasure::setLayerWidthRatio(Scalar wr) {
+	layerWidthRatio = wr;
 }
 const LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
 		layer_measure_index_t layerIndex) const {
@@ -115,6 +128,10 @@ Scalar LayerMeasure::getLayerPosition(layer_measure_index_t layerIndex) const {
 }
 Scalar LayerMeasure::getLayerThickness(layer_measure_index_t layerIndex) const {
 	return getLayerAttributes(layerIndex).thickness;
+}
+Scalar LayerMeasure::getLayerWidth(layer_measure_index_t layerIndex) const {
+	const LayerAttributes& currentAttribs = getLayerAttributes(layerIndex);
+	return currentAttribs.thickness * currentAttribs.widthRatio;
 }
 layer_measure_index_t LayerMeasure::createAttributes(
 		const LayerAttributes& attribs) {

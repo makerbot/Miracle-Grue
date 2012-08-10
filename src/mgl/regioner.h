@@ -26,38 +26,42 @@ public:
 			: tubeSpacing(1),
 			//angle(1.570796326794897),
 			nbOfShells(2),
-			layerW(0.4),
-			infillShrinkingMultiplier(0.25),
+			layerWidthRatio(1.7),
 			insetDistanceMultiplier(0.9),
-			insetCuttOffMultiplier(0.01),
-			writeDebugScadFiles(false),
 			roofLayerCount(0),
 			floorLayerCount(0),
-			// infillSkipCount(2),
 			gridSpacingMultiplier(0.95), 
 			raftLayers(0), 
 			raftBaseThickness(0.5), 
-			raftOutset(6) {}
+			raftInterfaceThickness(0.27), 
+			raftOutset(6),
+			raftModelSpacing(0),
+			doSupport(false),
+			supportMargin(1.0) {}
+
 	// These are relevant to regioner
 	Scalar tubeSpacing; //< distance in between infill (mm)
 	Scalar angle; //< angle of infill
 	unsigned int nbOfShells; //< shell count of model
-	Scalar layerW; //< TBD
-	Scalar infillShrinkingMultiplier; //< TBD
+	Scalar layerWidthRatio; //< TBD
 	Scalar insetDistanceMultiplier; //< TBD
-	Scalar insetCuttOffMultiplier; //< TBD
-	bool writeDebugScadFiles; //< true if we want to output debug scad files
-
 	unsigned int roofLayerCount; // number of solid layers for roofs
 	unsigned int floorLayerCount; // number of solid layers for floors
 	//unsigned int infillSkipCount; //< TBD
 	Scalar infillDensity; // the density of the infill patterns (0 to 1)
 	Scalar gridSpacingMultiplier;	// interference between 2 grid lines 
 									//( 0 to 1, for adhesion)
+    bool doRaft;
 	unsigned int raftLayers; //< nb of raft layers
 	Scalar raftBaseThickness; //< thickness of first raft layer (mm)
 	Scalar raftInterfaceThickness; //< thickness of other raft layers (mm)
 	Scalar raftOutset; //< How far to outset rafts (mm)
+	Scalar raftDensity;
+	Scalar raftModelSpacing; //< Distance between top raft and model
+
+	bool doSupport;  //< do we generate support
+	Scalar supportMargin; //< distance between side wall and support
+	Scalar supportDensity;
 };
 
 class LayerRegions {
@@ -103,9 +107,10 @@ public:
 
 	size_t initRegionList(const LayerLoops& layerloops,
 						  RegionList &regionlist, 
-						  LayerMeasure& layermeasure);
+						  LayerMeasure& layermeasure,
+						  RegionList::iterator& firstmodellayer);
 
-	void rafts(const LayerLoops::Layer &bottomLayer,
+	void rafts(const LayerRegions& bottomLayer,
 			   LayerMeasure &layerMeasure,
 			   RegionList &regionlist);
 
@@ -114,12 +119,14 @@ public:
 			const char* scadFile = NULL);
 	void insetsForSlice(const LoopList& sliceOutlines,
 			std::list<LoopList>& sliceInsets,
+			LayerMeasure& layermeasure, 
 			const char* scadFile = NULL);
 
 	void insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				const LayerLoops::const_layer_iterator outlinesEnd,
 				RegionList::iterator regionsBegin,
-				RegionList::iterator regionsEnd);
+				RegionList::iterator regionsEnd,
+				LayerMeasure& layermeasure);
 
 	void flatSurfaces(RegionList::iterator regionsBegin,
 					  RegionList::iterator regionsEnd,
@@ -142,6 +149,11 @@ public:
 	void flooring(RegionList::iterator regionsBegin,
 				  RegionList::iterator regionsEnd,
 				  const Grid &grid);
+
+	void support(RegionList::iterator regionsBegin,
+				 RegionList::iterator regionsEnd ,
+				 LayerMeasure& layermeasure);
+
 
 	void infills(RegionList::iterator regionsBegin,
 				 RegionList::iterator regionsEnd,

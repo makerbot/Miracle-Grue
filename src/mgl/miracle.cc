@@ -17,6 +17,7 @@ using namespace libthing;
 void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		const SlicerConfig &slicerCfg,
 		const RegionerConfig& regionerCfg, 
+		const PatherConfig& patherCfg, 
  	    const ExtruderConfig &extruderCfg,
 		const char *modelFile,
 		const char *, // scadFileStr,
@@ -54,7 +55,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions ,
 			limits, grid);
 
-	Pather pather(progress);
+	Pather pather(patherCfg, progress);
 
 	LayerPaths layers;
 	pather.generatePaths(extruderCfg, regions,

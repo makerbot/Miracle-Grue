@@ -71,8 +71,7 @@ GCoder::GCoder(const GCoderConfig &gCoderCfg,
 		ProgressBar* progress) : 
 		Progressive(progress), 
 		gcoderCfg(gCoderCfg), 
-		gantry(gCoderCfg.gantryCfg), 
-		distanceTol(0.05){
+		gantry(gCoderCfg.gantryCfg){
 	gantry.init_to_start();
 }
 
@@ -140,22 +139,12 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
 								   footer_file + "]").c_str());
 
 		ss << "(footer [" << footer_file << "] end)" << endl << endl;
-	} else {
-		for (size_t i=0; i< gcoderCfg.extruders.size(); i++)
-		{
-			ss << "M104 S0 T" << i << " (set extruder temperature to 0)" << endl;
-			ss << "M109 S0 T" << i << " (set heated-build-platform id tied an extrusion tool)" << endl;
-		}
-
-		if(gcoderCfg.gantryCfg.get_z_max_homing())
-			ss << "G162 Z F500 (home Z axis maximum)" << endl;
-		ss << "(That's all folks!)" << endl;
 	}
 }
 
 
 void GCoder::writeInfills(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		size_t sliceId, 
 		const Extruder& extruder,  
 		const LayerPaths::Layer::ExtruderLayer& paths) {
@@ -163,12 +152,14 @@ void GCoder::writeInfills(std::ostream& ss,
 		ss << "(infills: "  << paths.infillPaths.size() << ")"<< endl;
 		Extrusion extrusion;
 		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		gantry.snort(ss, extruder, extrusion);
 		for(LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter = 
 				paths.infillPaths.begin(); 
 				iter != paths.infillPaths.end(); 
 				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
+			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
+		gantry.snort(ss, extruder, extrusion);
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
 		errormsg << "\nERROR writing infills in slice " << 
@@ -180,7 +171,7 @@ void GCoder::writeInfills(std::ostream& ss,
 }
 
 void GCoder::writeSupport(std::ostream &ss, 
-						  Scalar z,
+						  Scalar z, Scalar h, Scalar w, 
 						  size_t sliceId,
 						  const Extruder &extruder,
 						  const LayerPaths::Layer::ExtruderLayer& paths) {
@@ -188,12 +179,14 @@ void GCoder::writeSupport(std::ostream &ss,
 		ss << "(support: "  << paths.supportPaths.size() << ")"<< endl;
 		Extrusion extrusion;
 		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		gantry.snort(ss, extruder, extrusion);
 		for(LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter = 
 				paths.supportPaths.begin(); 
 				iter != paths.supportPaths.end(); 
 				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
+			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
+		gantry.snort(ss, extruder, extrusion);
 	} catch (GcoderException& mixup) {
 		Log::info() << "ERROR writing support in slice " <<
 				sliceId << " for extruder " <<
@@ -206,7 +199,7 @@ void GCoder::writeSupport(std::ostream &ss,
 						  
 
 void GCoder::writeInsets(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		size_t sliceId, 
 		const Extruder& extruder, 
 		const LayerPaths& layerpaths, 
@@ -215,17 +208,23 @@ void GCoder::writeInsets(std::ostream& ss,
 	try {
 		ss << "(insets: "  << paths.insetPaths.size() << ")"<< endl;
 		Extrusion extrusion;
+		calcInSetExtrusion(layerpaths, extruder.id, layerId, 
+				paths.insetPaths.end(), extrusion);
+		gantry.snort(ss, extruder, extrusion);
 		for(LayerPaths::Layer::ExtruderLayer::const_inset_iterator i = 
 				paths.insetPaths.begin(); 
 				i != paths.insetPaths.end(); 
 				++i){
 			calcInSetExtrusion(layerpaths, extruder.id, layerId, i, 
 					extrusion);
-			for (LoopPathList::const_iterator j = i->begin();
+			for (OpenPathList::const_iterator j = i->begin();
 				 j != i->end(); ++j) {
-				writePath(ss, z, extruder, extrusion, *j);
+				writePath(ss, z, h, w, extruder, extrusion, *j);
 			}
 		}
+		calcInSetExtrusion(layerpaths, extruder.id, layerId, 
+				paths.insetPaths.end(), extrusion);
+		gantry.snort(ss, extruder, extrusion);
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
 		errormsg << "\nERROR writing insets in slice " << 
@@ -237,7 +236,7 @@ void GCoder::writeInsets(std::ostream& ss,
 }
 
 void GCoder::writeOutlines(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		size_t sliceId, 
 		const Extruder& extruder,  
 		const LayerPaths::Layer::ExtruderLayer& paths) {
@@ -245,11 +244,12 @@ void GCoder::writeOutlines(std::ostream& ss,
 		ss << "(outlines: "  << paths.outlinePaths.size() << ")"<< endl;
 		Extrusion extrusion;
 		calcInfillExtrusion(extruder.id, sliceId, extrusion);
+		gantry.snort(ss, extruder, extrusion);
 		for(LayerPaths::Layer::ExtruderLayer::const_outline_iterator iter = 
 				paths.outlinePaths.begin(); 
 				iter != paths.outlinePaths.end(); 
 				++iter){
-			writePath(ss, z, extruder, extrusion, *iter);
+			writePath(ss, z, h, w, extruder, extrusion, *iter);
 		}
 	} catch (GcoderException& mixup) {
 		stringstream errormsg;
@@ -269,7 +269,8 @@ void GCoder::moveZ(ostream & ss, Scalar z, unsigned int, Scalar zFeedrate) {
 	bool doFeed = true;
 
 
-	gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, "move Z", doX, doY, doZ, doE, doFeed);
+	gantry.g1Motion(ss, 0, 0, z, 0, zFeedrate, 0, 0, 
+			"move Z", doX, doY, doZ, doE, doFeed);
 
 }
 
@@ -297,8 +298,8 @@ void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, 
 		extrusion = it->second;
 	}
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
+
 void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths, 
 		unsigned int extruderId, 
 		LayerPaths::const_layer_iterator layerId, 
@@ -314,11 +315,11 @@ void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths,
 //				profileName  << "</name>" << endl;
 		GcoderException mixup((string("Failed to find extrusion profile ") + 
 				profileName).c_str());
+        throw mixup;
 	} else {
 		extrusionParams = it->second;
 	}
 	extrusionParams.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusionParams.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::calcInSetExtrusion(unsigned int extruderId,
@@ -340,12 +341,12 @@ void GCoder::calcInSetExtrusion(unsigned int extruderId,
 //				profileName  << "</name>" << endl;
 		GcoderException mixup((string("Failed to find extrusion profile ") + 
 				profileName).c_str());
+        throw mixup;
 	} else {
 		extrusion = it->second;
 	}
 	extrusion = it->second;
 	extrusion.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusion.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths, 
@@ -369,7 +370,6 @@ void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths,
 		extrusionParams = it->second;
 	}
 	extrusionParams.feedrate *= gcoderCfg.gantryCfg.get_scaling_factor();
-	extrusionParams.flow *= gcoderCfg.gantryCfg.get_scaling_factor();
 }
 
 void GCoder::writeGcodeFile(LayerPaths& layerpaths, 
@@ -406,10 +406,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
 }
 
 Vector2 GCoder::startPoint(const SliceData& sliceData) {
-	if (gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-		return sliceData.extruderSlices[0].infills[0][0];
-	}
-	else if (gcoderCfg.doOutlines) {
+	if (gcoderCfg.doOutlines) {
 		return sliceData.extruderSlices[0].boundary[0][0];
 	}
 	else if (gcoderCfg.doInsets) {
@@ -436,7 +433,9 @@ void GCoder::writeSlice(std::ostream& ss,
 	LayerPaths::Layer& currentLayer = *layerIter;
 	unsigned int extruderCount = currentLayer.extruders.size();
 	ss << "(Slice " << layerSequence << ", " << extruderCount << 
-			" " << plural("Extruder", extruderCount) << ")"<< endl;
+			" " << plural("Extruder", extruderCount) << ") "<< endl;
+	ss << "(Layer Height: \t" << layerIter->layerHeight << ")" << endl;
+	ss << "(Layer Width: \t" << layerIter->layerW << ")" << endl;
 	if(gcoderCfg.doPrintLayerMessages){
 		//print layer message to printer screen if config enabled
 		ss << "M70 P20 (Layer: " << layerSequence << ")" << endl;
@@ -451,7 +450,7 @@ void GCoder::writeSlice(std::ostream& ss,
 		gantry.set_current_extruder_index(currentExtruder.code);
 		//this is the current extruder's zFeedrate
 		Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() * 
-				currentExtruder.zFeedRate;
+			gantry.gantryCfg.get_rapid_move_feed_rate_z();
 		try {
 			moveZ(ss, currentLayer.layerZ, currentExtruder.id, zFeedrate);
 		} catch(GcoderException& mixup) {
@@ -459,35 +458,38 @@ void GCoder::writeSlice(std::ostream& ss,
 					layerSequence << " for extruder " << currentExtruder.id <<
 					" : " << mixup.error << endl;
 		}
-		if(gcoderCfg.doInfills && gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, layerSequence, 
-					currentExtruder, *it);
-		}
+		const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight;
+		const Scalar currentH = currentLayer.layerHeight;
+		const Scalar currentW = currentLayer.layerW;
+
 		if(gcoderCfg.doOutlines) {
-			writeOutlines(ss, currentLayer.layerZ, layerSequence, 
+			writeOutlines(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doInsets) {
-			writeInsets(ss, currentLayer.layerZ, layerSequence, 
+			writeInsets(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, layerpaths, layerIter, *it);			
 		}
-		if(gcoderCfg.doInfills && !gcoderCfg.doInfillsFirst) {
-			writeInfills(ss, currentLayer.layerZ, layerSequence, 
+		if(gcoderCfg.doInfills) {
+			writeInfills(ss, currentZ, currentH, currentW, layerSequence, 
 					currentExtruder, *it);
 		}
 		if(gcoderCfg.doSupport) {
-			writeSupport(ss, currentLayer.layerZ, layerSequence, 
+			writeSupport(ss, currentZ, currentH, currentW, layerSequence, 
 						 currentExtruder, *it);
 		}
+		
+		writePaths(ss, currentZ, currentH, currentW, layerSequence, 
+				currentExtruder, it->paths);
    	}
 }
 
-Scalar Extrusion::crossSectionArea(Scalar height) const {
-	Scalar width = height * extrudedDimensionsRatio;
+Scalar Extrusion::crossSectionArea(Scalar height, Scalar width) const {
+	
 
 	//two semicircles joined by a rectangle
 	Scalar radius = height / 2;
-	return (M_TAU / 2) * radius * radius + height * (width - height);
+	return (M_TAU / 2) * (radius * radius) + height * (width - height);
 	//LONG LIVE TAU!
 }
 
@@ -519,20 +521,12 @@ void GCoder::writeGCodeConfig(std::ostream &ss, const char* title="unknown sourc
 			gcoderCfg.programName << " " << 
 			getMiracleGrueVersionStr() << ")"<< endl;
 	ss << "(" << indent << hal9000.clock.now() <<  ")" << endl;
-	ss << "(" << indent << "machine name: " << gcoderCfg.machineName << ")"<< endl;
-	ss << "(" << indent << "firmware revision:" << gcoderCfg.firmware << ")" << endl;
 	ss << "(" << indent << title << ")" << endl;
 
 	std::string plurial = gcoderCfg.extruders.size()? "":"s";
 	ss << "(" << indent << gcoderCfg.extruders.size() << " extruder" << plurial << ")" << endl;
 
 	ss << "(" << indent << "Extrude infills: " << gcoderCfg.doInfills <<  ")" << endl;
-	ss << "(" << indent;
-	if(gcoderCfg.doInfillsFirst )
-		ss << "first operation: Infill";
-	else
-		ss << "first operation: Insets";
-	ss << ")" << endl;
 	ss << "(" << indent << "Extrude insets: " << gcoderCfg.doInsets << ")" << endl;
 	ss << "(" << indent << "Extrude outlines: " << gcoderCfg.doOutlines << ")" << endl;
 	ss << endl;

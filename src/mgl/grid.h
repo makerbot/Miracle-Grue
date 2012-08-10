@@ -204,6 +204,10 @@ public:
     void trimGridRange(const GridRanges& src, Scalar cutOff, 
 			GridRanges &result) const;
 
+	void gridRangesToOpenPaths(const ScalarRangeTable &rays,
+							   const std::vector<Scalar> &values,
+							   const axis_e axis,
+							   OpenPathList &paths) const;
 };
 
 void dumpRangeTable(const ScalarRangeTable &table);

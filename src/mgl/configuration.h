@@ -26,8 +26,6 @@
 
 #include "mgl.h"
 
-
-
 namespace mgl
 {
 
@@ -110,6 +108,7 @@ class GCoderConfig;
 class SlicerConfig;
 class RegionerConfig;
 class ExtruderConfig;
+class PatherConfig;
 
 void loadGCoderConfigFromFile(const Configuration& conf, 
 		GCoderConfig &gcoder);
@@ -119,6 +118,8 @@ void loadExtruderConfigFromFile(const Configuration &config,
 		ExtruderConfig &extruderCfg);
 void loadRegionerConfigFromFile(const Configuration& config, 
 		RegionerConfig& regionerCfg);
+void loadPatherConfigFromFile(const Configuration& config, 
+		PatherConfig& patherCfg);
 
 }
 #endif /* CONFIGURATION_H_ */

@@ -17,9 +17,22 @@
 #include "insets.h"
 #include "regioner.h"
 #include "loop_path.h"
+#include "labeled_path.h"
+
 #include <list>
 
 namespace mgl {
+
+class PatherConfig {
+public:
+	PatherConfig() 
+			: doGraphOptimization(true), 
+			coarseness(0.05), 
+			directionWeight(0.0){}
+	bool doGraphOptimization;
+	Scalar coarseness;
+	Scalar directionWeight;
+};
 
 typedef std::vector<LoopList> InsetVector; // TODO: make this a smarter object
 
@@ -55,29 +68,35 @@ public:
 		typedef ExtruderList::const_iterator const_extruder_iterator;
 		class ExtruderLayer{
 		public:
-			typedef std::list<LoopPathList> InsetList;
+			typedef std::list<OpenPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
-			typedef std::list<LoopPath> OutlineList;
+			typedef std::list<OpenPath> OutlineList;
+			typedef std::list<LabeledOpenPath> LabeledPathList;
 			typedef InsetList::iterator inset_iterator;
 			typedef InfillList::iterator infill_iterator;
 			typedef OutlineList::iterator outline_iterator;
+			typedef LabeledPathList::iterator path_iterator;
 			typedef InsetList::const_iterator const_inset_iterator;
 			typedef InfillList::const_iterator const_infill_iterator;
 			typedef OutlineList::const_iterator const_outline_iterator;
+			typedef LabeledPathList::const_iterator const_path_iterator;
 			ExtruderLayer(size_t exId = 0) : extruderId(exId) {}
 			InsetList insetPaths;
 			InfillList infillPaths;
 			InfillList supportPaths;
 			OutlineList outlinePaths;
+			LabeledPathList paths;
 			size_t extruderId;
 		};
-		Layer(Scalar z, Scalar layerh, layer_measure_index_t mind)
-				: layerZ(z), layerHeight(layerh), measure_index(mind) {}
+		Layer(Scalar z, Scalar layerh, Scalar layerw, layer_measure_index_t mind)
+				: layerZ(z), layerHeight(layerh), layerW(layerw), 
+				measure_index(mind) {}
 		Layer(layer_measure_index_t mind = 0) 
-				: layerZ(0), layerHeight(0.27), measure_index(mind) {}
+				: layerZ(0), layerHeight(0.27), layerW(0.43), measure_index(mind) {}
 		ExtruderList extruders;
 		Scalar layerZ;		//vertical coordinate
 		Scalar layerHeight;	//thickness
+		Scalar layerW;		//width of filament
 		layer_measure_index_t measure_index;
 	};
 	
@@ -140,11 +159,13 @@ public:
 
 class Pather : public Progressive
 {
+private:
+	PatherConfig patherCfg;
 
 public:
 
 
-	Pather(ProgressBar * progress = NULL);
+	Pather(const PatherConfig& pCfg, ProgressBar * progress = NULL);
 
 
 	void generatePaths(const ExtruderConfig &extruderCfg,
@@ -167,6 +188,10 @@ public:
 				 const LoopList& outlines,
 				 bool direction,
 				 OpenPathList &infills);
+	
+	void directionalCoarsenessCleanup(
+		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths);
+	void directionalCoarsenessCleanup(LabeledOpenPath& labeledPath);
 	
 
 };

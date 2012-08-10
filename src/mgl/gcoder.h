@@ -24,60 +24,24 @@
 namespace mgl
 {
 
-class GcoderException : public Exception {	public: GcoderException(const char *msg) :Exception(msg){} };
-
-
-/// Properties of a print platform
-class Platform{
-public:
-	Platform() : temperature(100),
-			automated(false){}
-	
-	Scalar temperature;				// temperature of the platform during builds
-	bool automated;
-
-	// the wiper(s) are affixed to the platform
-//    Scalar waitingPositionX;
-//    Scalar waitingPositionY;
-//    Scalar waitingPositionZ;
+class GcoderException : public Exception {	
+public: 
+	GcoderException(const char *msg) 
+			: Exception(msg){} 
 };
+
 
 /// Properties of an extrusion profile
 /// an extruder may have multiple extrusion profiles
 /// EG: large, fast, 'first layer'
 class Extrusion {
 public:
-	Extrusion() : feedrate(2400),
-			retractDistance(0),
-			retractRate(3000),
-			restartExtraDistance(0),
-			extrudedDimensionsRatio(0),
-			flow(2.8),
-			leadIn(0),
-			leadOut(0),
-			snortFlow(35),
-			snortFeedrate(600),
-			squirtFlow(35),
-			squirtFeedrate(600)	{}
+	Extrusion() {}
 
-	Scalar crossSectionArea(Scalar height) const;
+	Scalar crossSectionArea(Scalar height, Scalar width) const;
 
 	Scalar feedrate;
-
-	Scalar retractDistance;
-	Scalar retractRate;
-	Scalar restartExtraDistance;
-	Scalar extrudedDimensionsRatio;
-
-	Scalar flow; // RPM value for the extruder motor... not a real unit :-(
-
-	Scalar leadIn;
-	Scalar leadOut;
-
-	Scalar snortFlow;
-	Scalar snortFeedrate;
-	Scalar squirtFlow;
-	Scalar squirtFeedrate;
+	Scalar temperature;
 };
 
 
@@ -85,35 +49,20 @@ public:
 class Extruder {
 public:
 	
-	enum extrusionMode_t {
-		RPM_MODE, 
-		VOLUMETRIC_MODE
-	}; 
-
-	Extruder() : coordinateSystemOffsetX(0),
-			extrusionTemperature(220),
-			nozzleZ(0),
-			zFeedRate(100),
-			extrusionMode(VOLUMETRIC_MODE),
-			feedDiameter(3),
-			code('A'),
-			id(0) {}
+	Extruder() {}
 
 	Scalar feedCrossSectionArea() const;
-	bool isVolumetric() const { return  extrusionMode == VOLUMETRIC_MODE; };
 
+	Scalar isVolumetric() const { return true; };
 
-	Scalar coordinateSystemOffsetX;  // the distance along X between the machine 0 position and the extruder tip
-	Scalar extrusionTemperature; 	 // the extrusion temperature in Celsius
-
-	// this determines the gap between the nozzle tip
-	// and the layer at position z (measured at the middle of the layer)
-	Scalar nozzleZ;
-	Scalar zFeedRate;
-	extrusionMode_t extrusionMode;
 	Scalar feedDiameter;
+	Scalar nozzleDiameter;
 	unsigned char code;
 	int id;
+
+	Scalar retractDistance;
+	Scalar retractRate;
+	Scalar restartExtraDistance;
 
 	std::string firstLayerExtrusionProfile;
 	std::string insetsExtrusionProfile;
@@ -121,30 +70,19 @@ public:
 };
 
 
-//// a line around the print used as a print 'skirt'
-///
-class Outline {
-public:
-	Outline() : enabled(false), distance(3.0) {}
-	bool enabled;   // when true, a rectangular ouline of the part will be performed
-	Scalar distance; // the distance in mm  between the model and the rectangular outline
-};
-
-
-
-
 class GCoderConfig {
 public:
 	GCoderConfig() : programName(GRUE_PROGRAM_NAME), 
-			versionStr(GRUE_VERSION) {}
+			versionStr(GRUE_VERSION), 
+            startX(BAD_SCALAR), 
+            startY(BAD_SCALAR){}
+    
+    static const Scalar BAD_SCALAR = 999999;
 
     std::string programName;
     std::string versionStr;
-    std::string machineName;
-    std::string firmware;
+  
 
-    Platform platform;
-    Outline outline;
     GantryConfig gantryCfg;
 
     std::map<std::string, Extrusion> extrusionProfiles;
@@ -155,7 +93,6 @@ public:
     bool doInsets;
 	bool doSupport;
     bool doInfills;
-    bool doInfillsFirst;
 	bool doPrintLayerMessages;
 
 	Scalar startX;
@@ -180,7 +117,6 @@ public:
 
 	GCoderConfig gcoderCfg;
 	Gantry gantry;
-	Scalar distanceTol;
 
 	GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress=NULL);
 
@@ -260,33 +196,39 @@ private:
 //    void writeWarmupSequence(std::ostream & ss);
 //    void writeAnchor(std::ostream & ss);
 	void writeInfills(std::ostream& ss, 
-					  Scalar z, 
+					  Scalar z, Scalar h, Scalar w, 
 					  size_t sliceId, 
 					  const Extruder& extruder, 
 					  const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeSupport(std::ostream& ss,
-					  Scalar z,
+					  Scalar z, Scalar h, Scalar w, 
 					  size_t sliceId,
 					  const Extruder& extruder, 
 					  const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeInsets(std::ostream& ss, 
-			Scalar z, 
+			Scalar z, Scalar h, Scalar w, 
 			size_t sliceId, 
 			const Extruder& extruder, 
 			const LayerPaths& layerpaths,
 			LayerPaths::layer_iterator layerId, 
 			const LayerPaths::Layer::ExtruderLayer& paths);
 	void writeOutlines(std::ostream& ss, 
-			Scalar z, 
+			Scalar z, Scalar h, Scalar w, 
 			size_t sliceId, 
 			const Extruder& extruder, 
 			const LayerPaths::Layer::ExtruderLayer& paths);
 	template <typename PATH>
 	void writePath(std::ostream& ss, 
-			Scalar z,
+			Scalar z, Scalar h, Scalar w, 
 			const Extruder& extruder,
 			const Extrusion& extrusion, 
 			const PATH& path);
+	template <template <class, class> class LABELEDPATHS, class ALLOC>
+	void writePaths(std::ostream& ss, 
+			Scalar z, Scalar h, Scalar w, 
+			size_t layerSequence, 
+			const Extruder& extruder, 
+			const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
 	libthing::Vector2 startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
@@ -294,49 +236,105 @@ private:
 
 template <typename PATH>
 void GCoder::writePath(std::ostream& ss, 
-		Scalar z, 
+		Scalar z, Scalar h, Scalar w, 
 		const Extruder& extruder, 
 		const Extrusion& extrusion, 
 		const PATH& path) {
-	if(path.fromStart() == path.end()){
+	if(path.size() < 2){
 		GcoderException mixup("Attempted to write path with no points");
 		throw mixup;
 	}
 	typename PATH::const_iterator current = path.fromStart();
-	// rapid move into position
-	gantry.g1(ss, extruder, extrusion,
-			current->x, current->y, z,
-			gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(),
-			"move into position");
 	PointType last = *current;
 	++current;
+	// rapid move into position
+	PointType gantryPos(gantry.get_x(), gantry.get_y());
+	if((gantryPos - last).magnitude() >= gcoderCfg.gantryCfg.get_coarseness()) {
+		gantry.snort(ss, extruder, extrusion);
+		gantry.g1(ss, extruder, extrusion,
+				last.x, last.y, z, 
+				gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
+				0, 0, 
+				"move into position");
+	} 
 	gantry.squirt(ss, extruder, extrusion);
 	for(; current!=path.end(); ++current){
 		PointType relative = (*current)-last;
-		typename PATH::const_iterator nextIter = current;
-		++nextIter;
-		// if the next point is far enough or the last one
-		if(nextIter == path.end() || 
-				relative.magnitude() > distanceTol) {
-			//the output the point
-			std::stringstream comment;
-			Scalar distance = relative.magnitude();
-			comment << "d: " << distance;
-			gantry.g1(ss, extruder, extrusion, 
-					current->x, current->y, z, 
-					extrusion.feedrate, comment.str().c_str());
-			last = *current;
-		} else {
-			// otherwise don't
-			//Log::severe() << "Attempt to extrude segment of length " 
-			//		<< relative.magnitude() << std::endl;
-		}
+		
+		std::stringstream comment;
+		Scalar distance = relative.magnitude();
+		comment << "d: " << distance;
+		gantry.g1(ss, extruder, extrusion, 
+				current->x, current->y, z, 
+				extrusion.feedrate, h, w, comment.str().c_str());
+		last = *current;
 	}
-	gantry.snort(ss, extruder, extrusion);
-	ss << std::endl;
-	//Log::severe() << "IMPLEMNT WRITING OF PATHS!" << std::endl;
-	
-	
+}
+
+template <template <class, class> class LABELEDPATHS, class ALLOC>
+void GCoder::writePaths(std::ostream& ss, 
+		Scalar z, Scalar h, Scalar w, 
+		size_t layerSequence, 
+		const Extruder& extruder, 
+		const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
+	typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
+			const_iterator;
+	Extrusion fluidstrusion;
+	calcInfillExtrusion(extruder.id, layerSequence, fluidstrusion);
+	gantry.snort(ss, extruder, fluidstrusion);
+	bool didLastPath = true;
+	for(const_iterator iter = labeledPaths.begin(); 
+			iter != labeledPaths.end(); 
+			++iter) {
+		const LabeledOpenPath& currentLP = *iter;
+		Extrusion extrusion;
+		Scalar currentH = h;
+		Scalar currentW = w;
+		if(currentLP.myLabel.isOutline()) {
+			if(!gcoderCfg.doOutlines) {
+				didLastPath = false;
+				continue;
+			}
+			calcInSetExtrusion(extruder.id, layerSequence, 
+					currentLP.myLabel.myValue, -1, extrusion);
+			ss << "(outline path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isSupport()) {
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(support path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isConnection()) {
+			if(!didLastPath)
+				continue;
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(connection path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isInset()) {
+			if(!gcoderCfg.doInsets) {
+				didLastPath = false;
+				continue;
+			}
+			calcInSetExtrusion(extruder.id, layerSequence, 
+					currentLP.myLabel.myValue, -1, extrusion);
+			ss << "(inset path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else if(currentLP.myLabel.isInfill()) {
+			if(!gcoderCfg.doInfills) {
+				didLastPath = false;
+				continue;
+			}
+			calcInfillExtrusion(extruder.id, layerSequence, extrusion);
+			ss << "(infill path, length: " << currentLP.myPath.size() 
+					<< ")" << std::endl;
+		} else {
+			GcoderException mixup("Invalid path label type");
+			throw mixup;
+		}
+		didLastPath = true;
+		writePath(ss, z, currentH, currentW, extruder, extrusion, currentLP.myPath);
+	}
+	gantry.snort(ss, extruder, fluidstrusion);
+	ss << std::endl << std::endl;
 }
 
 

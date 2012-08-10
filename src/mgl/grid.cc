@@ -16,6 +16,7 @@
 #include "log.h"
 #include <limits>
 #include <list>
+#include <vector>
 
 namespace mgl {
 
@@ -180,13 +181,38 @@ bool crossesOutlines(const LineSegment2 &seg,
 	return false;
 }
 
+void Grid::gridRangesToOpenPaths(const ScalarRangeTable &rays,
+								 const std::vector<Scalar> &values,
+								 const axis_e axis,
+								 OpenPathList &paths) const {
+
+	std::vector<Scalar>::const_iterator value = values.begin();
+	ScalarRangeTable::const_iterator ray = rays.begin();
+
+	for (;
+		 ray != rays.end() && value != values.end(); 
+		 ++value, ++ray) {
+		for (vector<ScalarRange>::const_iterator range = ray->begin();
+			 range != ray->end(); ++range) {
+			paths.push_back(OpenPath());
+
+			OpenPath &path = paths.back();
+
+			if (axis == X_AXIS) {
+				path.appendPoint(Vector2(range->min, *value));
+				path.appendPoint(Vector2(range->max, *value));
+			} else {
+				path.appendPoint(Vector2(*value, range->min));
+				path.appendPoint(Vector2(*value, range->max));
+			}
+		}
+	}
+}
+
 
 typedef map<int, int> PointMap;
 typedef PointMap::iterator PointIter;
 
-typedef enum {
-	X_AXIS, Y_AXIS
-} axis_e;
 
 void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ranges along this axis, multiple per lines
 									 const std::vector<Scalar> &values, // the opposite axis values for each line

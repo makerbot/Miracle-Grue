@@ -60,7 +60,7 @@ void GantryTestCase::testG1Move(){
 			" F" << 3200 << " ()" << endl;
 	
 	try{
-		gantry.g1(ss, x, y, z, gantry.get_feed(), "");
+		gantry.g1(ss, x, y, z, gantry.get_feed(), 0, 0, "");
 	} catch (mgl::Exception thrown){
 		CPPUNIT_ASSERT_MESSAGE(thrown.error, false);
 	}
@@ -92,7 +92,7 @@ void GantryTestCase::testG1Extrude(){
 	gantry.set_extruding(true);
 	
 	try{
-		gantry.g1(ss, uder, usion, x, y, z, usion.feedrate, "");
+		gantry.g1(ss, uder, usion, x, y, z, usion.feedrate, 0, 0, "");
 	} catch (mgl::Exception thrown){
 		CPPUNIT_ASSERT_MESSAGE(thrown.error, false);
 	}

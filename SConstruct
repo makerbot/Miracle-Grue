@@ -177,6 +177,12 @@ if operating_system == "win32":
 
 if debug:
     env.Append(CCFLAGS = '-g')
+    #env.Append(CCFLAGS = '-pg')
+    #env.Append(CCFLAGS = '-fprofile-arcs')
+    #env.Append(LINKFLAGS = '-pg')
+    #env.Append(LINKFLAGS = '-fprofile-arcs')
+    #env.Append(LINKFLAGS = '-fprofile-arcs')
+    #env.Append(LIBS = 'gcov')
 else:
     env.Append(CCFLAGS = '-O2')
 
@@ -225,13 +231,16 @@ mgl_cc = [
           'src/mgl/miracle.cc',
           'src/mgl/pather.cc',
           'src/mgl/pather_layerpaths.cc',
+          'src/mgl/pather_optimizer.cc',
+          'src/mgl/pather_optimizer_graph.cc',
           'src/mgl/regioner.cc',
           'src/mgl/segment.cc',
           'src/mgl/segmenter.cc',
           'src/mgl/shrinky.cc',
           'src/mgl/slicer.cc',
           'src/mgl/slicer_loops.cc',
-          'src/mgl/slicy.cc']
+          'src/mgl/slicy.cc',
+          'src/mgl/loop_utils.cc']
 
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
@@ -261,15 +270,19 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',
 
 default_libs.extend(['mgl', '_json', 'thing'])
 
-debug_libs = ['cppunit',]
+#debug_libs = ['cppunit', 'gcov']
+debug_libs = ['cppunit']
 debug_libs_path = ["", ]
 
 env.Append(CPPPATH = default_includes)
 env.Append(LIBS = default_libs)
 env.Append(LIBPATH = default_libs_path)
 
+
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/miracle_grue/miracle_grue.cc'] ))
+
+target_list = [p]
 
 if build_gui:
     print "Building miracle_gui"
@@ -283,6 +296,7 @@ if build_gui:
     ui = qtEnv.Uic4(toolpathviz_ui)
     p = qtEnv.Program('bin/miracle_gui',
                     toolpathviz_cc)
+    target_list.append(p)
 
 gettestname = re.compile('^(.*)TestCase\.cc')
 tests = []
@@ -307,8 +321,10 @@ if run_unit_tests:
         testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
+DESTDIR=ARGUMENTS.get('DESTDIR','')+'/usr/bin'
 
-
+install_list = map(lambda x: env.Install(DESTDIR,x), target_list)
+env.Alias('install', install_list)
 
 
 

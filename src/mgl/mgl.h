@@ -54,6 +54,11 @@ typedef std::vector<TriangleIndices> SliceTable;
 
 typedef int layer_measure_index_t;
 
+enum axis_e {
+	X_AXIS, 
+	Y_AXIS
+};
+
 
 // Bring over from mgl.cc
 Scalar AreaSign(const libthing::Vector2& a,
@@ -95,26 +100,31 @@ public:
 
 	class LayerAttributes {
 	public:
-		LayerAttributes(Scalar d = 0., Scalar t = 0.27, 
+		LayerAttributes(Scalar d = 0., Scalar t = -1.0, Scalar wr = -1.0, 
 				layer_measure_index_t b = 0);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
 		Scalar thickness; // Height of filament
-		//Scalar width;		// Width of filament
+		Scalar widthRatio;		// Width of filament with respect to thickness
 		layer_measure_index_t base;	// Layer to which delta is relative
 	};
 
 	/* Old interface */
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH);
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio = -1.0);
 	layer_measure_index_t zToLayerAbove(Scalar z) const;
 	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;
+	Scalar getLayerW() const;
+	Scalar getLayerWidthRatio() const;
+	void setLayerH(Scalar h);
+	void setLayerWidthRatio(Scalar wr);
 	
 	/* New interface */
 	const LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex) const;
 	LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex);
 	Scalar getLayerPosition(layer_measure_index_t layerIndex) const;
 	Scalar getLayerThickness(layer_measure_index_t layerIndex) const;
+	Scalar getLayerWidth(layer_measure_index_t layerIndex) const;
 		
 	layer_measure_index_t createAttributes(
 			const LayerAttributes& attribs = LayerAttributes());
@@ -131,6 +141,7 @@ private:
 
 	Scalar firstLayerZ;
 	Scalar layerH;
+	Scalar layerWidthRatio;
 
 	attributesMap attributes;
 	

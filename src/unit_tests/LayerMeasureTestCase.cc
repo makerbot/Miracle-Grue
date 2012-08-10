@@ -14,12 +14,12 @@ void LayerMeasureTestCase::setUp() {
 }
 
 void LayerMeasureTestCase::testLayer0() {
-	LayerMeasure layerMeasure(0.0, 0.27);
+	LayerMeasure layerMeasure(0.0, 0.27, 0.43);
 	CPPUNIT_ASSERT_EQUAL(0.0, layerMeasure.getLayerPosition(0));
 }
 
 void LayerMeasureTestCase::testCreatingLayers() {
-	LayerMeasure layerMeasure(0.0, 0.27);
+	LayerMeasure layerMeasure(0.0, 0.27, 0.43);
 	
 	layer_measure_index_t first; 
 	layer_measure_index_t second; 
@@ -32,7 +32,7 @@ void LayerMeasureTestCase::testCreatingLayers() {
 }
 
 void LayerMeasureTestCase::testOffset() {
-	LayerMeasure layerMeasure(0.0, 0.27);
+	LayerMeasure layerMeasure(0.0, 0.27, 0.43);
 	
 	layer_measure_index_t first; 
 	layer_measure_index_t second; 

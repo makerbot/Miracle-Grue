@@ -2,24 +2,67 @@
 #define	LOOP_UTILS_H
 
 #include "loop_path.h"
+#include <set>
 
 namespace mgl {
 
-class AngleFunctor {
+template <typename COMPARE = std::less<Scalar> >
+class basic_anglefunctor {
 public:
-	AngleFunctor(PointType ref) : reference(ref) {}
+	basic_anglefunctor(PointType ref, const COMPARE& comp = COMPARE()) 
+			: my_compare(comp), reference(ref) {}
 	bool operator () (const PointType& l, const PointType& r) const {
-		return (l-reference).crossProduct(r - reference) < 0.0;
+		if(l == r || l == reference || r == reference)
+			return false;
+		PointType lvec = (l-reference).unit();
+		PointType rvec = (r-reference).unit();
+		return my_compare(rvec.crossProduct(lvec), 0);
 	}
 private:
+	COMPARE my_compare;
 	PointType reference;
 };
+
+template <typename COMPARE = std::less<Scalar> >
+class basic_axisfunctor {
+public:
+	basic_axisfunctor(axis_e a = X_AXIS, const COMPARE& comp = COMPARE()) 
+			: my_compare(comp), axis(a) {}
+	bool operator () (const PointType& l, const PointType& r) const {
+		switch(axis) {
+		case X_AXIS:
+			return l.x == r.x ? my_compare(l.y, r.y) : my_compare(l.x, r.x);
+			break;
+		case Y_AXIS:
+			return l.y == r.y ? my_compare(l.x, r.x) : my_compare(l.y, r.y);
+			break;
+		default:
+			return false;
+		}
+	}
+private:
+	COMPARE my_compare;
+	axis_e axis;
+};
+
+typedef basic_anglefunctor<> AngleFunctor;
+typedef basic_axisfunctor<> AxisFunctor;
+
+template <template <class, class> class COLLECTION, class T, class ALLOC, 
+		class COMPARE >
+void stripDuplicates(COLLECTION<T, ALLOC>& collection, 
+		const COMPARE& comp) {
+	std::set<T, COMPARE> uniqueset(comp);
+	typedef typename COLLECTION<T, ALLOC>::iterator iterator;
+	uniqueset.insert(collection.begin(), collection.end());
+	collection.clear();
+	collection.insert(collection.end(), uniqueset.begin(), uniqueset.end());
+}
 
 template <template <class, class> class COLLECTION, class ALLOC>
 Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){	
 	std::vector<PointType> points;
-	size_t extremeIndex = 0;
-	/* Assemble all points in a vector, also choose the bottom left */
+	/* Assemble all points in a vector */
 	for(typename COLLECTION<Loop, ALLOC>::const_iterator iter = input.begin(); 
 			iter != input.end(); 
 			++iter) {
@@ -27,67 +70,61 @@ Loop createConvexLoop(const COLLECTION<Loop, ALLOC>& input){
 				loopiter != iter->clockwiseEnd(); 
 				++loopiter) {
 			points.push_back(*loopiter);
-			if(loopiter->getPoint().y < points[extremeIndex].y || 
-					loopiter->getPoint().x < points[extremeIndex].x) {
-				extremeIndex = points.size()-1;
-			}
 		}
 	}
 	if(points.empty()) {
-		Exception mixup("Attempting convex hull on empty list of loops or empty loops!");
+		Exception mixup(
+				"Attempting convex hull on empty list of loops or empty loops!");
 		throw mixup;
 	}
-	/* Place the bottom left point in index 0 */
-	std::swap(points[0], points[extremeIndex]);
-	extremeIndex = 0;
-	
-	/* Sort in a counterclockwise way */
-	std::vector<PointType>::iterator beginIter = points.begin();
-	++beginIter;
-	std::vector<PointType>::iterator endIter = points.end();
-	std::sort(beginIter, endIter, 
-			AngleFunctor(points[extremeIndex]));
-	
-	std::vector<PointType> pointsUnique;
-	pointsUnique.push_back(points.front());
 	/* Remove duplicates */
-	for(std::vector<PointType>::iterator iter = points.begin() + 1; 
-			iter != points.end(); 
-			++iter) {
-		if(*iter == *(iter - 1)){
-			continue;
-		} else {
-			pointsUnique.push_back(*iter);
-		}
-	}
+	stripDuplicates(points, AxisFunctor());
+	/* Sort on X */
+	std::sort(points.begin(), points.end(), AxisFunctor(Y_AXIS));
 	
 	Loop retLoop;
+		
+	std::vector<PointType>::iterator startIter = points.begin();
+	std::vector<PointType>::iterator lastIter = points.begin();
 	
-	for(size_t i = 0; i < pointsUnique.size(); ++i) {
-		if(i < 2) {
-			retLoop.insertPointBefore(pointsUnique[i], retLoop.clockwiseEnd());
-			continue;
-		}
-		Loop::finite_cw_iterator last1(retLoop.clockwiseEnd());
-		--last1;
-		Loop::finite_cw_iterator last2 = last1;
-		--last2;
-		/* Here is where we fill the loop with the points, 
-		 optionally dropping some */
-		PointType currentPoint = pointsUnique[i];
-		if(AngleFunctor(last2->getPoint())(
-				currentPoint, last1->getPoint())) {
-			/* point at last1 was not on the convex loop */
-			last1->setPoint(currentPoint);
-		} else {
-			/* point at last1 was valid, next we will check currentPoint */
-			retLoop.insertPointBefore(currentPoint, retLoop.clockwiseEnd());
-		}
-	}
+	retLoop.insertPointBefore(*lastIter, retLoop.clockwiseEnd());
 	
+	do {
+		std::vector<PointType>::iterator bestIter = lastIter;
+		++bestIter;
+		if(bestIter == points.end())
+			bestIter = points.begin();
+		for(std::vector<PointType>::iterator iter = points.begin(); 
+				iter != points.end(); 
+				++iter ){
+			if(AngleFunctor(*lastIter).operator ()(
+					*bestIter, *iter)) {
+				bestIter = iter;
+			}
+		}
+		lastIter = bestIter;
+		retLoop.insertPointBefore(*lastIter, retLoop.clockwiseEnd());
+	} while(lastIter != startIter);
 	return retLoop;
 }
 
+void loopsUnion(LoopList &subject, const LoopList &apply);
+void loopsUnion(LoopList &dest,
+				const LoopList &subject, const LoopList &apply);
+
+void loopsDifference(LoopList &subject, const LoopList &apply);
+void loopsDifference(LoopList &dest,
+					 const LoopList &subject, const LoopList &apply);
+
+void loopsIntersection(LoopList &subject, const LoopList &apply);
+void loopsIntersection(LoopList &dest,
+					   const LoopList &subject, const LoopList &apply);
+
+void loopsXOR(LoopList &subject, const LoopList &apply);
+void loopsXOR(LoopList &dest,
+			  const LoopList &subject, const LoopList &apply);
+
+void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance);
 }
 
 

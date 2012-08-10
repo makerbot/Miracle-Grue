@@ -469,17 +469,17 @@ void ModelReaderTestCase::testRotate()
 
 void batchProcess(	Scalar firstLayerZ,
 					Scalar layerH,
-					Scalar layerW,
-					Scalar tubeSpacing,
-					Scalar infillShrinking,
-					Scalar insetDistanceFactor,
+					Scalar , // layerW,
+					Scalar , // tubeSpacing,
+					Scalar , // infillShrinking,
+					Scalar , // insetDistanceFactor,
 					const char* outDir,
 					const std::vector<std::string> &models)
 {
-	bool writeDebugScadFiles = true;
+	//bool writeDebugScadFiles = true;
 	FileSystemAbstractor fileSystem;
 	std::vector<double> times;
-	for (int i=0; i < models.size(); i++)
+	for (unsigned i=0; i < models.size(); i++)
 	{
 
 		std::string modelFile = models[i];
@@ -495,26 +495,26 @@ void batchProcess(	Scalar firstLayerZ,
 		unsigned int t0,t1;
 		t0=clock();
 
-		Scalar angle = M_PI*0.5;
+		//Scalar angle = M_PI*0.5;
 		Meshy mesh;
 		Segmenter seg(firstLayerZ, layerH);
 		mesh.readStlFile( modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
 		std::vector< SliceData > slices;
 		seg.tablaturize(mesh);
-		unsigned int nbOfShells = 0;
+		//unsigned int nbOfShells = 0;
 		//Slicy slicy(mesh.readAllTriangles(), mesh.readLimits(), layerW, layerH, mesh.readSliceTable().size(), scadFile.c_str());
 
 		cout << "Slicing" << endl;
-		unsigned int extruderId = 0;
+		//unsigned int extruderId = 0;
 		unsigned int sliceCount = seg.readSliceTable().size();
 		for(unsigned int sliceId=0; sliceId < sliceCount; sliceId++)
 		{
-			const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
-			Scalar z = seg.readLayerMeasure().sliceIndexToHeight(sliceId);
-			Scalar sliceAngle = sliceId * angle;
+			//const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
+			//Scalar z = seg.readLayerMeasure().sliceIndexToHeight(sliceId);
+			//Scalar sliceAngle = sliceId * angle;
 			slices.push_back( SliceData());
-			SliceData &slice = slices[sliceId];
+			//SliceData &slice = slices[sliceId];
 
 			bool hazNewPaths = false;
 			/*needs to be converted to slicer and tomographize
@@ -544,7 +544,7 @@ void batchProcess(	Scalar firstLayerZ,
 
 	cout << endl << endl << "MODEL    TIME 2 SLICE (s)" << endl;
 	cout << " ----------" <<endl;
-	for (int i=0; i < models.size(); i++)
+	for (unsigned i=0; i < models.size(); i++)
 	{
 		cout << models[i] << "\t" << times[i] << endl;
 	}
@@ -662,7 +662,7 @@ void ModelReaderTestCase::fixContourProblem()
 	double layerH = 0.35;
 	int layerIndex = 30;
 
-	LayerMeasure zTapeMeasure(firstZ, layerH);
+	LayerMeasure zTapeMeasure(firstZ, layerH, 0.43);
 
 	Meshy mesh;
 	Segmenter seg(firstZ, layerH); // 0.35
@@ -687,7 +687,7 @@ void ModelReaderTestCase::fixContourProblem()
 	minsAndMaxes.reserve(triangleCount);
 	cout << "triangles for layer "<< layerIndex <<", z=" << z<< endl;
 
-	for (int i=0; i < triangleCount; i++)
+	for (unsigned i=0; i < triangleCount; i++)
 	{
 		index_t idx = trianglesForSlice[i];
 		const Triangle3 &t = allTriangles[idx];
@@ -702,7 +702,7 @@ void ModelReaderTestCase::fixContourProblem()
 //		CPPUNIT_ASSERT(z <= max);
 	}
 
-	for (int i=0; i < triangleCount; i++)
+	for (unsigned i=0; i < triangleCount; i++)
 	{
 		cout << i  << " ";
 		CPPUNIT_ASSERT(z >= minsAndMaxes[i].first);
@@ -716,7 +716,7 @@ void ModelReaderTestCase::testLayerMeasure()
 {
 	cout << endl;
 	double tol = 0.000000001;
-	LayerMeasure n(0.11, 0.35 ); // n is for nozzle
+	LayerMeasure n(0.11, 0.35, 0.43); // n is for nozzle
 
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.11, n.sliceIndexToHeight(0), tol);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.46, n.sliceIndexToHeight(1), tol);

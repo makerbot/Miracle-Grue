@@ -10,14 +10,13 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 {
 	layerCfg.firstLayerZ = slicerCfg.firstLayerZ;
 	layerCfg.layerH = slicerCfg.layerH;
-	layerCfg.layerW = slicerCfg.layerW;
-	layerCfg.gridSpacingMultiplier = slicerCfg.gridSpacingMultiplier;
 }
 void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	unsigned int sliceCount = seg.readSliceTable().size();
 	initProgress("outlines", sliceCount);
 	
 	layerloops.layerMeasure = seg.readLayerMeasure();
+	layerloops.layerMeasure.getLayerAttributes(0).delta = layerCfg.firstLayerZ;
 	
 	for (size_t sliceId = 0; sliceId < sliceCount; sliceId++) {
 		tick();
@@ -79,7 +78,8 @@ void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::Se
 {
 	Scalar tol = 1e-6;
 	const LayerMeasure & layerMeasure = seg.readLayerMeasure();
-	Scalar z = layerMeasure.sliceIndexToHeight(sliceId);
+	Scalar z = layerMeasure.sliceIndexToHeight(sliceId) + 
+			0.5 * layerMeasure.getLayerH();
 	const std::vector<libthing::Triangle3> & allTriangles = seg.readAllTriangles();
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
 	std::vector<libthing::LineSegment2> unorderedSegments;

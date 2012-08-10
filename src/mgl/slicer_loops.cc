@@ -48,8 +48,8 @@ layer_measure_index_t LayerLoops::Layer::getIndex() const {
 	return measure_index;
 }
 
-LayerLoops::LayerLoops(Scalar firstLayerZ, Scalar layerH) : 
-		layerMeasure(firstLayerZ, layerH) {}
+LayerLoops::LayerLoops(Scalar firstLayerZ, Scalar layerH, Scalar layerW) : 
+		layerMeasure(firstLayerZ, layerH, layerW) {}
 LayerLoops::layer_iterator LayerLoops::begin(){
 	return layers.begin();
 }
