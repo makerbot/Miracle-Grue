@@ -90,17 +90,17 @@ const option::Descriptor usageDescriptor[] ={
 	{HELP, 0, "", "help", Arg::None, "  --help  \tPrint usage and exit."},
 	{CONFIG, 1, "c", "config", Arg::NonEmpty, "-c  \tconfig data in a config.json file."
 		"(default is local miracle.config)"},
-	{FIRST_Z, 2, "f", "firstLayerZ", Arg::Numeric,
+	{FIRST_Z, 2, "f", "bedZOffset", Arg::Numeric,
 		"-f \tfirst layer height (mm)"},
-	{LAYER_H, 3, "h", "layerH", Arg::Numeric,
+	{LAYER_H, 3, "h", "layerHeight", Arg::Numeric,
 		"  -h \tgeneral layer height(mm)"},
-	{LAYER_W, 4, "w", "layerW", Arg::Numeric,
+	{LAYER_W, 4, "w", "layerWidth", Arg::Numeric,
 		"  -w \tlayer width(mm)"},
 	{ FILL_ANGLE, 5, "a", "angle", Arg::Numeric,
 		"  -a \tinfill grid inter slice angle(radians)"},
-	{ FILL_DENSITY, 6, "p", "density", Arg::Numeric,
+	{ FILL_DENSITY, 6, "p", "infillDensity", Arg::Numeric,
 		"  -p \tapprox infill density(percent), aka rho aka p"},
-	{ N_SHELLS, 7, "n", "nbOfShells", Arg::Numeric,
+	{ N_SHELLS, 7, "n", "numberOfShells", Arg::Numeric,
 		"  -n \tnumber of shells per layer"},
 	{ BOTTOM_SLICE_IDX, 8, "b", "bottomIdx", Arg::Numeric,
 		"  -b \tbottom slice index"},
@@ -180,31 +180,31 @@ int newParseArgs(Configuration &config,
 		fprintf(stdout, "Argument #%d name %s is #%s\n", i, opt.desc->longopt, opt.arg);
 		switch (opt.index()) {
 		case LAYER_H:
-			config["slicer"][opt.desc->longopt] = atof(opt.arg);
+			config[opt.desc->longopt] = atof(opt.arg);
 			break;
 		case LAYER_W:
 		case FILL_ANGLE:
 		case FILL_DENSITY:
 		case N_SHELLS:
-			config["regioner"][opt.desc->longopt] = atoi(opt.arg);
+			config[opt.desc->longopt] = atoi(opt.arg);
 			break;
 		case BOTTOM_SLICE_IDX:
 		case TOP_SLICE_IDX:
 		case FIRST_Z:
-			config["slicer"][opt.desc->longopt] = atof(opt.arg);
+			config[opt.desc->longopt] = atof(opt.arg);
 			break;
 		case DEBUG_ME:
 			config["meta"][opt.desc->longopt] = atof(opt.arg);
 			break;
 		case DEBUG_LAYER:
-			config["gcoder"][opt.desc->longopt] = true;
+			config[opt.desc->longopt] = true;
 			break;
 		case START_GCODE:
 		case END_GCODE:
 		case DEFAULT_EXTRUDER:
-			config["extruder"][opt.desc->longopt] = atoi(opt.arg);
+			config[opt.desc->longopt] = atoi(opt.arg);
 		case OUT_FILENAME:
-			config["gcoder"][opt.desc->longopt] = opt.arg;
+			config[opt.desc->longopt] = opt.arg;
 			break;
 		case CONFIG:
 			// handled above before other config values
@@ -297,7 +297,7 @@ int main(int argc, char *argv[], char *[]) // envp
 		scadFile = computer.fileSystem.ChangeExtension(computer.fileSystem.ExtractFilename(modelFile.c_str()).c_str(), ".scad");
 
 
-		std::string gcodeFile = config["gcoder"]["outFilename"].asString();
+		std::string gcodeFile = config["outFilename"].asString();
 
 		if (gcodeFile.empty()) {
 			gcodeFile = ".";
