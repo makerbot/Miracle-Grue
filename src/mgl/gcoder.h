@@ -149,6 +149,9 @@ public:
     void calcInfillExtrusion(unsigned int extruderId,
 			unsigned int sliceId,
 			Extrusion &extrusionParams) const;
+    void calcOutlineExtrucion(unsigned int extruderId, 
+            unsigned int sliceId, 
+            Extrusion& extrusionParams) const;
 	void calcInfillExtrusion(const LayerPaths& layerpaths, 
 			unsigned int extruderId, 
 			LayerPaths::const_layer_iterator layerId, 
