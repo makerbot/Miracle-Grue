@@ -299,8 +299,8 @@ void GCoder::writePaths(std::ostream& ss,
 				didLastPath = false;
 				continue;
 			}
-			calcInSetExtrusion(extruder.id, layerSequence, 
-					currentLP.myLabel.myValue, -1, extrusion);
+            calcOutlineExtrucion(extruder.id, layerSequence, 
+                    extrusion);
 			ss << "(outline path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isSupport()) {
@@ -318,8 +318,16 @@ void GCoder::writePaths(std::ostream& ss,
 				didLastPath = false;
 				continue;
 			}
-			calcInSetExtrusion(extruder.id, layerSequence, 
-					currentLP.myLabel.myValue, -1, extrusion);
+            if(currentLP.myLabel.myValue == 
+                    LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE) {
+                //this is an outline
+                calcOutlineExtrucion(extruder.id, layerSequence, 
+                        extrusion);
+            } else {
+                //this is a regular inset
+                calcInSetExtrusion(extruder.id, layerSequence, 
+                    	currentLP.myLabel.myValue, -1, extrusion);
+            }
 			ss << "(inset path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
 		} else if(currentLP.myLabel.isInfill()) {
