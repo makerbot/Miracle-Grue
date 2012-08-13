@@ -88,7 +88,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		
 		preoptimizer.addBoundaries(layerRegions->outlines);	
 		
-		int currentShell = 10;
+		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
