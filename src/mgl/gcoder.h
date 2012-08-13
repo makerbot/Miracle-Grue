@@ -257,7 +257,8 @@ void GCoder::writePath(std::ostream& ss,
 		gantry.snort(ss, extruder, extrusion);
 		gantry.g1(ss, extruder, extrusion,
 				last.x, last.y, z, 
-				gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy(), 
+				gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy() * 
+                gcoderCfg.gantryCfg.get_scaling_factor(), 
 				0, 0, 
 				"move into position");
 	} 

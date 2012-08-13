@@ -204,7 +204,8 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() + extruder.retractDistance
-				+ extruder.restartExtraDistance, extruder.retractRate,
+				+ extruder.restartExtraDistance, 
+                extruder.retractRate * gantryCfg.get_scaling_factor(),
 				FLUID_H, FLUID_W,
 				"squirt", false, false, false, true, true); //only E and F
 	} else {
@@ -221,7 +222,8 @@ void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() - extruder.retractDistance,
-				extruder.retractRate, FLUID_H, FLUID_W, "snort",
+				extruder.retractRate * gantryCfg.get_scaling_factor(), 
+                FLUID_H, FLUID_W, "snort",
 				false, false, false, true, true); //only E and F
 	} else {
 		//we don't support RPM anymore
