@@ -203,6 +203,7 @@ int newParseArgs(Configuration &config,
 		case END_GCODE:
 		case DEFAULT_EXTRUDER:
 			config[opt.desc->longopt] = atoi(opt.arg);
+			break;
 		case OUT_FILENAME:
 			config[opt.desc->longopt] = opt.arg;
 			break;
