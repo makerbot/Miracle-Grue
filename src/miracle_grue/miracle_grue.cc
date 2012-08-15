@@ -331,7 +331,13 @@ int main(int argc, char *argv[], char *[]) // envp
 		RegionList regions;
 		std::vector<mgl::SliceData> slices;
 
-		std::ofstream gcodeFileStream(gcodeFile.c_str());
+		std::ofstream gcodeFileStream;
+        gcodeFileStream.open(gcodeFile.c_str(), ios::out);
+        if(!gcodeFileStream) {
+            Exception mixup(std::string("Bad output file: ") + 
+                    gcodeFile);
+            throw mixup;
+        }
 
 		ProgressLog log;
 		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, extruderCfg,
