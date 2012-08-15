@@ -334,8 +334,11 @@ void loadRegionerConfigFromFile(const Configuration& config,
         regionerCfg.supportMargin = doubleCheck(config["supportMargin"],
                                                 "supportMargin");
                                             
-        regionerCfg.raftModelSpacing = doubleCheck(
+        regionerCfg.supportDensity = doubleCheck(
               config["supportDensity"], "supportDensity");
+        
+        regionerCfg.raftModelSpacing = doubleCheck(
+              config["raftModelSpacing"], "raftModelSpacing");
     }
 }
 
