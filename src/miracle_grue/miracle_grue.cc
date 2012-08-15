@@ -185,11 +185,13 @@ int newParseArgs(Configuration &config,
 		case LAYER_W:
 		case FILL_ANGLE:
 		case FILL_DENSITY:
+            break;
 		case N_SHELLS:
 			config[opt.desc->longopt] = atoi(opt.arg);
 			break;
 		case BOTTOM_SLICE_IDX:
 		case TOP_SLICE_IDX:
+            break;
 		case FIRST_Z:
 			config[opt.desc->longopt] = atof(opt.arg);
 			break;
@@ -201,6 +203,8 @@ int newParseArgs(Configuration &config,
 			break;
 		case START_GCODE:
 		case END_GCODE:
+            config[opt.desc->longopt] = opt.arg;
+			break;
 		case DEFAULT_EXTRUDER:
 			config[opt.desc->longopt] = atoi(opt.arg);
 			break;
