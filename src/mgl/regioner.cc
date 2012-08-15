@@ -566,7 +566,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
         
-        if(regionerCfg.doSupport) {
+        if(regionerCfg.doSupport || regionerCfg.doRaft) {
             size_t supportSkipCount = (int) (1 / regionerCfg.supportDensity) - 1;
             grid.subSample(current->supportSurface, supportSkipCount,
                     current->support);
