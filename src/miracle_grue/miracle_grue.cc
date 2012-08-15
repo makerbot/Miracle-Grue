@@ -81,7 +81,7 @@ enum optionIndex {
 	UNKNOWN, HELP, CONFIG, FIRST_Z, LAYER_H, LAYER_W, FILL_ANGLE,
 	FILL_DENSITY, N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX,
 	DEBUG_ME, DEBUG_LAYER, START_GCODE, END_GCODE,
-	DEFAULT_EXTRUDER, OUT_FILENAME
+	DEFAULT_EXTRUDER, OUT_FILENAME, JSON_PROGRESS
 };
 // options descriptor table
 const option::Descriptor usageDescriptor[] ={
@@ -118,6 +118,8 @@ const option::Descriptor usageDescriptor[] ={
 		"  -x \tindex of extruder to use on a single material print (1 is lowest)"},
 	{ OUT_FILENAME, 15, "o", "outFilename", Arg::NonEmpty,
 		"  -o \twrite gcode to specific filename (defaults to <model>.gcode)"},
+	{ JSON_PROGRESS, 16, "j", "jsonProgress", Arg::None,
+	  "  -j \toutput progress as machine parsable JSON"},
 	{0, 0, 0, 0, 0, 0},
 };
 
@@ -144,9 +146,11 @@ int newParseArgs(Configuration &config,
 		int argc, char *argv[],
 		string &modelFile,
 		int &firstSliceIdx,
-		int &lastSliceIdx) {
+		int &lastSliceIdx,
+		bool &jsonProgress) {
 
 	string configFilename = "";
+	jsonProgress = false;
 
 	argc -= (argc > 0);
 	argv += (argc > 0); // skip program name argv[0] if present
@@ -210,6 +214,9 @@ int newParseArgs(Configuration &config,
 			break;
 		case OUT_FILENAME:
 			config[opt.desc->longopt] = opt.arg;
+			break;
+		case JSON_PROGRESS:
+			jsonProgress = true;
 			break;
 		case CONFIG:
 			// handled above before other config values
@@ -282,8 +289,9 @@ int main(int argc, char *argv[], char *[]) // envp
 	Configuration config;
 	try {
 		int firstSliceIdx, lastSliceIdx;
+		bool jsonProgress;
 
-		int ret = newParseArgs(config, argc, argv, modelFile, firstSliceIdx, lastSliceIdx);
+		int ret = newParseArgs(config, argc, argv, modelFile, firstSliceIdx, lastSliceIdx, jsonProgress);
 
 		if (ret != 0) {
 			usage();
@@ -344,7 +352,14 @@ int main(int argc, char *argv[], char *[]) // envp
             throw mixup;
         }
 
-		ProgressLog log;
+		ProgressBar *log;
+		if (jsonProgress) {
+			log = new ProgressJSONStream();
+		}
+		else {
+			log = new ProgressLog();
+		}
+
 		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, extruderCfg,
 				modelFile.c_str(),
 				scad,
@@ -353,9 +368,11 @@ int main(int argc, char *argv[], char *[]) // envp
 				lastSliceIdx,
 				regions,
 				slices,
-				&log);
+				log);
 
 		gcodeFileStream.close();
+
+		delete log;
 	} catch (mgl::Exception &mixup) {
 		Log::severe() << "ERROR: " << mixup.error << endl;
 		return -1;
