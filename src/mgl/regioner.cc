@@ -561,13 +561,16 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
 
 		// TODO: move me to the slicer
-		GridRanges sparseSupport;
 		GridRanges sparseInfill;
 		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
-		grid.subSample(current->supportSurface, infillSkipCount,
-				current->support);
+        
+        if(regionerCfg.doSupport) {
+            size_t supportSkipCount = (int) (1 / regionerCfg.supportDensity) - 1;
+            grid.subSample(current->supportSurface, supportSkipCount,
+                    current->support);
+        }
 
 		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
 	}
