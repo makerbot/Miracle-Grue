@@ -149,7 +149,7 @@ public:
     void calcInfillExtrusion(unsigned int extruderId,
 			unsigned int sliceId,
 			Extrusion &extrusionParams) const;
-    void calcOutlineExtrucion(unsigned int extruderId, 
+    void calcOutlineExtrusion(unsigned int extruderId, 
             unsigned int sliceId, 
             Extrusion& extrusionParams) const;
 	void calcInfillExtrusion(const LayerPaths& layerpaths, 
@@ -300,7 +300,7 @@ void GCoder::writePaths(std::ostream& ss,
 				didLastPath = false;
 				continue;
 			}
-            calcOutlineExtrucion(extruder.id, layerSequence, 
+            calcOutlineExtrusion(extruder.id, layerSequence, 
                     extrusion);
 			ss << "(outline path, length: " << currentLP.myPath.size() 
 					<< ")" << std::endl;
@@ -322,7 +322,7 @@ void GCoder::writePaths(std::ostream& ss,
             if(currentLP.myLabel.myValue == 
                     LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE) {
                 //this is an outline
-                calcOutlineExtrucion(extruder.id, layerSequence, 
+                calcOutlineExtrusion(extruder.id, layerSequence, 
                         extrusion);
             } else {
                 //this is a regular inset

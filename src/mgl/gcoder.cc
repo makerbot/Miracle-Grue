@@ -275,7 +275,7 @@ void GCoder::moveZ(ostream & ss, Scalar z, unsigned int, Scalar zFeedrate) {
 
 }
 
-void GCoder::calcOutlineExtrucion(unsigned int extruderId, 
+void GCoder::calcOutlineExtrusion(unsigned int extruderId, 
         unsigned int sliceId, 
         Extrusion& extrusionParams) const {
     string profileName;
