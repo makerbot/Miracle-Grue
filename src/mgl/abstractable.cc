@@ -30,6 +30,9 @@ using namespace std;
 
 #include <fstream>
 
+#include <json/value.h>
+#include <json/writer.h>
+
 std::ostream &MyComputer::log()
 {
     return cout;
@@ -310,6 +313,27 @@ void ProgressLog::onTick(const char* taskName, unsigned int count, unsigned int 
 	deltaTicks++;
 }
 
+ProgressJSONStream::ProgressJSONStream(unsigned int count)
+    :ProgressBar(count,"")
+{
+	reset(count);
+}
+
+
+void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsigned int ticks)
+{
+	double percent = 0;
+	if (ticks != 0) {
+		percent = (double)ticks/(double)count * 100;
+	}
+
+	Json::Value msg(Json::objectValue);
+	msg["stage"] = taskName;
+	msg["percentComplete"] = (int)percent;
+
+	Json::StyledStreamWriter writer;
+	writer.write(std::cout, msg);
+}
 
 
 
