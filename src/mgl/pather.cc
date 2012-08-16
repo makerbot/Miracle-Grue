@@ -142,14 +142,24 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 			//run graph optimizations
 			std::list<LabeledOpenPath> resultModel;
 			std::list<LabeledOpenPath> resultSupport;
-			optimizer.addBoundaries(layerRegions->outlines);
-			optimizer.addPaths(preoptimized);
-			optimizer.optimize(resultModel);
-			optimizer.clearPaths();
-			optimizer.clearBoundaries();
-			optimizer.addBoundaries(layerRegions->supportLoops);
-			optimizer.addPaths(presupport);
-			optimizer.optimize(resultSupport);
+                        if(preoptimized.size() > 3) {
+                            optimizer.addBoundaries(layerRegions->outlines);
+                            optimizer.addPaths(preoptimized);
+                            optimizer.optimize(resultModel);
+                            optimizer.clearPaths();
+                            optimizer.clearBoundaries();
+                        } else {
+                            resultModel.insert(resultModel.end(), 
+                                    preoptimized.begin(), preoptimized.end());
+                        }
+                        if(presupport.size() > 3) {
+                            optimizer.addBoundaries(layerRegions->supportLoops);
+                            optimizer.addPaths(presupport);
+                            optimizer.optimize(resultSupport);
+                        } else {
+                            resultSupport.insert(resultSupport.end(), 
+                                    presupport.begin(), presupport.end());
+                        }
 			
 			extruderlayer.paths.insert(extruderlayer.paths.end(), 
 					resultModel.begin(), resultModel.end());
