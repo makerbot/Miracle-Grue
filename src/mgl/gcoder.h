@@ -88,6 +88,7 @@ public:
     }
 
     static const Scalar BAD_SCALAR = 999999;
+    static const unsigned int BAD_UINT = -1;
 
     std::string programName;
     std::string versionStr;
@@ -104,7 +105,11 @@ public:
     bool doSupport;
     bool doInfills;
     bool doPrintLayerMessages;
+    bool doFanCommand;
 
+    unsigned int fanLayer;
+    
+    
     Scalar startX;
     Scalar startY;
     std::string header;

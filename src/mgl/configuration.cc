@@ -274,6 +274,12 @@ void loadGCoderConfigFromFile(const Configuration& conf,
             "doInfills", true);
     gcoderCfg.doSupport = boolCheck(conf.root["doSupport"],
             "doSupport", false);
+    gcoderCfg.doFanCommand = boolCheck(conf.root["doFanCommand"],
+            "doFanCommand", false);
+    if(gcoderCfg.doFanCommand) {
+        gcoderCfg.fanLayer = uintCheck(conf.root["fanLayer"], 
+                "fanLayer");
+    }
     gcoderCfg.doPrintLayerMessages = boolCheck(
             conf.root["printLayerMessages"],
             "printLayerMessages", false);
