@@ -419,6 +419,10 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
         //Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
         writeSlice(gout, layerpaths, it, layerSequence);
     }
+    if(gcoderCfg.doFanCommand) {
+        //print command to disable fan
+        gout << "M127 (Turn off the fan)" << endl;
+    }
     writeEndDotGCode(gout);
 }
 
@@ -454,6 +458,10 @@ void GCoder::writeSlice(std::ostream& ss,
     if (gcoderCfg.doPrintLayerMessages) {
         //print layer message to printer screen if config enabled
         ss << "M70 P20 (Layer: " << layerSequence << ")" << endl;
+    }
+    if (gcoderCfg.doFanCommand && layerSequence == gcoderCfg.fanLayer) {
+        //print command to enable fan
+        ss << "M126 (Turn on the fan)" << endl;
     }
     //iterate over all extruders invoked in this layer
     for (LayerPaths::Layer::const_extruder_iterator it =
