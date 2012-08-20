@@ -329,6 +329,7 @@ void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsign
 	}
     if(percent != lastpercent) {
         Json::Value msg(Json::objectValue);
+        msg["type"] = "progress";
         msg["stage"] = taskName;
         msg["percentComplete"] = percent;
 

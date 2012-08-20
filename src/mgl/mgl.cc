@@ -157,6 +157,7 @@ ostream& operator <<(ostream &os, const Vector2 &pt) {
 
 void exceptionToJson(std::ostream& os, const Exception& mixup, bool warn) {
     Json::Value msg(Json::objectValue);
+    msg["type"] = "message";
     msg[(warn ? "warning" : "error")] = mixup.error;
 
     Json::FastWriter writer;
@@ -164,6 +165,7 @@ void exceptionToJson(std::ostream& os, const Exception& mixup, bool warn) {
 }
 void exceptionToJson(std::ostream& os, const std::string& mixup, bool warn) {
     Json::Value msg(Json::objectValue);
+    msg["type"] = "message";
     msg[(warn ? "warning" : "error")] = mixup;
 
     Json::FastWriter writer;
