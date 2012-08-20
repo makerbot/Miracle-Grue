@@ -80,7 +80,11 @@ void pather_optimizer::optimizeInternal(
 				labeledpaths.push_back(currentClosest);
 			}
 		} catch(Exception mixup) {
-			Log::severe() << "ERROR: " << mixup.what() << std::endl;
+            if(jsonErrors) {
+                    exceptionToJson(Log::severe(), mixup, true);
+            } else {
+                Log::severe() << "WARNING: " << mixup.what() << std::endl;
+            }
 		}
 	}
 	//if moves don't cross boundaries, ok to extrude them
