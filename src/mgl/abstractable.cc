@@ -314,25 +314,27 @@ void ProgressLog::onTick(const char* taskName, unsigned int count, unsigned int 
 }
 
 ProgressJSONStream::ProgressJSONStream(unsigned int count)
-    :ProgressBar(count,"")
-{
+    : ProgressBar(count,""){
 	reset(count);
 }
 
 
 void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsigned int ticks)
 {
-	double percent = 0;
+	int percent = 0;
+    int lastpercent = 0;
 	if (ticks != 0) {
-		percent = (double)ticks/(double)count * 100;
+		percent = int((double)ticks/(double)count * 100);
+        lastpercent = int((double)(ticks-1)/(double)count * 100);
 	}
+    if(percent != lastpercent) {
+        Json::Value msg(Json::objectValue);
+        msg["stage"] = taskName;
+        msg["percentComplete"] = percent;
 
-	Json::Value msg(Json::objectValue);
-	msg["stage"] = taskName;
-	msg["percentComplete"] = (int)percent;
-
-	Json::StyledStreamWriter writer;
-	writer.write(std::cout, msg);
+        Json::FastWriter writer;
+        std::cout << writer.write(msg);
+    }
 }
 
 
