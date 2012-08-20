@@ -167,6 +167,11 @@ typedef std::vector<Polygons> PolygonsGroup;
 
 std::ostream& operator<<(std::ostream& os, const Polygon& v);
 
+void exceptionToJson(std::ostream& os, const Exception& mixup, 
+        bool warn = false);
+void exceptionToJson(std::ostream& os, const std::string& mixup, 
+        bool warn = false);
+
 } // namespace
 
 #endif

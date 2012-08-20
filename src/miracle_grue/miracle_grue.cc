@@ -217,6 +217,7 @@ int newParseArgs(Configuration &config,
 			break;
 		case JSON_PROGRESS:
 			jsonProgress = true;
+                        config[opt.desc->longopt] = true;
 			break;
 		case CONFIG:
 			// handled above before other config values
@@ -285,11 +286,10 @@ int main(int argc, char *argv[], char *[]) // envp
 {
 
 	string modelFile;
-
+        bool jsonProgress = false;
 	Configuration config;
 	try {
 		int firstSliceIdx, lastSliceIdx;
-		bool jsonProgress;
 
 		int ret = newParseArgs(config, argc, argv, modelFile, firstSliceIdx, lastSliceIdx, jsonProgress);
 
@@ -374,11 +374,19 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		delete log;
 	} catch (mgl::Exception &mixup) {
+            if(jsonProgress) {
+                exceptionToJson(Log::severe(), mixup, false);
+            } else {
 		Log::severe() << "ERROR: " << mixup.error << endl;
-		return -1;
-	}	catch (char const* c) {
+            }
+            return -1;
+	} catch (char const* c) {
+            if(jsonProgress) {
+                exceptionToJson(Log::severe(), std::string(c), false);
+            } else {
 		Log::severe() << c << endl;
-		return -1;
+            }
+            return -1;
 	}
 
 	exit(EXIT_SUCCESS);

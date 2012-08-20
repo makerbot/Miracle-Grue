@@ -18,6 +18,11 @@
 #include <cstring>
 #include <map>
 
+#include <json/reader.h>
+#include <json/writer.h>
+#include <json/value.h>
+#include <json/writer.h>
+
 #include "meshy.h"
 #include "shrinky.h"
 #include "ScadDebugFile.h"
@@ -148,6 +153,21 @@ ostream& operator<<(ostream& os, const Limits& l) {
 ostream& operator <<(ostream &os, const Vector2 &pt) {
 	os << "[" << pt.x << ", " << pt.y << "]";
 	return os;
+}
+
+void exceptionToJson(std::ostream& os, const Exception& mixup, bool warn) {
+    Json::Value msg(Json::objectValue);
+    msg[(warn ? "warning" : "error")] = mixup.error;
+
+    Json::StyledStreamWriter writer;
+    writer.write(os, msg);
+}
+void exceptionToJson(std::ostream& os, const std::string& mixup, bool warn) {
+    Json::Value msg(Json::objectValue);
+    msg[(warn ? "warning" : "error")] = mixup;
+
+    Json::StyledStreamWriter writer;
+    writer.write(os, msg);
 }
 
 #if defined WIN32 && defined _MSVC_VER
