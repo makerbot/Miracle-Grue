@@ -417,6 +417,36 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
             it != end; ++it, ++layerSequence) {
         tick();
         //Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
+        if(layerSequence == 0) {
+            Extrusion strusion;
+            Extruder& struder = gcoderCfg.extruders[
+                    it->extruders.front().extruderId];
+            calcInfillExtrusion(struder.id, 1, strusion);
+            gantry.set_current_extruder_index(struder.code);
+            PointType startPoint;
+            if(!it->extruders.empty() && 
+                    !it->extruders.front().paths.empty() && 
+                    !it->extruders.front().paths.front().myPath.empty()) {
+                startPoint = *(it->extruders.front().paths.front().myPath.fromStart());
+            }gantry.snort(gout, struder, 
+                    strusion);
+            gantry.g1(gout, struder, 
+                    strusion, gantry.gantryCfg.get_start_x(), 
+                    gantry.gantryCfg.get_start_y(), it->layerZ, 
+                    strusion.feedrate, 
+                    it->layerHeight, it->layerW, "(Anchor Start)");
+            gantry.squirt(gout, struder, 
+                    strusion);
+            gantry.g1(gout, struder, 
+                    strusion, gantry.gantryCfg.get_start_x(), 
+                    gantry.gantryCfg.get_start_y(), it->layerZ, 
+                    strusion.feedrate, 
+                    it->layerHeight, it->layerW, "(Anchor Start)");
+            gantry.g1(gout, struder, 
+                    strusion, startPoint.x, startPoint.y, it->layerZ, 
+                    strusion.feedrate, 
+                    it->layerHeight, it->layerW, "(Anchor End)");
+        }
         writeSlice(gout, layerpaths, it, layerSequence);
     }
     if(gcoderCfg.doFanCommand) {
