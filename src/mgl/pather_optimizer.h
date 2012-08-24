@@ -19,6 +19,7 @@ namespace mgl {
 
 class abstract_optimizer {
 public:
+    abstract_optimizer(bool j = true) : jsonErrors(j) {}
 	typedef std::list<LabeledOpenPath> LabeledOpenPaths;
 	//optimize everything you have accumulated
 	//calls to the internal optimize
@@ -51,7 +52,11 @@ public:
 			try {
 				addPath(*iter, label); 
 			} catch(Exception mixup) {
-				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+                if(jsonErrors) {
+                    exceptionToJson(Log::severe(), mixup, true);
+                } else {
+                    Log::severe() << "WARNING: " << mixup.what() << std::endl;
+                }
 			}
 		}
 	}
@@ -65,7 +70,11 @@ public:
 			try {
 				addPath(*iter); 
 			} catch(Exception mixup) {
-				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+				if(jsonErrors) {
+                    exceptionToJson(Log::severe(), mixup, true);
+                } else {
+                    Log::severe() << "WARNING: " << mixup.what() << std::endl;
+                }
 			}
 		}
 	}
@@ -91,7 +100,11 @@ public:
 			try {
 				addBoundary(*iter);
 			} catch(Exception mixup) {
-				Log::severe() << "ERROR: " << mixup.what() << std::endl;
+                if(jsonErrors) {
+                    exceptionToJson(Log::severe(), mixup, true);
+                } else {
+                    Log::severe() << "WARNING: " << mixup.what() << std::endl;
+                }
 			}
 		}
 	}
@@ -105,6 +118,8 @@ protected:
 	
 	//labeledpaths is the output of optimization
 	virtual void optimizeInternal(LabeledOpenPaths& labeledpaths) = 0;
+    //do print exceptions as json?
+    bool jsonErrors;
 };
 
 class pather_optimizer : public abstract_optimizer {

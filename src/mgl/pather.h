@@ -28,7 +28,7 @@ public:
 	PatherConfig() 
 			: doGraphOptimization(true), 
 			coarseness(0.05), 
-			directionWeight(0.0){}
+			directionWeight(1.0){}
 	bool doGraphOptimization;
 	Scalar coarseness;
 	Scalar directionWeight;
@@ -68,6 +68,7 @@ public:
 		typedef ExtruderList::const_iterator const_extruder_iterator;
 		class ExtruderLayer{
 		public:
+            static const int OUTLINE_LABEL_VALUE = 10;
 			typedef std::list<OpenPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
 			typedef std::list<OpenPath> OutlineList;

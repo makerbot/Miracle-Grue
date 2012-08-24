@@ -175,7 +175,7 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 			if(!nextNode)
 				return;
 		}
-//		if(currentNode->outlinks_size() > 1) {
+//		if(currentNode->outlinks_size() > 2) {
 //			std::cout << "Current number of links: " << currentNode->outlinks_size() 
 //					<< std::endl;
 //		}

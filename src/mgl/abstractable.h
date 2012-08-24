@@ -141,6 +141,13 @@ public:
 
 };
 
+class ProgressJSONStream : public ProgressBar {
+public:
+	ProgressJSONStream(unsigned int count = 0);
+
+	void onTick(const char* taskName, unsigned int count, unsigned int tick);
+};
+
 /// used as a base class to provide progress bar support
 ///
 /// This is used for top level operations that take time (Pather, Gcoder, Slicer)

@@ -81,7 +81,7 @@ enum optionIndex {
 	UNKNOWN, HELP, CONFIG, FIRST_Z, LAYER_H, LAYER_W, FILL_ANGLE,
 	FILL_DENSITY, N_SHELLS, BOTTOM_SLICE_IDX, TOP_SLICE_IDX,
 	DEBUG_ME, DEBUG_LAYER, START_GCODE, END_GCODE,
-	DEFAULT_EXTRUDER, OUT_FILENAME
+	DEFAULT_EXTRUDER, OUT_FILENAME, JSON_PROGRESS
 };
 // options descriptor table
 const option::Descriptor usageDescriptor[] ={
@@ -110,14 +110,16 @@ const option::Descriptor usageDescriptor[] ={
 		"  -d \tdebug level, 0 to 99. 60 is 'info'"},
 	{ DEBUG_LAYER, 11, "l", "printLayerMessages", Arg::None,
 		"  -l \tinsert layer messages in gcode"},
-	{ START_GCODE, 12, "s", "header", Arg::NonEmpty,
+	{ START_GCODE, 12, "s", "startGcode", Arg::NonEmpty,
 		"  -s \tstart gcode file"},
-	{ END_GCODE, 13, "e", "footer", Arg::NonEmpty,
+	{ END_GCODE, 13, "e", "endGcode", Arg::NonEmpty,
 		"  -e \tend gcode file"},
 	{ DEFAULT_EXTRUDER, 14, "x", "defaultExtruder", Arg::Numeric,
 		"  -x \tindex of extruder to use on a single material print (1 is lowest)"},
 	{ OUT_FILENAME, 15, "o", "outFilename", Arg::NonEmpty,
 		"  -o \twrite gcode to specific filename (defaults to <model>.gcode)"},
+	{ JSON_PROGRESS, 16, "j", "jsonProgress", Arg::None,
+	  "  -j \toutput progress as machine parsable JSON"},
 	{0, 0, 0, 0, 0, 0},
 };
 
@@ -144,9 +146,11 @@ int newParseArgs(Configuration &config,
 		int argc, char *argv[],
 		string &modelFile,
 		int &firstSliceIdx,
-		int &lastSliceIdx) {
+		int &lastSliceIdx,
+		bool &jsonProgress) {
 
 	string configFilename = "";
+	jsonProgress = false;
 
 	argc -= (argc > 0);
 	argv += (argc > 0); // skip program name argv[0] if present
@@ -185,11 +189,13 @@ int newParseArgs(Configuration &config,
 		case LAYER_W:
 		case FILL_ANGLE:
 		case FILL_DENSITY:
+            break;
 		case N_SHELLS:
 			config[opt.desc->longopt] = atoi(opt.arg);
 			break;
 		case BOTTOM_SLICE_IDX:
 		case TOP_SLICE_IDX:
+            break;
 		case FIRST_Z:
 			config[opt.desc->longopt] = atof(opt.arg);
 			break;
@@ -201,10 +207,17 @@ int newParseArgs(Configuration &config,
 			break;
 		case START_GCODE:
 		case END_GCODE:
+            config[opt.desc->longopt] = opt.arg;
+			break;
 		case DEFAULT_EXTRUDER:
 			config[opt.desc->longopt] = atoi(opt.arg);
+			break;
 		case OUT_FILENAME:
 			config[opt.desc->longopt] = opt.arg;
+			break;
+		case JSON_PROGRESS:
+			jsonProgress = true;
+                        config[opt.desc->longopt] = true;
 			break;
 		case CONFIG:
 			// handled above before other config values
@@ -273,12 +286,12 @@ int main(int argc, char *argv[], char *[]) // envp
 {
 
 	string modelFile;
-
+        bool jsonProgress = false;
 	Configuration config;
 	try {
 		int firstSliceIdx, lastSliceIdx;
 
-		int ret = newParseArgs(config, argc, argv, modelFile, firstSliceIdx, lastSliceIdx);
+		int ret = newParseArgs(config, argc, argv, modelFile, firstSliceIdx, lastSliceIdx, jsonProgress);
 
 		if (ret != 0) {
 			usage();
@@ -331,9 +344,22 @@ int main(int argc, char *argv[], char *[]) // envp
 		RegionList regions;
 		std::vector<mgl::SliceData> slices;
 
-		std::ofstream gcodeFileStream(gcodeFile.c_str());
+		std::ofstream gcodeFileStream;
+        gcodeFileStream.open(gcodeFile.c_str(), ios::out);
+        if(!gcodeFileStream) {
+            Exception mixup(std::string("Bad output file: ") + 
+                    gcodeFile);
+            throw mixup;
+        }
 
-		ProgressLog log;
+		ProgressBar *log;
+		if (jsonProgress) {
+			log = new ProgressJSONStream();
+		}
+		else {
+			log = new ProgressLog();
+		}
+
 		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, extruderCfg,
 				modelFile.c_str(),
 				scad,
@@ -342,15 +368,25 @@ int main(int argc, char *argv[], char *[]) // envp
 				lastSliceIdx,
 				regions,
 				slices,
-				&log);
+				log);
 
 		gcodeFileStream.close();
+
+		delete log;
 	} catch (mgl::Exception &mixup) {
+            if(jsonProgress) {
+                exceptionToJson(Log::severe(), mixup, false);
+            } else {
 		Log::severe() << "ERROR: " << mixup.error << endl;
-		return -1;
-	}	catch (char const* c) {
+            }
+            return -1;
+	} catch (char const* c) {
+            if(jsonProgress) {
+                exceptionToJson(Log::severe(), std::string(c), false);
+            } else {
 		Log::severe() << c << endl;
-		return -1;
+            }
+            return -1;
 	}
 
 	exit(EXIT_SUCCESS);
