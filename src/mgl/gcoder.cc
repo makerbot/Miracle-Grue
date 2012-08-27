@@ -436,6 +436,15 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     exit->paths.begin(); 
                     pathiter != exit->paths.end(); 
                     ++pathiter) {
+                if(pathiter->myLabel.isOutline() && 
+                        !gcoderCfg.doOutlines)
+                    continue;
+                if(pathiter->myLabel.isInfill() && 
+                        !gcoderCfg.doInfills)
+                    continue;
+                if(pathiter->myLabel.isInset() && 
+                        !gcoderCfg.doInsets)
+                    continue;
                 progressTotal += pathiter->myPath.size();
             }
         }
