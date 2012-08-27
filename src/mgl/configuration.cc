@@ -283,6 +283,9 @@ void loadGCoderConfigFromFile(const Configuration& conf,
     gcoderCfg.doPrintLayerMessages = boolCheck(
             conf.root["printLayerMessages"],
             "printLayerMessages", false);
+    gcoderCfg.doProgress = boolCheck(
+            conf.root["doProgress"],
+            "doProgress", false);
     gcoderCfg.gantryCfg.set_use_e_axis(boolCheck(conf.root["useEAxis"],
             "useEAxis", false));
 }

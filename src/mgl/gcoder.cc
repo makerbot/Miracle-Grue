@@ -145,6 +145,8 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
 
 void GCoder::writeProgressPercent(std::ostream& ss, unsigned int current, 
         unsigned int total) {
+    if(gcoderCfg.doProgress)
+        return;
     unsigned int curPercent = (current--*100)/total;
     unsigned int lastPercent = (current++*100)/total;
     if(curPercent != lastPercent) {
