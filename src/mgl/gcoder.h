@@ -132,6 +132,8 @@ public:
 
     GCoderConfig gcoderCfg;
     Gantry gantry;
+    unsigned int progressTotal;    //how many paths we will be doing
+    unsigned int progressCurrent;  //which path the current one is
 
     GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress = NULL);
 
@@ -192,6 +194,9 @@ public:
     /// Writes the end.gcode file, otherwise generates a
     /// end.gcode if needed
     void writeEndDotGCode(std::ostream & ss) const;
+    
+    void writeProgressPercent(std::ostream& ss, unsigned int current, 
+            unsigned int total);
 
 
     // todo: return the gCoderCfg instead
@@ -287,6 +292,8 @@ void GCoder::writePath(std::ostream& ss,
                 current->x, current->y, z,
                 extrusion.feedrate, h, w, comment.str().c_str());
         last = *current;
+        
+        writeProgressPercent(ss, progressCurrent++, progressTotal);
     }
 }
 
