@@ -106,7 +106,7 @@ public:
     bool doInfills;
     bool doPrintLayerMessages;
     bool doFanCommand;
-    bool doProgress;
+    bool doPrintProgress;
 
     unsigned int fanLayer;
     
