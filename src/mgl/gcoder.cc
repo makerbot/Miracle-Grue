@@ -74,7 +74,8 @@ GCoder::GCoder(const GCoderConfig &gCoderCfg,
         gcoderCfg(gCoderCfg),
         gantry(gCoderCfg.gantryCfg), 
         progressTotal(0), 
-        progressCurrent(0){
+        progressCurrent(0), 
+        progressPercent(0){
             gantry.init_to_start();
 }
 
@@ -148,11 +149,11 @@ void GCoder::writeProgressPercent(std::ostream& ss, unsigned int current,
     if(!gcoderCfg.doPrintProgress)
         return;
     unsigned int curPercent = (current--*100)/total;
-    unsigned int lastPercent = (current++*100)/total;
-    if(curPercent != lastPercent) {
+    if(curPercent != progressPercent) {
         ss << "M73 P" << curPercent << " (progress (" << 
                 curPercent << "%): " << current 
                 << "/" << total << ")" << std::endl;
+        progressPercent = curPercent;
     }
 }
 
@@ -425,6 +426,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
     size_t sliceCount = 0;
     progressTotal = 1;
     progressCurrent = 0;
+    progressPercent = 0;
     for (LayerPaths::const_layer_iterator it = begin;
             it != end;
             ++it, ++sliceCount){
@@ -436,15 +438,6 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     exit->paths.begin(); 
                     pathiter != exit->paths.end(); 
                     ++pathiter) {
-                if(pathiter->myLabel.isOutline() && 
-                        !gcoderCfg.doOutlines)
-                    continue;
-                if(pathiter->myLabel.isInfill() && 
-                        !gcoderCfg.doInfills)
-                    continue;
-                if(pathiter->myLabel.isInset() && 
-                        !gcoderCfg.doInsets)
-                    continue;
                 progressTotal += pathiter->myPath.size();
             }
         }

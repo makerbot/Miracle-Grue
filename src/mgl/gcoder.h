@@ -135,6 +135,7 @@ public:
     Gantry gantry;
     unsigned int progressTotal;    //how many paths we will be doing
     unsigned int progressCurrent;  //which path the current one is
+    unsigned int progressPercent;
 
     GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress = NULL);
 
@@ -293,8 +294,6 @@ void GCoder::writePath(std::ostream& ss,
                 current->x, current->y, z,
                 extrusion.feedrate, h, w, comment.str().c_str());
         last = *current;
-        
-        writeProgressPercent(ss, progressCurrent++, progressTotal);
     }
 }
 
@@ -314,6 +313,8 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
             iter != labeledPaths.end();
             ++iter) {
         const LabeledOpenPath& currentLP = *iter;
+        writeProgressPercent(ss, progressCurrent+=currentLP.myPath.size(), 
+                progressTotal);
         Extrusion extrusion;
         Scalar currentH = h;
         Scalar currentW = w;
