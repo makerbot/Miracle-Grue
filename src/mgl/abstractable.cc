@@ -318,8 +318,18 @@ ProgressJSONStream::ProgressJSONStream(unsigned int count)
 	reset(count);
 }
 
+void ProgressJSONStream::outputJson(const char* taskName, unsigned int percent) {
+    Json::Value msg(Json::objectValue);
+    msg["type"] = "progress";
+    msg["stage"] = taskName;
+    msg["percentComplete"] = percent;
 
-void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsigned int ticks)
+    Json::FastWriter writer;
+    std::cout << writer.write(msg);
+}
+
+void ProgressJSONStream::onTick(const char* taskName, 
+        unsigned int count, unsigned int ticks)
 {
 	int percent = 0;
     int lastpercent = 0;
@@ -328,14 +338,27 @@ void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsign
         lastpercent = int((double)(ticks-1)/(double)count * 100);
 	}
     if(percent != lastpercent) {
-        Json::Value msg(Json::objectValue);
-        msg["type"] = "progress";
-        msg["stage"] = taskName;
-        msg["percentComplete"] = percent;
-
-        Json::FastWriter writer;
-        std::cout << writer.write(msg);
+        outputJson(taskName, percent);
     }
+}
+
+ProgressJSONStreamTotal::ProgressJSONStreamTotal(unsigned int count)
+        : ProgressJSONStream(count), curstage(0) {
+    stagemap["outlines"] = 0;
+    stagemap["support"] = 1;
+    stagemap["rafts"] = 2;
+    stagemap["insets"] = 3;
+    stagemap["flat surfaces"] = 4;
+    stagemap["roofing"] = 5;
+    stagemap["flooring"] = 6;
+    stagemap["infills"] = 7;
+    stagemap["Path generation"] = 8;
+    stagemap["gcode"] = 9;
+}
+
+void ProgressJSONStreamTotal::outputJson(const char* taskName, 
+        unsigned int percent) {
+    ProgressJSONStream::outputJson(taskName, percent);
 }
 
 
