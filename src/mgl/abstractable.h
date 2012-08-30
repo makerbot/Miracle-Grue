@@ -27,6 +27,7 @@
 #include <string>
 #include <map>
 #include <sys/stat.h>
+#include <json/value.h>
 
 namespace mgl {
 
@@ -148,6 +149,7 @@ public:
 	void onTick(const char* taskName, unsigned int count, unsigned int tick);
 protected:
     virtual void outputJson(const char* taskName, unsigned int percent);
+    virtual Json::Value makeJson(const char* taskName, unsigned int percent);
 };
 
 class ProgressJSONStreamTotal : public ProgressJSONStream {
@@ -155,7 +157,7 @@ public:
     ProgressJSONStreamTotal(unsigned int count = 0);
 protected:
     typedef std::map<std::string, unsigned int> StageMap;
-    void outputJson(const char* taskName, unsigned int percent);
+    Json::Value makeJson(const char* taskName, unsigned int percent);
     
     StageMap stagemap;
     unsigned int curstage;

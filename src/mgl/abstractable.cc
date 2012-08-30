@@ -32,6 +32,7 @@ using namespace std;
 
 #include <json/value.h>
 #include <json/writer.h>
+#include <map>
 
 std::ostream &MyComputer::log()
 {
@@ -318,12 +319,16 @@ ProgressJSONStream::ProgressJSONStream(unsigned int count)
 	reset(count);
 }
 
-void ProgressJSONStream::outputJson(const char* taskName, unsigned int percent) {
+Json::Value ProgressJSONStream::makeJson(const char* taskName, unsigned int percent) {
     Json::Value msg(Json::objectValue);
     msg["type"] = "progress";
     msg["stage"] = taskName;
     msg["percentComplete"] = percent;
+    return msg;
+}
 
+void ProgressJSONStream::outputJson(const char* taskName, unsigned int percent) {
+    Json::Value msg = makeJson(taskName, percent);
     Json::FastWriter writer;
     std::cout << writer.write(msg);
 }
@@ -356,9 +361,17 @@ ProgressJSONStreamTotal::ProgressJSONStreamTotal(unsigned int count)
     stagemap["gcode"] = 9;
 }
 
-void ProgressJSONStreamTotal::outputJson(const char* taskName, 
+Json::Value ProgressJSONStreamTotal::makeJson(const char* taskName, 
         unsigned int percent) {
-    ProgressJSONStream::outputJson(taskName, percent);
+    Json::Value msg = ProgressJSONStream::makeJson(taskName, percent);
+    StageMap::const_iterator iter = stagemap.find(taskName);
+    if(iter != stagemap.end())
+        curstage = iter->second;
+    unsigned int totalPercent = static_cast<unsigned int>(
+            float(curstage*100)/stagemap.size() + 
+            float(percent)/stagemap.size());
+    msg["totalPercentComplete"] = totalPercent;
+    return msg;
 }
 
 
