@@ -2,7 +2,7 @@ Source: miracle-grue
 Section: unknown
 Priority: extra
 Maintainer: MakerBot Industries dev team <dev@makerbot.com>
-Build-Depends: debhelper (>= 8.0.0), libqt4-dev, libqt4-opengl-dev, libboost-dev, libboost-filesystem-dev, libboost-regex-dev, libboost-system-dev
+Build-Depends: debhelper (>= 8.0.0), libqt4-dev, libqt4-opengl-dev, libboost-dev, libboost-filesystem-dev, libboost-regex-dev, libboost-system-dev, pkg-config
 Standards-Version: 3.9.2
 Homepage: https://github.com/makerbot/Miracle-Grue
 #Vcs-Git: git@github.com:makerbot/Miracle-Grue.git
