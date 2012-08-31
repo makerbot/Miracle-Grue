@@ -11,6 +11,5 @@ Homepage: https://github.com/makerbot/Miracle-Grue
 Package: miracle-grue
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libqtcore4, libqtgui4, libqt4-opengl, libboost-filesystem1.46.1, libboost-regex1.46.1, libboost-system1.46.1
-Description: This is a simple tool for preparing and managing 3D prints.
- Prototype is MakerBot's initial cut of a tool for preparing and
- managing 3D prints.
+Description: This is MakerBot's toolpath generation engine.
+ Miracle-grue creates toolpaths for Replicator and other 3d printers.
