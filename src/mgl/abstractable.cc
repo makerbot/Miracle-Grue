@@ -32,6 +32,7 @@ using namespace std;
 
 #include <json/value.h>
 #include <json/writer.h>
+#include <map>
 
 std::ostream &MyComputer::log()
 {
@@ -318,8 +319,22 @@ ProgressJSONStream::ProgressJSONStream(unsigned int count)
 	reset(count);
 }
 
+Json::Value ProgressJSONStream::makeJson(const char* taskName, unsigned int percent) {
+    Json::Value msg(Json::objectValue);
+    msg["type"] = "progress";
+    msg["stage"] = taskName;
+    msg["percentComplete"] = percent;
+    return msg;
+}
 
-void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsigned int ticks)
+void ProgressJSONStream::outputJson(const char* taskName, unsigned int percent) {
+    Json::Value msg = makeJson(taskName, percent);
+    Json::FastWriter writer;
+    std::cout << writer.write(msg);
+}
+
+void ProgressJSONStream::onTick(const char* taskName, 
+        unsigned int count, unsigned int ticks)
 {
 	int percent = 0;
     int lastpercent = 0;
@@ -328,14 +343,35 @@ void ProgressJSONStream::onTick(const char* taskName, unsigned int count, unsign
         lastpercent = int((double)(ticks-1)/(double)count * 100);
 	}
     if(percent != lastpercent) {
-        Json::Value msg(Json::objectValue);
-        msg["type"] = "progress";
-        msg["stage"] = taskName;
-        msg["percentComplete"] = percent;
-
-        Json::FastWriter writer;
-        std::cout << writer.write(msg);
+        outputJson(taskName, percent);
     }
+}
+
+ProgressJSONStreamTotal::ProgressJSONStreamTotal(unsigned int count)
+        : ProgressJSONStream(count), curstage(0) {
+    stagemap["outlines"] = 0;
+    stagemap["support"] = 1;
+    stagemap["rafts"] = 2;
+    stagemap["insets"] = 3;
+    stagemap["flat surfaces"] = 4;
+    stagemap["roofing"] = 5;
+    stagemap["flooring"] = 6;
+    stagemap["infills"] = 7;
+    stagemap["Path generation"] = 8;
+    stagemap["gcode"] = 9;
+}
+
+Json::Value ProgressJSONStreamTotal::makeJson(const char* taskName, 
+        unsigned int percent) {
+    Json::Value msg = ProgressJSONStream::makeJson(taskName, percent);
+    StageMap::const_iterator iter = stagemap.find(taskName);
+    if(iter != stagemap.end())
+        curstage = iter->second;
+    unsigned int totalPercent = static_cast<unsigned int>(
+            float(curstage*100)/stagemap.size() + 
+            float(percent)/stagemap.size());
+    msg["totalPercentComplete"] = totalPercent;
+    return msg;
 }
 
 

@@ -106,6 +106,7 @@ public:
     bool doInfills;
     bool doPrintLayerMessages;
     bool doFanCommand;
+    bool doPrintProgress;
 
     unsigned int fanLayer;
     
@@ -132,6 +133,9 @@ public:
 
     GCoderConfig gcoderCfg;
     Gantry gantry;
+    unsigned int progressTotal;    //how many paths we will be doing
+    unsigned int progressCurrent;  //which path the current one is
+    unsigned int progressPercent;
 
     GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress = NULL);
 
@@ -192,6 +196,9 @@ public:
     /// Writes the end.gcode file, otherwise generates a
     /// end.gcode if needed
     void writeEndDotGCode(std::ostream & ss) const;
+    
+    void writeProgressPercent(std::ostream& ss, unsigned int current, 
+            unsigned int total);
 
 
     // todo: return the gCoderCfg instead
@@ -306,6 +313,8 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
             iter != labeledPaths.end();
             ++iter) {
         const LabeledOpenPath& currentLP = *iter;
+        writeProgressPercent(ss, progressCurrent+=currentLP.myPath.size(), 
+                progressTotal);
         Extrusion extrusion;
         Scalar currentH = h;
         Scalar currentW = w;

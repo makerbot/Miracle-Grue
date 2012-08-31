@@ -70,10 +70,13 @@ void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extrud
 
 GCoder::GCoder(const GCoderConfig &gCoderCfg,
         ProgressBar* progress) :
-Progressive(progress),
-gcoderCfg(gCoderCfg),
-gantry(gCoderCfg.gantryCfg) {
-    gantry.init_to_start();
+        Progressive(progress),
+        gcoderCfg(gCoderCfg),
+        gantry(gCoderCfg.gantryCfg), 
+        progressTotal(0), 
+        progressCurrent(0), 
+        progressPercent(0){
+            gantry.init_to_start();
 }
 
 /**
@@ -138,6 +141,19 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
                 footer_file + "]").c_str());
 
         ss << "(footer [" << footer_file << "] end)" << endl << endl;
+    }
+}
+
+void GCoder::writeProgressPercent(std::ostream& ss, unsigned int current, 
+        unsigned int total) {
+    if(!gcoderCfg.doPrintProgress)
+        return;
+    unsigned int curPercent = (current--*100)/total;
+    if(curPercent != progressPercent) {
+        ss << "M73 P" << curPercent << " (progress (" << 
+                curPercent << "%): " << current 
+                << "/" << total << ")" << std::endl;
+        progressPercent = curPercent;
     }
 }
 
@@ -408,9 +424,24 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
         LayerPaths::layer_iterator end) {
     writeStartDotGCode(gout, title.c_str());
     size_t sliceCount = 0;
+    progressTotal = 1;
+    progressCurrent = 0;
+    progressPercent = 0;
     for (LayerPaths::const_layer_iterator it = begin;
             it != end;
-            ++it, ++sliceCount);
+            ++it, ++sliceCount){
+        for(LayerPaths::Layer::const_extruder_iterator exit = 
+                it->extruders.begin(); 
+                exit != it->extruders.end(); 
+                ++exit) {
+            for(LayerPaths::Layer::ExtruderLayer::const_path_iterator pathiter = 
+                    exit->paths.begin(); 
+                    pathiter != exit->paths.end(); 
+                    ++pathiter) {
+                progressTotal += pathiter->myPath.size();
+            }
+        }
+    }
     initProgress("gcode", sliceCount);
     size_t layerSequence = 0;
     for (LayerPaths::layer_iterator it = begin;
@@ -421,7 +452,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
             Extrusion strusion;
             Extruder& struder = gcoderCfg.extruders[
                     it->extruders.front().extruderId];
-            calcInfillExtrusion(struder.id, 1, strusion);
+            calcInfillExtrusion(struder.id, 0, strusion);
             gantry.set_current_extruder_index(struder.code);
             PointType startPoint;
             if(!it->extruders.empty() && 

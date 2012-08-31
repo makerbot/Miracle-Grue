@@ -25,7 +25,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <map>
 #include <sys/stat.h>
+#include <json/value.h>
 
 namespace mgl {
 
@@ -144,9 +146,24 @@ public:
 class ProgressJSONStream : public ProgressBar {
 public:
 	ProgressJSONStream(unsigned int count = 0);
-
 	void onTick(const char* taskName, unsigned int count, unsigned int tick);
+protected:
+    virtual void outputJson(const char* taskName, unsigned int percent);
+    virtual Json::Value makeJson(const char* taskName, unsigned int percent);
 };
+
+class ProgressJSONStreamTotal : public ProgressJSONStream {
+public:
+    ProgressJSONStreamTotal(unsigned int count = 0);
+protected:
+    typedef std::map<std::string, unsigned int> StageMap;
+    Json::Value makeJson(const char* taskName, unsigned int percent);
+    
+    StageMap stagemap;
+    unsigned int curstage;
+};
+
+
 
 /// used as a base class to provide progress bar support
 ///

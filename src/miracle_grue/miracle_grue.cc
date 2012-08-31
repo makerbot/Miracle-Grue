@@ -354,7 +354,7 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		ProgressBar *log;
 		if (jsonProgress) {
-			log = new ProgressJSONStream();
+			log = new ProgressJSONStreamTotal();
 		}
 		else {
 			log = new ProgressLog();
