@@ -66,8 +66,9 @@ void pather_optimizer::clearPaths() {
 }
 
 void pather_optimizer::optimizeInternal(
-		abstract_optimizer::LabeledOpenPaths& labeledpaths) {
-	PointType lastPoint;
+		abstract_optimizer::LabeledOpenPaths& labeledpaths, 
+        PointType startPoint) {
+	PointType lastPoint = startPoint;
 	LabeledOpenPath currentClosest;
 	if(!myLoops.empty())
 		lastPoint = *(myLoops.begin()->myPath.entryBegin());

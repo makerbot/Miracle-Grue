@@ -17,6 +17,24 @@
 
 namespace mgl {
 
+template <typename T>
+class optimizer_progress{
+public:
+    optimizer_progress() : lastPercent(0) {}
+    void report(unsigned int current, unsigned int total) {
+        unsigned int curPercent = (current * 100) / ++total;
+        if(curPercent != lastPercent) {
+            report(curPercent);
+            lastPercent = curPercent;
+        }
+    }
+    void report(unsigned int current) {
+        std::cout << "Optimizing: " << current << std::endl;
+    }
+private:
+    unsigned int lastPercent;
+};
+
 class abstract_optimizer {
 public:
     abstract_optimizer(bool j = true) : jsonErrors(j) {}
@@ -24,9 +42,10 @@ public:
 	//optimize everything you have accumulated
 	//calls to the internal optimize
 	template <template<class, class> class PATHS, typename ALLOC>
-	void optimize(PATHS<OpenPath, ALLOC>& paths) {
+	void optimize(PATHS<OpenPath, ALLOC>& paths, 
+            PointType startPoint = PointType()) {
 		LabeledOpenPaths result;
-		optimizeInternal(result);
+		optimizeInternal(result, startPoint);
 		for(LabeledOpenPaths::const_iterator iter = result.begin(); 
 				iter != result.end(); 
 				++iter) {
@@ -34,9 +53,10 @@ public:
 		}
 	}
 	template <template <class, class> class LABELEDPATHS, typename ALLOC>
-	void optimize(LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledpaths) {
+	void optimize(LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledpaths, 
+            PointType startPoint = PointType()) {
 		LabeledOpenPaths result;
-		optimizeInternal(result);
+		optimizeInternal(result, startPoint);
 		labeledpaths.insert(labeledpaths.end(), result.begin(), result.end());
 	}
 	
@@ -117,7 +137,8 @@ public:
 protected:
 	
 	//labeledpaths is the output of optimization
-	virtual void optimizeInternal(LabeledOpenPaths& labeledpaths) = 0;
+	virtual void optimizeInternal(LabeledOpenPaths& labeledpaths, 
+            PointType startPoint) = 0;
     //do print exceptions as json?
     bool jsonErrors;
 };
@@ -142,7 +163,8 @@ public:
 	void clearBoundaries();
 	void clearPaths();
 protected:
-	void optimizeInternal(abstract_optimizer::LabeledOpenPaths& labeledpaths);
+	void optimizeInternal(abstract_optimizer::LabeledOpenPaths& labeledpaths, 
+            PointType startPoint);
 private:
 	LabeledOpenPath closestLoop(std::list<LabeledLoop>::iterator loopIter, 
 			Loop::entry_iterator entryIter);

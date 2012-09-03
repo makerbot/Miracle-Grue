@@ -125,13 +125,13 @@ void pather_optimizer_graph::clearPaths() {
 }
 
 void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPaths& 
-		labeledpaths) {
+		labeledpaths, PointType startPoint) {
 	pruneEntries();
 	if(entryNodeSet.empty())
 		return;
-	node* currentNode = *(entryNodeSet.begin());
-	currentNode = bruteForceNearestRequired(currentNode);
-	
+	node* currentNode = bruteForceNearestRequired(startPoint);
+    size_t startSize = nodeSet.size();
+	optimizer_progress<pather_optimizer_graph> progress;
 //	std::cout << "Current Number of total nodes: " 
 //			<< nodeSet.size() << std::endl;
 //	std::cout << "Current Number of entry nodes: " 
@@ -179,6 +179,7 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 //			std::cout << "Current number of links: " << currentNode->outlinks_size() 
 //					<< std::endl;
 //		}
+        progress.report(startSize - nodeSet.size(), startSize);
 		link* currentChoice = *(currentNode->outlinks_begin());
 		node::iterator linkIter = currentNode->outlinks_begin();
 		for(++linkIter; linkIter != currentNode->outlinks_end(); 
@@ -338,6 +339,32 @@ pather_optimizer_graph::node*
 	}
 	if(closest == current)
 		return NULL;
+	return closest;
+}
+
+pather_optimizer_graph::node* 
+		pather_optimizer_graph::bruteForceNearestRequired(
+		PointType point) const {
+	if(nodeSet.empty())
+		return NULL;
+	node* closest = (*nodeSet.begin());
+	Scalar closestDist = (closest->get_position() - 
+			point).magnitude();
+	int closestVal = highestValue(closest);
+	for(NodeSet::const_iterator iter = nodeSet.begin(); 
+		iter != nodeSet.end(); 
+		++iter){
+		Scalar dist = ((*iter)->get_position() - 
+				point).magnitude();
+		int val = highestValue(*iter);
+		if(val > closestVal ||
+				( val == closestVal && 
+				dist < closestDist)) {
+			closestDist = dist;
+			closest = (*iter);
+			closestVal = val;
+		}
+	}
 	return closest;
 }
 

@@ -43,7 +43,8 @@ public:
 	
 protected:
 	
-	void optimizeInternal(LabeledOpenPaths& labeledpaths);
+	void optimizeInternal(LabeledOpenPaths& labeledpaths, 
+            PointType startPoint);
 	
 private:
 	
@@ -88,6 +89,7 @@ private:
 	void connectEntry(node* n, std::list<nodePair>& entries);
 	
 	node* bruteForceNearestRequired(node* current) const;
+    node* bruteForceNearestRequired(PointType point) const;
 	
 	bool isBetter(link* current, link* alternate, 
 			const LabeledOpenPaths& labeledpaths) const;
