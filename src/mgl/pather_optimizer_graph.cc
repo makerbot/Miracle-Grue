@@ -9,6 +9,11 @@
 
 namespace mgl {
 
+template<>
+void optimizer_progress<pather_optimizer_graph>::report(unsigned int current) {
+    //specialization that does nothing
+}
+
 pather_optimizer_graph::~pather_optimizer_graph() {
 	clearBoundaries();
 	clearPaths();

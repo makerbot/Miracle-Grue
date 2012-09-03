@@ -40,6 +40,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 	if (slastSliceIdx > 0) {
 		lastSliceIdx = (size_t) slastSliceIdx;
 	}
+    PointType curPoint;
 
 	bool direction = false;
 	unsigned int currentSlice = 0;
@@ -145,7 +146,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
                         if(preoptimized.size() > 3) {
                             optimizer.addBoundaries(layerRegions->outlines);
                             optimizer.addPaths(preoptimized);
-                            optimizer.optimize(resultModel);
+                            optimizer.optimize(resultModel, curPoint);
+                            curPoint = *(resultModel.back().myPath.fromEnd());
                             optimizer.clearPaths();
                             optimizer.clearBoundaries();
                         } else {
@@ -155,7 +157,8 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
                         if(presupport.size() > 3) {
                             optimizer.addBoundaries(layerRegions->supportLoops);
                             optimizer.addPaths(presupport);
-                            optimizer.optimize(resultSupport);
+                            optimizer.optimize(resultSupport, curPoint);
+                            curPoint = *(resultSupport.back().myPath.fromEnd());
                         } else {
                             resultSupport.insert(resultSupport.end(), 
                                     presupport.begin(), presupport.end());
@@ -290,17 +293,22 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 		++last2;
 		bool addPoint = true;
         try {
-            PointType unit = PointType(*last1 - *last2).unit();
-            Scalar component = (currentPoint - *last1).dotProduct(unit);
-            Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
-            landingPoint = *last1 + unit*component;
+            PointType delta = PointType(*last1 - *last2);
+            PointType deltaMag = delta.magnitude();
+            if(deltaMag > patherCfg.coarseness) {
+                PointType unit = delta.unit();
+                Scalar component = (currentPoint - *last1).dotProduct(unit);
+                Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
+                landingPoint = *last1 + unit*component;
 
-            cumulativeError += deviation;
-
+                cumulativeError += deviation;
+            } else {
+                cumulativeError += deltaMag;
+            }
             addPoint = cumulativeError > patherCfg.coarseness;
         } catch(libthing::Exception mixup) {
             //we expect this to be something like a bad normalization
-            Log::severe() << "ERROR: " << mixup.what() << std::endl;
+            Log::severe() << "WARNING: " << mixup.what() << std::endl;
         }
 		
 		if(addPoint) {
