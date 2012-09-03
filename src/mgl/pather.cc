@@ -294,7 +294,7 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 		bool addPoint = true;
         try {
             PointType delta = PointType(*last1 - *last2);
-            PointType deltaMag = delta.magnitude();
+            Scalar deltaMag = delta.magnitude();
             if(deltaMag > patherCfg.coarseness) {
                 PointType unit = delta.unit();
                 Scalar component = (currentPoint - *last1).dotProduct(unit);
