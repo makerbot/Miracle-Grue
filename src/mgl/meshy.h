@@ -17,6 +17,7 @@
 #include <set>
 #include <fstream>
 #include <list>
+#include <string>
 
 #ifdef OMPFF
 #include <omp.h>
@@ -47,6 +48,24 @@ public:
 
 	}
 
+};
+
+class ModelParseException : public std::exception {
+private:
+	const std::string m_path;
+	const std::string m_detail;
+	std::string m_what;
+public:
+
+	ModelParseException(const std::string& path, const std::string& detail) throw ():
+		m_path(path), m_detail(detail) 
+	{
+		m_what = std::string("Model Parse Exception while parsing") + m_path + ":" + m_detail;
+	}
+	~ModelParseException() throw() {}
+	const std::string& path() { return m_path; }
+	const std::string& detail() { return m_detail; }
+	const char* what() const throw() { return m_what.c_str(); }
 };
 
 // simple class that writes
@@ -113,17 +132,29 @@ public:
 	void writeStlFile(const char* fileName) const;
 //	void writeStlFileForLayer(unsigned int layerIndex, const char* fileName) const;
 
-	size_t readStlFile(const char* stlFilename);
+	/**
+	 * Read an ASCII STL file into the given mesh object. Throws a ModelParseException
+	 * if an error is encountered while reading the file.
+	 */
+	size_t readAsciiStlFile(const char* filename);
+
+	/**
+	 * Read a binary STL file into the given mesh object. Throws a ModelParseException
+	 * if an error is encountered while reading the file.
+	 */
+	size_t readBinaryStlFile(const char* filename);
+
+	/**
+	 * Reads a general STL file into a given mesh object. Throws a ModelParseException
+	 * if it can't properly interpret the file as an STL file.
+	 */
+	size_t readStlFile(const char* filename);
+	
 	void flushBuffer();
 
 	void alignToPlate();
 	void translate(const libthing::Vector3 &change);
 };
-
-
-//void writeMeshyToStl(mgl::Meshy &meshy, const char* filename);
-
-size_t readStlFile(mgl::Meshy &meshy, const char* filename);
 
 
 

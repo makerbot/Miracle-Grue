@@ -185,16 +185,83 @@ void Meshy::writeStlFile(const char* fileName) const {
 //	// Log::often() << fileName << " written!"<< std::endl;
 //}
 
+
 /// Loads an STL file into a mesh object, from a binary or ASCII stl file.
 ///
 /// @param stlFilename target file to load into the specified mesh
 ///
 /// @returns count of triangles loaded into this mesh by this call
 
-size_t Meshy::readStlFile(const char* stlFilename) {
-	// NOTE: for stl legacy read-in reasons, we are using floats here,
-	// instead of our own Scalar type
+size_t Meshy::readAsciiStlFile(const char* stlFilename) {
+	struct vertexes_t {
+		float nx, ny, nz;
+		float x1, y1, z1;
+		float x2, y2, z2;
+		float x3, y3, z3;
+		uint16_t attrBytes;
+	};
 
+	union {
+		struct vertexes_t vertexes;
+		uint8_t bytes[sizeof(vertexes_t)];
+	} tridata;
+
+	uint8_t buf[512];
+	FILE *fHandle = fopen(stlFilename, "rb");
+	if (!fHandle) {
+		string msg = "Can't open \"";
+		msg += stlFilename;
+		msg += "\". Check that the file name is correct and that you have sufficient privileges to open it.";
+		MeshyException problem(msg.c_str());
+		throw(problem);
+	}
+
+	char* comment = fgets((char*) buf, sizeof(buf), fHandle);
+	if (strncmp("solid ",comment,6)) {
+		throw(ModelParseException(stlFilename,"ASCII file does not begin with solid keyword"));
+	}
+	// Comment is remainder of string. Discard for now.
+
+	while (!feof(fHandle)) {
+		// This read should return either 'endsolid' or 'facet'
+		fscanf(fHandle, "%80s", buf);
+		if (strncmp("endsolid",(const char*)buf,8) == 0) {
+			break;
+		}
+		vertexes_t &v = tridata.vertexes;
+		bool success = true;
+		if (fscanf(fHandle, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
+			success = false;
+		if (fscanf(fHandle, "%*s %*s") < 0)
+			success = false;
+		if (fscanf(fHandle, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
+			success = false;
+		if (fscanf(fHandle, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
+			success = false;
+		if (fscanf(fHandle, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
+			success = false;
+		if (fscanf(fHandle, "%*s") < 0)
+			success = false;
+		if (fscanf(fHandle, "%*s") < 0)
+			success = false;
+		if (!success) {
+			stringstream msg;
+			msg << "Error reading face " << triangleCount();
+			ModelParseException problem(stlFilename, msg.str().c_str());
+			Log::info() << problem.what() << endl;
+			Log::info() << buf << endl;
+			throw(problem);
+		}
+		Triangle3 triangle(Vector3(v.x1, v.y1, v.z1), Vector3(v.x2, v.y2, v.z2), Vector3(v.x3, v.y3, v.z3));
+		bufferTriangle(triangle);
+	}
+	fclose(fHandle);
+	flushBuffer();
+	return triangleCount();
+
+}
+
+size_t Meshy::readBinaryStlFile(const char* stlFilename) {
 	struct vertexes_t {
 		float nx, ny, nz;
 		float x1, y1, z1;
@@ -214,8 +281,6 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 		uint8_t bytes[4];
 	} intdata;
 
-	size_t facecount = 0;
-
 	uint8_t buf[512];
 	FILE *fHandle = fopen(stlFilename, "rb");
 	if (!fHandle) {
@@ -226,129 +291,68 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 		throw(problem);
 	}
 
-	if (fread(buf, 1, 5, fHandle) < 5) {
-		string msg = "\"";
-		msg += stlFilename;
-		msg += "\" is empty!";
-		MeshyException problem(msg.c_str());
-		throw(problem);
+	// Binary STL file
+	if (fread(buf, 1, 80, fHandle) < 80) {
+		throw(ModelParseException(stlFilename,"Binary STL file is shorter than comment field"));
 	}
-	bool isBinary = true;
-
-	string solid_string = "solid";
-	buf[5] = '\0';
-	string test_string((const char*) buf);
-	transform(test_string.begin(), test_string.end(), test_string.begin(), ::tolower);
-
-	isBinary = (test_string.compare(solid_string) != 0);
-
-	if (isBinary) {
-		// Binary STL file
-		// Skip remainder of 80 character comment field
-		if (fread(buf, 1, 75, fHandle) < 75) {
-			string msg = "\"";
-			msg += stlFilename;
-			msg += "\" is not a valid stl file";
-			MeshyException problem(msg.c_str());
-			throw(problem);
-		}
-		// Read in triangle count
-		if (fread(intdata.bytes, 1, 4, fHandle) < 4) {
-			string msg = "\"";
-			msg += stlFilename;
-			msg += "\" is not a valid stl file";
-			MeshyException problem(msg.c_str());
-			throw(problem);
-		}
-		convertFromLittleEndian32(intdata.bytes);
-		uint32_t tricount = intdata.intval;
-		int countdown = (int) tricount;
-		while (!feof(fHandle) && countdown-- > 0) {
-			if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
-				Log::info() << __FUNCTION__ << "BREAKING" << endl;
-				break;
-			}
-			for (int i = 0; i < 3 * 4; i++) {
-				convertFromLittleEndian32(tridata.bytes + i * 4);
-			}
-			convertFromLittleEndian16((uint8_t*) & tridata.vertexes.attrBytes);
-
-			vertexes_t &v = tridata.vertexes;
-			Vector3 pt1(v.x1, v.y1, v.z1);
-			Vector3 pt2(v.x2, v.y2, v.z2);
-			Vector3 pt3(v.x3, v.y3, v.z3);
-
-			Triangle3 triangle(pt1, pt2, pt3);
-			bufferTriangle(triangle);
-
-			facecount++;
-		}
-
-		/// Throw removed to continue coding progress. We may not expect all
-		/// triangles to load, depending on situation. Needs debugging/revision
-		if (this->triangleCount() != tricount) {
-			stringstream msg;
-			msg << "Warning: triangle count err in \"";
-			msg << stlFilename;
-			msg << "\".  Expected: ";
-			msg << tricount;
-			msg << ", Read:";
-			msg << triangleCount();
-			msg << ", faced:";
-			msg << facecount;
-			Log::info() << msg.str();
-			//			MeshyException problem(msg.c_str());
-			//			throw (problem);
-		}
-
-
-	} else {
-		// ASCII STL file
-		// Gobble remainder of solid name line.
-		char* c = fgets((char*) buf, sizeof(buf), fHandle);
-		while (!feof(fHandle)) {
-			int q = fscanf(fHandle, "%80s", buf);
-			test_string = (const char*) (buf);
-			transform(test_string.begin(), test_string.end(), test_string.begin(), ::tolower);
-			string endsolid_string("endsolid");
-			if (test_string == endsolid_string) {
-				break;
-			}
-			vertexes_t &v = tridata.vertexes;
-			bool success = true;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.nx, &v.ny, &v.nz) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s %*s") < 0)
-				success = false;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.x1, &v.y1, &v.z1) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.x2, &v.y2, &v.z2) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s %f %f %f", &v.x3, &v.y3, &v.z3) < 3)
-				success = false;
-			if (fscanf(fHandle, "%*s") < 0)
-				success = false;
-			if (fscanf(fHandle, "%*s") < 0)
-				success = false;
-			if (!success) {
-				stringstream msg;
-				msg << "Error reading face " << facecount << " in file \"" << stlFilename << "\"";
-				MeshyException problem(msg.str().c_str());
-				Log::info() << msg << endl;
-				Log::info() << buf << endl;
-				Log::info() << c << " " << q << endl;
-				throw(problem);
-			}
-			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1), Vector3(v.x2, v.y2, v.z2), Vector3(v.x3, v.y3, v.z3));
-			bufferTriangle(triangle);
-
-			facecount++;
-		}
+	// Read in triangle count
+	if (fread(intdata.bytes, 1, 4, fHandle) < 4) {
+		throw(ModelParseException(stlFilename,"Cannot read triangle count in binary STL"));
 	}
+	convertFromLittleEndian32(intdata.bytes);
+	uint32_t tricount = intdata.intval;
+	int countdown = (int) tricount;
+	while (!feof(fHandle) && countdown-- > 0) {
+		if (fread(tridata.bytes, 1, 3 * 4 * 4 + 2, fHandle) < 3 * 4 * 4 + 2) {
+			Log::info() << __FUNCTION__ << "BREAKING" << endl;
+			break;
+		}
+		for (int i = 0; i < 3 * 4; i++) {
+			convertFromLittleEndian32(tridata.bytes + i * 4);
+		}
+		convertFromLittleEndian16((uint8_t*) & tridata.vertexes.attrBytes);
+		vertexes_t &v = tridata.vertexes;
+		Vector3 pt1(v.x1, v.y1, v.z1);
+		Vector3 pt2(v.x2, v.y2, v.z2);
+		Vector3 pt3(v.x3, v.y3, v.z3);
+		Triangle3 triangle(pt1, pt2, pt3);
+		bufferTriangle(triangle);
+	}
+
+	// AGM: Regarding below: wtf? TODO replace this all soon.
+	/// Throw removed to continue coding progress. We may not expect all
+	/// triangles to load, depending on situation. Needs debugging/revision
+	if (this->triangleCount() != tricount) {
+		stringstream msg;
+		msg << "Warning: triangle count err in \"";
+		msg << stlFilename;
+		msg << "\".  Expected: ";
+		msg << tricount;
+		msg << ", Read:";
+		msg << triangleCount();
+		Log::info() << msg.str();
+		//			MeshyException problem(msg.c_str());
+		//			throw (problem);
+	}
+
+
 	fclose(fHandle);
 	flushBuffer();
 	return this->triangleCount();
 
+}
+
+size_t Meshy::readStlFile(const char* stlFilename) {
+	// NOTE: for stl legacy read-in reasons, we are using floats here,
+	// instead of our own Scalar type
+	size_t facecount = 0;
+
+	try {
+		facecount = readAsciiStlFile(stlFilename);
+	} catch (ModelParseException& parseException) {
+		facecount = readBinaryStlFile(stlFilename);
+	}
+	return facecount;
 }
 
 void Meshy::alignToPlate() {
