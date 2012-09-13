@@ -459,24 +459,28 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     !it->extruders.front().paths.empty() && 
                     !it->extruders.front().paths.front().myPath.empty()) {
                 startPoint = *(it->extruders.front().paths.front().myPath.fromStart());
-            }gantry.snort(gout, struder, 
+            }
+            gantry.snort(gout, struder, 
                     strusion);
+            const Scalar currentZ = it->layerZ + it->layerHeight;
+            const Scalar currentH = it->layerHeight;
+            const Scalar currentW = it->layerW;
             gantry.g1(gout, struder, 
                     strusion, gantry.gantryCfg.get_start_x(), 
-                    gantry.gantryCfg.get_start_y(), it->layerZ, 
+                    gantry.gantryCfg.get_start_y(), currentZ, 
                     strusion.feedrate, 
-                    it->layerHeight, it->layerW, "(Anchor Start)");
+                    currentH, currentW, "(Anchor Start)");
             gantry.squirt(gout, struder, 
                     strusion);
             gantry.g1(gout, struder, 
                     strusion, gantry.gantryCfg.get_start_x(), 
-                    gantry.gantryCfg.get_start_y(), it->layerZ, 
+                    gantry.gantryCfg.get_start_y(), currentZ, 
                     strusion.feedrate, 
-                    it->layerHeight, it->layerW, "(Anchor Start)");
+                    currentH, currentW, "(Anchor Start)");
             gantry.g1(gout, struder, 
-                    strusion, startPoint.x, startPoint.y, it->layerZ, 
+                    strusion, startPoint.x, startPoint.y, currentZ, 
                     strusion.feedrate, 
-                    it->layerHeight, it->layerW, "(Anchor End)");
+                    currentH, currentW, "(Anchor End)");
         }
         writeSlice(gout, layerpaths, it, layerSequence);
     }
@@ -535,16 +539,16 @@ void GCoder::writeSlice(std::ostream& ss,
         //this is the current extruder's zFeedrate
         Scalar zFeedrate = gcoderCfg.gantryCfg.get_scaling_factor() *
                 gantry.gantryCfg.get_rapid_move_feed_rate_z();
+        const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight;
+        const Scalar currentH = currentLayer.layerHeight;
+        const Scalar currentW = currentLayer.layerW;
         try {
-            moveZ(ss, currentLayer.layerZ, currentExtruder.id, zFeedrate);
+            moveZ(ss, currentZ, currentExtruder.id, zFeedrate);
         } catch (GcoderException& mixup) {
             Log::info() << "ERROR writing Z move in slice " <<
                     layerSequence << " for extruder " << currentExtruder.id <<
                     " : " << mixup.error << endl;
         }
-        const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight;
-        const Scalar currentH = currentLayer.layerHeight;
-        const Scalar currentW = currentLayer.layerW;
 
         if (gcoderCfg.doOutlines) {
             writeOutlines(ss, currentZ, currentH, currentW, layerSequence,
