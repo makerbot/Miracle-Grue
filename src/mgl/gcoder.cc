@@ -486,7 +486,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
     }
     if(gcoderCfg.doFanCommand) {
         //print command to disable fan
-        gout << "M127 (Turn off the fan)" << endl;
+        gout << "M127 T0(Turn off the fan)" << endl;
     }
     writeEndDotGCode(gout);
 }
@@ -526,7 +526,7 @@ void GCoder::writeSlice(std::ostream& ss,
     }
     if (gcoderCfg.doFanCommand && layerSequence == gcoderCfg.fanLayer) {
         //print command to enable fan
-        ss << "M126 (Turn on the fan)" << endl;
+        ss << "M126 T0(Turn on the fan)" << endl;
     }
     //iterate over all extruders invoked in this layer
     for (LayerPaths::Layer::const_extruder_iterator it =
