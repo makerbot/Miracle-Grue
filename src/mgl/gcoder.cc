@@ -488,7 +488,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
         //print command to disable fan
         gout << "M127 T" << 
                 gcoderCfg.defaultExtruder 
-                << "(Turn off the fan)" << endl;
+                << " (Turn off the fan)" << endl;
     }
     writeEndDotGCode(gout);
 }
@@ -530,7 +530,7 @@ void GCoder::writeSlice(std::ostream& ss,
         //print command to enable fan
         ss << "M126 T" << 
                 gcoderCfg.defaultExtruder 
-                << "(Turn on the fan)" << endl;
+                << " (Turn on the fan)" << endl;
     }
     //iterate over all extruders invoked in this layer
     for (LayerPaths::Layer::const_extruder_iterator it =
