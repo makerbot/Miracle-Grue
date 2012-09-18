@@ -288,6 +288,8 @@ void loadGCoderConfigFromFile(const Configuration& conf,
             "doPrintProgress", false);
     gcoderCfg.gantryCfg.set_use_e_axis(boolCheck(conf.root["useEAxis"],
             "useEAxis", false));
+    gcoderCfg.defaultExtruder = uintCheck(conf.root["defaultExtruder"],
+            "defaultExtruder");
 }
 
 void loadSlicerConfigFromFile(const Configuration &config,
