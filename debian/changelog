@@ -1,3 +1,10 @@
+miracle-grue (1.00-0) precise; urgency=low
+
+  * Initial release of MakerWare
+  * Implements future
+
+ -- MakerBot Industries dev team <dev@makerbot.com>  Tue, 19 Sep 2012 10:30:00 -0400
+
 miracle-grue (0.03) precise; urgency=low
 
   * Initial Release.
