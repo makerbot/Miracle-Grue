@@ -86,6 +86,9 @@ private:
 	
 	bool crossesBoundaries(const libthing::LineSegment2& seg);
 	void connectEntry(node* n, std::list<nodePair>& entries);
+    void makeOnewayConnections(node* fromNode, 
+            std::list<nodePair>& connections, 
+            const CostType& cost);
 	
 	node* bruteForceNearestRequired(node* current) const;
 	

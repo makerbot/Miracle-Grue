@@ -132,53 +132,38 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 	node* currentNode = *(entryNodeSet.begin());
 	currentNode = bruteForceNearestRequired(currentNode);
 	
-//	std::cout << "Current Number of total nodes: " 
-//			<< nodeSet.size() << std::endl;
-//	std::cout << "Current Number of entry nodes: " 
-//			<< entryNodeSet.size() << std::endl;
 	while(!nodeSet.empty()) {
 		if(currentNode->outlinks_size() == 0) {
+            //no more places to go,
 			std::list<nodePair> input, yescross, nocross;
+            //Make pairs of this node and every other entry point
 			connectEntry(currentNode, input);
+            //determine which cross a boundary
 			bulkLineCrossings(input, nocross, yescross);
 			CostType cost(CostType::TYP_CONNECTION, 
 					CostType::OWN_MODEL, 0);
 			if(!nocross.empty()) {
-				for(std::list<nodePair>::const_iterator iter = 
-						nocross.begin(); 
-						iter != nocross.end(); 
-						++iter) {
-					if(iter->first == currentNode)
-						iter->first->connect(iter->second, cost);
-					else
-						iter->second->connect(iter->first, cost);
-				}
+                //prefer non-crossings and make those connections
+				makeOnewayConnections(currentNode, 
+                        nocross, cost);
 			} else if(!yescross.empty()) {
+                //otherwise we cross, make those connections
 				cost.myOwner = CostType::OWN_INVALID;
 				cost.myType = CostType::TYP_INVALID;
 				cost.myValue = -1;
-				for(std::list<nodePair>::const_iterator iter = 
-						yescross.begin(); 
-						iter != yescross.end(); 
-						++iter) {
-					if(iter->first == currentNode)
-						iter->first->connect(iter->second, cost);
-					else
-						iter->second->connect(iter->first, cost);
-				}
+				makeOnewayConnections(currentNode, yescross, cost);
 			}
 		}
 		if(currentNode->outlinks_size() == 0) {
+            //if we get here, there are no more entry points
+            //so try to just pick the closest node available
 			node* nextNode = bruteForceNearestRequired(currentNode);
 			tryRemoveNode(currentNode);
 			currentNode = nextNode;
 			if(!nextNode)
-				return;
+				return;     //this means we're done
 		}
-//		if(currentNode->outlinks_size() > 2) {
-//			std::cout << "Current number of links: " << currentNode->outlinks_size() 
-//					<< std::endl;
-//		}
+        //select the best outgoing edge based on our conditions in isBetter
 		link* currentChoice = *(currentNode->outlinks_begin());
 		node::iterator linkIter = currentNode->outlinks_begin();
 		for(++linkIter; linkIter != currentNode->outlinks_end(); 
@@ -186,11 +171,15 @@ void pather_optimizer_graph::optimizeInternal(abstract_optimizer::LabeledOpenPat
 			if(isBetter(currentChoice, *linkIter, labeledpaths))
 				currentChoice = *linkIter;
 		}
+        //We have selected a move to take
 		appendMove(currentChoice, labeledpaths);
 		node* nextNode = currentChoice->get_to();
+        //never traverse this edge again
 		currentNode->disconnect(nextNode);
 		nextNode->disconnect(currentNode);
+        //remove current node if it has no more required segments on it
 		tryRemoveNode(currentNode);
+        //for next iteration, start from next node
 		currentNode = nextNode;
 	}
 }
@@ -310,6 +299,21 @@ void pather_optimizer_graph::connectEntry(node* n, std::list<nodePair>& entries)
 		if(n != *entryIter)
 			entries.push_back(nodePair(n, *entryIter));
 	}
+}
+
+void pather_optimizer_graph::makeOnewayConnections(node* fromNode, 
+        std::list<nodePair>& connections, 
+        const CostType& cost) {
+    for(std::list<nodePair>::const_iterator iter = connections.begin(); 
+            iter != connections.end(); 
+            ++iter) {
+        if(fromNode == iter->first)
+            iter->first->connect(iter->second, cost);
+        else if(fromNode == iter->second)
+            iter->second->connect(iter->first, cost);
+        else
+            throw Exception("Something went wrong with graph optimization!");
+    }
 }
 
 pather_optimizer_graph::node* 
