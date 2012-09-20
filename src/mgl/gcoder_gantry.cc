@@ -197,8 +197,10 @@ void Gantry::g1(std::ostream &ss,
 			doX, doY, doZ, doE, doFeed);
 }
 
-void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
-		const Extruder &extruder, const Extrusion &extrusion) {
+void Gantry::squirt(std::ostream &ss, 
+        const Vector2 &/*lineStart*/,
+		const Extruder &extruder, 
+        const Extrusion &/*extrusion*/) {
 	if(get_extruding())
 		return;
 	if (extruder.isVolumetric()) {
@@ -215,8 +217,10 @@ void Gantry::squirt(std::ostream &ss, const Vector2 &lineStart,
 	set_extruding(true);
 }
 
-void Gantry::snort(std::ostream &ss, const Vector2 &lineEnd,
-		const Extruder &extruder, const Extrusion &extrusion) {
+void Gantry::snort(std::ostream &ss, 
+        const Vector2 &/*lineEnd*/,
+		const Extruder &extruder, 
+        const Extrusion &/*extrusion*/) {
 	if(!get_extruding())
 		return;
 	if (extruder.isVolumetric()) {
