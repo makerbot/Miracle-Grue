@@ -16,6 +16,7 @@ using namespace libthing;
 
 void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 		const SlicerConfig &slicerCfg,
+        const LPConfig& lpCfg, 
 		const RegionerConfig& regionerCfg, 
 		const PatherConfig& patherCfg, 
  	    const ExtruderConfig &extruderCfg,
@@ -45,6 +46,11 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//slicer.tomographyze(segmenter, tomograph);
 	//new interface
 	slicer.generateLoops(segmenter, layerloops);
+    
+    LayerLoops processedLoops;
+    
+    LoopProcessor processor(lpCfg, progress);
+    processor.processLoops(layerloops, processedLoops);
 
 
 	Regioner regioner(regionerCfg, progress);
@@ -52,7 +58,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);
 	//new interface
-	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions ,
+	regioner.generateSkeleton(processedLoops, layerloops.layerMeasure, regions ,
 			limits, grid);
 
 	Pather pather(patherCfg, progress);
