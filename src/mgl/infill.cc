@@ -5,7 +5,6 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 //bool shrinkLine(Vector2 &left, Vector2 &right, Scalar shrinkDistance)
 //{

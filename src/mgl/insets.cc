@@ -17,13 +17,12 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 
 static const Scalar DBLTOINT = 1000;
 
 void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
-									const Insets & insetsForLoops,
+									const libthing::Insets & insetsForLoops,
 									std::vector<Polygons> & insetsPolys )
 {
     // assert(insetsForLoops.size() == outlineSegmentCount);
@@ -123,9 +122,9 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	}
 }
 
-void ClipperInsetter::inset( const libthing::SegmentVector &inputPolys,
+void ClipperInsetter::inset( const SegmentVector &inputPolys,
 							 Scalar insetDist,
-							 libthing::SegmentVector& outputPolys)
+							 SegmentVector& outputPolys)
 {
 
 	ClipperLib::Polygons in_polys, out_polys;
@@ -165,7 +164,7 @@ void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 		Scalar insetDistanceFactor,
 		const char *scadFile,
 		bool /*writeDebugScadFiles*/,
-		Insets &insetsForLoops) {
+		libthing::Insets &insetsForLoops) {
 	
 	static const bool USE_SHRINKY = false;
 	

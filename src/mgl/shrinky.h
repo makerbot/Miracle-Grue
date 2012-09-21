@@ -83,11 +83,11 @@ private:
 /// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
 /// and nbOffShels insets)
 ///
-void createShellsForSliceUsingShrinky(const libthing::SegmentVector & 	outlinesSegments,
+void createShellsForSliceUsingShrinky(const SegmentVector & 	outlinesSegments,
 		const std::vector<Scalar> &insetDistances,
 		unsigned int sliceId,
 		const char *scadFile,
-		std::vector<libthing::SegmentVector> & insetsForLoops);
+		std::vector<SegmentVector> & insetsForLoops);
 
 bool attachSegments(SegmentType &first, 
 		SegmentType &second, Scalar elongation);

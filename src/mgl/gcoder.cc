@@ -20,7 +20,6 @@
 namespace mgl {
 
 using namespace std;
-using namespace libthing;
 
 
 // function that adds an s to a noun if count is more than 1

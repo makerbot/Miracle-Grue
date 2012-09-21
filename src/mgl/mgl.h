@@ -61,6 +61,8 @@ enum axis_e {
 
 typedef libthing::Vector2 PointType;
 typedef libthing::LineSegment2 SegmentType;
+typedef libthing::SegmentTable SegmentTable;
+typedef libthing::SegmentVector SegmentVector;
 
 
 // Bring over from mgl.cc

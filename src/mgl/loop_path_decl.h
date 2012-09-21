@@ -14,8 +14,6 @@
 #include <list>
 #include <ostream>
 #include <algorithm>
-#include "libthing/Vector2.h"
-#include "libthing/LineSegment2.h"
 #include "mgl.h"
 
 namespace mgl {

@@ -15,7 +15,6 @@
 
 #include "mgl.h"
 #include "obj_limits.h"
-#include "libthing/LineSegment2.h"
 #include "segment.h"
 #include "loop_path.h"
 #include <list>
@@ -133,7 +132,7 @@ void castRaysOnSliceAlongY(const std::list<Loop>& outlineLoops,
 		Scalar max,
 		ScalarRangeTable &rangeTable);
 bool crossesOutline(const SegmentType &seg,
-		const libthing::SegmentTable &outline);
+		const SegmentTable &outline);
 
 
 ///  A grid is a set of intersecting lines that is subsampled to create

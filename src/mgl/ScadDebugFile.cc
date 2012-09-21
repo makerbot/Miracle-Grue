@@ -2,7 +2,6 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 #include "log.h"
 
@@ -266,7 +265,7 @@ void ScadDebugFile::writeSegments2(	const char* name,
 // It is used to display the triangles involved in a slice (layerIndex).
 
 void ScadDebugFile::writeTrianglesModule(	const char* name,
-							const vector<Triangle3>  &allTriangles,
+							const vector<libthing::Triangle3>  &allTriangles,
 							const TriangleIndices &trianglesForSlice,
 							unsigned int layerIndex)
 {
@@ -283,7 +282,7 @@ void ScadDebugFile::writeTrianglesModule(	const char* name,
 	{
 
 		index_t index = trianglesForSlice[i];
-		const Triangle3 &t = allTriangles[index];
+		const libthing::Triangle3 &t = allTriangles[index];
 		ss << "    [" << t[0].x << ", " << t[0].y << ", " << t[0].z << "], ";
 		ss <<     "[" << t[1].x << ", " << t[1].y << ", " << t[1].z << "], ";
 		ss <<     "[" << t[2].x << ", " << t[2].y << ", " << t[2].z << "], // tri " << i << endl;

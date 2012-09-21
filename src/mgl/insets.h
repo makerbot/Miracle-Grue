@@ -29,7 +29,7 @@ void polygonsFromLoopSegmentTables( unsigned int nbOfShells,
 									const libthing::Insets & insetsForLoops,
 									std::vector<Polygons> & insetsPolys );
 
-void inshelligence( const libthing::SegmentTable & outlinesSegments,
+void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
 					double layerW,
 					//unsigned int sliceId,
@@ -43,9 +43,9 @@ class ClipperInsetter {
 public:
 	ClipperInsetter() {	}
 	virtual ~ClipperInsetter(){}
-	void inset( const libthing::SegmentVector & inputPolys,
+	void inset( const SegmentVector & inputPolys,
 				Scalar insetDist,
-				libthing::SegmentVector & outputPolys);
+				SegmentVector & outputPolys);
 	static void setTolerance(long double toler);
 };
 

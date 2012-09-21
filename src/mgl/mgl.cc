@@ -32,13 +32,12 @@
 namespace mgl {
 
 using namespace std;
-using namespace libthing;
 
 string getMiracleGrueVersionStr() {
 	return "v 0.04 alpha";
 }
 
-ostream& operator<<(ostream& os, const Vector3& v) {
+ostream& operator<<(ostream& os, const libthing::Vector3& v) {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
 }

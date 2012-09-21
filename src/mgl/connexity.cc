@@ -13,7 +13,6 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
 
 #include "log.h"
 #include <libthing/Scalar.h>

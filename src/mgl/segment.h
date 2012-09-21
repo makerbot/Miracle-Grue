@@ -30,7 +30,7 @@ namespace mgl
 // Converts vectors of segments into polygons.
 // The ordering is reversed... the last vector of segments is the first polygon
 // This function fills a a list of poygon (table of Vector2) from a table of segments
-void createPolysFromloopSegments(const libthing::SegmentVector &SegmentVector, Polygons& loops);
+void createPolysFromloopSegments(const SegmentVector &SegmentVector, Polygons& loops);
 
 // segments are OK, but polys are better for paths (no repeat point)
 void segments2polygon(const std::vector<SegmentType> & segments, mgl::Polygon &loop);
@@ -47,7 +47,7 @@ void loopsAndHoleOgy(std::vector<SegmentType> &segments,
 					std::vector< std::vector<SegmentType> > &loops);
 
 // 2D translation
-void translateLoops(libthing::SegmentVector &loops, PointType p);
+void translateLoops(SegmentVector &loops, PointType p);
 
 // moves Segments by a position
 void translateSegments(std::vector<SegmentType> &segments, PointType p);
