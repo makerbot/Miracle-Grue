@@ -11,65 +11,67 @@
 namespace mgl {
 
 template <int F, typename VT>
-class Scalar;
+class basic_scalar;
 
 template <int F, typename VT>
-bool operator<(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator<(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-bool operator==(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator==(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 
 template <int F, typename VT = long int>
-class Scalar{
+class basic_scalar{
 public:
     
     template <int OF, typename OVT>
-    friend class Scalar;
+    friend class basic_scalar;
     
-    friend bool operator < <>(const Scalar& lhs, const Scalar& rhs);
-    friend bool operator == <>(const Scalar& lhs, const Scalar& rhs);
+    friend bool operator < <>(const basic_scalar& lhs, const basic_scalar& rhs);
+    friend bool operator == <>(const basic_scalar& lhs, const basic_scalar& rhs);
     
     typedef VT value_type;
     static const int FACTOR = F;
-    static const value_type FACTOR_PRODUCT = 2 << FACTOR;
+    static const value_type FACTOR_PRODUCT = 1 << FACTOR;
     static const value_type FACTOR2_PRODUCT = FACTOR_PRODUCT << 1;
     
     template <typename T>
-    Scalar(const T& other);
+    basic_scalar(const T& other);
     template <typename T>
-    Scalar& operator=(const T& other);
+    basic_scalar& operator=(const T& other);
     template <int OF, typename OVT>
-    Scalar(const Scalar<OF, OVT>& other);
+    basic_scalar(const basic_scalar<OF, OVT>& other);
     template <int OF, typename OVT>
-    Scalar& operator=(const Scalar<OF, OVT>& other);
-    Scalar& operator+=(const Scalar& other);
-    Scalar& operator*=(const Scalar& other);
-    Scalar& operator/=(const Scalar& other);
-    Scalar operator-() const;
+    basic_scalar& operator=(const basic_scalar<OF, OVT>& other);
+    basic_scalar& operator+=(const basic_scalar& other);
+    basic_scalar& operator*=(const basic_scalar& other);
+    basic_scalar& operator/=(const basic_scalar& other);
+    basic_scalar operator-() const;
+    operator float() const;
+    operator double() const;
 private:
     value_type value;
 };
 
 template <int F, typename VT>
-Scalar<F, VT> operator+(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+basic_scalar<F, VT> operator+(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-Scalar<F, VT> operator-(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+basic_scalar<F, VT> operator-(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-Scalar<F, VT> operator*(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+basic_scalar<F, VT> operator*(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-Scalar<F, VT> operator/(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+basic_scalar<F, VT> operator/(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 
 template <int F, typename VT>
-bool operator<(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator<(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-bool operator>(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator>(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-bool operator<=(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator<=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-bool operator>=(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator>=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-bool operator==(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator==(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
-bool operator!=(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs);
+bool operator!=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 
 }
 

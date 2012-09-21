@@ -1,5 +1,5 @@
 /* 
- * File:   Scalar_impl.h
+ * File:   basic_scalar_impl.h
  * Author: Dev
  *
  * Created on September 21, 2012, 1:50 PM
@@ -13,88 +13,98 @@
 namespace mgl {
 
 template <int F, typename VT> template <int OF, typename OVT>
-Scalar<F, VT>::Scalar(const Scalar<OF, OVT>& other) 
-        : value(other.Scalar<OF, OVT>::value << 
-        (FACTOR - Scalar<OF, OVT>::FACTOR)) {}
+basic_scalar<F, VT>::basic_scalar(const basic_scalar<OF, OVT>& other) 
+        : value(other.basic_scalar<OF, OVT>::value << 
+        (FACTOR - basic_scalar<OF, OVT>::FACTOR)) {}
 template <int F, typename VT> template <int OF, typename OVT>
-Scalar<F, VT>& Scalar<F, VT>::operator =(const Scalar<OF,OVT>& other) {
-    value = other.Scalar<OF, OVT>::value << 
-            (FACTOR - Scalar<OF, OVT>::FACTOR);
+basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const basic_scalar<OF,OVT>& other) {
+    value = other.basic_scalar<OF, OVT>::value << 
+            (FACTOR - basic_scalar<OF, OVT>::FACTOR);
     return *this;
 }
 template <int F, typename VT> template <typename T>
-Scalar<F, VT>::Scalar(const T& other)
+basic_scalar<F, VT>::basic_scalar(const T& other)
         : value(static_cast<value_type>(other * FACTOR_PRODUCT)) {}
 template <int F, typename VT> template <typename T>
-Scalar<F, VT>& Scalar<F, VT>::operator =(const T& other) {
+basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const T& other) {
     value = static_cast<value_type>(other * FACTOR_PRODUCT);
     return *this;
 }
 template <int F, typename VT>
-Scalar<F, VT>& Scalar<F, VT>::operator +=(const Scalar& other) {
+basic_scalar<F, VT>& basic_scalar<F, VT>::operator +=(const basic_scalar& other) {
     value += other.value;
     return *this;
 }
 template <int F, typename VT>
-Scalar<F, VT>& Scalar<F, VT>::operator *=(const Scalar& other) {
+basic_scalar<F, VT>& basic_scalar<F, VT>::operator *=(const basic_scalar& other) {
     (value *= other.value) >>= FACTOR;
     return *this;
 }
 template <int F, typename VT>
-Scalar<F, VT>& Scalar<F, VT>::operator /=(const Scalar& other) {
+basic_scalar<F, VT>& basic_scalar<F, VT>::operator /=(const basic_scalar& other) {
     (value <<= FACTOR) /= other.value;
     return *this;
 }
 template <int F, typename VT>
-Scalar<F, VT> Scalar<F, VT>::operator -() const {
-    Scalar ret;
+basic_scalar<F, VT> basic_scalar<F, VT>::operator -() const {
+    basic_scalar ret;
     ret.value = -value;
     return ret;
 }
+template <int F, typename VT>
+basic_scalar<F, VT>::operator float() const{
+    return float(value)*FACTOR_PRODUCT;
+}
+template <int F, typename VT>
+basic_scalar<F, VT>::operator double() const{
+    return double(value)*FACTOR_PRODUCT;
+}
+
+
 
 //operator overloads
 template <int F, typename VT>
-Scalar<F, VT> operator+(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
-    Scalar<F, VT> ret = lhs;
+basic_scalar<F, VT> operator+(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
+    basic_scalar<F, VT> ret = lhs;
     return ret += rhs;
 }
 template <int F, typename VT>
-Scalar<F, VT> operator-(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
-    Scalar<F, VT> ret = lhs;
+basic_scalar<F, VT> operator-(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
+    basic_scalar<F, VT> ret = lhs;
     return ret -= rhs;
 }
 template <int F, typename VT>
-Scalar<F, VT> operator*(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
-    Scalar<F, VT> ret = lhs;
+basic_scalar<F, VT> operator*(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
+    basic_scalar<F, VT> ret = lhs;
     return ret *= rhs;
 }
 template <int F, typename VT>
-Scalar<F, VT> operator/(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
-    Scalar<F, VT> ret = lhs;
+basic_scalar<F, VT> operator/(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
+    basic_scalar<F, VT> ret = lhs;
     return ret /= rhs;
 }
 template <int F, typename VT>
-bool operator<(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs) {
+bool operator<(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
     return lhs.value_type < rhs.value_type;
 }
 template <int F, typename VT>
-bool operator>(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
+bool operator>(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
     return rhs < lhs;
 }
 template <int F, typename VT>
-bool operator<=(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
+bool operator<=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
     return !(lhs>rhs);
 }
 template <int F, typename VT>
-bool operator>=(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs){
+bool operator>=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
     return !(rhs<lhs);
 }
 template <int F, typename VT>
-bool operator==(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs) {
+bool operator==(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
     return lhs.value_type == rhs.value_type;
 }
 template <int F, typename VT>
-bool operator!=(const Scalar<F, VT>& lhs, const Scalar<F, VT>& rhs) {
+bool operator!=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
     return !(lhs == rhs);
 }
 
