@@ -136,4 +136,125 @@ void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance) {
 	ClPolygonToLoop(destPolys, dest);
 }
 
+enum SMOOTH_RESULT {
+    SMOOTH_ADD,
+    SMOOTH_REPLACE
+};
+
+SMOOTH_RESULT smoothPoints(const PointType& lp1, 
+        const PointType& lp2, 
+        const PointType& cp, 
+        const Scalar& maxDeviation, 
+        Scalar& cumDeviation,
+        PointType& output);
+
+void smooth(const Loop& input, Scalar smoothness, Loop& output) {
+    if(smoothness == 0 || input.size() <= 3) {
+		output = input;
+        return;
+    }
+	Loop::const_finite_cw_iterator current;
+	current = input.clockwiseFinite();
+    
+    std::vector<PointType> tmpPoints;
+    tmpPoints.push_back(*(current++));
+    tmpPoints.push_back(*(current++));
+    
+	//insert the first two points
+    
+	Scalar cumulativeError = 0.0;
+    
+	for(; current != input.clockwiseEnd(); ++current) {
+        std::vector<PointType>::reverse_iterator last1 = 
+                tmpPoints.rbegin();
+        std::vector<PointType>::const_reverse_iterator last2 = 
+                tmpPoints.rbegin();
+        ++last2;
+        const PointType& currentPoint = *current;
+        const PointType& lp1 = *last1;
+        const PointType& lp2 = *last2;
+        PointType result;
+        SMOOTH_RESULT rslt = smoothPoints(lp1, lp2, currentPoint, smoothness, 
+                cumulativeError, result);
+        if(rslt == SMOOTH_ADD) {
+            tmpPoints.push_back(currentPoint);
+        } else {
+            tmpPoints.back() = result;
+        }
+	}
+    for(std::vector<PointType>::const_iterator iter = tmpPoints.begin(); 
+            iter != tmpPoints.end(); 
+            ++iter) {
+        output.insertPointBefore(*iter, output.clockwiseEnd());
+    }
+}
+
+void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output) {
+    if(smoothness == 0 || input.size() <= 3) {
+		output = input;
+        return;
+    }
+	OpenPath::const_iterator current;
+	current = input.fromStart();
+    
+    output.appendPoint(*(current++));
+    output.appendPoint(*(current++));
+    
+	//insert the first two points
+    
+	Scalar cumulativeError = 0.0;
+    
+	for(; current != input.end(); ++current) {
+        OpenPath::reverse_iterator last1 = 
+                output.fromEnd();
+        OpenPath::const_reverse_iterator last2(
+                output.fromEnd());
+        ++last2;
+        const PointType& currentPoint = *current;
+        const PointType& lp1 = *last1;
+        const PointType& lp2 = *last2;
+        PointType result;
+        SMOOTH_RESULT rslt = smoothPoints(lp1, lp2, currentPoint, smoothness, 
+                cumulativeError, result);
+        if(rslt == SMOOTH_ADD) {;
+            output.appendPoint(currentPoint);
+        } else {
+            (*output.fromEnd()) = result;
+        }
+	}
+}
+
+
+SMOOTH_RESULT smoothPoints(const PointType& lp1, 
+        const PointType& lp2, 
+        const PointType& cp, 
+        const Scalar& maxDeviation, 
+        Scalar& cumDeviation, 
+        PointType& output) {
+    PointType ldelta = lp1 - lp2;
+    PointType unit;
+    try{
+        unit = ldelta.unit();
+    } catch (const libthing::Exception& e) {
+        output = cp;
+        return SMOOTH_ADD;
+    }
+    PointType delta = cp - lp1;
+    Scalar component = delta.dotProduct(unit);
+    Scalar deviation = delta.crossProduct(unit);
+    deviation = deviation < 0 ? -deviation : deviation;
+    PointType landingPoint = lp1 + unit*component;
+    cumDeviation += deviation;
+    if(cumDeviation > maxDeviation) {
+        output = cp;
+        cumDeviation = 0;
+        return SMOOTH_ADD;
+    } else {
+        output = landingPoint;
+        return SMOOTH_REPLACE;
+    }
+}
+
+
+
 }
