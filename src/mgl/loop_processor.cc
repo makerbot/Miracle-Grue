@@ -30,19 +30,46 @@ void LoopProcessor::processLoops(const LayerLoops& input, LayerLoops& output) {
                 ++loopIter) {
             currentOutputLayer.push_back(processSingleLoop(*loopIter));
         }
+        
         output.push_back(currentOutputLayer);
         tick();
     }
 }
 
+LoopProcessor::PROC_RESULT LoopProcessor::processPoints(
+        const PointType& lp1, 
+        const PointType& lp2, 
+        const PointType& cp, 
+        Scalar& cumDeviation, 
+        PointType& output) {
+    PointType ldelta = lp1 - lp2;
+    PointType unit;
+    try{
+        unit = ldelta.unit();
+    } catch (const libthing::Exception& e) {
+        output = cp;
+        return PROC_ADD;
+    }
+    PointType delta = cp - lp1;
+    Scalar component = delta.dotProduct(unit);
+    Scalar deviation = delta.crossProduct(unit);
+    deviation = deviation < 0 ? -deviation : deviation;
+    PointType landingPoint = lp1 + unit*component;
+    cumDeviation += deviation;
+    if(cumDeviation > lpCfg.coarseness) {
+        output = cp;
+        cumDeviation = 0;
+        return PROC_ADD;
+    } else {
+        output = landingPoint;
+        return PROC_REPLACE;
+    }
+}
+
 void LoopProcessor::processSingleLoop(const Loop& input, Loop& output) {
-    if(lpCfg.coarseness == 0) {
+    if(lpCfg.coarseness == 0 || input.size() <= 3) {
 		output = input;
         return;
-    }
-	if(input.size() <= 3) {
-        output = input;
-		return;
     }
 	Loop::const_finite_cw_iterator current;
 	current = input.clockwiseFinite();
@@ -62,44 +89,22 @@ void LoopProcessor::processSingleLoop(const Loop& input, Loop& output) {
                 tmpPoints.rbegin();
         ++last2;
         const PointType& currentPoint = *current;
-        PointType landingPoint = currentPoint;
-		bool addPoint = true;
-        try {
-            const PointType& lp1 = *last1;
-            const PointType& lp2 = *last2;
-//            std::cout << "LP1 "  << lp1 << "\nLP2 " << lp2 
-//                    << "\nCPN " << currentPoint << std::endl;
-            const PointType unit = PointType(lp1 - lp2).unit();
-            const Scalar component = (currentPoint - lp1).dotProduct(unit);
-            const Scalar deviation = abs((currentPoint - lp1).crossProduct(unit));
-            
-            landingPoint = lp1 + unit*component;
-
-            cumulativeError += deviation;
-            
-//            std::cout << "DEV " << deviation << std::endl << 
-//                    "CUM " << cumulativeError << std::endl << std::endl;
-
-            addPoint = cumulativeError > lpCfg.coarseness;
-        } catch(libthing::Exception mixup) {
-            //we expect this to be something like a bad normalization
-            Log::severe() << "ERROR: " << mixup.what() << std::endl;
-        }
-		
-		if(addPoint) {
-            output.insertPointBefore(currentPoint,output.clockwiseEnd());
+        const PointType& lp1 = *last1;
+        const PointType& lp2 = *last2;
+        PointType result;
+        PROC_RESULT rslt = processPoints(lp1, lp2, currentPoint, cumulativeError, 
+                result);
+        if(rslt == PROC_ADD) {
             tmpPoints.push_back(currentPoint);
-			cumulativeError = 0;
-		} else {
-			*last1 = landingPoint * (1.0 - lpCfg.directionWeight) + 
-					currentPoint * lpCfg.directionWeight;
-		}
-        for(std::vector<PointType>::const_iterator iter = tmpPoints.begin(); 
-                iter != tmpPoints.end(); 
-                ++iter) {
-            output.insertPointBefore(*iter, output.clockwiseEnd());
+        } else {
+            tmpPoints.back() = result;
         }
 	}
+    for(std::vector<PointType>::const_iterator iter = tmpPoints.begin(); 
+            iter != tmpPoints.end(); 
+            ++iter) {
+        output.insertPointBefore(*iter, output.clockwiseEnd());
+    }
 }
 
 Loop LoopProcessor::processSingleLoop(const Loop& input) {

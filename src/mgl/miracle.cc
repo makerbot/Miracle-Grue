@@ -51,6 +51,8 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
     
     LoopProcessor processor(lpCfg, progress);
     processor.processLoops(layerloops, processedLoops);
+    
+    LayerMeasure& layerMeasure = processedLoops.layerMeasure;
 
 
 	Regioner regioner(regionerCfg, progress);
@@ -58,14 +60,14 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);
 	//new interface
-	regioner.generateSkeleton(processedLoops, layerloops.layerMeasure, regions ,
+	regioner.generateSkeleton(processedLoops, layerMeasure, regions ,
 			limits, grid);
 
 	Pather pather(patherCfg, progress);
 
 	LayerPaths layers;
 	pather.generatePaths(extruderCfg, regions,
-						 layerloops.layerMeasure, grid, layers);
+						 layerMeasure, grid, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);
@@ -76,7 +78,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	//	gcoder.writeGcodeFile(slices, layerloops.layerMeasure, gcodeFile, 
 	//			modelFile, firstSliceIdx, lastSliceIdx);
 	//new interface
-	gcoder.writeGcodeFile(layers, layerloops.layerMeasure, 
+	gcoder.writeGcodeFile(layers, layerMeasure, 
 			gcodeFile, modelFile);
 
 	//gout.close();

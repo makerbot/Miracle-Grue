@@ -22,8 +22,20 @@ public:
             : Progressive(progress), lpCfg(conf) {}
     void processLoops(const LayerLoops& input, LayerLoops& output);
 private:
+    enum PROC_RESULT {
+        PROC_ADD,
+        PROC_REPLACE
+    };
+    
+    PROC_RESULT processPoints(const PointType& lp1, 
+            const PointType& lp2, 
+            const PointType& cp, 
+            Scalar& cumDeviation,
+            PointType& output);
+    
     void processSingleLoop(const Loop& input, Loop& output);
     Loop processSingleLoop(const Loop& input);
+    
     LPConfig lpCfg;
 };
 
