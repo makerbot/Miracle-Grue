@@ -19,7 +19,6 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 
 

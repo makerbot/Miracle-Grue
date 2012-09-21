@@ -171,23 +171,23 @@ void Gantry::g1(std::ostream &ss,
 	
 	PointType relativeVector(gx - get_x(), gy - get_y());
 
-	if (!libthing::tequals(get_x(), gx, SAMESAME_TOL)) {
+	if (!TEQUALS(get_x(), gx, SAMESAME_TOL)) {
 		doX = true;
 	}
-	if (!libthing::tequals(get_y(), gy, SAMESAME_TOL)) {
+	if (!TEQUALS(get_y(), gy, SAMESAME_TOL)) {
 		doY = true;
 	}
-	if (!libthing::tequals(get_z(), gz, SAMESAME_TOL)) {
+	if (!TEQUALS(get_z(), gz, SAMESAME_TOL)) {
 		doZ = true;
 	}
-	if (!libthing::tequals(get_feed(), gfeed, SAMESAME_TOL)) {
+	if (!TEQUALS(get_feed(), gfeed, SAMESAME_TOL)) {
 		doFeed = true;
 	}
 	if (get_extruding() && extruder && extrusion &&
 			extruder->isVolumetric()) {
 		doE = true;
 		me = volumetricE(*extruder, *extrusion, gx, gy, gz, h, w);
-		if(libthing::tequals(me, getCurrentE(), 0.0) || 
+		if(TEQUALS(me, getCurrentE(), 0.0) || 
 				relativeVector.magnitude() <= gantryCfg.get_coarseness())
 			return;
 	}

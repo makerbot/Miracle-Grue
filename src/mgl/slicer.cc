@@ -80,7 +80,7 @@ void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, SegmentTable
 	const LayerMeasure & layerMeasure = seg.readLayerMeasure();
 	Scalar z = layerMeasure.sliceIndexToHeight(sliceId) + 
 			0.5 * layerMeasure.getLayerH();
-	const std::vector<libthing::Triangle3> & allTriangles = seg.readAllTriangles();
+	const std::vector<Triangle3> & allTriangles = seg.readAllTriangles();
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
 	std::vector<SegmentType> unorderedSegments;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);

@@ -28,7 +28,7 @@ public:
 
 	bool loadJsonFromScalar(Json::Value& val, Scalar& s);
 	bool loadJsonFromVector2(Json::Value& val, PointType& input);
-	bool loadJsonFromVector3(Json::Value& val, libthing::Vector3& input);
+	bool loadJsonFromVector3(Json::Value& val, Point3Type& input);
 	bool loadJsonFromPolygon(Json::Value& val, Polygon& input);
 	bool loadJsonFromPolygons(Json::Value& val, Polygons& input);
 

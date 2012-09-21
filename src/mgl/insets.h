@@ -26,7 +26,7 @@ namespace mgl
 
 
 void polygonsFromLoopSegmentTables( unsigned int nbOfShells,
-									const libthing::Insets & insetsForLoops,
+									const InsetsCollection & insetsForLoops,
 									std::vector<Polygons> & insetsPolys );
 
 void inshelligence( const SegmentTable & outlinesSegments,
@@ -36,7 +36,7 @@ void inshelligence( const SegmentTable & outlinesSegments,
 					Scalar insetDistanceFactor,
 					const char *scadFile,
 					bool writeDebugScadFiles,
-					libthing::Insets &insetsForLoops);
+					InsetsCollection &insetsForLoops);
 
 class ClipperInsetter {
 

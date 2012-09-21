@@ -19,7 +19,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SlicerSplitTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 string inputDir("test_cases/slicerCupTestCase/stls/");
 string outputDir("outputs/test_cases/SlicerSplitTestCase/");
@@ -103,14 +102,14 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	cout << "\t" << triangle[0] << ",\t" << triangle[1] << ",\t" << triangle[2] << ","<< endl;
 
 	 // [-25.000000, -0.000002, 19.000000],	[-25.000000, 30.000000, 0.000000],	[-25.000000, -5.000002, 19.000000],
-//	Triangle3 t(Vector3());
+//	Triangle3 t(Point3Type());
 /*
 	for(unsigned int i=0; i < trianglesForSlice.size(); i++)
 	{
 		index_t triangle_id = trianglesForSlice[i];
 		const Triangle3 &triangle = allTriangles[triangle_id];
 
-		Vector3 a, b;
+		Point3Type a, b;
 		// bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
 		bool cut = triangle.cut(z, a, b);
 

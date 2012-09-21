@@ -24,7 +24,7 @@ class MglCoreTestCase : public CPPUNIT_NS::TestFixture
   CPPUNIT_TEST( Vector2Maths );
 
   CPPUNIT_TEST(testLineSegment2dBasics);
-  CPPUNIT_TEST( testVector3Basics );
+  CPPUNIT_TEST( testPoint3TypeBasics );
   CPPUNIT_TEST( testTriangle3Maths );
 
   CPPUNIT_TEST( testTequalsPolygon );
@@ -54,7 +54,7 @@ protected:
 
  void testLineSegment2dBasics();
 
- void testVector3Basics();
+ void testPoint3TypeBasics();
 
  void testTriangle3Maths();
 

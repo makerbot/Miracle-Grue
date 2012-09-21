@@ -19,7 +19,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( RoofingTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 MyComputer computer;
 
@@ -879,8 +878,8 @@ void RoofingTestCase::testGridStruct()
     cout << endl;
 
     Limits limits;
-    limits.grow(Vector3(5,5,0));
-    limits.grow(Vector3(10,10,10));
+    limits.grow(Point3Type(5,5,0));
+    limits.grow(Point3Type(10,10,10));
 
     Grid grid(limits, 0.391);
     cout << "center = " << grid.getOrigin() << endl;
@@ -915,8 +914,8 @@ void RoofingTestCase::testGridStruct()
 	addOuterHexLoop(loops, centerX, centerY);
 	addInnerHexLoop(loops, centerX, centerY);
 
-	Vector3 min(-12.1 + centerX, -12.1 + centerY, 0);
-	Vector3 max( 12.1 + centerX,  12.1 + centerY, 1);
+	Point3Type min(-12.1 + centerX, -12.1 + centerY, 0);
+	Point3Type max( 12.1 + centerX,  12.1 + centerY, 1);
 	Limits limits;
 	limits.grow(min);
 	limits.grow(max);

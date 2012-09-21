@@ -21,7 +21,6 @@
 namespace mgl{
 
 using namespace std;
-using namespace libthing;
 
 
 
@@ -153,9 +152,9 @@ void segmentsDiagnostic(const char* title , const std::vector<SegmentType> &segm
 
 PointType getInsetDirection(const SegmentType &seg)
 {
-	Vector3 v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
-	Vector3 up(0,0,1);
-	Vector3 inset = v.crossProduct(up);
+	Point3Type v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
+	Point3Type up(0,0,1);
+	Point3Type inset = v.crossProduct(up);
 	inset.normalise();
 	PointType inset2(inset.x, inset.y);
 	return inset2;
@@ -489,7 +488,7 @@ Scalar removeFirstCollapsedSegments(	const std::vector<SegmentType> &originalSeg
 bool collinear(const PointType &a, const PointType &b, const PointType &c, Scalar tol)
 {
 	Scalar dot = ((b[0]- a[0]) * (c[1] - a[1]) - (c[0] - c[0]) * (b[1] - a[1]));
-	bool r = libthing::tequals(dot, 0, tol);
+	bool r = TEQUALS(dot, 0, tol);
 	return r;
 }
 
@@ -662,7 +661,7 @@ void Shrinky::inset(const std::vector<SegmentType>& originalSegments,
 		Scalar distanceGone = insetStep(initialSegs, distanceToGo, tol, writePartialSteps, finalInsets);
 
 		distanceToGo -= distanceGone;
-		if( libthing::tequals(distanceToGo, 0, tol))
+		if( TEQUALS(distanceToGo, 0, tol))
 		{
 			done = true;
 			return;
@@ -688,7 +687,7 @@ void removeZeroLengthSegments(const std::vector<SegmentType> &inputSegments, std
 	for(unsigned int i = 0; i < inputSegments.size(); i++)
 	{
 		const SegmentType &seg = inputSegments[i];
-  		if( libthing::tequals(seg.squaredLength(), 0, tol) )
+  		if( TEQUALS(seg.squaredLength(), 0, tol) )
 		{
 			continue;
 		}

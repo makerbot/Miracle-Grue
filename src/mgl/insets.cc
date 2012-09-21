@@ -22,7 +22,7 @@ using namespace mgl;
 static const Scalar DBLTOINT = 1000;
 
 void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
-									const libthing::Insets & insetsForLoops,
+									const InsetsCollection & insetsForLoops,
 									std::vector<Polygons> & insetsPolys )
 {
     // assert(insetsForLoops.size() == outlineSegmentCount);
@@ -164,7 +164,7 @@ void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 		Scalar insetDistanceFactor,
 		const char *scadFile,
 		bool /*writeDebugScadFiles*/,
-		libthing::Insets &insetsForLoops) {
+		InsetsCollection &insetsForLoops) {
 	
 	static const bool USE_SHRINKY = false;
 	

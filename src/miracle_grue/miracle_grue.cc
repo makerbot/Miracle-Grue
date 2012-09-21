@@ -21,7 +21,6 @@
 #include "mgl/configuration.h"
 #include "mgl/miracle.h"
 
-#include "libthing/Vector2.h"
 #include "optionparser.h"
 
 #include "mgl/log.h"

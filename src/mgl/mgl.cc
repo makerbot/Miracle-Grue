@@ -37,7 +37,7 @@ string getMiracleGrueVersionStr() {
 	return "v 0.04 alpha";
 }
 
-ostream& operator<<(ostream& os, const libthing::Vector3& v) {
+ostream& operator<<(ostream& os, const Point3Type& v) {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
 }
@@ -77,7 +77,7 @@ LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio)
 }
 layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
-	if (libthing::tlower(z, firstLayerZ, tol))
+	if (TLOWER(z, firstLayerZ, tol))
 		return 0;
 	Scalar const layer = (z + tol - firstLayerZ) / layerH;
 	return static_cast<layer_measure_index_t> (ceil(layer));
@@ -218,7 +218,7 @@ bool collinear(const SegmentType &prev, const SegmentType &current,
 	Scalar y3 = current.b[1];
 
 	Scalar c = ((mid.x - x1) * (y3 - y1) - (x3 - x1) * (mid.y - y1));
-	bool r = libthing::tequals(c, 0, tol);
+	bool r = TEQUALS(c, 0, tol);
 	return r;
 }
 

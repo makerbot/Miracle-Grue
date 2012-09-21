@@ -9,7 +9,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SlicerOutputTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 string inputsDir;
 

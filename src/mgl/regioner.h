@@ -115,7 +115,7 @@ public:
 			   RegionList &regionlist);
 
 	void insetsForSlice(const SegmentTable &sliceOutlines,
-			libthing::Insets &sliceInsets,
+			InsetsCollection &sliceInsets,
 			const char* scadFile = NULL);
 	void insetsForSlice(const LoopList& sliceOutlines,
 			std::list<LoopList>& sliceInsets,

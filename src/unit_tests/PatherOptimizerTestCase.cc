@@ -9,7 +9,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( PatherOptimizerTestCase );
 
 using namespace std;
-using namespace libthing;
 using namespace mgl;
 
 void PatherOptimizerTestCase::setUp() {

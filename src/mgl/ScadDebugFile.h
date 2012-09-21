@@ -99,7 +99,7 @@ public:
 	// It is used to display the triangles involved in a slice (layerIndex).
 
 	void writeTrianglesModule(	const char* name,
-								const std::vector<libthing::Triangle3>  &allTriangles,
+								const std::vector<Triangle3>  &allTriangles,
 								const TriangleIndices &trianglesForSlice,
 								unsigned int layerIndex);
 	/*

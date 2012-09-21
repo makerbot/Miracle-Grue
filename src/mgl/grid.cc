@@ -512,7 +512,7 @@ bool scalarRangeDifference(const ScalarRange& diffRange,
 			srcRange.min = srcRange.max;
 		}
 		// cout << resultRange << " (intersection!) leftover " <<  srcRange << endl;
-		if (libthing::tequals(resultRange.max, resultRange.min, GRID_RANGE_TOL)) {
+		if (TEQUALS(resultRange.max, resultRange.min, GRID_RANGE_TOL)) {
 			return false;
 		}
 
@@ -548,7 +548,7 @@ vector< ScalarRange >::const_iterator subRangeDifference(
 		const ScalarRange &itRange = *it;
 		// cout << " itRange=" << itRange << endl;
 		if ((itRange.min >= range.max)) {
-			if (!libthing::tequals(range.min, range.max, GRID_RANGE_TOL))
+			if (!TEQUALS(range.min, range.max, GRID_RANGE_TOL))
 				result.push_back(range);
 			//cout << "subRangeDifference return" << endl;
 			return it;
@@ -568,7 +568,7 @@ vector< ScalarRange >::const_iterator subRangeDifference(
 		it++;
 	}
 	// add the left over (if any)
-	if (range.max > range.min && !libthing::tequals(range.min, range.max, GRID_RANGE_TOL)) {
+	if (range.max > range.min && !TEQUALS(range.min, range.max, GRID_RANGE_TOL)) {
 		// cout << "add_left_over =" << range << endl;
 		result.push_back(range);
 	}
@@ -798,7 +798,7 @@ void rangeTrim(const vector<ScalarRange> &src,
 	result.reserve(src.size());
 	for (size_t i = 0; i < src.size(); i++) {
 		const ScalarRange range = src[i];
-		if (!libthing::tequals(range.max, range.min, cutOff)) {
+		if (!TEQUALS(range.max, range.min, cutOff)) {
 			result.push_back(range);
 		}
 

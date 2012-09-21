@@ -7,7 +7,6 @@
 #include "UnitTestUtils.h"
 #include "MglCoreTestCase.h"
 
-#include "libthing/Scalar.h"
 #include "mgl/abstractable.h"
 #include "mgl/meshy.h"
 #include "mgl/configuration.h"
@@ -15,7 +14,6 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 
 string testCaseInputsDir("test_cases/mglCoreTestCase/inputs/");
@@ -155,17 +153,17 @@ void MglCoreTestCase::testLineSegment2dBasics()
 
 }
 
-void MglCoreTestCase::testVector3Basics()
+void MglCoreTestCase::testPoint3TypeBasics()
 {
-	Vector3 foo;
+	Point3Type foo;
 	CPPUNIT_ASSERT( foo.x == 0);
 	CPPUNIT_ASSERT( foo.y == 0);
 	CPPUNIT_ASSERT( foo.z == 0);
-	Vector3 bar = foo;
+	Point3Type bar = foo;
 	CPPUNIT_ASSERT( (void*)&bar != (void*)&foo);
 	CPPUNIT_ASSERT( (void*)&bar.x != (void*)&foo.x);
 
-	Vector3 baz(10, 40, 50 );
+	Point3Type baz(10, 40, 50 );
 	CPPUNIT_ASSERT( baz[0] == 10);
 	CPPUNIT_ASSERT( baz[1] == 40);
 	CPPUNIT_ASSERT( baz[2] == 50);
@@ -176,37 +174,37 @@ void MglCoreTestCase::testVector3Basics()
 	CPPUNIT_ASSERT( baz.y == 400);
 	CPPUNIT_ASSERT( baz.z == 500);
 
-	//verify Vector3.tequals
-	Vector3 v0(0,0,0);
-	Vector3 v1(0,0,SCALAR_EPSILON*2);
+	//verify Point3Type.tequals
+	Point3Type v0(0,0,0);
+	Point3Type v1(0,0,SCALAR_EPSILON*2);
 	CPPUNIT_ASSERT( v0.tequals(v1,SCALAR_EPSILON ) == false );
-	Vector3 v2(0,0,0);
-	Vector3 v3(0,0,SCALAR_EPSILON/2);
+	Point3Type v2(0,0,0);
+	Point3Type v3(0,0,SCALAR_EPSILON/2);
 	CPPUNIT_ASSERT( v2.tequals(v3,SCALAR_EPSILON ) == true );
 
 }
 
 void MglCoreTestCase::testTriangle3Maths() {
 
-	//Vector3 v0, v1, v2;
-	Vector3 v0(0,0,0);
-	Vector3 v1(0,0,0);
-	Vector3 v2(0,0,0);
+	//Point3Type v0, v1, v2;
+	Point3Type v0(0,0,0);
+	Point3Type v1(0,0,0);
+	Point3Type v2(0,0,0);
 	Triangle3 foo(v0,v1,v2);
 
-	Vector3 x1= foo[0];
-	Vector3 x2= foo[1];
-	Vector3 x3= foo[2];
+	Point3Type x1= foo[0];
+	Point3Type x2= foo[1];
+	Point3Type x3= foo[2];
 	CPPUNIT_ASSERT( x1.tequals(foo[0],SCALAR_EPSILON ) );
 	CPPUNIT_ASSERT( x2.tequals(foo[1],SCALAR_EPSILON ) );
 	CPPUNIT_ASSERT( x3.tequals(foo[2],SCALAR_EPSILON ) );
 
-	Vector3 value = foo.normal();
+	Point3Type value = foo.normal();
 	CPPUNIT_ASSERT( v0.tequals(value,SCALAR_EPSILON ) );
 
-	Vector3 v3(0,0,0);
-	Vector3 v4(0,0,0);
-	Vector3 v5(0,0,0);
+	Point3Type v3(0,0,0);
+	Point3Type v4(0,0,0);
+	Point3Type v5(0,0,0);
 	Triangle3 foo2(v0,v1,v2);
 }
 

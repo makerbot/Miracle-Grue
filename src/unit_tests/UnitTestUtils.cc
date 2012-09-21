@@ -8,7 +8,6 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
 
 
 

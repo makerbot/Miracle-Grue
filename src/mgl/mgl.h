@@ -60,9 +60,16 @@ enum axis_e {
 };
 
 typedef libthing::Vector2 PointType;
+typedef libthing::Vector3 Point3Type;
 typedef libthing::LineSegment2 SegmentType;
 typedef libthing::SegmentTable SegmentTable;
 typedef libthing::SegmentVector SegmentVector;
+typedef libthing::Triangle3 Triangle3;
+typedef libthing::Insets InsetsCollection;
+typedef libthing::Exception GeometryException;
+
+#define TEQUALS(a,b,c) libthing::tequals(a,b,c)
+#define TLOWER(a,b,c) libthing::tlower(a,b,c)
 
 
 // Bring over from mgl.cc
@@ -76,7 +83,7 @@ bool convexVertex(const PointType& i,
 std::ostream& operator <<(std::ostream& os,
 		const PointType& pt);
 std::ostream& operator <<(std::ostream& os,
-		const libthing::Vector3& v);
+		const Point3Type& v);
 //std::ostream& operator<<(std::ostream& os, libthing::LineSegment2 const& line);
 
 bool collinear(const SegmentType &prev,
