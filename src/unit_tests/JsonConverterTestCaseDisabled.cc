@@ -76,7 +76,7 @@ void JsonConverterTestCase::testJsonToScalar()
 void JsonConverterTestCase::testVector2ToJson()
 {
 	JsonConverter converter;
-	Vector2 vector(0,100);
+	PointType vector(0,100);
 	Value value;
 	Value exp0(0.0),exp1(100.0);
 	bool ok = converter.loadJsonFromVector2(value, vector);
@@ -100,7 +100,7 @@ void JsonConverterTestCase::testJsonToVector2()
 {
 	JsonConverter converter;
 	Json::Value value;
-	Vector2 expected(5,17),converted;
+	PointType expected(5,17),converted;
 	value.append(Json::Value(5.0));
 	value.append(Json::Value(17.0));
 
@@ -109,7 +109,7 @@ void JsonConverterTestCase::testJsonToVector2()
 	CPPUNIT_ASSERT(expected.tequals(converted,SCALAR_EPSILON) == true);
 
 	Json::Value value2;
-	Vector2 expected2(SCALAR_EPSILON*5,SCALAR_EPSILON*17),converted2;
+	PointType expected2(SCALAR_EPSILON*5,SCALAR_EPSILON*17),converted2;
 	value2.append(Json::Value(SCALAR_EPSILON*5.0));
 	value2.append(Json::Value(SCALAR_EPSILON*17.0));
 	ok = converter.loadVector2FromJson(converted2, value2);
@@ -133,7 +133,7 @@ void fillJsonWithPolygon(Json::Value& value,
 
 bool fillPolygon(mgl::Polygon& poly, int baseX=0, int baseY=0, int delta=1)
 {
-	Vector2 v0(baseX+0,baseY+0),v1(baseX+0,baseY+1),v2(baseX+1,baseY+1);
+	PointType v0(baseX+0,baseY+0),v1(baseX+0,baseY+1),v2(baseX+1,baseY+1);
 	poly.push_back(v0); poly.push_back(v1); poly.push_back(v2);
 	return true;
 }
@@ -189,8 +189,8 @@ void JsonConverterTestCase::testJsonToPolygon( )
 
 inline bool fillPolygons(Polygons& polys, int baseX=0, int baseY=0, int delta=1)
 {
-	Vector2 v0(baseX+0,baseY+0),v1(baseX+0,baseY+1),v2(baseX+1,baseY+1);
-	Vector2 v3(baseX+1,baseY+0),v4(baseX+1,baseY+1),v5(baseX+2,baseY+1);
+	PointType v0(baseX+0,baseY+0),v1(baseX+0,baseY+1),v2(baseX+1,baseY+1);
+	PointType v3(baseX+1,baseY+0),v4(baseX+1,baseY+1),v5(baseX+2,baseY+1);
 	mgl::Polygon p0,p1;
 	p0.push_back(v0); p0.push_back(v1); p0.push_back(v2);
 	p1.push_back(v3); p1.push_back(v4); p1.push_back(v5);
@@ -239,8 +239,8 @@ void JsonConverterTestCase::testJsonToPolygonsGroup()
 void JsonConverterTestCase::testPolygonsToJson()
 {
 	JsonConverter converter;
-	Vector2 v0(0,0),v1(0,1),v2(1,1);
-	Vector2 v3(1,0),v4(1,1),v5(2,1);
+	PointType v0(0,0),v1(0,1),v2(1,1);
+	PointType v3(1,0),v4(1,1),v5(2,1);
 	mgl::Polygon p0,p1;
 	p0.push_back(v0); p0.push_back(v1); p0.push_back(v2);
 	p1.push_back(v3); p1.push_back(v4); p1.push_back(v5);

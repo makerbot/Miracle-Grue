@@ -132,7 +132,7 @@ void castRaysOnSliceAlongY(const std::list<Loop>& outlineLoops,
 		Scalar min,
 		Scalar max,
 		ScalarRangeTable &rangeTable);
-bool crossesOutline(const libthing::LineSegment2 &seg,
+bool crossesOutline(const SegmentType &seg,
 		const libthing::SegmentTable &outline);
 
 
@@ -144,7 +144,7 @@ class Grid
 {
     std::vector<Scalar> xValues; ///< list of spacing between lines along y axis(mm)
     std::vector<Scalar> yValues; ///< list of spacing between lines along x axis(mm)
-    libthing::Vector2 gridOrigin; ///< origin of our grid system
+    PointType gridOrigin; ///< origin of our grid system
 
 public:
     Grid();
@@ -159,7 +159,7 @@ public:
     void init(const Limits &limits, Scalar gridSpacing);
 
 
-    libthing::Vector2 getOrigin() const {return gridOrigin;}
+    PointType getOrigin() const {return gridOrigin;}
 
     const std::vector<Scalar>& getXValues() const{return xValues;}
 

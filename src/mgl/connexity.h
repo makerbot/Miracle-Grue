@@ -102,12 +102,12 @@ public:
 	index_t cutNextFace(const std::list<index_t> &facesLeft,
 							Scalar z,
 							index_t startFaceIndex,
-							libthing::LineSegment2& cut) const;
+							SegmentType& cut) const;
 
-	bool cutFace(Scalar z, const Face &face, libthing::LineSegment2& cut) const;
+	bool cutFace(Scalar z, const Face &face, SegmentType& cut) const;
 
 	void splitLoop(Scalar z, std::list<index_t> &facesLeft,
-			std::list<libthing::LineSegment2> &loop) const;
+			std::list<SegmentType> &loop) const;
 
 private:
 

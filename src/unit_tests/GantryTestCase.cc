@@ -127,7 +127,7 @@ void GantryTestCase::testSquirtSnort(){
 	
 	cout << "\nSnort test\n" << endl;
 	
-	gantry.snort(ss, Vector2(20,20), uder, usion);
+	gantry.snort(ss, PointType(20,20), uder, usion);
 	expected << "G1" << " F" << usion.retractRate << 
 			" A" << -usion.retractDistance << " (snort)" << endl;
 	astring = ss.str();
@@ -140,7 +140,7 @@ void GantryTestCase::testSquirtSnort(){
 	
 	cout << "\nSquirt test\n" << endl;
 	
-	gantry.squirt(ss, Vector2(30,30), uder, usion);
+	gantry.squirt(ss, PointType(30,30), uder, usion);
 	expected << "G1" << " F" << usion.retractRate << 
 			" A" << 0.0 << " (squirt)" << endl;
 	astring = ss.str();

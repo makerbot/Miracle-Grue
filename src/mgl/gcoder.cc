@@ -41,14 +41,14 @@ std::string plural(const char*noun, int count, const char* ending = "s") {
 
 void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extruder,
         double leadIn, double leadOut,
-        Vector2 &start, Vector2 &end) {
+        PointType &start, PointType &end) {
     size_t count = polygon.size();
 
-    const Vector2 &a = polygon[0]; // first element
-    const Vector2 &b = polygon[1];
+    const PointType &a = polygon[0]; // first element
+    const PointType &b = polygon[1];
 
-    const Vector2 &c = polygon[count - 2];
-    const Vector2 &d = polygon[count - 1]; // last element
+    const PointType &c = polygon[count - 2];
+    const PointType &d = polygon[count - 1]; // last element
 
     if (extruder.isVolumetric()) {
         start = a;
@@ -56,9 +56,9 @@ void polygonLeadInAndLeadOut(const mgl::Polygon &polygon, const Extruder &extrud
         return;
     }
 
-    Vector2 ab = b - a;
+    PointType ab = b - a;
     ab.normalise();
-    Vector2 cd = d - c;
+    PointType cd = d - c;
     cd.normalise();
 
     start.x = a.x - ab.x * leadIn;
@@ -493,7 +493,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
     writeEndDotGCode(gout);
 }
 
-Vector2 GCoder::startPoint(const SliceData& sliceData) {
+PointType GCoder::startPoint(const SliceData& sliceData) {
     if (gcoderCfg.doOutlines) {
         return sliceData.extruderSlices[0].boundary[0][0];
     } else if (gcoderCfg.doInsets) {

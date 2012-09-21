@@ -38,12 +38,12 @@ class Shrinky
 	int color;
 	unsigned int counter;
 
-    void writeScadBisectors(const std::vector<libthing::Vector2> & bisectors,
-    						const std::vector<libthing::LineSegment2> & originalSegments);
+    void writeScadBisectors(const std::vector<PointType> & bisectors,
+    						const std::vector<SegmentType> & originalSegments);
 
     void writeScadSegments(	const char* segNames,
 							const char* prefix,
-							const std::vector<libthing::LineSegment2> & segments);
+							const std::vector<SegmentType> & segments);
 
     void closeScadFile();
 public:
@@ -61,18 +61,18 @@ public:
 
 
 
-	void inset(const std::vector<libthing::LineSegment2> & segments,
+	void inset(const std::vector<SegmentType> & segments,
 			Scalar insetDist,
-			std::vector<libthing::LineSegment2> & finalInsets);
+			std::vector<SegmentType> & finalInsets);
 
 	~Shrinky();
 
 private:
-	Scalar insetStep(const std::vector<libthing::LineSegment2> & segments,
+	Scalar insetStep(const std::vector<SegmentType> & segments,
 			Scalar insetDist,
 			Scalar cutoffLength,
 			bool writeThisStep,
-			std::vector<libthing::LineSegment2> & finalInsets);
+			std::vector<SegmentType> & finalInsets);
 };
 
 /// uses a Straight Skeleton algorithm to 'shrink' the outlines to create
@@ -89,8 +89,8 @@ void createShellsForSliceUsingShrinky(const libthing::SegmentVector & 	outlinesS
 		const char *scadFile,
 		std::vector<libthing::SegmentVector> & insetsForLoops);
 
-bool attachSegments(libthing::LineSegment2 &first, 
-		libthing::LineSegment2 &second, Scalar elongation);
+bool attachSegments(SegmentType &first, 
+		SegmentType &second, Scalar elongation);
 
 }
 

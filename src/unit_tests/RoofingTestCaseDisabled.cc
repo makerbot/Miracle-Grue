@@ -70,14 +70,14 @@ void dumpGridRanges(const GridRanges &ranges)
 
 void lineSegmentsFromScalarRanges(const std::vector<ScalarRange> &ranges,
 									Scalar y,
-									std::vector<LineSegment2> &gridSegments)
+									std::vector<SegmentType> &gridSegments)
 {
 	assert(gridSegments.size()==0);
 	gridSegments.reserve(ranges.size());
 	for(size_t i=0; i < ranges.size(); i++)
 	{
 		const ScalarRange &range = ranges[i];
-		gridSegments.push_back(LineSegment2(Vector2(range.min,y), Vector2(range.max,y)));
+		gridSegments.push_back(SegmentType(PointType(range.min,y), PointType(range.max,y)));
 	}
 }
 
@@ -94,7 +94,7 @@ void segmentTableFromRangeTable(const ScalarRangeTable &rangeTable,
 	{
 		Scalar y = yValues[i];
 		const std::vector<ScalarRange> &ranges = rangeTable[i];
-		vector<LineSegment2> &segments = rayTable[i];
+		vector<SegmentType> &segments = rayTable[i];
 		lineSegmentsFromScalarRanges(ranges, y, segments);
 	}
 }
@@ -123,11 +123,11 @@ void RoofingTestCase::testSimple()
 	cout<<endl;
 
 	SegmentTable outlineLoops;
-	outlineLoops.push_back(vector<LineSegment2>());
+	outlineLoops.push_back(vector<SegmentType>());
 
-	LineSegment2 s= LineSegment2(Vector2(0,0), Vector2(0,1));
+	SegmentType s= SegmentType(PointType(0,0), PointType(0,1));
 	outlineLoops[0].push_back(s);
-	outlineLoops[0].push_back(LineSegment2(Vector2(1,0), Vector2(1,1)) );
+	outlineLoops[0].push_back(SegmentType(PointType(1,0), PointType(1,1)) );
 
 	vector<ScalarRange> ranges;
 	Scalar y= 0.5;
@@ -147,106 +147,106 @@ void RoofingTestCase::testSimple()
 
 void addInnerHexLoop(LoopList &loops, Scalar dx=0, Scalar dy=0)
 {
-	loops.push_back(Loop(Vector2( dx + 2.16506, -1.25 + dy )));
+	loops.push_back(Loop(PointType( dx + 2.16506, -1.25 + dy )));
 	Loop &loop = loops.back();
 
 	Loop::cw_iterator loc = loop.clockwise();
 	
 
-	loc = loop.insertPointAfter(Vector2( dx + 2.1669, -1.24605 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.34923, -0.85505 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.35036, -0.85084 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.46202, -0.43412 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.4624, -0.42978 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.5, 0.0 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.49962, 0.00434 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.46202, 0.43412 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.46089, 0.43833 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.34923, 0.85505 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.34739, 0.859 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.16506, 1.25 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.16256, 1.25357 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.91511, 1.60697 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.91203, 1.61005 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.60697, 1.91511 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.6034, 1.91761 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.25, 2.16506 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.24605, 2.16691 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.85505, 2.34923 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.85084, 2.35036 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.43412, 2.46202 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.42978, 2.4624 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.0, 2.5 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.00434, 2.49962 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.43412, 2.46202 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.43833, 2.46089 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.85505, 2.34923 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.859, 2.34739 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.25, 2.16506 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.25357, 2.16256 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.60697, 1.91511 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.61005, 1.91203 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.91511, 1.60697 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.91761, 1.6034 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.16506, 1.25 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.1669, 1.24605 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.34923, 0.85505 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.35036, 0.85084 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.46202, 0.43412 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.4624, 0.42978 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.5, 0.0 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.49962, -0.00434 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.46202, -0.43412 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.46089, -0.43833 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.34923, -0.85505 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.34739, -0.859 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.16506, -1.25 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -2.16256, -1.25357 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.91511, -1.60697 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.91203, -1.61005 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.60697, -1.91511 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.6034, -1.91761 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.25, -2.16506 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -1.24605, -2.1669 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.85505, -2.34923 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.85084, -2.35036 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.43412, -2.46202 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + -0.42978, -2.4624 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.0, -2.5 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.00434, -2.49962 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.43412, -2.46202 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.43833, -2.46089 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.85505, -2.34923 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 0.859, -2.34739 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.25, -2.16506 + dy), loc);
-loc = loop.insertPointAfter(Vector2( dx + 1.25357, -2.16256 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.60697, -1.91511 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.61005, -1.91203 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.91511, -1.60697 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 1.91761, -1.6034 + dy), loc);
-	loc = loop.insertPointAfter(Vector2( dx + 2.16506, -1.25 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.1669, -1.24605 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.34923, -0.85505 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.35036, -0.85084 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.46202, -0.43412 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.4624, -0.42978 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.5, 0.0 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.49962, 0.00434 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.46202, 0.43412 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.46089, 0.43833 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.34923, 0.85505 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.34739, 0.859 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.16506, 1.25 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.16256, 1.25357 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.91511, 1.60697 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.91203, 1.61005 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.60697, 1.91511 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.6034, 1.91761 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.25, 2.16506 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.24605, 2.16691 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.85505, 2.34923 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.85084, 2.35036 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.43412, 2.46202 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.42978, 2.4624 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.0, 2.5 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.00434, 2.49962 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.43412, 2.46202 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.43833, 2.46089 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.85505, 2.34923 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.859, 2.34739 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.25, 2.16506 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.25357, 2.16256 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.60697, 1.91511 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.61005, 1.91203 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.91511, 1.60697 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.91761, 1.6034 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.16506, 1.25 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.1669, 1.24605 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.34923, 0.85505 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.35036, 0.85084 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.46202, 0.43412 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.4624, 0.42978 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.5, 0.0 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.49962, -0.00434 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.46202, -0.43412 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.46089, -0.43833 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.34923, -0.85505 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.34739, -0.859 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.16506, -1.25 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -2.16256, -1.25357 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.91511, -1.60697 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.91203, -1.61005 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.60697, -1.91511 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.6034, -1.91761 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.25, -2.16506 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -1.24605, -2.1669 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.85505, -2.34923 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.85084, -2.35036 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.43412, -2.46202 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + -0.42978, -2.4624 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.0, -2.5 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.00434, -2.49962 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.43412, -2.46202 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.43833, -2.46089 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.85505, -2.34923 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 0.859, -2.34739 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.25, -2.16506 + dy), loc);
+loc = loop.insertPointAfter(PointType( dx + 1.25357, -2.16256 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.60697, -1.91511 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.61005, -1.91203 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.91511, -1.60697 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 1.91761, -1.6034 + dy), loc);
+	loc = loop.insertPointAfter(PointType( dx + 2.16506, -1.25 + dy), loc);
 
 }
 
 void addOuterHexLoop(LoopList &loops, Scalar dx=0, Scalar dy=0)
 {
-  loops.push_back(Loop(Vector2( dx+ 10.0,   -5.773501+dy )));
+  loops.push_back(Loop(PointType( dx+ 10.0,   -5.773501+dy )));
   Loop &loop = loops.back();
 
   Loop::cw_iterator location = loop.clockwise();
 
-  location = loop.insertPointAfter(Vector2( dx +   9.89, -5.83701+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +   0.0, -11.54701+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +  -0.11, -11.483502+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx + -10.0, -5.773501+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx + -10.0, -5.646484+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx + -10.0, 5.773504+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +  -9.89, 5.837012+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +   0.0, 11.54701+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +   0.11, 11.483502+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +  10.0, 5.773504+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +  10.0, 5.646487+ dy ), location);
-  location = loop.insertPointAfter(Vector2( dx +  10.0, -5.773501+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +   9.89, -5.83701+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +   0.0, -11.54701+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +  -0.11, -11.483502+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx + -10.0, -5.773501+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx + -10.0, -5.646484+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx + -10.0, 5.773504+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +  -9.89, 5.837012+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +   0.0, 11.54701+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +   0.11, 11.483502+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +  10.0, 5.773504+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +  10.0, 5.646487+ dy ), location);
+  location = loop.insertPointAfter(PointType( dx +  10.0, -5.773501+ dy ), location);
 }
 
 
@@ -300,7 +300,7 @@ Scalar writeScanLines(ScadDebugFile& fscad,
 	Scalar h = z;
 	for(size_t i=0; i < rayTable.size(); i++)
 	{
-		const std::vector<LineSegment2>& line = rayTable[i];
+		const std::vector<SegmentType>& line = rayTable[i];
 		h = fscad.writeSegments3(name, implementation, line, h, dz, i);
 	}
 
@@ -334,7 +334,7 @@ void RoofingTestCase::testHoly() // test with a hole in the slice
 	{
 		for(size_t i=0; i < rayTable.size(); i++)
 		{
-			std::vector<LineSegment2>& line = rayTable[i];
+			std::vector<SegmentType>& line = rayTable[i];
 			// cout << i << ": " << yValues[i] << ") " << line.size() << endl << "\t";
 			for(size_t j=0; j < line.size(); j++)
 			{
@@ -381,8 +381,8 @@ void RoofingTestCase::testGrid()
 	addValues(xMin, xMax, dy, yValues);
 	addValues(yMin, yMax, dx, xValues);
 
-	Vector2 toRotationCenter(0,0);
-	Vector2 backToOrigin( toRotationCenter * -1);
+	PointType toRotationCenter(0,0);
+	PointType backToOrigin( toRotationCenter * -1);
 
 	Scalar angle = M_PI * 0.5;
 
@@ -431,7 +431,7 @@ void RoofingTestCase::testGrid()
     fscad.close();
 }
 
-void checkSegment(const LineSegment2& s, Scalar x0, Scalar x1, Scalar y0, Scalar y1)
+void checkSegment(const SegmentType& s, Scalar x0, Scalar x1, Scalar y0, Scalar y1)
 {
 	Scalar tol= 1e-6;
 	cout << "Check a" << endl;
@@ -501,7 +501,7 @@ void RoofingTestCase::testBooleanIntersect()
 
 	addValues(xMin, xMax, dy, yValues);
 
-	Vector2 rotationCenter(0,0);
+	PointType rotationCenter(0,0);
 	Scalar angle = M_PI * 0.5;
 
 	ScalarRangeTable rangeTableBottom;
@@ -969,12 +969,12 @@ void SurfaceUnion(const FlatSurface& surface, const FlatSurface &)
 */
 
 
-void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
+void dumpSegments(const char* prefix, const std::vector<SegmentType> &segments)
 {
 	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
     for(size_t id = 0; id < segments.size(); id++)
     {
-    	LineSegment2 seg = segments[id];
+    	SegmentType seg = segments[id];
     	cout  << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
     }
     cout << prefix << "]" << endl;

@@ -10,8 +10,6 @@ using std::ostream;
 using std::endl;
 using std::string;
 using std::stringstream;
-using libthing::LineSegment2;
-using libthing::Vector2;
 
 Gantry::Gantry(const GantryConfig& gCfg) : gantryCfg(gCfg) {
 	set_current_extruder_index('A');
@@ -147,7 +145,7 @@ Scalar Gantry::volumetricE(const Extruder &extruder,
 		Scalar h, Scalar w) const {
 	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
 	//segments get extruded
-	LineSegment2 seg(Vector2(get_x(), get_y()), Vector2(vx, vy));
+	SegmentType seg(PointType(get_x(), get_y()), PointType(vx, vy));
 	Scalar seg_volume = gantryCfg.segmentVolume(extruder, extrusion, seg, h, w);
 
 	Scalar feed_cross_area = extruder.feedCrossSectionArea();
@@ -198,7 +196,7 @@ void Gantry::g1(std::ostream &ss,
 }
 
 void Gantry::squirt(std::ostream &ss, 
-        const Vector2 &/*lineStart*/,
+        const PointType &/*lineStart*/,
 		const Extruder &extruder, 
         const Extrusion &/*extrusion*/) {
 	if(get_extruding())
@@ -218,7 +216,7 @@ void Gantry::squirt(std::ostream &ss,
 }
 
 void Gantry::snort(std::ostream &ss, 
-        const Vector2 &/*lineEnd*/,
+        const PointType &/*lineEnd*/,
 		const Extruder &extruder, 
         const Extrusion &/*extrusion*/) {
 	if(!get_extruding())
@@ -371,7 +369,7 @@ Scalar GantryConfig::get_coarseness() const {
 
 Scalar GantryConfig::segmentVolume(const Extruder &, // extruder,
 		const Extrusion &extrusion,
-		LineSegment2 &segment, Scalar h, Scalar w) const {
+		SegmentType &segment, Scalar h, Scalar w) const {
 	Scalar cross_area = extrusion.crossSectionArea(h, w);
 	Scalar length = segment.length();
 	return cross_area * length;

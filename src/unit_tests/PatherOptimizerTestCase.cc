@@ -19,8 +19,8 @@ void PatherOptimizerTestCase::setUp() {
 
 void PatherOptimizerTestCase::testBasics() {
 	//assert that line intersection works
-	LineSegment2 seg1(PointType(-1,0), PointType(1,0));
-	LineSegment2 seg2(PointType(0,-1), PointType(0,1));
+	SegmentType seg1(PointType(-1,0), PointType(1,0));
+	SegmentType seg2(PointType(0,-1), PointType(0,1));
 	cout << "Testing that lines intersect properly..." << endl;
 	CPPUNIT_ASSERT(seg1.intersects(seg2));
 	pather_optimizer optimizer(true);
@@ -99,12 +99,12 @@ void PatherOptimizerTestCase::testBoundary() {
 		for(OpenPath::const_iterator iter = currentPath.fromStart(); 
 				iter != currentPath.end(); 
 				++iter) {
-			LineSegment2 currentSegment = currentPath.segmentAfterPoint(iter);
+			SegmentType currentSegment = currentPath.segmentAfterPoint(iter);
 			//make sure it doesn't cross a boundary
 			for(Loop::finite_cw_iterator loopIter = loop.clockwiseFinite(); 
 					loopIter != loop.clockwiseEnd(); 
 					++loopIter) {
-				LineSegment2 boundarySegment = loop.segmentAfterPoint(loopIter);
+				SegmentType boundarySegment = loop.segmentAfterPoint(loopIter);
 				CPPUNIT_ASSERT(!currentSegment.intersects(boundarySegment));
 			}
 		}

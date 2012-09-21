@@ -279,13 +279,13 @@ void pather_optimizer_graph::pruneEntries() {
     }
 }
 
-bool pather_optimizer_graph::crossesBoundaries(const libthing::LineSegment2& seg) {
+bool pather_optimizer_graph::crossesBoundaries(const SegmentType& seg) {
     //test if this linesegment crosses any boundaries
     for (BoundaryListType::const_iterator iter =
             boundaries.begin();
             iter != boundaries.end();
             ++iter) {
-        const libthing::LineSegment2& currentBoundary = *iter;
+        const SegmentType& currentBoundary = *iter;
         if (seg.intersects(currentBoundary))
             return true;
     }
@@ -471,7 +471,7 @@ void orientNodepair(pather_optimizer_graph::nodePair& np) {
         std::swap(np.first, np.second);
 }
 
-void orientLineSegment(libthing::LineSegment2& ls) {
+void orientLineSegment(SegmentType& ls) {
     if (ls.a.x >= ls.b.x)
         std::swap(ls.a, ls.b);
 }
@@ -482,8 +482,8 @@ bool compareOrientedNodepair(const pather_optimizer_graph::nodePair& lhs,
             rhs.first->get_position().x;
 }
 
-bool compareOrientedLineSegment(const libthing::LineSegment2& lhs,
-        const libthing::LineSegment2& rhs) {
+bool compareOrientedLineSegment(const SegmentType& lhs,
+        const SegmentType& rhs) {
     return lhs.a.x < rhs.a.x;
 }
 
@@ -527,16 +527,16 @@ public:
     CheckBelowXlinesegment(Scalar nx) : myX(nx) {
     }
 
-    bool operator ()(const libthing::LineSegment2& ls) const {
+    bool operator ()(const SegmentType& ls) const {
         return ls.b.x < myX;
     }
 private:
     Scalar myX;
 };
 
-void stripBeforeX(std::vector<libthing::LineSegment2>& current,
+void stripBeforeX(std::vector<SegmentType>& current,
         Scalar x) {
-    typedef std::vector<libthing::LineSegment2>::iterator iterator;
+    typedef std::vector<SegmentType>::iterator iterator;
 
     iterator ibegin = current.begin();
     iterator iend = current.end();
@@ -550,14 +550,14 @@ void stripBeforeX(std::vector<libthing::LineSegment2>& current,
 class CheckNodepairIntersects {
 public:
 
-    CheckNodepairIntersects(const std::vector<libthing::LineSegment2>& bounds,
+    CheckNodepairIntersects(const std::vector<SegmentType>& bounds,
             std::list<pather_optimizer_graph::nodePair>& dest)
     : myBounds(bounds), myDest(dest) {
     }
 
     bool operator ()(const pather_optimizer_graph::nodePair& np) const {
-        typedef std::vector<libthing::LineSegment2>::const_iterator const_iterator;
-        libthing::LineSegment2 nodeSeg(np.first->get_position(),
+        typedef std::vector<SegmentType>::const_iterator const_iterator;
+        SegmentType nodeSeg(np.first->get_position(),
                 np.second->get_position());
         for (const_iterator boundIter = myBounds.begin();
                 boundIter != myBounds.end();
@@ -570,13 +570,13 @@ public:
         return false;
     }
 private:
-    const std::vector<libthing::LineSegment2>& myBounds;
+    const std::vector<SegmentType>& myBounds;
     std::list<pather_optimizer_graph::nodePair>& myDest;
 };
 
 void stripIntersects(
         std::vector<pather_optimizer_graph::nodePair>& currentNodes,
-        std::vector<libthing::LineSegment2>& currentBoundaries,
+        std::vector<SegmentType>& currentBoundaries,
         std::list<pather_optimizer_graph::nodePair>& crossings) {
     typedef std::vector<pather_optimizer_graph::nodePair>::iterator node_iterator;
 
@@ -603,7 +603,7 @@ void pather_optimizer_graph::bulkLineCrossings(
             compareOrientedLineSegment);
     boundariesSorted = true;
     std::vector<nodePair> activeInputs;
-    std::vector<libthing::LineSegment2> activeBoundaries;
+    std::vector<SegmentType> activeBoundaries;
     std::list<nodePair>::const_iterator currentInput = inputs.begin();
     //iterate through the ordered x coordinates
     for (BoundaryListType::const_iterator boundaryIter = boundaries.begin();

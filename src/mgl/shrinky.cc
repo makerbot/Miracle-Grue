@@ -27,11 +27,11 @@ using namespace libthing;
 
 
 
-void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
+void lengthCheck(const std::vector<SegmentType> &segments, const char *msg)
 {
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
-		const LineSegment2 &seg = segments[i];
+		const SegmentType &seg = segments[i];
 		Scalar l = seg.length();
         // Log::often() << msg << " seg[" << i << "] = " << seg << " l=" << l << endl;
 		if(!( l > 0 ) )
@@ -49,19 +49,19 @@ void lengthCheck(const std::vector<LineSegment2> &segments, const char *msg)
 
 
 
-void connectivityCheck( const std::vector<LineSegment2> &segments,
+void connectivityCheck( const std::vector<SegmentType> &segments,
 						Scalar tol)
 {
 
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
-		const LineSegment2 &prevSeg = segments[prevId];
-		LineSegment2 seg = segments[i];
+		const SegmentType &prevSeg = segments[prevId];
+		SegmentType seg = segments[i];
 
 		if(!prevSeg.b.tequals(seg.a, tol) )
 		{
-			Vector2 dist = prevSeg.b - seg.a;
+			PointType dist = prevSeg.b - seg.a;
 			stringstream ss;
 			ss << "Connectivity error: segment[" << prevId << "] = " << prevSeg << endl;
 			ss << " and segment[" << i << "] = " << seg << endl;
@@ -80,7 +80,7 @@ void connectivityCheck( const std::vector<LineSegment2> &segments,
 	}
 }
 
-void createConvexList(const std::vector<LineSegment2> &segments, std::vector<bool> &convex)
+void createConvexList(const std::vector<SegmentType> &segments, std::vector<bool> &convex)
 {
 	Scalar tol=0.3;
 
@@ -88,13 +88,13 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
     {
         size_t prevId = id==0 ? segments.size()-1 : id-1;
 
-        const LineSegment2 &seg = segments[id];
-        const LineSegment2 &prevSeg = segments[prevId];
+        const SegmentType &seg = segments[id];
+        const SegmentType &prevSeg = segments[prevId];
 
-        const Vector2 & i = prevSeg.a;
-        const Vector2 & j = seg.a;
-        const Vector2 & j2 = prevSeg.b;
-        const Vector2 & k = seg.b;
+        const PointType & i = prevSeg.a;
+        const PointType & j = seg.a;
+        const PointType & j2 = prevSeg.b;
+        const PointType & k = seg.b;
         bool isSameSame = j.tequals(j2, tol);
 
         if(!isSameSame)
@@ -106,7 +106,7 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
         	ss << "j: " << j  << endl;
         	ss << "j2: "<< j2 << endl;
         	ss << "k: " << k  << endl;
-        	Vector2 d = j2 - j;
+        	PointType d = j2 - j;
         	Scalar distance = d.magnitude();
         	ss << "distance " << distance << endl;
         	ss << "SameSame " << isSameSame << endl;
@@ -121,7 +121,7 @@ void createConvexList(const std::vector<LineSegment2> &segments, std::vector<boo
 }
 
 
-void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &segments)
+void segmentsDiagnostic(const char* title , const std::vector<SegmentType> &segments)
 {
 
     Log::info() << endl << title << endl;
@@ -130,17 +130,17 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &seg
     for(size_t id = 0; id < segments.size(); id++)
     {
 
-        const LineSegment2 &seg = segments[id];
+        const SegmentType &seg = segments[id];
         size_t prevId = id==0 ? segments.size()-1 : id-1;
 
-        const LineSegment2 &prevSeg = segments[prevId];
+        const SegmentType &prevSeg = segments[prevId];
 
-        const Vector2 & i = prevSeg.a;
-        const Vector2 & j = seg.a;
-        const Vector2 & j2 = prevSeg.b;
-        const Vector2 & k = seg.b;
+        const PointType & i = prevSeg.a;
+        const PointType & j = seg.a;
+        const PointType & j2 = prevSeg.b;
+        const PointType & k = seg.b;
 
-        Vector2 d = j2 - j;
+        PointType d = j2 - j;
         Scalar distance = d.magnitude();
         Scalar length = seg.squaredLength();
         Scalar angle = d.angleFromPoint2s(i, j, k);
@@ -151,21 +151,21 @@ void segmentsDiagnostic(const char* title , const std::vector<LineSegment2> &seg
 }
 
 
-Vector2 getInsetDirection(const LineSegment2 &seg)
+PointType getInsetDirection(const SegmentType &seg)
 {
 	Vector3 v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
 	Vector3 up(0,0,1);
 	Vector3 inset = v.crossProduct(up);
 	inset.normalise();
-	Vector2 inset2(inset.x, inset.y);
+	PointType inset2(inset.x, inset.y);
 	return inset2;
 }
 
 
-LineSegment2 elongateAndPrelongate(const LineSegment2 &s, Scalar dist)
+SegmentType elongateAndPrelongate(const SegmentType &s, Scalar dist)
 {
-	LineSegment2 segment(s);
-	Vector2 l = segment.b - segment.a;
+	SegmentType segment(s);
+	PointType l = segment.b - segment.a;
 	l.normalise();
 	l *= dist;
 	segment.b += l;
@@ -174,14 +174,14 @@ LineSegment2 elongateAndPrelongate(const LineSegment2 &s, Scalar dist)
 
 }
 
-void insetSegments(const std::vector<LineSegment2> &segments, Scalar d,
-					std::vector<LineSegment2> &insets)
+void insetSegments(const std::vector<SegmentType> &segments, Scalar d,
+					std::vector<SegmentType> &insets)
 {
 	assert(insets.size() == 0);
 	for(size_t i=0; i<segments.size(); i++)
 	{
-		LineSegment2 seg = segments[i];
-		Vector2 inset = getInsetDirection(seg);
+		SegmentType seg = segments[i];
+		PointType inset = getInsetDirection(seg);
 		inset *= d;
 		seg.a += inset;
 		seg.b += inset;
@@ -190,7 +190,7 @@ void insetSegments(const std::vector<LineSegment2> &segments, Scalar d,
 	assert(insets.size() == segments.size());
 }
 
-string segment3(const LineSegment2 &s, Scalar z)
+string segment3(const SegmentType &s, Scalar z)
 {
 	stringstream ss;
 	ss << "[[" << s.a[0] << ", " << s.a[1] << ", " << z << "], [" <<  s.b[0] << ", " << s.b[1] << ", " << z << "]]";
@@ -198,9 +198,9 @@ string segment3(const LineSegment2 &s, Scalar z)
 }
 
 
-void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
+void trimConvexSegments(const std::vector<SegmentType> & rawInsets,
 						const std::vector<bool> &convex,
-						std::vector<LineSegment2> & segments)
+						std::vector<SegmentType> & segments)
 {
 	assert(segments.size() == 0);
 	segments = rawInsets;
@@ -209,13 +209,13 @@ void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 
-		LineSegment2 &currentSegment = segments[i];
-		LineSegment2 &previousSegment = segments[prevId];
+		SegmentType &currentSegment = segments[i];
+		SegmentType &previousSegment = segments[prevId];
 
 		if (convex[i])
 		{
 
-			Vector2 intersection;
+			PointType intersection;
 			bool trimmed = segmentSegmentIntersection(previousSegment, currentSegment, intersection);
 			if(trimmed)
 			{
@@ -235,10 +235,10 @@ void trimConvexSegments(const std::vector<LineSegment2> & rawInsets,
 	}
 }
 
-void AddReflexSegments(	const std::vector<LineSegment2> &segments,
-						const std::vector<LineSegment2> &trimmedInsets,
+void AddReflexSegments(	const std::vector<SegmentType> &segments,
+						const std::vector<SegmentType> &trimmedInsets,
 						const std::vector<bool> &convexVertices,
-						std::vector<LineSegment2> &newSegments)
+						std::vector<SegmentType> &newSegments)
 {
 	assert(newSegments.size() == 0 );
 	newSegments.reserve(segments.size() * 2);
@@ -250,9 +250,9 @@ void AddReflexSegments(	const std::vector<LineSegment2> &segments,
 		if(!convexVertices[i])
 		{
                         // Vector2 center = segments[i].a;
-			Vector2 start  = trimmedInsets[prevId].b;
-			Vector2 end    = trimmedInsets[i].a;
-			LineSegment2 straight(start, end);
+			PointType start  = trimmedInsets[prevId].b;
+			PointType end    = trimmedInsets[i].a;
+			SegmentType straight(start, end);
 			newSegments.push_back(straight);
 		}
 		newSegments.push_back(trimmedInsets[i] );
@@ -260,9 +260,9 @@ void AddReflexSegments(	const std::vector<LineSegment2> &segments,
 
 }
 
-void removeShortSegments(const std::vector<LineSegment2> &segments,
+void removeShortSegments(const std::vector<SegmentType> &segments,
 						 Scalar cutoffLength,
-						 std::vector<LineSegment2> &shorts)
+						 std::vector<SegmentType> &shorts)
 {
 
 	shorts.reserve(segments.size()); // worst case
@@ -271,7 +271,7 @@ void removeShortSegments(const std::vector<LineSegment2> &segments,
 
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
-		const LineSegment2 &seg = segments[i];
+		const SegmentType &seg = segments[i];
 		Scalar length2 = seg.squaredLength();
 		if(length2 > cutoffLength2)
 		{
@@ -304,15 +304,15 @@ Shrinky::Shrinky( const char *scadFileName)
 }
 
 
-bool attachSegments(LineSegment2 &first, LineSegment2 &second, Scalar elongation)
+bool attachSegments(SegmentType &first, SegmentType &second, Scalar elongation)
 {
 //	LineSegment2 s0 = elongateAndPrelongate(first, elongation); // elongate(first, elongation);
 //	LineSegment2 s1 = elongateAndPrelongate(second, elongation); //prelongate(second, elongation);
 
-	LineSegment2 s0 = first.elongate(elongation);
-	LineSegment2 s1 = second.prelongate(elongation);
+	SegmentType s0 = first.elongate(elongation);
+	SegmentType s1 = second.prelongate(elongation);
 
-	Vector2 intersection;
+	PointType intersection;
 	bool trimmed = segmentSegmentIntersection(s0, s1, intersection);
 	if(trimmed)
 	{
@@ -338,32 +338,32 @@ Scalar triangleAltitude(Scalar a, Scalar b, Scalar c)
 
 // an edged has collapsed when its 2 bisectors intersect
 // at an altitude that is lower than the inset distance
-bool edgeCollapse(const LineSegment2& segment,
-					const Vector2& bisector0,
-					const Vector2& bisector1,
+bool edgeCollapse(const SegmentType& segment,
+					const PointType& bisector0,
+					const PointType& bisector1,
 					Scalar elongation,
 					Scalar &collapseDistance)
 {
 	// segment is the base of the triangle
 	// from which we want the altitude
 
-	LineSegment2 bisectorSegment0;
+	SegmentType bisectorSegment0;
 	bisectorSegment0.a = segment.a;
 	bisectorSegment0.b = segment.a + bisector0;
 
-	LineSegment2 bisectorSegment1;
+	SegmentType bisectorSegment1;
 	bisectorSegment1.a = segment.b + bisector1;
 	bisectorSegment1.b = segment.b;
 
-	LineSegment2 s0 = bisectorSegment0.elongate(elongation);
-	LineSegment2 s1 = bisectorSegment1.prelongate(elongation);
-	Vector2 intersection;
+	SegmentType s0 = bisectorSegment0.elongate(elongation);
+	SegmentType s1 = bisectorSegment1.prelongate(elongation);
+	PointType intersection;
 	bool attached = segmentSegmentIntersection(s0, s1, intersection);
 	if(attached)
 	{
 		// the triangle is made from
-		Vector2 edge0 = segment.a -intersection;
-		Vector2 edge1 = segment.b -intersection;
+		PointType edge0 = segment.a -intersection;
+		PointType edge1 = segment.b -intersection;
 		Scalar a, b,c;
 		a = segment.length();
 		b = edge0.magnitude();
@@ -392,10 +392,10 @@ void outMap(const std::multimap<Scalar, unsigned int> &collapsingSegments)
 
 
 
-Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSegments,
-									const std::vector<Vector2> &bisectors,
+Scalar removeFirstCollapsedSegments(	const std::vector<SegmentType> &originalSegments,
+									const std::vector<PointType> &bisectors,
 									Scalar insetDist,
-									std::vector<LineSegment2> &relevantSegments)
+									std::vector<SegmentType> &relevantSegments)
 {
 	Scalar elongation = 100;
 	assert(relevantSegments.size()==0);
@@ -406,16 +406,16 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 	multimap<Scalar, unsigned int> collapsingSegments;
 
     // Log::often() << endl << "removeFirstCollapsedSegments:: looking for collapses" << endl;
-	std::vector<LineSegment2> segments =  originalSegments;
+	std::vector<SegmentType> segments =  originalSegments;
 	for (unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int nextId = i==segments.size()-1 ? 0 : i+1;
 
                 //const LineSegment2 &nextSeg = segments[nextId];
-		const Vector2 &nextBisector = bisectors[nextId];
+		const PointType &nextBisector = bisectors[nextId];
 
-		const LineSegment2 &currentSegment =  segments[i];
-		const Vector2 &currentBisector = bisectors[i];
+		const SegmentType &currentSegment =  segments[i];
+		const PointType &currentBisector = bisectors[i];
 
 		Scalar collapseDistance;
 		// check
@@ -486,16 +486,16 @@ Scalar removeFirstCollapsedSegments(	const std::vector<LineSegment2> &originalSe
 }
 
 // True if the 3 points are collinear
-bool collinear(const Vector2 &a, const Vector2 &b, const Vector2 &c, Scalar tol)
+bool collinear(const PointType &a, const PointType &b, const PointType &c, Scalar tol)
 {
 	Scalar dot = ((b[0]- a[0]) * (c[1] - a[1]) - (c[0] - c[0]) * (b[1] - a[1]));
 	bool r = libthing::tequals(dot, 0, tol);
 	return r;
 }
 
-void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
+void elongateAndTrimSegments(const std::vector<SegmentType> & longSegments,
 					Scalar elongation,
-					std::vector<LineSegment2> &segments)
+					std::vector<SegmentType> &segments)
 {
 	Scalar tol = 1e-6;
 
@@ -505,8 +505,8 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 
-		LineSegment2 &previousSegment = segments[prevId];
-		LineSegment2 &currentSegment =  segments[i];
+		SegmentType &previousSegment = segments[prevId];
+		SegmentType &currentSegment =  segments[i];
 
         //Log::often() << "prev: seg[" << prevId << "] = " << previousSegment << endl;
         //Log::often() << "cur:  seg[" << i << "] = " << currentSegment << endl;
@@ -535,7 +535,7 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 		if(!attached)
 		{
             Log::info() << "!";
-			Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
+			PointType m = (previousSegment.a + currentSegment.b) * 0.5;
 			previousSegment.b = m;
 			currentSegment.a = m;
 
@@ -547,21 +547,21 @@ void elongateAndTrimSegments(const std::vector<LineSegment2> & longSegments,
 
 
 
-void createBisectors(const std::vector<LineSegment2>& segments,
+void createBisectors(const std::vector<SegmentType>& segments,
 						Scalar tol,
-						std::vector<Vector2>  &motorCycles)
+						std::vector<PointType>  &motorCycles)
 {
 	for(unsigned int i=0; i < segments.size(); i++)
 	{
 		unsigned int prevId = i==0 ? segments.size()-1 : i-1;
 
-		const LineSegment2 &prevSeg = segments[prevId];
-		const LineSegment2 &seg = segments[i];
+		const SegmentType &prevSeg = segments[prevId];
+		const SegmentType &seg = segments[i];
 
-		Vector2 prevInset = getInsetDirection(prevSeg);
-		Vector2 inset = getInsetDirection(seg);
+		PointType prevInset = getInsetDirection(prevSeg);
+		PointType inset = getInsetDirection(seg);
 
-		Vector2 bisector = inset;
+		PointType bisector = inset;
 
 		// if points are disjoint, do not combine both insets
 		if(prevSeg.b.tequals(seg.a, tol) )
@@ -574,7 +574,7 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 			// ok... maybe this is a bit drastic and we could combine the biesctors
 			// this author needs to make up his mind about non closed polygon support
 			//
-			Vector2 dist = prevSeg.b - seg.a;
+			PointType dist = prevSeg.b - seg.a;
 			stringstream ss;
 			ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b ;
 			ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
@@ -601,16 +601,16 @@ void createBisectors(const std::vector<LineSegment2>& segments,
 }
 
 
-void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<LineSegment2> & originalSegments)
+void Shrinky::writeScadBisectors(const std::vector<PointType> & bisectors, const std::vector<SegmentType> & originalSegments)
 {
     if(scadFileName){
-        std::vector<LineSegment2> motorCycleTraces;
+        std::vector<SegmentType> motorCycleTraces;
         for(size_t i = 0;i < bisectors.size();i++){
-            Vector2 a = originalSegments[i].a;
-            Vector2 dir = bisectors[i];
+            PointType a = originalSegments[i].a;
+            PointType dir = bisectors[i];
             dir *= 2;
-            Vector2 b = a + dir;
-            LineSegment2 s(a, b);
+            PointType b = a + dir;
+            SegmentType s(a, b);
             motorCycleTraces.push_back(s);
         }
         scadZ = fscad.writeSegments3("bisectors_", "color([0.75,0.5,0.2,1])loop_segments3", motorCycleTraces, scadZ, dz, this->counter);
@@ -620,7 +620,7 @@ void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const s
 
 void Shrinky::writeScadSegments(const char* segNames,
 								const char* prefix,
-								const std::vector<LineSegment2> & segments)
+								const std::vector<SegmentType> & segments)
 {
 	if(scadFileName)
 	{
@@ -630,9 +630,9 @@ void Shrinky::writeScadSegments(const char* segNames,
 	}
 }
 
-void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
+void Shrinky::inset(const std::vector<SegmentType>& originalSegments,
 								Scalar insetDist,
-								std::vector<LineSegment2> &finalInsets)
+								std::vector<SegmentType> &finalInsets)
 {
 	bool writePartialSteps = true;
 
@@ -649,7 +649,7 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 	Scalar tol = 1e-6; // for continuity testing and distance to go
 	Scalar distanceToGo = insetDist;
 
-	std::vector<LineSegment2> initialSegs = originalSegments;
+	std::vector<SegmentType> initialSegs = originalSegments;
 
 	bool done = false;
 	while (!done)
@@ -679,7 +679,7 @@ void Shrinky::inset(const std::vector<LineSegment2>& originalSegments,
 
 }
 
-void removeZeroLengthSegments(const std::vector<LineSegment2> &inputSegments, std::vector<LineSegment2> &segments, Scalar tol)
+void removeZeroLengthSegments(const std::vector<SegmentType> &inputSegments, std::vector<SegmentType> &segments, Scalar tol)
 {
 
 	assert(inputSegments.size() > 0);
@@ -687,7 +687,7 @@ void removeZeroLengthSegments(const std::vector<LineSegment2> &inputSegments, st
 	// deep copy
 	for(unsigned int i = 0; i < inputSegments.size(); i++)
 	{
-		const LineSegment2 &seg = inputSegments[i];
+		const SegmentType &seg = inputSegments[i];
   		if( libthing::tequals(seg.squaredLength(), 0, tol) )
 		{
 			continue;
@@ -696,11 +696,11 @@ void removeZeroLengthSegments(const std::vector<LineSegment2> &inputSegments, st
 	}
 }
 
-Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
+Scalar Shrinky::insetStep(const std::vector<SegmentType>& originalSegments,
 								Scalar insetDist,
 								Scalar continuityTolerance,
                                                                 bool ,//  writePartialStep,
-								std::vector<LineSegment2> &finalInsets)
+								std::vector<SegmentType> &finalInsets)
 {
 	Scalar tol = 1e-6;
 	// magic numbers
@@ -742,11 +742,11 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	        scadZ = dzBefore;
 	    }
 
-	    std::vector<LineSegment2> relevantSegments;
+	    std::vector<SegmentType> relevantSegments;
 	    if(originalSegments.size()>2)
 	    {
             //Log::often() << "...BISECTING..." << endl;
-	    	std::vector<Vector2> bisectors;
+	    	std::vector<PointType> bisectors;
 	    	createBisectors(originalSegments, continuityTolerance, bisectors);
 	    	writeScadBisectors(bisectors, originalSegments);
 
@@ -756,7 +756,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 	    	writeScadSegments("relevants_", "color([0.5,0.5,0,1])", relevantSegments);
 	    }
 
-	    std::vector<LineSegment2> insets;
+	    std::vector<SegmentType> insets;
 		unsigned int relevantCount = relevantSegments.size();
 		if( relevantCount > 2)
 		{
@@ -768,7 +768,7 @@ Scalar Shrinky::insetStep(const std::vector<LineSegment2>& originalSegments,
 		}
 
 
-		std::vector<LineSegment2> connected;
+		std::vector<SegmentType> connected;
 		if(insets.size()>2)
 		{
             //Log::often() << "...ATTACHING..." << endl;
@@ -848,7 +848,7 @@ void createShells( const SegmentVector & outlinesSegments,
 	// dbgs__( "outlineSegmentCount " << outlineSegmentCount)
     for(unsigned int outlineId=0; outlineId < outlinesSegments.size(); outlineId++)
 	{
-    	const std::vector<LineSegment2> &outlineLoop = outlinesSegments[outlineId];
+    	const std::vector<SegmentType> &outlineLoop = outlinesSegments[outlineId];
     	assert(outlineLoop.size() > 0);
 
 		insetsForLoops.push_back(SegmentVector());
@@ -858,7 +858,7 @@ void createShells( const SegmentVector & outlinesSegments,
 		insetTable.reserve(nbOfShells);
 		for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 		{
-			insetTable.push_back(std::vector<LineSegment2>());
+			insetTable.push_back(std::vector<SegmentType>());
 		}
 
                 //unsigned int segmentCountBefore =0;
@@ -869,12 +869,12 @@ void createShells( const SegmentVector & outlinesSegments,
 		{
 
 			Shrinky shrinky;
-			const vector<LineSegment2> *previousInsets  = &outlineLoop;
+			const vector<SegmentType> *previousInsets  = &outlineLoop;
 			for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 			{
 				currentShellIdForErrorReporting = shellId;
 				Scalar insetDistance = insetDistances[shellId];
-				std::vector<LineSegment2> &insets = insetTable[shellId];
+				std::vector<SegmentType> &insets = insetTable[shellId];
 				if((*previousInsets).size() > 2)
 				{
 					shrinky.inset(*previousInsets, insetDistance, insets);
@@ -908,11 +908,11 @@ void createShells( const SegmentVector & outlinesSegments,
 					scad << endl << "*/" << endl;
 
 
-					vector<LineSegment2> previousInsets  = outlineLoop;
+					vector<SegmentType> previousInsets  = outlineLoop;
                                         Log::info() << "Creating file: " << loopScadFile << endl;
                                         Log::info() << "	Number of points " << (int)previousInsets.size() << endl;
 					ScadDebugFile::segment3(cout,"","segments", previousInsets, 0, 0.1);
-					std::vector<LineSegment2> insets;
+					std::vector<SegmentType> insets;
 					for (unsigned int shellId=0; shellId < nbOfShells; shellId++)
 					{
 						Scalar insetDistance = insetDistances[shellId];
@@ -954,8 +954,8 @@ void createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
 			try
 			{
 				Shrinky shrinky;
-				currentShellTable.push_back(std::vector<LineSegment2>());
-				std::vector<LineSegment2> &outlineShell = *currentShellTable.rbegin();
+				currentShellTable.push_back(std::vector<SegmentType>());
+				std::vector<SegmentType> &outlineShell = *currentShellTable.rbegin();
 				Scalar dist = insetDistances[shellId];
 				const SegmentVector *pInputs = NULL;
 				if(shellId == 0)
@@ -967,7 +967,7 @@ void createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
 					pInputs = &insetsForLoops[shellId-1];
 				}
 				const SegmentVector &inputTable = *pInputs;
-				const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
+				const std::vector<SegmentType> & inputSegments = inputTable[outlineId];
 
 				if(inputSegments.size()>2)
 				{
@@ -996,19 +996,19 @@ void createShellsForSliceUsingShrinky(const SegmentVector & outlinesSegments,
 					try
 					{
 						Shrinky shrinky;
-						currentShellTable.push_back(std::vector<LineSegment2>());
-						std::vector<LineSegment2> &outlineShell = *currentShellTable.rbegin();
+						currentShellTable.push_back(std::vector<SegmentType>());
+						std::vector<SegmentType> &outlineShell = *currentShellTable.rbegin();
 						Scalar dist = insetDistances[shellId];
 						if(shellId == 0)
 						{
 							const SegmentVector &inputTable = outlinesSegments;
-							const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
+							const std::vector<SegmentType> & inputSegments = inputTable[outlineId];
 							shrinky.inset(inputSegments, dist, outlineShell);
 						}
 						else
 						{
 							const SegmentVector &inputTable = insetsForLoops[shellId-1];
-							const std::vector<LineSegment2> & inputSegments = inputTable[outlineId];
+							const std::vector<SegmentType> & inputSegments = inputTable[outlineId];
 							shrinky.inset(inputSegments, dist, outlineShell);
 						}
 					}

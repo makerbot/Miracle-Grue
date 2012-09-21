@@ -75,7 +75,7 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
 			for(Loop::const_finite_cw_iterator iter(currentLoop.clockwiseFinite()); 
 					iter != currentLoop.clockwiseEnd(); 
 					++iter) {
-				LineSegment2 segment = currentLoop.segmentAfterPoint(iter);
+				SegmentType segment = currentLoop.segmentAfterPoint(iter);
 				Scalar intersectionX, intersectionY;
 				if (segmentSegmentIntersection(xMin,
 						y,
@@ -111,7 +111,7 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 			for (Loop::const_finite_cw_iterator it(currentLoop.clockwiseFinite()); 
 					it != currentLoop.clockwiseEnd(); 
 					it++) {
-				LineSegment2 segment = currentLoop.segmentAfterPoint(it);
+				SegmentType segment = currentLoop.segmentAfterPoint(it);
 				Scalar intersectionX, intersectionY;
 				if (segmentSegmentIntersection(x,
 						yMin,
@@ -162,7 +162,7 @@ void castRaysOnSliceAlongY(const std::list<Loop> &outlineLoops,
 }
 
 
-bool crossesOutlines(const LineSegment2 &seg,
+bool crossesOutlines(const SegmentType &seg,
 					 const LoopList &outlines) {
 	for (LoopList::const_iterator loop = outlines.begin();
 		 loop != outlines.end(); loop++) {
@@ -171,8 +171,8 @@ bool crossesOutlines(const LineSegment2 &seg,
 		LoopPath lp(*loop, loop->clockwise(), loop->counterClockwise());
 		for (LoopPath::iterator point = lp.fromStart();
 			 point != lp.end(); point++) {
-			LineSegment2 border = loop->segmentAfterPoint(point);
-			Vector2 intersection;
+			SegmentType border = loop->segmentAfterPoint(point);
+			PointType intersection;
 			if (segmentSegmentIntersection(seg, border, intersection))
 				return true;
 		}
@@ -199,11 +199,11 @@ void Grid::gridRangesToOpenPaths(const ScalarRangeTable &rays,
 			OpenPath &path = paths.back();
 
 			if (axis == X_AXIS) {
-				path.appendPoint(Vector2(range->min, *value));
-				path.appendPoint(Vector2(range->max, *value));
+				path.appendPoint(PointType(range->min, *value));
+				path.appendPoint(PointType(range->max, *value));
 			} else {
-				path.appendPoint(Vector2(*value, range->min));
-				path.appendPoint(Vector2(*value, range->max));
+				path.appendPoint(PointType(*value, range->min));
+				path.appendPoint(PointType(*value, range->max));
 			}
 		}
 	}
@@ -225,7 +225,7 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 	PointMap points_remaining;
 
 	//Convert ray ranges to segments and map endpoints
-	vector<Vector2> points;
+	vector<PointType> points;
 	for (size_t i = 0; i < rays.size(); i++) {
 		const vector<ScalarRange> &ray = rays[i];
 
@@ -239,11 +239,11 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 			assert(j->min != j->max);
 
 			if (axis == X_AXIS) {
-				points.push_back(Vector2(j->min, val));
-				points.push_back(Vector2(j->max, val));
+				points.push_back(PointType(j->min, val));
+				points.push_back(PointType(j->max, val));
 			} else {
-				points.push_back(Vector2(val, j->min));
-				points.push_back(Vector2(val, j->max));
+				points.push_back(PointType(val, j->min));
+				points.push_back(PointType(val, j->max));
 			}
 
 			points_remaining[points.size() - 2] = points.size() - 1;
@@ -272,7 +272,7 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 
 			int close = close_i->first;
 
-			Scalar dist = LineSegment2(points[endpoint], points[close])
+			Scalar dist = SegmentType(points[endpoint], points[close])
 					.squaredLength();
 
 			if (dist < closest_dist) {
@@ -282,7 +282,7 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 		}
 
 
-		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
+		if (crossesOutlines(SegmentType(points[endpoint], points[closest]),
 							outlines)) {
 			if(currentPath.size() > 1)
 				paths.push_back(currentPath);

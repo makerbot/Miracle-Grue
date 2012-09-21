@@ -152,13 +152,13 @@ void SlicerCupTestCase::testSpecificIssuesC() {
 }
 
 void addPoints(mgl::Polygon& pol) {
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
+	pol.push_back(PointType());
+	pol.push_back(PointType());
+	pol.push_back(PointType());
+	pol.push_back(PointType());
+	pol.push_back(PointType());
+	pol.push_back(PointType());
+	pol.push_back(PointType());
 }
 
 void addPolys(Polygons& pol) {

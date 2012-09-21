@@ -366,14 +366,14 @@ void ModelReaderTestCase::testMeshyCycleMin()
 
 
 
-Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
+PointType rotateAroundPoint(const PointType &center, Scalar angle, const PointType &p)
 {
 	// translate point back to origin:
-	Vector2 translated = p - center;
+	PointType translated = p - center;
 
-	Vector2 rotated = translated.rotate2d( angle );
+	PointType rotated = translated.rotate2d( angle );
 	// translate point back:
-	Vector2 r = rotated + center;
+	PointType r = rotated + center;
 	return r;
 }
 
@@ -451,11 +451,11 @@ void ModelReaderTestCase::testRotate()
 {
 	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	Vector2 center(4,4);
-	Vector2 a(4,3);
+	PointType center(4,4);
+	PointType a(4,3);
 
 	Scalar angle = M_PI /2;
-	Vector2 b = rotateAroundPoint(center, angle, a);
+	PointType b = rotateAroundPoint(center, angle, a);
 
 	cout << endl << "rotated " << a << " around " << center << " by " << angle << " rads and got " << b << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 5.0, b.x, 0.00001 );
@@ -676,7 +676,7 @@ void ModelReaderTestCase::fixContourProblem()
 	const SliceTable &sliceTable = seg.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 
-	std::vector<LineSegment2> segments;
+	std::vector<SegmentType> segments;
 	// get 2D paths for outline
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	SegmentTable outlinesSegments;

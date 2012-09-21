@@ -52,7 +52,7 @@ ostream& operator<<(std::ostream& os, const Polygon& polygon) {
 
 void rotatePolygon(Polygon& polygon, Scalar angle) {
 	for (unsigned int i = 0; i < polygon.size(); i++) {
-		const Vector2 &p = polygon[i];
+		const PointType &p = polygon[i];
 		polygon[i] = p.rotate2d(angle);
 	}
 }
@@ -150,7 +150,7 @@ ostream& operator<<(ostream& os, const Limits& l) {
 	return os;
 }
 
-ostream& operator <<(ostream &os, const Vector2 &pt) {
+ostream& operator <<(ostream &os, const PointType &pt) {
 	os << "[" << pt.x << ", " << pt.y << "]";
 	return os;
 }
@@ -183,7 +183,7 @@ void exceptionToJson(std::ostream& os, const std::string& mixup, bool warn) {
  * Ex: ((0,0)(0,1)(1,0))  returns -1 (normal points negative Z out of plane)
  * Ex: ((1,0)(0,0)(0,1))  returns 1 (normal points positive Z out of plane)
  */
-Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c) {
+Scalar AreaSign(const PointType &a, const PointType &b, const PointType &c) {
 	Scalar area2;
 	area2 = (b[0] - a[0]) * (Scalar) (c[1] - a[1]) -
 			(c[0] - a[0]) * (Scalar) (b[1] - a[1]);
@@ -195,7 +195,7 @@ Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c) {
  * @returns true if the triangle of these vectors has a negative index,
  * false otherwise
  */
-bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k) {
+bool convexVertex(const PointType &i, const PointType &j, const PointType &k) {
 	return AreaSign(i, j, k) < 0;
 }
 
@@ -208,8 +208,8 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k) {
 /**
  * @returns true if the passed line segments are colinear within the tolerance tol
  */
-bool collinear(const LineSegment2 &prev, const LineSegment2 &current,
-		Scalar tol, Vector2 &mid) {
+bool collinear(const SegmentType &prev, const SegmentType &current,
+		Scalar tol, PointType &mid) {
 
 	Scalar x1 = prev.a[0];
 	Scalar y1 = prev.a[1];

@@ -20,14 +20,14 @@ bool JsonConverter::loadScalarFromJson(Scalar& s, Value& input)
 }
 
 
-bool JsonConverter::loadJsonFromVector2(Value& val, Vector2& input)
+bool JsonConverter::loadJsonFromVector2(Value& val, PointType& input)
 {
 	val.append(Value(input.x));
 	val.append(Value(input.y));
 	return false;
 }
 
-bool JsonConverter::loadVector2FromJson(Vector2& s, Value& input)
+bool JsonConverter::loadVector2FromJson(PointType& s, Value& input)
 {
 	if(input.size() != 2)
 		return false;
@@ -49,7 +49,7 @@ bool JsonConverter::loadJsonFromPolygon(Value& val, Polygon& input)
 	for(Polygon::iterator i = input.begin(); i < input.end(); i++)
 	{
 		//const std::pair<Scalar, unsigned int>& seg = *it;
-		const Vector2& vec = *i;
+		const PointType& vec = *i;
 		Value t;
 		t.append(Value(vec.x));
 		t.append(Value(vec.y));
@@ -66,7 +66,7 @@ bool JsonConverter::loadPolygonFromJson(Polygon& poly,Value& input)
         for ( size_t index = 0; index < input.size(); ++index ){
                         Value& tmp = input[(int)index];
 			if( tmp.size() == 2) {
-				Vector2 vec(tmp[0].asDouble(), tmp[1].asDouble());
+				PointType vec(tmp[0].asDouble(), tmp[1].asDouble());
 				poly.push_back(vec);
 			}
 			else {
@@ -104,7 +104,7 @@ bool JsonConverter::loadJsonFromPolygons(Value& val, Polygons& input)
 		for(Polygon::iterator j = polyList.begin(); j < polyList.end(); j++)
 		{
 			//const std::pair<Scalar, unsigned int>& seg = *it;
-			const Vector2& vec = *j;
+			const PointType& vec = *j;
 			Value t;
 			t.append(Value(vec.x));
 			t.append(Value(vec.y));

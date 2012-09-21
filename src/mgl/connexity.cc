@@ -258,7 +258,7 @@ void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNe
 index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
 						Scalar z,
 						index_t startFaceIndex,
-						LineSegment2& cut) const
+						SegmentType& cut) const
 {
 	std::set<index_t> allNeighbors;
 	getAllNeighbors(startFaceIndex, allNeighbors);
@@ -283,7 +283,7 @@ index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
 }
 
 
-bool Connexity::cutFace(Scalar z, const Face &face, LineSegment2& cut) const
+bool Connexity::cutFace(Scalar z, const Face &face, SegmentType& cut) const
 {
 
 
@@ -307,13 +307,13 @@ bool Connexity::cutFace(Scalar z, const Face &face, LineSegment2& cut) const
 }
 
 
-void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<LineSegment2> &loop) const
+void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<SegmentType> &loop) const
 {
 	assert(loop.size() == 0);
 	assert(facesLeft.size() > 0);
 
 	bool firstCutFound = false;
-	LineSegment2 cut;
+	SegmentType cut;
 
 	index_t faceIndex;
 	while (!firstCutFound)

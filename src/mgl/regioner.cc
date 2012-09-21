@@ -168,7 +168,7 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	tick();
 
 	SegmentTable convexSegs;
-	convexSegs.push_back(std::vector<LineSegment2 > ());
+	convexSegs.push_back(std::vector<SegmentType > ());
 
 	for (Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite();
 			iter != convexLoop.clockwiseEnd(); ++iter) {
@@ -177,14 +177,14 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	}
 
 	SegmentTable outsetSegs;
-	outsetSegs.push_back(std::vector<LineSegment2 > ());
+	outsetSegs.push_back(std::vector<SegmentType > ());
 
 	//outset the convex hull by the configured distance
 	ClipperInsetter().inset(convexSegs, -regionerCfg.raftOutset, outsetSegs);
 	tick();
 
 	Loop raftLoop;
-	for (std::vector<LineSegment2>::const_iterator iter =
+	for (std::vector<SegmentType>::const_iterator iter =
 			outsetSegs.back().begin();
 			iter != outsetSegs.back().end();
 			++iter) {
@@ -261,7 +261,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	for (LoopList::const_iterator iter = sliceOutlines.begin();
 			iter != sliceOutlines.end();
 			++iter) {
-		sliceOutlinesOld.push_back(std::vector<libthing::LineSegment2 > ());
+		sliceOutlinesOld.push_back(std::vector<SegmentType > ());
 		const Loop& currentLoop = *iter;
 		//Convert current loop to a vector of segments
 		for (Loop::const_finite_cw_iterator loopiter =
@@ -293,12 +293,12 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 				setIter != iter->end();
 				++setIter) {
 			currentLoopList.push_back(Loop());
-			const std::vector<libthing::LineSegment2>& currentPoly = *setIter;
+			const std::vector<SegmentType>& currentPoly = *setIter;
 			Loop& currentLoop = currentLoopList.back();
 			Loop::cw_iterator loopIter = currentLoop.clockwiseEnd();
 			//Convert each individual inset to a Loop
 			//Insert points 1 - N
-			for (std::vector<libthing::LineSegment2>::const_iterator polyIter =
+			for (std::vector<SegmentType>::const_iterator polyIter =
 					currentPoly.begin();
 					polyIter != currentPoly.end();
 					++polyIter) {

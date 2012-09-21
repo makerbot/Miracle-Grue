@@ -255,7 +255,7 @@ private:
     const Extruder& extruder,
     const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
-    libthing::Vector2 startPoint(const SliceData &sliceData);
+    PointType startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
 };
 

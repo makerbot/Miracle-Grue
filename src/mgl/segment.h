@@ -33,40 +33,40 @@ namespace mgl
 void createPolysFromloopSegments(const libthing::SegmentVector &SegmentVector, Polygons& loops);
 
 // segments are OK, but polys are better for paths (no repeat point)
-void segments2polygon(const std::vector<libthing::LineSegment2> & segments, mgl::Polygon &loop);
+void segments2polygon(const std::vector<SegmentType> & segments, mgl::Polygon &loop);
 
 // turns triangles into lines
 void segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 		const std::vector<libthing::Triangle3> &allTriangles,
 		Scalar z,
-		std::vector<libthing::LineSegment2> &segments);
+		std::vector<SegmentType> &segments);
 
 // Assembles lines segments into loops (perimeter loops and holes)
-void loopsAndHoleOgy(std::vector<libthing::LineSegment2> &segments,
+void loopsAndHoleOgy(std::vector<SegmentType> &segments,
 					Scalar tol,
-					std::vector< std::vector<libthing::LineSegment2> > &loops);
+					std::vector< std::vector<SegmentType> > &loops);
 
 // 2D translation
-void translateLoops(libthing::SegmentVector &loops, libthing::Vector2 p);
+void translateLoops(libthing::SegmentVector &loops, PointType p);
 
 // moves Segments by a position
-void translateSegments(std::vector<libthing::LineSegment2> &segments, libthing::Vector2 p);
+void translateSegments(std::vector<SegmentType> &segments, PointType p);
 
-void translatePolygon(Polygon &polygon, libthing::Vector2 p);
-void translatePolygons(Polygons &polygons, libthing::Vector2 p);
+void translatePolygon(Polygon &polygon, PointType p);
+void translatePolygons(Polygons &polygons, PointType p);
 
 void rotateLoops(LoopList& loops, Scalar angle);
-void translateLoops(LoopList& loops, libthing::Vector2 p);
-void translateOpenPaths(OpenPathList &paths, libthing::Vector2 p);
+void translateLoops(LoopList& loops, PointType p);
+void translateOpenPaths(OpenPathList &paths, PointType p);
 void rotatePolygon(Polygon& polygon, Scalar angle);
 void rotatePolygons(Polygons& polygons, Scalar angle);
 
-void rotateLoops(std::vector<std::vector<libthing::LineSegment2> > &loops, Scalar angle);
-void rotateSegments(std::vector<libthing::LineSegment2> &segments, Scalar angle);
+void rotateLoops(std::vector<std::vector<SegmentType> > &loops, Scalar angle);
+void rotateSegments(std::vector<SegmentType> &segments, Scalar angle);
 
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
-bool segmentSegmentIntersection(const libthing::LineSegment2 &a, const libthing::LineSegment2 &b, libthing::Vector2 &p);
+bool segmentSegmentIntersection(const SegmentType &a, const SegmentType &b, PointType &p);
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
 

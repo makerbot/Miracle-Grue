@@ -40,17 +40,17 @@ void ClipperTestCase::test_conversion()
 {
 	cout << endl;
 	SegmentVector table;
-	table.push_back(vector<LineSegment2>());
-	vector<LineSegment2> &segs = *table.rbegin();
+	table.push_back(vector<SegmentType>());
+	vector<SegmentType> &segs = *table.rbegin();
 
-	segs.push_back(LineSegment2(Vector2(-25.867, 20.72951), Vector2(-24.93132, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(-24.93132, 20.72951), Vector2(25.867, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(25.867, 20.72951), Vector2(25.867, -22.01515)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.01515), Vector2(25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.80249), Vector2(24.93132, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(24.93132, -22.80249), Vector2(-25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(-25.867, -22.80249), Vector2(-25.867, 19.94217)));
-	segs.push_back(LineSegment2(Vector2(-25.867, 19.94217), Vector2(-25.867, 20.72951)));
+	segs.push_back(SegmentType(PointType(-25.867, 20.72951), PointType(-24.93132, 20.72951)));
+	segs.push_back(SegmentType(PointType(-24.93132, 20.72951), PointType(25.867, 20.72951)));
+	segs.push_back(SegmentType(PointType(25.867, 20.72951), PointType(25.867, -22.01515)));
+	segs.push_back(SegmentType(PointType(25.867, -22.01515), PointType(25.867, -22.80249)));
+	segs.push_back(SegmentType(PointType(25.867, -22.80249), PointType(24.93132, -22.80249)));
+	segs.push_back(SegmentType(PointType(24.93132, -22.80249), PointType(-25.867, -22.80249)));
+	segs.push_back(SegmentType(PointType(-25.867, -22.80249), PointType(-25.867, 19.94217)));
+	segs.push_back(SegmentType(PointType(-25.867, 19.94217), PointType(-25.867, 20.72951)));
 	/*
 	segs.push_back(LineSegment2(Vector2(1,0), Vector2(0,1)) );
 	segs.push_back(LineSegment2(Vector2(0,1), Vector2(1,1)) );
@@ -129,17 +129,17 @@ void ClipperTestCase::testSimpleInset()
 	cout << endl;
 	SegmentTable table;
 
-	table.push_back(vector<LineSegment2>());
-	vector<LineSegment2> &segs = *table.rbegin();
+	table.push_back(vector<SegmentType>());
+	vector<SegmentType> &segs = *table.rbegin();
 
-	segs.push_back(LineSegment2(Vector2(-25.867, 20.72951), Vector2(-24.93132, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(-24.93132, 20.72951), Vector2(25.867, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(25.867, 20.72951), Vector2(25.867, -22.01515)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.01515), Vector2(25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.80249), Vector2(24.93132, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(24.93132, -22.80249), Vector2(-25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(-25.867, -22.80249), Vector2(-25.867, 19.94217)));
-	segs.push_back(LineSegment2(Vector2(-25.867, 19.94217), Vector2(-25.867, 20.72951)));
+	segs.push_back(SegmentType(PointType(-25.867, 20.72951), PointType(-24.93132, 20.72951)));
+	segs.push_back(SegmentType(PointType(-24.93132, 20.72951), PointType(25.867, 20.72951)));
+	segs.push_back(SegmentType(PointType(25.867, 20.72951), PointType(25.867, -22.01515)));
+	segs.push_back(SegmentType(PointType(25.867, -22.01515), PointType(25.867, -22.80249)));
+	segs.push_back(SegmentType(PointType(25.867, -22.80249), PointType(24.93132, -22.80249)));
+	segs.push_back(SegmentType(PointType(24.93132, -22.80249), PointType(-25.867, -22.80249)));
+	segs.push_back(SegmentType(PointType(-25.867, -22.80249), PointType(-25.867, 19.94217)));
+	segs.push_back(SegmentType(PointType(-25.867, 19.94217), PointType(-25.867, 20.72951)));
 
 	// std::reverse(segs.begin(), segs.end());
 

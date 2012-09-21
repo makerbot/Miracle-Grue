@@ -259,13 +259,13 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 	return true;
 }
 
-bool pather_optimizer::crossesBoundaries(const libthing::LineSegment2& seg) {
+bool pather_optimizer::crossesBoundaries(const SegmentType& seg) {
 	//test if this linesegment crosses any boundaries
 	for(BoundaryList::const_iterator iter = 
 			boundaries.begin(); 
 			iter != boundaries.end(); 
 			++iter) {
-		const libthing::LineSegment2& currentBoundary = *iter;
+		const SegmentType& currentBoundary = *iter;
 		if(seg.intersects(currentBoundary))
 			return true;
 	}
@@ -292,7 +292,7 @@ void pather_optimizer::link(
 				continue;
 			if(lastPoint == currentPoint)
 				continue;
-			libthing::LineSegment2 transition(lastPoint, currentPoint);
+			SegmentType transition(lastPoint, currentPoint);
 			if(crossesBoundaries(transition))
 				continue;
 			LabeledOpenPath connection;

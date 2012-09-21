@@ -20,8 +20,6 @@
 
 namespace mgl {
 
-typedef libthing::Vector2 PointType;
-
 typedef std::vector<PointType> PointList;
 typedef std::vector<PointType> VectorList;
 
@@ -138,16 +136,16 @@ public:
 	 *          length segment if this is the last point in the path
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint(ITER &beginning) const{
+	SegmentType segmentAfterPoint(ITER &beginning) const{
 		ITER endpoint = beginning;
 		++endpoint;
 
 		if (isEnd(endpoint))
 			//0 len segment if we're at the last point
-			return libthing::LineSegment2(*beginning, *beginning);
+			return SegmentType(*beginning, *beginning);
 
 		else
-			return libthing::LineSegment2(*beginning, *endpoint);
+			return SegmentType(*beginning, *endpoint);
 	}
 
 	/*! Find points you can start extrusion on for this path.  For an
@@ -419,13 +417,13 @@ public:
 	 *  /return The line segment starting with the point at location
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint (ITER location) const {
+	SegmentType segmentAfterPoint (ITER location) const {
 		ITER second = location;
 		++second;
-		return libthing::LineSegment2(*location, *second);
+		return SegmentType(*location, *second);
 	}
 	template <typename BASE>
-	libthing::LineSegment2 segmentAfterPoint (iterator_finite_gen<BASE> location) const {
+	SegmentType segmentAfterPoint (iterator_finite_gen<BASE> location) const {
 		return segmentAfterPoint(static_cast<iterator_gen<BASE> >(location));
 	}
 	

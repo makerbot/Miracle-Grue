@@ -77,13 +77,13 @@ public:
 	static Scalar segment3(	std::ostream &out,
 							const char* indent,
 							const char* variableName,
-							const std::vector<libthing::LineSegment2> &segments,
+							const std::vector<SegmentType> &segments,
 							Scalar z,
 							Scalar dz);
 
 	Scalar writeSegments3(	const char* name,
 							const char* implementation,
-							const std::vector<libthing::LineSegment2> &segments,
+							const std::vector<SegmentType> &segments,
 							Scalar z,
 							Scalar dz,
 							int slice);
@@ -91,7 +91,7 @@ public:
 
 	void writeSegments2(	const char* name,
 							const char* implementation,
-							const std::vector<libthing::LineSegment2> &segments,
+							const std::vector<SegmentType> &segments,
 							Scalar z,
 							int slice);
 

@@ -12,10 +12,10 @@ using namespace libthing;
 
 
 
-void clip(const std::vector<LineSegment2> &in,
+void clip(const std::vector<SegmentType> &in,
 			unsigned int min,
 			unsigned int max,
-			std::vector<LineSegment2> &out)
+			std::vector<SegmentType> &out)
 {
 	int newSize = in.size() - (max -min);
 	std::cout << "NEW SIZE " << newSize << std::endl;
@@ -25,11 +25,11 @@ void clip(const std::vector<LineSegment2> &in,
 
 	for(unsigned int i =0; i <in.size(); i++)
 	{
-		const LineSegment2 s = in[i];
+		const SegmentType s = in[i];
 		if(i == min-1)
 		{
 			i = max+1; // advance the cursor
-			LineSegment2 s1 = in[i];
+			SegmentType s1 = in[i];
 			s1.a = s.b;
 			out.push_back(s);
 			out.push_back(s1);

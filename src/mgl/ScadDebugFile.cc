@@ -191,14 +191,14 @@ void ScadDebugFile::writePolygons(const char* moduleName,
 Scalar ScadDebugFile::segment3(	ostream &out,
 						const char* indent,
 						const char* variableName,
-						const vector<LineSegment2> &segments,
+						const vector<SegmentType> &segments,
 						Scalar z,
 						Scalar dz)
 {
 	out << indent << variableName<< " =[" << endl;
 	for (size_t i=0; i < segments.size(); i++)
 	{
-		const LineSegment2& segment  = segments[i];
+		const SegmentType& segment  = segments[i];
 		Scalar ax = segment.a[0];
 		Scalar ay = segment.a[1];
 		Scalar az = z;
@@ -219,7 +219,7 @@ Scalar ScadDebugFile::segment3(	ostream &out,
 
 Scalar ScadDebugFile::writeSegments3(	const char* name,
 						const char* implementation,
-						const vector<LineSegment2> &segments,
+						const vector<SegmentType> &segments,
 						Scalar z,
 						Scalar dz,
 						int slice)
@@ -235,7 +235,7 @@ Scalar ScadDebugFile::writeSegments3(	const char* name,
 
 void ScadDebugFile::writeSegments2(	const char* name,
 						const char* implementation,
-						const vector<LineSegment2> &segments,
+						const vector<SegmentType> &segments,
 						Scalar z,
 						int slice)
 {
@@ -244,7 +244,7 @@ void ScadDebugFile::writeSegments2(	const char* name,
 	out << "    segments =[" << endl;
 	for (size_t i=0; i < segments.size(); i++)
 	{
-		const LineSegment2& segment  = segments[i];
+		const SegmentType& segment  = segments[i];
 		Scalar ax = segment.a[0];
 		Scalar ay = segment.a[1];
 		Scalar bx = segment.b[0];

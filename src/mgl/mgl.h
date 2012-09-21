@@ -59,24 +59,27 @@ enum axis_e {
 	Y_AXIS
 };
 
+typedef libthing::Vector2 PointType;
+typedef libthing::LineSegment2 SegmentType;
+
 
 // Bring over from mgl.cc
-Scalar AreaSign(const libthing::Vector2& a,
-		const libthing::Vector2& b,
-		const libthing::Vector2& c);
-bool convexVertex(const libthing::Vector2& i,
-		const libthing::Vector2& j,
-		const libthing::Vector2& k);
+Scalar AreaSign(const PointType& a,
+		const PointType& b,
+		const PointType& c);
+bool convexVertex(const PointType& i,
+		const PointType& j,
+		const PointType& k);
 
 std::ostream& operator <<(std::ostream& os,
-		const libthing::Vector2& pt);
+		const PointType& pt);
 std::ostream& operator <<(std::ostream& os,
 		const libthing::Vector3& v);
 //std::ostream& operator<<(std::ostream& os, libthing::LineSegment2 const& line);
 
-bool collinear(const libthing::LineSegment2 &prev,
-		const libthing::LineSegment2 &current,
-		Scalar tol, libthing::Vector2 &mid);
+bool collinear(const SegmentType &prev,
+		const SegmentType &current,
+		Scalar tol, PointType &mid);
 
 class LayerException : public Exception {
 public:
@@ -149,7 +152,7 @@ private:
 };
 
 /// A polygon is an arbitarty collection of 2d points
-typedef std::vector<libthing::Vector2> Polygon;
+typedef std::vector<PointType> Polygon;
 
 /// Verifies each libthing::Vector2in the passed Polygon are in tolerance
 // tol
