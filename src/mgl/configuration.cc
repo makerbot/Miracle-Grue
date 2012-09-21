@@ -374,8 +374,8 @@ void loadPatherConfigFromFile(const Configuration& config,
 void loadLoopProcessorConfigFromFile(const Configuration& config, 
         LPConfig& lpCfg) {
     lpCfg.coarseness = doubleCheck(
-            config["coarseness"],
-            "coarseness",
+            config["preCoarseness"],
+            "preCoarseness",
             lpCfg.coarseness);
     lpCfg.directionWeight = doubleCheck(
             config["directionWeight"],
