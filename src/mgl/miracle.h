@@ -23,18 +23,18 @@ namespace mgl {
 
 
 void miracleGrue(const GCoderConfig &gcoderCfg,
-		const SlicerConfig &slicerCfg,
-		const RegionerConfig& regionerCfg, 
-		const PatherConfig& patherCfg, 
-		const ExtruderConfig &extruderCfg,
-		const char *modelFile,
-		const char *scadFile,
-		std::ostream& gcodeFile,
-		int firstSliceIdx,
-		int lastSliceIdx,
-		RegionList &regions,
-		std::vector< SliceData > &slices,
-		ProgressBar* progress = NULL);
+				 const SlicerConfig &slicerCfg,
+				 const RegionerConfig& regionerCfg, 
+				 const PatherConfig& patherCfg, 
+				 const ExtruderConfig &extruderCfg,
+				 const char *modelFile,
+				 const char *scadFile,
+				 std::ostream& gcodeFile,
+				 int firstSliceIdx,
+				 int lastSliceIdx,
+				 RegionList &regions,
+				 std::vector< SliceData > &slices,
+				 ProgressBar* progress = NULL);
 
 void slicesFromSlicerAndMesh(
 		std::vector< SliceData > &slices,
