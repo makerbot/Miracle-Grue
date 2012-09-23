@@ -370,7 +370,11 @@ void loadPatherConfigFromFile(const Configuration& config,
             patherCfg.directionWeight);
 }
 
-
+void loadMeshConfigFromFile(const Configuration &config,
+							MeshConfig &meshCfg) {
+	meshCfg.centerX = doubleCheck(config["centerX"], "centerX", 0);
+	meshCfg.centerY = doubleCheck(config["centerY"], "centerY", 0);
+	meshCfg.lowerToBed = boolCheck(config["lowerToBed"], "lowerToBed", true);
 }
 
 

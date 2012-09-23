@@ -90,7 +90,7 @@ void StlWriter::close() {
 
 /// requires firstLayerSlice height, and general layer height
 
-Meshy::Meshy() {}
+Meshy::Meshy(const MeshConfig &config) : meshCfg(config) {}
 
 const std::vector<Triangle3>& Meshy::readAllTriangles() const {
 	return allTriangles;
@@ -352,9 +352,25 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 }
 
 void Meshy::alignToPlate() {
-	if (!tequals(limits.zMin, 0, 0.0000001)) {
-		translate(Vector3(0, 0, -limits.zMin));
+	Vector3 delta(0, 0, 0);
+
+	bool change = false;
+	if (meshCfg.lowerToBed && !tequals(limits.zMin, 0, 0.0000001)) {
+		delta.z = -limits.zMin;
+		change = true;
 	}
+
+	if (!tequals(meshCfg.centerX, 0, 0.0000001)) {
+		delta.x = meshCfg.centerX;
+		change = true;
+	}
+
+	if (!tequals(meshCfg.centerY, 0, 0.0000001)) {
+		delta.Y = meshCfg.centerY;
+		change = true;
+	}
+
+	translate(delta);
 }
 
 void Meshy::translate(const Vector3 &change) {

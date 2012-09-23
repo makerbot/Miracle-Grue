@@ -336,6 +336,9 @@ int main(int argc, char *argv[], char *[]) // envp
 		ExtruderConfig extruderCfg;
 		loadExtruderConfigFromFile(config, extruderCfg);
 
+		MeshConfig meshCfg;
+		loadMeshConfigFromFile(config, meshCfg);
+
 		const char* scad = NULL;
 
 		if (scadFile.size() > 0)

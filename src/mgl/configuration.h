@@ -120,6 +120,7 @@ void loadRegionerConfigFromFile(const Configuration& config,
 		RegionerConfig& regionerCfg);
 void loadPatherConfigFromFile(const Configuration& config, 
 		PatherConfig& patherCfg);
-
+void loadMeshConfigFromFile(const Configuration& config,
+							MeshConfig &meshCfg);
 }
 #endif /* CONFIGURATION_H_ */

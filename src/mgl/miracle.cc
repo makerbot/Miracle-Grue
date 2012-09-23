@@ -19,6 +19,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 					  const RegionerConfig& regionerCfg,
 					  const PatherConfig& patherCfg,
 					  const ExtruderConfig &extruderCfg,
+					  const MeshConfig &meshCfg,
 					  const char *modelFile,
 					  const char *, // scadFileStr,
 					  ostream& gcodeFile,
@@ -28,7 +29,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 					  std::vector< SliceData >&, // slices,
 					  ProgressBar *progress) {
 
-    Meshy mesh;
+    Meshy mesh(meshCfg);
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
 	

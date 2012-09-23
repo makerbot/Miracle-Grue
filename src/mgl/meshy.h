@@ -49,6 +49,16 @@ public:
 
 };
 
+
+class MeshConfig {
+public:
+	Scalar centerX;
+	Scalar centerY;
+	Scalar lowerToBed;
+};
+		
+
+
 // simple class that writes
 // a simple text file STL
 
@@ -89,11 +99,11 @@ class Meshy {
 	/// allTriangles
 	//bufferTriangles
 
+	MeshConfig meshConfig;
 public:
 
 
-	/// requires firstLayerSlice height, and general layer height
-	Meshy();
+	Meshy(const MeshConfig &config);
 	const std::vector<libthing::Triangle3>& readAllTriangles() const;
 	const Limits& readLimits() const;
 
