@@ -15,20 +15,20 @@ using namespace libthing;
 //// @param slices list of output slice (output )
 
 void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
-		const SlicerConfig &slicerCfg,
-		const RegionerConfig& regionerCfg, 
-		const PatherConfig& patherCfg, 
- 	    const ExtruderConfig &extruderCfg,
-		const char *modelFile,
-		const char *, // scadFileStr,
-		ostream& gcodeFile,
-		int, // firstSliceIdx,
-		int, // lastSliceIdx,
-		RegionList &regions,
-		std::vector< SliceData >&, // slices,
-		ProgressBar *progress) {
+					  const SlicerConfig &slicerCfg,
+					  const RegionerConfig& regionerCfg,
+					  const PatherConfig& patherCfg,
+					  const ExtruderConfig &extruderCfg,
+					  const char *modelFile,
+					  const char *, // scadFileStr,
+					  ostream& gcodeFile,
+					  int, // firstSliceIdx,
+					  int, // lastSliceIdx,
+					  RegionList &regions,
+					  std::vector< SliceData >&, // slices,
+					  ProgressBar *progress) {
 
-	Meshy mesh;
+    Meshy mesh;
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
 	
@@ -41,19 +41,13 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Slicer slicer(slicerCfg, progress);
 	LayerLoops layerloops(slicerCfg.firstLayerZ, slicerCfg.layerH);
 
-	//old interface
-	//slicer.tomographyze(segmenter, tomograph);
-	//new interface
 	slicer.generateLoops(segmenter, layerloops);
 
 
 	Regioner regioner(regionerCfg, progress);
 
-	//old interface
-	//regioner.generateSkeleton(tomograph, regions);
-	//new interface
 	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions ,
-			limits, grid);
+							  limits, grid);
 
 	Pather pather(patherCfg, progress);
 
@@ -61,20 +55,10 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	pather.generatePaths(extruderCfg, regions,
 						 layerloops.layerMeasure, grid, layers);
 
-	// pather.writeGcode(gcodeFileStr, modelFile, slices);
-	//std::ofstream gout(gcodeFile);
-
 	GCoder gcoder(gcoderCfg, progress);
 
-	//old interface
-	//	gcoder.writeGcodeFile(slices, layerloops.layerMeasure, gcodeFile, 
-	//			modelFile, firstSliceIdx, lastSliceIdx);
-	//new interface
 	gcoder.writeGcodeFile(layers, layerloops.layerMeasure, 
 			gcodeFile, modelFile);
-
-	//gout.close();
-
 }
 
 
