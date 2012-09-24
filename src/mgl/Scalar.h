@@ -12,9 +12,10 @@
 #include "Scalar_impl.h"
 
 namespace mgl {
-//typedef basic_scalar<10, long int> Scalar;
 
-typedef double Scalar;
+
+//typedef basic_scalar<10, long int> Scalar;
+typedef float Scalar;
 
 template <typename T>
 T abs(const T& arg) { return arg < 0 ? -arg : arg; }

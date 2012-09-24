@@ -59,7 +59,7 @@ Slicy::~Slicy() {
 	closeScadFile();
 }
 
-void Slicy::openScadFile(const char *scadFile, double layerW, Scalar layerH, size_t sliceCount) {
+void Slicy::openScadFile(const char *scadFile, Scalar layerW, Scalar layerH, size_t sliceCount) {
 	if (scadFile != NULL) {
 		fscad.open(scadFile);
 

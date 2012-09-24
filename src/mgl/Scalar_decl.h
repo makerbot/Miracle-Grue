@@ -56,7 +56,8 @@ public:
 private:
     value_type value;
 };
-
+template <int F, typename VT>
+basic_scalar<F, VT>& operator-=(basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
 basic_scalar<F, VT> operator+(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>

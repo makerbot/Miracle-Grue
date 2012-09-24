@@ -71,6 +71,10 @@ void basic_scalar<F, VT>::convertToMath(typename basic_scalar<F, VT>::math_type&
 
 //operator overloads
 template <int F, typename VT>
+basic_scalar<F, VT>& operator-=(basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
+    return lhs+=-rhs;
+}
+template <int F, typename VT>
 basic_scalar<F, VT> operator+(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
     basic_scalar<F, VT> ret = lhs;
     return ret += rhs;
