@@ -5,7 +5,7 @@ using namespace std;
 
 #include "log.h"
 
-Edge::Edge(index_t v0, index_t v1, index_t face)
+Edge::Edge(size_t v0, size_t v1, size_t face)
 	//:vertexIndices({v0,v1},
 	:face0(face), face1(-1)
 {
@@ -20,7 +20,7 @@ void Edge::lookUpIncidentFaces(int& f1, int &f2) const
 	f2 = face1;
 }
 
-int Edge::lookUpNeighbor(index_t face) const
+int Edge::lookUpNeighbor(size_t face) const
 {
 	if((unsigned)face0 == face)
 		return face1;
@@ -46,7 +46,7 @@ bool Edge::operator!=(const Edge &other) const
 	return !(*this == other);
 }
 
-void Edge::connectFace(index_t face)
+void Edge::connectFace(size_t face)
 {
 	if(face0 == face)
 	{

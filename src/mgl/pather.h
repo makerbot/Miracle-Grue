@@ -89,16 +89,16 @@ public:
 			LabeledPathList paths;
 			size_t extruderId;
 		};
-		Layer(Scalar z, Scalar layerh, Scalar layerw, layer_measure_index_t mind)
+		Layer(Scalar z, Scalar layerh, Scalar layerw, layer_measure_size_t mind)
 				: layerZ(z), layerHeight(layerh), layerW(layerw), 
 				measure_index(mind) {}
-		Layer(layer_measure_index_t mind = 0) 
+		Layer(layer_measure_size_t mind = 0) 
 				: layerZ(0), layerHeight(0.27), layerW(0.43), measure_index(mind) {}
 		ExtruderList extruders;
 		Scalar layerZ;		//vertical coordinate
 		Scalar layerHeight;	//thickness
 		Scalar layerW;		//width of filament
-		layer_measure_index_t measure_index;
+		layer_measure_size_t measure_index;
 	};
 	
 	layer_iterator begin();

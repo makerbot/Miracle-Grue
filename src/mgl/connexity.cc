@@ -16,7 +16,7 @@ using namespace std;
 
 #include "log.h"
 
-index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
+size_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
 								const Vector3 &coords,
 								Scalar tolerence)
 {
@@ -33,12 +33,12 @@ index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
 		if( dd < tolerence )
 		{
 			Log::info() << "Found VERTEX" << std::endl;
-			index_t vertexIndex = std::distance(vertices.begin(), it);
+			size_t vertexIndex = std::distance(vertices.begin(), it);
 			return vertexIndex;
 		}
 	}
 
-	index_t vertexIndex;
+	size_t vertexIndex;
 	Log::info() << "NEW VERTEX " << coords << std::endl;
 	Vertex vertex;
 	vertex.point = coords;
@@ -72,17 +72,17 @@ const std::vector<Vertex>& Connexity::readVertices() const
 }
 
 
-index_t Connexity::addTriangle(const TriangleType &t)
+size_t Connexity::addTriangle(const TriangleType &t)
 {
-	index_t faceId = faces.size();
+	size_t faceId = faces.size();
 
 		Log::finest() << "Slicy::addTriangle " << std::endl;
 		Log::finest() << "  v0 " << t[0] << " v1" << t[1] << " v3 " << t[2] << std::endl;
 		Log::finest() << "  id:" << faceId << ": edge (v1,v2, f1,f2)" << std::endl;
 
-	index_t v0 = findOrCreateVertex(t[0]);
-	index_t v1 = findOrCreateVertex(t[1]);
-	index_t v2 = findOrCreateVertex(t[2]);
+	size_t v0 = findOrCreateVertex(t[0]);
+	size_t v1 = findOrCreateVertex(t[1]);
+	size_t v2 = findOrCreateVertex(t[2]);
 
 	Face face;
 	face.edgeIndices[0] = findOrCreateEdge(v0, v1, faceId);
@@ -110,7 +110,7 @@ index_t Connexity::addTriangle(const TriangleType &t)
 
 
 // given a face index, this method returns the cached
-void Connexity::lookupIncidentFacesToFace(index_t faceId, int& face0, int& face1, int& face2) const
+void Connexity::lookupIncidentFacesToFace(size_t faceId, int& face0, int& face1, int& face2) const
 {
 	const Face& face = faces[faceId];
 
@@ -124,14 +124,14 @@ void Connexity::lookupIncidentFacesToFace(index_t faceId, int& face0, int& face1
 
 }
 
-void Connexity::fillEdgeList(Scalar z, std::list<index_t> & crossingEdges) const
+void Connexity::fillEdgeList(Scalar z, std::list<size_t> & crossingEdges) const
 {
 	assert(crossingEdges.size() == 0);
-	for (index_t i=0; i < edges.size(); i++)
+	for (size_t i=0; i < edges.size(); i++)
 	{
 		const Edge &e= edges[i];
-		index_t v0 = e.vertexIndices[0];
-		index_t v1 = e.vertexIndices[1];
+		size_t v0 = e.vertexIndices[0];
+		size_t v1 = e.vertexIndices[1];
 
 		const Vector3 &p0 = vertices[v0].point;
 		const Vector3 &p1 = vertices[v1].point;
@@ -188,11 +188,11 @@ void Connexity::dump(std::ostream& out) const
 
 
 // finds 2 neighboring edges
-std::pair<index_t, index_t> Connexity::edgeToEdges(index_t edgeIndex) const
+std::pair<size_t, size_t> Connexity::edgeToEdges(size_t edgeIndex) const
 {
-	std::pair<index_t, index_t> ret;
+	std::pair<size_t, size_t> ret;
 	const Edge &startEdge = edges[edgeIndex];
-	index_t faceIndex = startEdge.face0;
+	size_t faceIndex = startEdge.face0;
 	const Face &face = faces[faceIndex];
 
 	unsigned int it = 0;
@@ -213,17 +213,17 @@ std::pair<index_t, index_t> Connexity::edgeToEdges(index_t edgeIndex) const
 }
 
 
-void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNeighbors) const
+void Connexity::getAllNeighbors(size_t startFaceIndex, std::set<size_t>& allNeighbors) const
 {
 	const Face &face = faces[startFaceIndex];
-	const std::vector<index_t>& neighbors0 = vertices[ face.vertexIndices[0]].faces;
-	const std::vector<index_t>& neighbors1 = vertices[ face.vertexIndices[1]].faces;
-	const std::vector<index_t>& neighbors2 = vertices[ face.vertexIndices[2]].faces;
+	const std::vector<size_t>& neighbors0 = vertices[ face.vertexIndices[0]].faces;
+	const std::vector<size_t>& neighbors1 = vertices[ face.vertexIndices[1]].faces;
+	const std::vector<size_t>& neighbors2 = vertices[ face.vertexIndices[2]].faces;
 
 
 	for(size_t i=0; i< neighbors0.size(); i++)
 	{
-		index_t faceId = neighbors0[i];
+		size_t faceId = neighbors0[i];
 		if (faceId >=0  && faceId != startFaceIndex)
 		{
 			allNeighbors.insert(faceId);
@@ -231,7 +231,7 @@ void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNe
 	}
 	for(size_t i=0; i< neighbors1.size(); i++)
 	{
-		index_t faceId = neighbors1[i];
+		size_t faceId = neighbors1[i];
 		if (faceId >=0  && faceId != startFaceIndex)
 		{
 			allNeighbors.insert(faceId);
@@ -239,7 +239,7 @@ void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNe
 	}
 	for(size_t i=0; i< neighbors2.size(); i++)
 	{
-		index_t faceId = neighbors2[i];
+		size_t faceId = neighbors2[i];
 		if (faceId >=0  && faceId != startFaceIndex)
 		{
 			allNeighbors.insert(faceId);
@@ -247,23 +247,23 @@ void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNe
 	}
 
 	Log::info() << "All Neighbors of face:" << startFaceIndex <<":" << neighbors0.size() << ", " << neighbors1.size() << ", " << neighbors2.size() << std::endl;
-	for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
+	for(std::set<size_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
 	{
 		Log::info() << " >" << *i << std::endl;
 	}
 }
 
-index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
+size_t Connexity::cutNextFace(const std::list<size_t> &facesLeft,
 						Scalar z,
-						index_t startFaceIndex,
+						size_t startFaceIndex,
 						SegmentType& cut) const
 {
-	std::set<index_t> allNeighbors;
+	std::set<size_t> allNeighbors;
 	getAllNeighbors(startFaceIndex, allNeighbors);
 
-	for(std::set<index_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
+	for(std::set<size_t>::iterator i= allNeighbors.begin(); i != allNeighbors.end(); i++)
 	{
-		index_t faceIndex = *i;
+		size_t faceIndex = *i;
 		// use it only if its in the list of triangles left
 		if(find(facesLeft.begin(), facesLeft.end(), faceIndex) != facesLeft.end())
 		{
@@ -305,7 +305,7 @@ bool Connexity::cutFace(Scalar z, const Face &face, SegmentType& cut) const
 }
 
 
-void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<SegmentType> &loop) const
+void Connexity::splitLoop(Scalar z, std::list<size_t> &facesLeft, std::list<SegmentType> &loop) const
 {
 	assert(loop.size() == 0);
 	assert(facesLeft.size() > 0);
@@ -313,7 +313,7 @@ void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Seg
 	bool firstCutFound = false;
 	SegmentType cut;
 
-	index_t faceIndex;
+	size_t faceIndex;
 	while (!firstCutFound)
 	{
 		if(facesLeft.size() ==0) return;
@@ -352,19 +352,19 @@ void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Seg
 }
 
 
-index_t Connexity::findOrCreateNewEdge(const Vector3 &coords0, 
+size_t Connexity::findOrCreateNewEdge(const Vector3 &coords0, 
 		const Vector3 &coords1, size_t face) {
-	index_t v0 = findOrCreateVertex(coords0);
-	index_t v1 = findOrCreateVertex(coords1);
+	size_t v0 = findOrCreateVertex(coords0);
+	size_t v1 = findOrCreateVertex(coords1);
 	findOrCreateEdge(v0, v1, face);
 	return 0;
 }
 
-index_t Connexity::findOrCreateEdge(index_t v0, index_t v1, size_t face)
+size_t Connexity::findOrCreateEdge(size_t v0, size_t v1, size_t face)
 {
 
 	Edge e(v0, v1, face);
-	index_t edgeIndex;
+	size_t edgeIndex;
 
 	std::vector<Edge>::iterator it = find(edges.begin(), edges.end(), e);
 	if(it == edges.end())
@@ -381,7 +381,7 @@ index_t Connexity::findOrCreateEdge(index_t v0, index_t v1, size_t face)
 	return edgeIndex;
 }
 
-index_t Connexity::findOrCreateVertex(const Vector3 &coords)
+size_t Connexity::findOrCreateVertex(const Vector3 &coords)
 {
 	return findOrCreateVertexIndex(vertices, coords, tolerence);
 }

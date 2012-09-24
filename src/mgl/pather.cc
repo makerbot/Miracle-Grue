@@ -54,7 +54,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		if (currentSlice > lastSliceIdx) break;
 
 		direction = !direction;
-		const layer_measure_index_t layerMeasureId =
+		const layer_measure_size_t layerMeasureId =
 				layerRegions->layerMeasureId;
 
 		//adding these should be handled in gcoder

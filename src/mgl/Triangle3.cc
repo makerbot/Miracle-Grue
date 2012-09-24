@@ -320,7 +320,7 @@ VertexNormTriangle3::VertexNormTriangle3(
 	/// this space intentionally left blank
 }
 
-void VertexNormTriangle3::setVertexNormal(index_t vertex, Vector3& norm)
+void VertexNormTriangle3::setVertexNormal(size_t vertex, Vector3& norm)
 {
 	if(vertex == 0) n0 = norm;
 	else if(vertex == 1) n1 = norm;

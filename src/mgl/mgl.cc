@@ -64,7 +64,7 @@ void rotatePolygons(Polygons& polygons, Scalar angle) {
 }
 
 LayerMeasure::LayerAttributes::LayerAttributes(Scalar d, Scalar t, Scalar wr ,
-		layer_measure_index_t b) 
+		layer_measure_size_t b) 
 		: delta(d), thickness(t), widthRatio(wr), base(b) {}
 bool LayerMeasure::LayerAttributes::isAbsolute() const {
 	return base < 0;
@@ -75,15 +75,15 @@ LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio)
 	attributes[0] = LayerAttributes(0, 0);
 	attributes[0].base = -1;
 }
-layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
+layer_measure_size_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
 	if (TLOWER(z, firstLayerZ, tol))
 		return 0;
 	Scalar const layer = (z + tol - firstLayerZ) / layerH;
-	return static_cast<layer_measure_index_t> (ceil(layer));
+	return static_cast<layer_measure_size_t> (ceil(layer));
 }
 
-Scalar LayerMeasure::sliceIndexToHeight(layer_measure_index_t sliceIndex) const {
+Scalar LayerMeasure::sliceIndexToHeight(layer_measure_size_t sliceIndex) const {
 	return firstLayerZ + sliceIndex * layerH;
 }
 
@@ -103,7 +103,7 @@ void LayerMeasure::setLayerWidthRatio(Scalar wr) {
 	layerWidthRatio = wr;
 }
 const LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
-		layer_measure_index_t layerIndex) const {
+		layer_measure_size_t layerIndex) const {
 	attributesMap::const_iterator iter = attributes.find(layerIndex);
 	if(iter == attributes.end()){
 		stringstream msg;
@@ -114,7 +114,7 @@ const LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
 	return iter->second;
 }
 LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
-		layer_measure_index_t layerIndex) {
+		layer_measure_size_t layerIndex) {
 	attributesMap::iterator iter = attributes.find(layerIndex);
 	if(iter == attributes.end()){
 		stringstream msg;
@@ -124,20 +124,20 @@ LayerMeasure::LayerAttributes& LayerMeasure::getLayerAttributes(
 	}
 	return iter->second;
 }
-Scalar LayerMeasure::getLayerPosition(layer_measure_index_t layerIndex) const {
+Scalar LayerMeasure::getLayerPosition(layer_measure_size_t layerIndex) const {
 	if(layerIndex < 0)
 		return 0.0;
 	const LayerAttributes& currentAttribs = getLayerAttributes(layerIndex);
 	return currentAttribs.delta + getLayerPosition(currentAttribs.base);
 }
-Scalar LayerMeasure::getLayerThickness(layer_measure_index_t layerIndex) const {
+Scalar LayerMeasure::getLayerThickness(layer_measure_size_t layerIndex) const {
 	return getLayerAttributes(layerIndex).thickness;
 }
-Scalar LayerMeasure::getLayerWidth(layer_measure_index_t layerIndex) const {
+Scalar LayerMeasure::getLayerWidth(layer_measure_size_t layerIndex) const {
 	const LayerAttributes& currentAttribs = getLayerAttributes(layerIndex);
 	return currentAttribs.thickness * currentAttribs.widthRatio;
 }
-layer_measure_index_t LayerMeasure::createAttributes(
+layer_measure_size_t LayerMeasure::createAttributes(
 		const LayerAttributes& attribs) {
 	attributes[issuedIndex] = attribs;
 	return issuedIndex++;

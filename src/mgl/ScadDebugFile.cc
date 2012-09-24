@@ -281,7 +281,7 @@ void ScadDebugFile::writeTrianglesModule(	const char* name,
 	for(size_t i=0; i< trianglesForSlice.size(); i++ )
 	{
 
-		index_t index = trianglesForSlice[i];
+		size_t index = trianglesForSlice[i];
 		const TriangleType &t = allTriangles[index];
 		ss << "    [" << t[0].x << ", " << t[0].y << ", " << t[0].z << "], ";
 		ss <<     "[" << t[1].x << ", " << t[1].y << ", " << t[1].z << "], ";

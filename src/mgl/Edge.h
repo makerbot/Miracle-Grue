@@ -9,26 +9,26 @@ namespace mgl{
 class Edge // it's a line.
 {
 public:
-	index_t face0;
+	size_t face0;
 	int face1;
 
 	// vertices is plural for vertex (it's a point, really)
 public:
-	index_t vertexIndices[2];	// the index of the vertices that make out the edge
+	size_t vertexIndices[2];	// the index of the vertices that make out the edge
 
 	friend std::ostream& operator <<(std::ostream &os,const Edge &pt);
 
 
-	Edge(index_t v0, index_t v1, index_t face);
+	Edge(size_t v0, size_t v1, size_t face);
 	void lookUpIncidentFaces(int& f1, int &f2) const;
 
-	int lookUpNeighbor(index_t face) const;
+	int lookUpNeighbor(size_t face) const;
 
 	bool operator==(const Edge &other) const;
 
 	bool operator!=(const Edge &other) const;
 
-	void connectFace(index_t face);
+	void connectFace(size_t face);
 
 };
 

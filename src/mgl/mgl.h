@@ -45,14 +45,14 @@ std::string getMiracleGrueVersionStr();
 
 /// Structure contains list of triangle 'id's, used to
 /// reference which triangle in the master list is related.
-typedef std::vector<index_t> TriangleIndices;
+typedef std::vector<size_t> TriangleIndices;
 
 /// A list of all slices, where each slice
 /// is just a list of triangles id's that are related to
 /// that specified slice.
 typedef std::vector<TriangleIndices> SliceTable;
 
-typedef int layer_measure_index_t;
+typedef int layer_measure_size_t;
 
 enum axis_e {
 	X_AXIS, 
@@ -113,18 +113,18 @@ public:
 	class LayerAttributes {
 	public:
 		LayerAttributes(Scalar d = 0., Scalar t = -1.0, Scalar wr = -1.0, 
-				layer_measure_index_t b = 0);
+				layer_measure_size_t b = 0);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
 		Scalar thickness; // Height of filament
 		Scalar widthRatio;		// Width of filament with respect to thickness
-		layer_measure_index_t base;	// Layer to which delta is relative
+		layer_measure_size_t base;	// Layer to which delta is relative
 	};
 
 	/* Old interface */
 	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio = -1.0);
-	layer_measure_index_t zToLayerAbove(Scalar z) const;
-	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
+	layer_measure_size_t zToLayerAbove(Scalar z) const;
+	Scalar sliceIndexToHeight(layer_measure_size_t layerIndex) const;
 	Scalar getLayerH() const;
 	Scalar getLayerW() const;
 	Scalar getLayerWidthRatio() const;
@@ -132,13 +132,13 @@ public:
 	void setLayerWidthRatio(Scalar wr);
 	
 	/* New interface */
-	const LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex) const;
-	LayerAttributes& getLayerAttributes(layer_measure_index_t layerIndex);
-	Scalar getLayerPosition(layer_measure_index_t layerIndex) const;
-	Scalar getLayerThickness(layer_measure_index_t layerIndex) const;
-	Scalar getLayerWidth(layer_measure_index_t layerIndex) const;
+	const LayerAttributes& getLayerAttributes(layer_measure_size_t layerIndex) const;
+	LayerAttributes& getLayerAttributes(layer_measure_size_t layerIndex);
+	Scalar getLayerPosition(layer_measure_size_t layerIndex) const;
+	Scalar getLayerThickness(layer_measure_size_t layerIndex) const;
+	Scalar getLayerWidth(layer_measure_size_t layerIndex) const;
 		
-	layer_measure_index_t createAttributes(
+	layer_measure_size_t createAttributes(
 			const LayerAttributes& attribs = LayerAttributes());
 	
 
@@ -149,7 +149,7 @@ private:
 		
 	};
 	
-	typedef std::map<layer_measure_index_t, LayerAttributes> attributesMap;
+	typedef std::map<layer_measure_size_t, LayerAttributes> attributesMap;
 
 	Scalar firstLayerZ;
 	Scalar layerH;
@@ -157,7 +157,7 @@ private:
 
 	attributesMap attributes;
 	
-	layer_measure_index_t issuedIndex;
+	layer_measure_size_t issuedIndex;
 };
 
 /// A polygon is an arbitarty collection of 2d points

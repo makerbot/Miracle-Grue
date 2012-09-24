@@ -193,8 +193,8 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 
 	//create a first layer measure with absolute positioning
 	//already done when regionlist initialized
-	//layer_measure_index_t baseIndex = layerMeasure.createAttributes();
-	layer_measure_index_t baseIndex = regionlist.front().layerMeasureId;
+	//layer_measure_size_t baseIndex = layerMeasure.createAttributes();
+	layer_measure_size_t baseIndex = regionlist.front().layerMeasureId;
 	LayerMeasure::LayerAttributes &baseAttr =
 			layerMeasure.getLayerAttributes(baseIndex);
 	baseAttr.delta = 0;
@@ -203,7 +203,7 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	tick();
 	//add interface raft layers in correct order to the beginning of the list
 	for (unsigned raftnum = 1; raftnum < regionerCfg.raftLayers; ++raftnum) {
-		layer_measure_index_t raftIndex = regionlist[raftnum].layerMeasureId;
+		layer_measure_size_t raftIndex = regionlist[raftnum].layerMeasureId;
 		LayerMeasure::LayerAttributes &raftAttr =
 				layerMeasure.getLayerAttributes(raftIndex);
 		raftAttr.delta = regionerCfg.raftBaseThickness +

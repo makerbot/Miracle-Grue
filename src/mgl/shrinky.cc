@@ -331,7 +331,7 @@ bool attachSegments(SegmentType &first, SegmentType &second, Scalar elongation)
 Scalar triangleAltitude(Scalar a, Scalar b, Scalar c)
 {
 	Scalar s = 0.5 * (a+b+c);
-	Scalar h = 2 * SCALAR_SQRT( s*(s-a)*(s-b)*(s-c) ) /a;
+	Scalar h = 2 * sqrt( s*(s-a)*(s-b)*(s-c) ) /a;
 	return h;
 }
 

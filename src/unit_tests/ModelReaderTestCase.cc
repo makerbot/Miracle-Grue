@@ -350,7 +350,7 @@ void ModelReaderTestCase::testMeshyCycleMin()
 //		cout  << " Triangles in this slice" << endl;
 //		for (TriangleIndices::const_iterator j = sliceables.begin(); j != sliceables.end(); j++ )
 //		{
-//			index_t index = (*j);
+//			size_t index = (*j);
 //			const TriangleType& triangle = allTriangles[index];
 ////			cout << "adding triangle # " << index << endl;
 //			sy.addTriangle(triangle);
@@ -688,7 +688,7 @@ void ModelReaderTestCase::fixContourProblem()
 
 	for (unsigned i=0; i < triangleCount; i++)
 	{
-		index_t idx = trianglesForSlice[i];
+		size_t idx = trianglesForSlice[i];
 		const TriangleType &t = allTriangles[idx];
 
 		Point3Type a,b,c;
@@ -861,9 +861,9 @@ void initConfig(Configuration &config)
 //
 //	cout << connexity << endl;
 //
-//	list<index_t> faces;
+//	list<size_t> faces;
 //	size_t faceCount = connexity.readFaces().size();
-//	for(index_t i=0; i< faceCount; i++)
+//	for(size_t i=0; i< faceCount; i++)
 //	{
 //		faces.push_back(i);
 //
@@ -891,7 +891,7 @@ void initConfig(Configuration &config)
 //	cout << "loop with " << loop.size() << "faces" << endl;
 //	cout << "faces left: "  << faces.size()  << " / " << connexity.readEdges().size() << endl;
 //
-////	list<index_t> edges;
+////	list<size_t> edges;
 ////	slicy.fillEdgeList(z,edges);
 ////	dumpIntList(edges);
 //

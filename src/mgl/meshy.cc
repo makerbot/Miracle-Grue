@@ -175,8 +175,8 @@ void Meshy::writeStlFile(const char* fileName) const {
 //	out.open(fileName);
 //
 //	const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
-//	for (std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i != trianglesForSlice.end(); i++) {
-//		index_t index = *i;
+//	for (std::vector<size_t>::const_iterator i = trianglesForSlice.begin(); i != trianglesForSlice.end(); i++) {
+//		size_t index = *i;
 //		const TriangleType &t = allTriangles[index];
 //		out.writeTriangle(t);
 //	}

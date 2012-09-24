@@ -27,7 +27,7 @@ public:
 
 	class Layer{
 	public:
-		Layer(layer_measure_index_t ind = 0);
+		Layer(layer_measure_size_t ind = 0);
 		loop_iterator begin();
 		const_loop_iterator begin() const;
 		loop_iterator end();
@@ -41,10 +41,10 @@ public:
 		loop_iterator erase(loop_iterator from, loop_iterator to);
 		bool empty() const;
 		const LoopList& readLoops() const;
-		layer_measure_index_t getIndex() const;
+		layer_measure_size_t getIndex() const;
 	private:
 		LoopList loops;
-		layer_measure_index_t measure_index;
+		layer_measure_size_t measure_index;
 	};
 	LayerLoops(Scalar firstLayerZ = 0.33, Scalar layerH = 0.27, Scalar layerW = 0.43);
 	layer_iterator begin();

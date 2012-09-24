@@ -83,7 +83,7 @@ public:
 	GridRanges solid;
 	GridRanges sparse;
 
-	layer_measure_index_t layerMeasureId;
+	layer_measure_size_t layerMeasureId;
 };
 
 typedef std::vector<LayerRegions> RegionList;

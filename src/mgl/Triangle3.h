@@ -68,7 +68,7 @@ public:
 			const Vector3& v0, const Vector3& v1, const Vector3& v2,
 			const Vector3& n0, const Vector3& n1, const Vector3& n2);
 
-	void setVertexNormal(index_t vertex, Vector3& norm);
+	void setVertexNormal(size_t vertex, Vector3& norm);
 };
 
 // Triangle3 with vertex normals

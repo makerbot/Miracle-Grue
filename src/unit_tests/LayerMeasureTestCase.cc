@@ -20,8 +20,8 @@ void LayerMeasureTestCase::testLayer0() {
 void LayerMeasureTestCase::testCreatingLayers() {
 	LayerMeasure layerMeasure(0.0, 0.27, 0.43);
 	
-	layer_measure_index_t first; 
-	layer_measure_index_t second; 
+	layer_measure_size_t first; 
+	layer_measure_size_t second; 
 	first = layerMeasure.createAttributes(
 			LayerMeasure::LayerAttributes(0.27, 0.27));
 	second = layerMeasure.createAttributes(
@@ -33,8 +33,8 @@ void LayerMeasureTestCase::testCreatingLayers() {
 void LayerMeasureTestCase::testOffset() {
 	LayerMeasure layerMeasure(0.0, 0.27, 0.43);
 	
-	layer_measure_index_t first; 
-	layer_measure_index_t second; 
+	layer_measure_size_t first; 
+	layer_measure_size_t second; 
 	first = layerMeasure.createAttributes(
 			LayerMeasure::LayerAttributes(0.27, 0.27));
 	second = layerMeasure.createAttributes(

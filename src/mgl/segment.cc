@@ -132,7 +132,7 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
     //#pragma omp parallel for
     for(size_t i = 0;i < triangleCount;i++)
     {
-        index_t triangleIndex = trianglesForSlice[i];
+        size_t triangleIndex = trianglesForSlice[i];
         const TriangleType & triangle = allTriangles[triangleIndex];
         Point3Type a, b;
         // bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);

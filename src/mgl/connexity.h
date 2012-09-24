@@ -30,8 +30,8 @@ namespace mgl // Miracle-Grue's geometry library
 class Face
 {
 public:
-	index_t edgeIndices[3];
-	index_t vertexIndices[3];
+	size_t edgeIndices[3];
+	size_t vertexIndices[3];
 };
 
 
@@ -44,12 +44,12 @@ class Vertex
 public:
 	// Vector3 point;
 	Point3Type point;
-	std::vector<index_t> faces;
+	std::vector<size_t> faces;
 };
 std::ostream& operator<<(std::ostream& os, const Vertex& v);
 
 
-index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices,
+size_t findOrCreateVertexIndex(std::vector<Vertex>& vertices,
 								const Point3Type &coords,
 								Scalar tolerence);
 
@@ -79,44 +79,44 @@ public:
 
 	const std::vector<Vertex>& readVertices() const;
 
-	index_t addTriangle(const TriangleType &t);
+	size_t addTriangle(const TriangleType &t);
 
 
 	// given a face index, this method returns the cached
-	void lookupIncidentFacesToFace(index_t faceId, int& face0, int& face1, int& face2) const;
+	void lookupIncidentFacesToFace(size_t faceId, int& face0, int& face1, int& face2) const;
 
 
 	//
 	// Adds all edges that cross the specified z
 	//
-	void fillEdgeList(Scalar z, std::list<index_t> & crossingEdges) const;
+	void fillEdgeList(Scalar z, std::list<size_t> & crossingEdges) const;
 
 	void dump(std::ostream& out) const;
 
 
 	// finds 2 neighboring edges
-	std::pair<index_t, index_t> edgeToEdges(index_t edgeIndex) const;
+	std::pair<size_t, size_t> edgeToEdges(size_t edgeIndex) const;
 
-	void getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNeighbors) const;
+	void getAllNeighbors(size_t startFaceIndex, std::set<size_t>& allNeighbors) const;
 
-	index_t cutNextFace(const std::list<index_t> &facesLeft,
+	size_t cutNextFace(const std::list<size_t> &facesLeft,
 							Scalar z,
-							index_t startFaceIndex,
+							size_t startFaceIndex,
 							SegmentType& cut) const;
 
 	bool cutFace(Scalar z, const Face &face, SegmentType& cut) const;
 
-	void splitLoop(Scalar z, std::list<index_t> &facesLeft,
+	void splitLoop(Scalar z, std::list<size_t> &facesLeft,
 			std::list<SegmentType> &loop) const;
 
 private:
 
 
-	index_t findOrCreateNewEdge(const Point3Type &coords0, const Point3Type &coords1, size_t face);
+	size_t findOrCreateNewEdge(const Point3Type &coords0, const Point3Type &coords1, size_t face);
 
-	index_t findOrCreateEdge(index_t v0, index_t v1, size_t face);
+	size_t findOrCreateEdge(size_t v0, size_t v1, size_t face);
 
-	index_t findOrCreateVertex(const Point3Type &coords);
+	size_t findOrCreateVertex(const Point3Type &coords);
 
 };
 

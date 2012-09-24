@@ -10,10 +10,11 @@
 
 //#include "Scalar_decl.h"
 //#include "Scalar_impl.h"
-#include "libthing/Scalar.h"
 
 namespace mgl {
 //typedef basic_scalar<10, long int> Scalar;
+
+typedef double Scalar;
 
 Scalar abs(const Scalar& arg);
 Scalar sqrt(const Scalar& arg);
