@@ -1,7 +1,7 @@
 #ifndef VECTOR3_H_
 #define VECTOR3_H_ (1)
 
-#include "libthing/Scalar.h"
+#include "Scalar.h"
 #include "Exception.h"
 
 namespace mgl {

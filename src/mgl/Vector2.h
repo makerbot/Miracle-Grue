@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "libthing/Scalar.h"
+#include "Scalar.h"
 #include "Exception.h"
 
 namespace mgl

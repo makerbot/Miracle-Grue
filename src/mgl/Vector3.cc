@@ -1,5 +1,5 @@
 #include "Vector3.h"
-#include "libthing/Scalar.h"
+#include "Scalar.h"
 
 namespace mgl {
 

@@ -22,7 +22,7 @@
 #include <sstream>
 
 #include "Exception.h"
-#include "libthing/Scalar.h"
+#include "Scalar.h"
 #include "libthing/Vector2.h"
 #include "libthing/Vector3.h"
 #include "libthing/LineSegment2.h"
