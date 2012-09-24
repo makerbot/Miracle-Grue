@@ -1,7 +1,7 @@
 # Miracle Grue
 
 ## Overview 
-This project is the basis for a new toolpathing engine to suppliment skeinforge in the MakerBot/3D printer community.  The engine is C++ based.
+This project is the basis for a new toolpathing engine to supplement skeinforge in the MakerBot/3D printer community.  The engine is C++ based.
 
 # Layout
 
