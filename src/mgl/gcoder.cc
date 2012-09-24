@@ -177,7 +177,7 @@ void GCoder::writeInfills(std::ostream& ss,
         stringstream errormsg;
         errormsg << "\nERROR writing infills in slice " <<
                 sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
+                extruder.id << " : " << mixup.what() << endl;
         Log::info() << errormsg.str();
         Log::severe() << errormsg.str();
     }
@@ -203,10 +203,10 @@ void GCoder::writeSupport(std::ostream &ss,
     } catch (GcoderException& mixup) {
         Log::info() << "ERROR writing support in slice " <<
                 sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
+                extruder.id << " : " << mixup.what() << endl;
         Log::severe() << "ERROR writing support in slice " <<
                 sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
+                extruder.id << " : " << mixup.what() << endl;
     }
 }
 
@@ -241,7 +241,7 @@ void GCoder::writeInsets(std::ostream& ss,
         stringstream errormsg;
         errormsg << "\nERROR writing insets in slice " <<
                 sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
+                extruder.id << " : " << mixup.what() << endl;
         Log::info() << errormsg.str();
         Log::severe() << errormsg.str();
     }
@@ -267,7 +267,7 @@ void GCoder::writeOutlines(std::ostream& ss,
         stringstream errormsg;
         errormsg << "\nERROR writing outlines in slice " <<
                 sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
+                extruder.id << " : " << mixup.what() << endl;
         Log::info() << errormsg.str();
         Log::severe() << errormsg.str();
     }
@@ -550,7 +550,7 @@ void GCoder::writeSlice(std::ostream& ss,
         } catch (GcoderException& mixup) {
             Log::info() << "ERROR writing Z move in slice " <<
                     layerSequence << " for extruder " << currentExtruder.id <<
-                    " : " << mixup.error << endl;
+                    " : " << mixup.what() << endl;
         }
 
         if (gcoderCfg.doOutlines) {

@@ -73,6 +73,19 @@ bool operator==(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
 bool operator!=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs);
 
+template <int F, typename VT>
+basic_scalar<F, VT> abs(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> sqrt(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> sin(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> cos(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> asin(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> acos(const basic_scalar<F, VT>& arg);
+
 }
 
 

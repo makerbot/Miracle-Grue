@@ -3,26 +3,23 @@
 #define MGL_EXCEPTION_H_ (1)
 
 #include <string>
+#include <stdexcept>
 
 namespace mgl {
 
 /**
  * base class for all MGL Exceptions
  */
-class Exception : public std::exception {
+class Exception : public std::runtime_error {
 public:
-	std::string error;
+	Exception(const char *msg) throw() : std::runtime_error(msg) {}
+	Exception(const std::string& msg) throw() : std::runtime_error(msg.c_str()) {}
+};
 
-	Exception(const char *msg) throw() : error(msg) {
-		//	std::cerr << std::endl << msg << std::endl;
-		// fprintf(stderr, "%s", msg);
-	}
-	Exception(const std::string& msg) throw() : error(msg) {}
-	const char* what() const throw() {
-		return error.c_str();
-	}
-	~Exception() throw() {}
-
+class GeometryException : public Exception {
+public:
+    template <typename T>
+    GeometryException(const T& arg) throw() : Exception(arg) {}
 };
 
 } /*end namespace mgl; */

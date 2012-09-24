@@ -66,10 +66,10 @@ typedef libthing::SegmentTable SegmentTable;
 typedef libthing::SegmentVector SegmentVector;
 typedef libthing::Triangle3 Triangle3;
 typedef libthing::Insets InsetsCollection;
-typedef libthing::Exception GeometryException;
+//typedef libthing::Exception GeometryException;
 
-#define TEQUALS(a,b,c) libthing::tequals(a,b,c)
-#define TLOWER(a,b,c) libthing::tlower(a,b,c)
+#define TEQUALS(a,b,c) (a==b)
+#define TLOWER(a,b,c) (a<b)
 
 
 // Bring over from mgl.cc

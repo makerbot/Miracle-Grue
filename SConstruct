@@ -241,6 +241,10 @@ mgl_cc = [
           'src/mgl/slicer.cc',
           'src/mgl/slicer_loops.cc',
           'src/mgl/slicy.cc',
+          'src/mgl/Triangle3.cc',
+          'src/mgl/LineSegment2.cc',
+          'src/mgl/Vector2.cc',
+          'src/mgl/Vector3.cc',
           'src/mgl/loop_utils.cc']
 
 

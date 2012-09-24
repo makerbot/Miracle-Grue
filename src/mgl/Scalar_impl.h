@@ -9,6 +9,7 @@
 #define	MGL_SCALAR_IMPL_H
 
 #include "Scalar_decl.h"
+#include <cmath>
 
 namespace mgl {
 
@@ -106,6 +107,32 @@ bool operator==(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) 
 template <int F, typename VT>
 bool operator!=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
     return !(lhs == rhs);
+}
+
+template <int F, typename VT>
+basic_scalar<F, VT> abs(const basic_scalar<F, VT>& arg) {
+    return arg < 0 ? -arg : arg;
+}
+//no fancy int tricks. We go to double and back
+template <int F, typename VT>
+basic_scalar<F, VT> sqrt(const basic_scalar<F, VT>& arg) {
+    return basic_scalar<F, VT>(sqrt(arg.operator  double()));
+}
+template <int F, typename VT>
+basic_scalar<F, VT> sin(const basic_scalar<F, VT>& arg){
+    return basic_scalar<F, VT>(sin(arg.operator  double()));
+}
+template <int F, typename VT>
+basic_scalar<F, VT> cos(const basic_scalar<F, VT>& arg){
+    return basic_scalar<F, VT>(cos(arg.operator  double()));
+}
+template <int F, typename VT>
+basic_scalar<F, VT> asin(const basic_scalar<F, VT>& arg){
+    return basic_scalar<F, VT>(asin(arg.operator  double()));
+}
+template <int F, typename VT>
+basic_scalar<F, VT> acos(const basic_scalar<F, VT>& arg){
+    return basic_scalar<F, VT>(acos(arg.operator  double()));
 }
 
 }

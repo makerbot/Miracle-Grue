@@ -786,9 +786,9 @@ Scalar Shrinky::insetStep(const std::vector<SegmentType>& originalSegments,
 	catch(ShrinkyException &mixup)
 	{
 
-            Log::info() <<    mixup.error << endl;
+            Log::info() <<    mixup.what() << endl;
 
-        // Log::often() << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.error << endl;
+        // Log::often() << "ABORT MISSION!!! " << insetStepDistance << ": " << mixup.what() << endl;
 		// this is a lie...  but we want to break the loop
 		insetStepDistance = insetDist;
 		throw;
@@ -903,7 +903,7 @@ void createShells( const SegmentVector & outlinesSegments,
 				{
 					std::ostream &scad = shriker.fscad.getOut();
 					scad << "/*" << endl;
-					scad << messup.error;
+					scad << messup.what();
 					scad << endl << "*/" << endl;
 
 
