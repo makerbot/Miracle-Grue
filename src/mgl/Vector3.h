@@ -36,9 +36,6 @@ public:
 
     Vector3 operator/(Scalar s) { return Vector3(x/s, y/s, z/s); }
 
-    // Vector3 other matches this vector within tolerance tol
-    bool tequals(const Vector3 &other, const Scalar tol) const;
-
     Vector3 crossProduct(const Vector3 &vector) const;
 
     // performs a cross product,
@@ -58,6 +55,16 @@ public:
 	Vector3 getNormal() const;
 
     Vector3 unit() const;
+    
+    bool tequals (const Vector3& other, Scalar tol) const { return (*this-other).magnitude() < tol; }
+    
 };
+
+
 } //end namespace mgl
+
+
+
 #endif //VECTOR3_H_
+
+

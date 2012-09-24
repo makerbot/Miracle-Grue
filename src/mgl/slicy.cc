@@ -22,7 +22,7 @@
 using namespace mgl;
 using namespace std;
 
-Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
+Slicy::Slicy(const std::vector<TriangleType> &allTriangles,
 		const Limits& limits,
 		Scalar layerW,
 		Scalar layerH,

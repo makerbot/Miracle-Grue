@@ -70,7 +70,7 @@ public:
 
 	void open(const char* fileName, const char *solid = "Default");
 
-	void writeTriangle(const Triangle3& t);
+	void writeTriangle(const TriangleType& t);
 
 	void close();
 
@@ -82,9 +82,9 @@ public:
  */
 class Meshy {
 	mgl::Limits limits; /// Bounding box for the model
-	std::vector<Triangle3> allTriangles; /// every triangle in the model.
+	std::vector<TriangleType> allTriangles; /// every triangle in the model.
 	
-	std::list<Triangle3> bufferedTriangles; /// list of triangles that
+	std::list<TriangleType> bufferedTriangles; /// list of triangles that
 	/// have been parsed from the file, but not yet analyzed and placed into
 	/// allTriangles
 	//bufferTriangles
@@ -94,14 +94,14 @@ public:
 
 	/// requires firstLayerSlice height, and general layer height
 	Meshy();
-	const std::vector<Triangle3>& readAllTriangles() const;
+	const std::vector<TriangleType>& readAllTriangles() const;
 	const Limits& readLimits() const;
 
 	//
 	// Adds a triangle to the global array and for each slice of interest
 	//
-	void bufferTriangle(Triangle3 t);
-	void addTriangle(Triangle3 &t);
+	void bufferTriangle(TriangleType t);
+	void addTriangle(TriangleType &t);
 	void updateSlicesTriangle(size_t newTriangleId);
 
 

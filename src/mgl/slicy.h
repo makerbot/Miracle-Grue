@@ -44,7 +44,7 @@ class Slicy {
 	ScadDebugFile fscad;
 
 	//Mesh info
-	const std::vector<Triangle3> &allTriangles;
+	const std::vector<TriangleType> &allTriangles;
 	const Limits& limits;
 	//-const LayerMeasure& zTapeMeasure;
 
@@ -69,7 +69,7 @@ class Slicy {
 
 
 public:
-	Slicy(const std::vector<Triangle3> &allTriangles,
+	Slicy(const std::vector<TriangleType> &allTriangles,
 			const Limits& limits,
 			Scalar layerW,
 			Scalar layerH,

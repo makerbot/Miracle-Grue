@@ -79,7 +79,7 @@ public:
 
 	const std::vector<Vertex>& readVertices() const;
 
-	index_t addTriangle(const Triangle3 &t);
+	index_t addTriangle(const TriangleType &t);
 
 
 	// given a face index, this method returns the cached

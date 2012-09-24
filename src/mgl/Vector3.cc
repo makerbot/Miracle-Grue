@@ -13,18 +13,36 @@ Vector3::Vector3(Scalar x, Scalar y, Scalar z)
 
 Scalar Vector3::operator[](unsigned i) const
 {
-	if (i == 0) return x;
-	if (i == 1) return y;
-	if (i == 2) return z;
-	throw GeometryException("index out of range in Scalar Vector3[]");
+    switch(i){
+    case 0:
+        return x;
+        break;
+    case 1:
+        return y;
+        break;
+    case 2:
+        return z;
+        break;
+    default:
+        throw GeometryException("index out of range in Scalar Vector3[]");
+    }
 }
 
 Scalar& Vector3::operator[](unsigned i)
 {
-	if (i == 0) return x;
-	if (i == 1) return y;
-	if (i == 2) return z;
-	throw GeometryException("index out of range in Scalar& Vector3[]");
+	switch(i){
+    case 0:
+        return x;
+        break;
+    case 1:
+        return y;
+        break;
+    case 2:
+        return z;
+        break;
+    default:
+        throw GeometryException("index out of range in Scalar Vector3[]");
+    }
 }
 
 void Vector3::operator*=(const Scalar value)

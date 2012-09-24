@@ -86,7 +86,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	cout << "Slices " << sliceCount << endl;
 
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[70];
-	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+	const vector<TriangleType> &allTriangles = mesh.readAllTriangles();
 	std::vector<SegmentType> segments;
 	Scalar z = seg.readLayerMeasure().sliceIndexToHeight(70);
 	cout  << "z="<< z << endl;
@@ -97,17 +97,17 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 
 
 	index_t triangle_id = trianglesForSlice[33];
-	const Triangle3 &triangle = allTriangles[triangle_id];
+	const TriangleType &triangle = allTriangles[triangle_id];
 
 	cout << "\t" << triangle[0] << ",\t" << triangle[1] << ",\t" << triangle[2] << ","<< endl;
 
 	 // [-25.000000, -0.000002, 19.000000],	[-25.000000, 30.000000, 0.000000],	[-25.000000, -5.000002, 19.000000],
-//	Triangle3 t(Point3Type());
+//	TriangleType t(Point3Type());
 /*
 	for(unsigned int i=0; i < trianglesForSlice.size(); i++)
 	{
 		index_t triangle_id = trianglesForSlice[i];
-		const Triangle3 &triangle = allTriangles[triangle_id];
+		const TriangleType &triangle = allTriangles[triangle_id];
 
 		Point3Type a, b;
 		// bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);

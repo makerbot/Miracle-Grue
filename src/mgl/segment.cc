@@ -123,7 +123,7 @@ bool mgl::segmentSegmentIntersection(const SegmentType &s0, const SegmentType &s
 }
 
 void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
-		const std::vector<Triangle3> &allTriangles,
+		const std::vector<TriangleType> &allTriangles,
 		Scalar z,
 		std::vector<SegmentType> &segments)
 {
@@ -133,7 +133,7 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
     for(size_t i = 0;i < triangleCount;i++)
     {
         index_t triangleIndex = trianglesForSlice[i];
-        const Triangle3 & triangle = allTriangles[triangleIndex];
+        const TriangleType & triangle = allTriangles[triangleIndex];
         Point3Type a, b;
         // bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
         bool cut = triangle.cut(z, a, b);

@@ -21,7 +21,7 @@ public:
 	Segmenter(Scalar firstSliceZ, Scalar layerH);
 	const SliceTable& readSliceTable() const;
 	const LayerMeasure& readLayerMeasure() const;
-	const std::vector<Triangle3>& readAllTriangles() const;
+	const std::vector<TriangleType>& readAllTriangles() const;
 	const Limits& readLimits() const;
 	void tablaturize(const Meshy& mesh);
 private:
@@ -30,7 +30,7 @@ private:
 	SliceTable sliceTable;
 	LayerMeasure zTapeMeasure;
 	
-	std::vector<Triangle3> allTriangles;
+	std::vector<TriangleType> allTriangles;
 	Limits limits;
 };
 

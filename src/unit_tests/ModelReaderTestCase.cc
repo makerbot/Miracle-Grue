@@ -63,8 +63,8 @@ void ModelReaderTestCase::setUp()
 //	Point3Type p2(1,1,0);
 //	Point3Type p3(1,0,0);
 //
-//	Triangle3 t0(p0, p1, p2);
-//	Triangle3 t1(p0, p2, p3);
+//	TriangleType t0(p0, p1, p2);
+//	TriangleType t1(p0, p2, p3);
 //
 //	Connexity sy(0.001);
 //
@@ -105,7 +105,7 @@ void ModelReaderTestCase::testMeshySimple()
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
-	Triangle3  t(Point3Type(0,10,0), Point3Type(0,10,3.4), Point3Type(0,10,1));
+	TriangleType  t(Point3Type(0,10,0), Point3Type(0,10,3.4), Point3Type(0,10,1));
 
 	cout << endl << endl;
 	cout << "t " << t[0] << ", " << t[1] << ", " << t[2] << endl;
@@ -337,7 +337,7 @@ void ModelReaderTestCase::testMeshyCycleMin()
 //	unsigned int t0,t1;
 //	t0=clock();
 //
-//	const vector<Triangle3>& allTriangles = mesh.readAllTriangles();
+//	const vector<TriangleType>& allTriangles = mesh.readAllTriangles();
 //	int sliceIndex = 0;
 //	for (SliceTable::const_iterator i = table.begin(); i != table.end(); i++)
 //	{
@@ -351,7 +351,7 @@ void ModelReaderTestCase::testMeshyCycleMin()
 //		for (TriangleIndices::const_iterator j = sliceables.begin(); j != sliceables.end(); j++ )
 //		{
 //			index_t index = (*j);
-//			const Triangle3& triangle = allTriangles[index];
+//			const TriangleType& triangle = allTriangles[index];
 ////			cout << "adding triangle # " << index << endl;
 //			sy.addTriangle(triangle);
 //		}
@@ -377,7 +377,7 @@ PointType rotateAroundPoint(const PointType &center, Scalar angle, const PointTy
 }
 
 // openscad debugging
-string visibleCut(const Triangle3& t, const Point3Type &a, const Point3Type &b)
+string visibleCut(const TriangleType& t, const Point3Type &a, const Point3Type &b)
 {
 	stringstream out;
 
@@ -403,7 +403,7 @@ void ModelReaderTestCase::testCutTriangle()
 	Point3Type v1(1, 0, 0);
 	Point3Type v2(0,0,1);
 
-	Triangle3 t(v0,v1,v2);
+	TriangleType t(v0,v1,v2);
 
 	Point3Type a,b;
 	bool cut;
@@ -428,7 +428,7 @@ void ModelReaderTestCase::testCutTriangle()
 	Point3Type v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
 	Point3Type v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
 	Point3Type v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
-	Triangle3 tb(v0b,v1b,v2b);
+	TriangleType tb(v0b,v1b,v2b);
 
 
 
@@ -670,7 +670,7 @@ void ModelReaderTestCase::fixContourProblem()
 
 	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
-	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+	const std::vector<TriangleType> &allTriangles = mesh.readAllTriangles();
 	seg.tablaturize(mesh);
 	const SliceTable &sliceTable = seg.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
@@ -689,7 +689,7 @@ void ModelReaderTestCase::fixContourProblem()
 	for (unsigned i=0; i < triangleCount; i++)
 	{
 		index_t idx = trianglesForSlice[i];
-		const Triangle3 &t = allTriangles[idx];
+		const TriangleType &t = allTriangles[idx];
 
 		Point3Type a,b,c;
 		t.zSort(a,b,c);
@@ -839,7 +839,7 @@ void initConfig(Configuration &config)
 //	const SliceTable &sliceTable = seg.readSliceTable();
 //	int layerCount = sliceTable.size();
 //	cout  << "Slice count: "<< layerCount << endl;
-//	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+//	const vector<TriangleType> &allTriangles = mesh.readAllTriangles();
 //	cout << "Faces: " << allTriangles.size() << endl;
 //	cout << "layer " << layerCount-1 << " z: " << seg.readLayerMeasure().sliceIndexToHeight(layerCount-1) << endl;
 //
@@ -855,7 +855,7 @@ void initConfig(Configuration &config)
 //	for (int i=0; i < triangleCount; i++)
 //	{
 //		unsigned int triangleIndex = trianglesInSlice[i];
-//		const Triangle3& t = allTriangles[triangleIndex];
+//		const TriangleType& t = allTriangles[triangleIndex];
 //		connexity.addTriangle(t);
 //	}
 //

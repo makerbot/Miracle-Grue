@@ -59,7 +59,7 @@ bool intersects(const LineSegment2& lhs,
 
 typedef std::vector< std::vector<LineSegment2 > > SegmentVector;
 
-}//end namespace libthing
+}
 
 #endif //LINESEGMENT_H_
 

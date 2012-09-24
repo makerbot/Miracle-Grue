@@ -20,7 +20,7 @@ const SliceTable& Segmenter::readSliceTable() const{
 const LayerMeasure& Segmenter::readLayerMeasure() const{
 	return zTapeMeasure;
 }
-const vector<Triangle3>& Segmenter::readAllTriangles() const{
+const vector<TriangleType>& Segmenter::readAllTriangles() const{
 	return allTriangles;
 }
 const Limits& Segmenter::readLimits() const{
@@ -34,7 +34,7 @@ void Segmenter::tablaturize(const Meshy& mesh){
 		updateSlicesTriangle(i);
 }
 void Segmenter::updateSlicesTriangle(size_t newTriangleId){
-	Triangle3 t = allTriangles[newTriangleId];
+	TriangleType t = allTriangles[newTriangleId];
 	
 	Point3Type a, b, c;
 	t.zSort(a, b, c);

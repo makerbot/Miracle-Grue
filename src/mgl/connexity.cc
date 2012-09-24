@@ -72,7 +72,7 @@ const std::vector<Vertex>& Connexity::readVertices() const
 }
 
 
-index_t Connexity::addTriangle(const Triangle3 &t)
+index_t Connexity::addTriangle(const TriangleType &t)
 {
 	index_t faceId = faces.size();
 
@@ -292,7 +292,7 @@ bool Connexity::cutFace(Scalar z, const Face &face, SegmentType& cut) const
 	Vector3 a(v0.point.x, v0.point.y, v0.point.z);
 	Vector3 b(v1.point.x, v1.point.y, v1.point.z);
 	Vector3 c(v2.point.x, v2.point.y, v2.point.z);
-	Triangle3 triangle(a,b,c);
+	TriangleType triangle(a,b,c);
 
 	bool success = triangle.cut( z, a, b);
 

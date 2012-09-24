@@ -23,10 +23,10 @@
 
 #include "Exception.h"
 #include "Scalar.h"
-#include "libthing/Vector2.h"
-#include "libthing/Vector3.h"
-#include "libthing/LineSegment2.h"
-#include "libthing/Triangle3.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "LineSegment2.h"
+#include "Triangle3.h"
 
 
 //#define M_TAU M_PI*2
@@ -59,13 +59,13 @@ enum axis_e {
 	Y_AXIS
 };
 
-typedef libthing::Vector2 PointType;
-typedef libthing::Vector3 Point3Type;
-typedef libthing::LineSegment2 SegmentType;
-typedef libthing::SegmentTable SegmentTable;
-typedef libthing::SegmentVector SegmentVector;
-typedef libthing::Triangle3 Triangle3;
-typedef libthing::Insets InsetsCollection;
+typedef Vector2 PointType;
+typedef Vector3 Point3Type;
+typedef LineSegment2 SegmentType;
+typedef SegmentTable SegmentTable;
+typedef SegmentVector SegmentVector;
+typedef Triangle3 TriangleType;
+typedef Insets InsetsCollection;
 //typedef libthing::Exception GeometryException;
 
 #define TEQUALS(a,b,c) (a==b)

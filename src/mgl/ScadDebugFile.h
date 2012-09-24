@@ -99,7 +99,7 @@ public:
 	// It is used to display the triangles involved in a slice (layerIndex).
 
 	void writeTrianglesModule(	const char* name,
-								const std::vector<Triangle3>  &allTriangles,
+								const std::vector<TriangleType>  &allTriangles,
 								const TriangleIndices &trianglesForSlice,
 								unsigned int layerIndex);
 	/*
@@ -107,7 +107,7 @@ public:
 								unsigned int layerIndex)
 	{
 		const TriangleIndices &trianglesForSlice = mesh.readSliceTable()[layerIndex];
-		const std::vector<Triangle3>  &allTriangles = mesh.readAllTriangles();
+		const std::vector<TriangleType>  &allTriangles = mesh.readAllTriangles();
 		writeTrianglesModule(name, allTriangles, trianglesForSlice, layerIndex);
 	}
 */

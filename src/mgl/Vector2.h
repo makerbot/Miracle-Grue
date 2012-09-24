@@ -73,6 +73,8 @@ public:
     // around 0,0
     //@ returns a new vector rotated around point 0,0
     Vector2 rotate2d(Scalar angle) const;
+    
+    bool tequals (const Vector2& other, Scalar tol) const { return (*this-other).magnitude() < tol; }
 };
 
 } /* close namespace mgl */
