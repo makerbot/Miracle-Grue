@@ -10,6 +10,8 @@
 
 namespace mgl {
 
+typedef double basic_scalar_internal_type;
+
 template <int F, typename VT>
 class basic_scalar;
 
@@ -31,8 +33,10 @@ public:
     typedef VT value_type;
     static const int FACTOR = F;
     static const value_type FACTOR_PRODUCT = 1 << FACTOR;
-    static const value_type FACTOR2_PRODUCT = FACTOR_PRODUCT << 1;
     
+    typedef double math_type;   //what we use for doing cmath functions
+    
+    basic_scalar();
     template <typename T>
     basic_scalar(const T& other);
     template <typename T>
@@ -45,8 +49,10 @@ public:
     basic_scalar& operator*=(const basic_scalar& other);
     basic_scalar& operator/=(const basic_scalar& other);
     basic_scalar operator-() const;
-    operator float() const;
-    operator double() const;
+    
+    math_type convertToMath() const;
+    void convertToMath(math_type& result) const;
+    
 private:
     value_type value;
 };

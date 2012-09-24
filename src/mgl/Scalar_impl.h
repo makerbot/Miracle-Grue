@@ -13,6 +13,10 @@
 
 namespace mgl {
 
+
+template <int F, typename VT>
+basic_scalar<F, VT>::basic_scalar() 
+        : value(0) {}
 template <int F, typename VT> template <int OF, typename OVT>
 basic_scalar<F, VT>::basic_scalar(const basic_scalar<OF, OVT>& other) 
         : value(other.basic_scalar<OF, OVT>::value << 
@@ -25,10 +29,10 @@ basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const basic_scalar<OF,OVT>&
 }
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>::basic_scalar(const T& other)
-        : value(static_cast<value_type>(other * FACTOR_PRODUCT)) {}
+        : value(static_cast<value_type>(other) * FACTOR_PRODUCT) {}
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const T& other) {
-    value = static_cast<value_type>(other * FACTOR_PRODUCT);
+    value = static_cast<value_type>(other) * FACTOR_PRODUCT;
     return *this;
 }
 template <int F, typename VT>
@@ -53,12 +57,14 @@ basic_scalar<F, VT> basic_scalar<F, VT>::operator -() const {
     return ret;
 }
 template <int F, typename VT>
-basic_scalar<F, VT>::operator float() const{
-    return float(value)*FACTOR_PRODUCT;
+typename basic_scalar<F, VT>::math_type basic_scalar<F, VT>::convertToMath() const{
+    math_type result;
+    convertToMath(result);
+    return result;
 }
 template <int F, typename VT>
-basic_scalar<F, VT>::operator double() const{
-    return double(value)*FACTOR_PRODUCT;
+void basic_scalar<F, VT>::convertToMath(typename basic_scalar<F, VT>::math_type& result) const{
+    result = static_cast<math_type>(value) / FACTOR_PRODUCT;
 }
 
 
@@ -116,23 +122,23 @@ basic_scalar<F, VT> abs(const basic_scalar<F, VT>& arg) {
 //no fancy int tricks. We go to double and back
 template <int F, typename VT>
 basic_scalar<F, VT> sqrt(const basic_scalar<F, VT>& arg) {
-    return basic_scalar<F, VT>(sqrt(arg.operator  double()));
+    return basic_scalar<F, VT>(::sqrt(arg.convertToMath()));
 }
 template <int F, typename VT>
 basic_scalar<F, VT> sin(const basic_scalar<F, VT>& arg){
-    return basic_scalar<F, VT>(sin(arg.operator  double()));
+    return basic_scalar<F, VT>(::sin(arg.convertToMath()));
 }
 template <int F, typename VT>
 basic_scalar<F, VT> cos(const basic_scalar<F, VT>& arg){
-    return basic_scalar<F, VT>(cos(arg.operator  double()));
+    return basic_scalar<F, VT>(::cos(arg.convertToMath()));
 }
 template <int F, typename VT>
 basic_scalar<F, VT> asin(const basic_scalar<F, VT>& arg){
-    return basic_scalar<F, VT>(asin(arg.operator  double()));
+    return basic_scalar<F, VT>(::asin(arg.convertToMath()));
 }
 template <int F, typename VT>
 basic_scalar<F, VT> acos(const basic_scalar<F, VT>& arg){
-    return basic_scalar<F, VT>(acos(arg.operator  double()));
+    return basic_scalar<F, VT>(::acos(arg.convertToMath()));
 }
 
 }
