@@ -29,10 +29,10 @@ basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const basic_scalar<OF,OVT>&
 }
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>::basic_scalar(const T& other)
-        : value(static_cast<value_type>(other) * FACTOR_PRODUCT) {}
+        : value(static_cast<value_type>(other * FACTOR_PRODUCT)) {}
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const T& other) {
-    value = static_cast<value_type>(other) * FACTOR_PRODUCT;
+    value = static_cast<value_type>(other * FACTOR_PRODUCT);
     return *this;
 }
 template <int F, typename VT>
