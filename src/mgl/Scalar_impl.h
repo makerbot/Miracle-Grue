@@ -66,6 +66,14 @@ template <int F, typename VT>
 void basic_scalar<F, VT>::convertToMath(typename basic_scalar<F, VT>::math_type& result) const{
     result = static_cast<math_type>(value) / FACTOR_PRODUCT;
 }
+template <int F, typename VT>
+typename basic_scalar<F, VT>::value_type& basic_scalar<F, VT>::underlyingValue() {
+    return value;
+}
+template <int F, typename VT>
+const typename basic_scalar<F, VT>::value_type& basic_scalar<F, VT>::underlyingValue() const {
+    return value;
+}
 
 
 
@@ -94,6 +102,8 @@ basic_scalar<F, VT> operator/(const basic_scalar<F, VT>& lhs, const basic_scalar
     basic_scalar<F, VT> ret = lhs;
     return ret /= rhs;
 }
+
+//boolean operations
 template <int F, typename VT>
 bool operator<(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
     return lhs.value_type < rhs.value_type;
@@ -119,6 +129,107 @@ bool operator!=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) 
     return !(lhs == rhs);
 }
 
+//operators with other types
+template <int F, typename VT, typename T>
+basic_scalar<F, VT>& operator+=(basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs += basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT>& operator-=(basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs -= basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT>& operator*=(basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs *= basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT>& operator/=(basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs /= basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator+(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs + basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator-(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs - basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator*(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs * basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator/(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs / basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator+(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) + rhs;
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator-(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) - rhs;
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator*(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) * rhs;
+}
+template <int F, typename VT, typename T>
+basic_scalar<F, VT> operator/(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) / rhs;
+}
+
+//boolean operations with other types
+template <int F, typename VT, typename T>
+bool operator<(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs < basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+bool operator>(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs > basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+bool operator<=(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs <= basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+bool operator>=(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs >= basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+bool operator==(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs == basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+bool operator!=(const basic_scalar<F, VT>& lhs, const T& rhs) {
+    return lhs != basic_scalar<F, VT>(rhs);
+}
+template <int F, typename VT, typename T>
+bool operator<(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) < rhs;
+}
+template <int F, typename VT, typename T>
+bool operator>(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) > rhs;
+}
+template <int F, typename VT, typename T>
+bool operator<=(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) <= rhs;
+}
+template <int F, typename VT, typename T>
+bool operator>=(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) >= rhs;
+}
+template <int F, typename VT, typename T>
+bool operator==(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) == rhs;
+}
+template <int F, typename VT, typename T>
+bool operator!=(const T& lhs, const basic_scalar<F, VT>& rhs) {
+    return basic_scalar<F, VT>(lhs) != rhs;
+}
+
+//math function overloads
 template <int F, typename VT>
 basic_scalar<F, VT> abs(const basic_scalar<F, VT>& arg) {
     return arg < 0 ? -arg : arg;
