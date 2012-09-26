@@ -19,11 +19,11 @@ basic_scalar<F, VT>::basic_scalar()
         : value(0) {}
 template <int F, typename VT> template <int OF, typename OVT>
 basic_scalar<F, VT>::basic_scalar(const basic_scalar<OF, OVT>& other) 
-        : value(other.basic_scalar<OF, OVT>::value << 
+        : value(other.underlyingValue() << 
         (FACTOR - basic_scalar<OF, OVT>::FACTOR)) {}
 template <int F, typename VT> template <int OF, typename OVT>
 basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const basic_scalar<OF,OVT>& other) {
-    value = other.basic_scalar<OF, OVT>::value << 
+    value = other.underlyingValue() << 
             (FACTOR - basic_scalar<OF, OVT>::FACTOR);
     return *this;
 }
@@ -106,7 +106,7 @@ basic_scalar<F, VT> operator/(const basic_scalar<F, VT>& lhs, const basic_scalar
 //boolean operations
 template <int F, typename VT>
 bool operator<(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
-    return lhs.value_type < rhs.value_type;
+    return lhs.underlyingValue() < rhs.underlyingValue();
 }
 template <int F, typename VT>
 bool operator>(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
@@ -122,7 +122,7 @@ bool operator>=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs){
 }
 template <int F, typename VT>
 bool operator==(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
-    return lhs.value_type == rhs.value_type;
+    return lhs.underlyingValue() == rhs.underlyingValue();
 }
 template <int F, typename VT>
 bool operator!=(const basic_scalar<F, VT>& lhs, const basic_scalar<F, VT>& rhs) {
@@ -254,6 +254,19 @@ basic_scalar<F, VT> asin(const basic_scalar<F, VT>& arg){
 template <int F, typename VT>
 basic_scalar<F, VT> acos(const basic_scalar<F, VT>& arg){
     return basic_scalar<F, VT>(::acos(arg.convertToMath()));
+}
+
+template <int F, typename VT, typename LHT>
+LHT& operator<<(LHT& lhs, const basic_scalar<F, VT>& rhs) {
+    return lhs << rhs.convertToMath();
+}
+template <int F, typename VT, typename LHT>
+LHT& operator>>(LHT& lhs, basic_scalar<F, VT>& rhs) {
+    typedef typename basic_scalar<F, VT>::math_type math_type;
+    math_type intermediate;
+    lhs >> intermediate;
+    rhs = intermediate;
+    return lhs;
 }
 
 }

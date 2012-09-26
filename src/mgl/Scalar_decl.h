@@ -146,6 +146,11 @@ basic_scalar<F, VT> asin(const basic_scalar<F, VT>& arg);
 template <int F, typename VT>
 basic_scalar<F, VT> acos(const basic_scalar<F, VT>& arg);
 
+template <int F, typename VT, typename LHT>
+LHT& operator<<(LHT& lhs, const basic_scalar<F, VT>& rhs);
+template <int F, typename VT, typename LHT>
+LHT& operator>>(LHT& lhs, basic_scalar<F, VT>& rhs);
+
 }
 
 
