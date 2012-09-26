@@ -80,7 +80,7 @@ layer_measure_size_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	if (TLOWER(z, firstLayerZ, tol))
 		return 0;
 	Scalar const layer = (z + tol - firstLayerZ) / layerH;
-	return static_cast<layer_measure_size_t> (ceil(layer));
+	return static_cast<layer_measure_size_t> (ceil(layer).convertToValue());
 }
 
 Scalar LayerMeasure::sliceIndexToHeight(layer_measure_size_t sliceIndex) const {

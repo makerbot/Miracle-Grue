@@ -21,8 +21,8 @@ using namespace mgl;
 
 void mgl::infillosophy( const  SegmentTable &outlineLoops,
                         const Limits& limits,
-                        double, //z,
-                        double layerW,
+                        Scalar, //z,
+                        Scalar layerW,
                         size_t skipCount,
                         bool xDirection, // y when false
                         Scalar, // infillShrinking,

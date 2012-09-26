@@ -32,6 +32,7 @@ public:
     
     typedef VT value_type;
     static const int FACTOR = F;
+    static const int NFACTOR = sizeof(value_type) - FACTOR;
     static const value_type FACTOR_PRODUCT = 1 << FACTOR;
     
     typedef double math_type;   //what we use for doing cmath functions
@@ -52,6 +53,11 @@ public:
     
     math_type convertToMath() const;
     void convertToMath(math_type& result) const;
+    value_type convertToValue() const;
+    void convertToValue(value_type& result) const;
+    
+    basic_scalar ipart() const;
+    basic_scalar fpart() const;
     
     value_type& underlyingValue();
     const value_type& underlyingValue() const;
@@ -136,6 +142,12 @@ bool operator!=(const T& lhs, const basic_scalar<F, VT>& rhs);
 template <int F, typename VT>
 basic_scalar<F, VT> abs(const basic_scalar<F, VT>& arg);
 template <int F, typename VT>
+basic_scalar<F, VT> floor(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> ceil(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
+basic_scalar<F, VT> round(const basic_scalar<F, VT>& arg);
+template <int F, typename VT>
 basic_scalar<F, VT> sqrt(const basic_scalar<F, VT>& arg);
 template <int F, typename VT>
 basic_scalar<F, VT> sin(const basic_scalar<F, VT>& arg);
@@ -145,6 +157,7 @@ template <int F, typename VT>
 basic_scalar<F, VT> asin(const basic_scalar<F, VT>& arg);
 template <int F, typename VT>
 basic_scalar<F, VT> acos(const basic_scalar<F, VT>& arg);
+
 
 template <int F, typename VT, typename LHT>
 LHT& operator<<(LHT& lhs, const basic_scalar<F, VT>& rhs);

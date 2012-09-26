@@ -24,8 +24,8 @@ namespace mgl
 //
 void infillosophy(const  SegmentTable &outlineSegments,
 				const Limits& limits,
-				double z,
-                double layerW,
+				Scalar z,
+                Scalar layerW,
                 size_t skipCount,
                 bool xDirection,  // y when false
 				Scalar infillShrinking,

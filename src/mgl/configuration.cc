@@ -56,6 +56,15 @@ double doubleCheck(const Json::Value &value, const char *name,
     }
 }
 
+double doubleCheck(const Json::Value &value, const char *name,
+        const Scalar& defaultVal) {
+    if (value.isNull()) {
+        return defaultVal.convertToMath();
+    } else {
+        return doubleCheck(value, name);
+    }
+}
+
 unsigned int uintCheck(const Json::Value &value, const char *name) {
     if (value.isNull()) {
         stringstream ss;

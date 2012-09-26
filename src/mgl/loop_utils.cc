@@ -8,13 +8,13 @@ namespace mgl {
 static const Scalar DBLTOINT = 20000;
 
 void PointTypeToIntPoint(const PointType pt, ClipperLib::IntPoint &ip) {
-	ip.X = pt.x * DBLTOINT;
-	ip.Y = pt.y * DBLTOINT;
+	ip.X = (pt.x * DBLTOINT).convertToMath();
+	ip.Y = (pt.y * DBLTOINT).convertToMath();
 }
 
 void IntPointToPointType(const ClipperLib::IntPoint ip, PointType &pt) {
-	pt.x = ip.X / DBLTOINT;
-	pt.y = ip.Y / DBLTOINT;
+	pt.x = (ip.X / DBLTOINT);
+	pt.y = (ip.Y / DBLTOINT);
 }
 
 
@@ -131,7 +131,7 @@ void loopsXOR(LoopList &subject, const LoopList &apply) {
 void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance) {
 	ClipperLib::Polygons subjectPolys, destPolys;
 	loopToClPolygon(subject, subjectPolys);
-	ClipperLib::OffsetPolygons(subjectPolys, destPolys, distance * DBLTOINT, 
+	ClipperLib::OffsetPolygons(subjectPolys, destPolys, (distance * DBLTOINT).convertToMath(), 
 			ClipperLib::jtSquare, 2.0);
 	ClPolygonToLoop(destPolys, dest);
 }

@@ -31,7 +31,7 @@ void polygonsFromLoopSegmentTables( unsigned int nbOfShells,
 
 void inshelligence( const SegmentTable & outlinesSegments,
 					unsigned int nbOfShells,
-					double layerW,
+					Scalar layerW,
 					//unsigned int sliceId,
 					Scalar insetDistanceFactor,
 					const char *scadFile,

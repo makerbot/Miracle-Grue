@@ -89,8 +89,8 @@ void  mglToClipper(const SegmentVector &segmentTable, ClipperLib::Polygons &out_
 			size_t reverseIndex = loop.size()-1 -j;
 			const SegmentType &seg = loop[reverseIndex];
 			ClipperLib::IntPoint p;
-			p.X = seg.a[0] * DBLTOINT;
-			p.Y = seg.a[1] * DBLTOINT;
+			p.X = (seg.a[0] * DBLTOINT).convertToMath();
+			p.Y = (seg.a[1] * DBLTOINT).convertToMath();
 			poly.push_back(p);
 		}
 	}
@@ -131,7 +131,7 @@ void ClipperInsetter::inset( const SegmentVector &inputPolys,
 	ClipperLib::JoinType jointype = ClipperLib::jtMiter;
 	double miterLimit = 3.0;
 
-	double delta = -insetDist * DBLTOINT;
+	double delta = (-insetDist * DBLTOINT).convertToMath();
 
 	mglToClipper  (inputPolys, in_polys);
 	//dumpClipperPolys(in_polys);
@@ -141,7 +141,7 @@ void ClipperInsetter::inset( const SegmentVector &inputPolys,
 }
 
 void ClipperInsetter::setTolerance(long double toler) {
-	ClipperLib::TOLERANCE = toler * DBLTOINT;
+	ClipperLib::TOLERANCE = (toler * DBLTOINT).convertToMath();
 }
 
 /// a) takes in a segment table (i.e a series of loops, clockwise segments for perimeters,
@@ -159,7 +159,7 @@ void ClipperInsetter::setTolerance(long double toler) {
 /// @param insetsForLoops : vector of TBD
 void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 		const unsigned int nShells,
-		const double layerW,
+		Scalar layerW,
 		//unsigned int sliceId,
 		Scalar insetDistanceFactor,
 		const char *scadFile,

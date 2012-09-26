@@ -11,6 +11,10 @@ using std::endl;
 using std::string;
 using std::stringstream;
 
+const Scalar Gantry::FLUID_H = 0.3;
+const Scalar Gantry::FLUID_W = 0.3;
+const Scalar GCoderConfig::BAD_SCALAR = 999999;
+
 Gantry::Gantry(const GantryConfig& gCfg) : gantryCfg(gCfg) {
 	set_current_extruder_index('A');
 	set_extruding(false);
@@ -251,9 +255,9 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 
 	// our moto: don't be bad!
 	bool bad = false;
-	if (fabs(mx) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
-	if (fabs(my) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
-	if (fabs(mz) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if (abs(mx) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if (abs(my) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
+	if (abs(mz) > MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM) bad = true;
 	if (mfeed <= 0 || mfeed > 100000) bad = true;
 
 	if (bad) {

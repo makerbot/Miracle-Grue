@@ -59,7 +59,7 @@ public:
 
     Scalar feedCrossSectionArea() const;
 
-    Scalar isVolumetric() const {
+    bool isVolumetric() const {
         return true;
     };
 
@@ -87,7 +87,7 @@ public:
     startY(BAD_SCALAR) {
     }
 
-    static const Scalar BAD_SCALAR = 999999;
+    static const Scalar BAD_SCALAR;// = 999999;
     static const unsigned int BAD_UINT = -1;
 
     std::string programName;

@@ -694,8 +694,8 @@ void Grid::init(const Limits &limits, Scalar gridSpacing) {
 	gridOrigin[1] = limits.yMin + 0.5 * deltaY;
 
 	// round to nearest odd number
-	unsigned int yGridSize = (unsigned int) (deltaY / gridSpacing) + 1;
-	unsigned int xGridSize = (unsigned int) (deltaX / gridSpacing) + 1;
+	unsigned int yGridSize = (unsigned int) (deltaY / gridSpacing).convertToMath() + 1;
+	unsigned int xGridSize = (unsigned int) (deltaX / gridSpacing).convertToMath() + 1;
 
 	yValues.resize(yGridSize);
 	for (unsigned int i = 0; i < yGridSize; i++) {

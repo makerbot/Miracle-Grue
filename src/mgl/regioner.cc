@@ -561,12 +561,12 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		// TODO: move me to the slicer
 		GridRanges sparseInfill;
-		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity) - 1;
+		size_t infillSkipCount = (int) (1 / regionerCfg.infillDensity).convertToMath() - 1;
 
 		grid.subSample(surface, infillSkipCount, sparseInfill);
         
         if(regionerCfg.doSupport || regionerCfg.doRaft) {
-            size_t supportSkipCount = (int) (1 / regionerCfg.supportDensity) - 1;
+            size_t supportSkipCount = (int) (1 / regionerCfg.supportDensity).convertToMath() - 1;
             grid.subSample(current->supportSurface, supportSkipCount,
                     current->support);
         }

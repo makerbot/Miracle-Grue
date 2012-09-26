@@ -72,8 +72,8 @@ private:
 class Gantry {
 public:
 	
-	static const Scalar FLUID_H = 0.3;
-	static const Scalar FLUID_W = 0.5;
+	static const Scalar FLUID_H;// = 0.3;
+	static const Scalar FLUID_W;// = 0.5;
 	
 	Gantry(const GantryConfig& gCfg);
 	

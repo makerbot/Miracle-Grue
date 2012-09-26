@@ -67,6 +67,27 @@ void basic_scalar<F, VT>::convertToMath(typename basic_scalar<F, VT>::math_type&
     result = static_cast<math_type>(value) / FACTOR_PRODUCT;
 }
 template <int F, typename VT>
+typename basic_scalar<F, VT>::value_type basic_scalar<F, VT>::convertToValue() const{
+    value_type result;
+    convertToValue(result);
+    return result;
+}
+template <int F, typename VT>
+void basic_scalar<F, VT>::convertToValue(typename basic_scalar<F, VT>::value_type& result) const{
+    result = value >> FACTOR;
+}
+template <int F, typename VT>
+basic_scalar<F, VT> basic_scalar<F, VT>::ipart() const {
+    value_type retValue =  (value >> FACTOR) << FACTOR;
+    basic_scalar ret;
+    ret.value = retValue;
+    return ret;
+}
+template <int F, typename VT>
+basic_scalar<F, VT> basic_scalar<F, VT>::fpart() const {
+    return *this - ipart();
+}
+template <int F, typename VT>
 typename basic_scalar<F, VT>::value_type& basic_scalar<F, VT>::underlyingValue() {
     return value;
 }
@@ -233,6 +254,18 @@ bool operator!=(const T& lhs, const basic_scalar<F, VT>& rhs) {
 template <int F, typename VT>
 basic_scalar<F, VT> abs(const basic_scalar<F, VT>& arg) {
     return arg < 0 ? -arg : arg;
+}
+template <int F, typename VT>
+basic_scalar<F, VT> floor(const basic_scalar<F, VT>& arg) {
+    return basic_scalar<F, VT>(arg.convertToValue());
+}
+template <int F, typename VT>
+basic_scalar<F, VT> ceil(const basic_scalar<F, VT>& arg) {
+    return floor(arg + (arg.fpart().underlyingValue() ? 1 : 0));
+}
+template <int F, typename VT>
+basic_scalar<F, VT> round(const basic_scalar<F, VT>& arg) {
+    return floor(arg + 0.5);
 }
 //no fancy int tricks. We go to double and back
 template <int F, typename VT>
