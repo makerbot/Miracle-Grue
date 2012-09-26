@@ -97,9 +97,13 @@ void Vector2::normalise() {
  * @returns a new Vector2 which is the unit-vector of this vector
  */
 Vector2 Vector2::unit() const {
-	Vector2 result = *this;
-	result.normalise();
-	return result;
+    try {
+        Vector2 result = *this;
+        result.normalise();
+        return result;
+    } catch (const GeometryException& ge) {
+        return Vector2();
+    }
 }
 
 /**

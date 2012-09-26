@@ -12,8 +12,9 @@
 
 namespace mgl{
 
-static const Scalar SAMESAME_TOL = 1e-6;
-static const Scalar MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM = 100000000;
+static const Scalar SAMESAME_TOL = std::numeric_limits<Scalar>::epsilon();
+static const Scalar MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM = 
+        std::numeric_limits<Scalar>::max();
 
 class Extruder;
 class Extrusion;

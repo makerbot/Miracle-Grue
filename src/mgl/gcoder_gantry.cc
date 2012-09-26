@@ -13,7 +13,7 @@ using std::stringstream;
 
 const Scalar Gantry::FLUID_H = 0.3;
 const Scalar Gantry::FLUID_W = 0.3;
-const Scalar GCoderConfig::BAD_SCALAR = 999999;
+const Scalar GCoderConfig::BAD_SCALAR = std::numeric_limits<Scalar>::max();
 
 Gantry::Gantry(const GantryConfig& gCfg) : gantryCfg(gCfg) {
 	set_current_extruder_index('A');

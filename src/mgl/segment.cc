@@ -381,7 +381,7 @@ Scalar findClosestLineSegment2(const PointType& endOfPreviousLineSegment2,
 						vector<SegmentType>::iterator &bestSegmentIt ) // "returned here"
 {
 	bestSegmentIt = endIt; 	// just in case, we'll check for this on the caller side
-	Scalar minDist = 1e100;
+	Scalar minDist = std::numeric_limits<Scalar>::max();
 
 	Point3Type end(endOfPreviousLineSegment2.x,endOfPreviousLineSegment2.y, 0);
 	vector<SegmentType>::iterator it = startIt;

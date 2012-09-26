@@ -117,6 +117,9 @@ void Meshy::flushBuffer() {
 //
 
 void Meshy::bufferTriangle(TriangleType t){
+    std::cout << "Triangle: \n";
+    for(unsigned i = 0; i < 3; ++i)
+        std::cout << '\t' << t[i] << ",\n";
 	bufferedTriangles.push_back(t);
 }
 

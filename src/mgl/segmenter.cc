@@ -5,6 +5,8 @@
  * Created on June 19, 2012, 2:05 PM
  */
 
+#include <vector>
+
 #include "segmenter.h"
 #include "mgl.h"
 
@@ -29,6 +31,7 @@ const Limits& Segmenter::readLimits() const{
 
 void Segmenter::tablaturize(const Meshy& mesh){
 	allTriangles = mesh.readAllTriangles();
+    std::cout << "Number of Trianges: " << allTriangles.size() << std::endl;
 	limits = mesh.readLimits();
 	for(size_t i=0; i<allTriangles.size(); ++i)
 		updateSlicesTriangle(i);

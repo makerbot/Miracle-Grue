@@ -53,6 +53,12 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 				iter = currentLoop.insertPointAfter(it->begin()->a, iter);
 			//add the loop to the current layer
 			currentLayer.push_back(currentLoop);
+            std::cout << "Loop Length: " << currentLoop.size() << std::endl;
+            for(Loop::finite_cw_iterator loopit = currentLoop.clockwiseFinite(); 
+                    loopit != currentLoop.clockwiseEnd(); 
+                    ++loopit) {
+                std::cout << "\t" << *loopit << std::endl;
+            }
 		}
 		//finally, add the loop layer to the new data structure
 		layerloops.push_back(currentLayer);
@@ -82,9 +88,12 @@ void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, SegmentTable
 			0.5 * layerMeasure.getLayerH();
 	const std::vector<TriangleType> & allTriangles = seg.readAllTriangles();
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
-	std::vector<SegmentType> unorderedSegments;
+    std::vector<SegmentType> unorderedSegments;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
-	assert(segments.size() ==0);
+    std::cout << "Layer: " << sliceId 
+            << " \tTriangles: " << trianglesForSlice.size()
+            << " \tSegments: " << unorderedSegments.size() << std::endl;
+	assert(segments.size() == 0);
 
 	// dumpSegments("unordered_", unorderedSegments);
 	// cout << segments << endl;
@@ -103,4 +112,5 @@ void Slicer::loopsFromLineSegments(const std::vector<SegmentType>& unorderedSegm
 		std::vector<SegmentType> segs =  unorderedSegments;
 		loopsAndHoleOgy(segs, tol, segments);
 	}
+    std::cout << "\tSegmentTableEntries: " << segments.size() << std::endl;
 }

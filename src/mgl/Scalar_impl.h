@@ -10,6 +10,8 @@
 
 #include "Scalar_decl.h"
 #include <cmath>
+#include <stdexcept>
+#include <iostream>
 
 namespace mgl {
 
@@ -29,11 +31,19 @@ basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const basic_scalar<OF,OVT>&
 }
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>::basic_scalar(const T& other)
-        : value(static_cast<value_type>(other * FACTOR_PRODUCT)) {}
+        : value(static_cast<value_type>(other * FACTOR_PRODUCT)) {
+//    std::cout 
+//            <<   "Input:    " << other 
+//            //<< "\nInputDbl: " << static_cast<double>(other) 
+//            << "\nOutput:   " << *this << std::endl;
+    math_type error = static_cast<math_type>(underlyingValue()) - 
+            other * FACTOR_PRODUCT;
+    if(error < -1 || error > 1)
+        throw std::logic_error("Fixed Point conversion error");
+}
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const T& other) {
-    value = static_cast<value_type>(other * FACTOR_PRODUCT);
-    return *this;
+    return *this = basic_scalar<F, VT>(other);
 }
 template <int F, typename VT>
 basic_scalar<F, VT>& basic_scalar<F, VT>::operator +=(const basic_scalar& other) {

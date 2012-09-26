@@ -11,6 +11,7 @@
 #include "Scalar_decl.h"
 #include "Scalar_impl.h"
 #include <cmath>
+#include <limits>
 
 namespace mgl {
 
