@@ -30,7 +30,7 @@ void LoopProcessor::processLoops(const LayerLoops& input, LayerLoops& output) {
                 loopIter != currentInputLayer.end(); 
                 ++loopIter) {
             Loop processed;
-            smooth(*loopIter, lpCfg.coarseness, processed);
+            smooth(*loopIter, lpCfg.coarseness, processed, lpCfg.directionWeight);
             currentOutputLayer.push_back(processed);
         }
         

@@ -145,10 +145,11 @@ SMOOTH_RESULT smoothPoints(const PointType& lp1,
         const PointType& lp2, 
         const PointType& cp, 
         const Scalar& maxDeviation, 
+        const Scalar& factor, 
         Scalar& cumDeviation,
         PointType& output);
 
-void smooth(const Loop& input, Scalar smoothness, Loop& output) {
+void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
     if(smoothness == 0 || input.size() <= 3) {
 		output = input;
         return;
@@ -175,7 +176,7 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output) {
         const PointType& lp2 = *last2;
         PointType result;
         SMOOTH_RESULT rslt = smoothPoints(lp1, lp2, currentPoint, smoothness, 
-                cumulativeError, result);
+                factor, cumulativeError, result);
         if(rslt == SMOOTH_ADD) {
             tmpPoints.push_back(currentPoint);
         } else {
@@ -189,7 +190,7 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output) {
     }
 }
 
-void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output) {
+void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output, Scalar factor) {
     if(smoothness == 0 || input.size() <= 3) {
 		output = input;
         return;
@@ -215,7 +216,7 @@ void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output) {
         const PointType& lp2 = *last2;
         PointType result;
         SMOOTH_RESULT rslt = smoothPoints(lp1, lp2, currentPoint, smoothness, 
-                cumulativeError, result);
+                factor, cumulativeError, result);
         if(rslt == SMOOTH_ADD) {;
             output.appendPoint(currentPoint);
         } else {
@@ -229,6 +230,7 @@ SMOOTH_RESULT smoothPoints(const PointType& lp1,
         const PointType& lp2, 
         const PointType& cp, 
         const Scalar& maxDeviation, 
+        const Scalar& factor, 
         Scalar& cumDeviation, 
         PointType& output) {
     PointType ldelta = lp1 - lp2;
@@ -250,7 +252,7 @@ SMOOTH_RESULT smoothPoints(const PointType& lp1,
         cumDeviation = 0;
         return SMOOTH_ADD;
     } else {
-        output = landingPoint;
+        output = cp * factor + landingPoint * (1.0 - factor);
         return SMOOTH_REPLACE;
     }
 }

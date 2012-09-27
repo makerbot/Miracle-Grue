@@ -126,15 +126,13 @@ void loopsXOR(LoopList &dest,
 
 void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance);
 
-void smooth(const Loop& input, Scalar smoothness, Loop& output);
-void smooth(Loop& input, Scalar smoothness);
-void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output);
-void smooth(OpenPath& input, Scalar smoothness);
+void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor = 1.0);
+void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output, Scalar factor = 1.0);
 
 template <typename LOOP_OR_PATH>
-void smooth(LOOP_OR_PATH& input, Scalar smoothness) {
+void smooth(LOOP_OR_PATH& input, Scalar smoothness, Scalar factor = 1.0) {
     LOOP_OR_PATH output;
-    smooth(input, smoothness, output);
+    smooth(input, smoothness, output, factor);
     input = output;
 }
 
