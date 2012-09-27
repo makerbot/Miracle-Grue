@@ -174,6 +174,7 @@ namespace std {
 
 template <int F, typename VT>
 struct numeric_limits<mgl::basic_scalar<F, VT> > {
+    
     typedef mgl::basic_scalar<F, VT> numeric_type;
     typedef typename numeric_type::value_type value_type;
     

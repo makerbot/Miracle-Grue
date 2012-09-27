@@ -31,7 +31,7 @@ public:
 		// xMax = std::numeric_limits<Scalar>::min();
 		// xMin = std::numeric_limits<Scalar>::max();
 
-		Scalar large = 999999; // using this instead. That's a few kilometers larger than the build platform in 2012
+		Scalar large = std::numeric_limits<Scalar>::max(); // using this instead. That's a few kilometers larger than the build platform in 2012
 
 		xMax = -large;
 		yMax = xMax;

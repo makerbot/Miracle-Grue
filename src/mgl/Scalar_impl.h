@@ -32,10 +32,13 @@ basic_scalar<F, VT>& basic_scalar<F, VT>::operator =(const basic_scalar<OF,OVT>&
 template <int F, typename VT> template <typename T>
 basic_scalar<F, VT>::basic_scalar(const T& other)
         : value(static_cast<value_type>(other * FACTOR_PRODUCT)) {
-//    std::cout 
-//            <<   "Input:    " << other 
-//            //<< "\nInputDbl: " << static_cast<double>(other) 
-//            << "\nOutput:   " << *this << std::endl;
+    std::cout 
+            <<   "Input:    " << other 
+            << "\nMax:      " << std::numeric_limits<basic_scalar<F, VT> >::max() 
+            << "\nMin:      " << std::numeric_limits<basic_scalar<F, VT> >::min() 
+            << "\nEpsilon:  " << std::numeric_limits<basic_scalar<F, VT> >::epsilon() 
+            //<< "\nInputDbl: " << static_cast<double>(other) 
+            << "\nOutput:   " << *this << std::endl;
     math_type error = static_cast<math_type>(underlyingValue()) - 
             other * FACTOR_PRODUCT;
     if(error < -1 || error > 1)

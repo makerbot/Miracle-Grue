@@ -82,7 +82,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 
 void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, SegmentTable & segments)
 {
-	Scalar tol = 1e-6;
+	Scalar tol = 0.10;
 	const LayerMeasure & layerMeasure = seg.readLayerMeasure();
 	Scalar z = layerMeasure.sliceIndexToHeight(sliceId) + 
 			0.5 * layerMeasure.getLayerH();

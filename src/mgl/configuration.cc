@@ -180,7 +180,7 @@ void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg
                 (prefix + "feedrate").c_str());
 
         extrusion.temperature = doubleCheck(value["temperature"],
-                (prefix + "temperature").c_str(), -99999);
+                (prefix + "temperature").c_str(), 0);
 
         gcoderCfg.extrusionProfiles.insert(pair<std::string,
                 Extrusion > (profileName, extrusion));
