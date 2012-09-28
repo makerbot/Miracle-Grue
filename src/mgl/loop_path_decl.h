@@ -20,8 +20,6 @@
 
 namespace mgl {
 
-typedef libthing::Vector2 PointType;
-
 typedef std::vector<PointType> PointList;
 typedef std::vector<PointType> VectorList;
 
