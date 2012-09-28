@@ -289,7 +289,7 @@ if build_gui:
     qtEnv = env.Clone()
     qtEnv['QT4DIR'] = detectLatestQtDir(operating_system, compiler_type)
     qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/lib/pkgconfig'
-    qtEnv.Tool('qt4')
+    qtEnv.Tool('qt4', toolpath=[Dir('submodule/mw-scons-tools')])
     qtEnv.EnableQt4Modules(['QtGui',
                             'QtCore',
                             'QtOpenGL'])
