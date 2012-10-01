@@ -550,8 +550,8 @@ void SlicerTestCase::testInset2()
 			shrinky.inset(segments, insetDist,  finalInsets);
 			segments = finalInsets;
 		}
-	} catch (mgl::Exception mgle) {
-		CPPUNIT_FAIL(mgle.error);
+	} catch (const mgl::Exception& mgle) {
+		CPPUNIT_FAIL(mgle.what());
 	}
 
 }
