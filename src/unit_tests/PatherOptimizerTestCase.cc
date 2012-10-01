@@ -23,7 +23,7 @@ void PatherOptimizerTestCase::testBasics() {
 	LineSegment2 seg2(PointType(0,-1), PointType(0,1));
 	cout << "Testing that lines intersect properly..." << endl;
 	CPPUNIT_ASSERT(seg1.intersects(seg2));
-	pather_optimizer optimizer(true);
+	pather_optimizer optimizer;
 	
 	//make a normal triangle loop
 	Loop loop;
@@ -66,7 +66,7 @@ void PatherOptimizerTestCase::testBoundary() {
 	loop.insertPointBefore(PointType(1,-1), loop.clockwiseEnd());
 	loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
 	
-	pather_optimizer optimizer(true);
+	pather_optimizer optimizer;
 	
 	//make paths that cross boundary and don't
 	
@@ -119,7 +119,7 @@ void PatherOptimizerTestCase::testCompleteness() {
 	loop.insertPointBefore(PointType(1,-1), loop.clockwiseEnd());
 	loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
 	
-	pather_optimizer optimizer(true);
+	pather_optimizer optimizer;
 	
 	//make paths that cross boundary and don't
 	std::list<PointType> points;	//keeps track of points I expect to get out

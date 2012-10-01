@@ -123,13 +123,14 @@ void GantryTestCase::testSquirtSnort(){
 	Extruder uder;
 	Extrusion usion;
 	
-	usion.retractDistance = -0.5;
+    uder.retractDistance = -0.5;
+    uder.retractRate = 60;
 	
 	cout << "\nSnort test\n" << endl;
 	
 	gantry.snort(ss, Vector2(20,20), uder, usion);
-	expected << "G1" << " F" << usion.retractRate << 
-			" A" << -usion.retractDistance << " (snort)" << endl;
+	expected << "G1" << " F" << uder.retractRate << 
+			" A" << -uder.retractDistance << " (snort)" << endl;
 	astring = ss.str();
 	estring = expected.str();
 	cout << "Expected: \t" << estring << endl;
@@ -141,7 +142,7 @@ void GantryTestCase::testSquirtSnort(){
 	cout << "\nSquirt test\n" << endl;
 	
 	gantry.squirt(ss, Vector2(30,30), uder, usion);
-	expected << "G1" << " F" << usion.retractRate << 
+	expected << "G1" << " F" << uder.retractRate << 
 			" A" << 0.0 << " (squirt)" << endl;
 	astring = ss.str();
 	estring = expected.str();
