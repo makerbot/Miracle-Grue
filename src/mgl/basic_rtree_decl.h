@@ -20,7 +20,7 @@ public:
     TreeException(const T& arg) : exception(arg) {}
 };
 
-static const size_t RTREE_DEFAULT_BRANCH = 3;
+static const size_t RTREE_DEFAULT_BRANCH = 4;
 
 template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
 class basic_rtree {
