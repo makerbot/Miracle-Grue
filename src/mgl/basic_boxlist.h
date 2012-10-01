@@ -21,11 +21,12 @@ public:
     typedef std::pair<value_type, AABBox> value_bounds;
     
     typedef std::vector<value_bounds> internal_container;
-    typedef internal_container::iterator iterator;
-    typedef internal_container::const_iterator const_iterator;
+    typedef typename internal_container::iterator iterator;
+    typedef typename internal_container::const_iterator const_iterator;
     
     iterator insert(const value_type& value) {
-        data.push_back(value_bounds(value, to_bbox<value_type>::bound(value)));
+        return data.insert(data.end(), value_bounds(value, 
+                to_bbox<value_type>::bound(value)));
     }
     void erase (iterator iter) {
         data.erase(iter);
@@ -39,6 +40,8 @@ public:
                 result.push_back(iter->first);
         }
     }
+    iterator begin() { return data.begin(); }
+    iterator end() { return data.end(); }
     
 private:
     internal_container data;
