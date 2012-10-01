@@ -17,7 +17,7 @@ namespace mgl {
 class TreeException : public Exception {
 public:
     template <typename T>
-    TreeException(const T& arg) : exception(arg) {}
+    TreeException(const T& arg) : Exception(arg) {}
 };
 
 static const size_t RTREE_DEFAULT_BRANCH = 4;
@@ -27,17 +27,18 @@ class basic_rtree {
 public:
     typedef T value_type;
     typedef std::allocator<basic_rtree> tree_alloc_t;
-    typedef tree_alloc_t::rebind<value_type>::other value_alloc_t;
+    typedef typename tree_alloc_t::template rebind<value_type>::other value_alloc_t;
     
     class iterator{
     public:
         iterator() {}
-        template <typename T>
-        iterator(const T& arg) {}
+        template <typename U>
+        iterator(const U&) {  }
     };
     typedef iterator const_iterator;
     
     basic_rtree();
+    basic_rtree(bool canReproduce);
     basic_rtree(const basic_rtree& other);
     basic_rtree& operator =(const basic_rtree& other);
     ~basic_rtree();
@@ -60,11 +61,14 @@ private:
     void split(basic_rtree* child);   //redistribute my children
     
     void adopt(basic_rtree* from);
+    void growTree();
     
     bool isLeaf() const { return myData; }
     size_t size() const { return myChildrenCount; }
     size_t capacity() const { return CAPACITY; }
     bool full() const { return size() >= capacity(); }
+    
+    bool splitMyself;   //true for root
     
     AABBox myBounds;
     basic_rtree* myChildren[CAPACITY];

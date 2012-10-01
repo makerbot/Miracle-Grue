@@ -17,6 +17,7 @@ private:
     CPPUNIT_TEST( testFilter );
     CPPUNIT_TEST( testEmpty );
     CPPUNIT_TEST( testStress );
+    CPPUNIT_TEST( testRtree );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -26,6 +27,7 @@ protected:
     void testFilter();
     void testEmpty();
     void testStress();
+    void testRtree();
     
 };
 

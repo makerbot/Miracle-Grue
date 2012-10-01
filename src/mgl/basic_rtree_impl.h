@@ -15,14 +15,19 @@
 namespace mgl {
 
 template <typename T, size_t C>
-basic_rtree<T, C>::basic_rtree() 
-        : myChildrenCount(0), myData(NULL) {
+basic_rtree<T, C>::basic_rtree() {
+    myTreeAllocator.construct(this, basic_rtree(true));
+}
+template <typename T, size_t C>
+basic_rtree<T, C>::basic_rtree(bool canReproduce) 
+        : splitMyself(canReproduce), myChildrenCount(0), myData(NULL) {
     for(size_t i = 0; i != CAPACITY; ++i)
         myChildren[i] = NULL;
 }
 template <typename T, size_t C>
 basic_rtree<T, C>::basic_rtree(const basic_rtree& other) 
-        : myChildrenCount(other.myChildren), myData(NULL) {
+        : splitMyself(other.splitMyself), 
+        myChildrenCount(other.myChildrenCount), myData(NULL) {
     for(size_t i = 0; i != CAPACITY; ++i) {
         myChildren[i] = NULL;
         if(other.myChildren[i]) {
@@ -34,7 +39,6 @@ basic_rtree<T, C>::basic_rtree(const basic_rtree& other)
         myData = myDataAllocator.allocate(1, this);
         myDataAllocator.construct(myData, *other.myData);
     }
-    return *this;
 }
 template <typename T, size_t C>
 basic_rtree<T, C>& basic_rtree<T, C>::operator =(const basic_rtree& other) {
@@ -45,18 +49,19 @@ basic_rtree<T, C>& basic_rtree<T, C>::operator =(const basic_rtree& other) {
     basic_rtree tmpStorage(other); //in case other is child of this
     tmpAllocator.destroy(this);
     tmpAllocator.construct(this, tmpStorage);
+    return *this;
 }
 template <typename T, size_t C>
 basic_rtree<T, C>::~basic_rtree() {
     for(size_t i = 0; i != CAPACITY; ++i) {
         myTreeAllocator.destroy(myChildren[i]);
-        myTreeAllocator.deallocate(myChildren[i]);
+        myTreeAllocator.deallocate(myChildren[i], 1);
     }
     myDataAllocator.destroy(myData);
-    myDataAllocator.deallocate(myData);
+    myDataAllocator.deallocate(myData, 1);
 }
 template <typename T, size_t C>
-basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
+typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
         const basic_rtree::value_type& value) {
     return insert(value, to_bbox<value_type>::bound(value));
 }
@@ -83,13 +88,15 @@ void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
     out << tabs << myBounds.m_min << " - " << myBounds.m_max;
     if(isLeaf())
         out << " - leaf";
+    if(splitMyself)
+        out << " - rooot";
     out << std::endl;
     for(size_t i = 0; i < size(); ++i) {
         myChildren[i]->repr(out, recursionLevel + 1);
     }
 }
 template <typename T, size_t C>
-basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
+typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
         const basic_rtree::value_type& value, const AABBox& bound) {
     if(!isLeaf() && !size()) {
         //root
@@ -99,10 +106,10 @@ basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
         return iterator(this);
     } else if(isLeaf()) {
         basic_rtree* newborn = myTreeAllocator.allocate(1, this);
-        myTreeAllocator.construct(newborn, basic_rtree());
+        myTreeAllocator.construct(newborn, basic_rtree(false));
         iterator ret = newborn->insert(value, bound);  //he stores the new data
         basic_rtree* adopted = myTreeAllocator.allocate(1, this);
-        myTreeAllocator.construct(adopted, basic_rtree());
+        myTreeAllocator.construct(adopted, basic_rtree(false));
         adopted->adopt(this); //he steals all my data
         //i own them both
         insert(newborn);
@@ -126,7 +133,10 @@ basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
                 minsize = myChildren[i]->size();
             }
         }
-        return myChildren[minind]->insert(value, bound);
+        iterator ret = myChildren[minind]->insert(value, bound);
+        if(myChildren[minind]->full())
+            split(myChildren[minind]);
+        return ret;
     }
 }
 template <typename T, size_t C>
@@ -150,16 +160,19 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
     child->myChildrenCount = 0;
     child->myBounds.reset();
     basic_rtree* clone = myTreeAllocator.allocate(1, child);
-    myTreeAllocator.construct(clone, basic_rtree());
+    myTreeAllocator.construct(clone, basic_rtree(false));
     //distribute even/odd
     for(size_t i = 0; i < CAPACITY; ++i) {
-        if([contents[i]]) {
+        if(contents[i]) {
             basic_rtree* curthing = (i & 1 ? child : clone);
             curthing->insert(contents[i]);
         }
     }
     myBounds.growTo(child->myBounds);
     insert(clone);
+    if(splitMyself && full()) {
+        growTree();
+    }
     
 }
 template <typename T, size_t C>
@@ -178,6 +191,16 @@ void basic_rtree<T, C>::adopt(basic_rtree* from) {
     myBounds = from->myBounds;
     from->myBounds.reset();
     
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::growTree() {
+    basic_rtree* childling = myTreeAllocator.allocate(1, this);
+    myTreeAllocator.construct(childling, basic_rtree(false));
+    childling->adopt(this);
+    splitMyself = true;
+    childling->splitMyself = false;
+    insert(childling);
+    split(childling);
 }
 
 }

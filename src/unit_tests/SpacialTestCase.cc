@@ -4,6 +4,7 @@
 #include "SpacialTestCase.h"
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
+#include "mgl/basic_rtree.h"
 #include <cmath>
 #include <ctime>
 
@@ -102,6 +103,48 @@ void SpacialTestCase::testStress() {
     }
     SegmentType testLine = randSegment(range);
     basic_boxlist<SegmentType> boxlist;
+    std::cout << "Building index" << std::endl;
+    for(std::vector<SegmentType>::const_iterator iter = dataset.begin(); 
+            iter != dataset.end(); 
+            ++iter) {
+        boxlist.insert(*iter);
+    }
+    std::cout << "Filtering set" << std::endl;
+    std::vector<SegmentType> result;
+    boxlist.search(result, LineSegmentFilter(testLine));
+    std::cout << "Remaining " << result.size() << " to test" << std::endl;
+    std::vector<SegmentType> finalFiltered;
+    std::vector<SegmentType> finalBrute;
+    for(std::vector<SegmentType>::const_iterator iter = result.begin(); 
+            iter != result.end(); 
+            ++iter) {
+        if(testLine.intersects(*iter))
+            finalFiltered.push_back(*iter);
+    }
+    std::cout << "Final outcome of filtering  : " << finalFiltered.size() 
+            << std::endl;
+    std::cout << "Brute force test" << std::endl;
+    for(std::vector<SegmentType>::const_iterator iter = dataset.begin(); 
+            iter != dataset.end(); 
+            ++iter) {
+        if(testLine.intersects(*iter))
+            finalBrute.push_back(*iter);
+    }
+    std::cout << "Final outcome of brute check: " << finalBrute.size() 
+            << std::endl;
+}
+
+void SpacialTestCase::testRtree() {
+    srand(static_cast<unsigned int>(time(NULL)));
+    static const size_t SET_SIZE = 1000000;
+    std::vector<SegmentType> dataset;
+    std::cout << "Making " << SET_SIZE << " lines" << std::endl;
+    Scalar range = 500;
+    for(size_t i=0; i < SET_SIZE; ++i) {
+        dataset.push_back(randSegment(range));
+    }
+    SegmentType testLine = randSegment(range);
+    basic_rtree<SegmentType> boxlist;
     std::cout << "Building index" << std::endl;
     for(std::vector<SegmentType>::const_iterator iter = dataset.begin(); 
             iter != dataset.end(); 
