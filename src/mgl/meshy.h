@@ -99,7 +99,7 @@ class Meshy {
 	/// allTriangles
 	//bufferTriangles
 
-	MeshConfig meshConfig;
+	MeshConfig meshCfg;
 public:
 
 

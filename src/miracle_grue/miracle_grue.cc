@@ -364,14 +364,15 @@ int main(int argc, char *argv[], char *[]) // envp
 		}
 
 		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, extruderCfg,
-				modelFile.c_str(),
-				scad,
-				gcodeFileStream,
-				firstSliceIdx,
-				lastSliceIdx,
-				regions,
-				slices,
-				log);
+					meshCfg,
+					modelFile.c_str(),
+					scad,
+					gcodeFileStream,
+					firstSliceIdx,
+					lastSliceIdx,
+					regions,
+					slices,
+					log);
 
 		gcodeFileStream.close();
 

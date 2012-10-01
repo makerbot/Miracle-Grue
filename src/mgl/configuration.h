@@ -109,6 +109,7 @@ class SlicerConfig;
 class RegionerConfig;
 class ExtruderConfig;
 class PatherConfig;
+class MeshConfig;
 
 void loadGCoderConfigFromFile(const Configuration& conf, 
 		GCoderConfig &gcoder);

@@ -366,7 +366,7 @@ void Meshy::alignToPlate() {
 	}
 
 	if (!tequals(meshCfg.centerY, 0, 0.0000001)) {
-		delta.Y = meshCfg.centerY;
+		delta.y = meshCfg.centerY;
 		change = true;
 	}
 
