@@ -40,8 +40,9 @@ basic_rtree<T, C>& basic_rtree<T, C>::operator =(const basic_rtree& other) {
         return *this;
     tree_alloc_t tmpAllocator;
     //HACK!!!
+    basic_rtree tmpStorage(other);
     tmpAllocator.destroy(this);
-    tmpAllocator.construct(this, other);
+    tmpAllocator.construct(this, tmpStorage);
 }
 template <typename T, size_t C>
 basic_rtree<T, C>::~basic_rtree() {
