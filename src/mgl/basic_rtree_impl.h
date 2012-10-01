@@ -27,6 +27,16 @@ basic_rtree<T, C>::~basic_rtree() {
     myChildAllocator.destroy(myData);
     myChildAllocator.deallocate(myData);
 }
+template <typename T, size_t C>
+basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
+        const basic_rtree<T, C>::value_type& value) {
+    return insert(value, to_bbox<value_type>::bound(value));
+}
+template <typename T, size_t C>
+basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
+        const basic_rtree<T, C>::value_type& value, const AABBox& bound) {
+    return iterator();
+}
 
 }
 

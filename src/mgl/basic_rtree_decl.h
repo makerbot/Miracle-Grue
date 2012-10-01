@@ -18,7 +18,7 @@ class basic_rtree {
 public:
     typedef T value_type;
     typedef std::allocator<basic_rtree> tree_alloc_t;
-    typedef alloc_t::rebind<T>::other child_alloc_t;
+    typedef tree_alloc_t::rebind<value_type>::other child_alloc_t;
     
     class iterator{};
     class const_iterator{};
@@ -34,6 +34,7 @@ public:
 private:
     static const size_t CAPACITY = C;
     
+    iterator insert(const value_type& value, const AABBox& bound);
     void split(basic_rtree* child);   //redistribute my children
     bool isLeaf() const { return myData; }
     

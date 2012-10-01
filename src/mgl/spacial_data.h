@@ -18,6 +18,7 @@ class AABBox {
 public:
     AABBox(PointType pt = PointType()) : m_min(pt), m_max(pt) {}
     void growTo(PointType pt);
+    void growTo(const AABBox& bb);
     void reset(PointType pt = PointType());
         
     Scalar left() const { return m_min.x; }
@@ -26,10 +27,21 @@ public:
     Scalar top() const { return m_max.y; }
     Scalar size_x() const { return m_max.x - m_min.x; }
     Scalar size_y() const { return m_max.y - m_min.y; }
+    Scalar intersection_x(const AABBox& other) const;
+    Scalar intersection_y(const AABBox& other) const;
     
     bool contains(const AABBox& other) const;
     bool intersects(const AABBox& other) const;
     bool fits(const AABBox& other) const;
+    bool intersects_x(const AABBox& other) const;
+    bool intersects_y(const AABBox& other) const;
+    /*!Returns shared area if intersecting, 0 if not*/
+    Scalar intersectionArea(const AABBox& other) const;
+    
+    static Scalar coordinateIntersection(Scalar min1, Scalar max1, 
+            Scalar min2, Scalar max2);
+    static bool coordinateIntersects(Scalar min1, Scalar max1, 
+            Scalar min2, Scalar max2);
     
     PointType m_min;
     PointType m_max;
