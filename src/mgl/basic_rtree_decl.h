@@ -13,17 +13,32 @@
 
 namespace mgl {
 
-template <typename T, size_t C = 10>
+class TreeException : public Exception {
+public:
+    template <typename T>
+    TreeException(const T& arg) : exception(arg) {}
+};
+
+static const size_t RTREE_DEFAULT_BRANCH = 3;
+
+template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
 class basic_rtree {
 public:
     typedef T value_type;
     typedef std::allocator<basic_rtree> tree_alloc_t;
-    typedef tree_alloc_t::rebind<value_type>::other child_alloc_t;
+    typedef tree_alloc_t::rebind<value_type>::other value_alloc_t;
     
-    class iterator{};
-    class const_iterator{};
+    class iterator{
+    public:
+        iterator() {}
+        template <typename T>
+        iterator(const T& arg) {}
+    };
+    typedef iterator const_iterator;
     
     basic_rtree();
+    basic_rtree(const basic_rtree& other);
+    basic_rtree& operator =(const basic_rtree& other);
     ~basic_rtree();
     
     iterator insert(const value_type& value);
@@ -35,8 +50,15 @@ private:
     static const size_t CAPACITY = C;
     
     iterator insert(const value_type& value, const AABBox& bound);
+    void insert(basic_rtree* child);
     void split(basic_rtree* child);   //redistribute my children
+    
+    void adopt(basic_rtree* from);
+    
     bool isLeaf() const { return myData; }
+    size_t size() const { return myChildrenCount; }
+    size_t capacity() const { return CAPACITY; }
+    bool full() const { return size() >= capacity(); }
     
     AABBox myBounds;
     basic_rtree* myChildren[CAPACITY];
@@ -45,7 +67,7 @@ private:
     value_type* myData;
     
     tree_alloc_t myTreeAllocator;
-    child_alloc_t myChildAllocator;
+    value_alloc_t myDataAllocator;
         
 };
 

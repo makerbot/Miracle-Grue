@@ -29,6 +29,7 @@ public:
     Scalar size_y() const { return m_max.y - m_min.y; }
     Scalar intersection_x(const AABBox& other) const;
     Scalar intersection_y(const AABBox& other) const;
+    Scalar area() const { return size_x() * size_y(); }
     
     bool contains(const AABBox& other) const;
     bool intersects(const AABBox& other) const;
