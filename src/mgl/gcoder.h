@@ -115,6 +115,8 @@ public:
     Scalar startY;
     std::string header;
     std::string footer;
+	std::string commentOpen;
+	std::string commentClose;
 
     unsigned int defaultExtruder;
 };

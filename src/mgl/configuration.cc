@@ -94,6 +94,14 @@ string pathCheck(const Json::Value &value, const char *name) {
     return result;
 }
 
+string stringCheck(const Json::Value &value, const char *name,
+				   const string &defaultVal) {
+	if (value.isNull())
+		return defaultVal;
+	else
+		return stringCheck(value, name);
+}
+
 string stringCheck(const Json::Value &value, const char *name) {
     if (value.isNull()) {
         stringstream ss;
@@ -290,6 +298,11 @@ void loadGCoderConfigFromFile(const Configuration& conf,
             "useEAxis", false));
     gcoderCfg.defaultExtruder = uintCheck(conf.root["defaultExtruder"],
             "defaultExtruder");
+
+	gcoderCfg.commentOpen = stringCheck(conf.root["commentOpen"],
+										"commentOpen", "(");
+	gcoderCfg.commentOpen = stringCheck(conf.root["commentClose"],
+										"commentOpen", ")");
 }
 
 void loadSlicerConfigFromFile(const Configuration &config,
@@ -378,3 +391,4 @@ void loadMeshConfigFromFile(const Configuration &config,
 }
 
 
+}

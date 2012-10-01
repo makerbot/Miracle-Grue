@@ -99,7 +99,8 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName) {
             throw GcoderException((string("Unable to open gcode header file [") +
                 header_file + "]").c_str());
 
-        gout << "(header [" << header_file << "] begin)" << endl;
+        gout << gcoderCfg.commentOpen << "header [" << header_file << "] begin"
+			 << gcoderCfg.commentClose << endl;
 
         while (header_in.good()) {
             char buf[1024];
@@ -112,7 +113,8 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName) {
             throw GcoderException((string("Error reading gcode header file [") +
                 header_file + "]").c_str());
 
-        gout << "(header [" << header_file << "] end)" << endl << endl;
+        gout << gcoderCfg.commentOpen << "header [" << header_file << "] end"
+			 << gcoderCfg.commentClose << endl << endl;
     }
 }
 
@@ -127,7 +129,8 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
             throw GcoderException((string("Unable to open footer file [") +
                 footer_file + "]").c_str());
 
-        ss << "(footer [" << footer_file << "] begin)" << endl;
+        ss << gcoderCfg.commentOpen << "footer [" << footer_file << "] begin"
+		   << gcoderCfg.commentClose << endl;
 
         while (footer_in.good()) {
             char buf[1024];
@@ -140,7 +143,8 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
             throw GcoderException((string("Error reading footer file [") +
                 footer_file + "]").c_str());
 
-        ss << "(footer [" << footer_file << "] end)" << endl << endl;
+        ss << gcoderCfg.commentOpen << "footer [" << footer_file << "] end"
+		   << gcoderCfg.commentClose<< endl << endl;
     }
 }
 
