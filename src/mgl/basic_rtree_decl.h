@@ -10,6 +10,7 @@
 
 #include "mgl.h"
 #include "spacial_data.h"
+#include <sstream>
 
 namespace mgl {
 
@@ -45,6 +46,11 @@ public:
     void erase(iterator iter);
     template <typename COLLECTION, typename FILTER>
     void search(COLLECTION& result, const FILTER& filt);
+    
+    iterator begin() { return iterator(); }
+    iterator end() { return iterator(); }
+    
+    void repr(std::ostream& out, size_t recursionLevel = 0);
     
 private:
     static const size_t CAPACITY = C;

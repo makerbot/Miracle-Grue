@@ -9,6 +9,7 @@
 #define	MGL_BASIC_RTREE_IMPL_H
 
 #include "basic_rtree_decl.h"
+#include <string>
 
 namespace mgl {
 
@@ -40,7 +41,7 @@ basic_rtree<T, C>& basic_rtree<T, C>::operator =(const basic_rtree& other) {
         return *this;
     tree_alloc_t tmpAllocator;
     //HACK!!!
-    basic_rtree tmpStorage(other);
+    basic_rtree tmpStorage(other); //in case other is child of this
     tmpAllocator.destroy(this);
     tmpAllocator.construct(this, tmpStorage);
 }
@@ -57,6 +58,17 @@ template <typename T, size_t C>
 basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
         const basic_rtree::value_type& value) {
     return insert(value, to_bbox<value_type>::bound(value));
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
+    std::string tabs(recursionLevel, '\t');
+    out << tabs << myBounds.m_min << " - " << myBounds.m_max;
+    if(isLeaf())
+        out << " - leaf";
+    out << std::endl;
+    for(size_t i = 0; i < size(); ++i) {
+        myChildren[i]->repr(out, recursionLevel + 1);
+    }
 }
 template <typename T, size_t C>
 basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(

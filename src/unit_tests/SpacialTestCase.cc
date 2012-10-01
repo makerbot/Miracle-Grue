@@ -4,7 +4,8 @@
 #include "SpacialTestCase.h"
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
-#include "cmath"
+#include <cmath>
+#include <ctime>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SpacialTestCase );
 
@@ -40,7 +41,7 @@ void SpacialTestCase::testInsertion() {
 
 void SpacialTestCase::testFilter() {
     std::cout << "Testing filtering of things" << std::endl;
-    basic_boxlist<SegmentType>  lines;
+    basic_boxlist<SegmentType> lines;
     SegmentType line1(PointType(-1,0), PointType(0,1));
     SegmentType line2(PointType(-1,1), PointType(0,2));
     SegmentType line3(PointType(0,1), PointType(1,0));
@@ -66,6 +67,20 @@ void SpacialTestCase::testFilter() {
     CPPUNIT_ASSERT_EQUAL(expected, counter);
 }
 
+void SpacialTestCase::testEmpty() {
+    basic_boxlist<SegmentType> lines;
+    SegmentType testLine(PointType(-1.0,0.0), PointType(1.0,0.0));
+    std::vector<SegmentType> result;
+    lines.search(result, LineSegmentFilter(testLine));
+    CPPUNIT_ASSERT(result.empty());
+    lines.insert(SegmentType(PointType(-1.0,1.0),PointType(1.0,1.0)));
+    lines.search(result, LineSegmentFilter(testLine));
+    CPPUNIT_ASSERT(result.empty());
+    lines.insert(SegmentType(PointType(0.0,1.0),PointType(0.0,-1.0)));
+    lines.search(result, LineSegmentFilter(testLine));
+    CPPUNIT_ASSERT(result.size() == 1);
+}
+
 Scalar randScalar(Scalar Range) {
     return (Scalar(rand()) * Range) / RAND_MAX;
 }
@@ -77,6 +92,7 @@ SegmentType randSegment(Scalar Range) {
 }
 
 void SpacialTestCase::testStress() {
+    srand(static_cast<unsigned int>(time(NULL)));
     static const size_t SET_SIZE = 1000000;
     std::vector<SegmentType> dataset;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
