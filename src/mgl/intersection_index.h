@@ -23,12 +23,12 @@ struct to_bbox<libthing::LineSegment2> {
     }
 };
 
-class LineSegmentFilter{
+class LineSegmentFilter : public BBoxFilter{
 public:
     LineSegmentFilter(const libthing::LineSegment2& data = 
             libthing::LineSegment2())
-            : myData(data), 
-            myBound(to_bbox<libthing::LineSegment2>::bound(data)) {}
+            : BBoxFilter(to_bbox<libthing::LineSegment2>::bound(data)), 
+            myData(data){}
     bool filter(const AABBox& bb) const {
         
         enum leg {
@@ -37,7 +37,7 @@ public:
             l_gre = 1
         };
         
-        if(!myBound.intersects(bb))
+        if(!BBoxFilter::filter(bb))
             return false;
         
         leg x1, y1, x2, y2;
@@ -57,9 +57,8 @@ public:
         int y = y1 + y2;
         return (abs(x) < 2 && abs(y) < 2);
     }
-private:
+protected:
     libthing::LineSegment2 myData;
-    AABBox myBound;
 };
 
 }
