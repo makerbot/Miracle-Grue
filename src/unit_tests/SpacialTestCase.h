@@ -15,6 +15,7 @@ private:
     CPPUNIT_TEST_SUITE( SpacialTestCase );
     CPPUNIT_TEST( testInsertion );
     CPPUNIT_TEST( testFilter );
+    CPPUNIT_TEST( testStress );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -22,6 +23,7 @@ protected:
     
     void testInsertion();
     void testFilter();
+    void testStress();
     
 };
 
