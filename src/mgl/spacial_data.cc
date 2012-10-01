@@ -21,7 +21,7 @@ void AABBox::growTo(const AABBox& bb) {
 void AABBox::reset(PointType pt) {
     m_min = m_max = pt;
 }
-Scalar AABBox::intersection_x(const AABBox& other) const {
+Scalar AABBox::intersectiondistance_x(const AABBox& other) const {
     using std::min;
     using std::max;
     if (!intersects_x(other))
@@ -30,7 +30,7 @@ Scalar AABBox::intersection_x(const AABBox& other) const {
     Scalar b = min(m_max.x, other.m_max.x);
     return b - a;
 }
-Scalar AABBox::intersection_y(const AABBox& other) const {
+Scalar AABBox::intersectiondistance_y(const AABBox& other) const {
     using std::min;
     using std::max;
     if (!intersects_y(other))
@@ -56,7 +56,7 @@ bool AABBox::fits(const AABBox& other) const {
     return other.size_x() < size_x() && other.size_y() < size_y();
 }
 Scalar AABBox::intersectionArea(const AABBox& other) const {
-    return intersection_x(other) * intersection_y(other);
+    return intersectiondistance_x(other) * intersectiondistance_y(other);
 }
 
 bool AABBox::coordinateIntersects(Scalar min1, Scalar max1, Scalar min2, Scalar max2) {

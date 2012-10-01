@@ -27,8 +27,8 @@ public:
     Scalar top() const { return m_max.y; }
     Scalar size_x() const { return m_max.x - m_min.x; }
     Scalar size_y() const { return m_max.y - m_min.y; }
-    Scalar intersection_x(const AABBox& other) const;
-    Scalar intersection_y(const AABBox& other) const;
+    Scalar intersectiondistance_x(const AABBox& other) const;
+    Scalar intersectiondistance_y(const AABBox& other) const;
     Scalar area() const { return size_x() * size_y(); }
     
     bool contains(const AABBox& other) const;
@@ -39,7 +39,7 @@ public:
     /*!Returns shared area if intersecting, 0 if not*/
     Scalar intersectionArea(const AABBox& other) const;
     
-    static Scalar coordinateIntersection(Scalar min1, Scalar max1, 
+    static Scalar coordinateIntersectionDistance(Scalar min1, Scalar max1, 
             Scalar min2, Scalar max2);
     static bool coordinateIntersects(Scalar min1, Scalar max1, 
             Scalar min2, Scalar max2);

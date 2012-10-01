@@ -102,10 +102,12 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::adopt(basic_rtree* from) {
+    *this = basic_rtree();
     for(size_t i = 0; i < CAPACITY; ++i) {
         myChildren[i] = from->myChildren[i];
         from->myChildren[i] = NULL;
     }
+    myChildrenCount = from->myChildrenCount;
     from->myChildrenCount = 0;
     
     myData = from->myData;
