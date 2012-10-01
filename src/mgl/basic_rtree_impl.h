@@ -54,11 +54,15 @@ basic_rtree<T, C>& basic_rtree<T, C>::operator =(const basic_rtree& other) {
 template <typename T, size_t C>
 basic_rtree<T, C>::~basic_rtree() {
     for(size_t i = 0; i != CAPACITY; ++i) {
-        myTreeAllocator.destroy(myChildren[i]);
-        myTreeAllocator.deallocate(myChildren[i], 1);
+        if(myChildren[i]) {
+            myTreeAllocator.destroy(myChildren[i]);
+            myTreeAllocator.deallocate(myChildren[i], 1);
+        }
     }
-    myDataAllocator.destroy(myData);
-    myDataAllocator.deallocate(myData, 1);
+    if(myData) {
+        myDataAllocator.destroy(myData);
+        myDataAllocator.deallocate(myData, 1);
+    }
 }
 template <typename T, size_t C>
 typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
@@ -87,9 +91,9 @@ void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
     std::string tabs(recursionLevel, '\t');
     out << tabs << myBounds.m_min << " - " << myBounds.m_max;
     if(isLeaf())
-        out << " - leaf";
+        out << "-L";
     if(splitMyself)
-        out << " - rooot";
+        out << "-R";
     out << std::endl;
     for(size_t i = 0; i < size(); ++i) {
         myChildren[i]->repr(out, recursionLevel + 1);
@@ -145,6 +149,7 @@ void basic_rtree<T, C>::insert(basic_rtree* child) {
         throw TreeException("Overfilled R Tree node!");
     }
     myChildren[myChildrenCount++] = child;
+    myBounds.growTo(child->myBounds);
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::split(basic_rtree* child) {
@@ -152,6 +157,8 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
         throw TreeException("Attempted to split a leaf!");
     if(full())
         throw TreeException("Can't split child of full node");
+    if(!child->full())
+        return;
     basic_rtree* contents[CAPACITY];
     for(size_t i = 0; i < CAPACITY; ++i) {
         contents[i] = child->myChildren[i];
@@ -177,7 +184,7 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::adopt(basic_rtree* from) {
-    *this = basic_rtree();
+    *this = basic_rtree(false);
     for(size_t i = 0; i < CAPACITY; ++i) {
         myChildren[i] = from->myChildren[i];
         from->myChildren[i] = NULL;
@@ -197,8 +204,6 @@ void basic_rtree<T, C>::growTree() {
     basic_rtree* childling = myTreeAllocator.allocate(1, this);
     myTreeAllocator.construct(childling, basic_rtree(false));
     childling->adopt(this);
-    splitMyself = true;
-    childling->splitMyself = false;
     insert(childling);
     split(childling);
 }
