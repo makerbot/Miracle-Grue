@@ -242,72 +242,18 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 }
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
-		std::list<LoopList>& sliceInsets,
-		LayerMeasure& layermeasure,
-		const char* scadFile) {
+							  std::list<LoopList>& sliceInsets,
+							  LayerMeasure& layermeasure) {
+	const Scalar base_distance = 0.5;
 
-	libthing::SegmentTable sliceOutlinesOld;
-	libthing::Insets sliceInsetsOld;
-
-	/*
-	 This function makes use of inshelligence, which indirectly makes use of 
-	 clipper.cc, a machine translated Delphi library designed to make use of 
-	 SegmentTables. As it is currently not practical to quickly convert this 
-	 library to use the new Loop type, we instead elected to simply convert 
-	 the resulting SegmentTables into Loops
-	 */
-
-	//convert outline Loops into equivalent SegmentTables
-	for (LoopList::const_iterator iter = sliceOutlines.begin();
-			iter != sliceOutlines.end();
-			++iter) {
-		sliceOutlinesOld.push_back(std::vector<libthing::LineSegment2 > ());
-		const Loop& currentLoop = *iter;
-		//Convert current loop to a vector of segments
-		for (Loop::const_finite_cw_iterator loopiter =
-				currentLoop.clockwiseFinite();
-				loopiter != currentLoop.clockwiseEnd();
-				++loopiter) {
-			sliceOutlinesOld.back().push_back(currentLoop.segmentAfterPoint(loopiter));
-		}
-	}
-
-	//call the function with the equivalent SegmentTables
-	bool writeDebugScadFiles = false;
-	inshelligence(sliceOutlinesOld,
-			regionerCfg.nbOfShells,
-			layermeasure.getLayerW(),
-			regionerCfg.insetDistanceMultiplier,
-			scadFile,
-			writeDebugScadFiles,
-			sliceInsetsOld);
-
-	//Recover loops from the resulting SegmentTable
-	for (libthing::Insets::const_iterator iter = sliceInsetsOld.begin();
-			iter != sliceInsetsOld.end();
-			++iter) {
+	for (unsigned int shell = 0; shell < regionerCfg.nbOfShells; ++shell) {
 		sliceInsets.push_back(LoopList());
-		LoopList& currentLoopList = sliceInsets.back();
-		//Convert each group of insets into a list of Loops
-		for (libthing::SegmentTable::const_iterator setIter = iter->begin();
-				setIter != iter->end();
-				++setIter) {
-			currentLoopList.push_back(Loop());
-			const std::vector<libthing::LineSegment2>& currentPoly = *setIter;
-			Loop& currentLoop = currentLoopList.back();
-			Loop::cw_iterator loopIter = currentLoop.clockwiseEnd();
-			//Convert each individual inset to a Loop
-			//Insert points 1 - N
-			for (std::vector<libthing::LineSegment2>::const_iterator polyIter =
-					currentPoly.begin();
-					polyIter != currentPoly.end();
-					++polyIter) {
-				loopIter = currentLoop.insertPointAfter(polyIter->b, loopIter);
-			}
-			//Insert point 0
-			if (!currentPoly.empty())
-				loopIter = currentLoop.insertPointAfter(currentPoly.begin()->a, loopIter);
-		}
+		LoopList &shells = sliceInsets.back();
+
+		Scalar distance = base_distance + regionerCfg.insetDistanceMultiplier
+			* layermeasure.getLayerW() * shell;
+
+		loopsOffset(shells, sliceOutlines, distance);
 	}
 }
 
@@ -340,8 +286,7 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		tick();
 		const LoopList& currentOutlines = outline->readLoops();
 
-		insetsForSlice(currentOutlines, region->insetLoops,
-				layermeasure, NULL);
+		insetsForSlice(currentOutlines, region->insetLoops, layermeasure);
 
 		++outline;
 		++region;

@@ -115,12 +115,11 @@ public:
 			   RegionList &regionlist);
 
 	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
-			libthing::Insets &sliceInsets,
-			const char* scadFile = NULL);
+						libthing::Insets &sliceInsets);
+
 	void insetsForSlice(const LoopList& sliceOutlines,
-			std::list<LoopList>& sliceInsets,
-			LayerMeasure& layermeasure, 
-			const char* scadFile = NULL);
+						std::list<LoopList>& sliceInsets,
+						LayerMeasure& layermeasure);
 
 	void insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				const LayerLoops::const_layer_iterator outlinesEnd,
