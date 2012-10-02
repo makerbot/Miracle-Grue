@@ -177,8 +177,12 @@ void basic_rtree<T, C>::insert(basic_rtree* child) {
         if(firstborn->isLeaf()) {
             //we're one level above leaves
             //make a sibling
-            myChildren[myChildrenCount++] = child;
-            myBounds.growTo(child->myBounds);
+            if(child->isLeaf()) {
+                myChildren[myChildrenCount++] = child;
+                myBounds.growTo(child->myBounds);
+            } else {
+                throw TreeException("Leaf level mismatch!");
+            }
         } else {
             //use brainpower to pick where to insert and do it
             insertIntelligently(child);
@@ -233,15 +237,16 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
     child->myBounds.reset();
     basic_rtree* clone = myTreeAllocator.allocate(1, child);
     myTreeAllocator.construct(clone, basic_rtree(false));
+    myChildren[myChildrenCount++] = clone;
     //distribute even/odd
     for(size_t i = 0; i < CAPACITY; ++i) {
         if(contents[i]) {
             basic_rtree* curthing = (i & 1 ? child : clone);
-            curthing->insert(contents[i]);
+            curthing->myChildren[curthing->myChildrenCount++]=contents[i];
+            curthing->myBounds.growTo(contents[i]->myBounds);
         }
     }
     myBounds.growTo(child->myBounds);
-    myChildren[myChildrenCount++] = clone;
     myBounds.growTo(clone->myBounds);
     if(splitMyself && isFull()) {
         growTree();

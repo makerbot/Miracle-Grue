@@ -132,11 +132,12 @@ void SpacialTestCase::testStress() {
     }
     std::cout << "Final outcome of brute check: " << finalBrute.size() 
             << std::endl;
+    CPPUNIT_ASSERT_EQUAL(finalBrute.size(), finalFiltered.size());
 }
 
 void SpacialTestCase::testRtree() {
     srand(static_cast<unsigned int>(time(NULL)));
-    static const size_t SET_SIZE = 10;
+    static const size_t SET_SIZE = 1000000;
     std::vector<SegmentType> dataset;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     Scalar range = 500;
@@ -151,8 +152,8 @@ void SpacialTestCase::testRtree() {
             ++iter) {
         const SegmentType& cur = *iter;
         boxlist.insert(cur);
-        boxlist.repr(std::cout);
-        std::cout << std::endl;
+        //boxlist.repr(std::cout);
+        //std::cout << std::endl;
     }
     std::cout << "Filtering set" << std::endl;
     std::vector<SegmentType> result;
@@ -177,6 +178,7 @@ void SpacialTestCase::testRtree() {
     }
     std::cout << "Final outcome of brute check: " << finalBrute.size() 
             << std::endl;
+    CPPUNIT_ASSERT_EQUAL(finalBrute.size(), finalFiltered.size());
 }
 
 
