@@ -11,6 +11,8 @@
 #include "basic_rtree_decl.h"
 #include <string>
 #include <limits>
+#include <set>
+#include <iostream>
 
 namespace mgl {
 
@@ -19,14 +21,8 @@ basic_rtree<T, C>::basic_rtree() {
     myTreeAllocator.construct(this, basic_rtree(true));
 }
 template <typename T, size_t C>
-basic_rtree<T, C>::basic_rtree(bool canReproduce) 
-        : splitMyself(canReproduce), myChildrenCount(0), myData(NULL) {
-    for(size_t i = 0; i != CAPACITY; ++i)
-        myChildren[i] = NULL;
-}
-template <typename T, size_t C>
 basic_rtree<T, C>::basic_rtree(const basic_rtree& other) 
-        : splitMyself(other.splitMyself), 
+        : splitMyself(other.splitMyself), myBounds(other.myBounds), 
         myChildrenCount(other.myChildrenCount), myData(NULL) {
     for(size_t i = 0; i != CAPACITY; ++i) {
         myChildren[i] = NULL;
@@ -64,15 +60,33 @@ basic_rtree<T, C>::~basic_rtree() {
         myDataAllocator.deallocate(myData, 1);
     }
 }
+/* Private constructors */
+template <typename T, size_t C>
+basic_rtree<T, C>::basic_rtree(const value_type& value) {
+    myTreeAllocator.construct(this, basic_rtree(false));
+    myData = myDataAllocator.allocate(1, this);
+    myDataAllocator.construct(myData, value);
+    myBounds = to_bbox<value_type>::bound(value);
+}
+template <typename T, size_t C>
+basic_rtree<T, C>::basic_rtree(bool canReproduce) 
+        : splitMyself(canReproduce), myChildrenCount(0), myData(NULL) {
+    for(size_t i = 0; i != CAPACITY; ++i)
+        myChildren[i] = NULL;
+}
+/* End Private constructors */
+/* Public insert */
 template <typename T, size_t C>
 typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
         const basic_rtree::value_type& value) {
-    return insert(value, to_bbox<value_type>::bound(value));
+    basic_rtree* child = myTreeAllocator.allocate(1, this);
+    myTreeAllocator.construct(child, basic_rtree(value));
+    insert(child);
+    return iterator(child);
 }
+/* End Public insert */
 template <typename T, size_t C>
-void basic_rtree<T, C>::erase(iterator iter) {
-    iter;
-}
+void basic_rtree<T, C>::erase(iterator) {}
 template <typename T, size_t C>
 template <typename COLLECTION, typename FILTER>
 void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) {
@@ -99,65 +113,116 @@ void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
         myChildren[i]->repr(out, recursionLevel + 1);
     }
 }
+//template <typename T, size_t C>
+//typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
+//        const basic_rtree::value_type& value, const AABBox& bound) {
+//    if(!isLeaf() && !size()) {
+//        //root
+//        myBounds = bound;
+//        myData = myDataAllocator.allocate(1, this);
+//        myDataAllocator.construct(myData, value);
+//        return iterator(this);
+//    } else if(isLeaf()) {
+//        basic_rtree* newborn = myTreeAllocator.allocate(1, this);
+//        myTreeAllocator.construct(newborn, basic_rtree(false));
+//        iterator ret = newborn->insert(value, bound);  //he stores the new data
+//        basic_rtree* adopted = myTreeAllocator.allocate(1, this);
+//        myTreeAllocator.construct(adopted, basic_rtree(false));
+//        adopted->adopt(this); //he steals all my data
+//        //i own them both
+//        insert(newborn);
+//        insert(adopted);
+//        return ret;
+//    } else {
+//        if(full()) {
+//            throw TreeException("Overfilled R Tree node!");
+//        }
+//        
+//        /*
+//         Here we select a child, insert into the child, 
+//         split if necessary, return correct iterator
+//         */
+//        //pick least populated
+//        size_t minsize = std::numeric_limits<size_t>::max();
+//        size_t minind = 0;
+//        for(size_t i = 0; i < size(); ++i) {
+//            if(myChildren[i]->size() < minsize) {
+//                minind = i;
+//                minsize = myChildren[i]->size();
+//            }
+//        }
+//        iterator ret = myChildren[minind]->insert(value, bound);
+//        if(myChildren[minind]->full())
+//            split(myChildren[minind]);
+//        return ret;
+//    }
+//}
 template <typename T, size_t C>
-typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
-        const basic_rtree::value_type& value, const AABBox& bound) {
-    if(!isLeaf() && !size()) {
-        //root
-        myBounds = bound;
-        myData = myDataAllocator.allocate(1, this);
-        myDataAllocator.construct(myData, value);
-        return iterator(this);
+void basic_rtree<T, C>::insert(basic_rtree* child) {
+    if(isFull()) {
+        throw TreeException("Overfilled R Tree node!");
+    }
+    if(isEmpty()) {
+        myChildren[myChildrenCount++] = child;
+        myBounds.growTo(child->myBounds);
     } else if(isLeaf()) {
-        basic_rtree* newborn = myTreeAllocator.allocate(1, this);
-        myTreeAllocator.construct(newborn, basic_rtree(false));
-        iterator ret = newborn->insert(value, bound);  //he stores the new data
-        basic_rtree* adopted = myTreeAllocator.allocate(1, this);
-        myTreeAllocator.construct(adopted, basic_rtree(false));
-        adopted->adopt(this); //he steals all my data
-        //i own them both
-        insert(newborn);
-        insert(adopted);
-        return ret;
+        basic_rtree* otherchild = myTreeAllocator.allocate(1, this);
+        myTreeAllocator.construct(otherchild, basic_rtree(false));
+        otherchild->adopt(this);
+        insert(otherchild);
+        insert(child);
     } else {
-        if(full()) {
-            throw TreeException("Overfilled R Tree node!");
+        //not leaf, but not empty
+        basic_rtree* firstborn = myChildren[0];
+        if(firstborn->isLeaf()) {
+            //we're one level above leaves
+            //make a sibling
+            myChildren[myChildrenCount++] = child;
+            myBounds.growTo(child->myBounds);
+        } else {
+            //use brainpower to pick where to insert and do it
+            insertIntelligently(child);
         }
-        
-        /*
-         Here we select a child, insert into the child, 
-         split if necessary, return correct iterator
-         */
-        //pick least populated
-        size_t minsize = std::numeric_limits<size_t>::max();
-        size_t minind = 0;
-        for(size_t i = 0; i < size(); ++i) {
-            if(myChildren[i]->size() < minsize) {
-                minind = i;
-                minsize = myChildren[i]->size();
-            }
+        if(splitMyself && isFull()) {
+            growTree();
         }
-        iterator ret = myChildren[minind]->insert(value, bound);
-        if(myChildren[minind]->full())
-            split(myChildren[minind]);
-        return ret;
     }
 }
 template <typename T, size_t C>
-void basic_rtree<T, C>::insert(basic_rtree* child) {
-    if(full()) {
-        throw TreeException("Overfilled R Tree node!");
+void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
+    typedef std::set<basic_rtree*> cset;
+    typedef typename cset::iterator iterator;
+    cset candidates;
+    for(size_t i = 0; i < size(); ++i) {
+        candidates.insert(myChildren[i]);
     }
-    myChildren[myChildrenCount++] = child;
-    myBounds.growTo(child->myBounds);
+    while(candidates.size() > 1) {
+        iterator curworst = candidates.begin();
+        Scalar curarea = std::numeric_limits<Scalar>::max();
+        for(iterator iter = candidates.begin(); 
+                iter != candidates.end(); 
+                ++iter) {
+            basic_rtree* iterchild = *iter;
+            Scalar area = iterchild->myBounds.intersectionArea(child->myBounds);
+            if(area < curarea) {
+                curarea = area;
+                curworst = iter;
+            }
+        }
+        candidates.erase(curworst);
+    }
+    basic_rtree* winner = *candidates.begin();
+    winner->insert(child);
+    myBounds.growTo(winner->myBounds);
+    split(winner);
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::split(basic_rtree* child) {
     if(child->isLeaf())
         throw TreeException("Attempted to split a leaf!");
-    if(full())
+    if(isFull())
         throw TreeException("Can't split child of full node");
-    if(!child->full())
+    if(!child->isFull())
         return;
     basic_rtree* contents[CAPACITY];
     for(size_t i = 0; i < CAPACITY; ++i) {
@@ -176,8 +241,9 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
         }
     }
     myBounds.growTo(child->myBounds);
-    insert(clone);
-    if(splitMyself && full()) {
+    myChildren[myChildrenCount++] = clone;
+    myBounds.growTo(clone->myBounds);
+    if(splitMyself && isFull()) {
         growTree();
     }
     

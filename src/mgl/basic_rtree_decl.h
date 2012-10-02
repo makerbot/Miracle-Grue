@@ -38,7 +38,6 @@ public:
     typedef iterator const_iterator;
     
     basic_rtree();
-    basic_rtree(bool canReproduce);
     basic_rtree(const basic_rtree& other);
     basic_rtree& operator =(const basic_rtree& other);
     ~basic_rtree();
@@ -54,19 +53,24 @@ public:
     void repr(std::ostream& out, size_t recursionLevel = 0);
     
 private:
+    explicit basic_rtree(const value_type& value);
+    basic_rtree(bool canReproduce);
+    
     static const size_t CAPACITY = C;
     
-    iterator insert(const value_type& value, const AABBox& bound);
     void insert(basic_rtree* child);
-    void split(basic_rtree* child);   //redistribute my children
+    void insertIntelligently(basic_rtree* child);   //here is rtree logic
+    void split(basic_rtree* child);   //clone child, distribute its children
     
     void adopt(basic_rtree* from);
     void growTree();
     
     bool isLeaf() const { return myData; }
+    bool isFull() const { return size() >= capacity(); }
+    bool isEmpty() const { return !isLeaf() && !hasChildren(); }
+    bool hasChildren() const { return size(); }
     size_t size() const { return myChildrenCount; }
     size_t capacity() const { return CAPACITY; }
-    bool full() const { return size() >= capacity(); }
     
     bool splitMyself;   //true for root
     
