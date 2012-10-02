@@ -10,6 +10,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+static const size_t SET_SIZE = 1000000;
+
 class SpacialTestCase : public CPPUNIT_NS::TestFixture {
 private:
     CPPUNIT_TEST_SUITE( SpacialTestCase );
@@ -17,7 +19,9 @@ private:
     CPPUNIT_TEST( testFilter );
     CPPUNIT_TEST( testEmpty );
     CPPUNIT_TEST( testStress );
-    CPPUNIT_TEST( testRtree );
+    CPPUNIT_TEST( testRtreeFilter );
+    CPPUNIT_TEST( testRtreeEmpty );
+    CPPUNIT_TEST( testRtreeStress );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -27,7 +31,9 @@ protected:
     void testFilter();
     void testEmpty();
     void testStress();
-    void testRtree();
+    void testRtreeFilter();
+    void testRtreeEmpty();
+    void testRtreeStress();
     
 };
 
