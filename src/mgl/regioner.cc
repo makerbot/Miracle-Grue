@@ -253,7 +253,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		Scalar distance = base_distance + regionerCfg.insetDistanceMultiplier
 			* layermeasure.getLayerW() * shell;
 
-		loopsOffset(shells, sliceOutlines, distance);
+		loopsOffset(shells, sliceOutlines, -distance);
 	}
 }
 
