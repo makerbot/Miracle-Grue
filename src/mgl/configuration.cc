@@ -153,6 +153,28 @@ std::string Configuration::asJson(Json::StyledWriter writer) const {
     return writer.write(root);
 }
 
+const Scalar GrueConfig::INVALID_SCALAR(std::numeric_limits<Scalar>::max());
+
+GrueConfig::GrueConfig()
+        : defaultExtruder(INVALID_UINT), doOutlines(INVALID_BOOL), 
+        doInsets(INVALID_BOOL), doInfill(INVALID_BOOL), 
+        doFanCommand(INVALID_BOOL), fanLayer(INVALID_UINT), 
+        doPrintLayerMessages(INVALID_BOOL), doPrintProgress(INVALID_BOOL), 
+        layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
+        infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
+        layerWidthRatio(INVALID_SCALAR), 
+        insetDistanceMultiplier(INVALID_SCALAR), roofLayerCount(INVALID_UINT), 
+        floorLayerCount(INVALID_UINT), doRaft(INVALID_BOOL), 
+        raftLayers(INVALID_UINT), raftBaseThickness(INVALID_SCALAR), 
+        raftInterfaceThickness(INVALID_SCALAR), raftOutset(INVALID_SCALAR), 
+        raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
+        doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
+        supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
+        coarseness(INVALID_SCALAR), directionWeight(INVALID_SCALAR) {}
+void GrueConfig::loadFromFile(const Configuration& config) {
+    //here will go massive things
+}
+
 // this is a work in progress...
 
 void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg) {

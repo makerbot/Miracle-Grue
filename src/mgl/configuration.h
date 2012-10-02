@@ -25,6 +25,7 @@
 #include <json/writer.h>
 
 #include "mgl.h"
+#include <limits>
 
 namespace mgl {
 
@@ -120,6 +121,59 @@ class SlicerConfig;
 class RegionerConfig;
 class ExtruderConfig;
 class PatherConfig;
+
+////master configuration object
+class GrueConfig {
+public:
+    GrueConfig();
+    void loadFromFile(const Configuration& config);
+private:
+    static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
+    static const unsigned int INVALID_UINT = -1;
+    static const bool INVALID_BOOL = false;
+    
+    //gcoder stuff
+    //std::map<std::string, Extrusion> extrusionProfiles;
+    unsigned int defaultExtruder;
+    //GantryConfig gantryCfg;
+    //std::vector<Extruder> extruders;
+    std::string header;
+    std::string footer;
+    bool doOutlines;
+    bool doInsets;
+    bool doInfill;
+    bool doFanCommand;
+    unsigned int fanLayer;
+    bool doPrintLayerMessages;
+    bool doPrintProgress;
+    //slicer stuff
+    Scalar layerH;
+    Scalar firstLayerZ;
+    //regioner stuff
+    Scalar infillDensity;
+    unsigned int nbOfShells;
+    Scalar layerWidthRatio;
+    Scalar insetDistanceMultiplier;
+    unsigned int roofLayerCount;
+    unsigned int floorLayerCount;
+    //raft
+    bool doRaft;
+    unsigned int raftLayers;
+    Scalar raftBaseThickness;
+    Scalar raftInterfaceThickness;
+    Scalar raftOutset;
+    Scalar raftModelSpacing;
+    Scalar raftDensity;
+    //support
+    bool doSupport;
+    Scalar supportMargin;
+    Scalar supportDensity;
+    //pather
+    bool doGraphOptimization;
+    Scalar coarseness;
+    Scalar directionWeight;
+    
+};
 
 void loadGCoderConfigFromFile(const Configuration& conf,
         GCoderConfig &gcoder);
