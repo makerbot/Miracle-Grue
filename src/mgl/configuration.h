@@ -7,7 +7,7 @@
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
 
-*/
+ */
 
 #ifndef CONFIGURATION_H_
 #define CONFIGURATION_H_
@@ -26,82 +26,93 @@
 
 #include "mgl.h"
 
-namespace mgl
-{
+namespace mgl {
 
-class ConfigException : public Exception {public: ConfigException(const char *msg):Exception(msg) {	} };
+class ConfigException : public Exception {
+public:
+
+    ConfigException(const char *msg) : Exception(msg) {
+    }
+};
 
 // checks that the value exist before returning it
 double doubleCheck(const Json::Value &value, const char *name);
-double doubleCheck(const Json::Value &value, const char *name, 
-		const double defaultVal);
+double doubleCheck(const Json::Value &value, const char *name,
+        const double defaultVal);
 unsigned int uintCheck(const Json::Value &value, const char *name);
-unsigned int uintCheck(const Json::Value &value, const char *name, 
-		const unsigned int defaultVal);
+unsigned int uintCheck(const Json::Value &value, const char *name,
+        const unsigned int defaultVal);
 std::string stringCheck(const Json::Value &value, const char *name);
 std::string pathCheck(const Json::Value &value, const char *name,
-					  const std::string &defaultval);
+        const std::string &defaultval);
 std::string pathCheck(const Json::Value &value, const char *name);
 bool boolCheck(const Json::Value &value, const char *name, bool defaultval);
 bool boolCheck(const Json::Value &value, const char *name);
 //
 // This class contains settings for the 3D printer, and user preferences
 //
+
 class Configuration {
-
-	std::string filename;
+    std::string filename;
 public:
-	Json::Value root;
+    Json::Value root;
 
-	public:
-	//	Json::Value &readJsonValue() {return root;}
-    public:
-		/// standard constructor
-		Configuration();
-		/// standard constructor for loading configuration from a json file
-        //    Configuration(std::string& srcFilename);
- 		/// standard  destructor
+public:
+    //	Json::Value &readJsonValue() {return root;}
+public:
+    /// standard constructor
+    Configuration();
+    /// standard constructor for loading configuration from a json file
+    //    Configuration(std::string& srcFilename);
+    /// standard  destructor
 
-         ~Configuration();
+    ~Configuration();
 
-         void readFromFile(const char* filename);
-         void readFromFile(const std::string &filename) { readFromFile(filename.c_str()); };
-         void readFromDefault() { readFromFile(defaultFilename()); };
-	
+    void readFromFile(const char* filename);
 
-    public:
-         bool isMember(const char* key) {
-             return this->root.isMember(key);
-         }
+    void readFromFile(const std::string &filename) {
+        readFromFile(filename.c_str());
+    };
 
-     	/// index function, to read/write values as config["foo"]
-     	Json::Value& operator[] (const char* key)
-		{
+    void readFromDefault() {
+        readFromFile(defaultFilename());
+    };
 
-//     		if(filename.length() ==0)
-//     		{
-//     			ConfigException mixup("Configuration file has not been read");
-//     		    throw mixup;
-//     		}
 
-//     		if( !root.isMember(key) )
-//     		{
-//     			std::stringstream ss;
-//     			ss << "Can't find \"" << key << "\" in " << filename;
-//     			ConfigException mixup(ss.str().c_str());
-//     			throw mixup;
-//     		}
-     		return this->root[key];
-		}
-     	const Json::Value& operator[] (const char* key) const
-     	{
-     		return this->root[key];
-     	}
+public:
 
-      	std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
+    bool isMember(const char* key) {
+        return this->root.isMember(key);
+    }
+
+    /// index function, to read/write values as config["foo"]
+
+    Json::Value& operator[] (const char* key) {
+
+        //     		if(filename.length() ==0)
+        //     		{
+        //     			ConfigException mixup("Configuration file has not been read");
+        //     		    throw mixup;
+        //     		}
+
+        //     		if( !root.isMember(key) )
+        //     		{
+        //     			std::stringstream ss;
+        //     			ss << "Can't find \"" << key << "\" in " << filename;
+        //     			ConfigException mixup(ss.str().c_str());
+        //     			throw mixup;
+        //     		}
+        return this->root[key];
+    }
+
+    const Json::Value& operator[] (const char* key) const {
+        return this->root[key];
+    }
+
+    std::string asJson(Json::StyledWriter writer = Json::StyledWriter()) const;
 
 private:
-	std::string defaultFilename();
+    std::string defaultFilename();
 };
 
 class GCoderConfig;
@@ -110,16 +121,16 @@ class RegionerConfig;
 class ExtruderConfig;
 class PatherConfig;
 
-void loadGCoderConfigFromFile(const Configuration& conf, 
-		GCoderConfig &gcoder);
-void loadSlicerConfigFromFile(const Configuration &config, 
-		SlicerConfig &slicer);
-void loadExtruderConfigFromFile(const Configuration &config, 
-		ExtruderConfig &extruderCfg);
-void loadRegionerConfigFromFile(const Configuration& config, 
-		RegionerConfig& regionerCfg);
-void loadPatherConfigFromFile(const Configuration& config, 
-		PatherConfig& patherCfg);
+void loadGCoderConfigFromFile(const Configuration& conf,
+        GCoderConfig &gcoder);
+void loadSlicerConfigFromFile(const Configuration &config,
+        SlicerConfig &slicer);
+void loadExtruderConfigFromFile(const Configuration &config,
+        ExtruderConfig &extruderCfg);
+void loadRegionerConfigFromFile(const Configuration& config,
+        RegionerConfig& regionerCfg);
+void loadPatherConfigFromFile(const Configuration& config,
+        PatherConfig& patherCfg);
 
 }
 #endif /* CONFIGURATION_H_ */

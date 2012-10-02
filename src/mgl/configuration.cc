@@ -276,8 +276,8 @@ void loadGCoderConfigFromFile(const Configuration& conf,
             "doSupport", false);
     gcoderCfg.doFanCommand = boolCheck(conf.root["doFanCommand"],
             "doFanCommand", false);
-    if(gcoderCfg.doFanCommand) {
-        gcoderCfg.fanLayer = uintCheck(conf.root["fanLayer"], 
+    if (gcoderCfg.doFanCommand) {
+        gcoderCfg.fanLayer = uintCheck(conf.root["fanLayer"],
                 "fanLayer");
     }
     gcoderCfg.doPrintLayerMessages = boolCheck(
