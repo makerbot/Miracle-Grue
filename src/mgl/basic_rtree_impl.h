@@ -102,8 +102,8 @@ void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) {
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
-    std::string tabs(recursionLevel, '\t');
-    out << tabs << myBounds.m_min << " - " << myBounds.m_max;
+    std::string tabs(recursionLevel, '|');
+    out << tabs << "N";// << myBounds.m_min << " - " << myBounds.m_max;
     if(isLeaf())
         out << "-L";
     if(splitMyself)
