@@ -175,7 +175,7 @@ void basic_rtree<T, C>::insertDumb(basic_rtree* child) {
     if(myChildrenCount == 1)
         myBounds = child->myBounds;
     else
-        myBounds.growTo(child->myBounds);
+        myBounds.expandTo(child->myBounds);
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
@@ -187,13 +187,14 @@ void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
     }
     while(candidates.size() > 1) {
         iterator curworst = candidates.begin();
-        Scalar curarea = std::numeric_limits<Scalar>::max();
+        Scalar curarea = 0;
         for(iterator iter = candidates.begin(); 
                 iter != candidates.end(); 
                 ++iter) {
             basic_rtree* iterchild = *iter;
-            Scalar area = iterchild->myBounds.intersectionArea(child->myBounds);
-            if(area < curarea) {
+            Scalar area = iterchild->myBounds.expandedTo(child->myBounds).area() - 
+                    iterchild->myBounds.area();
+            if(area > curarea) {
                 curarea = area;
                 curworst = iter;
             }
@@ -202,7 +203,7 @@ void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
     }
     basic_rtree* winner = *candidates.begin();
     winner->insert(child);
-    myBounds.growTo(winner->myBounds);
+    myBounds.expandTo(winner->myBounds);
     split(winner);
     regrowBounds();
 }
@@ -229,30 +230,31 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
         
     struct intersection_area {
         size_t a, b;
-        Scalar intersection;
+        Scalar area;
         static bool compare(const intersection_area& lhs, 
                 const intersection_area& rhs) {
-            return lhs.intersection < rhs.intersection;
+            return lhs.area < rhs.area;
         }
     };
     
     intersection_area worst;
     worst.a = 0;
     worst.b = 1;
-    worst.intersection = contents[worst.a]->myBounds.intersectionArea(
-            contents[worst.b]->myBounds);
+    worst.area = 0;
     for(size_t i = 2; i < CAPACITY; ++i) {
         if(!contents[i])
             continue;
         for(size_t j = i + 1; j < CAPACITY; ++j) {
             if(!contents[j])
                 continue;
-            Scalar area = contents[i]->myBounds.intersectionArea(
-                    contents[j]->myBounds);
-            if(area < worst.intersection) {
+            Scalar area = contents[i]->myBounds.expandedTo(
+                    contents[j]->myBounds).area() - 
+                    contents[i]->myBounds.area() - 
+                    contents[j]->myBounds.area();
+            if(area > worst.area) {
                 worst.a = i;
                 worst.b = j;
-                worst.intersection = area;
+                worst.area = area;
             }
         }
     }
@@ -269,7 +271,7 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
         basic_rtree* current = picker ? child : clone;
         basic_rtree* other = !picker ? child : clone;
         typename std::vector<basic_rtree*>::iterator worstmatch = 
-                std::min_element(theRest.begin(), theRest.end(), 
+                std::max_element(theRest.begin(), theRest.end(), 
                         basic_rtree_intersect_comparator<value_type, CAPACITY>(other));
         current->insertDumb(*worstmatch);
         theRest.erase(worstmatch);
@@ -314,7 +316,7 @@ void basic_rtree<T, C>::regrowBounds() {
     if(!isEmpty())
         myBounds = myChildren[0]->myBounds;
     for(size_t i = 0; i < size(); ++i) {
-        myBounds.growTo(myChildren[i]->myBounds);
+        myBounds.expandTo(myChildren[i]->myBounds);
     }
 }
 

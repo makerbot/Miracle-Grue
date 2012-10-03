@@ -199,22 +199,24 @@ void SpacialTestCase::testRtreeStress() {
     srand(static_cast<unsigned int>(time(NULL)));
     srand(rand());
     simpleCollectionType dataset;
-    size_t SET_SIZE = 20;
+    //size_t SET_SIZE = 200;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
-    Scalar range = 256;
+    Scalar range = 500;
     for(size_t i=0; i < SET_SIZE; ++i) {
         dataset.push_back(randSegment(range));
     }
     SegmentType testLine = randSegment(range);
     lineIndexType boxlist;
     std::cout << "Building index" << std::endl;
+    clock_t start = clock();
     for(simpleCollectionType::const_iterator iter = dataset.begin(); 
             iter != dataset.end(); 
             ++iter) {
         boxlist.insert(*iter);
     }
-    boxlist.repr(std::cerr);
-    clock_t start = clock();
+    std::cout << clock() - start << std::endl;
+    //boxlist.repr(std::cerr);
+    start = clock();
     std::cout << "Filtering set" << std::endl;
     simpleCollectionType result;
     boxlist.search(result, LineSegmentFilter(testLine));
@@ -252,8 +254,8 @@ void SpacialTestCase::testPerformance() {
     basic_rtree<SegmentType> rtree;
     vector testset;
     
-    static const size_t SET_SIZE = 1000000;
-    static const size_t TEST_SIZE = 100;
+    static const size_t SET_SIZE = 1000;
+    static const size_t TEST_SIZE = 1000;
     Scalar range = 500;
     
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;

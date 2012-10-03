@@ -18,7 +18,7 @@ template <>
 struct to_bbox<libthing::LineSegment2> {
     static AABBox bound(const libthing::LineSegment2& ls) {
         AABBox ret(ls.a);
-        ret.growTo(ls.b);
+        ret.expandTo(ls.b);
         return ret;
     }
 };

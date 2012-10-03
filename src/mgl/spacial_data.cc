@@ -2,7 +2,7 @@
 
 namespace mgl {
 
-void AABBox::growTo(PointType pt) {
+void AABBox::expandTo(PointType pt) {
     using std::min;
     using std::max;
     m_min.x = min(m_min.x, pt.x);
@@ -10,13 +10,23 @@ void AABBox::growTo(PointType pt) {
     m_max.x = max(m_max.x, pt.x);
     m_max.y = max(m_max.y, pt.y);
 }
-void AABBox::growTo(const AABBox& bb) {
+void AABBox::expandTo(const AABBox& bb) {
     using std::min;
     using std::max;
     m_min.x = min(m_min.x, bb.m_min.x);
     m_min.y = min(m_min.y, bb.m_min.y);
     m_max.x = max(m_max.x, bb.m_max.x);
     m_max.y = max(m_max.y, bb.m_max.y);
+}
+AABBox AABBox::expandedTo(PointType pt) const {
+    AABBox copy = *this;
+    copy.expandTo(pt);
+    return copy;
+}
+AABBox AABBox::expandedTo(const AABBox& bb) const {
+    AABBox copy = *this;
+    copy.expandTo(bb);
+    return copy;
 }
 void AABBox::reset(PointType pt) {
     m_min = m_max = pt;

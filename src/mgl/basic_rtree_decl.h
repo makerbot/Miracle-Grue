@@ -23,7 +23,7 @@ public:
     TreeException(const T& arg) : Exception(arg) {}
 };
 
-static const size_t RTREE_DEFAULT_BRANCH = 6;
+static const size_t RTREE_DEFAULT_BRANCH = 4;
 
 template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
 class basic_rtree {
@@ -100,8 +100,8 @@ class basic_rtree_intersect_comparator {
 public:
     basic_rtree_intersect_comparator(tree_type* b) : base(b) {}
     bool operator ()(const tree_type* a, const tree_type* b) const {
-            return b->myBounds.intersectionArea(base->myBounds) < 
-                    a->myBounds.intersectionArea(base->myBounds);
+            return base->myBounds.expandedTo(a->myBounds).area() - base->myBounds.area() < 
+                    base->myBounds.expandedTo(b->myBounds).area() - base->myBounds.area();
     }
 private:
     tree_type* base;

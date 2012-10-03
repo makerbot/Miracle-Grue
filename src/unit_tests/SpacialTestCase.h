@@ -21,8 +21,8 @@ private:
 //    CPPUNIT_TEST( testStress );
 //    CPPUNIT_TEST( testRtreeFilter );
 //    CPPUNIT_TEST( testRtreeEmpty );
-      CPPUNIT_TEST( testRtreeStress );
-//    CPPUNIT_TEST( testPerformance );
+    CPPUNIT_TEST( testRtreeStress );
+    CPPUNIT_TEST( testPerformance );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
