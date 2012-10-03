@@ -259,7 +259,7 @@ void SpacialTestCase::testPerformance() {
     static const size_t SET_SIZE = 50000;
     static const size_t TEST_SIZE = 1000;
     Scalar range = 500;
-    Scalar range2 = 50;
+    Scalar range2 = 100;
     
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     for(size_t i=0; i < SET_SIZE; ++i) {
@@ -302,6 +302,8 @@ void SpacialTestCase::testPerformance() {
     }
     std::cout << clock() - start << std::endl;
     start = clock();
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
 }
 
 

@@ -54,6 +54,7 @@ public:
     iterator end() { return iterator(); }
     
     void repr(std::ostream& out, size_t recursionLevel = 0);
+    void repr_svg(std::ostream& out, size_t recursionLevel = 0);
     
 private:
     

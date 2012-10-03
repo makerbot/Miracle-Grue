@@ -103,17 +103,23 @@ void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) {
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
-//    std::string tabs(recursionLevel, '|');
-//    out << tabs << 'N';//myBounds.m_min << " - " << myBounds.m_max;
-//    if(isLeaf())
-//        out << "-L";
-//    if(splitMyself)
-//        out << "-R";
-//    out << std::endl;
+    std::string tabs(recursionLevel, '|');
+    out << tabs << 'N';//myBounds.m_min << " - " << myBounds.m_max;
+    if(isLeaf())
+        out << "-L";
+    if(splitMyself)
+        out << "-R";
+    out << std::endl;
+    for(size_t i = 0; i < size(); ++i) {
+        myChildren[i]->repr(out, recursionLevel + 1);
+    }
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::repr_svg(std::ostream& out, unsigned int recursionLevel) {
     if(!recursionLevel) {
         out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
         out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
-        repr(out, 1);
+        repr_svg(out, 1);
         out << "</svg>" << std::endl;
         return;
     }
@@ -132,7 +138,7 @@ void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
             << ");stroke-width:" << 
             2.0 / (1.0 + recursionLevel) << ";\"/>" << std::endl;
     for(size_t i = 0; i < size(); ++i) {
-        myChildren[i]->repr(out, recursionLevel + 1);
+        myChildren[i]->repr_svg(out, recursionLevel + 1);
     }
 }
 template <typename T, size_t C>
@@ -187,13 +193,13 @@ void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
     }
     while(candidates.size() > 1) {
         iterator curworst = candidates.begin();
-        Scalar curarea = 0;
+        Scalar curarea = std::numeric_limits<Scalar>::min();
         for(iterator iter = candidates.begin(); 
                 iter != candidates.end(); 
                 ++iter) {
             basic_rtree* iterchild = *iter;
-            Scalar area = iterchild->myBounds.expandedTo(child->myBounds).area() - 
-                    iterchild->myBounds.area();
+            Scalar area = iterchild->myBounds.expandedTo(child->myBounds).perimeter() - 
+                    iterchild->myBounds.perimeter();
             if(area > curarea) {
                 curarea = area;
                 curworst = iter;
