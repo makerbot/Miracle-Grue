@@ -20,6 +20,8 @@ public:
     void growTo(PointType pt);
     void growTo(const AABBox& bb);
     void reset(PointType pt = PointType());
+    void adjust(PointType minDelta, PointType maxDelta);
+    AABBox adjusted(PointType minDelta, PointType maxDelta) const;
         
     Scalar left() const { return m_min.x; }
     Scalar right() const { return m_max.x; }

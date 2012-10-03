@@ -21,6 +21,15 @@ void AABBox::growTo(const AABBox& bb) {
 void AABBox::reset(PointType pt) {
     m_min = m_max = pt;
 }
+void AABBox::adjust(PointType minDelta, PointType maxDelta) {
+    m_min += minDelta;
+    m_max += maxDelta;
+}
+AABBox AABBox::adjusted(PointType minDelta, PointType maxDelta) const {
+    AABBox copy = *this;
+    copy.adjust(minDelta, maxDelta);
+    return copy;
+}
 Scalar AABBox::intersectiondistance_x(const AABBox& other) const {
     using std::min;
     using std::max;

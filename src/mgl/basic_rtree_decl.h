@@ -14,13 +14,16 @@
 
 namespace mgl {
 
+template <typename T, size_t C>
+class basic_rtree_intersect_comparator;
+
 class TreeException : public Exception {
 public:
     template <typename T>
     TreeException(const T& arg) : Exception(arg) {}
 };
 
-static const size_t RTREE_DEFAULT_BRANCH = 4;
+static const size_t RTREE_DEFAULT_BRANCH = 6;
 
 template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
 class basic_rtree {
@@ -53,17 +56,24 @@ public:
     void repr(std::ostream& out, size_t recursionLevel = 0);
     
 private:
+    
+
+    template <typename U, size_t V> 
+    friend class basic_rtree_intersect_comparator;
+    
     explicit basic_rtree(const value_type& value);
     basic_rtree(bool canReproduce);
     
     static const size_t CAPACITY = C;
     
     void insert(basic_rtree* child);
+    void insertDumb(basic_rtree* child);
     void insertIntelligently(basic_rtree* child);   //here is rtree logic
     void split(basic_rtree* child);   //clone child, distribute its children
     
     void adopt(basic_rtree* from);
     void growTree();
+    void regrowBounds();
     
     bool isLeaf() const { return myData; }
     bool isFull() const { return size() >= capacity(); }
@@ -82,8 +92,22 @@ private:
     
     tree_alloc_t myTreeAllocator;
     value_alloc_t myDataAllocator;
-        
 };
+
+template <typename T, size_t C>
+class basic_rtree_intersect_comparator {
+    typedef basic_rtree<T, C> tree_type;
+public:
+    basic_rtree_intersect_comparator(tree_type* b) : base(b) {}
+    bool operator ()(const tree_type* a, const tree_type* b) const {
+            return b->myBounds.intersectionArea(base->myBounds) < 
+                    a->myBounds.intersectionArea(base->myBounds);
+    }
+private:
+    tree_type* base;
+};
+
+
 
 }
 

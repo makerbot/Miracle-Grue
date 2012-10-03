@@ -15,13 +15,14 @@ static const size_t SET_SIZE = 1000000;
 class SpacialTestCase : public CPPUNIT_NS::TestFixture {
 private:
     CPPUNIT_TEST_SUITE( SpacialTestCase );
-    CPPUNIT_TEST( testInsertion );
-    CPPUNIT_TEST( testFilter );
-    CPPUNIT_TEST( testEmpty );
-    CPPUNIT_TEST( testStress );
-    CPPUNIT_TEST( testRtreeFilter );
-    CPPUNIT_TEST( testRtreeEmpty );
-    CPPUNIT_TEST( testRtreeStress );
+//    CPPUNIT_TEST( testInsertion );
+//    CPPUNIT_TEST( testFilter );
+//    CPPUNIT_TEST( testEmpty );
+//    CPPUNIT_TEST( testStress );
+//    CPPUNIT_TEST( testRtreeFilter );
+//    CPPUNIT_TEST( testRtreeEmpty );
+      CPPUNIT_TEST( testRtreeStress );
+//    CPPUNIT_TEST( testPerformance );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -34,6 +35,7 @@ protected:
     void testRtreeFilter();
     void testRtreeEmpty();
     void testRtreeStress();
+    void testPerformance(); //brute, boxlist, rtree
     
 };
 

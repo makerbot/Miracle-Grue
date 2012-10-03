@@ -94,7 +94,9 @@ PointType randVector(Scalar Range) {
     return PointType(randScalar(Range), randScalar(Range));
 }
 SegmentType randSegment(Scalar Range) {
-    return SegmentType(randVector(Range), randVector(Range));
+    PointType a = randVector(Range);
+    PointType b = randVector(10);
+    return SegmentType(a, a+b);
 }
 
 void SpacialTestCase::testStress() {
@@ -195,9 +197,11 @@ void SpacialTestCase::testRtreeStress() {
     typedef basic_rtree<SegmentType> lineIndexType;
     typedef std::vector<SegmentType> simpleCollectionType;
     srand(static_cast<unsigned int>(time(NULL)));
+    srand(rand());
     simpleCollectionType dataset;
+    size_t SET_SIZE = 20;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
-    Scalar range = 500;
+    Scalar range = 256;
     for(size_t i=0; i < SET_SIZE; ++i) {
         dataset.push_back(randSegment(range));
     }
@@ -209,6 +213,7 @@ void SpacialTestCase::testRtreeStress() {
             ++iter) {
         boxlist.insert(*iter);
     }
+    boxlist.repr(std::cerr);
     clock_t start = clock();
     std::cout << "Filtering set" << std::endl;
     simpleCollectionType result;
@@ -237,6 +242,61 @@ void SpacialTestCase::testRtreeStress() {
             << std::endl;
     std::cout << clock() - start << std::endl;
     CPPUNIT_ASSERT_EQUAL(finalBrute.size(), finalFiltered.size());
+}
+
+void SpacialTestCase::testPerformance() {
+    typedef std::vector<SegmentType> vector;
+    
+    vector dataset;
+    basic_boxlist<SegmentType> boxlist;
+    basic_rtree<SegmentType> rtree;
+    vector testset;
+    
+    static const size_t SET_SIZE = 1000000;
+    static const size_t TEST_SIZE = 100;
+    Scalar range = 500;
+    
+    std::cout << "Making " << SET_SIZE << " lines" << std::endl;
+    for(size_t i=0; i < SET_SIZE; ++i) {
+        dataset.push_back(randSegment(range));
+    }
+    std::cout << "Making " << TEST_SIZE << " lines for testing" << std::endl;
+    for(size_t i=0; i < TEST_SIZE; ++i) {
+        testset.push_back(randSegment(range));
+    }
+    time_t start = clock();
+    std::cout << "Building Boxlist" << std::endl;
+    for(vector::const_iterator iter = dataset.begin();
+            iter != dataset.end(); 
+            ++iter)
+        boxlist.insert(*iter);
+    std::cout << clock() - start << std::endl;
+    start = clock();
+    std::cout << "Building Rtree" << std::endl;
+    for(vector::const_iterator iter = dataset.begin();
+            iter != dataset.end(); 
+            ++iter)
+        rtree.insert(*iter);
+    std::cout << clock() - start << std::endl;
+    start = clock();
+    std::cout << "Testing Boxlist" << std::endl;
+    for(vector::const_iterator iter = testset.begin();
+            iter != testset.end(); 
+            ++iter) {
+        vector result;
+        boxlist.search(result, LineSegmentFilter(*iter));
+    }
+    std::cout << clock() - start << std::endl;
+    start = clock();
+    std::cout << "Testing Rtree" << std::endl;
+    for(vector::const_iterator iter = testset.begin();
+            iter != testset.end(); 
+            ++iter) {
+        vector result;
+        rtree.search(result, LineSegmentFilter(*iter));
+    }
+    std::cout << clock() - start << std::endl;
+    start = clock();
 }
 
 

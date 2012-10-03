@@ -13,6 +13,7 @@
 #include <limits>
 #include <set>
 #include <iostream>
+#include <algorithm>
 
 namespace mgl {
 
@@ -102,69 +103,45 @@ void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) {
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
-    std::string tabs(recursionLevel, '|');
-    out << tabs << "N";// << myBounds.m_min << " - " << myBounds.m_max;
-    if(isLeaf())
-        out << "-L";
-    if(splitMyself)
-        out << "-R";
-    out << std::endl;
+//    std::string tabs(recursionLevel, '|');
+//    out << tabs << 'N';//myBounds.m_min << " - " << myBounds.m_max;
+//    if(isLeaf())
+//        out << "-L";
+//    if(splitMyself)
+//        out << "-R";
+//    out << std::endl;
+    if(!recursionLevel) {
+        out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
+        out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
+        repr(out, 1);
+        out << "</svg>" << std::endl;
+        return;
+    }
+        
+    unsigned int rgbcolor = (255 << (recursionLevel*8)) | 
+            (255 >> ((1+recursionLevel)*8));
+    Scalar factor = -1.0 * recursionLevel;
+    AABBox bounds = myBounds.adjusted(PointType(factor, factor), PointType(-factor, -factor));
+    out << "<rect x=\"" << bounds.left() << "\" y=\"" << bounds.bottom() << 
+            "\" width=\"" << bounds.size_x() << "\" height=\"" << 
+            bounds.size_y() << "\" " << 
+            "style=\"fill-opacity:0.0;stroke:rgb(" << 
+            (255 & (rgbcolor >> 16)) << ',' << 
+            (255 & (rgbcolor >> 0)) << ',' << 
+            (255 & (rgbcolor >> 8))
+            << ");stroke-width:" << 
+            2.0 / (1.0 + recursionLevel) << ";\"/>" << std::endl;
     for(size_t i = 0; i < size(); ++i) {
         myChildren[i]->repr(out, recursionLevel + 1);
     }
 }
-//template <typename T, size_t C>
-//typename basic_rtree<T, C>::iterator basic_rtree<T, C>::insert(
-//        const basic_rtree::value_type& value, const AABBox& bound) {
-//    if(!isLeaf() && !size()) {
-//        //root
-//        myBounds = bound;
-//        myData = myDataAllocator.allocate(1, this);
-//        myDataAllocator.construct(myData, value);
-//        return iterator(this);
-//    } else if(isLeaf()) {
-//        basic_rtree* newborn = myTreeAllocator.allocate(1, this);
-//        myTreeAllocator.construct(newborn, basic_rtree(false));
-//        iterator ret = newborn->insert(value, bound);  //he stores the new data
-//        basic_rtree* adopted = myTreeAllocator.allocate(1, this);
-//        myTreeAllocator.construct(adopted, basic_rtree(false));
-//        adopted->adopt(this); //he steals all my data
-//        //i own them both
-//        insert(newborn);
-//        insert(adopted);
-//        return ret;
-//    } else {
-//        if(full()) {
-//            throw TreeException("Overfilled R Tree node!");
-//        }
-//        
-//        /*
-//         Here we select a child, insert into the child, 
-//         split if necessary, return correct iterator
-//         */
-//        //pick least populated
-//        size_t minsize = std::numeric_limits<size_t>::max();
-//        size_t minind = 0;
-//        for(size_t i = 0; i < size(); ++i) {
-//            if(myChildren[i]->size() < minsize) {
-//                minind = i;
-//                minsize = myChildren[i]->size();
-//            }
-//        }
-//        iterator ret = myChildren[minind]->insert(value, bound);
-//        if(myChildren[minind]->full())
-//            split(myChildren[minind]);
-//        return ret;
-//    }
-//}
 template <typename T, size_t C>
 void basic_rtree<T, C>::insert(basic_rtree* child) {
     if(isFull()) {
         throw TreeException("Overfilled R Tree node!");
     }
     if(isEmpty()) {
-        myChildren[myChildrenCount++] = child;
-        myBounds.growTo(child->myBounds);
+        insertDumb(child);
     } else if(isLeaf()) {
         basic_rtree* otherchild = myTreeAllocator.allocate(1, this);
         myTreeAllocator.construct(otherchild, basic_rtree(false));
@@ -178,8 +155,7 @@ void basic_rtree<T, C>::insert(basic_rtree* child) {
             //we're one level above leaves
             //make a sibling
             if(child->isLeaf()) {
-                myChildren[myChildrenCount++] = child;
-                myBounds.growTo(child->myBounds);
+                insertDumb(child);
             } else {
                 throw TreeException("Leaf level mismatch!");
             }
@@ -191,6 +167,15 @@ void basic_rtree<T, C>::insert(basic_rtree* child) {
             growTree();
         }
     }
+    regrowBounds();
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::insertDumb(basic_rtree* child) {
+    myChildren[myChildrenCount++] = child;
+    if(myChildrenCount == 1)
+        myBounds = child->myBounds;
+    else
+        myBounds.growTo(child->myBounds);
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
@@ -219,6 +204,7 @@ void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
     winner->insert(child);
     myBounds.growTo(winner->myBounds);
     split(winner);
+    regrowBounds();
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::split(basic_rtree* child) {
@@ -233,21 +219,64 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
         contents[i] = child->myChildren[i];
         child->myChildren[i] = NULL;
     }
+    
     child->myChildrenCount = 0;
     child->myBounds.reset();
     basic_rtree* clone = myTreeAllocator.allocate(1, child);
     myTreeAllocator.construct(clone, basic_rtree(false));
-    myChildren[myChildrenCount++] = clone;
+
     //distribute even/odd
-    for(size_t i = 0; i < CAPACITY; ++i) {
-        if(contents[i]) {
-            basic_rtree* curthing = (i & 1 ? child : clone);
-            curthing->myChildren[curthing->myChildrenCount++]=contents[i];
-            curthing->myBounds.growTo(contents[i]->myBounds);
+        
+    struct intersection_area {
+        size_t a, b;
+        Scalar intersection;
+        static bool compare(const intersection_area& lhs, 
+                const intersection_area& rhs) {
+            return lhs.intersection < rhs.intersection;
+        }
+    };
+    
+    intersection_area worst;
+    worst.a = 0;
+    worst.b = 1;
+    worst.intersection = contents[worst.a]->myBounds.intersectionArea(
+            contents[worst.b]->myBounds);
+    for(size_t i = 2; i < CAPACITY; ++i) {
+        if(!contents[i])
+            continue;
+        for(size_t j = i + 1; j < CAPACITY; ++j) {
+            if(!contents[j])
+                continue;
+            Scalar area = contents[i]->myBounds.intersectionArea(
+                    contents[j]->myBounds);
+            if(area < worst.intersection) {
+                worst.a = i;
+                worst.b = j;
+                worst.intersection = area;
+            }
         }
     }
-    myBounds.growTo(child->myBounds);
-    myBounds.growTo(clone->myBounds);
+    child->insertDumb(contents[worst.a]);
+    clone->insertDumb(contents[worst.b]);
+    std::swap(contents[worst.a], contents[0]);
+    std::swap(contents[worst.b], contents[1]);
+    std::vector<basic_rtree*> theRest;
+    for(size_t i = 2; i < CAPACITY; ++i) {
+        theRest.push_back(contents[i]);
+    }
+    bool picker = false;
+    while(!theRest.empty()) {
+        basic_rtree* current = picker ? child : clone;
+        basic_rtree* other = !picker ? child : clone;
+        typename std::vector<basic_rtree*>::iterator worstmatch = 
+                std::min_element(theRest.begin(), theRest.end(), 
+                        basic_rtree_intersect_comparator<value_type, CAPACITY>(other));
+        current->insertDumb(*worstmatch);
+        theRest.erase(worstmatch);
+        picker = !picker;
+    }
+    insertDumb(clone);
+    regrowBounds();
     if(splitMyself && isFull()) {
         growTree();
     }
@@ -277,6 +306,16 @@ void basic_rtree<T, C>::growTree() {
     childling->adopt(this);
     insert(childling);
     split(childling);
+    regrowBounds();
+}
+
+template <typename T, size_t C>
+void basic_rtree<T, C>::regrowBounds() {
+    if(!isEmpty())
+        myBounds = myChildren[0]->myBounds;
+    for(size_t i = 0; i < size(); ++i) {
+        myBounds.growTo(myChildren[i]->myBounds);
+    }
 }
 
 }
