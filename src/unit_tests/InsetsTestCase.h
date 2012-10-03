@@ -11,6 +11,7 @@ class InsetsTestCase : public CPPUNIT_NS::TestFixture{
 	CPPUNIT_TEST_SUITE( InsetsTestCase );
 
 	CPPUNIT_TEST( testSingleSquareInset );
+	CPPUNIT_TEST( testSquareSpur );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -20,10 +21,12 @@ public:
 
 protected:
 	void testSingleSquareInset();
+	void testSquareSpur();
 
 private:
 	mgl::RegionerConfig regionerCfg;
 	mgl::Loop square;
+	mgl::Loop squareSpur;
 	mgl::LayerMeasure layermeasure;
 };
 

@@ -125,6 +125,11 @@ public:
 				RegionList::iterator regionsEnd,
 				LayerMeasure& layermeasure);
 
+	void spurLoopsForSlice(const LoopList& sliceOutlines,
+						   const std::list<LoopList>& sliceInsets,
+						   const LayerMeasure &layermeasure,
+						   std::list<LoopList>& spurLoops);
+
 	void flatSurfaces(RegionList::iterator regionsBegin,
 					  RegionList::iterator regionsEnd,
 					  const Grid& grid);

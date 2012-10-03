@@ -263,15 +263,38 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	loopsOffset(interiors, sliceInsets.back(), -base_distance);
 }
 
-/*void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
+void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
 								 const std::list<LoopList>& sliceInsets,
 								 const LayerMeasure &layermeasure,
  								 std::list<LoopList>& spurLoops) {
-	LoopList outer = sliceOutlines;
-	
-	
 
-	}*/
+	// the outer shell is a special case
+	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
+	LoopList outset;
+	loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW()  + 0.1);
+	
+	spurLoops.push_back(LoopList());
+	LoopList &outerspurs = spurLoops.back();
+
+	loopsDifference(outerspurs, sliceOutlines, outset);
+
+	std::list<LoopList>::const_iterator outer = inner;
+	++inner;
+
+	while (inner != sliceInsets.begin()) {
+		outset.clear();
+		loopsOffset(outset, *inner,
+                regionerCfg.insetDistanceMultiplier * layermeasure.getLayerW() + 0.1);
+        
+        spurLoops.push_back(LoopList());
+        LoopList &spurs = spurLoops.back();
+
+        loopsDifference(spurs, sliceOutlines, outset);
+
+        outer = inner;
+        ++inner;
+    }
+}
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
 //		std::vector<libthing::Insets> & insets) {
