@@ -242,9 +242,9 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 }
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
+							  const LayerMeasure& layermeasure,
 							  std::list<LoopList>& sliceInsets,
-							  LoopList &interiors,
-							  LayerMeasure& layermeasure) {
+							  LoopList &interiors) {
 	const Scalar base_distance = 0.5 * layermeasure.getLayerW();
 
 	for (unsigned int shell = 0; shell < regionerCfg.nbOfShells; ++shell) {
@@ -262,6 +262,16 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 
 	loopsOffset(interiors, sliceInsets.back(), -base_distance);
 }
+
+/*void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
+								 const std::list<LoopList>& sliceInsets,
+								 const LayerMeasure &layermeasure,
+ 								 std::list<LoopList>& spurLoops) {
+	LoopList outer = sliceOutlines;
+	
+	
+
+	}*/
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
 //		std::vector<libthing::Insets> & insets) {
@@ -292,8 +302,8 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		tick();
 		const LoopList& currentOutlines = outline->readLoops();
 
-		insetsForSlice(currentOutlines, region->insetLoops, 
-					   region->interiorLoops, layermeasure);
+		insetsForSlice(currentOutlines, layermeasure, region->insetLoops, 
+					   region->interiorLoops);
 
 		++outline;
 		++region;

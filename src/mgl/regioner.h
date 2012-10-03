@@ -114,12 +114,10 @@ public:
 			   LayerMeasure &layerMeasure,
 			   RegionList &regionlist);
 
-	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
-						libthing::Insets &sliceInsets);
-
 	void insetsForSlice(const LoopList& sliceOutlines,
+						const LayerMeasure& layermeasure,
 						std::list<LoopList>& sliceInsets,
-						LayerMeasure& layermeasure);
+						LoopList &interiors);
 
 	void insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				const LayerLoops::const_layer_iterator outlinesEnd,

@@ -29,7 +29,7 @@ void InsetsTestCase::testSingleSquareInset() {
 	std::list<LoopList> insets;
 	LoopList interiors;
 
-	regioner.insetsForSlice(squarelist, insets, interiors, layermeasure);
+	regioner.insetsForSlice(squarelist, layermeasure, insets, interiors);
 
 	Loop &inset = insets.back().back();
 
