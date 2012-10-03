@@ -243,8 +243,9 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 							  std::list<LoopList>& sliceInsets,
+							  LoopList &interiors,
 							  LayerMeasure& layermeasure) {
-	const Scalar base_distance = 0.5;
+	const Scalar base_distance = 0.5 * layermeasure.getLayerW();
 
 	for (unsigned int shell = 0; shell < regionerCfg.nbOfShells; ++shell) {
 		sliceInsets.push_back(LoopList());
@@ -255,6 +256,11 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 
 		loopsOffset(shells, sliceOutlines, -distance);
 	}
+
+	// calculate the interior of a loop, temporarily hardcode the distance to
+	// half layerW
+
+	loopsOffset(interiors, sliceInsets.back(), -base_distance);
 }
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
@@ -286,7 +292,8 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		tick();
 		const LoopList& currentOutlines = outline->readLoops();
 
-		insetsForSlice(currentOutlines, region->insetLoops, layermeasure);
+		insetsForSlice(currentOutlines, region->insetLoops, 
+					   region->interiorLoops, layermeasure);
 
 		++outline;
 		++region;
@@ -299,8 +306,8 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 	for (; regionsBegin != regionsEnd; ++regionsBegin) {
 		tick();
 		//GridRanges currentSurface;
-		gridRangesForSlice(regionsBegin->insetLoops, grid,
-				regionsBegin->flatSurface);
+		gridRangesForSlice(regionsBegin->interiorLoops, grid,
+						   regionsBegin->flatSurface);
 		//inset supportloops by a fraction of supportmargin
 		LoopList insetSupportLoops;
 		loopsOffset(insetSupportLoops, regionsBegin->supportLoops, 
