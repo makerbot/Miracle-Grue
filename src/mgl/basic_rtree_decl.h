@@ -101,8 +101,9 @@ class basic_rtree_intersect_comparator {
 public:
     basic_rtree_intersect_comparator(tree_type* b) : base(b) {}
     bool operator ()(const tree_type* a, const tree_type* b) const {
-            return base->myBounds.expandedTo(a->myBounds).area() - base->myBounds.area() < 
-                    base->myBounds.expandedTo(b->myBounds).area() - base->myBounds.area();
+        Scalar origPerimeter = base->myBounds.perimeter();
+        return base->myBounds.expandedTo(a->myBounds).perimeter() - origPerimeter < 
+                base->myBounds.expandedTo(b->myBounds).perimeter() - origPerimeter;
     }
 private:
     tree_type* base;
