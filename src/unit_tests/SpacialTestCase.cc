@@ -93,9 +93,9 @@ Scalar randScalar(Scalar Range) {
 PointType randVector(Scalar Range) {
     return PointType(randScalar(Range), randScalar(Range));
 }
-SegmentType randSegment(Scalar Range) {
+SegmentType randSegment(Scalar Range, Scalar Range2) {
     PointType a = randVector(Range);
-    PointType b = randVector(10);
+    PointType b = PointType(-0.5 * Range2, -0.5 * Range2) + randVector(Range2);
     return SegmentType(a, a+b);
 }
 
@@ -106,10 +106,11 @@ void SpacialTestCase::testStress() {
     simpleCollectionType dataset;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     Scalar range = 500;
+    Scalar range2 = 50;
     for(size_t i=0; i < SET_SIZE; ++i) {
-        dataset.push_back(randSegment(range));
+        dataset.push_back(randSegment(range, range2));
     }
-    SegmentType testLine = randSegment(range);
+    SegmentType testLine = randSegment(range, range2);
     lineIndexType boxlist;
     std::cout << "Building index" << std::endl;
     for(simpleCollectionType::const_iterator iter = dataset.begin(); 
@@ -202,10 +203,11 @@ void SpacialTestCase::testRtreeStress() {
     //size_t SET_SIZE = 200;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     Scalar range = 500;
+    Scalar range2 = 50;
     for(size_t i=0; i < SET_SIZE; ++i) {
-        dataset.push_back(randSegment(range));
+        dataset.push_back(randSegment(range, range2));
     }
-    SegmentType testLine = randSegment(range);
+    SegmentType testLine = randSegment(range, range2);
     lineIndexType boxlist;
     std::cout << "Building index" << std::endl;
     clock_t start = clock();
@@ -254,17 +256,18 @@ void SpacialTestCase::testPerformance() {
     basic_rtree<SegmentType> rtree;
     vector testset;
     
-    static const size_t SET_SIZE = 1000;
+    static const size_t SET_SIZE = 50000;
     static const size_t TEST_SIZE = 1000;
     Scalar range = 500;
+    Scalar range2 = 50;
     
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     for(size_t i=0; i < SET_SIZE; ++i) {
-        dataset.push_back(randSegment(range));
+        dataset.push_back(randSegment(range, range2));
     }
     std::cout << "Making " << TEST_SIZE << " lines for testing" << std::endl;
     for(size_t i=0; i < TEST_SIZE; ++i) {
-        testset.push_back(randSegment(range));
+        testset.push_back(randSegment(range, range2));
     }
     time_t start = clock();
     std::cout << "Building Boxlist" << std::endl;
