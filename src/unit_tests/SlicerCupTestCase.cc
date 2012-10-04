@@ -63,6 +63,9 @@ void testModel(const char *model, const char* configFile) {
 
 	RegionerConfig regionerCfg;
 	loadRegionerConfigFromFile(config, regionerCfg);
+    
+    PatherConfig patherCfg;
+    loadPatherConfigFromFile(config, patherCfg);
 
 	ExtruderConfig extruderCfg;
 	loadExtruderConfigFromFile(config, extruderCfg);
@@ -72,7 +75,7 @@ void testModel(const char *model, const char* configFile) {
 
 	std::ofstream gcodeFileStream(gcodeFile.c_str());
 	try {
-		miracleGrue(gcoderCfg, slicerCfg, regionerCfg,
+		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, 
 				extruderCfg, modelFile.c_str(), NULL,
 				gcodeFileStream, -1, -1,
 				skeleton,
