@@ -17,6 +17,7 @@ namespace mgl {
 class AABBox {
 public:
     AABBox(PointType pt = PointType()) : m_min(pt), m_max(pt) {}
+    AABBox(PointType bl, PointType tr) : m_min(bl), m_max(tr) {}
     void expandTo(PointType pt);
     void expandTo(const AABBox& bb);
     AABBox expandedTo(PointType pt) const;
@@ -29,6 +30,15 @@ public:
     Scalar right() const { return m_max.x; }
     Scalar bottom() const { return m_min.y; }
     Scalar top() const { return m_max.y; }
+    PointType bottom_center() const { return PointType((m_min.x + m_max.x) * 0.5 , m_min.y); }
+    PointType bottom_left() const { return m_min; }
+    PointType bottom_right() const { return PointType(m_max.x, m_min.y); }
+    PointType top_center() const { return PointType((m_min.x + m_max.x) * 0.5 , m_max.y); }
+    PointType top_left() const { return PointType(m_min.x, m_max.y); }
+    PointType top_right() const { return m_max; }
+    PointType left_center() const { return PointType(m_min.x, (m_min.y + m_max.y) * 0.5); }
+    PointType right_center() const { return PointType(m_max.x, (m_min.y + m_max.y) * 0.5); }
+    PointType center() const { return (m_min + m_max) * 0.5; }
     Scalar size_x() const { return m_max.x - m_min.x; }
     Scalar size_y() const { return m_max.y - m_min.y; }
     Scalar intersectiondistance_x(const AABBox& other) const;
