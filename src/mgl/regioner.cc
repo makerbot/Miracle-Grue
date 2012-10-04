@@ -268,10 +268,13 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
 								 const LayerMeasure &layermeasure,
  								 std::list<LoopList>& spurLoops) {
 
+	const Scalar fudgefactor = 0.01;
+
 	// the outer shell is a special case
 	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
 	LoopList outset;
-	loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW()  + 0.1);
+	loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW() + fudgefactor,
+				false);
 	
 	spurLoops.push_back(LoopList());
 	LoopList &outerspurs = spurLoops.back();
@@ -284,12 +287,13 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
 	while (inner != sliceInsets.begin()) {
 		outset.clear();
 		loopsOffset(outset, *inner,
-                regionerCfg.insetDistanceMultiplier * layermeasure.getLayerW() + 0.1);
+                regionerCfg.insetDistanceMultiplier * layermeasure.getLayerW()
+					+ fudgefactor, false);
         
         spurLoops.push_back(LoopList());
         LoopList &spurs = spurLoops.back();
 
-        loopsDifference(spurs, sliceOutlines, outset);
+        loopsDifference(spurs, *outer, outset);
 
         outer = inner;
         ++inner;

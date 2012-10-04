@@ -13,39 +13,45 @@ using namespace libthing;
 CPPUNIT_TEST_SUITE_REGISTRATION( InsetsTestCase );
 
 void svgBegin() {
-	cout << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?><svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" x=\"loops\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"  >\"" << endl;
+	cerr << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?><svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" x=\"loops\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"  >\"" << endl;
 }
 
 void svgEnd() {
-	cout << "</svg>" << endl;
+	cerr << "</svg>" << endl;
 }
 
-void segToSVG(const LineSegment2 seg) {
-	cout << "<line x1=\"" << seg.a.x * 10 << "\" y1=\"" << seg.a.y * 10
-		 << "\" x2=\"" << seg.b.x * 10 << "\" y2=\"" << seg.b.y * 10
-		 << "\"	style=\"stroke-width: 2; stroke: black;\"/>" << endl;
+void segToSVG(const LineSegment2 seg, const string &color,
+			  const Scalar xoff, const Scalar yoff) {
+	cerr << "<line x1=\"" << (xoff + seg.a.x) * 10 
+		 << "\" y1=\""  << (yoff + seg.a.y) * 10
+		 << "\" x2=\"" << (xoff + seg.b.x) * 10 
+		 << "\" y2=\"" << (yoff + seg.b.y) * 10
+		 << "\"	style=\"stroke-width: 1; stroke: " << color << ";\"/>" << endl;
 }
 
-void loopToSVG(const Loop loop) {
+void loopToSVG(const Loop loop, const string &color,
+			   const Scalar xoff, const Scalar yoff) {
 	for (Loop::const_finite_cw_iterator cw = loop.clockwiseFinite();
 		 cw != loop.clockwiseEnd();
 		 ++cw) {
 		LineSegment2 seg = loop.segmentAfterPoint(cw);
-		segToSVG(seg);
+		segToSVG(seg, color, xoff, yoff);
 	}
 }
 
-void loopsToSVG(const LoopList loops) {
+void loopsToSVG(const LoopList loops, const string &color,
+				const Scalar xoff, const Scalar yoff) {
 	for (LoopList::const_iterator loop = loops.begin();
 		 loop != loops.end(); ++loop) {
-		loopToSVG(*loop);
+		loopToSVG(*loop, color, xoff, yoff);
 	}
 }
 
-void loopTableToSVG(const list<LoopList> table) {
+void loopTableToSVG(const list<LoopList> table, const string &color,
+					const Scalar xoff, const Scalar yoff) {
 	for (list<LoopList>::const_iterator loops = table.begin();
 		 loops != table.end(); ++loops) {
-		loopsToSVG(*loops);
+		loopsToSVG(*loops, color, xoff, yoff);
 	}
 }
 
@@ -65,8 +71,8 @@ void InsetsTestCase::setUp() {
 	at = squareSpur.insertPointAfter(Vector2(10.0, -10.0), at);
 	at = squareSpur.insertPointAfter(Vector2(-10.0, -10.0), at);
 	at = squareSpur.insertPointAfter(Vector2(-10.0, 10.0), at);
-	at = squareSpur.insertPointAfter(Vector2(8.5, 10.0), at);
-	at = squareSpur.insertPointAfter(Vector2(8.5, 15.0), at);
+	at = squareSpur.insertPointAfter(Vector2(9, 10.0), at);
+	at = squareSpur.insertPointAfter(Vector2(9, 15.0), at);
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -103,8 +109,6 @@ void InsetsTestCase::testSquareSpur() {
 	Regioner regioner(regionerCfg);
 
 	svgBegin();
-	loopToSVG(squareSpur);
-	svgEnd();
 
 	LoopList outlines;
 	outlines.push_back(squareSpur);
@@ -116,13 +120,14 @@ void InsetsTestCase::testSquareSpur() {
 	std::list<LoopList> spurs;
 	regioner.spurLoopsForSlice(outlines, insets, layermeasure, spurs);
 
-	svgBegin();
-	loopTableToSVG(spurs);
+	loopToSVG(squareSpur, "black", 20, 20);
+	loopTableToSVG(insets, "red", 20, 20);
+	loopTableToSVG(spurs, "green", 20, 20);
 	svgEnd();
 
 	cout << "Shells with spurs" << endl;
-	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
+	CPPUNIT_ASSERT_EQUAL(3, (int)spurs.size());
 	cout << "Spurs for shell" << endl;
-	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.back().size());
+	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.front().size());
 
 }
