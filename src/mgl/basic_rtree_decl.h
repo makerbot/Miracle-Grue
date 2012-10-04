@@ -12,6 +12,7 @@
 #include "spacial_data.h"
 #include <sstream>
 #include <memory>
+#include <utility>
 //#include "FSBAllocator.h"
 
 namespace mgl {
@@ -73,10 +74,18 @@ private:
     
     static const size_t CAPACITY = C;
     
+    typedef std::pair<size_t, size_t> child_index_pair;
+    typedef typename std::pair<basic_rtree*, basic_rtree*> child_ptr_pair;
+    
     void insert(basic_rtree* child);
     void insertDumb(basic_rtree* child);
+    void unlinkChild(size_t childIndex);
     void insertIntelligently(basic_rtree* child);   //here is rtree logic
     void split(basic_rtree* child);   //clone child, distribute its children
+    
+    child_index_pair pick_furthest_children() const;
+    void distributeChildPair(child_ptr_pair childs, child_ptr_pair to);
+    void distributeChild(basic_rtree* child, child_ptr_pair to);
     
     void adopt(basic_rtree* from);
     void growTree();
@@ -86,6 +95,7 @@ private:
     bool isFull() const { return size() >= capacity(); }
     bool isEmpty() const { return !isLeaf() && !hasChildren(); }
     bool hasChildren() const { return size(); }
+    bool needSplitting() const { return isFull(); }
     size_t size() const { return myChildrenCount; }
     size_t capacity() const { return CAPACITY; }
     

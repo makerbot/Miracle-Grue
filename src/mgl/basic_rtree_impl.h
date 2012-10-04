@@ -171,7 +171,7 @@ void basic_rtree<T, C>::insert(basic_rtree* child) {
             //use brainpower to pick where to insert and do it
             insertIntelligently(child);
         }
-        if(splitMyself && isFull()) {
+        if(splitMyself && needSplitting()) {
             growTree();
         }
     }
@@ -184,6 +184,13 @@ void basic_rtree<T, C>::insertDumb(basic_rtree* child) {
         myBounds = child->myBounds;
     else
         myBounds.expandTo(child->myBounds);
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::unlinkChild(size_t childIndex) {
+    if(childIndex < myChildrenCount) {
+        myChildren[childIndex] = myChildren[--myChildrenCount];
+        myChildren[myChildrenCount] = DEFAULT_CHILD_PTR();
+    }
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
@@ -212,86 +219,111 @@ void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
     basic_rtree* winner = *candidates.begin();
     winner->insert(child);
     myBounds.expandTo(winner->myBounds);
-    split(winner);
+    if(winner->needSplitting())
+        split(winner);
     regrowBounds();
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::split(basic_rtree* child) {
+    using std::min;
+    using std::max;
     if(child->isLeaf())
         throw TreeException("Attempted to split a leaf!");
     if(isFull())
         throw TreeException("Can't split child of full node");
-    if(!child->isFull())
-        return;
-    basic_rtree* contents[CAPACITY];
-    size_t contents_size = child->size();
-    for(size_t i = 0; i < CAPACITY; ++i) {
-        contents[i] = child->myChildren[i];
-        child->myChildren[i] = DEFAULT_CHILD_PTR();
+    typedef std::vector<child_ptr_pair> child_vector;
+    child_vector splittings;
+    bool hasLeftover = false;
+    basic_rtree* leftover = DEFAULT_CHILD_PTR();
+    while(child->size() > 1) {
+        child_index_pair furthest = child->pick_furthest_children();
+        splittings.push_back(child_ptr_pair(child->myChildren[furthest.first], 
+                child->myChildren[furthest.second]));
+        child->unlinkChild(max(furthest.first, furthest.second));
+        child->unlinkChild(min(furthest.first, furthest.second));
     }
-    
-    child->myChildrenCount = 0;
-    child->myBounds.reset();
+    if(child->size() > 1) {
+        throw TreeException("This should not happen while splitting!");
+    }
+    if(child->size() == 1) {
+        hasLeftover = true;
+        leftover = child->myChildren[0];
+        child->unlinkChild(0);
+    }
     basic_rtree* clone = myTreeAllocator.allocate(1, child);
     myTreeAllocator.construct(clone, basic_rtree(false));
-
-    //distribute even/odd
-        
-    struct intersection_area {
-        size_t a, b;
-        Scalar area;
-        static bool compare(const intersection_area& lhs, 
-                const intersection_area& rhs) {
-            return lhs.area < rhs.area;
-        }
-    };
-    
-    intersection_area worst;
-    worst.a = 0;
-    worst.b = 1;
-    worst.area = 0;
-    for(size_t i = 2; i < contents_size; ++i) {
-        if(!contents[i])
-            continue;
-        for(size_t j = i + 1; j < contents_size; ++j) {
-            if(!contents[j])
-                continue;
-            Scalar area = contents[i]->myBounds.expandedTo(
-                    contents[j]->myBounds).area() - 
-                    contents[i]->myBounds.area() - 
-                    contents[j]->myBounds.area();
-            if(area > worst.area) {
-                worst.a = i;
-                worst.b = j;
-                worst.area = area;
-            }
-        }
+    child_ptr_pair destination(child, clone);
+    for(typename child_vector::const_iterator iter = splittings.begin(); 
+            iter != splittings.end(); 
+            ++iter) {
+        distributeChildPair(*iter, destination);
     }
-    child->insertDumb(contents[worst.a]);
-    clone->insertDumb(contents[worst.b]);
-    std::swap(contents[worst.a], contents[0]);
-    std::swap(contents[worst.b], contents[1]);
-    std::vector<basic_rtree*> theRest;
-    for(size_t i = 2; i < contents_size; ++i) {
-        theRest.push_back(contents[i]);
-    }
-    bool picker = false;
-    while(!theRest.empty()) {
-        basic_rtree* current = picker ? child : clone;
-        basic_rtree* other = !picker ? child : clone;
-        typename std::vector<basic_rtree*>::iterator worstmatch = 
-                std::max_element(theRest.begin(), theRest.end(), 
-                        basic_rtree_intersect_comparator<value_type, CAPACITY>(other));
-        current->insertDumb(*worstmatch);
-        theRest.erase(worstmatch);
-        picker = !picker;
-    }
+    if(hasLeftover)
+        distributeChild(leftover, destination);
     insertDumb(clone);
-    regrowBounds();
     if(splitMyself && isFull()) {
         growTree();
     }
-    
+}
+template <typename T, size_t C>
+typename basic_rtree<T, C>::child_index_pair 
+        basic_rtree<T, C>::pick_furthest_children() const {
+    child_index_pair ret;
+    ret.first = 0;
+    ret.second = 0;
+    Scalar maxValue = std::numeric_limits<Scalar>::min();
+    for(size_t i = 0; i < size(); ++i) {
+        for(size_t j = i + 1; j < size(); ++j) {
+            Scalar value = myChildren[i]->myBounds.expandedTo(
+                    myChildren[j]->myBounds).perimeter();
+            if(value > maxValue) {
+                maxValue = value;
+                ret.first = i;
+                ret.second = j;
+            }
+        }
+    }
+    return ret;
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::distributeChildPair(child_ptr_pair childs, 
+        child_ptr_pair to) {
+    if(!to.first->hasChildren() && !to.second->hasChildren()) {
+        to.first->insert(childs.first);
+        to.second->insert(childs.second);
+    } else {
+        Scalar firstVal = to.first->myBounds.perimeter();
+        Scalar secondVal = to.second->myBounds.perimeter();
+        Scalar growthA = to.first->myBounds.expandedTo(
+                childs.first->myBounds).perimeter() - firstVal + 
+                to.second->myBounds.expandedTo(
+                childs.second->myBounds).perimeter() - secondVal;
+        Scalar growthB = to.second->myBounds.expandedTo(
+                childs.first->myBounds).perimeter() - secondVal + 
+                to.first->myBounds.expandedTo(
+                childs.second->myBounds).perimeter() - firstVal;
+        if(growthA > growthB) {
+            to.second->insertDumb(childs.first);
+            to.first->insertDumb(childs.second);
+        } else {
+            to.first->insertDumb(childs.first);
+            to.second->insertDumb(childs.second);
+        }
+    }
+}
+template <typename T, size_t C>
+void basic_rtree<T, C>::distributeChild(basic_rtree* child, child_ptr_pair to) {
+    Scalar firstVal = to.first->myBounds.perimeter();
+    Scalar secondVal = to.second->myBounds.perimeter();
+    Scalar growthA = to.first->myBounds.expandedTo(
+            child->myBounds).perimeter() - firstVal;
+    Scalar growthB = to.second->myBounds.expandedTo(
+            child->myBounds).perimeter() - secondVal;
+    if(growthA > growthB) {
+        to.second->insertDumb(child);
+    } else {
+        to.first->insertDumb(child);
+    }
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::adopt(basic_rtree* from) {
