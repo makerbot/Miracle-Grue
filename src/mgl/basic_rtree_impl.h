@@ -11,7 +11,6 @@
 #include "basic_rtree_decl.h"
 #include <string>
 #include <limits>
-#include <set>
 #include <iostream>
 #include <algorithm>
 
@@ -194,34 +193,21 @@ void basic_rtree<T, C>::unlinkChild(size_t childIndex) {
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::insertIntelligently(basic_rtree* child) {
-    typedef std::set<basic_rtree*> cset;
-    typedef typename cset::iterator iterator;
-    cset candidates;
+    size_t best = 0;
+    Scalar bestVal = std::numeric_limits<Scalar>::max();
     for(size_t i = 0; i < size(); ++i) {
-        candidates.insert(myChildren[i]);
-    }
-    while(candidates.size() > 1) {
-        iterator curworst = candidates.begin();
-        Scalar curarea = std::numeric_limits<Scalar>::min();
-        for(iterator iter = candidates.begin(); 
-                iter != candidates.end(); 
-                ++iter) {
-            basic_rtree* iterchild = *iter;
-            Scalar area = iterchild->myBounds.expandedTo(child->myBounds).perimeter() - 
-                    iterchild->myBounds.perimeter();
-            if(area > curarea) {
-                curarea = area;
-                curworst = iter;
-            }
+        Scalar val = myChildren[i]->myBounds.expandedTo(child->myBounds).perimeter() - 
+                myChildren[i]->myBounds.perimeter();
+        if(val < bestVal) {
+            bestVal = val;
+            best = i;
         }
-        candidates.erase(curworst);
     }
-    basic_rtree* winner = *candidates.begin();
+    basic_rtree* winner = myChildren[best];
     winner->insert(child);
     myBounds.expandTo(winner->myBounds);
     if(winner->needSplitting())
         split(winner);
-    regrowBounds();
 }
 template <typename T, size_t C>
 void basic_rtree<T, C>::split(basic_rtree* child) {
