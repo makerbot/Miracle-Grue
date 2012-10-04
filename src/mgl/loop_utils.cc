@@ -128,11 +128,14 @@ void loopsXOR(LoopList &subject, const LoopList &apply) {
 	loopsXOR(subject, subject, apply);
 }
 
-void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance) {
+void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance,
+				 bool square) {
 	ClipperLib::Polygons subjectPolys, destPolys;
 	loopToClPolygon(subject, subjectPolys);
 	ClipperLib::OffsetPolygons(subjectPolys, destPolys, distance * DBLTOINT, 
-			ClipperLib::jtSquare, 2.0);
+							   square ? ClipperLib::jtSquare
+							   :ClipperLib::jtMiter, 2.0);
+
 	ClPolygonToLoop(destPolys, dest);
 }
 
