@@ -301,8 +301,13 @@ void loadGCoderConfigFromFile(const Configuration& conf,
 
 	gcoderCfg.commentOpen = stringCheck(conf.root["commentOpen"],
 										"commentOpen", "(");
-	gcoderCfg.commentOpen = stringCheck(conf.root["commentClose"],
-										"commentOpen", ")");
+	gcoderCfg.commentClose = stringCheck(conf.root["commentClose"],
+										"commentClose", ")");
+
+	gcoderCfg.gantryCfg.commentOpen = stringCheck(conf.root["commentOpen"],
+										"commentOpen", "(");
+	gcoderCfg.gantryCfg.commentClose = stringCheck(conf.root["commentClose"],
+										"commentClose", ")");
 }
 
 void loadSlicerConfigFromFile(const Configuration &config,

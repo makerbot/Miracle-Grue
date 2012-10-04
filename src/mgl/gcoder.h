@@ -327,18 +327,21 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
             }
             calcOutlineExtrusion(extruder.id, layerSequence,
                     extrusion);
-            ss << "(outline path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
+            ss << gcoderCfg.commentOpen << "outline path, length: "
+			   << currentLP.myPath.size()
+			   << gcoderCfg.commentClose << std::endl;
         } else if (currentLP.myLabel.isSupport()) {
             calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-            ss << "(support path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
+            ss << gcoderCfg.commentOpen << "support path, length: "
+			   << currentLP.myPath.size()
+			   << gcoderCfg.commentClose << std::endl;
         } else if (currentLP.myLabel.isConnection()) {
             if (!didLastPath)
                 continue;
             calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-            ss << "(connection path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
+            ss << gcoderCfg.commentOpen << "connection path, length: "
+			   << currentLP.myPath.size()
+			   << gcoderCfg.commentClose << std::endl;
         } else if (currentLP.myLabel.isInset()) {
             if (!gcoderCfg.doInsets) {
                 didLastPath = false;
@@ -354,16 +357,18 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
                 calcInSetExtrusion(extruder.id, layerSequence,
                         currentLP.myLabel.myValue, -1, extrusion);
             }
-            ss << "(inset path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
+            ss << gcoderCfg.commentOpen << "inset path, length: "
+			   << currentLP.myPath.size()
+			   << gcoderCfg.commentClose << std::endl;
         } else if (currentLP.myLabel.isInfill()) {
             if (!gcoderCfg.doInfills) {
                 didLastPath = false;
                 continue;
             }
             calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-            ss << "(infill path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
+            ss << gcoderCfg.commentOpen << "infill path, length: "
+			   << currentLP.myPath.size()
+			   << gcoderCfg.commentClose << std::endl;
         } else {
             GcoderException mixup("Invalid path label type");
             throw mixup;

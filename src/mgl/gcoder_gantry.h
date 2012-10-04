@@ -56,6 +56,9 @@ public:
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
 			libthing::LineSegment2 &segment, Scalar h, Scalar w) const;
 
+	std::string commentOpen;
+	std::string commentClose;
+
 private:
 	Scalar rapidMoveFeedRateXY;
 	Scalar rapidMoveFeedRateZ;
@@ -66,6 +69,7 @@ private:
 	Scalar scalingFactor;
 
 	Scalar sx, sy, sz, sa, sb, sfeed;	// start positions and feed
+
 };
 
 

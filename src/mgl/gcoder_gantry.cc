@@ -134,9 +134,12 @@ void Gantry::setCurrentE(Scalar e) {
 }
 
 void Gantry::writeSwitchExtruder(ostream& ss, Extruder &extruder) {
-	ss << "( extruder " << extruder.id << " )" << endl;
-	ss << "( GSWITCH T" << extruder.id << " )" << endl;
-	ss << "( TODO: add offset management to Gantry )" << endl;
+	ss << gantryCfg.commentOpen << " extruder " << extruder.id << " "
+	   << gantryCfg.commentClose << endl;
+	ss << gantryCfg.commentOpen << " GSWITCH T" << extruder.id << " " 
+	   << gantryCfg.commentClose << endl;
+	ss << gantryCfg.commentOpen << " TODO: add offset management to Gantry " 
+	   << gantryCfg.commentClose << endl;
 	ab = extruder.code;
 	ss << endl;
 }
@@ -275,7 +278,8 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 	if (doZ) ss << " Z" << mz;
 	if (doFeed) ss << " F" << mfeed;
 	if (doE) ss << " " << ss_axis << me;
-	if (g1Comment) ss << " (" << g1Comment << ")";
+	if (g1Comment) ss << " " << gantryCfg.commentOpen << g1Comment
+					  << gantryCfg.commentClose;
 	ss << endl;
 
 	// if(feed >= 5000) assert(0);

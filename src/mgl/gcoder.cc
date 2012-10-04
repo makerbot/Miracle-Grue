@@ -154,9 +154,9 @@ void GCoder::writeProgressPercent(std::ostream& ss, unsigned int current,
         return;
     unsigned int curPercent = (current--*100)/total;
     if(curPercent != progressPercent) {
-        ss << "M73 P" << curPercent << " (progress (" << 
-                curPercent << "%): " << current 
-                << "/" << total << ")" << std::endl;
+        ss << "M73 P" << curPercent << " " << gcoderCfg.commentOpen
+		   << "progress (" << curPercent << "%): " << current 
+		   << "/" << total << gcoderCfg.commentClose << std::endl;
         progressPercent = curPercent;
     }
 }
@@ -167,7 +167,8 @@ void GCoder::writeInfills(std::ostream& ss,
         const Extruder& extruder,
         const LayerPaths::Layer::ExtruderLayer& paths) {
     try {
-        ss << "(infills: " << paths.infillPaths.size() << ")" << endl;
+        ss << gcoderCfg.commentOpen << "infills: " << paths.infillPaths.size()
+		   << gcoderCfg.commentClose << endl;
         Extrusion extrusion;
         calcInfillExtrusion(extruder.id, sliceId, extrusion);
         gantry.snort(ss, extruder, extrusion);
@@ -194,7 +195,8 @@ void GCoder::writeSupport(std::ostream &ss,
         const Extruder &extruder,
         const LayerPaths::Layer::ExtruderLayer& paths) {
     try {
-        ss << "(support: " << paths.supportPaths.size() << ")" << endl;
+        ss << gcoderCfg.commentOpen << "support: " << paths.supportPaths.size() 
+		   << gcoderCfg.commentClose << endl;
         Extrusion extrusion;
         calcInfillExtrusion(extruder.id, sliceId, extrusion);
         gantry.snort(ss, extruder, extrusion);
@@ -223,7 +225,8 @@ void GCoder::writeInsets(std::ostream& ss,
         LayerPaths::layer_iterator layerId,
         const LayerPaths::Layer::ExtruderLayer& paths) {
     try {
-        ss << "(insets: " << paths.insetPaths.size() << ")" << endl;
+        ss << gcoderCfg.commentOpen << "insets: " << paths.insetPaths.size()
+		   << gcoderCfg.commentClose << endl;
         Extrusion extrusion;
         calcInSetExtrusion(layerpaths, extruder.id, layerId,
                 paths.insetPaths.end(), extrusion);
@@ -258,7 +261,8 @@ void GCoder::writeOutlines(std::ostream& ss,
         const Extruder& extruder,
         const LayerPaths::Layer::ExtruderLayer& paths) {
     try {
-        ss << "(outlines: " << paths.outlinePaths.size() << ")" << endl;
+        ss << gcoderCfg.commentOpen << "outlines: " <<
+			paths.outlinePaths.size() << gcoderCfg.commentClose << endl;
         Extrusion extrusion;
         calcInfillExtrusion(extruder.id, sliceId, extrusion);
         gantry.snort(ss, extruder, extrusion);
@@ -473,18 +477,18 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     strusion, gantry.gantryCfg.get_start_x(), 
                     gantry.gantryCfg.get_start_y(), currentZ, 
                     strusion.feedrate, 
-                    currentH, currentW, "(Anchor Start)");
+                    currentH, currentW, "Anchor Start");
             gantry.squirt(gout, struder, 
                     strusion);
             gantry.g1(gout, struder, 
                     strusion, gantry.gantryCfg.get_start_x(), 
                     gantry.gantryCfg.get_start_y(), currentZ, 
                     strusion.feedrate, 
-                    currentH, currentW, "(Anchor Start)");
+                    currentH, currentW, "Anchor Start");
             gantry.g1(gout, struder, 
                     strusion, startPoint.x, startPoint.y, currentZ, 
                     strusion.feedrate, 
-                    currentH, currentW, "(Anchor End)");
+                    currentH, currentW, "Anchor End");
         }
         writeSlice(gout, layerpaths, it, layerSequence);
     }
@@ -522,19 +526,23 @@ void GCoder::writeSlice(std::ostream& ss,
         size_t layerSequence) {
     LayerPaths::Layer& currentLayer = *layerIter;
     unsigned int extruderCount = currentLayer.extruders.size();
-    ss << "(Slice " << layerSequence << ", " << extruderCount <<
-            " " << plural("Extruder", extruderCount) << ") " << endl;
-    ss << "(Layer Height: \t" << layerIter->layerHeight << ")" << endl;
-    ss << "(Layer Width: \t" << layerIter->layerW << ")" << endl;
+    ss << gcoderCfg.commentOpen << "Slice " << layerSequence << ", "
+	   << extruderCount << " " << plural("Extruder", extruderCount)
+	   << gcoderCfg.commentClose << " " << endl;
+    ss << gcoderCfg.commentOpen << "Layer Height: \t" << layerIter->layerHeight
+	   << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen << "Layer Width: \t" << layerIter->layerW
+	   << gcoderCfg.commentClose << endl;
     if (gcoderCfg.doPrintLayerMessages) {
         //print layer message to printer screen if config enabled
-        ss << "M70 P20 (Layer: " << layerSequence << ")" << endl;
+        ss << "M70 P20 " << gcoderCfg.commentOpen << "Layer: "
+		   << layerSequence << gcoderCfg.commentClose << endl;
     }
     if (gcoderCfg.doFanCommand && layerSequence == gcoderCfg.fanLayer) {
         //print command to enable fan
-        ss << "M126 T" << 
-                gcoderCfg.defaultExtruder 
-                << " (Turn on the fan)" << endl;
+        ss << "M126 T" << gcoderCfg.defaultExtruder 
+		   << " " << gcoderCfg.commentOpen << "Turn on the fan"
+		   << gcoderCfg.commentClose << endl;
     }
     //iterate over all extruders invoked in this layer
     for (LayerPaths::Layer::const_extruder_iterator it =
@@ -604,26 +612,36 @@ Scalar Extruder::feedCrossSectionArea() const {
 void GCoder::writeGCodeConfig(std::ostream &ss, const char* title = "unknown source") const {
     std::string indent = "* ";
     ss << endl;
-    ss << "(Makerbot Industries)" << endl;
-    ss << "(This file contains digital fabrication directives in gcode format)"
-            << endl;
-    ss << "(For your 3D printer)" << endl;
-    ss << "(http://wiki.makerbot.com/gcode)" << endl;
+    ss << gcoderCfg.commentOpen << "Makerbot Industries"
+	   << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen
+	   << "This file contains digital fabrication directives in gcode format"
+	   << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen << "For your 3D printer"
+	   << gcoderCfg.commentClose<< endl;
+    ss << gcoderCfg.commentOpen << "http://wiki.makerbot.com/gcode"
+	   << gcoderCfg.commentClose << endl;
 
     MyComputer hal9000;
 
-    ss << "(" << indent << "Generated by " <<
-            gcoderCfg.programName << " " <<
-            getMiracleGrueVersionStr() << ")" << endl;
-    ss << "(" << indent << hal9000.clock.now() << ")" << endl;
-    ss << "(" << indent << title << ")" << endl;
+    ss << gcoderCfg.commentOpen << indent << "Generated by "
+	   << gcoderCfg.programName << " " << getMiracleGrueVersionStr()
+	   << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen << indent << hal9000.clock.now()
+	   << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen << indent << title
+	   << gcoderCfg.commentClose << endl;
 
     std::string plurial = gcoderCfg.extruders.size() ? "" : "s";
-    ss << "(" << indent << gcoderCfg.extruders.size() << " extruder" << plurial << ")" << endl;
+    ss << gcoderCfg.commentOpen << indent << gcoderCfg.extruders.size()
+	   << " extruder" << plurial << gcoderCfg.commentClose << endl;
 
-    ss << "(" << indent << "Extrude infills: " << gcoderCfg.doInfills << ")" << endl;
-    ss << "(" << indent << "Extrude insets: " << gcoderCfg.doInsets << ")" << endl;
-    ss << "(" << indent << "Extrude outlines: " << gcoderCfg.doOutlines << ")" << endl;
+    ss << gcoderCfg.commentOpen << indent << "Extrude infills: "
+	   << gcoderCfg.doInfills << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen << indent << "Extrude insets: "
+	   << gcoderCfg.doInsets << gcoderCfg.commentClose << endl;
+    ss << gcoderCfg.commentOpen << indent << "Extrude outlines: "
+	   << gcoderCfg.doOutlines << gcoderCfg.commentClose << endl;
     ss << endl;
 }
 
