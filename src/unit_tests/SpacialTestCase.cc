@@ -302,8 +302,10 @@ void SpacialTestCase::testPerformance() {
     }
     std::cout << clock() - start << std::endl;
     start = clock();
-    std::cout << "Writing svg to cerr" << std::endl;
-    rtree.repr_svg(std::cerr);
+//    std::cout << "Writing svg to cerr" << std::endl;
+//    rtree.repr_svg(std::cerr);
+//    std::cout << "Writing tree to cout" << std::endl;
+//    rtree.repr(std::cout);
 }
 
 

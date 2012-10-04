@@ -18,15 +18,17 @@
 namespace mgl {
 
 template <typename T, size_t C>
-basic_rtree<T, C>::basic_rtree() {
-    myTreeAllocator.construct(this, basic_rtree(true));
+basic_rtree<T, C>::basic_rtree() 
+        : splitMyself(true), myChildrenCount(0), myData(DEFAULT_DATA_PTR()){
+    for(size_t i = 0; i != CAPACITY; ++i)
+        myChildren[i] = DEFAULT_CHILD_PTR();
 }
 template <typename T, size_t C>
 basic_rtree<T, C>::basic_rtree(const basic_rtree& other) 
         : splitMyself(other.splitMyself), myBounds(other.myBounds), 
-        myChildrenCount(other.myChildrenCount), myData(NULL) {
+        myChildrenCount(other.myChildrenCount), myData(DEFAULT_DATA_PTR()) {
     for(size_t i = 0; i != CAPACITY; ++i) {
-        myChildren[i] = NULL;
+        myChildren[i] = DEFAULT_CHILD_PTR();
         if(other.myChildren[i]) {
             myChildren[i] = myTreeAllocator.allocate(1, this);
             myTreeAllocator.construct(myChildren[i], *other.myChildren[i]);
@@ -71,9 +73,9 @@ basic_rtree<T, C>::basic_rtree(const value_type& value) {
 }
 template <typename T, size_t C>
 basic_rtree<T, C>::basic_rtree(bool canReproduce) 
-        : splitMyself(canReproduce), myChildrenCount(0), myData(NULL) {
+        : splitMyself(canReproduce), myChildrenCount(0), myData(DEFAULT_DATA_PTR()) {
     for(size_t i = 0; i != CAPACITY; ++i)
-        myChildren[i] = NULL;
+        myChildren[i] = DEFAULT_CHILD_PTR();
 }
 /* End Private constructors */
 /* Public insert */
@@ -222,9 +224,10 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
     if(!child->isFull())
         return;
     basic_rtree* contents[CAPACITY];
+    size_t contents_size = child->size();
     for(size_t i = 0; i < CAPACITY; ++i) {
         contents[i] = child->myChildren[i];
-        child->myChildren[i] = NULL;
+        child->myChildren[i] = DEFAULT_CHILD_PTR();
     }
     
     child->myChildrenCount = 0;
@@ -247,10 +250,10 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
     worst.a = 0;
     worst.b = 1;
     worst.area = 0;
-    for(size_t i = 2; i < CAPACITY; ++i) {
+    for(size_t i = 2; i < contents_size; ++i) {
         if(!contents[i])
             continue;
-        for(size_t j = i + 1; j < CAPACITY; ++j) {
+        for(size_t j = i + 1; j < contents_size; ++j) {
             if(!contents[j])
                 continue;
             Scalar area = contents[i]->myBounds.expandedTo(
@@ -269,7 +272,7 @@ void basic_rtree<T, C>::split(basic_rtree* child) {
     std::swap(contents[worst.a], contents[0]);
     std::swap(contents[worst.b], contents[1]);
     std::vector<basic_rtree*> theRest;
-    for(size_t i = 2; i < CAPACITY; ++i) {
+    for(size_t i = 2; i < contents_size; ++i) {
         theRest.push_back(contents[i]);
     }
     bool picker = false;
@@ -295,13 +298,13 @@ void basic_rtree<T, C>::adopt(basic_rtree* from) {
     *this = basic_rtree(false);
     for(size_t i = 0; i < CAPACITY; ++i) {
         myChildren[i] = from->myChildren[i];
-        from->myChildren[i] = NULL;
+        from->myChildren[i] = DEFAULT_CHILD_PTR();
     }
     myChildrenCount = from->myChildrenCount;
     from->myChildrenCount = 0;
     
     myData = from->myData;
-    from->myData = NULL;
+    from->myData = DEFAULT_DATA_PTR();
     
     myBounds = from->myBounds;
     from->myBounds.reset();

@@ -11,6 +11,8 @@
 #include "mgl.h"
 #include "spacial_data.h"
 #include <sstream>
+#include <memory>
+//#include "FSBAllocator.h"
 
 namespace mgl {
 
@@ -29,7 +31,11 @@ template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
 class basic_rtree {
 public:
     typedef T value_type;
+    
+    static value_type* DEFAULT_DATA_PTR() { return NULL; }
+    static basic_rtree* DEFAULT_CHILD_PTR() { return NULL; }
     typedef std::allocator<basic_rtree> tree_alloc_t;
+    //typedef FSB::FSBAllocator<basic_rtree> tree_alloc_t;
     typedef typename tree_alloc_t::template rebind<value_type>::other value_alloc_t;
     
     class iterator{
