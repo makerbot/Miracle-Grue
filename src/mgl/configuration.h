@@ -122,26 +122,44 @@ class RegionerConfig;
 class ExtruderConfig;
 class PatherConfig;
 
+class Extruder;
+class Extrusion;
+
 ////master configuration object
 class GrueConfig {
 public:
     GrueConfig();
     void loadFromFile(const Configuration& config);
+    Scalar segmentVolume(const Extruder& extruder, const Extrusion& extrusion, 
+            const libthing::LineSegment2& segment, Scalar h, Scalar w) const;
 private:
     static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
     static const unsigned int INVALID_UINT = -1;
     static const bool INVALID_BOOL = false;
     
+    void loadRaftParams(const Configuration& config);
+    void loadSupportParams(const Configuration& config);
+    void loadPathingParams(const Configuration& config);
+    void loadGantryParams(const Configuration& config);
+    void loadProfileParams(const Configuration& config);
+    void loadGcodeParams(const Configuration& config);
+    void loadSlicingParams(const Configuration& config);
+    
+    /* This is called from loadProfileParams */
+    void loadExtruderParams(const Configuration& config);
+    void loadExtrusionParams(const Configuration& config);
+    /* --END-- */
+    
     //gcoder stuff
-    //std::map<std::string, Extrusion> extrusionProfiles;
+    std::map<std::string, Extrusion> extrusionProfiles;
+    std::vector<Extruder> extruders;
+    
     unsigned int defaultExtruder;
-    //GantryConfig gantryCfg;
-    //std::vector<Extruder> extruders;
     std::string header;
     std::string footer;
     bool doOutlines;
     bool doInsets;
-    bool doInfill;
+    bool doInfills;
     bool doFanCommand;
     unsigned int fanLayer;
     bool doPrintLayerMessages;
@@ -172,6 +190,17 @@ private:
     bool doGraphOptimization;
     Scalar coarseness;
     Scalar directionWeight;
+    //gcoder gantry
+    Scalar rapidMoveFeedRateXY;
+    Scalar rapidMoveFeedRateZ;
+    bool useEaxis;
+    Scalar scalingFactor;
+    Scalar startingX;
+    Scalar startingY;
+    Scalar startingZ;
+    Scalar startingA;
+    Scalar startingB;
+    Scalar startingFeed;
     
 };
 
