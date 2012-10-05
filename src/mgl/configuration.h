@@ -132,6 +132,12 @@ public:
     void loadFromFile(const Configuration& config);
     Scalar segmentVolume(const Extruder& extruder, const Extrusion& extrusion, 
             const libthing::LineSegment2& segment, Scalar h, Scalar w) const;
+#define GRUECONFIG_PUBLIC_CONST_ACCESSOR(TYPE, NAME) \
+    private: \
+    TYPE NAME; \
+    public: \
+    TYPE get_##NAME() const { return NAME; }
+
 private:
     static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
     static const unsigned int INVALID_UINT = -1;
@@ -154,54 +160,55 @@ private:
     std::map<std::string, Extrusion> extrusionProfiles;
     std::vector<Extruder> extruders;
     
-    unsigned int defaultExtruder;
-    std::string header;
-    std::string footer;
-    bool doOutlines;
-    bool doInsets;
-    bool doInfills;
-    bool doFanCommand;
-    unsigned int fanLayer;
-    bool doPrintLayerMessages;
-    bool doPrintProgress;
-    //slicer stuff
-    Scalar layerH;
-    Scalar firstLayerZ;
-    //regioner stuff
-    Scalar infillDensity;
-    unsigned int nbOfShells;
-    Scalar layerWidthRatio;
-    Scalar insetDistanceMultiplier;
-    unsigned int roofLayerCount;
-    unsigned int floorLayerCount;
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, defaultExtruder)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, header)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, footer)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doOutlines)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInsets)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInfills)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doFanCommand)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, fanLayer)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
+    //slicer
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerH)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, firstLayerZ)
+    //regioner
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, infillDensity)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, nbOfShells)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthRatio)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, insetDistanceMultiplier)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, roofLayerCount)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, floorLayerCount)
     //raft
-    bool doRaft;
-    unsigned int raftLayers;
-    Scalar raftBaseThickness;
-    Scalar raftInterfaceThickness;
-    Scalar raftOutset;
-    Scalar raftModelSpacing;
-    Scalar raftDensity;
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doRaft)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, raftLayers)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftBaseThickness)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftInterfaceThickness)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftOutset)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftModelSpacing)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftDensity)
     //support
-    bool doSupport;
-    Scalar supportMargin;
-    Scalar supportDensity;
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doSupport)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportMargin)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportDensity)
     //pather
-    bool doGraphOptimization;
-    Scalar coarseness;
-    Scalar directionWeight;
-    //gcoder gantry
-    Scalar rapidMoveFeedRateXY;
-    Scalar rapidMoveFeedRateZ;
-    bool useEaxis;
-    Scalar scalingFactor;
-    Scalar startingX;
-    Scalar startingY;
-    Scalar startingZ;
-    Scalar startingA;
-    Scalar startingB;
-    Scalar startingFeed;
-    
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doGraphOptimization)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, directionWeight)
+    //gantry
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateXY)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateZ)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, useEaxis)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, scalingFactor)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingX)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingY)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingZ)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingA)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingB)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingFeed)
+
+#undef GRUECONFIG_PUBLIC_CONST_ACCESSOR
 };
 
 void loadGCoderConfigFromFile(const Configuration& conf,
