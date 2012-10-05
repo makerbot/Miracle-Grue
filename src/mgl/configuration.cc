@@ -334,7 +334,26 @@ void GrueConfig::loadExtruderParams(const Configuration& config) {
     }
 }
 void GrueConfig::loadExtrusionParams(const Configuration& config) {
-    
+    const Json::Value &extrusionsRoot = config["extrusionProfiles"];
+
+    for (Json::ValueIterator itr = extrusionsRoot.begin();
+            itr != extrusionsRoot.end(); itr++) {
+        string profileName = itr.key().asString();
+
+        stringstream ss;
+        ss << "extrusionProfiles[\"" << profileName << "\"].";
+        string prefix = ss.str();
+        const Json::Value &value = *itr;
+        Extrusion extrusion;
+        extrusion.feedrate = doubleCheck(value["feedrate"],
+                (prefix + "feedrate").c_str());
+
+        extrusion.temperature = doubleCheck(value["temperature"],
+                (prefix + "temperature").c_str(), INVALID_SCALAR);
+
+        extrusionProfiles.insert(pair<std::string,
+                Extrusion > (profileName, extrusion));
+    }
 }
 
 // this is a work in progress...
