@@ -95,10 +95,8 @@ typedef std::vector<LayerRegions> RegionList;
 class Regioner : public Progressive {
 	Scalar roofLengthCutOff;
 public:
-	RegionerConfig regionerCfg;
+    const GrueConfig& grueCfg;
 
-	Regioner(const RegionerConfig &regionerCfg, 
-			ProgressBar *progress = NULL);
     Regioner(const GrueConfig& grueConf, 
             ProgressBar* progress = NULL);
 

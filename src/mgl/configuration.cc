@@ -201,6 +201,8 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
             "bedZOffset");
     infillDensity = doubleCheck(config["infillDensity"],
             "infillDensity");
+    gridSpacingMultiplier = doubleCheck(config["gridSpacingMultiplier"],
+            "gridSpacingMultiplier", 0.92);
     nbOfShells = uintCheck(config["numberOfShells"],
             "numberOfShells");
     layerWidthRatio = doubleCheck(config["layerWidthRatio"],
@@ -228,6 +230,9 @@ void GrueConfig::loadGantryParams(const Configuration& config) {
             config["startY"], "startY"));
     startingZ = (doubleCheck(
             config["startZ"], "startZ"));
+    startingA = 0;
+    startingB = 0;
+    startingFeed = 0;
 }
 void GrueConfig::loadGcodeParams(const Configuration& config) {
     defaultExtruder = uintCheck(config["defaultExtruder"],

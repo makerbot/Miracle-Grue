@@ -187,6 +187,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, firstLayerZ)
     //regioner
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, infillDensity)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, gridSpacingMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, nbOfShells)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthRatio)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, insetDistanceMultiplier)
