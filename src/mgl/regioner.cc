@@ -300,6 +300,17 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
     }
 }
 
+void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
+								 const LayerMeasure &layermeasure,
+								 std::list<OpenPathList> &spursPerShell) {
+	for (std::list<LoopList>::const_iterator spurLoops =
+			 spurLoopsPerShell.begin();
+		 spurLoops != spurLoopsPerShell.end(); ++spurLoops) {
+		
+}
+
+	
+
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
 //		std::vector<libthing::Insets> & insets) {
 //
