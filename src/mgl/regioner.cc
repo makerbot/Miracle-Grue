@@ -20,8 +20,9 @@ using namespace std;
 using namespace libthing;
 
 Regioner::Regioner(const RegionerConfig& regionerConf, ProgressBar* progress)
-: Progressive(progress), regionerCfg(regionerConf) {
-}
+        : Progressive(progress), regionerCfg(regionerConf) {}
+Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
+        : Progressive(progress) {}
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		LayerMeasure& layerMeasure,

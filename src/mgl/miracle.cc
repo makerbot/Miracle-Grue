@@ -14,11 +14,7 @@ using namespace libthing;
 
 //// @param slices list of output slice (output )
 
-void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
-		const SlicerConfig &slicerCfg,
-		const RegionerConfig& regionerCfg, 
-		const PatherConfig& patherCfg, 
- 	    const ExtruderConfig &extruderCfg,
+void mgl::miracleGrue(const GrueConfig& grueCfg, 
 		const char *modelFile,
 		const char *, // scadFileStr,
 		ostream& gcodeFile,
@@ -35,11 +31,11 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	Limits limits = mesh.readLimits();
 	Grid grid;
 
-	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	Segmenter segmenter(grueCfg);
 	segmenter.tablaturize(mesh);
 
-	Slicer slicer(slicerCfg, progress);
-	LayerLoops layerloops(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	Slicer slicer(grueCfg, progress);
+	LayerLoops layerloops(grueCfg.get_firstLayerZ(), grueCfg.get_layerH());
 
 	//old interface
 	//slicer.tomographyze(segmenter, tomograph);
@@ -47,7 +43,7 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	slicer.generateLoops(segmenter, layerloops);
 
 
-	Regioner regioner(regionerCfg, progress);
+	Regioner regioner(grueCfg, progress);
 
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);
@@ -55,16 +51,16 @@ void mgl::miracleGrue(const GCoderConfig &gcoderCfg,
 	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions ,
 			limits, grid);
 
-	Pather pather(patherCfg, progress);
+	Pather pather(grueCfg, progress);
 
 	LayerPaths layers;
-	pather.generatePaths(extruderCfg, regions,
+	pather.generatePaths(grueCfg, regions,
 						 layerloops.layerMeasure, grid, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);
 
-	GCoder gcoder(gcoderCfg, progress);
+	GCoder gcoder(grueCfg, progress);
 
 	//old interface
 	//	gcoder.writeGcodeFile(slices, layerloops.layerMeasure, gcodeFile, 

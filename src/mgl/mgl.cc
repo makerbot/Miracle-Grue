@@ -34,8 +34,11 @@ namespace mgl {
 using namespace std;
 using namespace libthing;
 
+string getMiracleGrueProgramName() {
+    return "MiracleGrue Turboencabulator";
+}
 string getMiracleGrueVersionStr() {
-	return "v 0.04 alpha";
+	return "v 0.04";
 }
 
 ostream& operator<<(ostream& os, const Vector3& v) {

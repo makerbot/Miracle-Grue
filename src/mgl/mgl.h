@@ -41,6 +41,7 @@ namespace mgl {
 
 static const Scalar M_TAU = M_PI * 2;
 
+std::string getMiracleGrueProgramName();
 std::string getMiracleGrueVersionStr();
 
 /// Structure contains list of triangle 'id's, used to

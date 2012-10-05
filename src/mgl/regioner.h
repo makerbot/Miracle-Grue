@@ -14,6 +14,7 @@
 #ifndef REGIONER_H_
 #define REGIONER_H_ (1)
 
+#include "configuration.h"
 #include "slicer.h"
 #include "slicer_loops.h"
 #include "loop_path.h"
@@ -98,6 +99,8 @@ public:
 
 	Regioner(const RegionerConfig &regionerCfg, 
 			ProgressBar *progress = NULL);
+    Regioner(const GrueConfig& grueConf, 
+            ProgressBar* progress = NULL);
 
 	void generateSkeleton(const LayerLoops& layerloops, 
 						  LayerMeasure &layerMeasure, 

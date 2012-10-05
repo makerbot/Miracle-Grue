@@ -21,8 +21,14 @@ using namespace std;
 
 Pather::Pather(const PatherConfig& pCfg, ProgressBar* progress) 
 		: Progressive(progress), patherCfg(pCfg) {}
+Pather::Pather(const GrueConfig& grueConf, ProgressBar* progress)
+        : Progressive(progress) {
+    patherCfg.doGraphOptimization = grueConf.get_doGraphOptimization();
+    patherCfg.coarseness = grueConf.get_coarseness();
+    patherCfg.directionWeight = grueConf.get_directionWeight();
+}
 
-void Pather::generatePaths(const ExtruderConfig &extruderCfg,
+void Pather::generatePaths(const GrueConfig& grueCfg,
 		const RegionList &skeleton,
 		const LayerMeasure &layerMeasure,
 		const Grid &grid,
@@ -69,7 +75,7 @@ void Pather::generatePaths(const ExtruderConfig &extruderCfg,
 		//TODO: this only handles the case where the user specifies the extruder
 		// it does not handle a dualstrusion print
 		lp_layer.extruders.push_back(
-				LayerPaths::Layer::ExtruderLayer(extruderCfg.defaultExtruder));
+				LayerPaths::Layer::ExtruderLayer(grueCfg.get_defaultExtruder()));
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
 		

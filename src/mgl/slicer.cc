@@ -6,10 +6,14 @@ using namespace mgl;
 
 
 Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
-	:Progressive(progress)
-{
+	:Progressive(progress) {
 	layerCfg.firstLayerZ = slicerCfg.firstLayerZ;
 	layerCfg.layerH = slicerCfg.layerH;
+}
+Slicer::Slicer(const GrueConfig& grueCfg, ProgressBar* progress)
+    :Progressive(progress) {
+    layerCfg.firstLayerZ = grueCfg.get_firstLayerZ();
+    layerCfg.layerH = grueCfg.get_layerH();
 }
 void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 	unsigned int sliceCount = seg.readSliceTable().size();

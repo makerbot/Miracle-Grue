@@ -136,8 +136,19 @@ public:
     private: \
     TYPE NAME; \
     public: \
-    TYPE get_##NAME() const { return NAME; }
+    TYPE get_##NAME() const { return NAME; } \
+    TYPE get_##NAME() { return NAME; }
 
+#define GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(TYPE, NAME) \
+    private: \
+    TYPE NAME; \
+    public: \
+    const TYPE& get_##NAME() const { return NAME; } \
+    TYPE& get_##NAME() { return NAME; }
+
+    
+    typedef std::map<std::string, Extrusion> profileNameMap;
+    typedef std::vector<Extruder> extruderVector;
 private:
     static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
     static const unsigned int INVALID_UINT = -1;
@@ -157,8 +168,9 @@ private:
     /* --END-- */
     
     //gcoder stuff
-    std::map<std::string, Extrusion> extrusionProfiles;
-    std::vector<Extruder> extruders;
+    
+    GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(profileNameMap, extrusionProfiles)
+    GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(extruderVector, extruders)
     
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, defaultExtruder)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, header)
@@ -209,6 +221,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingFeed)
 
 #undef GRUECONFIG_PUBLIC_CONST_ACCESSOR
+#undef GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR
 };
 
 void loadGCoderConfigFromFile(const Configuration& conf,
