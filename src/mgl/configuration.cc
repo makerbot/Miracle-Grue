@@ -21,6 +21,7 @@
 #include "abstractable.h"
 #include "regioner.h"
 #include "pather.h"
+#include "loop_processor.h"
 
 namespace mgl {
 
@@ -368,6 +369,18 @@ void loadPatherConfigFromFile(const Configuration& config,
             config["directionWeight"],
             "directionWeight",
             patherCfg.directionWeight);
+}
+
+void loadLoopProcessorConfigFromFile(const Configuration& config, 
+        LPConfig& lpCfg) {
+    lpCfg.coarseness = doubleCheck(
+            config["preCoarseness"],
+            "preCoarseness",
+            lpCfg.coarseness);
+    lpCfg.directionWeight = doubleCheck(
+            config["directionWeight"],
+            "directionWeight",
+            lpCfg.directionWeight);
 }
 
 

@@ -326,6 +326,9 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		SlicerConfig slicerCfg;
 		loadSlicerConfigFromFile(config, slicerCfg);
+        
+        LPConfig lpCfg;
+        loadLoopProcessorConfigFromFile(config, lpCfg);
 
 		RegionerConfig regionerCfg;
 		loadRegionerConfigFromFile(config, regionerCfg);
@@ -360,7 +363,7 @@ int main(int argc, char *argv[], char *[]) // envp
 			log = new ProgressLog();
 		}
 
-		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, extruderCfg,
+		miracleGrue(gcoderCfg, slicerCfg, lpCfg, regionerCfg, patherCfg, extruderCfg,
 				modelFile.c_str(),
 				scad,
 				gcodeFileStream,
@@ -377,7 +380,7 @@ int main(int argc, char *argv[], char *[]) // envp
             if(jsonProgress) {
                 exceptionToJson(Log::severe(), mixup, false);
             } else {
-		Log::severe() << "ERROR: " << mixup.error << endl;
+            	Log::severe() << "ERROR: " << mixup.error << endl;
             }
             return -1;
 	} catch (char const* c) {
