@@ -12,6 +12,9 @@
 
 static const size_t SET_SIZE = 1000000;
 
+static const size_t TEST_SET_SIZE = 50000;
+static const size_t TEST_TEST_SIZE = 50000;
+
 class SpacialTestCase : public CPPUNIT_NS::TestFixture {
 private:
     CPPUNIT_TEST_SUITE( SpacialTestCase );
@@ -22,10 +25,11 @@ private:
 //    CPPUNIT_TEST( testRtreeFilter );
 //    CPPUNIT_TEST( testRtreeEmpty );
 //    CPPUNIT_TEST( testRtreeStress );
-    CPPUNIT_TEST( testQtreeFilter );
-    CPPUNIT_TEST( testQtreeEmpty );
-    CPPUNIT_TEST( testQtreeStress );
-//    CPPUNIT_TEST( testPerformance );
+//    CPPUNIT_TEST( testQtreeFilter );
+//    CPPUNIT_TEST( testQtreeEmpty );
+//    CPPUNIT_TEST( testQtreeStress );
+    CPPUNIT_TEST( testPerformance );
+    CPPUNIT_TEST( testQPerformance );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -41,7 +45,8 @@ protected:
     void testQtreeFilter();
     void testQtreeEmpty();
     void testQtreeStress();
-    void testPerformance(); //brute, boxlist, rtree
+    void testPerformance(); //boxlist, rtree
+    void testQPerformance();
     
 };
 
