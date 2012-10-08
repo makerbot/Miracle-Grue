@@ -19,9 +19,10 @@ public:
     typedef _COST_T cost_type;
     
     typedef std::map<size_t, cost_type> adjacency_map;
-    typedef std::map<size_t, size_t> reverse_adjacency_map;
+    typedef std::map<size_t, cost_type> reverse_adjacency_map;
     
     typedef std::vector<node_info_group> node_container_type;
+    typedef std::vector<size_t> free_container_type;
     
     class node {
     public:
@@ -30,6 +31,8 @@ public:
         friend class node_container_type::allocator_type;
         void connect(const node& other, const cost_type& cost);
         void disconnect(const node& other);
+        const node_data_type& data() const { return m_data; }
+        
     private:
         node(simple_graph& parent, size_t index, 
                 const node_data_type& data = node_data_type());
@@ -49,7 +52,7 @@ public:
     void disconnect(node& a, node& b);
     
     node& createNode(const node_data_type& data = node_data_type());
-    
+    void destroyNode(node& a);
 private:
     
     class node_info_group {
@@ -65,6 +68,7 @@ private:
     };
     
     node_container_type graph;
+    free_container_type free_space;
 };
 
 }
