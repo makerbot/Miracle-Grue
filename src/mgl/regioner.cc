@@ -306,10 +306,57 @@ void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
 	for (std::list<LoopList>::const_iterator spurLoops =
 			 spurLoopsPerShell.begin();
 		 spurLoops != spurLoopsPerShell.end(); ++spurLoops) {
-		
+
+		spursPerShell.push_back(OpenPathList());
+		OpenPathList &spurs = spursPerShell.back();
+		fillSpurLoops(spurLoop, layermeasure, spurs);
+	}
 }
 
+bool wallLess(WallPair &first, WallPair &second) {
 	
+}
+
+typedef pair<LineSegment2, LineSegment2> Walls;
+typedef set<wallPair, WallLess> WallSet;
+typedef vector<LineSegment2> SegmentList;
+
+void Regioner::fillSpurLoop(const LoopList &spurLoops,
+							const LayerMeasure &layermeasure,
+							OpenPathList &spurs) {
+	//get loop line segments
+	SegmentList segs;
+	for (LoopList::const_iterator loop = spurLoops.begin();
+		 loop != spurLoops.end(); ++loop) {
+
+		for (Loop::finite_cw_iterator pn = loop->begin();
+			 pn != loop->end(); ++pn) {
+			segs.push_back(LineSegment2());
+			LineSegment2 &seg = segs.back();
+			seg = loop->segmentAfterPoint(pn);
+		}
+
+	}
+
+	SegIndex index;
+	index->insert(segs);
+
+	//find wall pairs
+	WallSet walls;
+
+	for (int i = 0; i < segs.size(); ++i) {
+		LineSegment2 &cur = segs[i];
+
+		LineSegment2 normal = getSegmentNormal(cur, cur.a,
+											   layermeasure.layerW());
+
+		SegmentList intersecting;
+		index.findIntersecting(normal, intersecting);
+
+		
+
+
+}
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
 //		std::vector<libthing::Insets> & insets) {
