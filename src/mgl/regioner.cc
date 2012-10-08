@@ -45,13 +45,8 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		support(firstmodellayer, regionlist.end(), layerMeasure);
 	}
 
-    Scalar limitInflation = grueCfg.get_doRaft() ? 
-        grueCfg.get_raftOutset() : 0.0;
-	limits.inflate(limitInflation + 10,
-			limitInflation + 10,
-			0);
 	//optionally inflate if rafts present
-	if (grueCfg.get_raftLayers() > 0) {
+	if (grueCfg.get_doRaft()) {
 		limits.inflate(0, 0,
 				grueCfg.get_raftBaseThickness() +
 				grueCfg.get_raftInterfaceThickness() *
@@ -238,8 +233,6 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	for (size_t raftidx = 0; raftidx < grueCfg.get_raftLayers();
 			++raftidx, ++iter) {
 		iter->supportLoops.push_back(raftLoop);
-        std::cerr << "Support loops at " << raftidx << ": " << 
-                iter->supportLoops.size() << std::endl;
 	}
 
 	tick();

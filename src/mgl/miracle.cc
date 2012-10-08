@@ -62,7 +62,7 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 
 	LayerPaths layers;
 	pather.generatePaths(grueCfg, regions,
-						 layerloops.layerMeasure, grid, layers);
+						 layerMeasure, grid, layers);
 
 	// pather.writeGcode(gcodeFileStr, modelFile, slices);
 	//std::ofstream gout(gcodeFile);
