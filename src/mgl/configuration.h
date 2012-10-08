@@ -25,6 +25,7 @@
 #include <json/writer.h>
 
 #include "mgl.h"
+
 #include <limits>
 
 namespace mgl {
@@ -115,12 +116,6 @@ public:
 private:
     std::string defaultFilename();
 };
-
-class GCoderConfig;
-class SlicerConfig;
-class RegionerConfig;
-class ExtruderConfig;
-class PatherConfig;
 
 class Extruder;
 class Extrusion;
@@ -224,17 +219,6 @@ private:
 #undef GRUECONFIG_PUBLIC_CONST_ACCESSOR
 #undef GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR
 };
-
-void loadGCoderConfigFromFile(const Configuration& conf,
-        GCoderConfig &gcoder);
-void loadSlicerConfigFromFile(const Configuration &config,
-        SlicerConfig &slicer);
-void loadExtruderConfigFromFile(const Configuration &config,
-        ExtruderConfig &extruderCfg);
-void loadRegionerConfigFromFile(const Configuration& config,
-        RegionerConfig& regionerCfg);
-void loadPatherConfigFromFile(const Configuration& config,
-        PatherConfig& patherCfg);
 
 }
 #endif /* CONFIGURATION_H_ */

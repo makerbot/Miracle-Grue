@@ -15,6 +15,7 @@
 #include "gcoder.h"
 #include "regioner.h"
 #include "pather.h"
+#include "loop_processor.h"
 #include "log.h"
 #include <iostream>
 

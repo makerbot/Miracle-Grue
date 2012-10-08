@@ -41,6 +41,13 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 	//slicer.tomographyze(segmenter, tomograph);
 	//new interface
 	slicer.generateLoops(segmenter, layerloops);
+    
+    LayerLoops processedLoops;
+    
+    LoopProcessor processor(grueCfg, progress);
+    processor.processLoops(layerloops, processedLoops);
+    
+    LayerMeasure& layerMeasure = processedLoops.layerMeasure;
 
 
 	Regioner regioner(grueCfg, progress);
@@ -48,7 +55,7 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 	//old interface
 	//regioner.generateSkeleton(tomograph, regions);
 	//new interface
-	regioner.generateSkeleton(layerloops, layerloops.layerMeasure, regions ,
+	regioner.generateSkeleton(processedLoops, layerMeasure, regions ,
 			limits, grid);
 
 	Pather pather(grueCfg, progress);
@@ -66,7 +73,7 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 	//	gcoder.writeGcodeFile(slices, layerloops.layerMeasure, gcodeFile, 
 	//			modelFile, firstSliceIdx, lastSliceIdx);
 	//new interface
-	gcoder.writeGcodeFile(layers, layerloops.layerMeasure, 
+	gcoder.writeGcodeFile(layers, layerMeasure, 
 			gcodeFile, modelFile);
 
 	//gout.close();
