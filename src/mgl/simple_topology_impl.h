@@ -51,6 +51,20 @@ SG_TYPE::node& SG_TYPE::createNode(const node_data_type& data) {
 }
 SG_TEMPLATE
 void SG_TYPE::destroyNode(node& a) {
+    size_t currentIndex = a.getIndex();
+    node_info_group& currentNode = graph[currentIndex];
+    for(adjacency_map::const_iterator iter = 
+            currentNode.m_forward_links.begin(); 
+            iter != currentNode.m_forward_links.end(); 
+            ++iter) {
+        graph[iter->first].m_reverse_links.erase(currentIndex);
+    }
+    for(reverse_adjacency_map::const_iterator iter = 
+            currentNode.m_reverse_links.begin(); 
+            iter != currentNode.m_reverse_links.end(); 
+            ++iter) {
+        graph[iter->first].m_forward_links.erase(currentIndex);
+    }
     graph[a.getIndex()].m_forward_links.clear();
     graph[a.getIndex()].m_reverse_links.clear();
     free_space.push_back(a.getIndex());
