@@ -25,6 +25,7 @@
 #include <json/writer.h>
 
 #include "mgl.h"
+#include "loop_processor.h"
 
 namespace mgl
 {
@@ -109,6 +110,7 @@ class SlicerConfig;
 class RegionerConfig;
 class ExtruderConfig;
 class PatherConfig;
+class LPConfig;
 
 void loadGCoderConfigFromFile(const Configuration& conf, 
 		GCoderConfig &gcoder);
@@ -120,6 +122,8 @@ void loadRegionerConfigFromFile(const Configuration& config,
 		RegionerConfig& regionerCfg);
 void loadPatherConfigFromFile(const Configuration& config, 
 		PatherConfig& patherCfg);
+void loadLoopProcessorConfigFromFile(const Configuration& config, 
+        LPConfig& lpCfg);
 
 }
 #endif /* CONFIGURATION_H_ */
