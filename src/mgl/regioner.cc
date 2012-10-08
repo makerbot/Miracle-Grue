@@ -59,7 +59,7 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	grid.init(limits, layerMeasure.getLayerW() *
 			grueCfg.get_gridSpacingMultiplier());
 
-	if (grueCfg.get_raftLayers() > 0) {
+	if (grueCfg.get_doRaft()) {
 		initProgress("rafts", grueCfg.get_raftLayers() + 4);
 		rafts(*firstmodellayer, layerMeasure, regionlist);
 	}
@@ -235,6 +235,8 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	for (size_t raftidx = 0; raftidx < grueCfg.get_raftLayers();
 			++raftidx, ++iter) {
 		iter->supportLoops.push_back(raftLoop);
+        std::cerr << "Support loops at " << raftidx << ": " << 
+                iter->supportLoops.size() << std::endl;
 	}
 
 	tick();
@@ -358,7 +360,7 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 		//inset supportloops by a fraction of supportmargin
 		LoopList insetSupportLoops;
 		loopsOffset(insetSupportLoops, regionsBegin->supportLoops, 
-				-0.1 * grueCfg.get_supportMargin());
+				-0.01);
 		gridRangesForSlice(insetSupportLoops, grid,
 				regionsBegin->supportSurface);
 	}
@@ -567,12 +569,12 @@ void Regioner::infills(RegionList::iterator regionsBegin,
         
         if(grueCfg.get_doSupport() || grueCfg.get_doRaft()) {
             size_t supportSkipCount = 0;
-            if(grueCfg.get_doSupport()) {
-                supportSkipCount = (int) (1 / grueCfg.get_supportDensity()) - 1;
+            if(grueCfg.get_doRaft() && sequenceNumber < grueCfg.get_raftLayers()) {
+                supportSkipCount = (int) (1 / grueCfg.get_raftDensity()) - 1;
                 grid.subSample(current->supportSurface, supportSkipCount,
                         current->support);
-            } else if(grueCfg.get_doRaft() && sequenceNumber < grueCfg.get_raftLayers()) {
-                supportSkipCount = (int) (1 / grueCfg.get_raftDensity()) - 1;
+            } else if(grueCfg.get_doSupport()) {
+                supportSkipCount = (int) (1 / grueCfg.get_supportDensity()) - 1;
                 grid.subSample(current->supportSurface, supportSkipCount,
                         current->support);
             }
