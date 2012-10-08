@@ -20,7 +20,6 @@ class GrueConfig;
 
 class Segmenter {
 public:
-	Segmenter(Scalar firstSliceZ, Scalar layerH);
     Segmenter(const GrueConfig& config);
 	const SliceTable& readSliceTable() const;
 	const LayerMeasure& readLayerMeasure() const;

@@ -14,11 +14,9 @@ namespace mgl{
 using namespace std;
 using namespace libthing;
 
-Segmenter::Segmenter(Scalar firstSliceZ, Scalar layerH) : 
-		zTapeMeasure(firstSliceZ, layerH) {}
 Segmenter::Segmenter(const GrueConfig& config) 
         : zTapeMeasure(config.get_firstLayerZ(), 
-        config.get_layerH()) {}
+        config.get_layerH(), config.get_layerWidthRatio()) {}
 const SliceTable& Segmenter::readSliceTable() const{
 	return sliceTable;
 }

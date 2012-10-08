@@ -28,7 +28,8 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 		layerloops.layerMeasure.getLayerAttributes(currentLayer.getIndex()) = 
 				LayerMeasure::LayerAttributes(
 				layerloops.layerMeasure.sliceIndexToHeight(sliceId), 
-				layerloops.layerMeasure.getLayerH());
+				layerloops.layerMeasure.getLayerH(), 
+                layerloops.layerMeasure.getLayerWidthRatio());
 		libthing::SegmentTable segments;
 		/*
 		 Function outlinesForSlice is designed to use segmentTable rather than

@@ -67,7 +67,8 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	//LayerRegions &raftlayer = regionlist.front();
 
 	RegionList::iterator firstModelRegion =
-			regionlist.begin() + grueCfg.get_raftLayers();
+			regionlist.begin() + (grueCfg.get_doRaft() ? 
+                grueCfg.get_raftLayers() : 0);
 
 	initProgress("insets", sliceCount);
 	insets(layerloops.begin(), layerloops.end(),

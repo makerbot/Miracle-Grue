@@ -98,10 +98,11 @@ public:
 
 class LayerMeasure {
 public:
-
+    static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
 	class LayerAttributes {
 	public:
-		LayerAttributes(Scalar d = 0., Scalar t = -1.0, Scalar wr = -1.0, 
+		LayerAttributes(Scalar d = INVALID_SCALAR, Scalar t = INVALID_SCALAR, 
+                Scalar wr = INVALID_SCALAR, 
 				layer_measure_index_t b = 0);
 		bool isAbsolute() const;
 		Scalar delta; // Z position
@@ -111,7 +112,7 @@ public:
 	};
 
 	/* Old interface */
-	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio = -1.0);
+	LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio = INVALID_SCALAR);
 	layer_measure_index_t zToLayerAbove(Scalar z) const;
 	Scalar sliceIndexToHeight(layer_measure_index_t layerIndex) const;
 	Scalar getLayerH() const;

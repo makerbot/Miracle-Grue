@@ -34,6 +34,8 @@ namespace mgl {
 using namespace std;
 using namespace libthing;
 
+const Scalar LayerMeasure::INVALID_SCALAR = std::numeric_limits<Scalar>::min();
+
 string getMiracleGrueProgramName() {
     return "MiracleGrue Turboencabulator";
 }
@@ -76,7 +78,7 @@ bool LayerMeasure::LayerAttributes::isAbsolute() const {
 LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio) 
 		: firstLayerZ(firstLayerZ), layerH(layerH), 
 		layerWidthRatio(widthRatio), issuedIndex(256) {
-	attributes[0] = LayerAttributes(0, 0);
+	attributes[0] = LayerAttributes(0, 0, widthRatio);
 	attributes[0].base = -1;
 }
 layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
