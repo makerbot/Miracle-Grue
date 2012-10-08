@@ -45,8 +45,10 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		support(firstmodellayer, regionlist.end(), layerMeasure);
 	}
 
-	limits.inflate(grueCfg.get_raftOutset() + 10,
-			grueCfg.get_raftOutset() + 10,
+    Scalar limitInflation = grueCfg.get_doRaft() ? 
+        grueCfg.get_raftOutset() : 0.0;
+	limits.inflate(limitInflation + 10,
+			limitInflation + 10,
 			0);
 	//optionally inflate if rafts present
 	if (grueCfg.get_raftLayers() > 0) {
