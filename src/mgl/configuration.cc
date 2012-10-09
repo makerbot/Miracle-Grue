@@ -294,8 +294,9 @@ void GrueConfig::loadProfileParams(const Configuration& config) {
 }
 void GrueConfig::loadExtruderParams(const Configuration& config) {
     size_t extruderCount = config["extruderProfiles"].size();
+    const Json::Value& extruderBase = config["extruderProfiles"];
     for (size_t i = 0; i < extruderCount; i++) {
-        const Json::Value &value = config["extruderProfiles"][i];
+        const Json::Value &value = extruderBase[i];
 
         stringstream ss;
         ss << "extruders[" << i << "].";
