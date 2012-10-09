@@ -29,9 +29,41 @@ public:
     typedef std::vector<node_index> free_node_container_type;
     typedef std::vector<cost_index> free_cost_container_type;
     
+    typedef std::set<node_index> dense_node_container_type;
+    
     class node {
     public:
         friend class simple_graph;
+        
+        typedef std::pair<node*, const cost_type*> connection;
+        
+        template <typename BASE>
+        class link_iterator {
+        public:
+            
+            typedef BASE base_iterator;
+            
+            friend class node;
+            link_iterator& operator ++(); //pre
+            link_iterator operator ++(int); //post
+            connection operator *();
+            connection operator ->() { return this->operator *(); }
+            bool operator ==(const link_iterator& other) const;
+        private:
+            explicit link_iterator(base_iterator base) 
+                    : m_base(base) {}
+            base_iterator m_base;
+        };
+        
+        /* All iterators are forward iterators only. forward and reverse 
+         distinguishes between links that go FROM this node (forward) and
+         links that go TO this node (reverse) */
+        
+        typedef link_iterator<adjacency_map::iterator> 
+                forward_link_iterator;
+        typedef link_iterator<reverse_adjacency_map::iterator> 
+                reverse_link_iterator;
+        
         node(simple_graph& parent, size_t index, 
                 const node_data_type& data = node_data_type());
         
@@ -39,20 +71,10 @@ public:
         void disconnect(const node& other);
         const node_data_type& data() const { return m_data; }
         
-        class forward_link_iterator {
-        public:
-            friend class node;
-            typedef std::pair<node*, const cost_type*> connection;
-            forward_link_iterator& operator ++(); //pre
-            forward_link_iterator operator ++(int); //post
-            connection operator *();
-            connection operator ->() { return this->operator *(); }
-            bool operator ==(const forward_link_iterator& other) const;
-        private:
-            explicit forward_link_iterator(adjacency_map::iterator base) 
-                    : m_base(base) {}
-            adjacency_map::iterator m_base;
-        };
+        forward_link_iterator forwardBegin();
+        forward_link_iterator forwardEnd();
+        reverse_link_iterator reverseBegin();
+        reverse_link_iterator reverseEnd();
         
     private:
         
@@ -91,6 +113,7 @@ private:
     cost_container_type costs;
     free_node_container_type free_nodes;
     free_cost_container_type free_costs;
+    dense_node_container_type unordered_nodes; //valid nodes, no ordering
 };
 
 }

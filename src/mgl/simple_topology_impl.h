@@ -21,27 +21,47 @@ void SG_NODE::disconnect(const node& other) {
     m_parent.disconnect(*this, other);
 }
 SG_TEMPLATE
-typename SG_NODE::forward_link_iterator& 
-        SG_NODE::forward_link_iterator::operator ++() {
+typename SG_NODE::forward_link_iterator SG_NODE::forwardBegin() {
+    return forward_link_iterator(
+            m_parent.nodes[getIndex()].m_forward_links.begin());
+}
+SG_TEMPLATE
+typename SG_NODE::forward_link_iterator SG_NODE::forwardEnd() {
+    return forward_link_iterator(
+            m_parent.nodes[getIndex()].m_forward_links.end());
+}
+SG_TEMPLATE
+typename SG_NODE::reverse_link_iterator SG_NODE::forwardBegin() {
+    return reverse_link_iterator(
+            m_parent.nodes[getIndex()].m_reverse_links.begin());
+}
+SG_TEMPLATE
+typename SG_NODE::reverse_link_iterator SG_NODE::forwardEnd() {
+    return reverse_link_iterator(
+            m_parent.nodes[getIndex()].m_reverse_links.end());
+}
+SG_TEMPLATE template <typename BASE>
+SG_NODE::link_iterator<BASE>& 
+        SG_NODE::link_iterator<BASE>::operator ++() {
     ++m_base;
     return *this;
 }
-SG_TEMPLATE
-typename SG_NODE::forward_link_iterator 
-        SG_NODE::forward_link_iterator::operator ++(int) {
-    forward_link_iterator copy = *this;
+SG_TEMPLATE template <typename BASE>
+SG_NODE::link_iterator<BASE> 
+        SG_NODE::link_iterator<BASE>::operator ++(int) {
+    link_iterator copy = *this;
     ++*this;
     return copy;
 }
-SG_TEMPLATE
-typename SG_NODE::forward_link_iterator::connection 
-        SG_NODE::forward_link_iterator::operator *() {
+SG_TEMPLATE template <typename BASE>
+typename SG_NODE::connection 
+        SG_NODE::link_iterator<BASE>::operator *() {
     return connection(&m_parent.nodes[m_base->first].m_node, 
             &m_parent.costs[m_base->second]);
 }
-SG_TEMPLATE
-bool SG_NODE::forward_link_iterator::operator ==(
-        const forward_link_iterator& other) const {
+SG_TEMPLATE template <typename BASE>
+bool SG_NODE::link_iterator<BASE>::operator ==(
+        const link_iterator& other) const {
     return m_base == other.m_base;
 }
 SG_TEMPLATE
@@ -73,14 +93,17 @@ void SG_TYPE::disconnect(node& a, node& b) {
 }
 SG_TEMPLATE
 typename SG_NODE& SG_TYPE::createNode(const node_data_type& data) {
+    size_t index = -1;
     if(!free_nodes.empty()) {
-        size_t index = free_nodes.back();
+        index = free_nodes.back();
         free_nodes.pop_back();
         nodes[index].m_node = node(*this, index, data);
     } else {
-        size_t index = nodes.size();
+        index = nodes.size();
         nodes.push_back(node(*this, index, data));
     }
+    unordered_nodes.insert(index);
+    return nodes[index].m_node;
 }
 SG_TEMPLATE
 void SG_TYPE::destroyNode(node& a) {
@@ -102,6 +125,7 @@ void SG_TYPE::destroyNode(node& a) {
     }
     nodes[a.getIndex()].m_forward_links.clear();
     nodes[a.getIndex()].m_reverse_links.clear();
+    unordered_nodes.erase(currentIndex);
     free_nodes.push_back(a.getIndex());
 }
 
