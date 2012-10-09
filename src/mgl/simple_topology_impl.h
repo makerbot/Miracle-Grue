@@ -31,12 +31,12 @@ typename SG_NODE::forward_link_iterator SG_NODE::forwardEnd() {
             m_parent.nodes[getIndex()].m_forward_links.end());
 }
 SG_TEMPLATE
-typename SG_NODE::reverse_link_iterator SG_NODE::forwardBegin() {
+typename SG_NODE::reverse_link_iterator SG_NODE::reverseBegin() {
     return reverse_link_iterator(
             m_parent.nodes[getIndex()].m_reverse_links.begin());
 }
 SG_TEMPLATE
-typename SG_NODE::reverse_link_iterator SG_NODE::forwardEnd() {
+typename SG_NODE::reverse_link_iterator SG_NODE::reverseEnd() {
     return reverse_link_iterator(
             m_parent.nodes[getIndex()].m_reverse_links.end());
 }
@@ -102,7 +102,7 @@ typename SG_NODE& SG_TYPE::createNode(const node_data_type& data) {
         index = nodes.size();
         nodes.push_back(node(*this, index, data));
     }
-    unordered_nodes.insert(index);
+    nodes[index].m_valid = true;
     return nodes[index].m_node;
 }
 SG_TEMPLATE
@@ -123,10 +123,46 @@ void SG_TYPE::destroyNode(node& a) {
         nodes[iter->first].m_forward_links.erase(currentIndex);
         free_costs.push_back(iter->second);
     }
-    nodes[a.getIndex()].m_forward_links.clear();
-    nodes[a.getIndex()].m_reverse_links.clear();
-    unordered_nodes.erase(currentIndex);
+    nodes[currentIndex].m_forward_links.clear();
+    nodes[currentIndex].m_reverse_links.clear();
+    nodes[currentIndex].m_valid = false;
     free_nodes.push_back(a.getIndex());
+}
+SG_TEMPLATE template <typename BASE>
+SG_TYPE::node_iterator<BASE>& SG_TYPE::node_iterator<BASE>::operator ++() {
+    do { ++m_base; } while(m_base != m_end && !m_base->m_valid);
+    return !this;
+}
+SG_TEMPLATE template <typename BASE>
+SG_TYPE::node_iterator<BASE> SG_TYPE::node_iterator<BASE>::operator ++(int) {
+    node_iterator copy = *this;
+    ++*this;
+    return copy;
+}
+SG_TEMPLATE template <typename BASE>
+typename SG_NODE& SG_TYPE::node_iterator<BASE>::operator *() {
+    return m_base->m_node;
+}
+SG_TEMPLATE template <typename BASE>
+bool SG_TYPE::node_iterator<BASE>::operator ==(
+        const node_iterator& other) const {
+    return m_base == other.m_base;
+}
+SG_TEMPLATE
+SG_TYPE::forward_node_iterator SG_TYPE::begin() {
+    return forward_node_iterator(nodes.begin(), nodes.end());
+}
+SG_TEMPLATE
+SG_TYPE::forward_node_iterator SG_TYPE::end() {
+    return forward_node_iterator(nodes.end(), nodes.end());
+}
+SG_TEMPLATE
+SG_TYPE::reverse_node_iterator SG_TYPE::rbegin() {
+    return reverse_node_iterator(nodes.begin(), nodes.end());
+}
+SG_TEMPLATE
+SG_TYPE::reverse_node_iterator SG_TYPE::rend() {
+    return reverse_node_iterator(nodes.rend(), nodes.rend());
 }
 
 SG_TEMPLATE

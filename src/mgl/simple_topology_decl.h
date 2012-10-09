@@ -29,8 +29,6 @@ public:
     typedef std::vector<node_index> free_node_container_type;
     typedef std::vector<cost_index> free_cost_container_type;
     
-    typedef std::set<node_index> dense_node_container_type;
-    
     class node {
     public:
         friend class simple_graph;
@@ -42,12 +40,14 @@ public:
         public:
             
             typedef BASE base_iterator;
-            
             friend class node;
+            
+            link_iterator() {}
+            
             link_iterator& operator ++(); //pre
             link_iterator operator ++(int); //post
             connection operator *();
-            connection operator ->() { return this->operator *(); }
+            connection operator ->() { return **this; }
             bool operator ==(const link_iterator& other) const;
         private:
             explicit link_iterator(base_iterator base) 
@@ -96,14 +96,48 @@ public:
     class node_info_group {
     public:
         node_info_group(simple_graph& parent, size_t index, 
-                const node_data_type& data = node_data_type());
-        node_info_group(const node& other);
-        node_info_group& operator =(const node_info_group& other); // NOT ALLOWED
+                const node_data_type& data = node_data_type()) 
+                : m_node(parent, index, data), m_valid(true) {}
+        node_info_group(const node& other) 
+                : m_node(other), m_valid(true) {}
         
         node m_node;
         adjacency_map m_forward_links;
         reverse_adjacency_map m_reverse_links;
+        bool m_valid;
     };
+    
+    template <typename BASE>
+    class node_iterator {
+    public:
+        typedef BASE base_iterator;
+        
+        friend class simple_graph;
+        
+        node_iterator() {}
+            
+        node_iterator& operator ++(); //pre
+        node_iterator operator ++(int); //post
+        node& operator *();
+        node* operator ->() { return &**this; }
+        bool operator ==(const node_iterator& other) const;
+        
+    private:
+        explicit node_iterator(base_iterator base, base_iterator end) 
+                : m_base(base), m_end(end) {}
+        base_iterator m_base;
+        base_iterator m_end;
+    };
+    
+    typedef node_iterator<node_container_type::iterator> 
+            forward_node_iterator;
+    typedef node_iterator<node_container_type::reverse_iterator> 
+            reverse_node_iterator;
+    
+    forward_node_iterator begin();
+    forward_node_iterator end();
+    reverse_node_iterator rbegin();
+    reverse_node_iterator rend();
     
 private:
     
@@ -113,7 +147,6 @@ private:
     cost_container_type costs;
     free_node_container_type free_nodes;
     free_cost_container_type free_costs;
-    dense_node_container_type unordered_nodes; //valid nodes, no ordering
 };
 
 }
