@@ -29,6 +29,9 @@ public:
     typedef std::vector<node_index> free_node_container_type;
     typedef std::vector<cost_index> free_cost_container_type;
     
+    typedef std::allocator<node> node_allocator_type;
+    typedef std::allocator<cost_type> cost_allocator_type;
+    
     class node {
     public:
         friend class simple_graph;
@@ -76,19 +79,24 @@ public:
         reverse_link_iterator reverseBegin();
         reverse_link_iterator reverseEnd();
         
-    private:
+        bool forwardEmpty() const;
+        bool reverseEmpty() const;
         
         inline size_t getIndex() const { return m_index; }
         
-        simple_graph& m_parent;
-        const size_t m_index;
-        const node_data_type m_data;
+    private:
+        
+        simple_graph* m_parent;
+        size_t m_index;
+        node_data_type m_data;
     };
     
     template <typename COST_GEN>
-    void connect(node& a, node& b, const COST_GEN& costGenerator = COST_GEN());
-    void connect(node& a, node& b, const cost_type& cost);
-    void disconnect(node& a, node& b);
+    void connect(const node& a, const node& b, const COST_GEN& costGenerator = COST_GEN());
+    void connect(const node& a, const node& b, const cost_type& cost);
+    void disconnect(const node& a, const node& b);
+    
+    node& operator [](node_index i);
     
     node& createNode(const node_data_type& data = node_data_type());
     void destroyNode(node& a);
@@ -150,6 +158,9 @@ private:
     cost_container_type costs;
     free_node_container_type free_nodes;
     free_cost_container_type free_costs;
+    
+    node_allocator_type node_allocator;
+    cost_allocator_type cost_allocator;
 };
 
 }

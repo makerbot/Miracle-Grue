@@ -4,11 +4,82 @@ namespace mgl {
 
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
-    
+    if(path.size() < 2) {
+        throw GraphException("Attempted to insert degenerate path in fastgraph!");
+    }
+    node_index last = -1;
+    for(OpenPath::const_iterator iter = path.fromStart(); 
+            iter != path.end(); 
+            ++iter) {
+        OpenPath::const_iterator next = iter;
+        ++next;
+        if(iter == path.fromStart()) {
+            last = graph.createNode(NodeData(*iter, 
+                    label.myValue, true)).getIndex();
+        }
+        if(next != path.end()) {
+            OpenPath::const_iterator future = next;
+            ++future;
+            node& lastNode = graph[last];
+            node& curNode = graph.createNode(NodeData(*next, 
+                    label.myValue, future==path.end()));
+            libthing::LineSegment2 connection( 
+                    curNode.data().getPosition(), 
+                    lastNode.data().getPosition());
+            PointType normal = (connection.b - connection.a).unit();
+            Scalar distance = connection.length();
+            Cost frontCost(label, distance, normal);
+            Cost backCost(label, distance, normal * -1.0);
+            curNode.connect(lastNode, backCost);
+            lastNode.connect(curNode, frontCost);
+            last = curNode.getIndex();
+        }
+    }
 }
 void pather_optimizer_fastgraph::addPath(const Loop& loop, 
         const PathLabel& label) {
-    
+    if(loop.size() < 3) {
+        throw GraphException("Attempted to insert degenerate Loop in fastgraph!");
+    }
+    node_index last = -1;
+    node_index first = -1;
+    for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
+            iter != loop.clockwiseEnd(); 
+            ++iter) {
+        Loop::const_finite_cw_iterator next = iter;
+        ++next;
+        if(iter == loop.clockwiseFinite()) {
+            last = graph.createNode(NodeData(*iter, 
+                    label.myValue, true)).getIndex();
+            first = last;
+        }
+        if(next != loop.clockwiseFinite()) {
+            node& lastNode = graph[last];
+            node& curNode = graph.createNode(NodeData(*next, 
+                    label.myValue, true));
+            libthing::LineSegment2 connection( 
+                    curNode.data().getPosition(), 
+                    lastNode.data().getPosition());
+            PointType normal = (connection.b - connection.a).unit();
+            Scalar distance = connection.length();
+            Cost frontCost(label, distance, normal);
+            Cost backCost(label, distance, normal * -1.0);
+            curNode.connect(lastNode, backCost);
+            lastNode.connect(curNode, frontCost);
+            last = curNode.getIndex();
+        }
+    }
+    node& lastNode = graph[last];
+    node& curNode = graph[first];
+    libthing::LineSegment2 connection( 
+            curNode.data().getPosition(), 
+            lastNode.data().getPosition());
+    PointType normal = (connection.b - connection.a).unit();
+    Scalar distance = connection.length();
+    Cost frontCost(label, distance, normal);
+    Cost backCost(label, distance, normal * -1.0);
+    curNode.connect(lastNode, backCost);
+    lastNode.connect(curNode, frontCost);
 }
 void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     for(OpenPath::const_iterator iter = path.fromStart(); 
@@ -34,10 +105,6 @@ void pather_optimizer_fastgraph::clearBoundaries() {
 void pather_optimizer_fastgraph::clearPaths() {
     graph.clear();
 }
-void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths) {
-    
-}
-
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {
     do { ++m_base; } while(m_base != m_end && !m_base->data().isEntry());
@@ -57,5 +124,17 @@ bool pather_optimizer_fastgraph::entry_iterator::operator ==(
         const entry_iterator& other) const {
     return m_base == other.m_base;
 }
+pather_optimizer_fastgraph::entry_iterator 
+        pather_optimizer_fastgraph::entryBegin() {
+    return entry_iterator(graph.begin(), graph.end());
+}
+pather_optimizer_fastgraph::entry_iterator
+        pather_optimizer_fastgraph::entryEnd() {
+    return entry_iterator(graph.end(), graph.end());
+}
+
+
+
+
 }
 

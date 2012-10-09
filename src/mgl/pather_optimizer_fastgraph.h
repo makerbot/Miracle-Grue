@@ -11,8 +11,15 @@
 #include "pather_optimizer.h"
 #include "simple_topology.h"
 #include "basic_boxlist.h"
+#include "Exception.h"
 
 namespace mgl {
+
+class GraphException : public Exception {
+public:
+    template <typename T>
+    GraphException(const T& arg) : Exception(arg) {}
+};
 
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
@@ -30,12 +37,14 @@ private:
         Cost(const PathLabel& label = PathLabel(), 
                 Scalar distance = 0, 
                 PointType normal = PointType()) 
-                : m_distance(distance), m_normal(normal) {}
+                : PathLabel(label), m_distance(distance), m_normal(normal) {}
+        Cost(const Cost& other) : PathLabel(other), 
+                m_distance(other.m_distance), m_normal(other.m_normal) {}
         Scalar distance() const { return m_distance; }
         const PointType& normal() const { return m_normal; }
     private:
-        const Scalar m_distance;
-        const PointType m_normal;
+        Scalar m_distance;
+        PointType m_normal;
     };
     class NodeData {
     public:
@@ -45,9 +54,19 @@ private:
                 : m_position(position), 
                 m_priority(priority), 
                 m_isentry(entry) {}
+        NodeData(const NodeData& other)
+                : m_position(other.m_position), 
+                m_priority(other.m_priority), 
+                m_isentry(other.m_isentry) {}
+        static NodeData create(PointType position = PointType(), 
+                int priority = 0, 
+                bool entry = false) {
+            return NodeData(position, priority, entry);
+        }
         const PointType& getPosition() const { return m_position; }
         int getPriority() const { return m_priority; }
         bool isEntry() const { return m_isentry; }
+    private:
         PointType m_position;
         int m_priority;
         bool m_isentry;
@@ -55,11 +74,15 @@ private:
     typedef basic_boxlist<libthing::LineSegment2> boundary_container;
     typedef topo::simple_graph<NodeData, Cost> graph_type;
     typedef graph_type::node node;
+    typedef graph_type::node_index node_index;
     
     typedef graph_type::forward_node_iterator node_iterator;
     
     class entry_iterator {
     public:
+        
+        friend class pather_optimizer_fastgraph;
+        
         entry_iterator() {}
             
         entry_iterator& operator ++(); //pre
@@ -67,6 +90,8 @@ private:
         node& operator *();
         node* operator ->() { return &**this; }
         bool operator ==(const entry_iterator& other) const;
+        bool operator !=(const entry_iterator& other) const
+                { return !(*this==other); }
         
     private:
         explicit entry_iterator(node_iterator base, node_iterator end) 
@@ -74,6 +99,9 @@ private:
         node_iterator m_base;
         node_iterator m_end;
     };
+    
+    entry_iterator entryBegin();
+    entry_iterator entryEnd();
     
     boundary_container boundaries;
     graph_type graph;
