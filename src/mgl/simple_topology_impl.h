@@ -128,6 +128,13 @@ void SG_TYPE::destroyNode(node& a) {
     nodes[currentIndex].m_valid = false;
     free_nodes.push_back(a.getIndex());
 }
+SG_TEMPLATE
+void SG_TYPE::clear() {
+    nodes.clear();
+    costs.clear();
+    free_nodes.clear();
+    free_costs.clear();
+}
 SG_TEMPLATE template <typename BASE>
 SG_TYPE::node_iterator<BASE>& SG_TYPE::node_iterator<BASE>::operator ++() {
     do { ++m_base; } while(m_base != m_end && !m_base->m_valid);
@@ -149,19 +156,19 @@ bool SG_TYPE::node_iterator<BASE>::operator ==(
     return m_base == other.m_base;
 }
 SG_TEMPLATE
-SG_TYPE::forward_node_iterator SG_TYPE::begin() {
+typename SG_TYPE::forward_node_iterator SG_TYPE::begin() {
     return forward_node_iterator(nodes.begin(), nodes.end());
 }
 SG_TEMPLATE
-SG_TYPE::forward_node_iterator SG_TYPE::end() {
+typename SG_TYPE::forward_node_iterator SG_TYPE::end() {
     return forward_node_iterator(nodes.end(), nodes.end());
 }
 SG_TEMPLATE
-SG_TYPE::reverse_node_iterator SG_TYPE::rbegin() {
+typename SG_TYPE::reverse_node_iterator SG_TYPE::rbegin() {
     return reverse_node_iterator(nodes.begin(), nodes.end());
 }
 SG_TEMPLATE
-SG_TYPE::reverse_node_iterator SG_TYPE::rend() {
+typename SG_TYPE::reverse_node_iterator SG_TYPE::rend() {
     return reverse_node_iterator(nodes.rend(), nodes.rend());
 }
 

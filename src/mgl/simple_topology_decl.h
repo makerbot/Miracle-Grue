@@ -92,6 +92,7 @@ public:
     
     node& createNode(const node_data_type& data = node_data_type());
     void destroyNode(node& a);
+    void clear();
     
     class node_info_group {
     public:
@@ -129,9 +130,9 @@ public:
         base_iterator m_end;
     };
     
-    typedef node_iterator<node_container_type::iterator> 
+    typedef node_iterator<typename node_container_type::iterator> 
             forward_node_iterator;
-    typedef node_iterator<node_container_type::reverse_iterator> 
+    typedef node_iterator<typename node_container_type::reverse_iterator> 
             reverse_node_iterator;
     
     forward_node_iterator begin();
