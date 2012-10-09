@@ -122,6 +122,8 @@ public:
         node& operator *();
         node* operator ->() { return &**this; }
         bool operator ==(const node_iterator& other) const;
+        bool operator !=(const node_iterator& other) const 
+                { return !(*this==other); }
         
     private:
         explicit node_iterator(base_iterator base, base_iterator end) 

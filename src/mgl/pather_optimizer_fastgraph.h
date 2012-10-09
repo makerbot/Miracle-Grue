@@ -37,8 +37,43 @@ private:
         const Scalar m_distance;
         const PointType m_normal;
     };
+    class NodeData {
+    public:
+        NodeData(PointType position = PointType(), 
+                int priority = 0, 
+                bool entry = false) 
+                : m_position(position), 
+                m_priority(priority), 
+                m_isentry(entry) {}
+        const PointType& getPosition() const { return m_position; }
+        int getPriority() const { return m_priority; }
+        bool isEntry() const { return m_isentry; }
+        PointType m_position;
+        int m_priority;
+        bool m_isentry;
+    };
     typedef basic_boxlist<libthing::LineSegment2> boundary_container;
-    typedef topo::simple_graph<PointType, Cost> graph_type;
+    typedef topo::simple_graph<NodeData, Cost> graph_type;
+    typedef graph_type::node node;
+    
+    typedef graph_type::forward_node_iterator node_iterator;
+    
+    class entry_iterator {
+    public:
+        entry_iterator() {}
+            
+        entry_iterator& operator ++(); //pre
+        entry_iterator operator ++(int); //post
+        node& operator *();
+        node* operator ->() { return &**this; }
+        bool operator ==(const entry_iterator& other) const;
+        
+    private:
+        explicit entry_iterator(node_iterator base, node_iterator end) 
+                : m_base(base), m_end(end) {}
+        node_iterator m_base;
+        node_iterator m_end;
+    };
     
     boundary_container boundaries;
     graph_type graph;

@@ -138,7 +138,7 @@ void SG_TYPE::clear() {
 SG_TEMPLATE template <typename BASE>
 SG_TYPE::node_iterator<BASE>& SG_TYPE::node_iterator<BASE>::operator ++() {
     do { ++m_base; } while(m_base != m_end && !m_base->m_valid);
-    return !this;
+    return *this;
 }
 SG_TEMPLATE template <typename BASE>
 SG_TYPE::node_iterator<BASE> SG_TYPE::node_iterator<BASE>::operator ++(int) {

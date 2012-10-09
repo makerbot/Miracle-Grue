@@ -38,5 +38,24 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
     
 }
 
+pather_optimizer_fastgraph::entry_iterator& 
+        pather_optimizer_fastgraph::entry_iterator::operator ++() {
+    do { ++m_base; } while(m_base != m_end && !m_base->data().isEntry());
+    return *this;
+}
+pather_optimizer_fastgraph::entry_iterator
+        pather_optimizer_fastgraph::entry_iterator::operator ++(int) {
+    entry_iterator copy = *this;
+    ++*this;
+    return copy;
+}
+pather_optimizer_fastgraph::node&
+        pather_optimizer_fastgraph::entry_iterator::operator *() {
+    return *m_base;
+}
+bool pather_optimizer_fastgraph::entry_iterator::operator ==(
+        const entry_iterator& other) const {
+    return m_base == other.m_base;
+}
 }
 
