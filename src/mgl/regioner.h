@@ -14,6 +14,7 @@
 #ifndef REGIONER_H_
 #define REGIONER_H_ (1)
 
+#include "configuration.h"
 #include "slicer.h"
 #include "slicer_loops.h"
 #include "loop_path.h"
@@ -94,10 +95,10 @@ typedef std::vector<LayerRegions> RegionList;
 class Regioner : public Progressive {
 	Scalar roofLengthCutOff;
 public:
-	RegionerConfig regionerCfg;
+    const GrueConfig& grueCfg;
 
-	Regioner(const RegionerConfig &regionerCfg, 
-			ProgressBar *progress = NULL);
+    Regioner(const GrueConfig& grueConf, 
+            ProgressBar* progress = NULL);
 
 	void generateSkeleton(const LayerLoops& layerloops, 
 						  LayerMeasure &layerMeasure, 

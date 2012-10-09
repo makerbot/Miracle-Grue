@@ -13,7 +13,7 @@ using std::stringstream;
 using libthing::LineSegment2;
 using libthing::Vector2;
 
-Gantry::Gantry(const GantryConfig& gCfg) : gantryCfg(gCfg) {
+Gantry::Gantry(const GrueConfig& gCfg) : grueCfg(gCfg) {
 	set_current_extruder_index('A');
 	set_extruding(false);
 	init_to_start();
@@ -84,12 +84,12 @@ void Gantry::set_current_extruder_index(unsigned char nab) {
 }
 
 void Gantry::init_to_start() {
-	set_x(gantryCfg.get_start_x());
-	set_y(gantryCfg.get_start_y());
-	set_z(gantryCfg.get_start_z());
-	set_a(gantryCfg.get_start_a());
-	set_b(gantryCfg.get_start_b());
-	set_feed(gantryCfg.get_start_feed());
+	set_x(grueCfg.get_startingX());
+	set_y(grueCfg.get_startingY());
+	set_z(grueCfg.get_startingZ());
+	set_a(grueCfg.get_startingA());
+	set_b(grueCfg.get_startingA());
+	set_feed(grueCfg.get_startingFeed());
 }
 
 
@@ -148,7 +148,7 @@ Scalar Gantry::volumetricE(const Extruder &extruder,
 	//There isn't yet a LineSegment3, so for now I'm assuming that only 2d
 	//segments get extruded
 	LineSegment2 seg(Vector2(get_x(), get_y()), Vector2(vx, vy));
-	Scalar seg_volume = gantryCfg.segmentVolume(extruder, extrusion, seg, h, w);
+	Scalar seg_volume = grueCfg.segmentVolume(extruder, extrusion, seg, h, w);
 
 	Scalar feed_cross_area = extruder.feedCrossSectionArea();
 
@@ -190,7 +190,7 @@ void Gantry::g1(std::ostream &ss,
 		doE = true;
 		me = volumetricE(*extruder, *extrusion, gx, gy, gz, h, w);
 		if(libthing::tequals(me, getCurrentE(), 0.0) || 
-				relativeVector.magnitude() <= gantryCfg.get_coarseness())
+				relativeVector.magnitude() <= grueCfg.get_coarseness())
 			return;
 	}
 	g1Motion(ss, gx, gy, gz, me, gfeed, h, w, comment,
@@ -207,7 +207,7 @@ void Gantry::squirt(std::ostream &ss,
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() + extruder.retractDistance
 				+ extruder.restartExtraDistance, 
-                extruder.retractRate * gantryCfg.get_scaling_factor(),
+                extruder.retractRate * grueCfg.get_scalingFactor(),
 				FLUID_H, FLUID_W,
 				"squirt", false, false, false, true, true); //only E and F
 	} else {
@@ -226,7 +226,7 @@ void Gantry::snort(std::ostream &ss,
 	if (extruder.isVolumetric()) {
 		g1Motion(ss, get_x(), get_y(), get_z(),
 				getCurrentE() - extruder.retractDistance,
-				extruder.retractRate * gantryCfg.get_scaling_factor(), 
+				extruder.retractRate * grueCfg.get_scalingFactor(), 
                 FLUID_H, FLUID_W, "snort",
 				false, false, false, true, true); //only E and F
 	} else {
@@ -266,7 +266,7 @@ void Gantry::g1Motion(std::ostream &ss, Scalar mx, Scalar my, Scalar mz,
 	}
 
 	unsigned char ss_axis =
-			(gantryCfg.get_use_e_axis() ? 'E' :
+			(grueCfg.get_useEaxis() ? 'E' :
 			get_current_extruder_code());
 
 	ss << "G1";
@@ -401,6 +401,14 @@ void GantryConfig::set_coarseness(Scalar c) {
 	coarseness = c;
 }
 
+Scalar GrueConfig::segmentVolume(const Extruder& extruder, 
+        const Extrusion& extrusion, 
+        const libthing::LineSegment2& segment, 
+        Scalar h, Scalar w) const {
+    Scalar cross_area = extrusion.crossSectionArea(h, w);
+	Scalar length = segment.length();
+	return cross_area * length;
+}
 
 
 }

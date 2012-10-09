@@ -14,6 +14,7 @@
 #define GCODER_H_
 
 #include <map>
+#include "configuration.h"
 #include "mgl.h"
 #include "pather.h"
 
@@ -131,13 +132,13 @@ public:
 class GCoder : public Progressive {
 public:
 
-    GCoderConfig gcoderCfg;
+    const GrueConfig& grueCfg;
     Gantry gantry;
     unsigned int progressTotal;    //how many paths we will be doing
     unsigned int progressCurrent;  //which path the current one is
     unsigned int progressPercent;
 
-    GCoder(const GCoderConfig &gCoderCfg, ProgressBar* progress = NULL);
+    GCoder(const GrueConfig& grueConf, ProgressBar* progress = NULL);
 
     /// shortcut for doing a G1 that only move Z
     void moveZ(std::ostream & ss, Scalar z,
@@ -203,8 +204,8 @@ public:
 
     // todo: return the gCoderCfg instead
 
-    const std::vector<Extruder> & readExtruders() const {
-        return gcoderCfg.extruders;
+    const GrueConfig::extruderVector & readExtruders() const {
+        return grueCfg.get_extruders();
     }
     void writeSlice(std::ostream& ss,
             LayerPaths& layerpaths,
@@ -274,12 +275,12 @@ void GCoder::writePath(std::ostream& ss,
     ++current;
     // rapid move into position
     PointType gantryPos(gantry.get_x(), gantry.get_y());
-    if ((gantryPos - last).magnitude() >= gcoderCfg.gantryCfg.get_coarseness()) {
+    if ((gantryPos - last).magnitude() >= grueCfg.get_coarseness()) {
         gantry.snort(ss, extruder, extrusion);
         gantry.g1(ss, extruder, extrusion,
                 last.x, last.y, z,
-                gcoderCfg.gantryCfg.get_rapid_move_feed_rate_xy() *
-                gcoderCfg.gantryCfg.get_scaling_factor(),
+                grueCfg.get_rapidMoveFeedRateXY() *
+                grueCfg.get_scalingFactor(),
                 0, 0,
                 "move into position");
     }
@@ -319,7 +320,7 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
         Scalar currentH = h;
         Scalar currentW = w;
         if (currentLP.myLabel.isOutline()) {
-            if (!gcoderCfg.doOutlines) {
+            if (!grueCfg.get_doOutlines()) {
                 didLastPath = false;
                 continue;
             }
@@ -338,7 +339,7 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
             ss << "(connection path, length: " << currentLP.myPath.size()
                     << ")" << std::endl;
         } else if (currentLP.myLabel.isInset()) {
-            if (!gcoderCfg.doInsets) {
+            if (!grueCfg.get_doInsets()) {
                 didLastPath = false;
                 continue;
             }
@@ -355,7 +356,7 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
             ss << "(inset path, length: " << currentLP.myPath.size()
                     << ")" << std::endl;
         } else if (currentLP.myLabel.isInfill()) {
-            if (!gcoderCfg.doInfills) {
+            if (!grueCfg.get_doInfills()) {
                 didLastPath = false;
                 continue;
             }

@@ -154,72 +154,148 @@ std::string Configuration::asJson(Json::StyledWriter writer) const {
     return writer.write(root);
 }
 
-// this is a work in progress...
+const Scalar GrueConfig::INVALID_SCALAR(std::numeric_limits<Scalar>::max());
 
-void loadExtrusionProfileData(const Configuration& conf, GCoderConfig &gcoderCfg) {
-    const Json::Value &extrusionsRoot = conf.root["extrusionProfiles"];
-
-    for (Json::ValueIterator itr = extrusionsRoot.begin();
-            itr != extrusionsRoot.end(); itr++) {
-        string profileName = itr.key().asString();
-
-        stringstream ss;
-        ss << "extrusionProfiles[\"" << profileName << "\"].";
-        string prefix = ss.str();
-        const Json::Value &value = *itr;
-        Extrusion extrusion;
-        extrusion.feedrate = doubleCheck(value["feedrate"],
-                (prefix + "feedrate").c_str());
-
-        extrusion.temperature = doubleCheck(value["temperature"],
-                (prefix + "temperature").c_str(), -99999);
-
-        gcoderCfg.extrusionProfiles.insert(pair<std::string,
-                Extrusion > (profileName, extrusion));
-    }
+GrueConfig::GrueConfig()
+        : defaultExtruder(INVALID_UINT), doOutlines(INVALID_BOOL), 
+        doInsets(INVALID_BOOL), doInfills(INVALID_BOOL), 
+        doFanCommand(INVALID_BOOL), fanLayer(INVALID_UINT), 
+        doPrintLayerMessages(INVALID_BOOL), doPrintProgress(INVALID_BOOL), 
+        layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
+        infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
+        layerWidthRatio(INVALID_SCALAR), 
+        insetDistanceMultiplier(INVALID_SCALAR), roofLayerCount(INVALID_UINT), 
+        floorLayerCount(INVALID_UINT), doRaft(INVALID_BOOL), 
+        raftLayers(INVALID_UINT), raftBaseThickness(INVALID_SCALAR), 
+        raftInterfaceThickness(INVALID_SCALAR), raftOutset(INVALID_SCALAR), 
+        raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
+        doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
+        supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
+        coarseness(INVALID_SCALAR), directionWeight(INVALID_SCALAR), 
+        rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
+        useEaxis(INVALID_BOOL), scalingFactor(INVALID_BOOL), 
+        startingX(INVALID_SCALAR), startingY(INVALID_SCALAR), 
+        startingZ(INVALID_SCALAR), startingA(INVALID_SCALAR), 
+        startingB(INVALID_SCALAR), startingFeed(INVALID_SCALAR){}
+void GrueConfig::loadFromFile(const Configuration& config) {
+    loadSlicingParams(config);
+    doRaft = boolCheck(config["doRaft"], "doRaft");
+    if(doRaft)
+        loadRaftParams(config);
+    doSupport = boolCheck(config["doSupport"], "doSupport");
+    if(doSupport)
+        loadSupportParams(config);
+    doGraphOptimization = boolCheck(
+            config["doGraphOptimization"], "doGraphOptimization");
+    if(doGraphOptimization)
+        loadPathingParams(config);
+    loadGantryParams(config);
+    loadGcodeParams(config);
+    loadProfileParams(config);
 }
+void GrueConfig::loadSlicingParams(const Configuration& config) {
+    coarseness = (doubleCheck(
+            config["coarseness"], "coarseness"));
+    layerH = (doubleCheck(
+            config["layerHeight"], "layerHeight"));
+    firstLayerZ = doubleCheck(config["bedZOffset"], 
+            "bedZOffset");
+    infillDensity = doubleCheck(config["infillDensity"],
+            "infillDensity");
+    gridSpacingMultiplier = doubleCheck(config["gridSpacingMultiplier"],
+            "gridSpacingMultiplier", 0.92);
+    nbOfShells = uintCheck(config["numberOfShells"],
+            "numberOfShells");
+    layerWidthRatio = doubleCheck(config["layerWidthRatio"],
+            "layerWidthRatio");
+    insetDistanceMultiplier =
+            doubleCheck(config["insetDistanceMultiplier"],
+            "insetDistanceMultiplier");
+    roofLayerCount =
+            uintCheck(config["roofLayerCount"], "roofLayerCount");
+    floorLayerCount =
+            uintCheck(config["floorLayerCount"], "floorLayerCount");
+    
+}
+void GrueConfig::loadGantryParams(const Configuration& config) {
+    rapidMoveFeedRateXY = (doubleCheck(
+            config["rapidMoveFeedRateXY"], "rapidMoveFeedRateXY"));
+    rapidMoveFeedRateZ = (doubleCheck(
+            config["rapidMoveFeedRateZ"], "rapidMoveFeedRateZ"));
+    scalingFactor = (doubleCheck(
+            config["feedScalingFactor"], "feedScalingFactor", 60.0));
 
-void loadExtruderConfigFromFile(const Configuration& conf,
-        ExtruderConfig &extruderCfg) {
-    extruderCfg.defaultExtruder =
-            uintCheck(conf.root["defaultExtruder"],
+    startingX = (doubleCheck(
+            config["startX"], "startX"));
+    startingY = (doubleCheck(
+            config["startY"], "startY"));
+    startingZ = (doubleCheck(
+            config["startZ"], "startZ"));
+    startingA = 0;
+    startingB = 0;
+    startingFeed = 0;
+}
+void GrueConfig::loadGcodeParams(const Configuration& config) {
+    defaultExtruder = uintCheck(config["defaultExtruder"],
             "defaultExtruder");
-}
-
-void loadGCoderConfigFromFile(const Configuration& conf,
-        GCoderConfig &gcoderCfg) {
-    gcoderCfg.gantryCfg.set_coarseness(doubleCheck(
-            conf.root["coarseness"], "coarseness"));
-    gcoderCfg.gantryCfg.set_rapid_move_feed_rate_xy(doubleCheck(
-            conf.root["rapidMoveFeedRateXY"], "rapidMoveFeedRateXY"));
-    gcoderCfg.gantryCfg.set_rapid_move_feed_rate_z(doubleCheck(
-            conf.root["rapidMoveFeedRateZ"], "rapidMoveFeedRateZ"));
-    gcoderCfg.gantryCfg.set_layer_h(doubleCheck(
-            conf.root["layerHeight"], "layerHeight"));
-    gcoderCfg.gantryCfg.set_scaling_factor(doubleCheck(
-            conf.root["feedScalingFactor"], "feedScalingFactor", 60.0));
-
-    gcoderCfg.gantryCfg.set_start_x(doubleCheck(
-            conf.root["startX"], "startX"));
-    gcoderCfg.gantryCfg.set_start_y(doubleCheck(
-            conf.root["startY"], "startY"));
-    gcoderCfg.gantryCfg.set_start_z(doubleCheck(
-            conf.root["startZ"], "startZ"));
-
-    loadExtrusionProfileData(conf, gcoderCfg);
-
-    if (conf.root["extruderProfiles"].size() == 0) {
-        stringstream ss;
-        ss << "No extruder defined in the configuration file";
-        ConfigException mixup(ss.str().c_str());
-        throw mixup;
-        return;
+    header = pathCheck(config["startGcode"],
+            "startGcode", "");
+    footer = pathCheck(config["endGcode"],
+            "endGcode", "");
+    doOutlines = boolCheck(config["doOutlines"],
+            "doOutlines", false);
+    doInsets = boolCheck(config["insets"],
+            "doInsets", true);
+    doInfills = boolCheck(config["doInfills"],
+            "doInfills", true);
+    doFanCommand = boolCheck(config["doFanCommand"],
+            "doFanCommand", false);
+    if (doFanCommand) {
+        fanLayer = uintCheck(config["fanLayer"],
+                "fanLayer");
     }
-
-    int x = conf.root["extruderProfiles"].size();
-    unsigned int extruderCount = (unsigned int) x;
-    for (unsigned int i = 0; i < extruderCount; i++) {
-        const Json::Value &value = conf.root["extruderProfiles"][i];
+    doPrintLayerMessages = boolCheck(
+            config["printLayerMessages"],
+            "printLayerMessages", false);
+    doPrintProgress = boolCheck(
+            config["doPrintProgress"],
+            "doPrintProgress", false);
+    useEaxis = (boolCheck(config["useEAxis"],
+            "useEAxis", false));
+}
+void GrueConfig::loadRaftParams(const Configuration& config) {
+    raftLayers = uintCheck(config["raftLayers"],
+                "raftLayers");
+    raftBaseThickness = doubleCheck(
+            config["raftBaseThickness"], "raftBaseThickness");
+    raftInterfaceThickness = doubleCheck(
+            config["raftInterfaceThickness"],
+            "raftInterfaceThickness");
+    raftOutset = doubleCheck(
+            config["raftOutset"], "raftOutset");
+    raftModelSpacing = doubleCheck(
+            config["raftModelSpacing"], "raftModelSpacing");
+    raftDensity = doubleCheck(
+            config["raftDensity"], "raftDensity");
+}
+void GrueConfig::loadSupportParams(const Configuration& config) {
+    supportMargin = doubleCheck(config["supportMargin"],
+                "supportMargin");
+    supportDensity = doubleCheck(
+            config["supportDensity"], "supportDensity");
+}
+void GrueConfig::loadPathingParams(const Configuration& config) {
+    directionWeight = doubleCheck(config["directionWeight"],
+            "directionWeight");
+}
+void GrueConfig::loadProfileParams(const Configuration& config) {
+    loadExtruderParams(config);
+    loadExtrusionParams(config);
+}
+void GrueConfig::loadExtruderParams(const Configuration& config) {
+    size_t extruderCount = config["extruderProfiles"].size();
+    for (size_t i = 0; i < extruderCount; i++) {
+        const Json::Value &value = config.root["extruderProfiles"][i];
 
         stringstream ss;
         ss << "extruders[" << i << "].";
@@ -260,128 +336,33 @@ void loadGCoderConfigFromFile(const Configuration& conf,
                 doubleCheck(value["restartExtraDistance"],
                 (prefix + "restartExtraDistance").c_str());
 
-        gcoderCfg.extruders.push_back(extruder);
+        extruders.push_back(extruder);
     }
-
-    gcoderCfg.header = pathCheck(conf.root["startGcode"],
-            "startGcode", "");
-    gcoderCfg.footer = pathCheck(conf.root["endGcode"],
-            "endGcode", "");
-    gcoderCfg.doOutlines = boolCheck(conf.root["doOutlines"],
-            "doOutlines", false);
-    gcoderCfg.doInsets = boolCheck(conf.root["insets"],
-            "doInsets", true);
-    gcoderCfg.doInfills = boolCheck(conf.root["doInfills"],
-            "doInfills", true);
-    gcoderCfg.doSupport = boolCheck(conf.root["doSupport"],
-            "doSupport", false);
-    gcoderCfg.doFanCommand = boolCheck(conf.root["doFanCommand"],
-            "doFanCommand", false);
-    if(gcoderCfg.doFanCommand) {
-        gcoderCfg.fanLayer = uintCheck(conf.root["fanLayer"], 
-                "fanLayer");
-    }
-    gcoderCfg.doPrintLayerMessages = boolCheck(
-            conf.root["printLayerMessages"],
-            "printLayerMessages", false);
-    gcoderCfg.doPrintProgress = boolCheck(
-            conf.root["doPrintProgress"],
-            "doPrintProgress", false);
-    gcoderCfg.gantryCfg.set_use_e_axis(boolCheck(conf.root["useEAxis"],
-            "useEAxis", false));
-    gcoderCfg.defaultExtruder = uintCheck(conf.root["defaultExtruder"],
-            "defaultExtruder");
 }
+void GrueConfig::loadExtrusionParams(const Configuration& config) {
+    const Json::Value &extrusionsRoot = config["extrusionProfiles"];
 
-void loadSlicerConfigFromFile(const Configuration &config,
-        SlicerConfig &slicerCfg) {
-    //Relevant to slicer
-    slicerCfg.layerH = doubleCheck(config["layerHeight"], "layerHeight");
-    slicerCfg.firstLayerZ = doubleCheck(config["bedZOffset"], "bedZOffset");
-}
+    for (Json::ValueIterator itr = extrusionsRoot.begin();
+            itr != extrusionsRoot.end(); itr++) {
+        string profileName = itr.key().asString();
 
-void loadRegionerConfigFromFile(const Configuration& config,
-        RegionerConfig& regionerCfg) {
-    //Relevant to regioner
-    regionerCfg.infillDensity = doubleCheck(config["infillDensity"],
-            "infillDensity");
-    regionerCfg.nbOfShells = uintCheck(config["numberOfShells"],
-            "numberOfShells");
-    regionerCfg.layerWidthRatio = doubleCheck(config["layerWidthRatio"],
-            "layerWidthRatio");
-    regionerCfg.insetDistanceMultiplier =
-            doubleCheck(config["insetDistanceMultiplier"],
-            "insetDistanceMultiplier");
-    regionerCfg.roofLayerCount =
-            doubleCheck(config["roofLayerCount"], "roofLayerCount");
-    regionerCfg.floorLayerCount =
-            doubleCheck(config["floorLayerCount"], "floorLayerCount");
+        stringstream ss;
+        ss << "extrusionProfiles[\"" << profileName << "\"].";
+        string prefix = ss.str();
+        const Json::Value &value = *itr;
+        Extrusion extrusion;
+        extrusion.feedrate = doubleCheck(value["feedrate"],
+                (prefix + "feedrate").c_str());
 
-    //Rafting Configuration
-    regionerCfg.doRaft = boolCheck(config["doRaft"], "doRaft");
-    if (regionerCfg.doRaft) {
-        regionerCfg.raftLayers = uintCheck(config["raftLayers"],
-                "raftLayers");
+        extrusion.temperature = doubleCheck(value["temperature"],
+                (prefix + "temperature").c_str(), INVALID_SCALAR);
 
-        regionerCfg.raftBaseThickness = doubleCheck(
-                config["raftBaseThickness"], "raftBaseThickness");
-
-        regionerCfg.raftInterfaceThickness = doubleCheck(
-                config["raftInterfaceThickness"],
-                "raftInterfaceThickness");
-
-        regionerCfg.raftOutset = doubleCheck(
-                config["raftOutset"], "raftOutset");
-
-        regionerCfg.raftModelSpacing = doubleCheck(
-                config["raftModelSpacing"], "raftModelSpacing");
-
-        regionerCfg.raftModelSpacing = doubleCheck(
-                config["supportDensity"], "supportDensity");
-    }
-
-    regionerCfg.doSupport = boolCheck(config["doSupport"], "doSupport");
-
-    if (regionerCfg.doSupport) {
-        regionerCfg.supportMargin = doubleCheck(config["supportMargin"],
-                "supportMargin");
-
-        regionerCfg.raftModelSpacing = doubleCheck(
-                config["raftModelSpacing"], "raftModelSpacing");
-    }
-
-    if (regionerCfg.doRaft || regionerCfg.doSupport) {
-        regionerCfg.supportDensity = doubleCheck(
-                config["supportDensity"], "supportDensity");
+        extrusionProfiles.insert(pair<std::string,
+                Extrusion > (profileName, extrusion));
     }
 }
 
-void loadPatherConfigFromFile(const Configuration& config,
-        PatherConfig& patherCfg) {
-    patherCfg.doGraphOptimization = boolCheck(
-            config["doGraphOptimization"], "doGraphOptimization",
-            patherCfg.doGraphOptimization);
-    patherCfg.coarseness = doubleCheck(
-            config["coarseness"],
-            "coarseness",
-            patherCfg.coarseness);
-    patherCfg.directionWeight = doubleCheck(
-            config["directionWeight"],
-            "directionWeight",
-            patherCfg.directionWeight);
-}
 
-void loadLoopProcessorConfigFromFile(const Configuration& config, 
-        LPConfig& lpCfg) {
-    lpCfg.coarseness = doubleCheck(
-            config["preCoarseness"],
-            "preCoarseness",
-            lpCfg.coarseness);
-    lpCfg.directionWeight = doubleCheck(
-            config["directionWeight"],
-            "directionWeight",
-            lpCfg.directionWeight);
-}
 
 
 }
