@@ -241,6 +241,7 @@ mgl_cc = [
           'src/mgl/slicer.cc',
           'src/mgl/slicer_loops.cc',
           'src/mgl/slicy.cc',
+          'src/mgl/spacial_data.cc',
           'src/mgl/loop_utils.cc']
 
 
