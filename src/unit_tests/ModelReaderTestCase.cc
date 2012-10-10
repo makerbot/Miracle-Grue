@@ -676,7 +676,7 @@ void ModelReaderTestCase::fixContourProblem()
 	const SliceTable &sliceTable = seg.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 
-	std::vector<LineSegment2> segments;
+	std::vector<Segment2Type> segments;
 	// get 2D paths for outline
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	SegmentTable outlinesSegments;

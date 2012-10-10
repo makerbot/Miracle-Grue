@@ -75,7 +75,7 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
 			for(Loop::const_finite_cw_iterator iter(currentLoop.clockwiseFinite()); 
 					iter != currentLoop.clockwiseEnd(); 
 					++iter) {
-				LineSegment2 segment = currentLoop.segmentAfterPoint(iter);
+				Segment2Type segment = currentLoop.segmentAfterPoint(iter);
 				Scalar intersectionX, intersectionY;
 				if (segmentSegmentIntersection(xMin,
 						y,
@@ -111,7 +111,7 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 			for (Loop::const_finite_cw_iterator it(currentLoop.clockwiseFinite()); 
 					it != currentLoop.clockwiseEnd(); 
 					it++) {
-				LineSegment2 segment = currentLoop.segmentAfterPoint(it);
+				Segment2Type segment = currentLoop.segmentAfterPoint(it);
 				Scalar intersectionX, intersectionY;
 				if (segmentSegmentIntersection(x,
 						yMin,
@@ -162,7 +162,7 @@ void castRaysOnSliceAlongY(const std::list<Loop> &outlineLoops,
 }
 
 
-bool crossesOutlines(const LineSegment2 &seg,
+bool crossesOutlines(const Segment2Type &seg,
 					 const LoopList &outlines) {
 	for (LoopList::const_iterator loop = outlines.begin();
 		 loop != outlines.end(); loop++) {
@@ -171,7 +171,7 @@ bool crossesOutlines(const LineSegment2 &seg,
 		LoopPath lp(*loop, loop->clockwise(), loop->counterClockwise());
 		for (LoopPath::iterator point = lp.fromStart();
 			 point != lp.end(); point++) {
-			LineSegment2 border = loop->segmentAfterPoint(point);
+			Segment2Type border = loop->segmentAfterPoint(point);
 			Vector2 intersection;
 			if (segmentSegmentIntersection(seg, border, intersection))
 				return true;
@@ -272,7 +272,7 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 
 			int close = close_i->first;
 
-			Scalar dist = LineSegment2(points[endpoint], points[close])
+			Scalar dist = Segment2Type(points[endpoint], points[close])
 					.squaredLength();
 
 			if (dist < closest_dist) {
@@ -282,7 +282,7 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 		}
 
 
-		if (crossesOutlines(LineSegment2(points[endpoint], points[closest]),
+		if (crossesOutlines(Segment2Type(points[endpoint], points[closest]),
 							outlines)) {
 			if(currentPath.size() > 1)
 				paths.push_back(currentPath);

@@ -135,20 +135,20 @@ void  MglCoreTestCase::Vector2Maths()
 
 void MglCoreTestCase::testLineSegment2dBasics()
 {
-	LineSegment2 seg1;
+	Segment2Type seg1;
 	CPPUNIT_ASSERT( seg1.a.x == 0);
 	CPPUNIT_ASSERT( seg1.a.y == 0);
 	CPPUNIT_ASSERT( seg1.b.x == 0);
 	CPPUNIT_ASSERT( seg1.b.y == 0);
 
 	Vector2 v1(10,20), v2(100,200);
-	LineSegment2 seg2(v1, v2);
+	Segment2Type seg2(v1, v2);
 	CPPUNIT_ASSERT( seg2.a.x == 10);
 	CPPUNIT_ASSERT( seg2.a.y == 20);
 	CPPUNIT_ASSERT( seg2.b.x == 100);
 	CPPUNIT_ASSERT( seg2.b.y == 200);
 
-	LineSegment2 seg3 = seg2;
+	Segment2Type seg3 = seg2;
 	CPPUNIT_ASSERT( (void*)&seg2 != (void*)&seg3);
 	CPPUNIT_ASSERT( (void*)&seg2.a != (void*)&seg3.a);
 	CPPUNIT_ASSERT( (void*)&seg2.a.x != (void*)&seg3.a.x);

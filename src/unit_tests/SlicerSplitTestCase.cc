@@ -37,24 +37,24 @@ void SlicerSplitTestCase::setUp()
 
 void SlicerSplitTestCase::test_m()
 {
-	std::vector<LineSegment2> segs;
+	std::vector<Segment2Type> segs;
 	Scalar x = 0;
 	Scalar y = 0;
 
-	segs.push_back(LineSegment2(Vector2(0.2+x, 0.2+y), Vector2(0.2+x, 4.63+y)));
-	segs.push_back(LineSegment2(Vector2(0.2+x, 4.63+y), Vector2(0.2+x, 4.8+y)));
-	segs.push_back(LineSegment2(Vector2(0.2+x, 4.8+y), Vector2(3.52+x, 4.8+y)));
-	segs.push_back(LineSegment2(Vector2(3.52+x, 4.8+y), Vector2(4.8+x, 4.8+y)));
-	segs.push_back(LineSegment2(Vector2(4.8+x, 4.8+y), Vector2(4.8+x, 4.63+y)));
-	segs.push_back(LineSegment2(Vector2(4.8+x, 4.63+y), Vector2(4.8+x, 0.2+y)));
-	segs.push_back(LineSegment2(Vector2(4.8+x, 0.2+y), Vector2(4.63+x, 0.2+y)));
-	segs.push_back(LineSegment2(Vector2(4.63+x, 0.2+y), Vector2(0.2+x, 0.2+y)));
+	segs.push_back(Segment2Type(Vector2(0.2+x, 0.2+y), Vector2(0.2+x, 4.63+y)));
+	segs.push_back(Segment2Type(Vector2(0.2+x, 4.63+y), Vector2(0.2+x, 4.8+y)));
+	segs.push_back(Segment2Type(Vector2(0.2+x, 4.8+y), Vector2(3.52+x, 4.8+y)));
+	segs.push_back(Segment2Type(Vector2(3.52+x, 4.8+y), Vector2(4.8+x, 4.8+y)));
+	segs.push_back(Segment2Type(Vector2(4.8+x, 4.8+y), Vector2(4.8+x, 4.63+y)));
+	segs.push_back(Segment2Type(Vector2(4.8+x, 4.63+y), Vector2(4.8+x, 0.2+y)));
+	segs.push_back(Segment2Type(Vector2(4.8+x, 0.2+y), Vector2(4.63+x, 0.2+y)));
+	segs.push_back(Segment2Type(Vector2(4.63+x, 0.2+y), Vector2(0.2+x, 0.2+y)));
 
 
     Shrinky shrinky;
 	Scalar insetDistance = 0.9 * 0.4 * 2;
 
-	std::vector<LineSegment2> finalInsets;
+	std::vector<Segment2Type> finalInsets;
 
 	shrinky.inset(segs, insetDistance , finalInsets);
 
@@ -62,7 +62,7 @@ void SlicerSplitTestCase::test_m()
 	for (unsigned int i=0; i < finalInsets.size(); i++)
 	{
 
-		const LineSegment2 &seg = finalInsets[i];
+		const Segment2Type &seg = finalInsets[i];
 		Scalar l = seg.length();
 		cout << "seg[" << i << "] = " << seg << " l = " << l << endl;
 		CPPUNIT_ASSERT(l > 0);
@@ -88,7 +88,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[70];
 	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
-	std::vector<LineSegment2> segments;
+	std::vector<Segment2Type> segments;
 	Scalar z = seg.readLayerMeasure().sliceIndexToHeight(70);
 	cout  << "z="<< z << endl;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
@@ -181,7 +181,7 @@ void SlicerSplitTestCase::test_cath()
 {
 	cout << endl;
 
-	std::vector<LineSegment2> segs;
+	std::vector<Segment2Type> segs;
 	Scalar x = 0;
 	Scalar y = 0;
 
@@ -367,35 +367,35 @@ void SlicerSplitTestCase::test_cath()
 
 */
 
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 12.6701+y), Vector2(5.78329+x, 12.68999+y)));   // 30
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 12.68999+y), Vector2(5.78329+x, 12.69005+y)));
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 12.69005+y), Vector2(5.78329+x, 12.69008+y)));
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 12.69008+y), Vector2(5.78329+x, 12.69352+y)));
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 12.69352+y), Vector2(5.78329+x, 14.01863+y)));
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 14.01863+y), Vector2(5.78329+x, 14.02035+y)));
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 14.02035+y), Vector2(5.78329+x, 14.01971+y))); // 36
-	segs.push_back(LineSegment2(Vector2(5.78329+x, 14.01971+y), Vector2(8.25732+x, 14.01971+y)));
-	segs.push_back(LineSegment2(Vector2(8.25732+x, 14.01971+y), Vector2(8.26471+x, 14.01971+y)));
-	segs.push_back(LineSegment2(Vector2(8.26471+x, 14.01971+y), Vector2(8.26471+x, 14.0186+y)));
-	segs.push_back(LineSegment2(Vector2(8.26471+x, 14.0186+y), Vector2(8.26471+x, 12.67359+y)));
-	segs.push_back(LineSegment2(Vector2(8.26471+x, 12.67359+y), Vector2(8.26471+x, 12.6701+y)));
-	segs.push_back(LineSegment2(Vector2(8.26471+x, 12.6701+y), Vector2(8.26471+x, 12.66993+y)));
-	segs.push_back(LineSegment2(Vector2(8.26471+x, 12.66993+y), Vector2(8.26471+x, 12.66771+y)));
-	segs.push_back(LineSegment2(Vector2(8.26471+x, 12.66771+y), Vector2(8.37362+x, 12.66771+y)));
-	segs.push_back(LineSegment2(Vector2(8.37362+x, 12.66771+y), Vector2(8.374+x, 12.66771+y)));
-	segs.push_back(LineSegment2(Vector2(8.374+x, 12.66771+y), Vector2(8.38896+x, 12.66774+y)));
-	segs.push_back(LineSegment2(Vector2(8.38896+x, 12.66774+y), Vector2(9.564+x, 12.66971+y)));
-	segs.push_back(LineSegment2(Vector2(9.564+x, 12.66971+y), Vector2(9.60304+x, 12.66971+y)));
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 12.6701+y), Vector2(5.78329+x, 12.68999+y)));   // 30
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 12.68999+y), Vector2(5.78329+x, 12.69005+y)));
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 12.69005+y), Vector2(5.78329+x, 12.69008+y)));
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 12.69008+y), Vector2(5.78329+x, 12.69352+y)));
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 12.69352+y), Vector2(5.78329+x, 14.01863+y)));
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 14.01863+y), Vector2(5.78329+x, 14.02035+y)));
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 14.02035+y), Vector2(5.78329+x, 14.01971+y))); // 36
+	segs.push_back(Segment2Type(Vector2(5.78329+x, 14.01971+y), Vector2(8.25732+x, 14.01971+y)));
+	segs.push_back(Segment2Type(Vector2(8.25732+x, 14.01971+y), Vector2(8.26471+x, 14.01971+y)));
+	segs.push_back(Segment2Type(Vector2(8.26471+x, 14.01971+y), Vector2(8.26471+x, 14.0186+y)));
+	segs.push_back(Segment2Type(Vector2(8.26471+x, 14.0186+y), Vector2(8.26471+x, 12.67359+y)));
+	segs.push_back(Segment2Type(Vector2(8.26471+x, 12.67359+y), Vector2(8.26471+x, 12.6701+y)));
+	segs.push_back(Segment2Type(Vector2(8.26471+x, 12.6701+y), Vector2(8.26471+x, 12.66993+y)));
+	segs.push_back(Segment2Type(Vector2(8.26471+x, 12.66993+y), Vector2(8.26471+x, 12.66771+y)));
+	segs.push_back(Segment2Type(Vector2(8.26471+x, 12.66771+y), Vector2(8.37362+x, 12.66771+y)));
+	segs.push_back(Segment2Type(Vector2(8.37362+x, 12.66771+y), Vector2(8.374+x, 12.66771+y)));
+	segs.push_back(Segment2Type(Vector2(8.374+x, 12.66771+y), Vector2(8.38896+x, 12.66774+y)));
+	segs.push_back(Segment2Type(Vector2(8.38896+x, 12.66774+y), Vector2(9.564+x, 12.66971+y)));
+	segs.push_back(Segment2Type(Vector2(9.564+x, 12.66971+y), Vector2(9.60304+x, 12.66971+y)));
 
 
-	segs.push_back(LineSegment2(Vector2(9.60304+x, 12.66971+y) , Vector2(5.78329+x, 12.6701+y)));
+	segs.push_back(Segment2Type(Vector2(9.60304+x, 12.66971+y) , Vector2(5.78329+x, 12.6701+y)));
 
 
 
 	Shrinky shrinky("test_cath.scad");
 	Scalar insetDistance = 0.9 * 0.4 * 2;
 
-	std::vector<LineSegment2> finalInsets;
+	std::vector<Segment2Type> finalInsets;
 
 	try
 	{
@@ -410,7 +410,7 @@ void SlicerSplitTestCase::test_cath()
 	for (unsigned int i=0; i < finalInsets.size(); i++)
 	{
 
-		const LineSegment2 &seg = finalInsets[i];
+		const Segment2Type &seg = finalInsets[i];
 		Scalar l = seg.length();
 		cout << "seg[" << i << "] = " << seg << " l = " << l << endl;
 		CPPUNIT_ASSERT(l > 0);
@@ -420,33 +420,33 @@ void SlicerSplitTestCase::test_cath()
 void SlicerSplitTestCase::test_ultimate_59()
 {
 	cout << endl;
-	std::vector<LineSegment2> segs;
+	std::vector<Segment2Type> segs;
 	//Scalar x = 0;
 	//Scalar y = 0;
 
-	segs.push_back(LineSegment2(Vector2(22.0, 18.86667), Vector2(22.0, 21.65)));
-	segs.push_back(LineSegment2(Vector2(22.0, 21.65), Vector2(22.0, 30.0)));
-	segs.push_back(LineSegment2(Vector2(22.0, 30.0), Vector2(23.503, 30.0)));
-	segs.push_back(LineSegment2(Vector2(23.503, 30.0), Vector2(25.0, 30.0)));
-	segs.push_back(LineSegment2(Vector2(25.0, 30.0), Vector2(25.0, 22.24355)));
-	segs.push_back(LineSegment2(Vector2(25.0, 22.24355), Vector2(25.0, 21.4125)));
-	segs.push_back(LineSegment2(Vector2(25.0, 21.4125), Vector2(25.0, 18.55)));
-	segs.push_back(LineSegment2(Vector2(25.0, 18.55), Vector2(25.0, 17.176)));
-	segs.push_back(LineSegment2(Vector2(25.0, 17.176), Vector2(25.0, 11.78409)));
-	segs.push_back(LineSegment2(Vector2(25.0, 11.78409), Vector2(25.0, 8.14091)));
-	segs.push_back(LineSegment2(Vector2(25.0, 8.14091), Vector2(25.0, 4.68947)));
-	segs.push_back(LineSegment2(Vector2(25.0, 4.68947), Vector2(25.0, 0.47105)));
-	segs.push_back(LineSegment2(Vector2(25.0, 0.47105), Vector2(25.0, -5.0)));
-	segs.push_back(LineSegment2(Vector2(25.0, -5.0), Vector2(24.97, -5.0)));
-	segs.push_back(LineSegment2(Vector2(24.97, -5.0), Vector2(22.0, -5.0)));
-	segs.push_back(LineSegment2(Vector2(22.0, -5.0), Vector2(22.0, 0.775)));
-	segs.push_back(LineSegment2(Vector2(22.0, 0.775), Vector2(22.0, 4.95)));
-	segs.push_back(LineSegment2(Vector2(22.0, 4.95), Vector2(22.0, 12.10714)));
-	segs.push_back(LineSegment2(Vector2(22.0, 12.10714), Vector2(22.0, 14.34375)));
-	segs.push_back(LineSegment2(Vector2(22.0, 14.34375), Vector2(22.0, 17.475)));
-	segs.push_back(LineSegment2(Vector2(22.0, 17.475), Vector2(22.0, 18.86667)));
+	segs.push_back(Segment2Type(Vector2(22.0, 18.86667), Vector2(22.0, 21.65)));
+	segs.push_back(Segment2Type(Vector2(22.0, 21.65), Vector2(22.0, 30.0)));
+	segs.push_back(Segment2Type(Vector2(22.0, 30.0), Vector2(23.503, 30.0)));
+	segs.push_back(Segment2Type(Vector2(23.503, 30.0), Vector2(25.0, 30.0)));
+	segs.push_back(Segment2Type(Vector2(25.0, 30.0), Vector2(25.0, 22.24355)));
+	segs.push_back(Segment2Type(Vector2(25.0, 22.24355), Vector2(25.0, 21.4125)));
+	segs.push_back(Segment2Type(Vector2(25.0, 21.4125), Vector2(25.0, 18.55)));
+	segs.push_back(Segment2Type(Vector2(25.0, 18.55), Vector2(25.0, 17.176)));
+	segs.push_back(Segment2Type(Vector2(25.0, 17.176), Vector2(25.0, 11.78409)));
+	segs.push_back(Segment2Type(Vector2(25.0, 11.78409), Vector2(25.0, 8.14091)));
+	segs.push_back(Segment2Type(Vector2(25.0, 8.14091), Vector2(25.0, 4.68947)));
+	segs.push_back(Segment2Type(Vector2(25.0, 4.68947), Vector2(25.0, 0.47105)));
+	segs.push_back(Segment2Type(Vector2(25.0, 0.47105), Vector2(25.0, -5.0)));
+	segs.push_back(Segment2Type(Vector2(25.0, -5.0), Vector2(24.97, -5.0)));
+	segs.push_back(Segment2Type(Vector2(24.97, -5.0), Vector2(22.0, -5.0)));
+	segs.push_back(Segment2Type(Vector2(22.0, -5.0), Vector2(22.0, 0.775)));
+	segs.push_back(Segment2Type(Vector2(22.0, 0.775), Vector2(22.0, 4.95)));
+	segs.push_back(Segment2Type(Vector2(22.0, 4.95), Vector2(22.0, 12.10714)));
+	segs.push_back(Segment2Type(Vector2(22.0, 12.10714), Vector2(22.0, 14.34375)));
+	segs.push_back(Segment2Type(Vector2(22.0, 14.34375), Vector2(22.0, 17.475)));
+	segs.push_back(Segment2Type(Vector2(22.0, 17.475), Vector2(22.0, 18.86667)));
 
-	std::vector<LineSegment2> segs2;
+	std::vector<Segment2Type> segs2;
 	clip(segs, 1, 10, segs2);
 
 	string output = outputDir + "test_ultimate_59.scad";
@@ -454,7 +454,7 @@ void SlicerSplitTestCase::test_ultimate_59()
 	Shrinky shrinky(output.c_str());
 	Scalar insetDistance = 0.9 * 0.4 * 2;
 
-	std::vector<LineSegment2> finalInsets;
+	std::vector<Segment2Type> finalInsets;
 
 	try
 	{
@@ -468,7 +468,7 @@ void SlicerSplitTestCase::test_ultimate_59()
 	cout << "TEST done... verifying" << endl;
 	for (unsigned int i=0; i < finalInsets.size(); i++)
 	{
-		const LineSegment2 &seg = finalInsets[i];
+		const Segment2Type &seg = finalInsets[i];
 		Scalar l = seg.length();
 		cout << "seg[" << i << "] = " << seg << " l = " << l << endl;
 		CPPUNIT_ASSERT(l > 0);

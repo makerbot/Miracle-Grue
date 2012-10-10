@@ -74,7 +74,7 @@ private:
     typedef std::set<link*, link_undirected_comparator> LinkSet;
     typedef std::set<node*> NodeSet;
     typedef std::map<Point2Type, node*, basic_axisfunctor<> > NodePositionMap;
-    typedef std::vector<libthing::LineSegment2> BoundaryListType;
+    typedef std::vector<Segment2Type> BoundaryListType;
 
 
     void appendMove(link* l, LabeledOpenPaths& labeledpaths);
@@ -85,7 +85,7 @@ private:
     void tryMarkEntry(node* n);
     void pruneEntries();
 
-    bool crossesBoundaries(const libthing::LineSegment2& seg);
+    bool crossesBoundaries(const Segment2Type& seg);
     void connectEntry(node* n, std::list<nodePair>& entries);
     void makeOnewayConnections(node* fromNode,
             std::list<nodePair>& connections,

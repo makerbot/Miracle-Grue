@@ -25,12 +25,12 @@ using namespace libthing;
 #include "loop_path.h"
 
 
-void mgl::segments2polygon(const std::vector<LineSegment2> & segments, mgl::Polygon &loop)
+void mgl::segments2polygon(const std::vector<Segment2Type> & segments, mgl::Polygon &loop)
 {
 
     loop.reserve(segments.size());
     for(size_t j = 0;j < segments.size();j++){
-        const LineSegment2 & line = segments[j];
+        const Segment2Type & line = segments[j];
         Vector2 p(line.a);
         loop.push_back(p);
         if(j == segments.size() - 1){
@@ -49,7 +49,7 @@ void mgl::createPolysFromloopSegments(const SegmentTable &segmentTable,
 	size_t count = segmentTable.size();
 	for(size_t i=0; i < count; i++)
 	{
-		const std::vector<LineSegment2> &segments = segmentTable[count-1 - i];
+		const std::vector<Segment2Type> &segments = segmentTable[count-1 - i];
 		loops.push_back(Polygon());
 		Polygon &loop = loops[loops.size()-1];
 	    segments2polygon(segments, loop);
@@ -67,7 +67,7 @@ void mgl::rotateLoops(LoopList &loops, Scalar angle) {
 	}
 }
 
-void mgl::rotateLoops(std::vector<std::vector<LineSegment2> > &loops, Scalar angle)
+void mgl::rotateLoops(std::vector<std::vector<Segment2Type> > &loops, Scalar angle)
 {
 	for(size_t i=0; i < loops.size(); i++)
 	{
@@ -75,7 +75,7 @@ void mgl::rotateLoops(std::vector<std::vector<LineSegment2> > &loops, Scalar ang
 	}
 }
 
-void mgl::rotateSegments(std::vector<LineSegment2> &segments, Scalar angle)
+void mgl::rotateSegments(std::vector<Segment2Type> &segments, Scalar angle)
 {
 	for(size_t i=0; i < segments.size(); i++)
 	{
@@ -111,7 +111,7 @@ bool mgl::segmentSegmentIntersection(Scalar p0_x, Scalar p0_y,
     return false; // No collision
 }
 
-bool mgl::segmentSegmentIntersection(const LineSegment2 &s0, const LineSegment2 &s1, Vector2 &p)
+bool mgl::segmentSegmentIntersection(const Segment2Type &s0, const Segment2Type &s1, Vector2 &p)
 {
 
 	bool s;
@@ -126,7 +126,7 @@ bool mgl::segmentSegmentIntersection(const LineSegment2 &s0, const LineSegment2 
 void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 		const std::vector<Triangle3> &allTriangles,
 		Scalar z,
-		std::vector<LineSegment2> &segments)
+		std::vector<Segment2Type> &segments)
 {
     size_t triangleCount = trianglesForSlice.size();
     segments.reserve(triangleCount);
@@ -139,7 +139,7 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
         // bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
         bool cut = triangle.cut(z, a, b);
         if(cut){
-        	LineSegment2 s;
+        	Segment2Type s;
             s.a.x = a.x;
             s.a.y = a.y;
             s.b.x = b.x;
@@ -377,15 +377,15 @@ bool mgl::sliceTriangle(const Point3Type& vertex1,
 // given a point, finds the LineSegment2 that starts the closest from that point
 // and return the distance. Also, the iterator to the closest LineSegment2 is "returned"
 Scalar findClosestLineSegment2(const Vector2& endOfPreviousLineSegment2,
-						vector<LineSegment2>::iterator startIt,
-						vector<LineSegment2>::iterator endIt,
-						vector<LineSegment2>::iterator &bestSegmentIt ) // "returned here"
+						vector<Segment2Type>::iterator startIt,
+						vector<Segment2Type>::iterator endIt,
+						vector<Segment2Type>::iterator &bestSegmentIt ) // "returned here"
 {
 	bestSegmentIt = endIt; 	// just in case, we'll check for this on the caller side
 	Scalar minDist = 1e100;
 
 	Point3Type end(endOfPreviousLineSegment2.x,endOfPreviousLineSegment2.y, 0);
-	vector<LineSegment2>::iterator it = startIt;
+	vector<Segment2Type>::iterator it = startIt;
 	while(it != endIt)
 	{
 		Point3Type start(it->a.x, it->a.y, 0);
@@ -404,9 +404,9 @@ Scalar findClosestLineSegment2(const Vector2& endOfPreviousLineSegment2,
 
 
 
-void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
+void mgl::loopsAndHoleOgy(std::vector<Segment2Type> &segments,
 		Scalar tol,
-		std::vector< std::vector<LineSegment2> > &loops)
+		std::vector< std::vector<Segment2Type> > &loops)
 {
 	// Lets sort this mess out so we can extrude in a continuous line of shiny contour
 	// Nota: from their normals (int their previous life as 3d triangles), LineSegment2 know their beginings from their endings
@@ -416,11 +416,11 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 
 	distances.push_back(0); // this value is not used, it represents the distance between the
 							// first LineSegment2 and the one before (and there is no LineSegment2 before)
-	for(vector<LineSegment2>::iterator i = segments.begin(); i != segments.end(); i++)
+	for(vector<Segment2Type>::iterator i = segments.begin(); i != segments.end(); i++)
 	{
 		Vector2 &startingPoint = i->b;
-		vector<LineSegment2>::iterator startIt = i+1;
-		vector<LineSegment2>::iterator bestSegmentIt;
+		vector<Segment2Type>::iterator startIt = i+1;
+		vector<Segment2Type>::iterator bestSegmentIt;
 		if(startIt != segments.end())
 		{
 			Scalar distance = findClosestLineSegment2(startingPoint, startIt, segments.end(), bestSegmentIt);
@@ -439,12 +439,12 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 
 
 	vector<Scalar>::iterator hopIt = distances.begin();
-	vector<LineSegment2>::iterator i = segments.begin();
+	vector<Segment2Type>::iterator i = segments.begin();
 	while(i != segments.end())
 	{
 		// lets make a loop... we'll call it loop
-		loops.push_back(vector<LineSegment2>());
-		vector<LineSegment2> &loop = loops[loops.size()-1];
+		loops.push_back(vector<Segment2Type>());
+		vector<Segment2Type> &loop = loops[loops.size()-1];
 
 		loop.push_back(*i);
 
@@ -482,7 +482,7 @@ void mgl::loopsAndHoleOgy(std::vector<LineSegment2> &segments,
 	// sanity check
     for(unsigned int i=0; i < loops.size(); ++i)
     {
-    	const std::vector<LineSegment2 > &loop = loops[i];
+    	const std::vector<Segment2Type > &loop = loops[i];
     	if (loop.size() < 2)
     	{
             Log::info() << "WARNING: loop " << i << " segment count: " << loop.size() << endl;
@@ -538,7 +538,7 @@ void mgl::translatePolygon(Polygon &polygon, Vector2 p)
 	}
 }
 
-void mgl::translateSegments(std::vector<LineSegment2> &segments, Vector2 p)
+void mgl::translateSegments(std::vector<Segment2Type> &segments, Vector2 p)
 {
 	for(size_t i=0; i < segments.size(); i++)
 	{

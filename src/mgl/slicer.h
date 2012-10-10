@@ -80,7 +80,7 @@ public:
 			libthing::SegmentTable & segments);
 
 	/// TBD
-	void loopsFromLineSegments(const std::vector<libthing::LineSegment2>&
+	void loopsFromLineSegments(const std::vector<Segment2Type>&
 			unorderedSegments,
 			Scalar tol,
 			libthing::SegmentTable & segments);

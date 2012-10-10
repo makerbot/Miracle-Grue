@@ -51,7 +51,7 @@ void LoopPathTestCase::testOpenPathBasic() {
 	CPPUNIT_ASSERT_EQUAL(first.x, 6.0);
 	CPPUNIT_ASSERT_EQUAL(first.y, 5.0);
 
-	LineSegment2 seg = path.segmentAfterPoint(i);
+	Segment2Type seg = path.segmentAfterPoint(i);
 	CPPUNIT_ASSERT_EQUAL(seg.length(), 1.0);
 
 	OpenPath::entry_iterator entry = path.entryBegin();
@@ -129,9 +129,9 @@ void LoopPathTestCase::testLoopBasic() {
 	CPPUNIT_ASSERT_EQUAL(fourth.y, 7.0);
 	
 	cout << "Testing segmentAfterPoint" << endl;
-	LineSegment2 seg = loop.segmentAfterPoint(i);
+	Segment2Type seg = loop.segmentAfterPoint(i);
 	CPPUNIT_ASSERT_EQUAL(seg.squaredLength(), 
-			LineSegment2(Vector2(6,7), Vector2(2,3)).squaredLength());
+			Segment2Type(Vector2(6,7), Vector2(2,3)).squaredLength());
 
 	cout << "Testing entry points" << endl;
 	int count = 0;
@@ -437,26 +437,26 @@ void LoopPathTestCase::testConstLoopPath() {
 void LoopPathTestCase::testFiniteSegment() {
 	Loop loop;
 	Loop::cw_iterator iter = loop.clockwiseEnd();
-	std::list<LineSegment2> lines;
+	std::list<Segment2Type> lines;
 	for(Scalar x = 1.0; x < 10.0; ++x){
 		Point2Type current(x,x);
 		iter = loop.insertPointAfter(current, iter);
 	}
-	lines.push_back(LineSegment2(Point2Type(2,2), Point2Type(3,3)));
-	lines.push_back(LineSegment2(Point2Type(3,3), Point2Type(4,4)));
-	lines.push_back(LineSegment2(Point2Type(4,4), Point2Type(5,5)));
-	lines.push_back(LineSegment2(Point2Type(5,5), Point2Type(6,6)));
-	lines.push_back(LineSegment2(Point2Type(6,6), Point2Type(7,7)));
-	lines.push_back(LineSegment2(Point2Type(7,7), Point2Type(8,8)));
-	lines.push_back(LineSegment2(Point2Type(8,8), Point2Type(9,9)));
-	lines.push_back(LineSegment2(Point2Type(9,9), Point2Type(1,1)));
-	lines.push_back(LineSegment2(Point2Type(1,1), Point2Type(2,2)));
-	std::list<LineSegment2>::iterator liter;
+	lines.push_back(Segment2Type(Point2Type(2,2), Point2Type(3,3)));
+	lines.push_back(Segment2Type(Point2Type(3,3), Point2Type(4,4)));
+	lines.push_back(Segment2Type(Point2Type(4,4), Point2Type(5,5)));
+	lines.push_back(Segment2Type(Point2Type(5,5), Point2Type(6,6)));
+	lines.push_back(Segment2Type(Point2Type(6,6), Point2Type(7,7)));
+	lines.push_back(Segment2Type(Point2Type(7,7), Point2Type(8,8)));
+	lines.push_back(Segment2Type(Point2Type(8,8), Point2Type(9,9)));
+	lines.push_back(Segment2Type(Point2Type(9,9), Point2Type(1,1)));
+	lines.push_back(Segment2Type(Point2Type(1,1), Point2Type(2,2)));
+	std::list<Segment2Type>::iterator liter;
 	for(iter = loop.clockwiseFinite(), 
 			liter = lines.begin(); 
 			iter != loop.clockwiseEnd() && liter != lines.end(); 
 			++iter, ++liter) {
-		LineSegment2 line = loop.segmentAfterPoint(iter);
+		Segment2Type line = loop.segmentAfterPoint(iter);
 		//cout << "Point: \t" << *iter << endl;
 		cout << "Actual Line:   \t" << line.a << line.b << endl;
 		cout << "Expected Line: \t" << liter->a << liter->b << endl;
@@ -490,7 +490,7 @@ void LoopPathTestCase::testConvex() {
 	Loop convexLoop = createConvexLoop(looplist);
 	
 	SegmentTable outsetSegs;
-	outsetSegs.push_back(std::vector<LineSegment2>());
+	outsetSegs.push_back(std::vector<Segment2Type>());
 	
 	for(Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite(); 
 			iter != convexLoop.clockwiseEnd(); 
@@ -502,7 +502,7 @@ void LoopPathTestCase::testConvex() {
 	
 	convexLoop = Loop();
 	
-	for(std::vector<LineSegment2>::const_iterator iter = 
+	for(std::vector<Segment2Type>::const_iterator iter = 
 			outsetSegs.back().begin(); 
 			iter != outsetSegs.back().end(); 
 			++iter) {

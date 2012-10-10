@@ -56,7 +56,7 @@ public:
 	void set_coarseness(Scalar c);
 	
 	Scalar segmentVolume(const Extruder &extruder, const Extrusion &extrusion,
-			libthing::LineSegment2 &segment, Scalar h, Scalar w) const;
+			Segment2Type &segment, Scalar h, Scalar w) const;
 
 private:
 	Scalar rapidMoveFeedRateXY;

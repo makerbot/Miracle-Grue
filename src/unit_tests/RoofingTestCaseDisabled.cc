@@ -70,14 +70,14 @@ void dumpGridRanges(const GridRanges &ranges)
 
 void lineSegmentsFromScalarRanges(const std::vector<ScalarRange> &ranges,
 									Scalar y,
-									std::vector<LineSegment2> &gridSegments)
+									std::vector<Segment2Type> &gridSegments)
 {
 	assert(gridSegments.size()==0);
 	gridSegments.reserve(ranges.size());
 	for(size_t i=0; i < ranges.size(); i++)
 	{
 		const ScalarRange &range = ranges[i];
-		gridSegments.push_back(LineSegment2(Vector2(range.min,y), Vector2(range.max,y)));
+		gridSegments.push_back(Segment2Type(Vector2(range.min,y), Vector2(range.max,y)));
 	}
 }
 
@@ -94,7 +94,7 @@ void segmentTableFromRangeTable(const ScalarRangeTable &rangeTable,
 	{
 		Scalar y = yValues[i];
 		const std::vector<ScalarRange> &ranges = rangeTable[i];
-		vector<LineSegment2> &segments = rayTable[i];
+		vector<Segment2Type> &segments = rayTable[i];
 		lineSegmentsFromScalarRanges(ranges, y, segments);
 	}
 }
@@ -123,11 +123,11 @@ void RoofingTestCase::testSimple()
 	cout<<endl;
 
 	SegmentTable outlineLoops;
-	outlineLoops.push_back(vector<LineSegment2>());
+	outlineLoops.push_back(vector<Segment2Type>());
 
-	LineSegment2 s= LineSegment2(Vector2(0,0), Vector2(0,1));
+	Segment2Type s= Segment2Type(Vector2(0,0), Vector2(0,1));
 	outlineLoops[0].push_back(s);
-	outlineLoops[0].push_back(LineSegment2(Vector2(1,0), Vector2(1,1)) );
+	outlineLoops[0].push_back(Segment2Type(Vector2(1,0), Vector2(1,1)) );
 
 	vector<ScalarRange> ranges;
 	Scalar y= 0.5;
@@ -300,7 +300,7 @@ Scalar writeScanLines(ScadDebugFile& fscad,
 	Scalar h = z;
 	for(size_t i=0; i < rayTable.size(); i++)
 	{
-		const std::vector<LineSegment2>& line = rayTable[i];
+		const std::vector<Segment2Type>& line = rayTable[i];
 		h = fscad.writeSegments3(name, implementation, line, h, dz, i);
 	}
 
@@ -334,7 +334,7 @@ void RoofingTestCase::testHoly() // test with a hole in the slice
 	{
 		for(size_t i=0; i < rayTable.size(); i++)
 		{
-			std::vector<LineSegment2>& line = rayTable[i];
+			std::vector<Segment2Type>& line = rayTable[i];
 			// cout << i << ": " << yValues[i] << ") " << line.size() << endl << "\t";
 			for(size_t j=0; j < line.size(); j++)
 			{
@@ -431,7 +431,7 @@ void RoofingTestCase::testGrid()
     fscad.close();
 }
 
-void checkSegment(const LineSegment2& s, Scalar x0, Scalar x1, Scalar y0, Scalar y1)
+void checkSegment(const Segment2Type& s, Scalar x0, Scalar x1, Scalar y0, Scalar y1)
 {
 	Scalar tol= 1e-6;
 	cout << "Check a" << endl;
@@ -969,12 +969,12 @@ void SurfaceUnion(const FlatSurface& surface, const FlatSurface &)
 */
 
 
-void dumpSegments(const char* prefix, const std::vector<LineSegment2> &segments)
+void dumpSegments(const char* prefix, const std::vector<Segment2Type> &segments)
 {
 	cout << prefix << "segments = [ // " << segments.size() << " segments" << endl;
     for(size_t id = 0; id < segments.size(); id++)
     {
-    	LineSegment2 seg = segments[id];
+    	Segment2Type seg = segments[id];
     	cout  << " [[" << seg.a << ", " << seg.b << "]], // " << id << endl;
     }
     cout << prefix << "]" << endl;

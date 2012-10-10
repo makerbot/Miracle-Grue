@@ -213,7 +213,7 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k) {
 /**
  * @returns true if the passed line segments are colinear within the tolerance tol
  */
-bool collinear(const LineSegment2 &prev, const LineSegment2 &current,
+bool collinear(const Segment2Type &prev, const Segment2Type &current,
 		Scalar tol, Vector2 &mid) {
 
 	Scalar x1 = prev.a[0];

@@ -132,7 +132,7 @@ void castRaysOnSliceAlongY(const std::list<Loop>& outlineLoops,
 		Scalar min,
 		Scalar max,
 		ScalarRangeTable &rangeTable);
-bool crossesOutline(const libthing::LineSegment2 &seg,
+bool crossesOutline(const Segment2Type &seg,
 		const libthing::SegmentTable &outline);
 
 

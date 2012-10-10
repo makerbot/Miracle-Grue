@@ -242,8 +242,8 @@ Scalar Loop::curl() const {
 		const_ccw_iterator curCcw(curIter);
 		const_ccw_iterator nextCcw(curIter);
 		++nextCcw;
-		libthing::LineSegment2 curSegment = segmentAfterPoint(curCcw);
-		libthing::LineSegment2 nextSegment = segmentAfterPoint(nextCcw);
+		Segment2Type curSegment = segmentAfterPoint(curCcw);
+		Segment2Type nextSegment = segmentAfterPoint(nextCcw);
 		Point2Type curRel = curSegment.b - curSegment.a;
 		Point2Type nextRel = nextSegment.b - nextSegment.a;
 		accum += curRel.crossProduct(nextRel);

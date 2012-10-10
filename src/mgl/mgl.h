@@ -46,6 +46,7 @@ std::string getMiracleGrueVersionStr();
 
 typedef libthing::Vector2 Point2Type;
 typedef libthing::Vector3 Point3Type;
+typedef libthing::LineSegment2 Segment2Type;
 
 typedef std::vector<Point2Type> PointList;
 typedef std::vector<Point2Type> VectorList;
@@ -68,22 +69,22 @@ enum axis_e {
 
 
 // Bring over from mgl.cc
-Scalar AreaSign(const libthing::Vector2& a,
-		const libthing::Vector2& b,
-		const libthing::Vector2& c);
-bool convexVertex(const libthing::Vector2& i,
-		const libthing::Vector2& j,
-		const libthing::Vector2& k);
+Scalar AreaSign(const Point2Type& a,
+		const Point2Type& b,
+		const Point2Type& c);
+bool convexVertex(const Point2Type& i,
+		const Point2Type& j,
+		const Point2Type& k);
 
 std::ostream& operator <<(std::ostream& os,
-		const libthing::Vector2& pt);
+		const Point2Type& pt);
 std::ostream& operator <<(std::ostream& os,
 		const Point3Type& v);
 //std::ostream& operator<<(std::ostream& os, libthing::LineSegment2 const& line);
 
-bool collinear(const libthing::LineSegment2 &prev,
-		const libthing::LineSegment2 &current,
-		Scalar tol, libthing::Vector2 &mid);
+bool collinear(const Segment2Type &prev,
+		const Segment2Type &current,
+		Scalar tol, Point2Type &mid);
 
 class LayerException : public Exception {
 public:
@@ -157,9 +158,9 @@ private:
 };
 
 /// A polygon is an arbitarty collection of 2d points
-typedef std::vector<libthing::Vector2> Polygon;
+typedef std::vector<Point2Type> Polygon;
 
-/// Verifies each libthing::Vector2in the passed Polygon are in tolerance
+/// Verifies each Point2Typein the passed Polygon are in tolerance
 // tol
 bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol);
 

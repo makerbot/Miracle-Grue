@@ -192,7 +192,7 @@ bool Slicy::slice(const TriangleIndices & trianglesForSlice,
 	size_t skipCount = 1;
 
 	Scalar z = slice.getZHeight();
-	std::vector<LineSegment2> segments;
+	std::vector<Segment2Type> segments;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	// what we are left with is a series of segments (outline segments... triangle has beens)
 

@@ -127,7 +127,7 @@ public:
 	
 	static Scalar DISTANCE_THRESHOLD;
 
-	typedef std::list<libthing::LineSegment2> BoundaryList;
+	typedef std::list<Segment2Type> BoundaryList;
 	typedef std::list<LabeledOpenPath> LabeledPathList;
 	typedef std::list<LabeledLoop> LabeledLoopList;
 	
@@ -156,7 +156,7 @@ private:
 			OpenPath::entry_iterator& entryIter);
 	bool closest(const Point2Type& point, LabeledOpenPath& result);
 	void link(abstract_optimizer::LabeledOpenPaths& labeledpaths);
-	bool crossesBoundaries(const libthing::LineSegment2& seg);
+	bool crossesBoundaries(const Segment2Type& seg);
 	BoundaryList boundaries;
 	LabeledLoopList myLoops;
 	LabeledPathList myPaths;
