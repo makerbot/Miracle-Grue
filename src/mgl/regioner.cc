@@ -243,8 +243,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		LayerMeasure& layermeasure,
 		const char* scadFile) {
 
-	libthing::SegmentTable sliceOutlinesOld;
-	libthing::Insets sliceInsetsOld;
+	SegmentTable sliceOutlinesOld;
+	Insets sliceInsetsOld;
 
 	/*
 	 This function makes use of inshelligence, which indirectly makes use of 
@@ -280,13 +280,13 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 			sliceInsetsOld);
 
 	//Recover loops from the resulting SegmentTable
-	for (libthing::Insets::const_iterator iter = sliceInsetsOld.begin();
+	for (Insets::const_iterator iter = sliceInsetsOld.begin();
 			iter != sliceInsetsOld.end();
 			++iter) {
 		sliceInsets.push_back(LoopList());
 		LoopList& currentLoopList = sliceInsets.back();
 		//Convert each group of insets into a list of Loops
-		for (libthing::SegmentTable::const_iterator setIter = iter->begin();
+		for (SegmentTable::const_iterator setIter = iter->begin();
 				setIter != iter->end();
 				++setIter) {
 			currentLoopList.push_back(Loop());
@@ -308,8 +308,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	}
 }
 
-//void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
-//		std::vector<libthing::Insets> & insets) {
+//void Regioner::insets(const std::vector<SegmentTable> & outlinesSegments,
+//		std::vector<Insets> & insets) {
 //
 //	unsigned int sliceCount = outlinesSegments.size();
 //	initProgress("insets", sliceCount);
@@ -318,8 +318,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //	// slice id must be adjusted for
 //	for (size_t i = 0; i < sliceCount; i++) {
 //		tick();
-//		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
-//		libthing::Insets & sliceInsets = insets[i];
+//		const SegmentTable & sliceOutlines = outlinesSegments[i];
+//		Insets & sliceInsets = insets[i];
 //
 //		insetsForSlice(sliceOutlines, sliceInsets);
 //	}

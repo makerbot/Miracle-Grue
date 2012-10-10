@@ -112,20 +112,20 @@ public:
 				  bool doFeed);
 
 public:
-	void squirt(std::ostream &ss, const libthing::Vector2 &lineStart,
+	void squirt(std::ostream &ss, const Point2Type &lineStart,
 				const Extruder &extruder, const Extrusion &extrusion);
-	void snort(std::ostream &ss, const libthing::Vector2 &lineEnd,
+	void snort(std::ostream &ss, const Point2Type &lineEnd,
 			   const Extruder &extruder, const Extrusion &extrusion);
 	/// Squirt at the current location
 	void squirt(std::ostream& ss, const Extruder& extruder, 
 			const Extrusion& extrusion){
-		squirt(ss, libthing::Vector2(get_x(), get_y()), 
+		squirt(ss, Point2Type(get_x(), get_y()), 
 				extruder, extrusion);
 	}
 	/// Snort at the current location
 	void snort(std::ostream& ss, const Extruder& extruder,
 			const Extrusion& extrusion){
-		snort(ss, libthing::Vector2(get_x(), get_y()), 
+		snort(ss, Point2Type(get_x(), get_y()), 
 				extruder, extrusion);
 	}
 

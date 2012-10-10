@@ -304,7 +304,7 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
             cumulativeError += deviation;
 
             addPoint = cumulativeError > patherCfg.coarseness;
-        } catch(libthing::Exception mixup) {
+        } catch(GeometryException mixup) {
             //we expect this to be something like a bad normalization
             Log::severe() << "ERROR: " << mixup.what() << std::endl;
         }

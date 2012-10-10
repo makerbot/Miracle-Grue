@@ -38,7 +38,7 @@ class Shrinky
 	int color;
 	unsigned int counter;
 
-    void writeScadBisectors(const std::vector<libthing::Vector2> & bisectors,
+    void writeScadBisectors(const std::vector<Point2Type> & bisectors,
     						const std::vector<Segment2Type> & originalSegments);
 
     void writeScadSegments(	const char* segNames,
@@ -83,11 +83,11 @@ private:
 /// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
 /// and nbOffShels insets)
 ///
-void createShellsForSliceUsingShrinky(const libthing::SegmentVector & 	outlinesSegments,
+void createShellsForSliceUsingShrinky(const SegmentVector & 	outlinesSegments,
 		const std::vector<Scalar> &insetDistances,
 		unsigned int sliceId,
 		const char *scadFile,
-		std::vector<libthing::SegmentVector> & insetsForLoops);
+		std::vector<SegmentVector> & insetsForLoops);
 
 bool attachSegments(Segment2Type &first, 
 		Segment2Type &second, Scalar elongation);

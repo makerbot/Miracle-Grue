@@ -16,7 +16,7 @@ using namespace std;
 
 
 #include "log.h"
-#include <libthing/Scalar.h>
+#include "mgl.h"
 
 index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
 								const Point3Type &coords,

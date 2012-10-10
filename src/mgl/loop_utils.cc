@@ -237,7 +237,7 @@ SMOOTH_RESULT smoothPoints(const Point2Type& lp1,
     Point2Type unit;
     try{
         unit = ldelta.unit();
-    } catch (const libthing::Exception& e) {
+    } catch (const GeometryException& e) {
         output = cp;
         return SMOOTH_ADD;
     }

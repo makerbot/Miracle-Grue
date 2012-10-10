@@ -30,7 +30,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 				layerloops.layerMeasure.sliceIndexToHeight(sliceId), 
 				layerloops.layerMeasure.getLayerH(), 
                 layerloops.layerMeasure.getLayerWidthRatio());
-		libthing::SegmentTable segments;
+		SegmentTable segments;
 		/*
 		 Function outlinesForSlice is designed to use segmentTable rather than
 		 the new Loop class. It makes use of clipper.cc, which was machine 
@@ -41,7 +41,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 		 */
 		outlinesForSlice(seg, sliceId, segments);
 		//convert all SegmentTables into loops
-		for(libthing::SegmentTable::iterator it = segments.begin();
+		for(SegmentTable::iterator it = segments.begin();
 				it != segments.end();
 				++it){
 			Loop currentLoop;
@@ -79,7 +79,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 
 
 
-void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::SegmentTable & segments)
+void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, SegmentTable & segments)
 {
 	Scalar tol = 1e-6;
 	const LayerMeasure & layerMeasure = seg.readLayerMeasure();
@@ -99,7 +99,7 @@ void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::Se
 
 
 
-void Slicer::loopsFromLineSegments(const std::vector<Segment2Type>& unorderedSegments, Scalar tol, libthing::SegmentTable & segments)
+void Slicer::loopsFromLineSegments(const std::vector<Segment2Type>& unorderedSegments, Scalar tol, SegmentTable & segments)
 {
 	// dumpSegments("unordered_", unorderedSegments);
 	// cout << segments << endl;

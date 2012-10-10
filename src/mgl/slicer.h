@@ -52,7 +52,7 @@ struct Tomograph {
 	Tomograph() : layerMeasure(0, 0, 1) {
 	}
 
-	std::vector<libthing::SegmentTable> outlines;
+	std::vector<SegmentTable> outlines;
 	Grid grid;
 	LayerMeasure layerMeasure;
 };
@@ -77,13 +77,13 @@ public:
 	/// TBD
 	void outlinesForSlice(const Segmenter& seg,
 			size_t sliceId,
-			libthing::SegmentTable & segments);
+			SegmentTable & segments);
 
 	/// TBD
 	void loopsFromLineSegments(const std::vector<Segment2Type>&
 			unorderedSegments,
 			Scalar tol,
-			libthing::SegmentTable & segments);
+			SegmentTable & segments);
 };
 
 }

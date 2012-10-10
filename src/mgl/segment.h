@@ -29,8 +29,8 @@ namespace mgl
 //
 // Converts vectors of segments into polygons.
 // The ordering is reversed... the last vector of segments is the first polygon
-// This function fills a a list of poygon (table of Vector2) from a table of segments
-void createPolysFromloopSegments(const libthing::SegmentVector &SegmentVector, Polygons& loops);
+// This function fills a a list of poygon (table of Point2Type) from a table of segments
+void createPolysFromloopSegments(const SegmentVector &SegmentVector, Polygons& loops);
 
 // segments are OK, but polys are better for paths (no repeat point)
 void segments2polygon(const std::vector<Segment2Type> & segments, mgl::Polygon &loop);
@@ -47,17 +47,17 @@ void loopsAndHoleOgy(std::vector<Segment2Type> &segments,
 					std::vector< std::vector<Segment2Type> > &loops);
 
 // 2D translation
-void translateLoops(libthing::SegmentVector &loops, libthing::Vector2 p);
+void translateLoops(SegmentVector &loops, Point2Type p);
 
 // moves Segments by a position
-void translateSegments(std::vector<Segment2Type> &segments, libthing::Vector2 p);
+void translateSegments(std::vector<Segment2Type> &segments, Point2Type p);
 
-void translatePolygon(Polygon &polygon, libthing::Vector2 p);
-void translatePolygons(Polygons &polygons, libthing::Vector2 p);
+void translatePolygon(Polygon &polygon, Point2Type p);
+void translatePolygons(Polygons &polygons, Point2Type p);
 
 void rotateLoops(LoopList& loops, Scalar angle);
-void translateLoops(LoopList& loops, libthing::Vector2 p);
-void translateOpenPaths(OpenPathList &paths, libthing::Vector2 p);
+void translateLoops(LoopList& loops, Point2Type p);
+void translateOpenPaths(OpenPathList &paths, Point2Type p);
 void rotatePolygon(Polygon& polygon, Scalar angle);
 void rotatePolygons(Polygons& polygons, Scalar angle);
 
@@ -66,7 +66,7 @@ void rotateSegments(std::vector<Segment2Type> &segments, Scalar angle);
 
 
 // More important than meets the eyes: given 2 segments, where (if any) is the intersection?
-bool segmentSegmentIntersection(const Segment2Type &a, const Segment2Type &b, libthing::Vector2 &p);
+bool segmentSegmentIntersection(const Segment2Type &a, const Segment2Type &b, Point2Type &p);
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
 

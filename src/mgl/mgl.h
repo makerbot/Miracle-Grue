@@ -48,6 +48,7 @@ typedef libthing::Vector2 Point2Type;
 typedef libthing::Vector3 Point3Type;
 typedef libthing::LineSegment2 Segment2Type;
 typedef libthing::Triangle3 Triangle3Type;
+typedef libthing::Exception GeometryException;
 
 typedef std::vector<Point2Type> PointList;
 typedef std::vector<Point2Type> VectorList;

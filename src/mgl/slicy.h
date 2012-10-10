@@ -50,8 +50,8 @@ class Slicy {
 
 	// state
 	Scalar layerH;
-	libthing::Vector2 toRotationCenter;
-	libthing::Vector2 backToOrigin;
+	Point2Type toRotationCenter;
+	Point2Type backToOrigin;
 	Limits tubularLimits;
 
 
