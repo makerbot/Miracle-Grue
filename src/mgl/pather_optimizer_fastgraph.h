@@ -11,6 +11,7 @@
 #include "pather_optimizer.h"
 #include "simple_topology.h"
 #include "basic_boxlist.h"
+#include "intersection_index.h"
 #include "Exception.h"
 
 namespace mgl {
@@ -48,21 +49,13 @@ private:
     };
     class NodeData {
     public:
-        NodeData(PointType position = PointType(), 
-                int priority = 0, 
-                bool entry = false) 
+        NodeData(PointType position, 
+                int priority, 
+                bool entry) 
                 : m_position(position), 
                 m_priority(priority), 
                 m_isentry(entry) {}
-        NodeData(const NodeData& other)
-                : m_position(other.m_position), 
-                m_priority(other.m_priority), 
-                m_isentry(other.m_isentry) {}
-        static NodeData create(PointType position = PointType(), 
-                int priority = 0, 
-                bool entry = false) {
-            return NodeData(position, priority, entry);
-        }
+        NodeData() : m_priority(0), m_isentry(false) {}
         const PointType& getPosition() const { return m_position; }
         int getPriority() const { return m_priority; }
         bool isEntry() const { return m_isentry; }
@@ -71,10 +64,12 @@ private:
         int m_priority;
         bool m_isentry;
     };
+    
     typedef basic_boxlist<libthing::LineSegment2> boundary_container;
     typedef topo::simple_graph<NodeData, Cost> graph_type;
     typedef graph_type::node node;
     typedef graph_type::node_index node_index;
+    typedef std::pair<node_index, Scalar> probe_link_type;
     
     typedef graph_type::forward_node_iterator node_iterator;
     
@@ -102,6 +97,27 @@ private:
     
     entry_iterator entryBegin();
     entry_iterator entryEnd();
+    
+    class probeCompare {
+    public:
+        probeCompare(node_index from, graph_type& basis) 
+                : m_from(from), m_graph(basis) {}
+        bool operator ()(const probe_link_type& lhs, 
+                const probe_link_type& rhs) {
+            return lhs.second < rhs.second;
+        }
+    private:
+        node_index m_from;
+        graph_type& m_graph;
+    };
+    
+    node::forward_link_iterator bestLink(node& from); //can return node::forwardEnd()
+    void buildLinks(node& from);
+    
+    static bool compareConnections(const node::connection& lhs, 
+            const node::connection& rhs);
+    static bool compareNodes(const node& lhs, const node& rhs);
+    bool crossesBounds(const libthing::LineSegment2& line);
     
     boundary_container boundaries;
     graph_type graph;

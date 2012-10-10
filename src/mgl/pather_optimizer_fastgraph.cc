@@ -4,9 +4,6 @@ namespace mgl {
 
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
-    if(path.size() < 2) {
-        throw GraphException("Attempted to insert degenerate path in fastgraph!");
-    }
     node_index last = -1;
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
@@ -20,9 +17,9 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         if(next != path.end()) {
             OpenPath::const_iterator future = next;
             ++future;
-            node& lastNode = graph[last];
             node& curNode = graph.createNode(NodeData(*next, 
                     label.myValue, future==path.end()));
+            node& lastNode = graph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -35,12 +32,11 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
             last = curNode.getIndex();
         }
     }
+//    std::cout << "Path Size: " << path.size() << std::endl;
+//    std::cout << "Graph Nodes: " << graph.count() << std::endl;
 }
 void pather_optimizer_fastgraph::addPath(const Loop& loop, 
         const PathLabel& label) {
-    if(loop.size() < 3) {
-        throw GraphException("Attempted to insert degenerate Loop in fastgraph!");
-    }
     node_index last = -1;
     node_index first = -1;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
@@ -54,9 +50,9 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             first = last;
         }
         if(next != loop.clockwiseFinite()) {
+            NodeData curNodeData(*next, label.myValue, true);
+            node& curNode = graph.createNode(curNodeData);
             node& lastNode = graph[last];
-            node& curNode = graph.createNode(NodeData(*next, 
-                    label.myValue, true));
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -80,6 +76,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     Cost backCost(label, distance, normal * -1.0);
     curNode.connect(lastNode, backCost);
     lastNode.connect(curNode, frontCost);
+//    std::cout << "Path Size: " << loop.size() << std::endl;
+//    std::cout << "Graph Nodes: " << graph.count() << std::endl;
 }
 void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     for(OpenPath::const_iterator iter = path.fromStart(); 

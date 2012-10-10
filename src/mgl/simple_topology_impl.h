@@ -23,22 +23,26 @@ void SG_NODE::disconnect(const node& other) {
 SG_TEMPLATE
 typename SG_NODE::forward_link_iterator SG_NODE::forwardBegin() {
     return forward_link_iterator(
-            m_parent->nodes[getIndex()].m_forward_links.begin());
+            m_parent->nodes[getIndex()].m_forward_links.begin(), 
+            m_parent);
 }
 SG_TEMPLATE
 typename SG_NODE::forward_link_iterator SG_NODE::forwardEnd() {
     return forward_link_iterator(
-            m_parent->nodes[getIndex()].m_forward_links.end());
+            m_parent->nodes[getIndex()].m_forward_links.end(), 
+            m_parent);
 }
 SG_TEMPLATE
 typename SG_NODE::reverse_link_iterator SG_NODE::reverseBegin() {
     return reverse_link_iterator(
-            m_parent->nodes[getIndex()].m_reverse_links.begin());
+            m_parent->nodes[getIndex()].m_reverse_links.begin(), 
+            m_parent);
 }
 SG_TEMPLATE
 typename SG_NODE::reverse_link_iterator SG_NODE::reverseEnd() {
     return reverse_link_iterator(
-            m_parent->nodes[getIndex()].m_reverse_links.end());
+            m_parent->nodes[getIndex()].m_reverse_links.end(), 
+            m_parent);
 }
 SG_TEMPLATE
 bool SG_NODE::forwardEmpty() const {
@@ -64,8 +68,8 @@ SG_NODE::link_iterator<BASE>
 SG_TEMPLATE template <typename BASE>
 typename SG_NODE::connection 
         SG_NODE::link_iterator<BASE>::operator *() {
-    return connection(&m_parent->nodes[m_base->first].m_node, 
-            &m_parent->costs[m_base->second]);
+    return connection(&(m_parent->nodes[m_base->first].m_node), 
+            &(m_parent->costs[m_base->second]));
 }
 SG_TEMPLATE template <typename BASE>
 bool SG_NODE::link_iterator<BASE>::operator ==(
@@ -100,8 +104,9 @@ void SG_TYPE::disconnect(const node& a, const node& b) {
     }
 }
 SG_TEMPLATE
-typename SG_TYPE::node& SG_TYPE::operator [](node_index i) {
-    return nodes[i].m_node;
+typename SG_NODE& SG_TYPE::operator [](node_index i) {
+    node& retNode = nodes[i].m_node;
+    return retNode;
 }
 SG_TEMPLATE
 typename SG_NODE& SG_TYPE::createNode(const node_data_type& data) {
@@ -115,7 +120,8 @@ typename SG_NODE& SG_TYPE::createNode(const node_data_type& data) {
         nodes.push_back(node(*this, index, data));
     }
     nodes[index].m_valid = true;
-    return nodes[index].m_node;
+    node_info_group& retGroup = nodes[index];
+    return retGroup.m_node;
 }
 SG_TEMPLATE
 void SG_TYPE::destroyNode(node& a) {

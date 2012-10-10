@@ -52,10 +52,13 @@ public:
             connection operator *();
             connection operator ->() { return **this; }
             bool operator ==(const link_iterator& other) const;
+            bool operator !=(const link_iterator& other) const
+                    { return !(*this==other); }
         private:
-            explicit link_iterator(base_iterator base) 
-                    : m_base(base) {}
+            explicit link_iterator(base_iterator base, simple_graph* parent) 
+                    : m_base(base), m_parent(parent) {}
             base_iterator m_base;
+            simple_graph* m_parent;
         };
         
         /* All iterators are forward iterators only. forward and reverse 
@@ -84,6 +87,9 @@ public:
         
         inline size_t getIndex() const { return m_index; }
         
+        bool operator ==(const node& other) { return m_index == other.m_index; }
+        bool operator !=(const node& other) { return !(*this==other); } 
+        
     private:
         
         simple_graph* m_parent;
@@ -101,6 +107,8 @@ public:
     node& createNode(const node_data_type& data = node_data_type());
     void destroyNode(node& a);
     void clear();
+    bool empty() const { return free_nodes.size() >= nodes.size(); }
+    size_t count() const { return nodes.size() - free_nodes.size(); }
     
     class node_info_group {
     public:

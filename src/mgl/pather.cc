@@ -15,6 +15,7 @@
 #include "pather.h"
 #include "limits.h"
 #include "pather_optimizer_graph.h"
+#include "pather_optimizer_fastgraph.h"
 
 namespace mgl {
 using namespace std;
@@ -80,25 +81,23 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				lp_layer.extruders.back();
 		
 		
-		pather_optimizer preoptimizer;
-		pather_optimizer_graph optimizer;
-		//optimizer.linkPaths = false;
+		pather_optimizer_fastgraph optimizer;
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		
-		preoptimizer.addPaths(layerRegions->outlines, 
+		optimizer.addPaths(layerRegions->outlines, 
 				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
-		preoptimizer.addPaths(layerRegions->supportLoops, 
+		optimizer.addPaths(layerRegions->supportLoops, 
 				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
-		preoptimizer.optimize(extruderlayer.outlinePaths);
+		optimizer.optimize(extruderlayer.outlinePaths);
 		
-		preoptimizer.addBoundaries(layerRegions->outlines);	
+		optimizer.addBoundaries(layerRegions->outlines);	
 		
 		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
-			preoptimizer.addPaths(*listIter, 
+			optimizer.addPaths(*listIter, 
 					PathLabel(PathLabel::TYP_INSET, 
 					PathLabel::OWN_MODEL, currentShell));
 			++currentShell;
@@ -129,57 +128,25 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				axis, 
 				supportPaths);
 		
-		preoptimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
+		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_MODEL, 1));
 		
-		preoptimizer.optimize(preoptimized);
+		optimizer.optimize(preoptimized);
 		
-		preoptimizer.clearBoundaries();
-		preoptimizer.clearPaths();
+		optimizer.clearBoundaries();
+		optimizer.clearPaths();
 		
-		preoptimizer.addBoundaries(layerRegions->supportLoops);
+		optimizer.addBoundaries(layerRegions->supportLoops);
 		
-		preoptimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_SUPPORT, 0));
 		
-		preoptimizer.optimize(presupport);
+		optimizer.optimize(presupport);
 		
-		if(patherCfg.doGraphOptimization) {
-			//run graph optimizations
-			std::list<LabeledOpenPath> resultModel;
-			std::list<LabeledOpenPath> resultSupport;
-                        if(preoptimized.size() > 3) {
-                            optimizer.addBoundaries(layerRegions->outlines);
-                            optimizer.addPaths(preoptimized);
-                            optimizer.optimize(resultModel);
-                            optimizer.clearPaths();
-                            optimizer.clearBoundaries();
-                        } else {
-                            resultModel.insert(resultModel.end(), 
-                                    preoptimized.begin(), preoptimized.end());
-                        }
-                        if(presupport.size() > 3) {
-                            optimizer.addBoundaries(layerRegions->supportLoops);
-                            optimizer.addPaths(presupport);
-                            optimizer.optimize(resultSupport);
-                        } else {
-                            resultSupport.insert(resultSupport.end(), 
-                                    presupport.begin(), presupport.end());
-                        }
-			
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					resultModel.begin(), resultModel.end());
-			
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					resultSupport.begin(), resultSupport.end());
-		} else {
-			//don't run graph optimizations
-			//use naive result instead
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					preoptimized.begin(), preoptimized.end());
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					presupport.begin(), presupport.end());
-		}
+        extruderlayer.paths.insert(extruderlayer.paths.end(), 
+                preoptimized.begin(), preoptimized.end());
+        extruderlayer.paths.insert(extruderlayer.paths.end(), 
+                presupport.begin(), presupport.end());
 		directionalCoarsenessCleanup(extruderlayer.paths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
