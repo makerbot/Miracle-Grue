@@ -23,7 +23,10 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
-            PointType normal = (connection.b - connection.a).unit();
+            PointType normal;
+            try {
+                normal = (connection.b - connection.a).unit();
+            } catch (const libthing::Exception& le) {}
             Scalar distance = connection.length();
             Cost frontCost(label, distance, normal);
             Cost backCost(label, distance, normal * -1.0);
@@ -49,14 +52,17 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
                     label.myValue, true)).getIndex();
             first = last;
         }
-        if(next != loop.clockwiseFinite()) {
+        if(next != loop.clockwiseEnd()) {
             NodeData curNodeData(*next, label.myValue, true);
             node& curNode = graph.createNode(curNodeData);
             node& lastNode = graph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
-            PointType normal = (connection.b - connection.a).unit();
+            PointType normal;
+            try {
+                normal = (connection.b - connection.a).unit();
+            } catch (const libthing::Exception& le) {}
             Scalar distance = connection.length();
             Cost frontCost(label, distance, normal);
             Cost backCost(label, distance, normal * -1.0);
@@ -70,14 +76,15 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     libthing::LineSegment2 connection( 
             curNode.data().getPosition(), 
             lastNode.data().getPosition());
-    PointType normal = (connection.b - connection.a).unit();
+    PointType normal;
+    try {
+        normal = (connection.b - connection.a).unit();
+    } catch (const libthing::Exception& le) {}
     Scalar distance = connection.length();
     Cost frontCost(label, distance, normal);
     Cost backCost(label, distance, normal * -1.0);
     curNode.connect(lastNode, backCost);
     lastNode.connect(curNode, frontCost);
-//    std::cout << "Path Size: " << loop.size() << std::endl;
-//    std::cout << "Graph Nodes: " << graph.count() << std::endl;
 }
 void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     for(OpenPath::const_iterator iter = path.fromStart(); 
@@ -124,7 +131,10 @@ bool pather_optimizer_fastgraph::entry_iterator::operator ==(
 }
 pather_optimizer_fastgraph::entry_iterator 
         pather_optimizer_fastgraph::entryBegin() {
-    return entry_iterator(graph.begin(), graph.end());
+    entry_iterator ret(graph.begin(), graph.end());
+    if(!ret->data().isEntry())
+        ++ret;
+    return ret;
 }
 pather_optimizer_fastgraph::entry_iterator
         pather_optimizer_fastgraph::entryEnd() {

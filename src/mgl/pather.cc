@@ -56,7 +56,7 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 	for (RegionList::const_iterator layerRegions = skeleton.begin();
 			layerRegions != skeleton.end(); ++layerRegions) {
 		tick();
-
+        try {
 		if (currentSlice < firstSliceIdx) continue;
 		if (currentSlice > lastSliceIdx) break;
 
@@ -92,6 +92,7 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		optimizer.optimize(extruderlayer.outlinePaths);
 		
 		optimizer.addBoundaries(layerRegions->outlines);	
+        
 		
 		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
@@ -130,6 +131,9 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		
 		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_MODEL, 1));
+        
+        if(currentSlice == 70)
+            optimizer.repr_svg(std::cerr);
 		
 		optimizer.optimize(preoptimized);
 		
@@ -141,17 +145,20 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_SUPPORT, 0));
 		
-		optimizer.optimize(presupport);
+
+        optimizer.optimize(presupport); 
 		
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
                 preoptimized.begin(), preoptimized.end());
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
                 presupport.begin(), presupport.end());
-		directionalCoarsenessCleanup(extruderlayer.paths);
+		//directionalCoarsenessCleanup(extruderlayer.paths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;
-
+        }catch (const std::exception& our) {
+            std::cout << "Range error on layer " << currentSlice << std::endl;
+        }
 		++currentSlice;
 	}
 }

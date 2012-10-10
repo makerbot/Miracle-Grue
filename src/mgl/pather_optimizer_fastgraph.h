@@ -13,6 +13,7 @@
 #include "basic_boxlist.h"
 #include "intersection_index.h"
 #include "Exception.h"
+#include <iostream>
 
 namespace mgl {
 
@@ -30,6 +31,7 @@ public:
 	void addBoundary(const Loop& loop);
     void clearBoundaries();
 	void clearPaths();
+    void repr_svg(std::ostream& out);
 protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
 private:
@@ -118,6 +120,11 @@ private:
             const node::connection& rhs);
     static bool compareNodes(const node& lhs, const node& rhs);
     bool crossesBounds(const libthing::LineSegment2& line);
+    
+    void smartAppendPoint(PointType point, PathLabel label, 
+            LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+    void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+    
     
     boundary_container boundaries;
     graph_type graph;

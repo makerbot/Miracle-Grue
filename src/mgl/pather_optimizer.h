@@ -103,7 +103,7 @@ public:
                 if(jsonErrors) {
                     exceptionToJson(Log::severe(), mixup, true);
                 } else {
-                    std::cout << "WARNING: " << mixup.what() << std::endl;
+                    Log::severe() << "WARNING: " << mixup.what() << std::endl;
                 }
 			}
 		}

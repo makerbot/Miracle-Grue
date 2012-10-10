@@ -105,7 +105,7 @@ void SG_TYPE::disconnect(const node& a, const node& b) {
 }
 SG_TEMPLATE
 typename SG_NODE& SG_TYPE::operator [](node_index i) {
-    node& retNode = nodes[i].m_node;
+    node& retNode = nodes.at(i).m_node;
     return retNode;
 }
 SG_TEMPLATE
@@ -175,7 +175,10 @@ bool SG_TYPE::node_iterator<BASE>::operator ==(
 }
 SG_TEMPLATE
 typename SG_TYPE::forward_node_iterator SG_TYPE::begin() {
-    return forward_node_iterator(nodes.begin(), nodes.end());
+    forward_node_iterator ret(nodes.begin(), nodes.end());
+    if(!ret.m_base->m_valid)
+        ++ret;
+    return ret;
 }
 SG_TEMPLATE
 typename SG_TYPE::forward_node_iterator SG_TYPE::end() {
