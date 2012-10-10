@@ -33,7 +33,7 @@ bool pather_optimizer_fastgraph::crossesBounds(const libthing::LineSegment2& lin
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from) {
     if(from.forwardEmpty()) {
-        return from.forwardEnd();
+        //return from.forwardEnd();
         buildLinks(from);
     }
     return std::max_element(from.forwardBegin(), 
@@ -56,7 +56,7 @@ void pather_optimizer_fastgraph::buildLinks(node& from) {
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
-        if(iter->second > 10) {
+        if(iter->second > 10 && false) {
             probe_collection::iterator candidatesEnd = probes.begin();
             ++candidatesEnd;
             for(probe_collection::iterator candidate = probes.begin(); 
@@ -77,12 +77,12 @@ void pather_optimizer_fastgraph::buildLinks(node& from) {
         }
         libthing::LineSegment2 probeline(from.data().getPosition(), 
                 graph[iter->first].data().getPosition());
+        PointType unit;
+        try {
+            unit = (graph[iter->first].data().getPosition() - 
+                    from.data().getPosition()).unit();
+        } catch (const libthing::Exception& le) {}
         if(!crossesBounds(probeline)) {
-            PointType unit;
-            try {
-                unit = (graph[iter->first].data().getPosition() - 
-                        from.data().getPosition()).unit();
-            } catch (const libthing::Exception& le) {}
             from.connect(graph[iter->first], 
                     Cost(PathLabel(PathLabel::TYP_CONNECTION, 
                     PathLabel::OWN_MODEL, -1), 
@@ -104,16 +104,13 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
         currentIndex = std::max_element(graph.begin(), 
                 graph.end(), compareNodes)->getIndex();
         LabeledOpenPath activePath;
-        bool firstPath = true;
+        if(!graph[currentIndex].forwardEmpty())
+            smartAppendPoint(graph[currentIndex].data().getPosition(), 
+                    PathLabel(), labeledpaths, activePath);
         while((next = bestLink(graph[currentIndex])) != 
                 graph[currentIndex].forwardEnd()) {
             node::connection nextConnection = *next;
             PathLabel currentCost(*nextConnection.second);
-            if(firstPath) {
-                smartAppendPoint(graph[currentIndex].data().getPosition(), 
-                        currentCost, labeledpaths, activePath);
-                firstPath = false;
-            }
             smartAppendPoint(nextConnection.first->data().getPosition(), 
                     currentCost, labeledpaths, activePath);
             graph[currentIndex].disconnect(*nextConnection.first);
@@ -144,13 +141,14 @@ void pather_optimizer_fastgraph::smartAppendPath(LabeledOpenPaths& labeledpaths,
 void pather_optimizer_fastgraph::smartAppendPoint(PointType point, 
         PathLabel label, LabeledOpenPaths& labeledpaths, 
         LabeledOpenPath& path) {
-    if(path.myLabel.isInvalid() || path.myPath.empty()) {
+    if(path.myLabel.isInvalid()) {
         path.myLabel = label;
-        path.myPath.clear();
-    }
-    if(path.myLabel == label) {
+        //path.myPath.clear();
+        path.myPath.appendPoint(point);
+    } else if(path.myLabel == label) {
         path.myPath.appendPoint(point);
     } else {
+        path.myPath.appendPoint(point);
         smartAppendPath(labeledpaths, path);
         path.myLabel = label;
         path.myPath.appendPoint(point);

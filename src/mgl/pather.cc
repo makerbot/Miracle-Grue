@@ -131,9 +131,6 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		
 		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
 				PathLabel::OWN_MODEL, 1));
-        
-        if(currentSlice == 70)
-            optimizer.repr_svg(std::cerr);
 		
 		optimizer.optimize(preoptimized);
 		
