@@ -171,7 +171,7 @@ void Gantry::g1(std::ostream &ss,
 	bool doE = false;
 	Scalar me = getCurrentE();
 	
-	PointType relativeVector(gx - get_x(), gy - get_y());
+	Point2Type relativeVector(gx - get_x(), gy - get_y());
 
 	if (!libthing::tequals(get_x(), gx, SAMESAME_TOL)) {
 		doX = true;

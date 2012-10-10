@@ -226,7 +226,7 @@ void Pather::insets(const list<LoopList>& inset_loops,
 					*(flat_insets.front()->clockwise()))));
 			flat_insets.pop_front();
 		} else {
-			PointType current_exit = *onlyList.back().fromEnd();
+			Point2Type current_exit = *onlyList.back().fromEnd();
 			std::list<const Loop*>::iterator closestLoop = flat_insets.begin();
 			Loop::entry_iterator closestEntry = flat_insets.front()->entryBegin();
 			Scalar closestDistance = (closestEntry->getPoint() - 
@@ -291,12 +291,12 @@ void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
 	for(; current != path.end(); ++current) {
 		OpenPath::reverse_iterator last1 = cleanPath.fromEnd();
 		OpenPath::reverse_iterator last2 = cleanPath.fromEnd();
-        PointType currentPoint = *current;
-        PointType landingPoint = currentPoint;
+        Point2Type currentPoint = *current;
+        Point2Type landingPoint = currentPoint;
 		++last2;
 		bool addPoint = true;
         try {
-            PointType unit = PointType(*last1 - *last2).unit();
+            Point2Type unit = Point2Type(*last1 - *last2).unit();
             Scalar component = (currentPoint - *last1).dotProduct(unit);
             Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
             landingPoint = *last1 + unit*component;

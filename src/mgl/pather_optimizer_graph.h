@@ -24,8 +24,8 @@ public:
     }
 
     typedef PathLabel CostType;
-    typedef topo::node_template<CostType, PointType> node;
-    typedef topo::link_template<CostType, PointType> link;
+    typedef topo::node_template<CostType, Point2Type> node;
+    typedef topo::link_template<CostType, Point2Type> link;
 
     typedef std::pair<node*, node*> nodePair;
 
@@ -73,13 +73,13 @@ private:
 
     typedef std::set<link*, link_undirected_comparator> LinkSet;
     typedef std::set<node*> NodeSet;
-    typedef std::map<PointType, node*, basic_axisfunctor<> > NodePositionMap;
+    typedef std::map<Point2Type, node*, basic_axisfunctor<> > NodePositionMap;
     typedef std::vector<libthing::LineSegment2> BoundaryListType;
 
 
     void appendMove(link* l, LabeledOpenPaths& labeledpaths);
 
-    node* tryCreateNode(const PointType& pos);
+    node* tryCreateNode(const Point2Type& pos);
     void tryRemoveNode(node* n);
 
     void tryMarkEntry(node* n);

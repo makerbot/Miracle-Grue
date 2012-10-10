@@ -451,7 +451,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     it->extruders.front().extruderId];
             calcInfillExtrusion(struder.id, 0, strusion);
             gantry.set_current_extruder_index(struder.code);
-            PointType startPoint;
+            Point2Type startPoint;
             if(!it->extruders.empty() && 
                     !it->extruders.front().paths.empty() && 
                     !it->extruders.front().paths.front().myPath.empty()) {

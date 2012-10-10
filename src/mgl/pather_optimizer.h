@@ -148,13 +148,13 @@ private:
 			Loop::entry_iterator entryIter);
 	LabeledOpenPath closestPath(std::list<LabeledOpenPath>::iterator pathIter, 
 			OpenPath::entry_iterator entryIter);
-	void findClosestLoop(const PointType& point, 
+	void findClosestLoop(const Point2Type& point, 
 			std::list<LabeledLoop>::iterator& loopIter, 
 			Loop::entry_iterator& entryIter);
-	void findClosestPath(const PointType& point, 
+	void findClosestPath(const Point2Type& point, 
 			std::list<LabeledOpenPath>::iterator& pathIter, 
 			OpenPath::entry_iterator& entryIter);
-	bool closest(const PointType& point, LabeledOpenPath& result);
+	bool closest(const Point2Type& point, LabeledOpenPath& result);
 	void link(abstract_optimizer::LabeledOpenPaths& labeledpaths);
 	bool crossesBoundaries(const libthing::LineSegment2& seg);
 	BoundaryList boundaries;

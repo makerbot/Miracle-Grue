@@ -59,14 +59,14 @@ void pather_optimizer_graph::addPath(const Loop& loop, const PathLabel& label) {
     nodes.back()->connect(nodes.front(), label);
 
     //add them all to entry points
-    PointType lastEntry = nodes.front()->get_position();
+    Point2Type lastEntry = nodes.front()->get_position();
     int skip = 0;
     static const int SKIP_MAX = 5;
     static const Scalar SKIP_DIST = 10.0;
     for (std::list<node*>::iterator iter = nodes.begin();
             iter != nodes.end();
             ++iter) {
-        PointType currentEntry = (*iter)->get_position();
+        Point2Type currentEntry = (*iter)->get_position();
         //don't add each one, but every 2mm
         if (iter == nodes.begin() || skip > SKIP_MAX ||
                 (currentEntry - lastEntry).magnitude() > SKIP_DIST) {
@@ -205,12 +205,12 @@ void pather_optimizer_graph::appendMove(link* l,
 }
 
 pather_optimizer_graph::node* pather_optimizer_graph::tryCreateNode(
-        const PointType& pos) {
+        const Point2Type& pos) {
     node* createdNode = NULL;
     NodePositionMap::iterator mapped = nodePositions.find(pos);
     if (mapped == nodePositions.end()) {
         //no node at this exact position, create one
-        nodePositions.insert(std::pair<PointType, node*>(pos,
+        nodePositions.insert(std::pair<Point2Type, node*>(pos,
                 createdNode = new node(pos)));
         nodeSet.insert(createdNode);
     } else {
@@ -355,17 +355,17 @@ bool pather_optimizer_graph::isBetter(link* current,
     CostType altCost = alternate->get_cost();
     int curVal = highestValue(current->get_to());
     int altVal = highestValue(alternate->get_to());
-    PointType lastUnit;
+    Point2Type lastUnit;
     if (!labeledpaths.empty() && labeledpaths.back().myPath.size() > 1) {
         OpenPath::const_reverse_iterator iter =
                 labeledpaths.back().myPath.fromEnd();
-        PointType last1 = *(iter++);
-        PointType last2 = *iter;
+        Point2Type last1 = *(iter++);
+        Point2Type last2 = *iter;
         lastUnit = (last1 - last2).unit();
     }
-    PointType curUnit = (current->get_from()->get_position() -
+    Point2Type curUnit = (current->get_from()->get_position() -
             current->get_to()->get_position()).unit();
-    PointType altUnit = (alternate->get_from()->get_position() -
+    Point2Type altUnit = (alternate->get_from()->get_position() -
             alternate->get_to()->get_position()).unit();
     Scalar curDot = curUnit.dotProduct(lastUnit);
     Scalar altDot = altUnit.dotProduct(lastUnit);

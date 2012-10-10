@@ -44,6 +44,12 @@ static const Scalar M_TAU = M_PI * 2;
 std::string getMiracleGrueProgramName();
 std::string getMiracleGrueVersionStr();
 
+typedef libthing::Vector2 Point2Type;
+typedef libthing::Vector3 Point3Type;
+
+typedef std::vector<Point2Type> PointList;
+typedef std::vector<Point2Type> VectorList;
+
 /// Structure contains list of triangle 'id's, used to
 /// reference which triangle in the master list is related.
 typedef std::vector<index_t> TriangleIndices;

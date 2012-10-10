@@ -19,17 +19,17 @@ void PatherOptimizerTestCase::setUp() {
 
 void PatherOptimizerTestCase::testBasics() {
 	//assert that line intersection works
-	LineSegment2 seg1(PointType(-1,0), PointType(1,0));
-	LineSegment2 seg2(PointType(0,-1), PointType(0,1));
+	LineSegment2 seg1(Point2Type(-1,0), Point2Type(1,0));
+	LineSegment2 seg2(Point2Type(0,-1), Point2Type(0,1));
 	cout << "Testing that lines intersect properly..." << endl;
 	CPPUNIT_ASSERT(seg1.intersects(seg2));
 	pather_optimizer optimizer;
 	
 	//make a normal triangle loop
 	Loop loop;
-	loop.insertPointBefore(PointType(-1,1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(1,1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(1,-1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(-1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(1,-1), loop.clockwiseEnd());
 	//loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
 	//add loop to optimizer
 	cout << "Testing adding of a normal loop..." << endl;
@@ -37,22 +37,22 @@ void PatherOptimizerTestCase::testBasics() {
 	CPPUNIT_ASSERT_NO_THROW(optimizer.addPath(loop));
 	//make a degenerate loop
 	Loop badLoop;
-	badLoop.insertPointBefore(PointType(-1, 0), badLoop.clockwiseEnd());
-	badLoop.insertPointBefore(PointType(1, 0), badLoop.clockwiseEnd());
+	badLoop.insertPointBefore(Point2Type(-1, 0), badLoop.clockwiseEnd());
+	badLoop.insertPointBefore(Point2Type(1, 0), badLoop.clockwiseEnd());
 	cout << "Testing adding of a bad loop..." << endl;
 	CPPUNIT_ASSERT_THROW(optimizer.addBoundary(badLoop), mgl::Exception);
 	CPPUNIT_ASSERT_THROW(optimizer.addPath(badLoop), mgl::Exception);
 	
 	OpenPath path;
-	path.appendPoint(PointType(-1, 0));
-	path.appendPoint(PointType(1, 0));
+	path.appendPoint(Point2Type(-1, 0));
+	path.appendPoint(Point2Type(1, 0));
 	//add a path to optimizer
 	cout << "Testing adding of a normal path..." << endl;
 	CPPUNIT_ASSERT_NO_THROW(optimizer.addBoundary(path));
 	CPPUNIT_ASSERT_NO_THROW(optimizer.addPath(path));
 	//make a degenerate path
 	OpenPath badPath;
-	badPath.appendPoint(PointType());
+	badPath.appendPoint(Point2Type());
 	cout << "Testing adding of a bad path..." << endl;
 	CPPUNIT_ASSERT_THROW(optimizer.addBoundary(badPath), mgl::Exception);
 	CPPUNIT_ASSERT_THROW(optimizer.addPath(badPath), mgl::Exception);
@@ -61,21 +61,21 @@ void PatherOptimizerTestCase::testBasics() {
 void PatherOptimizerTestCase::testBoundary() {
 	//make a square +-1 both axes
 	Loop loop;
-	loop.insertPointBefore(PointType(-1,1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(1,1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(1,-1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(-1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(1,-1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(-1,-1), loop.clockwiseEnd());
 	
 	pather_optimizer optimizer;
 	
 	//make paths that cross boundary and don't
 	
 	OpenPath insideBoundary;
-	insideBoundary.appendPoint(PointType(-0.5, 0));
-	insideBoundary.appendPoint(PointType(0.5, 0));
+	insideBoundary.appendPoint(Point2Type(-0.5, 0));
+	insideBoundary.appendPoint(Point2Type(0.5, 0));
 	OpenPath outsideBoundary;
-	outsideBoundary.appendPoint(PointType(-0.5, 2));
-	outsideBoundary.appendPoint(PointType(0.5, 2));
+	outsideBoundary.appendPoint(Point2Type(-0.5, 2));
+	outsideBoundary.appendPoint(Point2Type(0.5, 2));
 	
 	cout << "Adding simple square boundary to optimizer" << endl;
 	CPPUNIT_ASSERT_NO_THROW(optimizer.addBoundary(loop));
@@ -114,26 +114,26 @@ void PatherOptimizerTestCase::testBoundary() {
 void PatherOptimizerTestCase::testCompleteness() {
 	//make a square +-1 both axes
 	Loop loop;
-	loop.insertPointBefore(PointType(-1,1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(1,1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(1,-1), loop.clockwiseEnd());
-	loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(-1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(1,1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(1,-1), loop.clockwiseEnd());
+	loop.insertPointBefore(Point2Type(-1,-1), loop.clockwiseEnd());
 	
 	pather_optimizer optimizer;
 	
 	//make paths that cross boundary and don't
-	std::list<PointType> points;	//keeps track of points I expect to get out
+	std::list<Point2Type> points;	//keeps track of points I expect to get out
 	
 	OpenPath insideBoundary;
-	insideBoundary.appendPoint(PointType(-0.5, 0));
-	points.push_back(PointType(-0.5, 0));
-	insideBoundary.appendPoint(PointType(0.5, 0));
-	points.push_back(PointType(0.5, 0));
+	insideBoundary.appendPoint(Point2Type(-0.5, 0));
+	points.push_back(Point2Type(-0.5, 0));
+	insideBoundary.appendPoint(Point2Type(0.5, 0));
+	points.push_back(Point2Type(0.5, 0));
 	OpenPath outsideBoundary;
-	outsideBoundary.appendPoint(PointType(-0.5, 2));
-	points.push_back(PointType(-0.5, 2));
-	outsideBoundary.appendPoint(PointType(0.5, 2));
-	points.push_back(PointType(0.5, 2));
+	outsideBoundary.appendPoint(Point2Type(-0.5, 2));
+	points.push_back(Point2Type(-0.5, 2));
+	outsideBoundary.appendPoint(Point2Type(0.5, 2));
+	points.push_back(Point2Type(0.5, 2));
 	
 	cout << "Adding simple square boundary to optimizer" << endl;
 	CPPUNIT_ASSERT_NO_THROW(optimizer.addBoundary(loop));

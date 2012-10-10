@@ -67,7 +67,7 @@ void pather_optimizer::clearPaths() {
 
 void pather_optimizer::optimizeInternal(
 		abstract_optimizer::LabeledOpenPaths& labeledpaths) {
-	PointType lastPoint;
+	Point2Type lastPoint;
 	LabeledOpenPath currentClosest;
 	if(!myLoops.empty())
 		lastPoint = *(myLoops.begin()->myPath.entryBegin());
@@ -153,7 +153,7 @@ LabeledOpenPath pather_optimizer::closestPath(
 	return retLabeled;
 }
 
-void pather_optimizer::findClosestLoop(const PointType& point, 
+void pather_optimizer::findClosestLoop(const Point2Type& point, 
 		LabeledLoopList::iterator& loopIter, 
 		Loop::entry_iterator& entryIter) {
 	
@@ -189,7 +189,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 	}
 }
 
-void pather_optimizer::findClosestPath(const PointType& point, 
+void pather_optimizer::findClosestPath(const Point2Type& point, 
 		LabeledPathList::iterator& pathIter, 
 		OpenPath::entry_iterator& entryIter) {
 	if(myPaths.empty()) {
@@ -223,7 +223,7 @@ void pather_optimizer::findClosestPath(const PointType& point,
 	}
 }
 
-bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) {
+bool pather_optimizer::closest(const Point2Type& point, LabeledOpenPath& result) {
 	LabeledLoopList::iterator loopIter;
 	Loop::entry_iterator loopEntry;
 	LabeledPathList::iterator pathIter;
@@ -285,8 +285,8 @@ void pather_optimizer::link(
 			--lastIter;
 			LabeledOpenPath& last = *lastIter;
 			LabeledOpenPath& current = *iter;
-			PointType lastPoint = *(last.myPath.fromEnd());
-			PointType currentPoint = *(current.myPath.fromStart());
+			Point2Type lastPoint = *(last.myPath.fromEnd());
+			Point2Type currentPoint = *(current.myPath.fromStart());
 			if(current.myLabel.myType == PathLabel::TYP_CONNECTION || 
 					last.myLabel.myType == PathLabel::TYP_CONNECTION)
 				continue;
