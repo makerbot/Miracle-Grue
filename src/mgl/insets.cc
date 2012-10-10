@@ -17,7 +17,7 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
+
 
 
 static const Scalar DBLTOINT = 1000;

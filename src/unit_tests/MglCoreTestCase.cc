@@ -192,7 +192,7 @@ void MglCoreTestCase::testTriangle3Maths() {
 	Point3Type v0(0,0,0);
 	Point3Type v1(0,0,0);
 	Point3Type v2(0,0,0);
-	Triangle3 foo(v0,v1,v2);
+	Triangle3Type foo(v0,v1,v2);
 
 	Point3Type x1= foo[0];
 	Point3Type x2= foo[1];
@@ -207,7 +207,7 @@ void MglCoreTestCase::testTriangle3Maths() {
 	Point3Type v3(0,0,0);
 	Point3Type v4(0,0,0);
 	Point3Type v5(0,0,0);
-	Triangle3 foo2(v0,v1,v2);
+	Triangle3Type foo2(v0,v1,v2);
 }
 
 

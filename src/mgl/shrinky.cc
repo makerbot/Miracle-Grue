@@ -21,7 +21,7 @@
 namespace mgl {
 
 using namespace std;
-using namespace libthing;
+
 
 void lengthCheck(const std::vector<Segment2Type> &segments, const char *msg) {
     for (unsigned int i = 0; i < segments.size(); i++) {
@@ -48,7 +48,7 @@ void connectivityCheck(const std::vector<Segment2Type> &segments,
         Segment2Type seg = segments[i];
 
         if (!prevSeg.b.tequals(seg.a, tol)) {
-            Vector2 dist = prevSeg.b - seg.a;
+            Point2Type dist = prevSeg.b - seg.a;
             stringstream ss;
             ss << "Connectivity error: segment[" << prevId << "] = " << prevSeg << endl;
             ss << " and segment[" << i << "] = " << seg << endl;
@@ -76,10 +76,10 @@ void createConvexList(const std::vector<Segment2Type> &segments, std::vector<boo
         const Segment2Type &seg = segments[id];
         const Segment2Type &prevSeg = segments[prevId];
 
-        const Vector2 & i = prevSeg.a;
-        const Vector2 & j = seg.a;
-        const Vector2 & j2 = prevSeg.b;
-        const Vector2 & k = seg.b;
+        const Point2Type & i = prevSeg.a;
+        const Point2Type & j = seg.a;
+        const Point2Type & j2 = prevSeg.b;
+        const Point2Type & k = seg.b;
         bool isSameSame = j.tequals(j2, tol);
 
         if (!isSameSame) {
@@ -90,7 +90,7 @@ void createConvexList(const std::vector<Segment2Type> &segments, std::vector<boo
             ss << "j: " << j << endl;
             ss << "j2: " << j2 << endl;
             ss << "k: " << k << endl;
-            Vector2 d = j2 - j;
+            Point2Type d = j2 - j;
             Scalar distance = d.magnitude();
             ss << "distance " << distance << endl;
             ss << "SameSame " << isSameSame << endl;
@@ -116,12 +116,12 @@ void segmentsDiagnostic(const char* title, const std::vector<Segment2Type> &segm
 
         const Segment2Type &prevSeg = segments[prevId];
 
-        const Vector2 & i = prevSeg.a;
-        const Vector2 & j = seg.a;
-        const Vector2 & j2 = prevSeg.b;
-        const Vector2 & k = seg.b;
+        const Point2Type & i = prevSeg.a;
+        const Point2Type & j = seg.a;
+        const Point2Type & j2 = prevSeg.b;
+        const Point2Type & k = seg.b;
 
-        Vector2 d = j2 - j;
+        Point2Type d = j2 - j;
         Scalar distance = d.magnitude();
         Scalar length = seg.squaredLength();
         Scalar angle = d.angleFromPoint2s(i, j, k);
@@ -131,18 +131,18 @@ void segmentsDiagnostic(const char* title, const std::vector<Segment2Type> &segm
     }
 }
 
-Vector2 getInsetDirection(const Segment2Type &seg) {
+Point2Type getInsetDirection(const Segment2Type &seg) {
     Point3Type v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
     Point3Type up(0, 0, 1);
     Point3Type inset = v.crossProduct(up);
     inset.normalise();
-    Vector2 inset2(inset.x, inset.y);
+    Point2Type inset2(inset.x, inset.y);
     return inset2;
 }
 
 Segment2Type elongateAndPrelongate(const Segment2Type &s, Scalar dist) {
     Segment2Type segment(s);
-    Vector2 l = segment.b - segment.a;
+    Point2Type l = segment.b - segment.a;
     l.normalise();
     l *= dist;
     segment.b += l;
@@ -156,7 +156,7 @@ void insetSegments(const std::vector<Segment2Type> &segments, Scalar d,
     assert(insets.size() == 0);
     for (size_t i = 0; i < segments.size(); i++) {
         Segment2Type seg = segments[i];
-        Vector2 inset = getInsetDirection(seg);
+        Point2Type inset = getInsetDirection(seg);
         inset *= d;
         seg.a += inset;
         seg.b += inset;
@@ -185,7 +185,7 @@ void trimConvexSegments(const std::vector<Segment2Type> & rawInsets,
 
         if (convex[i]) {
 
-            Vector2 intersection;
+            Point2Type intersection;
             bool trimmed = segmentSegmentIntersection(previousSegment, currentSegment, intersection);
             if (trimmed) {
                 previousSegment.b = intersection;
@@ -213,9 +213,9 @@ void AddReflexSegments(const std::vector<Segment2Type> &segments,
         unsigned int prevId = i == 0 ? segments.size() - 1 : i - 1;
 
         if (!convexVertices[i]) {
-            // Vector2 center = segments[i].a;
-            Vector2 start = trimmedInsets[prevId].b;
-            Vector2 end = trimmedInsets[i].a;
+            // Point2Type center = segments[i].a;
+            Point2Type start = trimmedInsets[prevId].b;
+            Point2Type end = trimmedInsets[i].a;
             Segment2Type straight(start, end);
             newSegments.push_back(straight);
         }
@@ -269,7 +269,7 @@ bool attachSegments(Segment2Type &first, Segment2Type &second, Scalar elongation
     Segment2Type s0 = first.elongate(elongation);
     Segment2Type s1 = second.prelongate(elongation);
 
-    Vector2 intersection;
+    Point2Type intersection;
     bool trimmed = segmentSegmentIntersection(s0, s1, intersection);
     if (trimmed) {
         first.b = intersection;
@@ -296,8 +296,8 @@ Scalar triangleAltitude(Scalar a, Scalar b, Scalar c) {
 // at an altitude that is lower than the inset distance
 
 bool edgeCollapse(const Segment2Type& segment,
-        const Vector2& bisector0,
-        const Vector2& bisector1,
+        const Point2Type& bisector0,
+        const Point2Type& bisector1,
         Scalar elongation,
         Scalar &collapseDistance) {
     // segment is the base of the triangle
@@ -313,12 +313,12 @@ bool edgeCollapse(const Segment2Type& segment,
 
     Segment2Type s0 = bisectorSegment0.elongate(elongation);
     Segment2Type s1 = bisectorSegment1.prelongate(elongation);
-    Vector2 intersection;
+    Point2Type intersection;
     bool attached = segmentSegmentIntersection(s0, s1, intersection);
     if (attached) {
         // the triangle is made from
-        Vector2 edge0 = segment.a - intersection;
-        Vector2 edge1 = segment.b - intersection;
+        Point2Type edge0 = segment.a - intersection;
+        Point2Type edge1 = segment.b - intersection;
         Scalar a, b, c;
         a = segment.length();
         b = edge0.magnitude();
@@ -344,7 +344,7 @@ void outMap(const std::multimap<Scalar, unsigned int> &collapsingSegments) {
 }
 
 Scalar removeFirstCollapsedSegments(const std::vector<Segment2Type> &originalSegments,
-        const std::vector<Vector2> &bisectors,
+        const std::vector<Point2Type> &bisectors,
         Scalar insetDist,
         std::vector<Segment2Type> &relevantSegments) {
     Scalar elongation = 100;
@@ -361,10 +361,10 @@ Scalar removeFirstCollapsedSegments(const std::vector<Segment2Type> &originalSeg
         unsigned int nextId = i == segments.size() - 1 ? 0 : i + 1;
 
         //const LineSegment2 &nextSeg = segments[nextId];
-        const Vector2 &nextBisector = bisectors[nextId];
+        const Point2Type &nextBisector = bisectors[nextId];
 
         const Segment2Type &currentSegment = segments[i];
-        const Vector2 &currentBisector = bisectors[i];
+        const Point2Type &currentBisector = bisectors[i];
 
         Scalar collapseDistance;
         // check
@@ -426,7 +426,7 @@ Scalar removeFirstCollapsedSegments(const std::vector<Segment2Type> &originalSeg
 
 // True if the 3 points are collinear
 
-bool collinear(const Vector2 &a, const Vector2 &b, const Vector2 &c, Scalar tol) {
+bool collinear(const Point2Type &a, const Point2Type &b, const Point2Type &c, Scalar tol) {
     Scalar dot = ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - c[0]) * (b[1] - a[1]));
     bool r = libthing::tequals(dot, 0, tol);
     return r;
@@ -468,7 +468,7 @@ void elongateAndTrimSegments(const std::vector<Segment2Type> & longSegments,
         bool attached = attachSegments(previousSegment, currentSegment, elongation);
         if (!attached) {
             Log::info() << "!";
-            Vector2 m = (previousSegment.a + currentSegment.b) * 0.5;
+            Point2Type m = (previousSegment.a + currentSegment.b) * 0.5;
             previousSegment.b = m;
             currentSegment.a = m;
 
@@ -480,17 +480,17 @@ void elongateAndTrimSegments(const std::vector<Segment2Type> & longSegments,
 
 void createBisectors(const std::vector<Segment2Type>& segments,
         Scalar tol,
-        std::vector<Vector2> &motorCycles) {
+        std::vector<Point2Type> &motorCycles) {
     for (unsigned int i = 0; i < segments.size(); i++) {
         unsigned int prevId = i == 0 ? segments.size() - 1 : i - 1;
 
         const Segment2Type &prevSeg = segments[prevId];
         const Segment2Type &seg = segments[i];
 
-        Vector2 prevInset = getInsetDirection(prevSeg);
-        Vector2 inset = getInsetDirection(seg);
+        Point2Type prevInset = getInsetDirection(prevSeg);
+        Point2Type inset = getInsetDirection(seg);
 
-        Vector2 bisector = inset;
+        Point2Type bisector = inset;
 
         // if points are disjoint, do not combine both insets
         if (prevSeg.b.tequals(seg.a, tol)) {
@@ -500,7 +500,7 @@ void createBisectors(const std::vector<Segment2Type>& segments,
             // ok... maybe this is a bit drastic and we could combine the biesctors
             // this author needs to make up his mind about non closed polygon support
             //
-            Vector2 dist = prevSeg.b - seg.a;
+            Point2Type dist = prevSeg.b - seg.a;
             stringstream ss;
             ss << "This is not a closed polygon. segment[" << prevId << "].b = " << prevSeg.b;
             ss << " and segment[" << i << "].a = " << seg.a << " are distant by " << dist.magnitude();
@@ -525,14 +525,14 @@ void createBisectors(const std::vector<Segment2Type>& segments,
     }
 }
 
-void Shrinky::writeScadBisectors(const std::vector<Vector2> & bisectors, const std::vector<Segment2Type> & originalSegments) {
+void Shrinky::writeScadBisectors(const std::vector<Point2Type> & bisectors, const std::vector<Segment2Type> & originalSegments) {
     if (scadFileName) {
         std::vector<Segment2Type> motorCycleTraces;
         for (size_t i = 0; i < bisectors.size(); i++) {
-            Vector2 a = originalSegments[i].a;
-            Vector2 dir = bisectors[i];
+            Point2Type a = originalSegments[i].a;
+            Point2Type dir = bisectors[i];
             dir *= 2;
-            Vector2 b = a + dir;
+            Point2Type b = a + dir;
             Segment2Type s(a, b);
             motorCycleTraces.push_back(s);
         }
@@ -652,7 +652,7 @@ Scalar Shrinky::insetStep(const std::vector<Segment2Type>& originalSegments,
         std::vector<Segment2Type> relevantSegments;
         if (originalSegments.size() > 2) {
             //Log::often() << "...BISECTING..." << endl;
-            std::vector<Vector2> bisectors;
+            std::vector<Point2Type> bisectors;
             createBisectors(originalSegments, continuityTolerance, bisectors);
             writeScadBisectors(bisectors, originalSegments);
 
@@ -718,7 +718,7 @@ void Shrinky::closeScadFile() {
         out << "draw_raw_insets(min, max);" << std::endl;
         out << "draw_final_insets(min, max);" << std::endl;
         out << endl;
-        out << "// s = [\"segs.push_back(TriangleSegment2(Vector2(%s+x, %s+y), Vector2(%s+x, %s+y)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
+        out << "// s = [\"segs.push_back(TriangleSegment2(Point2Type(%s+x, %s+y), Point2Type(%s+x, %s+y)));\" %(x[0][0], x[0][1], x[1][0], x[1][1]) for x in segments]" << std::endl;
         out << "// print '\\n'.join(s) " << endl;
         fscad.close();
     }

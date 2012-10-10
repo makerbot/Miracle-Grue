@@ -32,7 +32,7 @@
 namespace mgl {
 
 using namespace std;
-using namespace libthing;
+
 
 const Scalar LayerMeasure::INVALID_SCALAR = std::numeric_limits<Scalar>::min();
 
@@ -57,7 +57,7 @@ ostream& operator<<(std::ostream& os, const Polygon& polygon) {
 
 void rotatePolygon(Polygon& polygon, Scalar angle) {
 	for (unsigned int i = 0; i < polygon.size(); i++) {
-		const Vector2 &p = polygon[i];
+		const Point2Type &p = polygon[i];
 		polygon[i] = p.rotate2d(angle);
 	}
 }
@@ -155,7 +155,7 @@ ostream& operator<<(ostream& os, const Limits& l) {
 	return os;
 }
 
-ostream& operator <<(ostream &os, const Vector2 &pt) {
+ostream& operator <<(ostream &os, const Point2Type &pt) {
 	os << "[" << pt.x << ", " << pt.y << "]";
 	return os;
 }
@@ -188,7 +188,7 @@ void exceptionToJson(std::ostream& os, const std::string& mixup, bool warn) {
  * Ex: ((0,0)(0,1)(1,0))  returns -1 (normal points negative Z out of plane)
  * Ex: ((1,0)(0,0)(0,1))  returns 1 (normal points positive Z out of plane)
  */
-Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c) {
+Scalar AreaSign(const Point2Type &a, const Point2Type &b, const Point2Type &c) {
 	Scalar area2;
 	area2 = (b[0] - a[0]) * (Scalar) (c[1] - a[1]) -
 			(c[0] - a[0]) * (Scalar) (b[1] - a[1]);
@@ -200,7 +200,7 @@ Scalar AreaSign(const Vector2 &a, const Vector2 &b, const Vector2 &c) {
  * @returns true if the triangle of these vectors has a negative index,
  * false otherwise
  */
-bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k) {
+bool convexVertex(const Point2Type &i, const Point2Type &j, const Point2Type &k) {
 	return AreaSign(i, j, k) < 0;
 }
 
@@ -214,7 +214,7 @@ bool convexVertex(const Vector2 &i, const Vector2 &j, const Vector2 &k) {
  * @returns true if the passed line segments are colinear within the tolerance tol
  */
 bool collinear(const Segment2Type &prev, const Segment2Type &current,
-		Scalar tol, Vector2 &mid) {
+		Scalar tol, Point2Type &mid) {
 
 	Scalar x1 = prev.a[0];
 	Scalar y1 = prev.a[1];
@@ -230,7 +230,7 @@ bool collinear(const Segment2Type &prev, const Segment2Type &current,
 
 
 
-/// Verifies each Vector2 in the passed Polygon are in tolerance
+/// Verifies each Point2Type in the passed Polygon are in tolerance
 // tol
 
 bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol) {

@@ -87,7 +87,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	cout << "Slices " << sliceCount << endl;
 
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[70];
-	const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+	const vector<Triangle3Type> &allTriangles = mesh.readAllTriangles();
 	std::vector<Segment2Type> segments;
 	Scalar z = seg.readLayerMeasure().sliceIndexToHeight(70);
 	cout  << "z="<< z << endl;
@@ -98,7 +98,7 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 
 
 	index_t triangle_id = trianglesForSlice[33];
-	const Triangle3 &triangle = allTriangles[triangle_id];
+	const Triangle3Type &triangle = allTriangles[triangle_id];
 
 	cout << "\t" << triangle[0] << ",\t" << triangle[1] << ",\t" << triangle[2] << ","<< endl;
 

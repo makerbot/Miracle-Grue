@@ -37,7 +37,7 @@ void segments2polygon(const std::vector<Segment2Type> & segments, mgl::Polygon &
 
 // turns triangles into lines
 void segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
-		const std::vector<libthing::Triangle3> &allTriangles,
+		const std::vector<Triangle3Type> &allTriangles,
 		Scalar z,
 		std::vector<Segment2Type> &segments);
 

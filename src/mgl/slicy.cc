@@ -21,9 +21,9 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
 
-Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
+
+Slicy::Slicy(const std::vector<Triangle3Type> &allTriangles,
 		const Limits& limits,
 		Scalar layerW,
 		Scalar layerH,

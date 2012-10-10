@@ -106,7 +106,7 @@ void ModelReaderTestCase::testMeshySimple()
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
-	Triangle3  t(Point3Type(0,10,0), Point3Type(0,10,3.4), Point3Type(0,10,1));
+	Triangle3Type  t(Point3Type(0,10,0), Point3Type(0,10,3.4), Point3Type(0,10,1));
 
 	cout << endl << endl;
 	cout << "t " << t[0] << ", " << t[1] << ", " << t[2] << endl;
@@ -378,7 +378,7 @@ Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
 }
 
 // openscad debugging
-string visibleCut(const Triangle3& t, const Point3Type &a, const Point3Type &b)
+string visibleCut(const Triangle3Type& t, const Point3Type &a, const Point3Type &b)
 {
 	stringstream out;
 
@@ -404,7 +404,7 @@ void ModelReaderTestCase::testCutTriangle()
 	Point3Type v1(1, 0, 0);
 	Point3Type v2(0,0,1);
 
-	Triangle3 t(v0,v1,v2);
+	Triangle3Type t(v0,v1,v2);
 
 	Point3Type a,b;
 	bool cut;
@@ -429,7 +429,7 @@ void ModelReaderTestCase::testCutTriangle()
 	Point3Type v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
 	Point3Type v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
 	Point3Type v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
-	Triangle3 tb(v0b,v1b,v2b);
+	Triangle3Type tb(v0b,v1b,v2b);
 
 
 
@@ -671,7 +671,7 @@ void ModelReaderTestCase::fixContourProblem()
 
 	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
-	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+	const std::vector<Triangle3Type> &allTriangles = mesh.readAllTriangles();
 	seg.tablaturize(mesh);
 	const SliceTable &sliceTable = seg.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
@@ -690,7 +690,7 @@ void ModelReaderTestCase::fixContourProblem()
 	for (unsigned i=0; i < triangleCount; i++)
 	{
 		index_t idx = trianglesForSlice[i];
-		const Triangle3 &t = allTriangles[idx];
+		const Triangle3Type &t = allTriangles[idx];
 
 		Point3Type a,b,c;
 		t.zSort(a,b,c);

@@ -47,9 +47,14 @@ std::string getMiracleGrueVersionStr();
 typedef libthing::Vector2 Point2Type;
 typedef libthing::Vector3 Point3Type;
 typedef libthing::LineSegment2 Segment2Type;
+typedef libthing::Triangle3 Triangle3Type;
 
 typedef std::vector<Point2Type> PointList;
 typedef std::vector<Point2Type> VectorList;
+typedef libthing::SegmentTable SegmentTable;
+typedef libthing::SegmentVector SegmentVector;
+typedef libthing::Insets Insets;
+using libthing::tequals;
 
 /// Structure contains list of triangle 'id's, used to
 /// reference which triangle in the master list is related.

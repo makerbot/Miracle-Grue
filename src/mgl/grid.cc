@@ -22,7 +22,7 @@ namespace mgl {
 
 
 using namespace std;
-using namespace libthing;
+
 
 const Scalar GRID_RANGE_TOL = 0.0;
 
@@ -43,7 +43,7 @@ void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector
 		Scalar intersection = *it;
 		if (inside) {
 			xEnd = intersection;
-			// gridSegments.push_back(LineSegment2(Vector2(xBegin,y), Vector2(xEnd,y)));
+			// gridSegments.push_back(LineSegment2(Point2Type(xBegin,y), Point2Type(xEnd,y)));
 			ranges.push_back(ScalarRange(xBegin, xEnd));
 		} else {
 			xBegin = intersection;
@@ -172,7 +172,7 @@ bool crossesOutlines(const Segment2Type &seg,
 		for (LoopPath::iterator point = lp.fromStart();
 			 point != lp.end(); point++) {
 			Segment2Type border = loop->segmentAfterPoint(point);
-			Vector2 intersection;
+			Point2Type intersection;
 			if (segmentSegmentIntersection(seg, border, intersection))
 				return true;
 		}
@@ -199,11 +199,11 @@ void Grid::gridRangesToOpenPaths(const ScalarRangeTable &rays,
 			OpenPath &path = paths.back();
 
 			if (axis == X_AXIS) {
-				path.appendPoint(Vector2(range->min, *value));
-				path.appendPoint(Vector2(range->max, *value));
+				path.appendPoint(Point2Type(range->min, *value));
+				path.appendPoint(Point2Type(range->max, *value));
 			} else {
-				path.appendPoint(Vector2(*value, range->min));
-				path.appendPoint(Vector2(*value, range->max));
+				path.appendPoint(Point2Type(*value, range->min));
+				path.appendPoint(Point2Type(*value, range->max));
 			}
 		}
 	}
@@ -225,7 +225,7 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 	PointMap points_remaining;
 
 	//Convert ray ranges to segments and map endpoints
-	vector<Vector2> points;
+	vector<Point2Type> points;
 	for (size_t i = 0; i < rays.size(); i++) {
 		const vector<ScalarRange> &ray = rays[i];
 
@@ -239,11 +239,11 @@ void pathsFromScalarRangesAlongAxis( const ScalarRangeTable &rays,	   // the ran
 			assert(j->min != j->max);
 
 			if (axis == X_AXIS) {
-				points.push_back(Vector2(j->min, val));
-				points.push_back(Vector2(j->max, val));
+				points.push_back(Point2Type(j->min, val));
+				points.push_back(Point2Type(j->max, val));
 			} else {
-				points.push_back(Vector2(val, j->min));
-				points.push_back(Vector2(val, j->max));
+				points.push_back(Point2Type(val, j->min));
+				points.push_back(Point2Type(val, j->max));
 			}
 
 			points_remaining[points.size() - 2] = points.size() - 1;

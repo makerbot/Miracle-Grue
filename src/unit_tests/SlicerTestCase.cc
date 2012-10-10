@@ -102,7 +102,7 @@ void SlicerTestCase::testCut() {
     //	    endloop
     //	  endfacet
 
-    Triangle3 triangle(Point3Type(1.737416e+01, -4.841539e-01, 3.165644e+01), Point3Type(1.576195e+01, 1.465057e-01, 2.895734e+01), Point3Type(1.652539e+01, 9.044915e-01, 2.966791e+01));
+    Triangle3Type triangle(Point3Type(1.737416e+01, -4.841539e-01, 3.165644e+01), Point3Type(1.576195e+01, 1.465057e-01, 2.895734e+01), Point3Type(1.652539e+01, 9.044915e-01, 2.966791e+01));
     Point3Type cut = triangle.cutDirection();
 
     cout << "Cut:  " << cut << endl;
@@ -111,19 +111,19 @@ void SlicerTestCase::testCut() {
 
     // degenerate cases:  a flat triangle, a line and a Point2
 
-    Triangle3 triangleFlat(Point3Type(1.737416e+01, -4.841539e-01, 0), Point3Type(1.576195e+01, 1.465057e-01, 0), Point3Type(1.652539e+01, 9.044915e-01, 0));
+    Triangle3Type triangleFlat(Point3Type(1.737416e+01, -4.841539e-01, 0), Point3Type(1.576195e+01, 1.465057e-01, 0), Point3Type(1.652539e+01, 9.044915e-01, 0));
     cut = triangleFlat.cutDirection();
 
     // a flat triangle has no direction.
     cout << "Flat Cut:  " << cut << endl;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0, cut.magnitude(), tol);
 
-    Triangle3 line(Point3Type(0, 0, 0), Point3Type(1, 1, 1), Point3Type(3, 3, 3));
+    Triangle3Type line(Point3Type(0, 0, 0), Point3Type(1, 1, 1), Point3Type(3, 3, 3));
     cut = line.cutDirection();
     cout << "Line Cut:  " << cut << endl;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0, cut.magnitude(), tol);
 
-    Triangle3 Point2(Point3Type(10, 10, 10), Point3Type(10, 10, 10), Point3Type(10, 10, 10));
+    Triangle3Type Point2(Point3Type(10, 10, 10), Point3Type(10, 10, 10), Point3Type(10, 10, 10));
     cut = line.cutDirection();
     cout << "Point2 Cut:  " << cut << endl;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0, cut.magnitude(), tol);
@@ -159,7 +159,7 @@ void SlicerTestCase::testSlicyKnot_44() {
     const SliceTable &sliceTable = seg.readSliceTable();
     int layerCount = sliceTable.size();
     cout << "Slice count: " << layerCount << endl;
-    const vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+    const vector<Triangle3Type> &allTriangles = mesh.readAllTriangles();
     cout << "Faces: " << allTriangles.size() << endl;
     cout << "layer " << layerCount - 1 << " z: " << seg.readLayerMeasure().sliceIndexToHeight(layerCount - 1) << endl;
 
@@ -175,8 +175,8 @@ void SlicerTestCase::testSlicyKnot_44() {
     // Load slice connectivity information
     for (unsigned int i = 0; i < triangleCount; i++) {
         unsigned int triangleIndex = trianglesInSlice[i];
-        const Triangle3& t = allTriangles[triangleIndex];
-        Triangle3 triangle(Point3Type(t[0].x, t[0].y, t[0].z), Point3Type(t[1].x, t[1].y, t[1].z), Point3Type(t[2].x, t[2].y, t[2].z));
+        const Triangle3Type& t = allTriangles[triangleIndex];
+        Triangle3Type triangle(Point3Type(t[0].x, t[0].y, t[0].z), Point3Type(t[1].x, t[1].y, t[1].z), Point3Type(t[2].x, t[2].y, t[2].z));
 
         if (triangle.cutDirection().magnitude() > tol) {
             Point3Type a, b;

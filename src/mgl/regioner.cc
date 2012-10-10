@@ -17,7 +17,7 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
+
 
 Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
