@@ -135,7 +135,7 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
     {
         index_t triangleIndex = trianglesForSlice[i];
         const Triangle3 & triangle = allTriangles[triangleIndex];
-        Vector3 a, b;
+        Point3Type a, b;
         // bool cut = sliceTriangle(triangle[0], triangle[1], triangle[2], z, a, b);
         bool cut = triangle.cut(z, a, b);
         if(cut){
@@ -205,10 +205,10 @@ void mgl::segmentationOfTriangles(const TriangleIndices &trianglesForSlice,
 //}
 
 
-bool mgl::sliceTriangle(const Vector3& vertex1,
-		const Vector3& vertex2,
-		const Vector3& vertex3,
-		Scalar Z, Vector3 &a, Vector3 &b)
+bool mgl::sliceTriangle(const Point3Type& vertex1,
+		const Point3Type& vertex2,
+		const Point3Type& vertex3,
+		Scalar Z, Point3Type &a, Point3Type &b)
 {
 	Scalar tol = 1e-6;
 
@@ -384,12 +384,12 @@ Scalar findClosestLineSegment2(const Vector2& endOfPreviousLineSegment2,
 	bestSegmentIt = endIt; 	// just in case, we'll check for this on the caller side
 	Scalar minDist = 1e100;
 
-	Vector3 end(endOfPreviousLineSegment2.x,endOfPreviousLineSegment2.y, 0);
+	Point3Type end(endOfPreviousLineSegment2.x,endOfPreviousLineSegment2.y, 0);
 	vector<LineSegment2>::iterator it = startIt;
 	while(it != endIt)
 	{
-		Vector3 start(it->a.x, it->a.y, 0);
-		Vector3 v = end-start;
+		Point3Type start(it->a.x, it->a.y, 0);
+		Point3Type v = end-start;
 		Scalar distance = v.squaredMagnitude();
 		if (distance < minDist)
 		{

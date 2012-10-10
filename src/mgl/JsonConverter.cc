@@ -38,7 +38,7 @@ bool JsonConverter::loadVector2FromJson(Vector2& s, Value& input)
 
 
 bool JsonConverter::loadJsonFromVector3(Value& ,//val,
-                                        Vector3&)// input)
+                                        Point3Type&)// input)
 {
 	return false;
 }

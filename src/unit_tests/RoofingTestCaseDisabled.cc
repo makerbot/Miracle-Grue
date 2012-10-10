@@ -879,8 +879,8 @@ void RoofingTestCase::testGridStruct()
     cout << endl;
 
     Limits limits;
-    limits.grow(Vector3(5,5,0));
-    limits.grow(Vector3(10,10,10));
+    limits.grow(Point3Type(5,5,0));
+    limits.grow(Point3Type(10,10,10));
 
     Grid grid(limits, 0.391);
     cout << "center = " << grid.getOrigin() << endl;

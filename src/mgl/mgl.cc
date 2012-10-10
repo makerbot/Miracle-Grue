@@ -43,7 +43,7 @@ string getMiracleGrueVersionStr() {
 	return "v 0.04";
 }
 
-ostream& operator<<(ostream& os, const Vector3& v) {
+ostream& operator<<(ostream& os, const Point3Type& v) {
 	os << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
 	return os;
 }

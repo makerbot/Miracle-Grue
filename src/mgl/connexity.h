@@ -43,14 +43,14 @@ class Vertex
 
 public:
 	// Vector3 point;
-	libthing::Vector3 point;
+	libthing::Point3Type point;
 	std::vector<index_t> faces;
 };
 std::ostream& operator<<(std::ostream& os, const Vertex& v);
 
 
 index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices,
-								const libthing::Vector3 &coords,
+								const libthing::Point3Type &coords,
 								Scalar tolerence);
 
 
@@ -112,11 +112,11 @@ public:
 private:
 
 
-	index_t findOrCreateNewEdge(const libthing::Vector3 &coords0, const libthing::Vector3 &coords1, size_t face);
+	index_t findOrCreateNewEdge(const libthing::Point3Type &coords0, const libthing::Point3Type &coords1, size_t face);
 
 	index_t findOrCreateEdge(index_t v0, index_t v1, size_t face);
 
-	index_t findOrCreateVertex(const libthing::Vector3 &coords);
+	index_t findOrCreateVertex(const libthing::Point3Type &coords);
 
 };
 

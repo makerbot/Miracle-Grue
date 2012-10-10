@@ -70,9 +70,9 @@ bool segmentSegmentIntersection(const libthing::LineSegment2 &a, const libthing:
 bool segmentSegmentIntersection(Scalar p0_x, Scalar p0_y, Scalar p1_x, Scalar p1_y,
 		Scalar p2_x, Scalar p2_y, Scalar p3_x, Scalar p3_y, Scalar &i_x, Scalar &i_y);
 
-bool sliceTriangle(const libthing::Vector3& vertex1,
-		const libthing::Vector3& vertex2, const libthing::Vector3& vertex3,
-		Scalar Z, libthing::Vector3 &a, libthing::Vector3 &b);
+bool sliceTriangle(const Point3Type& vertex1,
+		const Point3Type& vertex2, const Point3Type& vertex3,
+		Scalar Z, Point3Type &a, Point3Type &b);
 }
 
 #endif

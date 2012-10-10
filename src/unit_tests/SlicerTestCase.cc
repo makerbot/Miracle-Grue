@@ -71,14 +71,14 @@ void SlicerTestCase::testNormals() {
     //	  endfacet
 
 
-    Vector3 v0(1.737416e+01, -4.841539e-01, 3.165644e+01);
-    Vector3 v1(1.576195e+01, 1.465057e-01, 2.895734e+01);
-    Vector3 v2(1.652539e+01, 9.044915e-01, 2.966791e+01);
+    Point3Type v0(1.737416e+01, -4.841539e-01, 3.165644e+01);
+    Point3Type v1(1.576195e+01, 1.465057e-01, 2.895734e+01);
+    Point3Type v2(1.652539e+01, 9.044915e-01, 2.966791e+01);
 
-    Vector3 a = v1 - v0;
-    Vector3 b = v2 - v0;
+    Point3Type a = v1 - v0;
+    Point3Type b = v2 - v0;
 
-    Vector3 n = a.crossProduct(b);
+    Point3Type n = a.crossProduct(b);
     n.normalise();
     cout << "Facet normal " << n << endl;
 
@@ -102,8 +102,8 @@ void SlicerTestCase::testCut() {
     //	    endloop
     //	  endfacet
 
-    Triangle3 triangle(Vector3(1.737416e+01, -4.841539e-01, 3.165644e+01), Vector3(1.576195e+01, 1.465057e-01, 2.895734e+01), Vector3(1.652539e+01, 9.044915e-01, 2.966791e+01));
-    Vector3 cut = triangle.cutDirection();
+    Triangle3 triangle(Point3Type(1.737416e+01, -4.841539e-01, 3.165644e+01), Point3Type(1.576195e+01, 1.465057e-01, 2.895734e+01), Point3Type(1.652539e+01, 9.044915e-01, 2.966791e+01));
+    Point3Type cut = triangle.cutDirection();
 
     cout << "Cut:  " << cut << endl;
     // the direction should be on a cpnstant z plane (on a slice)
@@ -111,25 +111,25 @@ void SlicerTestCase::testCut() {
 
     // degenerate cases:  a flat triangle, a line and a Point2
 
-    Triangle3 triangleFlat(Vector3(1.737416e+01, -4.841539e-01, 0), Vector3(1.576195e+01, 1.465057e-01, 0), Vector3(1.652539e+01, 9.044915e-01, 0));
+    Triangle3 triangleFlat(Point3Type(1.737416e+01, -4.841539e-01, 0), Point3Type(1.576195e+01, 1.465057e-01, 0), Point3Type(1.652539e+01, 9.044915e-01, 0));
     cut = triangleFlat.cutDirection();
 
     // a flat triangle has no direction.
     cout << "Flat Cut:  " << cut << endl;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0, cut.magnitude(), tol);
 
-    Triangle3 line(Vector3(0, 0, 0), Vector3(1, 1, 1), Vector3(3, 3, 3));
+    Triangle3 line(Point3Type(0, 0, 0), Point3Type(1, 1, 1), Point3Type(3, 3, 3));
     cut = line.cutDirection();
     cout << "Line Cut:  " << cut << endl;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0, cut.magnitude(), tol);
 
-    Triangle3 Point2(Vector3(10, 10, 10), Vector3(10, 10, 10), Vector3(10, 10, 10));
+    Triangle3 Point2(Point3Type(10, 10, 10), Point3Type(10, 10, 10), Point3Type(10, 10, 10));
     cut = line.cutDirection();
     cout << "Point2 Cut:  " << cut << endl;
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0, cut.magnitude(), tol);
 
     // sorting the 3 Point2s
-    Vector3 a, b, c;
+    Point3Type a, b, c;
     triangle.zSort(a, b, c);
     // a=v1, b=v2, c=v0
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.576195e+01, a[0], tol);
@@ -176,10 +176,10 @@ void SlicerTestCase::testSlicyKnot_44() {
     for (unsigned int i = 0; i < triangleCount; i++) {
         unsigned int triangleIndex = trianglesInSlice[i];
         const Triangle3& t = allTriangles[triangleIndex];
-        Triangle3 triangle(Vector3(t[0].x, t[0].y, t[0].z), Vector3(t[1].x, t[1].y, t[1].z), Vector3(t[2].x, t[2].y, t[2].z));
+        Triangle3 triangle(Point3Type(t[0].x, t[0].y, t[0].z), Point3Type(t[1].x, t[1].y, t[1].z), Point3Type(t[2].x, t[2].y, t[2].z));
 
         if (triangle.cutDirection().magnitude() > tol) {
-            Vector3 a, b;
+            Point3Type a, b;
             triangle.cut(z, a, b);
             LineSegment2 cut;
             cut.a.x = a.x;
@@ -689,17 +689,17 @@ void SlicerTestCase::testSliceTriangle() {
 
     // this should really be passed to the sliceTriangle function
     Scalar tol = 1e-6;
-    Vector3 v1, v2, v3;
+    Point3Type v1, v2, v3;
     Scalar Z = 0;
-    Vector3 a = Vector3(0, 0, 0);
-    Vector3 b = Vector3(0, 0, 0);
+    Point3Type a = Point3Type(0, 0, 0);
+    Point3Type b = Point3Type(0, 0, 0);
     bool result;
 
     ///Testing triangle above slice height
     cout << endl << "\t testing above" << endl;
-    v1 = Vector3(1, 2, 3);
-    v2 = Vector3(2, 3, 4);
-    v3 = Vector3(3, 4, 5);
+    v1 = Point3Type(1, 2, 3);
+    v2 = Point3Type(2, 3, 4);
+    v3 = Point3Type(3, 4, 5);
     result = sliceTriangle(v1, v2, v3, Z, a, b);
     CPPUNIT_ASSERT(result == false);
 
@@ -716,9 +716,9 @@ void SlicerTestCase::testSliceTriangle() {
     ///Testing triangle exactly on slice height, should not produce a slice
 
     cout << endl << "\t testing flat face" << endl;
-    v1 = Vector3(1, 2, 5);
-    v2 = Vector3(2, 3, 5);
-    v3 = Vector3(3, 4, 5);
+    v1 = Point3Type(1, 2, 5);
+    v2 = Point3Type(2, 3, 5);
+    v3 = Point3Type(3, 4, 5);
     Z = 5;
     result = sliceTriangle(v1, v2, v3, Z, a, b);
     CPPUNIT_ASSERT(result == false);
@@ -726,18 +726,18 @@ void SlicerTestCase::testSliceTriangle() {
     /// this should be based on a tolerance. can we pass tolerance to sliceTriangle?
     /// Testing triangle approximately at slice height (below tolerance value)
     cout << endl << "\t testing ~flat face" << endl;
-    v1 = Vector3(1, 2, 4.999999999);
-    v2 = Vector3(2, 3, 5.000000000);
-    v3 = Vector3(3, 4, 5.000000001);
+    v1 = Point3Type(1, 2, 4.999999999);
+    v2 = Point3Type(2, 3, 5.000000000);
+    v3 = Point3Type(3, 4, 5.000000001);
     Z = 5;
     result = sliceTriangle(v1, v2, v3, Z, a, b);
     CPPUNIT_ASSERT(result == false);
 
     ///Testing very small triangles (slightly above tolerance)
     cout << endl << "\t testing tiny triangle" << endl;
-    v1 = Vector3(0.0001, 0.0002, 0.0001);
-    v2 = Vector3(0.0005, 0.0004, 0.0002);
-    v3 = Vector3(0.0003, 0.0001, 0.0003);
+    v1 = Point3Type(0.0001, 0.0002, 0.0001);
+    v2 = Point3Type(0.0005, 0.0004, 0.0002);
+    v3 = Point3Type(0.0003, 0.0001, 0.0003);
 
     ///Testing at middle Z height of very small tri.
     Z = 0.0002;
@@ -847,7 +847,7 @@ void SlicerTestCase::testSliceTriangle() {
 
     ///Testing that the order in which variables are passed does not affect output
     cout << endl << "\t testing passed variable order" << endl;
-    Vector3 order1[2], order2[2], order3[2];
+    Point3Type order1[2], order2[2], order3[2];
 
     CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, order1[0], order1[1]) == true);
     CPPUNIT_ASSERT(sliceTriangle(v1, v3, v2, Z, order2[0], order2[1]) == true);
@@ -872,15 +872,15 @@ void SlicerTestCase::testSliceTriangle() {
 }
 
 void SlicerTestCase::testFutureSlice() {
-    Vector3 v1, v2, v3;
-    Vector3 a = Vector3(0, 0, 0);
-    Vector3 b = Vector3(0, 0, 0);
+    Point3Type v1, v2, v3;
+    Point3Type a = Point3Type(0, 0, 0);
+    Point3Type b = Point3Type(0, 0, 0);
 
     ///Testing that heights that just touch one corner don't create segments
     cout << endl << "\t testing corners" << endl;
-    v1 = Vector3(1, 2, 1);
-    v2 = Vector3(5, 4, 2);
-    v3 = Vector3(3, 1, 3);
+    v1 = Point3Type(1, 2, 1);
+    v2 = Point3Type(5, 4, 2);
+    v3 = Point3Type(3, 1, 3);
     Scalar Z = 1;
     CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
     Z = 3;
@@ -892,9 +892,9 @@ void SlicerTestCase::testFutureSlice() {
     ///Testing that
     cout << endl << "\t testing length" << endl;
     cerr << "The current implementation fails this test case" << endl;
-    v1 = Vector3(1, 2, 1);
-    v2 = Vector3(5, 4, 2);
-    v3 = Vector3(5, 4, 2);
+    v1 = Point3Type(1, 2, 1);
+    v2 = Point3Type(5, 4, 2);
+    v3 = Point3Type(5, 4, 2);
     Z = 2;
     //	CPPUNIT_ASSERT(sliceTriangle(v1, v2, v3, Z, a, b) == false);
 
@@ -903,14 +903,14 @@ void SlicerTestCase::testFutureSlice() {
 
     cout << endl << "\t testing split triangle" << endl;
     cerr << "Your current implementation fails this test case";
-    Vector3 triangle1[3];
-    triangle1[0] = Vector3(0, 0, 0);
-    triangle1[1] = Vector3(3, 3, 3);
-    triangle1[2] = Vector3(0, 0, 3);
-    Vector3 triangle2[3];
-    triangle2[0] = Vector3(0, 0, 3);
-    triangle2[1] = Vector3(3, 3, 3);
-    triangle2[2] = Vector3(0, 0, 6);
+    Point3Type triangle1[3];
+    triangle1[0] = Point3Type(0, 0, 0);
+    triangle1[1] = Point3Type(3, 3, 3);
+    triangle1[2] = Point3Type(0, 0, 3);
+    Point3Type triangle2[3];
+    triangle2[0] = Point3Type(0, 0, 3);
+    triangle2[1] = Point3Type(3, 3, 3);
+    triangle2[2] = Point3Type(0, 0, 6);
     Z = 3;
 
     bool sliceOne = sliceTriangle(triangle1[0], triangle1[1], triangle1[2], Z, a, b);

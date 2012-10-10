@@ -46,14 +46,14 @@ Slicy::Slicy(const std::vector<Triangle3> &allTriangles,
 	// hence, tubular limits around z
 	tubularLimits.tubularZ();
 
-	Vector3 c = limits.center();
+	Point3Type c = limits.center();
 
 	toRotationCenter[0] = -c[0];
 	toRotationCenter[1] = -c[1];
 	backToOrigin[0] = c[0];
 	backToOrigin[1] = c[1];
 
-	Vector3 rotationCenter = limits.center();
+	Point3Type rotationCenter = limits.center();
 }
 
 Slicy::~Slicy() {

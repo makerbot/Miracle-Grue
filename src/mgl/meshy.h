@@ -117,7 +117,7 @@ public:
 	void flushBuffer();
 
 	void alignToPlate();
-	void translate(const libthing::Vector3 &change);
+	void translate(const Point3Type &change);
 };
 
 

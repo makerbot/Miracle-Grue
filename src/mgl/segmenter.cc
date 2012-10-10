@@ -39,7 +39,7 @@ void Segmenter::tablaturize(const Meshy& mesh){
 void Segmenter::updateSlicesTriangle(size_t newTriangleId){
 	Triangle3 t = allTriangles[newTriangleId];
 	
-	Vector3 a, b, c;
+	Point3Type a, b, c;
 	t.zSort(a, b, c);
 
 	unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(a.z);

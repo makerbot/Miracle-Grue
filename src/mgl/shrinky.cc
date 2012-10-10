@@ -132,9 +132,9 @@ void segmentsDiagnostic(const char* title, const std::vector<LineSegment2> &segm
 }
 
 Vector2 getInsetDirection(const LineSegment2 &seg) {
-    Vector3 v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
-    Vector3 up(0, 0, 1);
-    Vector3 inset = v.crossProduct(up);
+    Point3Type v(seg.b.x - seg.a.x, seg.b.y - seg.a.y, 0);
+    Point3Type up(0, 0, 1);
+    Point3Type inset = v.crossProduct(up);
     inset.normalise();
     Vector2 inset2(inset.x, inset.y);
     return inset2;

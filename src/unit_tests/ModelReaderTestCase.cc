@@ -106,7 +106,7 @@ void ModelReaderTestCase::testMeshySimple()
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
-	Triangle3  t(Vector3(0,10,0), Vector3(0,10,3.4), Vector3(0,10,1));
+	Triangle3  t(Point3Type(0,10,0), Point3Type(0,10,3.4), Point3Type(0,10,1));
 
 	cout << endl << endl;
 	cout << "t " << t[0] << ", " << t[1] << ", " << t[2] << endl;
@@ -130,9 +130,9 @@ void ModelReaderTestCase::testMeshySimple()
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
 
 
-    t[0] =Vector3(0,10, 0);
-    t[1] =Vector3(0,10, 3.6);
-    t[2] =Vector3(0,10, 1);
+    t[0] =Point3Type(0,10, 0);
+    t[1] =Point3Type(0,10, 3.6);
+    t[2] =Point3Type(0,10, 1);
 
 	mesh.addTriangle(t);
 	CPPUNIT_ASSERT_EQUAL((size_t)3, seg.readSliceTable().size());
@@ -378,7 +378,7 @@ Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
 }
 
 // openscad debugging
-string visibleCut(const Triangle3& t, const Vector3 &a, const Vector3 &b)
+string visibleCut(const Triangle3& t, const Point3Type &a, const Point3Type &b)
 {
 	stringstream out;
 
@@ -400,13 +400,13 @@ void ModelReaderTestCase::testCutTriangle()
 {
 	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	Vector3 v0(-1, 0, 0);
-	Vector3 v1(1, 0, 0);
-	Vector3 v2(0,0,1);
+	Point3Type v0(-1, 0, 0);
+	Point3Type v1(1, 0, 0);
+	Point3Type v2(0,0,1);
 
 	Triangle3 t(v0,v1,v2);
 
-	Vector3 a,b;
+	Point3Type a,b;
 	bool cut;
 	Scalar z = 0.5;
 	cut = t.cut( z, a, b);
@@ -426,9 +426,9 @@ void ModelReaderTestCase::testCutTriangle()
 //	    endloop
 //	  endfacet
 
-	Vector3 v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
-	Vector3 v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
-	Vector3 v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
+	Point3Type v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
+	Point3Type v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
+	Point3Type v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
 	Triangle3 tb(v0b,v1b,v2b);
 
 
@@ -630,8 +630,8 @@ void ModelReaderTestCase::testTubularInflate()
 
 	Limits l0;
 
-	Vector3 p0(0,0,0);
-	Vector3 p1(8,4,1);
+	Point3Type p0(0,0,0);
+	Point3Type p1(8,4,1);
 
 	l0.grow(p0);
 	l0.grow(p1);
@@ -692,7 +692,7 @@ void ModelReaderTestCase::fixContourProblem()
 		index_t idx = trianglesForSlice[i];
 		const Triangle3 &t = allTriangles[idx];
 
-		Vector3 a,b,c;
+		Point3Type a,b,c;
 		t.zSort(a,b,c);
 
 		minsAndMaxes.push_back(std::pair<Scalar, Scalar>(a.z, c.z) );

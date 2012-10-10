@@ -78,7 +78,7 @@ bool convexVertex(const libthing::Vector2& i,
 std::ostream& operator <<(std::ostream& os,
 		const libthing::Vector2& pt);
 std::ostream& operator <<(std::ostream& os,
-		const libthing::Vector3& v);
+		const Point3Type& v);
 //std::ostream& operator<<(std::ostream& os, libthing::LineSegment2 const& line);
 
 bool collinear(const libthing::LineSegment2 &prev,
