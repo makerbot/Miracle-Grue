@@ -85,24 +85,30 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		
-		optimizer.addPaths(layerRegions->outlines, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
-		optimizer.addPaths(layerRegions->supportLoops, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
-		optimizer.optimize(extruderlayer.outlinePaths);
+        if(grueCfg.get_doOutlines()) {
+            optimizer.addBoundaries(layerRegions->outlines);
+            optimizer.addBoundaries(layerRegions->supportLoops);
+            optimizer.addPaths(layerRegions->outlines, 
+                    PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
+            optimizer.optimize(extruderlayer.paths);
+            optimizer.addPaths(layerRegions->supportLoops, 
+                    PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
+            optimizer.optimize(extruderlayer.paths);
+        }
 		
 		optimizer.addBoundaries(layerRegions->outlines);	
         
-		
-		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
-		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
-				listIter != insetLoops.end(); 
-				++listIter) {
-			optimizer.addPaths(*listIter, 
-					PathLabel(PathLabel::TYP_INSET, 
-					PathLabel::OWN_MODEL, currentShell));
-			++currentShell;
-		}
+		if(grueCfg.get_doInsets()) {
+            int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+            for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
+                    listIter != insetLoops.end(); 
+                    ++listIter) {
+                optimizer.addPaths(*listIter, 
+                        PathLabel(PathLabel::TYP_INSET, 
+                        PathLabel::OWN_MODEL, currentShell));
+                ++currentShell;
+            }
+        }
 
 		const GridRanges& infillRanges = layerRegions->infill;
 		const GridRanges& supportRanges = layerRegions->support;
@@ -129,21 +135,28 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				axis, 
 				supportPaths);
 		
-		optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
-				PathLabel::OWN_MODEL, 1));
+        if(grueCfg.get_doInfills()) {
+            optimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_MODEL, 1));
+        }
 		
 		optimizer.optimize(preoptimized);
 		
 		optimizer.clearBoundaries();
 		optimizer.clearPaths();
 		
-		optimizer.addBoundaries(layerRegions->supportLoops);
-		
-		optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
-				PathLabel::OWN_SUPPORT, 0));
-		
+        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {
+            LoopList outsetSupportLoops;
+            loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
+                    0.01);
+            optimizer.addBoundaries(outsetSupportLoops);
 
-        optimizer.optimize(presupport); 
+            optimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_SUPPORT, 0));
+
+
+            optimizer.optimize(presupport); 
+        }
 		
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
                 preoptimized.begin(), preoptimized.end());

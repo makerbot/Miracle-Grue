@@ -99,12 +99,12 @@ void pather_optimizer_fastgraph::buildLinks(node& from) {
 }
 void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths) {
     LabeledOpenPaths intermediate;
+    LabeledOpenPaths innerIntermediate;
     optimize1(intermediate);
-    for(size_t i = 0; i < 5; ++i) {
-        LabeledOpenPaths innerIntermediate;
+    do {
+        innerIntermediate.clear();
         innerIntermediate.swap(intermediate);
-        optimize2(intermediate, innerIntermediate);
-    }
+    } while (optimize2(intermediate, innerIntermediate));
     optimize2(labeledpaths, intermediate);
 }
 void pather_optimizer_fastgraph::optimize1(LabeledOpenPaths& labeledpaths) {

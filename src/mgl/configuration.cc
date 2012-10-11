@@ -244,7 +244,7 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
             "endGcode", "");
     doOutlines = boolCheck(config["doOutlines"],
             "doOutlines", false);
-    doInsets = boolCheck(config["insets"],
+    doInsets = boolCheck(config["doInsets"],
             "doInsets", true);
     doInfills = boolCheck(config["doInfills"],
             "doInfills", true);
