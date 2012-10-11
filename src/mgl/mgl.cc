@@ -83,7 +83,7 @@ LayerMeasure::LayerMeasure(Scalar firstLayerZ, Scalar layerH, Scalar widthRatio)
 }
 layer_measure_index_t LayerMeasure::zToLayerAbove(Scalar z) const {
 	Scalar const tol = 0.000001; // tolerance: 1 nanometer
-	if (libthing::tlower(z, firstLayerZ, tol))
+	if (tlower(z, firstLayerZ, tol))
 		return 0;
 	Scalar const layer = (z + tol - firstLayerZ) / layerH;
 	return static_cast<layer_measure_index_t> (ceil(layer));
@@ -224,7 +224,7 @@ bool collinear(const Segment2Type &prev, const Segment2Type &current,
 	Scalar y3 = current.b[1];
 
 	Scalar c = ((mid.x - x1) * (y3 - y1) - (x3 - x1) * (mid.y - y1));
-	bool r = libthing::tequals(c, 0, tol);
+	bool r = tequals(c, 0, tol);
 	return r;
 }
 

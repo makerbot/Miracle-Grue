@@ -56,6 +56,7 @@ typedef libthing::SegmentTable SegmentTable;
 typedef libthing::SegmentVector SegmentVector;
 typedef libthing::Insets Insets;
 using libthing::tequals;
+using libthing::tlower;
 
 /// Structure contains list of triangle 'id's, used to
 /// reference which triangle in the master list is related.
