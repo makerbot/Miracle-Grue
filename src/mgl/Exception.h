@@ -22,7 +22,12 @@ public:
 		return error.c_str();
 	}
 	~Exception() throw() {}
+};
 
+class GeometryException : public mgl::Exception {
+public:
+    template <typename T>
+    GeometryException(const T& arg) : Exception(arg) {}
 };
 
 } /*end namespace mgl; */

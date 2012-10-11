@@ -22,11 +22,11 @@
 #include <sstream>
 
 #include "Exception.h"
-#include "libthing/Scalar.h"
-#include "libthing/Vector2.h"
-#include "libthing/Vector3.h"
-#include "libthing/LineSegment2.h"
-#include "libthing/Triangle3.h"
+#include "Scalar.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "LineSegment2.h"
+#include "Triangle3.h"
 
 
 //#define M_TAU M_PI*2
@@ -35,6 +35,12 @@
 
 #define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
 #define dbgs__(s) std::cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << std::endl;
+
+namespace libthing {
+
+typedef mgl::GeometryException GeometryException;
+
+}
 
 
 namespace mgl {
@@ -48,7 +54,6 @@ typedef libthing::Vector2 Point2Type;
 typedef libthing::Vector3 Point3Type;
 typedef libthing::LineSegment2 Segment2Type;
 typedef libthing::Triangle3 Triangle3Type;
-typedef libthing::Exception GeometryException;
 
 typedef std::vector<Point2Type> PointList;
 typedef std::vector<Point2Type> VectorList;

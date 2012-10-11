@@ -133,15 +133,10 @@ operating_system = sys.platform
 
 print "Operating system: [" + operating_system + "]"
 
-LIBTHING_PATH = 'submodule/libthing/src/main/cpp/'
-LIBTHING_INCLUDE = LIBTHING_PATH + 'include'
-LIBTHING_SRC = LIBTHING_PATH + 'src/'
-
 default_libs = []
 default_includes = ['submodule/json-cpp/include',
 		    'submodule/EzCppLog', 
-		    'submodule/optionparser/src',
-		    LIBTHING_INCLUDE]
+		    'submodule/optionparser/src']
 
 tools = ['default']
 
@@ -202,13 +197,6 @@ env.Append(CCFLAGS = ['-Wall', '-Wextra'])
 #	print "QT modules", qtModules
 #	env.EnableQt4Modules(qtModules)
 
-libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
-		LIBTHING_SRC+'Vector2.cc', 
-		LIBTHING_SRC+'Vector3.cc',
-		LIBTHING_SRC+'Triangle3.cc',
-		LIBTHING_SRC+"LineSegment2.cc"
-]
-
 
 
 mgl_cc = [
@@ -241,7 +229,13 @@ mgl_cc = [
           'src/mgl/slicer.cc',
           'src/mgl/slicer_loops.cc',
           'src/mgl/slicy.cc',
-          'src/mgl/loop_utils.cc']
+          'src/mgl/loop_utils.cc',
+          #libthing objects go here
+          'src/mgl/Scalar.cc', 
+          'src/mgl/Vector2.cc', 
+          'src/mgl/Vector3.cc', 
+          'src/mgl/LineSegment2.cc',
+          'src/mgl/Triangle3.cc']
 
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
@@ -260,7 +254,6 @@ toolpathviz_ui = ['submodule/toolpathviz/mainwindow.ui']
 
 JSON_CPP_BASE = 'submodule/json-cpp/include'
 
-env.Library('./bin/lib/thing', libthing_cc, CPPPATH=[LIBTHING_INCLUDE])
 env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src', default_includes])
 env.Library('./bin/lib/_json', json_cc, CPPPATH=[JSON_CPP_BASE,])
 
@@ -269,7 +262,7 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',
 
 
 
-default_libs.extend(['mgl', '_json', 'thing'])
+default_libs.extend(['mgl', '_json'])
 
 #debug_libs = ['cppunit', 'gcov']
 debug_libs = ['cppunit']
