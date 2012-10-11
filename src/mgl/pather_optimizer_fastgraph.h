@@ -14,6 +14,7 @@
 #include "intersection_index.h"
 #include "Exception.h"
 #include <iostream>
+#include <list>
 
 namespace mgl {
 
@@ -35,6 +36,8 @@ public:
 protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
 private:
+    void optimize1(LabeledOpenPaths& labeledopenpaths);
+    bool optimize2(LabeledOpenPaths& labeledopenpaths, LabeledOpenPaths& intermediate);
     class Cost : public PathLabel {
     public:
         Cost(const PathLabel& label = PathLabel(), 
@@ -74,6 +77,8 @@ private:
     typedef std::pair<node_index, Scalar> probe_link_type;
     
     typedef graph_type::forward_node_iterator node_iterator;
+    
+    typedef std::list<LabeledOpenPaths> multipath_type;
     
     class entry_iterator {
     public:
@@ -119,11 +124,15 @@ private:
     static bool compareConnections(const node::connection& lhs, 
             const node::connection& rhs);
     static bool compareNodes(const node& lhs, const node& rhs);
+    static bool comparePathLists(const LabeledOpenPaths& lhs, 
+            const LabeledOpenPaths& rhs);
     bool crossesBounds(const libthing::LineSegment2& line);
     
     void smartAppendPoint(PointType point, PathLabel label, 
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+    
+    Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
     
     
     boundary_container boundaries;

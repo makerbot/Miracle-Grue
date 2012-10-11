@@ -1,3 +1,6 @@
+#include <list>
+#include <vector>
+
 #include "pather_optimizer_fastgraph.h"
 
 namespace mgl {
@@ -139,6 +142,27 @@ pather_optimizer_fastgraph::entry_iterator
 pather_optimizer_fastgraph::entry_iterator
         pather_optimizer_fastgraph::entryEnd() {
     return entry_iterator(graph.end(), graph.end());
+}
+Scalar pather_optimizer_fastgraph::splitPaths(multipath_type& destionation, 
+        const LabeledOpenPaths& source) {
+    PointType lastPoint(std::numeric_limits<Scalar>::min(), 
+            std::numeric_limits<Scalar>::min());
+    Scalar ret = 0;
+    for(LabeledOpenPaths::const_iterator iter = source.begin(); 
+            iter != source.end(); 
+            ++iter) {
+        if(iter->myPath.size() < 2) 
+            continue;
+        if(*(iter->myPath.fromStart()) != lastPoint) {
+            if(!destionation.empty()) {
+                ret += (*(iter->myPath.fromStart()) - lastPoint).magnitude();
+            }
+            destionation.push_back(LabeledOpenPaths());
+        }
+        destionation.back().push_back(*iter);
+        lastPoint = *destionation.back().back().myPath.fromEnd();
+    }
+    return ret;
 }
 
 
