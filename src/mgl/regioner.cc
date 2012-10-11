@@ -46,11 +46,17 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	}
 
 	//optionally inflate if rafts present
-	if (grueCfg.get_doRaft()) {
-		limits.inflate(0, 0,
-				grueCfg.get_raftBaseThickness() +
-				grueCfg.get_raftInterfaceThickness() *
-				(grueCfg.get_raftLayers() - 1));
+	if (grueCfg.get_doRaft() && grueCfg.get_raftLayers() > 0) {
+        Scalar raftHeight = grueCfg.get_raftBaseThickness() + 
+                grueCfg.get_raftInterfaceThickness() * 
+                (grueCfg.get_raftLayers() - 1);
+        Scalar raftOutsetOverhead = grueCfg.get_raftOutset() * 4;
+        //increase height by raft height
+        limits.grow(Point3Type(
+                limits.center().x, limits.center().y, 
+                limits.zMax + raftHeight));
+        //grow sides by raft outset
+        limits.inflate(raftOutsetOverhead, raftOutsetOverhead, 0);
 	}
 
 	grid.init(limits, layerMeasure.getLayerW() *
