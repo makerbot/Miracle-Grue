@@ -161,6 +161,7 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
         bool foundConnected = false;
         libthing::LineSegment2 joint;
         Scalar length = std::numeric_limits<Scalar>::max();
+        Scalar connectedLength = std::numeric_limits<Scalar>::max();
         other = current;
         ++other;
         if(other == split.end()) {
@@ -190,15 +191,20 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
                     otherPoint);
             Scalar curLength = testJoint.length();
             bool closer = curLength < length;
+            bool connectedCloser = curLength < connectedLength;
             bool connects = !crossesBounds(testJoint);
             if(connects) {
-                if(!foundConnected || closer) {
+                if(!foundConnected || connectedCloser) {
                     foundConnected = true;
                     joint = testJoint;
                     connected = other;
+                    connectedLength = curLength;
                 }
             }
-            if(closer) {
+            int otherValue = other->front().myLabel.myValue;
+            int nearestValue = nearest->front().myLabel.myValue;
+            if((otherValue > nearestValue && 
+                    curLength - length < 1) || closer) {
                 nearest = other;
                 length = testJoint.length();
             }
