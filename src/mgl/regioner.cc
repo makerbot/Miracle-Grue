@@ -313,17 +313,50 @@ void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
 	}
 }
 
-bool wallLess(WallPair &first, WallPair &second) {
-	
+bool SegLess(const LineSegment2 &first, LineSegment2 *second) {
+	if (first.x < second.x)
+		return true;
+	else if (first.x > second.x)
+		return false;
+	else if (first.y < second.y)
+		return true;
+	else
+		return false;
 }
 
-typedef pair<LineSegment2, LineSegment2> Walls;
-typedef set<wallPair, WallLess> WallSet;
+bool SegPairLess(const SegmentPair *first, const SegmentPair *second) {
+	if (SegLess(first->a, second->a))
+		return true;
+	else if (SegLess(second->a, first->a))
+		return false;
+	else if (SegLess(first->b, second->b))
+		return true;
+	else 
+		return false
+}
+
+typedef pair<LineSegment2, LineSegment2> SegmentPair;
+struct Intersection {
+	LineSegment2 seg;
+	Vector2 point;
+};
+typedef Vector<Intersection> IntersectionList;
+typedef set<SegmentPair*, SegPairLess> SegmentPairSet;
 typedef vector<LineSegment2> SegmentList;
+
+struct Line {
+	Vector2 start;
+	Vector2 heading;
+};
 
 void Regioner::fillSpurLoop(const LoopList &spurLoops,
 							const LayerMeasure &layermeasure,
 							OpenPathList &spurs) {
+
+	//TODO: make these config values
+	const maxSpurWidth = layermeasure.layerW() * 1.5;
+	const minSpurWidth = layermeasure.layerW() * 0.5;
+	
 	//get loop line segments
 	SegmentList segs;
 	for (LoopList::const_iterator loop = spurLoops.begin();
@@ -342,20 +375,75 @@ void Regioner::fillSpurLoop(const LoopList &spurLoops,
 	index->insert(segs);
 
 	//find wall pairs
-	WallSet walls;
+	SegmentPairSetSet allWalls;
 
-	for (int i = 0; i < segs.size(); ++i) {
-		LineSegment2 &cur = segs[i];
+	for (SegmentList::const_iterator curSeg segs.begin();
+		 curSeg != segs.end(); ++curSeg) {
+		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a,
+											   maxSpurWidth);
 
-		LineSegment2 normal = getSegmentNormal(cur, cur.a,
-											   layermeasure.layerW());
-
-		SegmentList intersecting;
+		IntersectionList intersecting;
 		index.findIntersecting(normal, intersecting);
 
+		if (intersecting.size() > 0) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, intersecting.front().seg);
+			allWalls.insert(curWalls);
+		}
+	}
+
+	// complete trapezoids and pull out the bottom and top
+	for (SegmentPairSet::const_iterator walls = allWalls.begin();
+		 walls != allWalls.end(); ++walls) {
+		SegmentPair spans =
+			completeTrapezoid(minSpurWidth, maxSpurWidth, *walls);
 		
+		LineSegment2 bisect(spans.first.midPoint(), spans.second.midPoint());
+		
+		spurs.push_back(cutInteriorSegment(index, minSpurWidth, bisect));
+	}
+}
 
+LineSegment2 getNormalSegment(const LineSegment2 &orig,
+							  const Vector2 &startingPoint,
+							  const Scalar length) {
+	Vector2 heading = segmentVector(orig);
+	heading.normalize();
 
+	Vector2 normalVector;
+	normalVector.x = -heading.y;
+	normalVector.y = heading.x;
+
+	normalVector *= length;
+
+	Vector2 endingPoint = startingPoint + normalVector;
+
+	return LineSegment2(startingPoint, endingPoint);
+}
+
+SegmentPair normalizeWalls(const LineSegment2 &first,
+						   const LineSegment2 &second) {
+
+	SegmentPair segs;
+	if (SegLess(first, second)) {
+		segs.first = first;
+		segs.second = second;
+	}
+	else {
+		segs.first = second;
+		segs.second = first;
+	}
+}
+
+SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
+							  const SegmentPair &sides) {
+	
+}
+
+LineSegment2 cutInteriorSegment(const Vector2 &orig, const Scalar margin,
+								const SegIndex &boundaries) {
+	
 }
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
