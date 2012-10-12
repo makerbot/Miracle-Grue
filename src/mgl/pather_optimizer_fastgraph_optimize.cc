@@ -160,7 +160,7 @@ void pather_optimizer_fastgraph::optimize1(multipath_type& output) {
         output.push_back(LabeledOpenPaths());
         LabeledOpenPaths& labeledpaths = output.back();
         graph_type& currentGraph = iter->m_graph;
-        boundary_container& currentBounds = iter->m_bounds;
+        boundary_container& currentBounds = m_boundaries;
         while(!currentGraph.empty()) {
             currentIndex = std::max_element(entryBegin(currentGraph), 
                     entryEnd(currentGraph), 
