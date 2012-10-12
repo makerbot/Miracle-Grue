@@ -79,6 +79,10 @@ private:
     typedef graph_type::node_index node_index;
     typedef std::pair<node_index, Scalar> probe_link_type;
     
+    typedef std::vector<graph_type::node_index> node_index_list;
+    typedef std::pair<boundary_container, node_index_list> bucket;
+    typedef std::list<bucket> bucket_list;
+    
     typedef graph_type::forward_node_iterator node_iterator;
     
     typedef std::list<LabeledOpenPaths> multipath_type;
@@ -130,16 +134,21 @@ private:
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);
     bool crossesBounds(const libthing::LineSegment2& line);
+    static size_t countIntersections(libthing::LineSegment2& line, 
+            boundary_container& boundContainer);
     
     void smartAppendPoint(PointType point, PathLabel label, 
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
+    void entryToBucket(node& entry);
     
     
     boundary_container boundaries;
+    bucket_list buckets;
     graph_type graph;
+    AABBox boundaryLimits;
     
     const GrueConfig& grueCfg;
     

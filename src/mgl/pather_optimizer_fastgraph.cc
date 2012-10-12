@@ -16,6 +16,7 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         if(iter == path.fromStart()) {
             last = graph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
+            entryToBucket(graph[last]);
         }
         if(next != path.end()) {
             OpenPath::const_iterator future = next;
@@ -23,6 +24,8 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
             node& curNode = graph.createNode(NodeData(*next, 
                     label.myValue, future==path.end()));
             node& lastNode = graph[last];
+            if(curNode.data().isEntry())
+                entryToBucket(curNode);
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -54,10 +57,12 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             last = graph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
             first = last;
+            entryToBucket(graph[first]);
         }
         if(next != loop.clockwiseEnd()) {
             NodeData curNodeData(*next, label.myValue, true);
             node& curNode = graph.createNode(curNodeData);
+            entryToBucket(curNode);
             node& lastNode = graph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
@@ -101,14 +106,22 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
+    buckets.push_back(bucket());
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
             ++iter) {
-        boundaries.insert(loop.segmentAfterPoint(iter));
+        libthing::LineSegment2 segment = loop.segmentAfterPoint(iter);
+        boundaryLimits.expandTo(segment.a);
+        boundaryLimits.expandTo(segment.b);
+        boundaries.insert(segment);
+        buckets.back().first.insert(segment);
     }
+    
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
     boundaries = boundary_container();
+    buckets.clear();
+    boundaryLimits.reset();
 }
 void pather_optimizer_fastgraph::clearPaths() {
     graph.clear();
@@ -163,6 +176,34 @@ Scalar pather_optimizer_fastgraph::splitPaths(multipath_type& destionation,
         lastPoint = *destionation.back().back().myPath.fromEnd();
     }
     return ret;
+}
+size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& line, 
+        boundary_container& boundContainer) {
+    typedef std::vector<libthing::LineSegment2> result_type;
+    result_type result;
+    size_t count = 0;
+    boundContainer.search(result, LineSegmentFilter(line));
+    for(result_type::const_iterator iter = result.begin(); 
+            iter != result.end(); 
+            ++iter) {
+        if(iter->intersects(line))
+            ++count;
+    }
+    return count;
+}
+
+void pather_optimizer_fastgraph::entryToBucket(node& entry) {
+    libthing::LineSegment2 testLine(entry.data().getPosition(), 
+            boundaryLimits.bottom_left());
+    for(bucket_list::iterator iter = buckets.begin(); 
+            iter != buckets.end(); 
+            ++iter) {
+        size_t intersections = countIntersections(testLine, 
+                iter->first);
+        if(intersections & 1) { //if odd, then inside
+            iter->second.push_back(entry.getIndex());
+        }
+    }
 }
 
 
