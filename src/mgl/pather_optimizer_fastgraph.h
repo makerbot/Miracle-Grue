@@ -28,7 +28,8 @@ public:
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
     pather_optimizer_fastgraph(const GrueConfig& grueConf)
-            : grueCfg(grueConf) {}
+            : grueCfg(grueConf), historyPoint(std::numeric_limits<Scalar>::min(), 
+            std::numeric_limits<Scalar>::min()) {}
     void addPath(const OpenPath& path, const PathLabel& label);
     void addPath(const Loop& loop, const PathLabel& label);
     void addBoundary(const OpenPath& path);
@@ -133,24 +134,40 @@ private:
     static bool compareNodes(const node& lhs, const node& rhs);
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);
-    bool crossesBounds(const libthing::LineSegment2& line);
     static size_t countIntersections(libthing::LineSegment2& line, 
             boundary_container& boundContainer);
+    
+    class nodeComparator {
+    public:
+        nodeComparator(graph_type& graph, PointType point = 
+                PointType(std::numeric_limits<Scalar>::min(), 
+                std::numeric_limits<Scalar>::min()))
+                : m_graph(graph), m_position(point) {}
+        bool operator ()(const node& lhs, const node& rhs) const;
+        bool operator ()(node_index lhs, node_index rhs) const;
+    private:
+        graph_type& m_graph;
+        PointType m_position;
+    };
+    
+    bool crossesBounds(const libthing::LineSegment2& line);
     
     void smartAppendPoint(PointType point, PathLabel label, 
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
-    void entryToBucket(node& entry);
+    bucket& pickBucket(PointType point);
     
+    
+    const GrueConfig& grueCfg;
     
     boundary_container boundaries;
     bucket_list buckets;
     graph_type graph;
     AABBox boundaryLimits;
+    PointType historyPoint;
     
-    const GrueConfig& grueCfg;
     
 };
 

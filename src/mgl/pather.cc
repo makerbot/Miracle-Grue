@@ -102,6 +102,8 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             optimizer->addPaths(layerRegions->supportLoops, 
                     PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
             optimizer->optimize(extruderlayer.paths);
+            optimizer->clearBoundaries();
+            optimizer->clearPaths();
         }
 		
 		optimizer->addBoundaries(layerRegions->outlines);	
@@ -175,7 +177,8 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;
         }catch (const std::exception& our) {
-            std::cout << "Range error on layer " << currentSlice << std::endl;
+            std::cout << "Error " << our.what() << " on layer " << 
+                    currentSlice << std::endl;
         }
 		++currentSlice;
 	}

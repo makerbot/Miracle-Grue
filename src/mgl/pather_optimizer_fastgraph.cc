@@ -8,6 +8,7 @@ namespace mgl {
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
     node_index last = -1;
+    //bucket& currentBucket = pickBucket(*path.fromStart());
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
             ++iter) {
@@ -16,7 +17,6 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         if(iter == path.fromStart()) {
             last = graph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
-            entryToBucket(graph[last]);
         }
         if(next != path.end()) {
             OpenPath::const_iterator future = next;
@@ -24,8 +24,6 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
             node& curNode = graph.createNode(NodeData(*next, 
                     label.myValue, future==path.end()));
             node& lastNode = graph[last];
-            if(curNode.data().isEntry())
-                entryToBucket(curNode);
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -48,6 +46,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         const PathLabel& label) {
     node_index last = -1;
     node_index first = -1;
+    //bucket& currentBucket = pickBucket(*loop.clockwise());
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
             ++iter) {
@@ -57,12 +56,10 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             last = graph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
             first = last;
-            entryToBucket(graph[first]);
         }
         if(next != loop.clockwiseEnd()) {
             NodeData curNodeData(*next, label.myValue, true);
             node& curNode = graph.createNode(curNodeData);
-            entryToBucket(curNode);
             node& lastNode = graph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
@@ -192,18 +189,23 @@ size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& li
     return count;
 }
 
-void pather_optimizer_fastgraph::entryToBucket(node& entry) {
-    libthing::LineSegment2 testLine(entry.data().getPosition(), 
-            boundaryLimits.bottom_left());
+pather_optimizer_fastgraph::bucket& 
+        pather_optimizer_fastgraph::pickBucket(PointType point) {
+    libthing::LineSegment2 testLine(point, 
+            boundaryLimits.bottom_left() - PointType(20,20));
     for(bucket_list::iterator iter = buckets.begin(); 
             iter != buckets.end(); 
             ++iter) {
         size_t intersections = countIntersections(testLine, 
                 iter->first);
         if(intersections & 1) { //if odd, then inside
-            iter->second.push_back(entry.getIndex());
+            return *iter;
         }
     }
+    std::cout << "Point Location: " << point << std::endl;
+    std::cout << "Bounds: " << boundaryLimits.bottom_left() <<
+            boundaryLimits.top_right() << std::endl;
+    throw GraphException("Thing did not fall into any bucket!");
 }
 
 

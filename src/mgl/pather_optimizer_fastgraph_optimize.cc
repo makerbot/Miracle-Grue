@@ -33,6 +33,17 @@ bool pather_optimizer_fastgraph::crossesBounds(const libthing::LineSegment2& lin
     }
     return false;
 }
+bool pather_optimizer_fastgraph::nodeComparator::operator ()(const node& lhs, 
+        const node& rhs) const {
+    if(lhs.data().getPriority() == rhs.data().getPriority())
+        return (lhs.data().getPosition() - m_position).squaredMagnitude() > 
+                (rhs.data().getPosition() - m_position).squaredMagnitude();
+    return lhs.data().getPriority() < rhs.data().getPriority();
+}
+bool pather_optimizer_fastgraph::nodeComparator::operator ()(node_index lhs, 
+        node_index rhs) const {
+    return operator ()(m_graph[lhs], m_graph[rhs]);
+}
 
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from) {
@@ -101,7 +112,7 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
     LabeledOpenPaths intermediate;
     LabeledOpenPaths innerIntermediate;
     optimize1(intermediate);
-    unsigned iteration = 0;
+    unsigned iteration = 1;
     do {
         innerIntermediate.clear();
         innerIntermediate.swap(intermediate);
@@ -110,39 +121,44 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
     optimize2(labeledpaths, intermediate);
 }
 void pather_optimizer_fastgraph::optimize1(LabeledOpenPaths& labeledpaths) {
+    if(graph.empty())
+        return;
+    //init code here
+    node_index currentIndex = -1;
+    node::forward_link_iterator next;
+
     while(!graph.empty()) {
-        //init code here
-        node_index currentIndex = -1;
-        node::forward_link_iterator next;
-
-        //std::cout << "Node Count: " << graph.count() << std::endl;
-
-        currentIndex = std::max_element(graph.begin(), 
-                graph.end(), compareNodes)->getIndex();
-        LabeledOpenPath activePath;
-        if(!graph[currentIndex].forwardEmpty())
-            smartAppendPoint(graph[currentIndex].data().getPosition(), 
-                    PathLabel(), labeledpaths, activePath);
-        while((next = bestLink(graph[currentIndex])) != 
-                graph[currentIndex].forwardEnd()) {
-            node::connection nextConnection = *next;
-            PathLabel currentCost(*nextConnection.second);
-            smartAppendPoint(nextConnection.first->data().getPosition(), 
-                    currentCost, labeledpaths, activePath);
-            graph[currentIndex].disconnect(*nextConnection.first);
-            nextConnection.first->disconnect(graph[currentIndex]);
+        while(!graph.empty()) {
+            currentIndex = std::max_element(entryBegin(), 
+                    entryEnd(), 
+                    nodeComparator(graph, historyPoint))->getIndex();
+            LabeledOpenPath activePath;
+            if(!graph[currentIndex].forwardEmpty()) {
+                smartAppendPoint(graph[currentIndex].data().getPosition(), 
+                        PathLabel(), labeledpaths, activePath);
+            }
+            while((next = bestLink(graph[currentIndex])) != 
+                    graph[currentIndex].forwardEnd()) {
+                node::connection nextConnection = *next;
+                PathLabel currentCost(*nextConnection.second);
+                smartAppendPoint(nextConnection.first->data().getPosition(), 
+                        currentCost, labeledpaths, activePath);
+                graph[currentIndex].disconnect(*nextConnection.first);
+                nextConnection.first->disconnect(graph[currentIndex]);
+                if(graph[currentIndex].forwardEmpty() && 
+                        graph[currentIndex].reverseEmpty()) {
+                    graph.destroyNode(graph[currentIndex]);
+                }
+                currentIndex = nextConnection.first->getIndex();
+                //std::cout << "Inner Count: " << graph.count() << std::endl;
+            }
             if(graph[currentIndex].forwardEmpty() && 
-                    graph[currentIndex].reverseEmpty())
+                    graph[currentIndex].reverseEmpty()) {
                 graph.destroyNode(graph[currentIndex]);
-            currentIndex = nextConnection.first->getIndex();
-            //std::cout << "Inner Count: " << graph.count() << std::endl;
+            }
+            //recover from corners here
+            smartAppendPath(labeledpaths, activePath);
         }
-        if(graph[currentIndex].forwardEmpty() && 
-                graph[currentIndex].reverseEmpty()) {
-            graph.destroyNode(graph[currentIndex]);
-        }
-        //recover from corners here
-        smartAppendPath(labeledpaths, activePath);
     }
 }
 bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths, 
@@ -262,6 +278,7 @@ void pather_optimizer_fastgraph::smartAppendPoint(PointType point,
         path.myLabel = label;
         path.myPath.appendPoint(point);
     }
+    historyPoint = point;
 }
 
 void pather_optimizer_fastgraph::repr_svg(std::ostream& out) {
