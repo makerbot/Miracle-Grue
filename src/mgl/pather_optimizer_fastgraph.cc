@@ -8,8 +8,8 @@ namespace mgl {
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
     node_index last = -1;
-    graph_type& currentGraph = m_graph;
-    //bucket& currentBucket = pickBucket(*path.fromStart());
+    bucket& currentBucket = pickBucket(*path.fromStart());
+    graph_type& currentGraph = currentBucket.m_graph;
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
             ++iter) {
@@ -47,8 +47,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         const PathLabel& label) {
     node_index last = -1;
     node_index first = -1;
-    graph_type& currentGraph = m_graph;
-    //bucket& currentBucket = pickBucket(*loop.clockwise());
+    bucket& currentBucket = pickBucket(*loop.clockwise());
+    graph_type& currentGraph = currentBucket.m_graph;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
             ++iter) {
@@ -113,7 +113,7 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
         boundaryLimits.expandTo(segment.a);
         boundaryLimits.expandTo(segment.b);
         m_boundaries.insert(segment);
-        buckets.back().first.insert(segment);
+        buckets.back().m_bounds.insert(segment);
     }
     
 }
@@ -124,6 +124,11 @@ void pather_optimizer_fastgraph::clearBoundaries() {
 }
 void pather_optimizer_fastgraph::clearPaths() {
     m_graph.clear();
+    for(bucket_list::iterator iter = buckets.begin(); 
+            iter != buckets.end(); 
+            ++iter) {
+        iter->m_graph.clear();
+    }
 }
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {
@@ -199,7 +204,7 @@ pather_optimizer_fastgraph::bucket&
             iter != buckets.end(); 
             ++iter) {
         size_t intersections = countIntersections(testLine, 
-                iter->first);
+                iter->m_bounds);
         if(intersections & 1) { //if odd, then inside
             return *iter;
         }

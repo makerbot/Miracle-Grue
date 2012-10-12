@@ -40,8 +40,11 @@ public:
 protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
 private:
-    void optimize1(LabeledOpenPaths& labeledopenpaths);
+    typedef std::list<LabeledOpenPaths> multipath_type;
+    //format is void foo(output, [input]);
+    void optimize1(multipath_type& output);
     bool optimize2(LabeledOpenPaths& labeledopenpaths, LabeledOpenPaths& intermediate);
+    bool optimize3(multipath_type& output, multipath_type& input);
     class Cost : public PathLabel {
     public:
         Cost(const PathLabel& label = PathLabel(), 
@@ -80,13 +83,17 @@ private:
     typedef graph_type::node_index node_index;
     typedef std::pair<node_index, Scalar> probe_link_type;
     
-    typedef std::vector<graph_type::node_index> node_index_list;
-    typedef std::pair<boundary_container, graph_type> bucket;
+    class bucket;
+    
     typedef std::list<bucket> bucket_list;
     
-    typedef graph_type::forward_node_iterator node_iterator;
+    class bucket {
+    public:
+        boundary_container m_bounds;
+        graph_type m_graph;
+    };
     
-    typedef std::list<LabeledOpenPaths> multipath_type;
+    typedef graph_type::forward_node_iterator node_iterator;
     
     class entry_iterator {
     public:
