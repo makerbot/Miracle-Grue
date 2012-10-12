@@ -81,7 +81,7 @@ private:
     typedef std::pair<node_index, Scalar> probe_link_type;
     
     typedef std::vector<graph_type::node_index> node_index_list;
-    typedef std::pair<boundary_container, node_index_list> bucket;
+    typedef std::pair<boundary_container, graph_type> bucket;
     typedef std::list<bucket> bucket_list;
     
     typedef graph_type::forward_node_iterator node_iterator;
@@ -110,8 +110,8 @@ private:
         node_iterator m_end;
     };
     
-    entry_iterator entryBegin();
-    entry_iterator entryEnd();
+    entry_iterator entryBegin(graph_type& graph);
+    entry_iterator entryEnd(graph_type& graph);
     
     class probeCompare {
     public:
@@ -164,7 +164,7 @@ private:
     
     boundary_container boundaries;
     bucket_list buckets;
-    graph_type graph;
+    graph_type m_graph;
     AABBox boundaryLimits;
     PointType historyPoint;
     

@@ -57,8 +57,8 @@ pather_optimizer_fastgraph::node::forward_link_iterator
 void pather_optimizer_fastgraph::buildLinks(node& from) {
     typedef std::vector<probe_link_type> probe_collection;
     probe_collection probes;
-    for(entry_iterator iter = entryBegin(); 
-            iter != entryEnd(); 
+    for(entry_iterator iter = entryBegin(m_graph); 
+            iter != entryEnd(m_graph); 
             ++iter) {
         if(*iter == from)
             continue;
@@ -67,7 +67,7 @@ void pather_optimizer_fastgraph::buildLinks(node& from) {
                 iter->data().getPosition()).magnitude()));
     }
     std::sort(probes.begin(), probes.end(), 
-            probeCompare(from.getIndex(), graph));
+            probeCompare(from.getIndex(), m_graph));
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
@@ -79,10 +79,10 @@ void pather_optimizer_fastgraph::buildLinks(node& from) {
                     ++candidate) {
                 PointType unit;
                 try {
-                    unit = (graph[candidate->first].data().getPosition() - 
+                    unit = (m_graph[candidate->first].data().getPosition() - 
                             from.data().getPosition()).unit();
                 } catch (const libthing::Exception& le) {}
-                from.connect(graph[candidate->first], 
+                from.connect(m_graph[candidate->first], 
                         Cost(PathLabel(PathLabel::TYP_INVALID, 
                         PathLabel::OWN_INVALID, -1), 
                         candidate->second, 
@@ -91,14 +91,14 @@ void pather_optimizer_fastgraph::buildLinks(node& from) {
             break;
         }
         libthing::LineSegment2 probeline(from.data().getPosition(), 
-                graph[iter->first].data().getPosition());
+                m_graph[iter->first].data().getPosition());
         PointType unit;
         try {
-            unit = (graph[iter->first].data().getPosition() - 
+            unit = (m_graph[iter->first].data().getPosition() - 
                     from.data().getPosition()).unit();
         } catch (const libthing::Exception& le) {}
         if(!crossesBounds(probeline)) {
-            from.connect(graph[iter->first], 
+            from.connect(m_graph[iter->first], 
                     Cost(PathLabel(PathLabel::TYP_CONNECTION, 
                     PathLabel::OWN_MODEL, -1), 
                     iter->second, 
@@ -121,40 +121,40 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
     optimize2(labeledpaths, intermediate);
 }
 void pather_optimizer_fastgraph::optimize1(LabeledOpenPaths& labeledpaths) {
-    if(graph.empty())
+    if(m_graph.empty())
         return;
     //init code here
     node_index currentIndex = -1;
     node::forward_link_iterator next;
 
-    while(!graph.empty()) {
-        while(!graph.empty()) {
-            currentIndex = std::max_element(entryBegin(), 
-                    entryEnd(), 
-                    nodeComparator(graph, historyPoint))->getIndex();
+    while(!m_graph.empty()) {
+        while(!m_graph.empty()) {
+            currentIndex = std::max_element(entryBegin(m_graph), 
+                    entryEnd(m_graph), 
+                    nodeComparator(m_graph, historyPoint))->getIndex();
             LabeledOpenPath activePath;
-            if(!graph[currentIndex].forwardEmpty()) {
-                smartAppendPoint(graph[currentIndex].data().getPosition(), 
+            if(!m_graph[currentIndex].forwardEmpty()) {
+                smartAppendPoint(m_graph[currentIndex].data().getPosition(), 
                         PathLabel(), labeledpaths, activePath);
             }
-            while((next = bestLink(graph[currentIndex])) != 
-                    graph[currentIndex].forwardEnd()) {
+            while((next = bestLink(m_graph[currentIndex])) != 
+                    m_graph[currentIndex].forwardEnd()) {
                 node::connection nextConnection = *next;
                 PathLabel currentCost(*nextConnection.second);
                 smartAppendPoint(nextConnection.first->data().getPosition(), 
                         currentCost, labeledpaths, activePath);
-                graph[currentIndex].disconnect(*nextConnection.first);
-                nextConnection.first->disconnect(graph[currentIndex]);
-                if(graph[currentIndex].forwardEmpty() && 
-                        graph[currentIndex].reverseEmpty()) {
-                    graph.destroyNode(graph[currentIndex]);
+                m_graph[currentIndex].disconnect(*nextConnection.first);
+                nextConnection.first->disconnect(m_graph[currentIndex]);
+                if(m_graph[currentIndex].forwardEmpty() && 
+                        m_graph[currentIndex].reverseEmpty()) {
+                    m_graph.destroyNode(m_graph[currentIndex]);
                 }
                 currentIndex = nextConnection.first->getIndex();
                 //std::cout << "Inner Count: " << graph.count() << std::endl;
             }
-            if(graph[currentIndex].forwardEmpty() && 
-                    graph[currentIndex].reverseEmpty()) {
-                graph.destroyNode(graph[currentIndex]);
+            if(m_graph[currentIndex].forwardEmpty() && 
+                    m_graph[currentIndex].reverseEmpty()) {
+                m_graph.destroyNode(m_graph[currentIndex]);
             }
             //recover from corners here
             smartAppendPath(labeledpaths, activePath);
@@ -284,8 +284,8 @@ void pather_optimizer_fastgraph::smartAppendPoint(PointType point,
 void pather_optimizer_fastgraph::repr_svg(std::ostream& out) {
     out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
-    for(graph_type::forward_node_iterator iter = graph.begin(); 
-            iter != graph.end(); 
+    for(graph_type::forward_node_iterator iter = m_graph.begin(); 
+            iter != m_graph.end(); 
             ++iter) {
         out << "<circle cx=\"" << 200 + iter->data().getPosition().x * 10
                 << "\" cy=\"" <<  200 + iter->data().getPosition().y * 10

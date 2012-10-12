@@ -15,15 +15,15 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         OpenPath::const_iterator next = iter;
         ++next;
         if(iter == path.fromStart()) {
-            last = graph.createNode(NodeData(*iter, 
+            last = m_graph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
         }
         if(next != path.end()) {
             OpenPath::const_iterator future = next;
             ++future;
-            node& curNode = graph.createNode(NodeData(*next, 
+            node& curNode = m_graph.createNode(NodeData(*next, 
                     label.myValue, future==path.end()));
-            node& lastNode = graph[last];
+            node& lastNode = m_graph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -53,14 +53,14 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         Loop::const_finite_cw_iterator next = iter;
         ++next;
         if(iter == loop.clockwiseFinite()) {
-            last = graph.createNode(NodeData(*iter, 
+            last = m_graph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
             first = last;
         }
         if(next != loop.clockwiseEnd()) {
             NodeData curNodeData(*next, label.myValue, true);
-            node& curNode = graph.createNode(curNodeData);
-            node& lastNode = graph[last];
+            node& curNode = m_graph.createNode(curNodeData);
+            node& lastNode = m_graph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -76,8 +76,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             last = curNode.getIndex();
         }
     }
-    node& lastNode = graph[last];
-    node& curNode = graph[first];
+    node& lastNode = m_graph[last];
+    node& curNode = m_graph[first];
     libthing::LineSegment2 connection( 
             curNode.data().getPosition(), 
             lastNode.data().getPosition());
@@ -121,7 +121,7 @@ void pather_optimizer_fastgraph::clearBoundaries() {
     boundaryLimits.reset();
 }
 void pather_optimizer_fastgraph::clearPaths() {
-    graph.clear();
+    m_graph.clear();
 }
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {
@@ -143,14 +143,14 @@ bool pather_optimizer_fastgraph::entry_iterator::operator ==(
     return m_base == other.m_base;
 }
 pather_optimizer_fastgraph::entry_iterator 
-        pather_optimizer_fastgraph::entryBegin() {
+        pather_optimizer_fastgraph::entryBegin(graph_type& graph) {
     entry_iterator ret(graph.begin(), graph.end());
     if(!ret->data().isEntry())
         ++ret;
     return ret;
 }
 pather_optimizer_fastgraph::entry_iterator
-        pather_optimizer_fastgraph::entryEnd() {
+        pather_optimizer_fastgraph::entryEnd(graph_type& graph) {
     return entry_iterator(graph.end(), graph.end());
 }
 Scalar pather_optimizer_fastgraph::splitPaths(multipath_type& destionation, 
