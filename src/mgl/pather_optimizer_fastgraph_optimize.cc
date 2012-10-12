@@ -101,10 +101,12 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
     LabeledOpenPaths intermediate;
     LabeledOpenPaths innerIntermediate;
     optimize1(intermediate);
+    unsigned iteration = 0;
     do {
         innerIntermediate.clear();
         innerIntermediate.swap(intermediate);
-    } while (optimize2(intermediate, innerIntermediate));
+    } while (optimize2(intermediate, innerIntermediate) && 
+            ++iteration < grueCfg.get_iterativeEffort());
     optimize2(labeledpaths, intermediate);
 }
 void pather_optimizer_fastgraph::optimize1(LabeledOpenPaths& labeledpaths) {

@@ -13,6 +13,7 @@
 #include "basic_boxlist.h"
 #include "intersection_index.h"
 #include "Exception.h"
+#include "configuration.h"
 #include <iostream>
 #include <list>
 
@@ -26,6 +27,8 @@ public:
 
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
+    pather_optimizer_fastgraph(const GrueConfig& grueConf)
+            : grueCfg(grueConf) {}
     void addPath(const OpenPath& path, const PathLabel& label);
     void addPath(const Loop& loop, const PathLabel& label);
     void addBoundary(const OpenPath& path);
@@ -137,6 +140,8 @@ private:
     
     boundary_container boundaries;
     graph_type graph;
+    
+    const GrueConfig& grueCfg;
     
 };
 

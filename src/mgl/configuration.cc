@@ -196,6 +196,8 @@ void GrueConfig::loadFromFile(const Configuration& config) {
 void GrueConfig::loadSlicingParams(const Configuration& config) {
     coarseness = (doubleCheck(
             config["coarseness"], "coarseness"));
+    directionWeight = doubleCheck(config["directionWeight"],
+            "directionWeight");
     layerH = (doubleCheck(
             config["layerHeight"], "layerHeight"));
     firstLayerZ = doubleCheck(config["bedZOffset"], 
@@ -285,8 +287,8 @@ void GrueConfig::loadSupportParams(const Configuration& config) {
             config["supportDensity"], "supportDensity");
 }
 void GrueConfig::loadPathingParams(const Configuration& config) {
-    directionWeight = doubleCheck(config["directionWeight"],
-            "directionWeight");
+    iterativeEffort = uintCheck(config["iterativeEffort"], 
+            "iterativeEffort");
 }
 void GrueConfig::loadProfileParams(const Configuration& config) {
     loadExtruderParams(config);
