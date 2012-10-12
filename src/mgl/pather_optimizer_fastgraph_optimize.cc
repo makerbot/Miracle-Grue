@@ -21,7 +21,9 @@ bool pather_optimizer_fastgraph::comparePathLists(const LabeledOpenPaths& lhs,
         const LabeledOpenPaths& rhs) {
     return lhs.front().myLabel.myValue > rhs.front().myLabel.myValue;
 }
-bool pather_optimizer_fastgraph::crossesBounds(const libthing::LineSegment2& line) {
+bool pather_optimizer_fastgraph::crossesBounds(
+        const libthing::LineSegment2& line, 
+        boundary_container& boundaries) {
     std::vector<libthing::LineSegment2> filtered;
     boundaries.search(filtered, LineSegmentFilter(line));
     for(std::vector<libthing::LineSegment2>::const_iterator iter = 
@@ -47,15 +49,16 @@ bool pather_optimizer_fastgraph::nodeComparator::operator ()(node_index lhs,
 
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from, 
-        graph_type& graph) {
+        graph_type& graph, boundary_container& boundaries) {
     if(from.forwardEmpty()) {
         //return from.forwardEnd();
-        buildLinks(from, graph);
+        buildLinks(from, graph, boundaries);
     }
     return std::max_element(from.forwardBegin(), 
             from.forwardEnd(), compareConnections);
 }
-void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph) {
+void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
+        boundary_container& boundaries) {
     typedef std::vector<probe_link_type> probe_collection;
     probe_collection probes;
     for(entry_iterator iter = entryBegin(graph); 
@@ -98,7 +101,7 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph) {
             unit = (graph[iter->first].data().getPosition() - 
                     from.data().getPosition()).unit();
         } catch (const libthing::Exception& le) {}
-        if(!crossesBounds(probeline)) {
+        if(!crossesBounds(probeline, boundaries)) {
             from.connect(graph[iter->first], 
                     Cost(PathLabel(PathLabel::TYP_CONNECTION, 
                     PathLabel::OWN_MODEL, -1), 
@@ -129,6 +132,7 @@ void pather_optimizer_fastgraph::optimize1(LabeledOpenPaths& labeledpaths) {
     node::forward_link_iterator next;
     
     graph_type& currentGraph = m_graph;
+    boundary_container& currentBounds = m_boundaries;
     while(!currentGraph.empty()) {
         currentIndex = std::max_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
@@ -138,7 +142,8 @@ void pather_optimizer_fastgraph::optimize1(LabeledOpenPaths& labeledpaths) {
             smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
                     PathLabel(), labeledpaths, activePath);
         }
-        while((next = bestLink(currentGraph[currentIndex], currentGraph)) != 
+        while((next = bestLink(currentGraph[currentIndex], 
+                currentGraph, currentBounds)) != 
                 currentGraph[currentIndex].forwardEnd()) {
             node::connection nextConnection = *next;
             PathLabel currentCost(*nextConnection.second);
@@ -210,7 +215,7 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
             Scalar curLength = testJoint.length();
             bool closer = curLength < length;
             bool connectedCloser = curLength < connectedLength;
-            bool connects = !crossesBounds(testJoint);
+            bool connects = !crossesBounds(testJoint, m_boundaries);
             if(connects) {
                 if(!foundConnected || connectedCloser) {
                     foundConnected = true;

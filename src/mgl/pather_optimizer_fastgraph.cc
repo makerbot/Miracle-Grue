@@ -8,6 +8,7 @@ namespace mgl {
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
     node_index last = -1;
+    graph_type& currentGraph = m_graph;
     //bucket& currentBucket = pickBucket(*path.fromStart());
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
@@ -15,15 +16,15 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         OpenPath::const_iterator next = iter;
         ++next;
         if(iter == path.fromStart()) {
-            last = m_graph.createNode(NodeData(*iter, 
+            last = currentGraph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
         }
         if(next != path.end()) {
             OpenPath::const_iterator future = next;
             ++future;
-            node& curNode = m_graph.createNode(NodeData(*next, 
+            node& curNode = currentGraph.createNode(NodeData(*next, 
                     label.myValue, future==path.end()));
-            node& lastNode = m_graph[last];
+            node& lastNode = currentGraph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -46,6 +47,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         const PathLabel& label) {
     node_index last = -1;
     node_index first = -1;
+    graph_type& currentGraph = m_graph;
     //bucket& currentBucket = pickBucket(*loop.clockwise());
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
@@ -53,14 +55,14 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         Loop::const_finite_cw_iterator next = iter;
         ++next;
         if(iter == loop.clockwiseFinite()) {
-            last = m_graph.createNode(NodeData(*iter, 
+            last = currentGraph.createNode(NodeData(*iter, 
                     label.myValue, true)).getIndex();
             first = last;
         }
         if(next != loop.clockwiseEnd()) {
             NodeData curNodeData(*next, label.myValue, true);
-            node& curNode = m_graph.createNode(curNodeData);
-            node& lastNode = m_graph[last];
+            node& curNode = currentGraph.createNode(curNodeData);
+            node& lastNode = currentGraph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
@@ -76,8 +78,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             last = curNode.getIndex();
         }
     }
-    node& lastNode = m_graph[last];
-    node& curNode = m_graph[first];
+    node& lastNode = currentGraph[last];
+    node& curNode = currentGraph[first];
     libthing::LineSegment2 connection( 
             curNode.data().getPosition(), 
             lastNode.data().getPosition());
@@ -98,7 +100,7 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
         OpenPath::const_iterator next = iter;
         ++next;
         if(next != path.end()) {
-            boundaries.insert(libthing::LineSegment2(*iter, *next));
+            m_boundaries.insert(libthing::LineSegment2(*iter, *next));
         }
     }
 }
@@ -110,13 +112,13 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
         libthing::LineSegment2 segment = loop.segmentAfterPoint(iter);
         boundaryLimits.expandTo(segment.a);
         boundaryLimits.expandTo(segment.b);
-        boundaries.insert(segment);
+        m_boundaries.insert(segment);
         buckets.back().first.insert(segment);
     }
     
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
-    boundaries = boundary_container();
+    m_boundaries = boundary_container();
     buckets.clear();
     boundaryLimits.reset();
 }

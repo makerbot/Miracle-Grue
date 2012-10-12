@@ -126,8 +126,10 @@ private:
         graph_type& m_graph;
     };
     
-    node::forward_link_iterator bestLink(node& from, graph_type& graph); //can return node::forwardEnd()
-    void buildLinks(node& from, graph_type& graph);
+    node::forward_link_iterator bestLink(node& from, graph_type& graph, 
+            boundary_container& boundaries); //can return node::forwardEnd()
+    void buildLinks(node& from, graph_type& graph, 
+            boundary_container& boundaries);
     
     static bool compareConnections(const node::connection& lhs, 
             const node::connection& rhs);
@@ -150,7 +152,8 @@ private:
         PointType m_position;
     };
     
-    bool crossesBounds(const libthing::LineSegment2& line);
+    bool crossesBounds(const libthing::LineSegment2& line, 
+            boundary_container& boundaries);
     
     void smartAppendPoint(PointType point, PathLabel label, 
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
@@ -162,7 +165,7 @@ private:
     
     const GrueConfig& grueCfg;
     
-    boundary_container boundaries;
+    boundary_container m_boundaries;
     bucket_list buckets;
     graph_type m_graph;
     AABBox boundaryLimits;
