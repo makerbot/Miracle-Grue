@@ -68,7 +68,9 @@ public:
 		typedef ExtruderList::const_iterator const_extruder_iterator;
 		class ExtruderLayer{
 		public:
-            static const int OUTLINE_LABEL_VALUE = 10;
+            static const int OUTLINE_LABEL_VALUE = 3;
+            static const int INSET_LABEL_VALUE = 10;
+            static const int INFILL_LABEL_VALUE = 5;
 			typedef std::list<OpenPathList> InsetList;
 			typedef std::list<OpenPath> InfillList;
 			typedef std::list<OpenPath> OutlineList;

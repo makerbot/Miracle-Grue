@@ -109,13 +109,16 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		optimizer->addBoundaries(layerRegions->outlines);	
         
 		if(grueCfg.get_doInsets()) {
-            int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+            int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
+            int shellSequence = 0;
             for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
                     listIter != insetLoops.end(); 
-                    ++listIter) {
+                    ++listIter, ++shellSequence) {
                 optimizer->addPaths(*listIter, 
                         PathLabel(PathLabel::TYP_INSET, 
-                        PathLabel::OWN_MODEL, currentShell));
+                        PathLabel::OWN_MODEL, shellSequence != 0 ? 
+                            currentShell : 
+                            LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE));
                 ++currentShell;
             }
         }
@@ -147,7 +150,8 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		
         if(grueCfg.get_doInfills()) {
             optimizer->addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
-                    PathLabel::OWN_MODEL, 1));
+                    PathLabel::OWN_MODEL, 
+                    LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
         }
 		
 		optimizer->optimize(preoptimized);

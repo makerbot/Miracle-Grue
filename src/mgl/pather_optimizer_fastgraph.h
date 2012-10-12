@@ -125,9 +125,7 @@ private:
         probeCompare(node_index from, graph_type& basis) 
                 : m_from(from), m_graph(basis) {}
         bool operator ()(const probe_link_type& lhs, 
-                const probe_link_type& rhs) {
-            return lhs.second < rhs.second;
-        }
+                const probe_link_type& rhs);
     private:
         node_index m_from;
         graph_type& m_graph;

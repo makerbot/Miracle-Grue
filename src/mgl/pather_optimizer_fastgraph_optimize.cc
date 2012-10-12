@@ -46,6 +46,18 @@ bool pather_optimizer_fastgraph::nodeComparator::operator ()(node_index lhs,
         node_index rhs) const {
     return operator ()(m_graph[lhs], m_graph[rhs]);
 }
+bool pather_optimizer_fastgraph::probeCompare::operator ()(
+        const probe_link_type& lhs, 
+        const probe_link_type& rhs) {
+    int priorityDifference = m_graph[lhs.first].data().getPriority() - 
+            m_graph[rhs.first].data().getPriority();
+    Scalar distDifference = lhs.second - rhs.second;
+    if(priorityDifference == 0) {
+        return distDifference < 0;
+    } else {
+        return priorityDifference > 0;
+    }
+}
 
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from, 
@@ -75,25 +87,6 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
-        if(iter->second > 10 && false) {
-            probe_collection::iterator candidatesEnd = probes.begin();
-            ++candidatesEnd;
-            for(probe_collection::iterator candidate = probes.begin(); 
-                    candidate != candidatesEnd; 
-                    ++candidate) {
-                PointType unit;
-                try {
-                    unit = (graph[candidate->first].data().getPosition() - 
-                            from.data().getPosition()).unit();
-                } catch (const libthing::Exception& le) {}
-                from.connect(graph[candidate->first], 
-                        Cost(PathLabel(PathLabel::TYP_INVALID, 
-                        PathLabel::OWN_INVALID, -1), 
-                        candidate->second, 
-                        unit));
-            }
-            break;
-        }
         libthing::LineSegment2 probeline(from.data().getPosition(), 
                 graph[iter->first].data().getPosition());
         PointType unit;
@@ -245,20 +238,18 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
                     otherPoint);
             Scalar curLength = testJoint.length();
             bool closer = curLength < length;
-            bool connectedCloser = curLength < connectedLength;
             bool connects = !crossesBounds(testJoint, m_boundaries);
+            int otherValue = other->front().myLabel.myValue;
+            int nearestValue = nearest->front().myLabel.myValue;
             if(connects) {
-                if(!foundConnected || connectedCloser) {
+                if(!foundConnected || (otherValue > nearestValue)) {
                     foundConnected = true;
                     joint = testJoint;
                     connected = other;
                     connectedLength = curLength;
                 }
             }
-            int otherValue = other->front().myLabel.myValue;
-            int nearestValue = nearest->front().myLabel.myValue;
-            if((otherValue > nearestValue && 
-                    curLength - length < 1) || closer) {
+            if((otherValue > nearestValue) || closer) {
                 nearest = other;
                 length = testJoint.length();
             }
