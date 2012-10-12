@@ -126,8 +126,8 @@ private:
         graph_type& m_graph;
     };
     
-    node::forward_link_iterator bestLink(node& from); //can return node::forwardEnd()
-    void buildLinks(node& from);
+    node::forward_link_iterator bestLink(node& from, graph_type& graph); //can return node::forwardEnd()
+    void buildLinks(node& from, graph_type& graph);
     
     static bool compareConnections(const node::connection& lhs, 
             const node::connection& rhs);
