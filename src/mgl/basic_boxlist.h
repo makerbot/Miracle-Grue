@@ -21,8 +21,25 @@ public:
     typedef std::pair<value_type, AABBox> value_bounds;
     
     typedef std::vector<value_bounds> internal_container;
-    typedef typename internal_container::iterator iterator;
-    typedef typename internal_container::const_iterator const_iterator;
+    
+    template <typename BASE>
+    class basic_iterator {
+        friend class basic_boxlist;
+    public:
+        basic_iterator& operator++() { ++m_base; return *this; }
+        basic_iterator operator++(int) { basic_iterator copy = *this; ++*this; return copy; }
+        bool operator== (const basic_iterator& rhs) { return m_base ==  rhs.m_base; }
+        bool operator!= (const basic_iterator& rhs) { return !(*this==rhs); }
+        const typename BASE::value_type::first_type& operator* () { return m_base->first; }
+        const typename BASE::value_type::first_type* operator-> () { return &**this; }
+    private:
+        basic_iterator(BASE base) : m_base(base) {}
+        BASE m_base;
+    };
+    
+    typedef basic_iterator<typename internal_container::iterator> iterator;
+    typedef basic_iterator<typename internal_container::const_iterator> const_iterator;
+    //internal_container::iterator::reference::first_type
     
     iterator insert(const value_type& value) {
         return data.insert(data.end(), value_bounds(value, 
@@ -33,7 +50,7 @@ public:
     }
     template <typename COLLECTION, typename FILTER>
     void search(COLLECTION& result, const FILTER& filt) {
-        for(const_iterator iter = data.begin(); 
+        for(typename internal_container::iterator iter = data.begin(); 
                 iter != data.end(); 
                 ++iter) {
             if(filt.filter(iter->second))
@@ -42,6 +59,8 @@ public:
     }
     iterator begin() { return data.begin(); }
     iterator end() { return data.end(); }
+    const_iterator begin() const { return data.begin(); }
+    const_iterator end() const { return data.end(); }
     
 private:
     internal_container data;

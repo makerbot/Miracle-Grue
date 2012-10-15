@@ -41,10 +41,15 @@ protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
 private:
     typedef std::list<LabeledOpenPaths> multipath_type;
+    
+    class bucket;
+    typedef std::list<bucket> bucket_list;
     //format is void foo(output, [input]);
-    void optimize1(multipath_type& output);
-    bool optimize2(LabeledOpenPaths& labeledopenpaths, LabeledOpenPaths& intermediate);
-    bool optimize3(multipath_type& output, multipath_type& input);
+    void optimize1(multipath_type& output, PointType& entryPoint);
+    void optimize1Inner(LabeledOpenPaths& labeledpaths, bucket_list::iterator input, 
+            PointType& entryPoint);
+    bool optimize2(LabeledOpenPaths& labeledopenpaths, 
+            LabeledOpenPaths& intermediate);
     class Cost : public PathLabel {
     public:
         Cost(const PathLabel& label = PathLabel(), 
@@ -82,10 +87,6 @@ private:
     typedef graph_type::node node;
     typedef graph_type::node_index node_index;
     typedef std::pair<node_index, Scalar> probe_link_type;
-    
-    class bucket;
-    
-    typedef std::list<bucket> bucket_list;
     
     class bucket {
     public:
@@ -157,11 +158,22 @@ private:
         PointType m_position;
     };
     
+    class bucketSorter {
+    public:
+        bucketSorter(boundary_container& bounds, PointType frompoint) 
+                : m_bounds(bounds), m_from(frompoint) {}
+        bool operator ()(const bucket& lhs, const bucket& rhs) const;
+    private:
+        boundary_container& m_bounds;
+        PointType m_from;
+    };
+    
     bool crossesBounds(const libthing::LineSegment2& line, 
             boundary_container& boundaries);
     
     void smartAppendPoint(PointType point, PathLabel label, 
-            LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+            LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
+            PointType& entryPoint);
     void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);

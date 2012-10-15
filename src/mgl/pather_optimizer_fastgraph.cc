@@ -9,6 +9,9 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         const PathLabel& label) {
     node_index last = -1;
     bucket_list::iterator bucketIter = pickBucket(*path.fromStart());
+    if(bucketIter == buckets.end()) {
+        throw GraphException("No bucket for path!");
+    }
     bucket& currentBucket = *bucketIter;
     graph_type& currentGraph = currentBucket.m_graph;
     for(OpenPath::const_iterator iter = path.fromStart(); 
@@ -49,6 +52,9 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     node_index last = -1;
     node_index first = -1;
     bucket_list::iterator bucketIter = pickBucket(*loop.clockwise());
+    if(bucketIter == buckets.end()) {
+        throw GraphException("No bucket for path!");
+    }
     bucket& currentBucket = *bucketIter;
     graph_type& currentGraph = currentBucket.m_graph;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
@@ -107,11 +113,7 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
-    PointType testPoint = *loop.clockwise();
-    bucket_list::iterator iter = pickBucket(testPoint);
-    if(iter == buckets.end()) {
-        iter = buckets.insert(iter, bucket());
-    }
+    bucket_list::iterator iter = buckets.insert(buckets.end(), bucket());
     bucket& destBucket = *iter;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
@@ -122,7 +124,8 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
         m_boundaries.insert(segment);
         destBucket.m_bounds.insert(segment);
     }
-    
+    buckets.sort(bucketSorter(m_boundaries, 
+            boundaryLimits.bottom_left() - PointType(20, 20)));
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
     m_boundaries = boundary_container();
@@ -139,7 +142,7 @@ void pather_optimizer_fastgraph::clearPaths() {
 }
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {
-    do { ++m_base; } while(m_base != m_end && !m_base->data().isEntry());
+    if(m_base != m_end) do { ++m_base; } while(m_base != m_end && !m_base->data().isEntry());
     return *this;
 }
 pather_optimizer_fastgraph::entry_iterator
@@ -159,7 +162,7 @@ bool pather_optimizer_fastgraph::entry_iterator::operator ==(
 pather_optimizer_fastgraph::entry_iterator 
         pather_optimizer_fastgraph::entryBegin(graph_type& graph) {
     entry_iterator ret(graph.begin(), graph.end());
-    if(!ret->data().isEntry())
+    if(ret.m_base != ret.m_end && !ret->data().isEntry())
         ++ret;
     return ret;
 }

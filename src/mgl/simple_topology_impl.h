@@ -155,7 +155,7 @@ void SG_TYPE::clear() {
 }
 SG_TEMPLATE template <typename BASE>
 SG_TYPE::node_iterator<BASE>& SG_TYPE::node_iterator<BASE>::operator ++() {
-    do { ++m_base; } while(m_base != m_end && !m_base->m_valid);
+    if(m_base != m_end) do { ++m_base; } while(m_base != m_end && !m_base->m_valid);
     return *this;
 }
 SG_TEMPLATE template <typename BASE>
@@ -176,7 +176,7 @@ bool SG_TYPE::node_iterator<BASE>::operator ==(
 SG_TEMPLATE
 typename SG_TYPE::forward_node_iterator SG_TYPE::begin() {
     forward_node_iterator ret(nodes.begin(), nodes.end());
-    if(!ret.m_base->m_valid)
+    if(ret.m_base != ret.m_end && !ret.m_base->m_valid)
         ++ret;
     return ret;
 }
@@ -186,7 +186,10 @@ typename SG_TYPE::forward_node_iterator SG_TYPE::end() {
 }
 SG_TEMPLATE
 typename SG_TYPE::reverse_node_iterator SG_TYPE::rbegin() {
-    return reverse_node_iterator(nodes.begin(), nodes.end());
+    reverse_node_iterator ret(nodes.begin(), nodes.end());
+    if(ret.m_base != ret.m_end && !ret.m_base->m_valid)
+        ++ret;
+    return ret;
 }
 SG_TEMPLATE
 typename SG_TYPE::reverse_node_iterator SG_TYPE::rend() {
