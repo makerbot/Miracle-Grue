@@ -168,6 +168,13 @@ public:
 							const Grid& grid, 
 							GridRanges& surface);
 
+	void fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
+						   const LayerMeasure &layermeasure,
+						   std::list<OpenPathList> &spursPerShell);
+
+	void fillSpurLoops(const LoopList &spurLoops,
+					   const LayerMeasure &layermeasure,
+					   OpenPathList &spurs);
 private:
 
 

@@ -309,11 +309,13 @@ void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
 
 		spursPerShell.push_back(OpenPathList());
 		OpenPathList &spurs = spursPerShell.back();
-		fillSpurLoops(spurLoop, layermeasure, spurs);
+		fillSpurLoops(*spurLoops, layermeasure, spurs);
 	}
 }
 
-bool SegLess(const LineSegment2 &first, LineSegment2 *second) {
+typedef pair<LineSegment2, LineSegment2> SegmentPair;
+
+bool VectorLess(const Vector2 &first, const Vector2 &second) {
 	if (first.x < second.x)
 		return true;
 	else if (first.x > second.x)
@@ -324,46 +326,150 @@ bool SegLess(const LineSegment2 &first, LineSegment2 *second) {
 		return false;
 }
 
-bool SegPairLess(const SegmentPair *first, const SegmentPair *second) {
-	if (SegLess(first->a, second->a))
+bool SegLess(const LineSegment2 &first, const LineSegment2 &second) {
+	if (VectorLess(first.a, second.a))
 		return true;
-	else if (SegLess(second->a, first->a))
+	else if (VectorLess(second.a, first.a))
 		return false;
-	else if (SegLess(first->b, second->b))
+	else if (VectorLess(first.b, second.b))
 		return true;
-	else 
-		return false
+	else
+		return false;
 }
 
-typedef pair<LineSegment2, LineSegment2> SegmentPair;
+struct SegPairLess {
+	bool operator()(const SegmentPair *first, const SegmentPair *second) {
+		if (SegLess(first->first, second->first))
+			return true;
+		else if (SegLess(second->first, first->first))
+			return false;
+		else if (SegLess(first->second, second->second))
+			return true;
+		else 
+			return false;
+	}
+};
+
 struct Intersection {
 	LineSegment2 seg;
 	Vector2 point;
 };
-typedef Vector<Intersection> IntersectionList;
+typedef vector<Intersection> IntersectionList;
 typedef set<SegmentPair*, SegPairLess> SegmentPairSet;
 typedef vector<LineSegment2> SegmentList;
 
-struct Line {
-	Vector2 start;
-	Vector2 heading;
-};
 
-void Regioner::fillSpurLoop(const LoopList &spurLoops,
-							const LayerMeasure &layermeasure,
-							OpenPathList &spurs) {
+Vector2 getSegmentVector(const LineSegment2 &seg) {
+	return seg.a - seg.b;
+}
+
+LineSegment2 getSegmentNormal(const LineSegment2 &orig,
+							  const Vector2 &startingPoint,
+							  const Scalar length) {
+	Vector2 heading = getSegmentVector(orig);
+	heading.normalise();
+
+	Vector2 normalVector;
+	normalVector.x = -heading.y;
+	normalVector.y = heading.x;
+
+	normalVector *= length;
+
+	Vector2 endingPoint = startingPoint + normalVector;
+
+	return LineSegment2(startingPoint, endingPoint);
+}
+
+#include <math.h>
+#include <Eigen/Geometry>
+
+typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
+typedef Eigen::Vector2d EVector;
+
+void lineIntersection(const ELine first, const ELine second,
+					  Vector2 &point, Scalar &angle) {
+	EVector epoint = first.intersectionPoint(Eigen::Hyperplane<Scalar, 2>(second));
+	point.x = epoint(0);
+	
+	EVector firstUnit = first.direction();
+	EVector secondUnit = second.direction();
+
+	angle = acos(firstUnit.dot(secondUnit));
+}
+
+SegmentPair normalizeWalls(const LineSegment2 &first,
+						   const LineSegment2 &second) {
+
+	SegmentPair segs;
+	if (SegLess(first, second)) {
+		segs.first = first;
+		segs.second = second;
+	}
+	else {
+		segs.first = second;
+		segs.second = first;
+	}
+
+	return segs;
+}
+
+LineSegment2 triangleBase(const Vector2 firstUnit,
+						  const Vector2 secondUnit,
+						  const Vector2 point,
+						  const Scalar angle,
+						  const Scalar baseLen) {
+	Scalar triangleSide = baseLen / (2 * sin(angle / 2));
+
+	Vector2 firstSide = firstUnit * triangleSide;
+	Vector2 secondSide = secondUnit * triangleSide;
+
+	return LineSegment2(point + firstSide, point + secondSide);
+}	
+
+EVector toEVector(const Vector2 &orig) {
+	return EVector(orig.x, orig.y);
+}
+
+SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
+							  const SegmentPair &sides) {
+	ELine firstLine(toEVector(sides.first.a), toEVector(sides.first.b));
+	ELine secondLine(toEVector(sides.second.a), toEVector(sides.second.b));
+
+	lineIntersection(firstLine, secondLine);
+
+	Vector2 firstUnit = firstLine.direction();
+	Vector2 secondUnit = secondLine.direction();
+
+	SegmentPair parallels;
+	parallels.first = triangleBase(firstUnit, secondUnit, intersect.point,
+								   intersect.angle, toplen);
+	parallels.second = triangleBase(firstUnit, secondUnit, intersect.point,
+									intersect.angle, toplen);
+
+	return parallels;
+}
+
+LineSegment2 cutInteriorSegment(const Vector2 &orig, const Scalar margin,
+								const SegIndex &boundaries) {
+	//STUB
+	return orig;
+}
+
+void Regioner::fillSpurLoops(const LoopList &spurLoops,
+							 const LayerMeasure &layermeasure,
+							 OpenPathList &spurs) {
 
 	//TODO: make these config values
-	const maxSpurWidth = layermeasure.layerW() * 1.5;
-	const minSpurWidth = layermeasure.layerW() * 0.5;
+	const Scalar maxSpurWidth = layermeasure.getLayerW() * 1.5;
+	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.5;
 	
 	//get loop line segments
 	SegmentList segs;
 	for (LoopList::const_iterator loop = spurLoops.begin();
 		 loop != spurLoops.end(); ++loop) {
 
-		for (Loop::finite_cw_iterator pn = loop->begin();
-			 pn != loop->end(); ++pn) {
+		for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
+			 pn != loop->clockwiseEnd(); ++pn) {
 			segs.push_back(LineSegment2());
 			LineSegment2 &seg = segs.back();
 			seg = loop->segmentAfterPoint(pn);
@@ -371,19 +477,19 @@ void Regioner::fillSpurLoop(const LoopList &spurLoops,
 
 	}
 
-	SegIndex index;
-	index->insert(segs);
+	//SegIndex index;
+	//index->insert(segs);
 
 	//find wall pairs
-	SegmentPairSetSet allWalls;
+	SegmentPairSet allWalls;
 
-	for (SegmentList::const_iterator curSeg segs.begin();
+	for (SegmentList::const_iterator curSeg = segs.begin();
 		 curSeg != segs.end(); ++curSeg) {
 		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a,
 											   maxSpurWidth);
 
 		IntersectionList intersecting;
-		index.findIntersecting(normal, intersecting);
+		//index.findIntersecting(normal, intersecting);
 
 		if (intersecting.size() > 0) {
 			//we only care about the closest intersection
@@ -405,46 +511,6 @@ void Regioner::fillSpurLoop(const LoopList &spurLoops,
 	}
 }
 
-LineSegment2 getNormalSegment(const LineSegment2 &orig,
-							  const Vector2 &startingPoint,
-							  const Scalar length) {
-	Vector2 heading = segmentVector(orig);
-	heading.normalize();
-
-	Vector2 normalVector;
-	normalVector.x = -heading.y;
-	normalVector.y = heading.x;
-
-	normalVector *= length;
-
-	Vector2 endingPoint = startingPoint + normalVector;
-
-	return LineSegment2(startingPoint, endingPoint);
-}
-
-SegmentPair normalizeWalls(const LineSegment2 &first,
-						   const LineSegment2 &second) {
-
-	SegmentPair segs;
-	if (SegLess(first, second)) {
-		segs.first = first;
-		segs.second = second;
-	}
-	else {
-		segs.first = second;
-		segs.second = first;
-	}
-}
-
-SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
-							  const SegmentPair &sides) {
-	
-}
-
-LineSegment2 cutInteriorSegment(const Vector2 &orig, const Scalar margin,
-								const SegIndex &boundaries) {
-	
-}
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
 //		std::vector<libthing::Insets> & insets) {
