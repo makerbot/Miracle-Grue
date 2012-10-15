@@ -8,7 +8,8 @@ namespace mgl {
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
     node_index last = -1;
-    bucket& currentBucket = pickBucket(*path.fromStart());
+    bucket_list::iterator bucketIter = pickBucket(*path.fromStart());
+    bucket& currentBucket = *bucketIter;
     graph_type& currentGraph = currentBucket.m_graph;
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
@@ -47,7 +48,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         const PathLabel& label) {
     node_index last = -1;
     node_index first = -1;
-    bucket& currentBucket = pickBucket(*loop.clockwise());
+    bucket_list::iterator bucketIter = pickBucket(*loop.clockwise());
+    bucket& currentBucket = *bucketIter;
     graph_type& currentGraph = currentBucket.m_graph;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
@@ -105,6 +107,19 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
+    bool makeBucket = true;
+    PointType testPoint = *loop.clockwise();
+    libthing::LineSegment2 testLine(testPoint, 
+            boundaryLimits.bottom_left() - PointType(20,20));
+    for(bucket_list::iterator iter = buckets.begin(); 
+            iter != buckets.end(); 
+            ++iter) {
+        size_t intersections = countIntersections(testLine, iter->m_bounds);
+        if(intersections & 1){    //is inside?
+            makeBucket = false;
+            break;
+        }
+    }
     buckets.push_back(bucket());
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
@@ -196,19 +211,21 @@ size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& li
     return count;
 }
 
-pather_optimizer_fastgraph::bucket& 
+pather_optimizer_fastgraph::bucket_list::iterator 
         pather_optimizer_fastgraph::pickBucket(PointType point) {
     libthing::LineSegment2 testLine(point, 
             boundaryLimits.bottom_left() - PointType(20,20));
-    for(bucket_list::iterator iter = buckets.begin(); 
+    bucket_list::iterator iter = buckets.begin();
+    for(; 
             iter != buckets.end(); 
             ++iter) {
         size_t intersections = countIntersections(testLine, 
                 iter->m_bounds);
         if(intersections & 1) { //if odd, then inside
-            return *iter;
+            break;
         }
     }
+    return iter;
     std::cout << "Point Location: " << point << std::endl;
     std::cout << "Bounds: " << boundaryLimits.bottom_left() <<
             boundaryLimits.top_right() << std::endl;

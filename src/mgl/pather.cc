@@ -116,7 +116,8 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
                     ++listIter, ++shellSequence) {
                 optimizer->addPaths(*listIter, 
                         PathLabel(PathLabel::TYP_INSET, 
-                        PathLabel::OWN_MODEL, shellSequence != 0 ? 
+                        PathLabel::OWN_MODEL, (shellSequence != 0 && 
+                            grueCfg.get_nbOfShells() > 1) ? 
                             currentShell : 
                             LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE));
                 ++currentShell;

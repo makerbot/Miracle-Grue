@@ -165,7 +165,7 @@ private:
     void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
-    bucket& pickBucket(PointType point);
+    bucket_list::iterator pickBucket(PointType point);
     
     
     const GrueConfig& grueCfg;
