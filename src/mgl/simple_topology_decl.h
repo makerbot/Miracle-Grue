@@ -8,6 +8,24 @@
 
 namespace topo {
 
+/*
+ This is a graph implementation focused on memory locality. Node data and cost
+ types are arbitrary and never used internally except for copying.
+ 
+ There is a vector of node info groups and a vector of costs
+ A node info group contains a node, a map of outgoing (forward) links, 
+ and a map of incoming (reverse) links. The maps map from node indeces 
+ (the other node to which you querry connection) to cost indeces 
+ (a vector of whatever cost type you have).
+ A node contains a node data, its own index, and a pointer to the parent graph. 
+ It provides convenience methods that invokes calls on the parent graph.
+ 
+ Node references will become invalidated on node insertions or removals, 
+ so use node indeces (node::getIndex()) and query the graph (graph[i]) if you 
+ plan on inserting things into the graph
+ 
+ */
+
 template <typename _NODE_DATA_T, typename _COST_T>
 class simple_graph {
 public:
@@ -18,17 +36,22 @@ public:
     typedef _NODE_DATA_T node_data_type;
     typedef _COST_T cost_type;
     
+    //uniquely identifies a node
     typedef size_t node_index;
+    //uniquely identifies a cost for a link
     typedef size_t cost_index;
-    
+    //maps outgoing links (from destionation to cost)
     typedef std::map<node_index, cost_index> adjacency_map;
+    //maps incoming links (from origin to cost)
     typedef std::map<node_index, cost_index> reverse_adjacency_map;
-    
+    //contains all nodes, node indeces point into this
     typedef std::vector<node_info_group> node_container_type;
+    //maps all costs, cost indeces point into here
     typedef std::vector<cost_type> cost_container_type;
+    //these are used for recovering freed space in node and cost containers
     typedef std::vector<node_index> free_node_container_type;
     typedef std::vector<cost_index> free_cost_container_type;
-    
+    //allocators!
     typedef std::allocator<node> node_allocator_type;
     typedef std::allocator<cost_type> cost_allocator_type;
     
@@ -82,6 +105,7 @@ public:
         reverse_link_iterator reverseBegin();
         reverse_link_iterator reverseEnd();
         
+        //true if no outgoing or incoming links
         bool forwardEmpty() const;
         bool reverseEmpty() const;
         
@@ -97,6 +121,7 @@ public:
         node_data_type m_data;
     };
     
+    //cost_gen can be a functor that generates cost types
     template <typename COST_GEN>
     void connect(const node& a, const node& b, const COST_GEN& costGenerator = COST_GEN());
     void connect(const node& a, const node& b, const cost_type& cost);
@@ -104,7 +129,9 @@ public:
     
     node& operator [](node_index i);
     
+    //create node with this data contents
     node& createNode(const node_data_type& data = node_data_type());
+    //clean up all this node's connections
     void destroyNode(node& a);
     void clear();
     bool empty() const { return free_nodes.size() >= nodes.size(); }

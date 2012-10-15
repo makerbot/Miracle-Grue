@@ -25,17 +25,32 @@ public:
     GraphException(const T& arg) : Exception(arg) {}
 };
 
+/* 
+ Implementation of interface put forth in abstract_optimizer
+   One of the several different options for optimizing paths. 
+    Usage:
+    pather_optimizer_fastgraph optimus(grueCfg);
+    optimus.addBoundary(loop1);
+    optimus.addBoundary(loop2); //all boundaries must be added first
+    optimus.addPaths(listOfLoops, somelabel);
+    optimus.addPaths(listOfPaths, somedifferentlabel);
+    optimus.optimize(destinationlistOfLabeledPaths);    //this is destructive
+ */
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
     pather_optimizer_fastgraph(const GrueConfig& grueConf)
             : grueCfg(grueConf), historyPoint(std::numeric_limits<Scalar>::min(), 
             std::numeric_limits<Scalar>::min()) {}
+    //addPath builds up the correct interior graph (the correct bucket)
     void addPath(const OpenPath& path, const PathLabel& label);
     void addPath(const Loop& loop, const PathLabel& label);
+    //Do not cross this path!
     void addBoundary(const OpenPath& path);
+    //Creates a new bucket. Things inside of this loop will be added to this bucket
 	void addBoundary(const Loop& loop);
     void clearBoundaries();
 	void clearPaths();
+    //debugging: Make a nice svg of this graph
     void repr_svg(std::ostream& out);
 protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
@@ -45,9 +60,12 @@ private:
     class bucket;
     typedef std::list<bucket> bucket_list;
     //format is void foo(output, [input]);
+    //pick the best bucket to start optimizing, optimize it, repeat until done
     void optimize1(multipath_type& output, PointType& entryPoint);
+    //optimize the bucket selected by above
     void optimize1Inner(LabeledOpenPaths& labeledpaths, bucket_list::iterator input, 
             PointType& entryPoint);
+    //Run v-opt on results of above function
     bool optimize2(LabeledOpenPaths& labeledopenpaths, 
             LabeledOpenPaths& intermediate);
     class Cost : public PathLabel {
