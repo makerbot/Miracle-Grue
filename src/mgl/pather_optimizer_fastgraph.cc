@@ -107,20 +107,12 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
-    bool makeBucket = true;
     PointType testPoint = *loop.clockwise();
-    libthing::LineSegment2 testLine(testPoint, 
-            boundaryLimits.bottom_left() - PointType(20,20));
-    for(bucket_list::iterator iter = buckets.begin(); 
-            iter != buckets.end(); 
-            ++iter) {
-        size_t intersections = countIntersections(testLine, iter->m_bounds);
-        if(intersections & 1){    //is inside?
-            makeBucket = false;
-            break;
-        }
+    bucket_list::iterator iter = pickBucket(testPoint);
+    if(iter == buckets.end()) {
+        iter = buckets.insert(iter, bucket());
     }
-    buckets.push_back(bucket());
+    bucket& destBucket = *iter;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
             ++iter) {
@@ -128,7 +120,7 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
         boundaryLimits.expandTo(segment.a);
         boundaryLimits.expandTo(segment.b);
         m_boundaries.insert(segment);
-        buckets.back().m_bounds.insert(segment);
+        destBucket.m_bounds.insert(segment);
     }
     
 }
