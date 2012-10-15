@@ -33,6 +33,7 @@ using namespace std;
 #include <json/value.h>
 #include <json/writer.h>
 #include <map>
+#include <vector>
 
 std::ostream &MyComputer::log()
 {
@@ -347,18 +348,22 @@ void ProgressJSONStream::onTick(const char* taskName,
     }
 }
 
-ProgressJSONStreamTotal::ProgressJSONStreamTotal(unsigned int count)
-        : ProgressJSONStream(count), curstage(0) {
-    stagemap["outlines"] = 0;
-    stagemap["support"] = 1;
-    stagemap["rafts"] = 2;
-    stagemap["insets"] = 3;
-    stagemap["flat surfaces"] = 4;
-    stagemap["roofing"] = 5;
-    stagemap["flooring"] = 6;
-    stagemap["infills"] = 7;
-    stagemap["Path generation"] = 8;
-    stagemap["gcode"] = 9;
+ProgressJSONStreamTotal::ProgressJSONStreamTotal(const GrueConfig& grueConf, 
+        unsigned int count)
+        : ProgressJSONStream(count), grueCfg(grueConf), curstage(0), 
+        accumulator(0){
+    addStage("outlines", 20);
+    if(grueConf.get_doSupport())
+        addStage("support", 50);
+    if(grueConf.get_doRaft())
+        addStage("rafts", 5);
+    addStage("insets", 5);
+    addStage("flat surfaces", grueConf.get_doSupport() ? 100 : 50);
+    addStage("roofing", 10);
+    addStage("flooring", 10);
+    addStage("infills", 20);
+    addStage("Path generation", 100);
+    addStage("gcode", 5);
 }
 
 Json::Value ProgressJSONStreamTotal::makeJson(const char* taskName, 
@@ -367,11 +372,18 @@ Json::Value ProgressJSONStreamTotal::makeJson(const char* taskName,
     StageMap::const_iterator iter = stagemap.find(taskName);
     if(iter != stagemap.end())
         curstage = iter->second;
-    unsigned int totalPercent = static_cast<unsigned int>(
-            float(curstage*100)/stagemap.size() + 
-            float(percent)/stagemap.size());
+    unsigned int totalPercent = static_cast<unsigned int>(((
+            proportions[curstage].first + 0.01 * 
+            proportions[curstage].second * percent) / 
+            accumulator) * 100);
     msg["totalPercentComplete"] = totalPercent;
     return msg;
+}
+
+void ProgressJSONStreamTotal::addStage(const std::string& name, float weight) {
+    stagemap[name] = proportions.size();
+    proportions.push_back(Proportion(accumulator, weight));
+    accumulator += weight;
 }
 
 

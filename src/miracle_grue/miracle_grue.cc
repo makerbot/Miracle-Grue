@@ -342,7 +342,7 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		ProgressBar *log;
 		if (jsonProgress) {
-			log = new ProgressJSONStreamTotal();
+			log = new ProgressJSONStreamTotal(grueCfg);
 		}
 		else {
 			log = new ProgressLog();
