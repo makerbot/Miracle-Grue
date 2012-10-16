@@ -163,6 +163,15 @@ private:
     static size_t countIntersections(libthing::LineSegment2& line, 
             boundary_container& boundContainer);
     
+    class connectionComparator {
+    public:
+        connectionComparator(PointType unit = PointType()) : m_unit(unit) {}
+        bool operator ()(const node::connection& lhs, 
+                const node::connection& rhs) const;
+    private:
+        PointType m_unit;
+    };
+    
     class nodeComparator {
     public:
         nodeComparator(graph_type& graph, PointType point = 

@@ -35,6 +35,16 @@ bool pather_optimizer_fastgraph::crossesBounds(
     }
     return false;
 }
+bool pather_optimizer_fastgraph::connectionComparator::operator ()(
+        const node::connection& lhs, const node::connection& rhs) const {
+    if(lhs.second->myValue != rhs.second->myValue)
+        return lhs.second->myValue < rhs.second->myValue;
+    if(lhs.second->isValid() && rhs.second->isValid()) {
+        return m_unit.dotProduct(lhs.second->normal()) < 
+                m_unit.dotProduct(rhs.second->normal());
+    }
+    return lhs.second->distance() > rhs.second->distance();
+}
 bool pather_optimizer_fastgraph::nodeComparator::operator ()(const node& lhs, 
         const node& rhs) const {
     if(lhs.data().getPriority() == rhs.data().getPriority())
@@ -120,7 +130,7 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
 }
 void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths) {
     multipath_type firstPass;
-    LabeledOpenPaths innerIntermediate;
+    //LabeledOpenPaths innerIntermediate;
     optimize1(firstPass, historyPoint);
     for(multipath_type::iterator iter = firstPass.begin(); 
             iter != firstPass.end(); 
@@ -137,16 +147,16 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
             toClear.pop_back();
         }
     }
-    for(multipath_type::iterator iter = firstPass.begin(); 
-            iter != firstPass.end(); 
-            ++iter) {
-        unsigned iteration = 1;
-        do {
-            innerIntermediate.clear();
-            innerIntermediate.swap(*iter);
-        } while (optimize2(*iter, innerIntermediate) && 
-                ++iteration < grueCfg.get_iterativeEffort());
-    }
+//    for(multipath_type::iterator iter = firstPass.begin(); 
+//            iter != firstPass.end(); 
+//            ++iter) {
+//        unsigned iteration = 1;
+//        do {
+//            innerIntermediate.clear();
+//            innerIntermediate.swap(*iter);
+//        } while (optimize2(*iter, innerIntermediate) && 
+//                ++iteration < grueCfg.get_iterativeEffort());
+//    }
     for(multipath_type::iterator iter = firstPass.begin(); 
             iter != firstPass.end(); 
             ++iter) {
@@ -174,21 +184,12 @@ void pather_optimizer_fastgraph::optimize1(multipath_type& output,
             }
         }
         LabeledOpenPaths currentResult;
-        PointType oldEntry = entryPoint;
         optimize1Inner(currentResult, currentNearest, entryPoint);
         
         output.push_back(LabeledOpenPaths());
         
-//        
-//        LabeledOpenPaths scratchSpace;
-//        unsigned iteration = 1;
-//        do {
-//            scratchSpace.clear();
-//            scratchSpace.swap(currentResult);
-//        } while (optimize2(currentResult, scratchSpace, oldEntry) && 
-//                ++iteration < grueCfg.get_iterativeEffort());
         output.back().splice(output.back().end(), currentResult);
-        buckets.erase(currentNearest); //optional?
+        buckets.erase(currentNearest);
     }
 }
 void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths, 
