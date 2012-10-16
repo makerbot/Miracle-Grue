@@ -12,6 +12,9 @@ using namespace libthing;
 
 CPPUNIT_TEST_SUITE_REGISTRATION( InsetsTestCase );
 
+
+
+
 void svgBegin() {
 	cerr << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?><svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" x=\"loops\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"  >\"" << endl;
 }
@@ -56,8 +59,7 @@ void loopTableToSVG(const list<LoopList> table, const string &color,
 }
 
 void InsetsTestCase::setUp() {
-	regionerCfg.nbOfShells = 2;
-	regionerCfg.insetDistanceMultiplier = .9;
+	config = InsetsTestCaseConfig(2, .9);
 
 	Loop::cw_iterator at =
 		square.insertPointAfter(Vector2(10.0, 10.0), square.clockwiseEnd());
@@ -66,17 +68,25 @@ void InsetsTestCase::setUp() {
 	at = square.insertPointAfter(Vector2(-10.0, 10.0), at);
 
 	at =
-		squareSpur.insertPointAfter(Vector2(10.0, 15.0),
-									squareSpur.clockwiseEnd());
-	at = squareSpur.insertPointAfter(Vector2(10.0, -10.0), at);
-	at = squareSpur.insertPointAfter(Vector2(-10.0, -10.0), at);
-	at = squareSpur.insertPointAfter(Vector2(-10.0, 10.0), at);
-	at = squareSpur.insertPointAfter(Vector2(9, 10.0), at);
-	at = squareSpur.insertPointAfter(Vector2(9, 15.0), at);
+		squareSpurShell.insertPointAfter(Vector2(10.0, 15.0),
+									squareSpurShell.clockwiseEnd());
+	at = squareSpurShell.insertPointAfter(Vector2(10.0, -10.0), at);
+	at = squareSpurShell.insertPointAfter(Vector2(-10.0, -10.0), at);
+	at = squareSpurShell.insertPointAfter(Vector2(-10.0, 10.0), at);
+	at = squareSpurShell.insertPointAfter(Vector2(9, 10.0), at);
+	at = squareSpurShell.insertPointAfter(Vector2(9, 15.0), at);
+
+	at =
+		triangleSpurShell.insertPointAfter(Vector2(10.0, 20.0),
+									triangleSpurShell.clockwiseEnd());
+	at = triangleSpurShell.insertPointAfter(Vector2(10.0, -10.0), at);
+	at = triangleSpurShell.insertPointAfter(Vector2(-10.0, -10.0), at);
+	at = triangleSpurShell.insertPointAfter(Vector2(-10.0, 10.0), at);
+	at = triangleSpurShell.insertPointAfter(Vector2(9, 10.0), at);
 }
 
 void InsetsTestCase::testSingleSquareInset() {
-	Regioner regioner(regionerCfg);
+	Regioner regioner(config);
 
 	LoopList squarelist;
 	squarelist.push_back(square);
@@ -105,13 +115,13 @@ void InsetsTestCase::testSingleSquareInset() {
 }
 
 
-void InsetsTestCase::testSquareSpur() {
-	Regioner regioner(regionerCfg);
+void InsetsTestCase::testSquareSpurRegion() {
+	Regioner regioner(config);
 
 	svgBegin();
 
 	LoopList outlines;
-	outlines.push_back(squareSpur);
+	outlines.push_back(squareSpurShell);
 	std::list<LoopList> insets;
 	LoopList interiors;
 
@@ -120,7 +130,7 @@ void InsetsTestCase::testSquareSpur() {
 	std::list<LoopList> spurs;
 	regioner.spurLoopsForSlice(outlines, insets, layermeasure, spurs);
 
-	loopToSVG(squareSpur, "black", 20, 20);
+	loopToSVG(squareSpurShell, "black", 20, 20);
 	loopTableToSVG(insets, "red", 20, 20);
 	loopTableToSVG(spurs, "green", 20, 20);
 	svgEnd();
@@ -130,4 +140,38 @@ void InsetsTestCase::testSquareSpur() {
 	cout << "Spurs for shell" << endl;
 	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.front().size());
 
+}
+
+void InsetsTestCase::testTriangleSpurRegion() {
+	Regioner regioner(config);
+
+	svgBegin();
+
+	LoopList outlines;
+	outlines.push_back(triangleSpurShell);
+	std::list<LoopList> insets;
+	LoopList interiors;
+
+	regioner.insetsForSlice(outlines, layermeasure, insets, interiors);
+
+	std::list<LoopList> &spurs = triangleSpurLoops;
+
+	regioner.spurLoopsForSlice(outlines, insets, layermeasure, spurs);
+
+	loopToSVG(triangleSpurShell, "black", 20, 20);
+	loopTableToSVG(insets, "red", 20, 20);
+	loopTableToSVG(spurs, "green", 20, 20);
+	svgEnd();
+
+	cout << "Shells with spurs" << endl;
+	CPPUNIT_ASSERT_EQUAL(3, (int)spurs.size());
+	cout << "Spurs for shell" << endl;
+	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.front().size());
+}
+
+void InsetsTestCase::testTriangleSpurFill() {
+	Regioner regioner(config);
+
+	OpenPathList spurs;
+	regioner.fillSpurLoops(triangleSpurLoops.front(), layermeasure, spurs);
 }

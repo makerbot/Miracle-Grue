@@ -3,15 +3,30 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "mgl/regioner.h"
+#include "mgl/gcoder.h"
 #include "mgl/mgl.h"
+#include "mgl/regioner.h"
+
+
+class InsetsTestCaseConfig : public mgl::GrueConfig {
+public:
+	InsetsTestCaseConfig() {};
+	InsetsTestCaseConfig(unsigned p_nbOfShells,
+						 Scalar p_insetDistanceMultiplier) {
+		nbOfShells = p_nbOfShells;
+		insetDistanceMultiplier = p_insetDistanceMultiplier;
+	}
+};
 
 class InsetsTestCase : public CPPUNIT_NS::TestFixture{
 
 	CPPUNIT_TEST_SUITE( InsetsTestCase );
 
 	CPPUNIT_TEST( testSingleSquareInset );
-	CPPUNIT_TEST( testSquareSpur );
+	CPPUNIT_TEST( testSquareSpurRegion );
+	CPPUNIT_TEST( testSquareSpurFill );
+	CPPUNIT_TEST( testTriangleSpurRegion );
+	CPPUNIT_TEST( testTriangleSpurFill );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -21,12 +36,20 @@ public:
 
 protected:
 	void testSingleSquareInset();
-	void testSquareSpur();
+	void testSquareSpurRegion();
+	void testTriangleSpurRegion();
+	void testTriangleSpurFill();
+
+	//not yet implemented
+	void testSquareSpurFill() {}
+	
 
 private:
-	mgl::RegionerConfig regionerCfg;
+	InsetsTestCaseConfig config;
 	mgl::Loop square;
-	mgl::Loop squareSpur;
+	mgl::Loop squareSpurShell;
+	mgl::Loop triangleSpurShell;
+	std::list<mgl::LoopList> triangleSpurLoops;
 	mgl::LayerMeasure layermeasure;
 };
 
