@@ -1,22 +1,12 @@
 #include "pather_optimizer_fastgraph.h"
 #include "intersection_index.h"
+#include "pather.h"
 #include <algorithm>
 #include <list>
 #include <vector>
 
 namespace mgl {
 
-bool pather_optimizer_fastgraph::compareConnections(
-        const node::connection& lhs, 
-        const node::connection& rhs) {
-    if(lhs.second->myValue != rhs.second->myValue)
-        return lhs.second->myValue < rhs.second->myValue;
-    return lhs.second->distance() > rhs.second->distance();
-}
-bool pather_optimizer_fastgraph::compareNodes(const node& lhs, 
-        const node& rhs) {
-    return lhs.data().getPriority() < rhs.data().getPriority();
-}
 bool pather_optimizer_fastgraph::comparePathLists(const LabeledOpenPaths& lhs, 
         const LabeledOpenPaths& rhs) {
     return lhs.front().myLabel.myValue > rhs.front().myLabel.myValue;
@@ -35,6 +25,41 @@ bool pather_optimizer_fastgraph::crossesBounds(
     }
     return false;
 }
+int pather_optimizer_fastgraph::LabelTypeComparator::compare(
+        const value_type& lhs, 
+        const value_type& rhs) const {
+    static const int OUTLINE_VALUE = 
+            LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+    if(lhs.myValue == rhs.myValue)
+            return SAME;
+    if(lhs.myValue == OUTLINE_VALUE && rhs.myValue != OUTLINE_VALUE)
+        return WORSE;
+    if(rhs.myValue == OUTLINE_VALUE && lhs.myValue != OUTLINE_VALUE)
+        return BETTER;
+    return SAME;
+}
+int pather_optimizer_fastgraph::LabelPriorityComparator::compare(
+        const value_type& lhs, 
+        const value_type& rhs) const {
+    int diff = lhs.myValue - rhs.myValue;
+    return (diff < 0 ? WORSE : 
+        (diff > 0 ? BETTER : 
+            SAME));
+}
+int pather_optimizer_fastgraph::NodeComparator::compare(const value_type& lhs, 
+        const value_type& rhs) const {
+    return m_labelCompare.compare(lhs.data().getLabel(), 
+            rhs.data().getLabel());
+}
+int pather_optimizer_fastgraph::NodeConnectionComparator::compare(
+        const value_type& lhs, const value_type& rhs) const {
+    int nc = m_nodeCompare(*lhs.first, *rhs.first);
+    if(nc)
+        return nc;
+    return (lhs.second->distance() < rhs.second->distance() ? 
+        BETTER : (rhs.second->distance() < lhs.second->distance() ? 
+            WORSE : SAME));
+}
 bool pather_optimizer_fastgraph::connectionComparator::operator ()(
         const node::connection& lhs, const node::connection& rhs) const {
     if(lhs.second->myValue != rhs.second->myValue)
@@ -47,10 +72,11 @@ bool pather_optimizer_fastgraph::connectionComparator::operator ()(
 }
 bool pather_optimizer_fastgraph::nodeComparator::operator ()(const node& lhs, 
         const node& rhs) const {
-    if(lhs.data().getPriority() == rhs.data().getPriority())
-        return (lhs.data().getPosition() - m_position).squaredMagnitude() > 
-                (rhs.data().getPosition() - m_position).squaredMagnitude();
-    return lhs.data().getPriority() < rhs.data().getPriority();
+    int nc = m_nodeCompare.compare(lhs, rhs);
+    if(nc)
+        return nc == BETTER;
+    return (lhs.data().getPosition() - m_position).squaredMagnitude() < 
+            (rhs.data().getPosition() - m_position).squaredMagnitude();
 }
 bool pather_optimizer_fastgraph::nodeComparator::operator ()(node_index lhs, 
         node_index rhs) const {
@@ -59,14 +85,11 @@ bool pather_optimizer_fastgraph::nodeComparator::operator ()(node_index lhs,
 bool pather_optimizer_fastgraph::probeCompare::operator ()(
         const probe_link_type& lhs, 
         const probe_link_type& rhs) {
-    int priorityDifference = m_graph[lhs.first].data().getPriority() - 
-            m_graph[rhs.first].data().getPriority();
+    int nc = m_nodeCompare.compare(m_graph[lhs.first], m_graph[rhs.first]);
+    if(nc)
+        return nc == BETTER;
     Scalar distDifference = lhs.second - rhs.second;
-    if(priorityDifference == 0) {
-        return distDifference < 0;
-    } else {
-        return priorityDifference > 0;
-    }
+    return distDifference < 0;
 }
 bool pather_optimizer_fastgraph::bucketSorter::operator ()(const bucket& lhs, 
         const bucket& rhs) const {
@@ -86,8 +109,8 @@ pather_optimizer_fastgraph::node::forward_link_iterator
         //return from.forwardEnd();
         buildLinks(from, graph, boundaries);
     }
-    return std::max_element(from.forwardBegin(), 
-            from.forwardEnd(), compareConnections);
+    return std::min_element(from.forwardBegin(), 
+            from.forwardEnd(), NodeConnectionComparator());
 }
 void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
         boundary_container& boundaries) {
@@ -104,11 +127,12 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
     }
     std::sort(probes.begin(), probes.end(), 
             probeCompare(from.getIndex(), graph));
+    LabelTypeComparator typeCompare;
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
-        if(graph[iter->first].data().getPriority() < 
-                graph[probes.front().first].data().getPriority())
+        if(typeCompare(graph[probes.front().first].data().getLabel(), 
+                graph[iter->first].data().getLabel()))
             break;  //make no connections to things of lower priority
         libthing::LineSegment2 probeline(from.data().getPosition(), 
                 graph[iter->first].data().getPosition());
@@ -199,7 +223,7 @@ void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths,
     graph_type& currentGraph = input->m_graph;
     boundary_container& currentBounds = m_boundaries;
     while(!currentGraph.empty()) {
-        currentIndex = std::max_element(entryBegin(currentGraph), 
+        currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
                 nodeComparator(currentGraph, entryPoint))->getIndex();
         LabeledOpenPath activePath;

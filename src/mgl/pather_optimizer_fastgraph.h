@@ -10,6 +10,7 @@
 
 #include "pather_optimizer.h"
 #include "simple_topology.h"
+#include "predicate.h"
 #include "basic_boxlist.h"
 #include "intersection_index.h"
 #include "Exception.h"
@@ -85,18 +86,18 @@ private:
     class NodeData {
     public:
         NodeData(PointType position, 
-                int priority, 
+                PathLabel label, 
                 bool entry) 
                 : m_position(position), 
-                m_priority(priority), 
+                m_label(label), 
                 m_isentry(entry) {}
-        NodeData() : m_priority(0), m_isentry(false) {}
+        NodeData() : m_isentry(false) {}
         const PointType& getPosition() const { return m_position; }
-        int getPriority() const { return m_priority; }
+        const PathLabel& getLabel() const { return m_label; }
         bool isEntry() const { return m_isentry; }
     private:
         PointType m_position;
-        int m_priority;
+        PathLabel m_label;
         bool m_isentry;
     };
     
@@ -113,6 +114,37 @@ private:
     };
     
     typedef graph_type::forward_node_iterator node_iterator;
+    
+    class AbstractLabelComparator : public abstract_predicate<PathLabel> {
+    public:
+        typedef abstract_predicate<PathLabel>::value_type value_type;
+    };
+    class LabelTypeComparator : public AbstractLabelComparator {
+    public:
+        typedef AbstractLabelComparator::value_type value_type;
+        int compare(const value_type& lhs, const value_type& rhs) const;
+    };
+    class LabelPriorityComparator : public AbstractLabelComparator {
+    public:
+        typedef AbstractLabelComparator::value_type value_type;
+        int compare(const value_type& lhs, const value_type& rhs) const;
+    };
+    typedef composite_predicate<PathLabel, LabelTypeComparator, LabelPriorityComparator> 
+            LabelComparator;
+    class NodeComparator : public abstract_predicate<node> {
+    public:
+        typedef abstract_predicate<node>::value_type value_type;
+        int compare(const value_type& lhs, const value_type& rhs) const;
+    protected:
+        LabelComparator m_labelCompare;
+    };
+    class NodeConnectionComparator : public abstract_predicate<node::connection> {
+    public:
+        typedef abstract_predicate<node::connection>::value_type value_type;
+        int compare(const value_type& lhs, const value_type& rhs) const;
+    protected:
+        NodeComparator m_nodeCompare;
+    };
     
     class entry_iterator {
     public:
@@ -148,6 +180,7 @@ private:
     private:
         node_index m_from;
         graph_type& m_graph;
+        NodeComparator m_nodeCompare;
     };
     
     node::forward_link_iterator bestLink(node& from, graph_type& graph, 
@@ -155,9 +188,6 @@ private:
     void buildLinks(node& from, graph_type& graph, 
             boundary_container& boundaries);
     
-    static bool compareConnections(const node::connection& lhs, 
-            const node::connection& rhs);
-    static bool compareNodes(const node& lhs, const node& rhs);
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);
     static size_t countIntersections(libthing::LineSegment2& line, 
@@ -183,6 +213,7 @@ private:
     private:
         graph_type& m_graph;
         PointType m_position;
+        NodeComparator m_nodeCompare;
     };
     
     class bucketSorter {

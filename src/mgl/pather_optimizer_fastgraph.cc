@@ -21,13 +21,13 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
         ++next;
         if(iter == path.fromStart()) {
             last = currentGraph.createNode(NodeData(*iter, 
-                    label.myValue, true)).getIndex();
+                    label, true)).getIndex();
         }
         if(next != path.end()) {
             OpenPath::const_iterator future = next;
             ++future;
             node& curNode = currentGraph.createNode(NodeData(*next, 
-                    label.myValue, future==path.end()));
+                    label, future==path.end()));
             node& lastNode = currentGraph[last];
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
@@ -64,11 +64,11 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         ++next;
         if(iter == loop.clockwiseFinite()) {
             last = currentGraph.createNode(NodeData(*iter, 
-                    label.myValue, true)).getIndex();
+                    label, true)).getIndex();
             first = last;
         }
         if(next != loop.clockwiseEnd()) {
-            NodeData curNodeData(*next, label.myValue, true);
+            NodeData curNodeData(*next, label, true);
             node& curNode = currentGraph.createNode(curNodeData);
             node& lastNode = currentGraph[last];
             libthing::LineSegment2 connection( 
