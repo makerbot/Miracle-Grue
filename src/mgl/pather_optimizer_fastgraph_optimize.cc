@@ -97,6 +97,9 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
+        if(graph[iter->first].data().getPriority() < 
+                graph[probes.front().first].data().getPriority())
+            break;  //make no connections to things of lower priority
         libthing::LineSegment2 probeline(from.data().getPosition(), 
                 graph[iter->first].data().getPosition());
         PointType unit;
