@@ -128,14 +128,14 @@ public:
     Scalar segmentVolume(const Extruder& extruder, const Extrusion& extrusion, 
             const libthing::LineSegment2& segment, Scalar h, Scalar w) const;
 #define GRUECONFIG_PUBLIC_CONST_ACCESSOR(TYPE, NAME) \
-    private: \
+    protected: \
     TYPE NAME; \
     public: \
     TYPE get_##NAME() const { return NAME; } \
     TYPE get_##NAME() { return NAME; }
 
 #define GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(TYPE, NAME) \
-    private: \
+    protected: \
     TYPE NAME; \
     public: \
     const TYPE& get_##NAME() const { return NAME; } \
