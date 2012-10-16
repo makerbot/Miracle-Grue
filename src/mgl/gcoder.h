@@ -32,53 +32,6 @@ public:
     }
 };
 
-
-/// Properties of an extrusion profile
-/// an extruder may have multiple extrusion profiles
-/// EG: large, fast, 'first layer'
-
-class Extrusion {
-public:
-
-    Extrusion() {
-    }
-
-    Scalar crossSectionArea(Scalar height, Scalar width) const;
-
-    Scalar feedrate;
-    Scalar temperature;
-};
-
-
-/// Properties common to a single hardware extruder
-
-class Extruder {
-public:
-
-    Extruder() {
-    }
-
-    Scalar feedCrossSectionArea() const;
-
-    Scalar isVolumetric() const {
-        return true;
-    };
-
-    Scalar feedDiameter;
-    Scalar nozzleDiameter;
-    unsigned char code;
-    int id;
-
-    Scalar retractDistance;
-    Scalar retractRate;
-    Scalar restartExtraDistance;
-
-    std::string firstLayerExtrusionProfile;
-    std::string insetsExtrusionProfile;
-    std::string infillsExtrusionProfile;
-    std::string outlinesExtrusionProfile;
-};
-
 class GCoderConfig {
 public:
 
