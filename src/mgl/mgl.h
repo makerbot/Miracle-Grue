@@ -54,6 +54,7 @@ typedef std::vector<index_t> TriangleIndices;
 typedef std::vector<TriangleIndices> SliceTable;
 
 typedef int layer_measure_index_t;
+typedef libthing::Vector2 PointType;
 
 enum axis_e {
 	X_AXIS, 
