@@ -809,7 +809,14 @@ void ModelReaderTestCase::testAlignToPlate() {
 	string above_file = inputsDir + "above.stl";
 	Meshy above;
 //	Segmenter segabove(.5, .5);
-    GrueConfig grueCfg;
+    class TestGrueCfg : public  GrueConfig {
+    public:
+        TestGrueCfg() {
+            layerH = 0.5;
+            firstLayerZ = 0.5;
+        }
+    };
+    TestGrueCfg grueCfg;
     Segmenter segabove(grueCfg);
 	//10mm cube one mm above the bed
 	above.readStlFile(above_file.c_str());
@@ -825,7 +832,7 @@ void ModelReaderTestCase::testAlignToPlate() {
 	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMin, 0.0);
 	CPPUNIT_ASSERT_EQUAL(above.readLimits().zMax, 10.0);
 	//we make a phantom layer above the last real layer
-	CPPUNIT_ASSERT_EQUAL((int)segabove.readSliceTable().size(), 21);
+	CPPUNIT_ASSERT_EQUAL(21, (int)segabove.readSliceTable().size());
 
 	cout << endl << "Testing object below the bed" << endl;
 	string below_file = inputsDir + "below.stl";
