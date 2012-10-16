@@ -25,13 +25,15 @@ void SlicerOutputTestCase::setUp() {
 void SlicerOutputTestCase::testLoopLayer(){
 	Meshy mesh;
 	mesh.readStlFile((inputsDir + "20mm_Calibration_Box.stl").c_str());
-	SlicerConfig slicerCfg;
-    slicerCfg.firstLayerZ = 0;
-    slicerCfg.layerH = 0.20;
-	Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
-	Slicer slicer(slicerCfg, NULL);
+//	  SlicerConfig slicerCfg;
+//    slicerCfg.firstLayerZ = 0;
+//    slicerCfg.layerH = 0.20;
+//	  Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
+    GrueConfig grueCfg;
+    Segmenter segmenter(grueCfg);
+	Slicer slicer(grueCfg);
 	segmenter.tablaturize(mesh);
-	LayerLoops layerloops(slicerCfg.firstLayerZ, slicerCfg.layerH);
+	LayerLoops layerloops(grueCfg.get_firstLayerZ(), grueCfg.get_layerH());
 	slicer.generateLoops(segmenter, layerloops);
 	
 	Loop expected;

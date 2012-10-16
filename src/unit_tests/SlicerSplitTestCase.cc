@@ -10,6 +10,7 @@
 
 #include "mgl/mgl.h"
 #include "mgl/configuration.h"
+#include "mgl/gcoder.h"
 #include "mgl/slicy.h"
 
 #include "mgl/shrinky.h"
@@ -71,14 +72,15 @@ void SlicerSplitTestCase::test_m()
 
 void SlicerSplitTestCase::test_calibration_slice_70()
 {
-	Scalar firstLayerZ = 0.1;
-	Scalar layerH = 0.27;
+//	Scalar firstLayerZ = 0.1;
+//	Scalar layerH = 0.27;
 	//Scalar layerW = 0.4;
 	cout << endl;
 	cout << fixed;
 
 	Meshy mesh;
-	Segmenter seg(firstLayerZ, layerH);
+    GrueConfig grueCfg;
+	Segmenter seg(grueCfg);
 
 	string inputFile = inputDir + "ultimate_calibration_test.stl";
 	mesh.readStlFile(inputFile.c_str());

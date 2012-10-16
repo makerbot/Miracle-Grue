@@ -55,28 +55,30 @@ void testModel(const char *model, const char* configFile) {
 	Configuration config;
 	config.readFromFile(configFile);
 
-	SlicerConfig slicerCfg;
-	loadSlicerConfigFromFile(config, slicerCfg);
-
-	GCoderConfig gcoderCfg;
-	loadGCoderConfigFromFile(config, gcoderCfg);
-
-	RegionerConfig regionerCfg;
-	loadRegionerConfigFromFile(config, regionerCfg);
+//	SlicerConfig slicerCfg;
+//	loadSlicerConfigFromFile(config, slicerCfg);
+//
+//	GCoderConfig gcoderCfg;
+//	loadGCoderConfigFromFile(config, gcoderCfg);
+//
+//	RegionerConfig regionerCfg;
+//	loadRegionerConfigFromFile(config, regionerCfg);
+//    
+//    PatherConfig patherCfg;
+//    loadPatherConfigFromFile(config, patherCfg);
+//
+//	ExtruderConfig extruderCfg;
+//	loadExtruderConfigFromFile(config, extruderCfg);
     
-    PatherConfig patherCfg;
-    loadPatherConfigFromFile(config, patherCfg);
-
-	ExtruderConfig extruderCfg;
-	loadExtruderConfigFromFile(config, extruderCfg);
+    GrueConfig grueCfg;
+    grueCfg.loadFromFile(config);
 
 	RegionList skeleton;
 	std::vector< SliceData > slices;
 
 	std::ofstream gcodeFileStream(gcodeFile.c_str());
 	try {
-		miracleGrue(gcoderCfg, slicerCfg, regionerCfg, patherCfg, 
-				extruderCfg, modelFile.c_str(), NULL,
+		miracleGrue(grueCfg, modelFile.c_str(), NULL,
 				gcodeFileStream, -1, -1,
 				skeleton,
 				slices);
