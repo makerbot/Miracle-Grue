@@ -320,24 +320,9 @@ int main(int argc, char *argv[], char *[]) // envp
 
 		Log::fine() << endl << endl;
 		Log::fine() << modelFile << " to \"" << gcodeFile << "\" and \"" << scadFile << "\"" << endl;
-
-		GCoderConfig gcoderCfg;
-		loadGCoderConfigFromFile(config, gcoderCfg);
-
-		SlicerConfig slicerCfg;
-		loadSlicerConfigFromFile(config, slicerCfg);
         
-        LPConfig lpCfg;
-        loadLoopProcessorConfigFromFile(config, lpCfg);
-
-		RegionerConfig regionerCfg;
-		loadRegionerConfigFromFile(config, regionerCfg);
-		
-		PatherConfig patherCfg;
-		loadPatherConfigFromFile(config, patherCfg);
-
-		ExtruderConfig extruderCfg;
-		loadExtruderConfigFromFile(config, extruderCfg);
+        GrueConfig grueCfg;
+        grueCfg.loadFromFile(config);
 
 		const char* scad = NULL;
 
@@ -363,7 +348,7 @@ int main(int argc, char *argv[], char *[]) // envp
 			log = new ProgressLog();
 		}
 
-		miracleGrue(gcoderCfg, slicerCfg, lpCfg, regionerCfg, patherCfg, extruderCfg,
+		miracleGrue(grueCfg,
 				modelFile.c_str(),
 				scad,
 				gcodeFileStream,

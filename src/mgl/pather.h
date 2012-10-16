@@ -13,7 +13,7 @@
 #ifndef PATHER_H_
 #define PATHER_H_
 
-
+#include "configuration.h"
 #include "insets.h"
 #include "regioner.h"
 #include "loop_path.h"
@@ -167,9 +167,10 @@ public:
 
 
 	Pather(const PatherConfig& pCfg, ProgressBar * progress = NULL);
+    Pather(const GrueConfig& grueConf, ProgressBar* progress = NULL);
 
 
-	void generatePaths(const ExtruderConfig &extruderCfg,
+	void generatePaths(const GrueConfig& grueCfg,
 					   const RegionList &skeleton,
 					   const LayerMeasure &layerMeasure,
 					   const Grid &grid,

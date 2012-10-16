@@ -12,6 +12,8 @@
 
 namespace mgl{
 
+class GrueConfig;
+
 static const Scalar SAMESAME_TOL = 1e-6;
 static const Scalar MUCH_LARGER_THAN_THE_BUILD_PLATFORM_MM = 100000000;
 
@@ -75,7 +77,7 @@ public:
 	static const Scalar FLUID_H = 0.3;
 	static const Scalar FLUID_W = 0.5;
 	
-	Gantry(const GantryConfig& gCfg);
+	Gantry(const GrueConfig& gCfg);
 	
 	Scalar get_x() const;
 	Scalar get_y() const;
@@ -179,7 +181,7 @@ public:
 	/// (aka mm of feedstock since the last reset this print)
 	void setCurrentE(Scalar e);// { if (ab == 'A') a = e; else b = e; };
 	
-	const GantryConfig& gantryCfg;
+    const GrueConfig& grueCfg;
 
 private:
 	

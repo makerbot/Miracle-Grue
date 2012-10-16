@@ -18,14 +18,14 @@ public:
 
 class LoopProcessor : public Progressive {
 public:
-    LoopProcessor(const LPConfig& conf, ProgressBar* progress = NULL) 
-            : Progressive(progress), lpCfg(conf) {}
+    LoopProcessor(const GrueConfig& grueConf, ProgressBar* progress = NULL) 
+            : Progressive(progress), grueCfg(grueConf) {}
     void processLoops(const LayerLoops& input, LayerLoops& output);
 private:
     
 
     
-    LPConfig lpCfg;
+    const GrueConfig& grueCfg;
 };
 
 }

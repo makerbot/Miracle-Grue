@@ -69,6 +69,7 @@ public:
 	/// @param slicerCfg slicer config!
 	/// @param progress Optional Progress Bar
 	Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress = NULL);
+    Slicer(const GrueConfig& grueCfg, ProgressBar* progress = NULL);
 
 	/// TBD
 	void generateLoops(const Segmenter& seg, LayerLoops& layerloops);
