@@ -338,12 +338,12 @@ bool SegLess(const LineSegment2 &first, const LineSegment2 &second) {
 }
 
 struct SegPairLess {
-	bool operator()(const SegmentPair *first, const SegmentPair *second) {
-		if (SegLess(first->first, second->first))
+	bool operator()(const SegmentPair first, const SegmentPair second) {
+		if (SegLess(first.first, second.first))
 			return true;
-		else if (SegLess(second->first, first->first))
+		else if (SegLess(second.first, first.first))
 			return false;
-		else if (SegLess(first->second, second->second))
+		else if (SegLess(first.second, second.second))
 			return true;
 		else 
 			return false;
@@ -355,7 +355,7 @@ struct Intersection {
 	Vector2 point;
 };
 typedef vector<Intersection> IntersectionList;
-typedef set<SegmentPair*, SegPairLess> SegmentPairSet;
+typedef set<SegmentPair, SegPairLess> SegmentPairSet;
 typedef vector<LineSegment2> SegmentList;
 
 
@@ -387,9 +387,8 @@ typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
 typedef Eigen::Vector2d EVector;
 
 void lineIntersection(const ELine first, const ELine second,
-					  Vector2 &point, Scalar &angle) {
-	EVector epoint = first.intersectionPoint(Eigen::Hyperplane<Scalar, 2>(second));
-	point.x = epoint(0);
+					  EVector &point, Scalar &angle) {
+	point = first.intersectionPoint(Eigen::Hyperplane<Scalar, 2>(second));
 	
 	EVector firstUnit = first.direction();
 	EVector secondUnit = second.direction();
@@ -413,46 +412,58 @@ SegmentPair normalizeWalls(const LineSegment2 &first,
 	return segs;
 }
 
-LineSegment2 triangleBase(const Vector2 firstUnit,
-						  const Vector2 secondUnit,
-						  const Vector2 point,
+EVector toEVector(const Vector2 &orig) {
+	return EVector(orig.x, orig.y);
+}
+
+Vector2 toVector2(const EVector &orig) {
+	return Vector2(orig(1), orig(2));
+}
+
+LineSegment2 triangleBase(const EVector firstUnit,
+						  const EVector secondUnit,
+						  const EVector point,
 						  const Scalar angle,
 						  const Scalar baseLen) {
 	Scalar triangleSide = baseLen / (2 * sin(angle / 2));
 
-	Vector2 firstSide = firstUnit * triangleSide;
-	Vector2 secondSide = secondUnit * triangleSide;
+	EVector firstSide = firstUnit * triangleSide;
+	EVector secondSide = secondUnit * triangleSide;
 
-	return LineSegment2(point + firstSide, point + secondSide);
+	return LineSegment2(toVector2(point + firstSide),
+						toVector2(point + secondSide));
 }	
 
-EVector toEVector(const Vector2 &orig) {
-	return EVector(orig.x, orig.y);
-}
 
 SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
 							  const SegmentPair &sides) {
 	ELine firstLine(toEVector(sides.first.a), toEVector(sides.first.b));
 	ELine secondLine(toEVector(sides.second.a), toEVector(sides.second.b));
 
-	lineIntersection(firstLine, secondLine);
+	EVector intersection;
+	Scalar angle;
+	lineIntersection(firstLine, secondLine, intersection, angle);
 
-	Vector2 firstUnit = firstLine.direction();
-	Vector2 secondUnit = secondLine.direction();
+	EVector firstUnit = firstLine.direction();
+	EVector secondUnit = secondLine.direction();
 
 	SegmentPair parallels;
-	parallels.first = triangleBase(firstUnit, secondUnit, intersect.point,
-								   intersect.angle, toplen);
-	parallels.second = triangleBase(firstUnit, secondUnit, intersect.point,
-									intersect.angle, toplen);
+	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
+								   angle, toplen);
+	parallels.second = triangleBase(firstUnit, secondUnit, intersection,
+									angle, bottomlen);
 
 	return parallels;
 }
 
-LineSegment2 cutInteriorSegment(const Vector2 &orig, const Scalar margin,
-								const SegIndex &boundaries) {
+LineSegment2 cutInteriorSegment(const LineSegment2 &orig, const Scalar margin) {
+								//const SegIndex &boundaries) {
 	//STUB
 	return orig;
+}
+
+Vector2 midPoint(const LineSegment2 &seg) {
+	return seg.a + ((seg.b - seg.a) * 0.5);
 }
 
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
@@ -499,15 +510,25 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 		}
 	}
 
+	SegmentList pieces;
+
 	// complete trapezoids and pull out the bottom and top
 	for (SegmentPairSet::const_iterator walls = allWalls.begin();
 		 walls != allWalls.end(); ++walls) {
 		SegmentPair spans =
 			completeTrapezoid(minSpurWidth, maxSpurWidth, *walls);
 		
-		LineSegment2 bisect(spans.first.midPoint(), spans.second.midPoint());
-		
-		spurs.push_back(cutInteriorSegment(index, minSpurWidth, bisect));
+		pieces.push_back(LineSegment2(midPoint(spans.first),
+									  midPoint(spans.second)));
+	}
+
+	//TODO: join segments into a chain
+	for (SegmentList::const_iterator piece = pieces.begin();
+		 piece != pieces.end(); ++piece) {
+		spurs.push_back(OpenPath());
+		OpenPath &spur = spurs.back();
+		spur.appendPoint(piece->a);
+		spur.appendPoint(piece->b);
 	}
 }
 
