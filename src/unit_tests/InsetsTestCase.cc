@@ -32,6 +32,23 @@ void segToSVG(const LineSegment2 seg, const string &color,
 		 << "\"	style=\"stroke-width: 1; stroke: " << color << ";\"/>" << endl;
 }
 
+void openPathToSVG(const OpenPath &path, const string &color,
+				   const Scalar xoff, const Scalar yoff) {
+	for (OpenPath::const_iterator point = path.fromStart();
+		 point != path.end(); ++point) {
+		LineSegment2 seg = path.segmentAfterPoint(point);
+		segToSVG(seg, color, xoff, yoff);
+	}
+}
+
+void openPathListToSVG(const OpenPathList &paths, const string &color, 
+					   const Scalar xoff, const Scalar yoff) {
+	for (OpenPathList::const_iterator path = paths.begin();
+		 path != paths.end(); ++path) {
+		openPathToSVG(*path, color, xoff, yoff);
+	}
+}
+
 void loopToSVG(const Loop loop, const string &color,
 			   const Scalar xoff, const Scalar yoff) {
 	for (Loop::const_finite_cw_iterator cw = loop.clockwiseFinite();
@@ -124,7 +141,7 @@ void InsetsTestCase::testSingleSquareInset() {
 void InsetsTestCase::testSquareSpurRegion() {
 	Regioner regioner(config);
 
-	svgBegin();
+	//svgBegin();
 
 	LoopList outlines;
 	outlines.push_back(squareSpurShell);
@@ -136,10 +153,10 @@ void InsetsTestCase::testSquareSpurRegion() {
 	std::list<LoopList> spurs;
 	regioner.spurLoopsForSlice(outlines, insets, layermeasure, spurs);
 
-	loopToSVG(squareSpurShell, "black", 20, 20);
+	/*loopToSVG(squareSpurShell, "black", 20, 20);
 	loopTableToSVG(insets, "red", 20, 20);
 	loopTableToSVG(spurs, "green", 20, 20);
-	svgEnd();
+	svgEnd();*/
 
 	cout << "Shells with spurs" << endl;
 	CPPUNIT_ASSERT_EQUAL(3, (int)spurs.size());
@@ -151,7 +168,7 @@ void InsetsTestCase::testSquareSpurRegion() {
 void InsetsTestCase::testTriangleSpurRegion() {
 	Regioner regioner(config);
 
-	svgBegin();
+	//svgBegin();
 
 	LoopList outlines;
 	outlines.push_back(triangleSpurShell);
@@ -164,10 +181,10 @@ void InsetsTestCase::testTriangleSpurRegion() {
 
 	regioner.spurLoopsForSlice(outlines, insets, layermeasure, spurs);
 
-	loopToSVG(triangleSpurShell, "black", 20, 20);
+	/*loopToSVG(triangleSpurShell, "black", 20, 20);
 	loopTableToSVG(insets, "red", 20, 20);
 	loopTableToSVG(spurs, "green", 20, 20);
-	svgEnd();
+	svgEnd();*/
 
 	CPPUNIT_ASSERT_EQUAL(3, (int)spurs.size());
 	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.front().size());
@@ -176,11 +193,16 @@ void InsetsTestCase::testTriangleSpurRegion() {
 void InsetsTestCase::testTriangleSpurFill() {
 	Regioner regioner(config);
 
-	//std::list<LoopList> triangleSpurLoopsPerShell;
-	//triangleSpurLoopsPerShell.push_back(LoopList());
 	LoopList triangleSpurLoops;
 	triangleSpurLoops.push_back(triangleSpurLoop);
 
 	OpenPathList spurs;
 	regioner.fillSpurLoops(triangleSpurLoops, layermeasure, spurs);
+
+	cout << "Spurs: " << spurs.size() << endl;
+
+	svgBegin();
+	loopToSVG(triangleSpurLoop, "black", 20, 20);
+	openPathListToSVG(spurs, "green", 20, 20);
+	svgEnd();
 }
