@@ -181,10 +181,11 @@ void GCoderTestCase::testSingleExtruder() {
 	string confstr = w.write(config.root);
 	cout << confstr << endl;
 
-	GCoderConfig cfg;
-	cfg.extruders.push_back(Extruder());
-
-	GCoder gcoder(cfg);
+//	GCoderConfig cfg;
+//	cfg.extruders.push_back(Extruder());
+    
+    GrueConfig grueCfg;
+	GCoder gcoder(grueCfg);
 
 
 	std::ofstream gout(SINGLE_EXTRUDER_FILE_NAME, std::ios::out);
@@ -216,11 +217,13 @@ void GCoderTestCase::testDualExtruders() {
 
 	std::ofstream gout(DUAL_EXTRUDER_FILE_NAME);
 
-	GCoderConfig gcoderCfg;
-	gcoderCfg.extruders.push_back(Extruder());
-	gcoderCfg.extruders.push_back(Extruder());
-	//	loadGCoderData(config, gcoder);
-	GCoder gcoder(gcoderCfg);
+//	GCoderConfig gcoderCfg;
+//	gcoderCfg.extruders.push_back(Extruder());
+//	gcoderCfg.extruders.push_back(Extruder());
+//	//	loadGCoderData(config, gcoder);
+//	GCoder gcoder(gcoderCfg);
+    GrueConfig grueCfg;
+	GCoder gcoder(grueCfg);
 
 	gcoder.writeStartDotGCode(gout, DUAL_EXTRUDER_FILE_NAME);
 	dbg__
@@ -254,10 +257,12 @@ void GCoderTestCase::testSimplePath() {
 
 	std::ofstream gout(SINGLE_EXTRUDER_WITH_PATH);
 
-	GCoderConfig gcoderCfg;
-	gcoderCfg.extruders.push_back(Extruder());
-
-	GCoder gcoder(gcoderCfg);
+//	GCoderConfig gcoderCfg;
+//	gcoderCfg.extruders.push_back(Extruder());
+//
+//	GCoder gcoder(gcoderCfg);
+    GrueConfig grueCfg;
+	GCoder gcoder(grueCfg);
 
 	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_WITH_PATH);
 	gcoder.writeEndDotGCode(gout);
@@ -494,10 +499,12 @@ void GCoderTestCase::testGridPath() {
 
 	std::ofstream gout(SINGLE_EXTRUDER_GRID_PATH);
 
-	GCoderConfig gcoderCfg;
-	gcoderCfg.extruders.push_back(Extruder());
-
-	GCoder gcoder(gcoderCfg);
+//	GCoderConfig gcoderCfg;
+//	gcoderCfg.extruders.push_back(Extruder());
+//
+//	GCoder gcoder(gcoderCfg);
+    GrueConfig grueCfg;
+	GCoder gcoder(grueCfg);
 
 	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_GRID_PATH);
 //	for (int i = 0; i < slices.size(); i++) {
@@ -570,10 +577,12 @@ void GCoderTestCase::testMultiGrid() {
 
 	std::ofstream gout(SINGLE_EXTRUDER_MULTI_GRID_PATH);
 
-	GCoderConfig gcoderCfg;
-	gcoderCfg.extruders.push_back(Extruder());
-
-	GCoder gcoder(gcoderCfg);
+//	GCoderConfig gcoderCfg;
+//	gcoderCfg.extruders.push_back(Extruder());
+//
+//	GCoder gcoder(gcoderCfg);
+    GrueConfig grueCfg;
+	GCoder gcoder(grueCfg);
 
 	// loadGCoderData(config, gcoder);
 	gcoder.writeStartDotGCode(gout, SINGLE_EXTRUDER_MULTI_GRID_PATH);
