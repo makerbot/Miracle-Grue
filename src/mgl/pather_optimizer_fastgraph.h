@@ -140,10 +140,13 @@ private:
     };
     class NodeConnectionComparator : public abstract_predicate<node::connection> {
     public:
+        NodeConnectionComparator(PointType unit = PointType()) 
+                : m_unit(unit) {}
         typedef abstract_predicate<node::connection>::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
         NodeComparator m_nodeCompare;
+        PointType m_unit;
     };
     
     class entry_iterator {
@@ -184,7 +187,8 @@ private:
     };
     
     node::forward_link_iterator bestLink(node& from, graph_type& graph, 
-            boundary_container& boundaries); //can return node::forwardEnd()
+            boundary_container& boundaries, 
+            PointType unit = PointType()); //can return node::forwardEnd()
     void buildLinks(node& from, graph_type& graph, 
             boundary_container& boundaries);
     

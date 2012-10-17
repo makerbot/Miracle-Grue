@@ -56,8 +56,10 @@ int pather_optimizer_fastgraph::NodeConnectionComparator::compare(
     int nc = m_nodeCompare(*lhs.first, *rhs.first);
     if(nc)
         return nc;
-    return (lhs.second->distance() < rhs.second->distance() ? 
-        BETTER : (rhs.second->distance() < lhs.second->distance() ? 
+    Scalar lunit = m_unit.dotProduct(lhs.second->normal());
+    Scalar runit = m_unit.dotProduct(rhs.second->normal());
+    return (lunit > runit ? 
+        BETTER : (runit < lunit ? 
             WORSE : SAME));
 }
 bool pather_optimizer_fastgraph::connectionComparator::operator ()(
@@ -104,13 +106,14 @@ bool pather_optimizer_fastgraph::bucketSorter::operator ()(const bucket& lhs,
 
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from, 
-        graph_type& graph, boundary_container& boundaries) {
+        graph_type& graph, boundary_container& boundaries, 
+        PointType unit) {
     if(from.forwardEmpty()) {
         //return from.forwardEnd();
         buildLinks(from, graph, boundaries);
     }
     return std::min_element(from.forwardBegin(), 
-            from.forwardEnd(), NodeConnectionComparator());
+            from.forwardEnd(), NodeConnectionComparator(unit));
 }
 void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
         boundary_container& boundaries) {
@@ -222,6 +225,7 @@ void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths,
     node::forward_link_iterator next;
     graph_type& currentGraph = input->m_graph;
     boundary_container& currentBounds = m_boundaries;
+    PointType currentUnit;
     while(!currentGraph.empty()) {
         currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
@@ -232,9 +236,10 @@ void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths,
                     PathLabel(), labeledpaths, activePath, entryPoint);
         }
         while((next = bestLink(currentGraph[currentIndex], 
-                currentGraph, currentBounds)) != 
+                currentGraph, currentBounds, currentUnit)) != 
                 currentGraph[currentIndex].forwardEnd()) {
             node::connection nextConnection = *next;
+            currentUnit = nextConnection.second->normal();
             PathLabel currentCost(*nextConnection.second);
             smartAppendPoint(nextConnection.first->data().getPosition(), 
                     currentCost, labeledpaths, activePath, entryPoint);
