@@ -30,12 +30,21 @@ int pather_optimizer_fastgraph::LabelTypeComparator::compare(
         const value_type& rhs) const {
     static const int OUTLINE_VALUE = 
             LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+    const int INNERMOST_VALUE = 
+            LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE + 
+            grueCfg.get_nbOfShells() - 1;
     if(lhs.myValue == rhs.myValue)
             return SAME;
+    //fail outermost shell always
     if(lhs.myValue == OUTLINE_VALUE && rhs.myValue != OUTLINE_VALUE)
         return WORSE;
     if(rhs.myValue == OUTLINE_VALUE && lhs.myValue != OUTLINE_VALUE)
         return BETTER;
+    //pass innermost shell always
+    if(lhs.myValue == INNERMOST_VALUE && rhs.myValue != INNERMOST_VALUE)
+        return BETTER;
+    if(rhs.myValue == INNERMOST_VALUE && lhs.myValue != INNERMOST_VALUE)
+        return WORSE;
     return SAME;
 }
 int pather_optimizer_fastgraph::LabelPriorityComparator::compare(
@@ -113,7 +122,7 @@ pather_optimizer_fastgraph::node::forward_link_iterator
         buildLinks(from, graph, boundaries);
     }
     return std::min_element(from.forwardBegin(), 
-            from.forwardEnd(), NodeConnectionComparator(unit));
+            from.forwardEnd(), NodeConnectionComparator(grueCfg, unit));
 }
 void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
         boundary_container& boundaries) {
@@ -129,8 +138,8 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
                 iter->data().getPosition()).magnitude()));
     }
     std::sort(probes.begin(), probes.end(), 
-            probeCompare(from.getIndex(), graph));
-    LabelTypeComparator typeCompare;
+            probeCompare(from.getIndex(), graph, grueCfg));
+    LabelTypeComparator typeCompare(grueCfg);
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
@@ -229,7 +238,7 @@ void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths,
     while(!currentGraph.empty()) {
         currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
-                nodeComparator(currentGraph, entryPoint))->getIndex();
+                nodeComparator(grueCfg, currentGraph, entryPoint))->getIndex();
         LabeledOpenPath activePath;
         if(!currentGraph[currentIndex].forwardEmpty()) {
             smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 

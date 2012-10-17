@@ -121,8 +121,11 @@ private:
     };
     class LabelTypeComparator : public AbstractLabelComparator {
     public:
+        LabelTypeComparator(const GrueConfig& grueConf) : grueCfg(grueConf) {}
         typedef AbstractLabelComparator::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
+    protected:
+        const GrueConfig& grueCfg;
     };
     class LabelPriorityComparator : public AbstractLabelComparator {
     public:
@@ -133,15 +136,17 @@ private:
             LabelComparator;
     class NodeComparator : public abstract_predicate<node> {
     public:
+        NodeComparator(const GrueConfig& grueConf) : m_labelCompare(grueConf) {}
         typedef abstract_predicate<node>::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
-        LabelComparator m_labelCompare;
+        LabelTypeComparator m_labelCompare;
     };
     class NodeConnectionComparator : public abstract_predicate<node::connection> {
     public:
-        NodeConnectionComparator(PointType unit = PointType()) 
-                : m_unit(unit) {}
+        NodeConnectionComparator(const GrueConfig& grueConf, 
+                PointType unit = PointType()) 
+                : m_nodeCompare(grueConf), m_unit(unit) {}
         typedef abstract_predicate<node::connection>::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
@@ -176,8 +181,10 @@ private:
     
     class probeCompare {
     public:
-        probeCompare(node_index from, graph_type& basis) 
-                : m_from(from), m_graph(basis) {}
+        probeCompare(node_index from, graph_type& basis, 
+                const GrueConfig& grueConf) 
+                : m_from(from), m_graph(basis), 
+                m_nodeCompare(grueConf) {}
         bool operator ()(const probe_link_type& lhs, 
                 const probe_link_type& rhs);
     private:
@@ -208,10 +215,11 @@ private:
     
     class nodeComparator {
     public:
-        nodeComparator(graph_type& graph, PointType point = 
+        nodeComparator(const GrueConfig& grueConf, graph_type& graph, PointType point = 
                 PointType(std::numeric_limits<Scalar>::min(), 
                 std::numeric_limits<Scalar>::min()))
-                : m_graph(graph), m_position(point) {}
+                : m_graph(graph), m_position(point), 
+                m_nodeCompare(grueConf) {}
         bool operator ()(const node& lhs, const node& rhs) const;
         bool operator ()(node_index lhs, node_index rhs) const;
     private:
