@@ -49,7 +49,7 @@ private:
 	mgl::Loop square;
 	mgl::Loop squareSpurShell;
 	mgl::Loop triangleSpurShell;
-	std::list<mgl::LoopList> triangleSpurLoops;
+	mgl::Loop triangleSpurLoop;
 	mgl::LayerMeasure layermeasure;
 };
 

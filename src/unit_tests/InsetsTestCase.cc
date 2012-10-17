@@ -83,6 +83,12 @@ void InsetsTestCase::setUp() {
 	at = triangleSpurShell.insertPointAfter(Vector2(-10.0, -10.0), at);
 	at = triangleSpurShell.insertPointAfter(Vector2(-10.0, 10.0), at);
 	at = triangleSpurShell.insertPointAfter(Vector2(9, 10.0), at);
+
+	at =
+		triangleSpurLoop.insertPointAfter(Vector2(0,0),
+										  triangleSpurLoop.clockwiseEnd());
+	at = triangleSpurLoop.insertPointAfter(Vector2(0, 10), at);
+	at = triangleSpurLoop.insertPointAfter(Vector2(1, 0), at);
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -154,7 +160,7 @@ void InsetsTestCase::testTriangleSpurRegion() {
 
 	regioner.insetsForSlice(outlines, layermeasure, insets, interiors);
 
-	std::list<LoopList> &spurs = triangleSpurLoops;
+	std::list<LoopList> spurs;
 
 	regioner.spurLoopsForSlice(outlines, insets, layermeasure, spurs);
 
@@ -163,15 +169,18 @@ void InsetsTestCase::testTriangleSpurRegion() {
 	loopTableToSVG(spurs, "green", 20, 20);
 	svgEnd();
 
-	cout << "Shells with spurs" << endl;
 	CPPUNIT_ASSERT_EQUAL(3, (int)spurs.size());
-	cout << "Spurs for shell" << endl;
 	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.front().size());
 }
 
 void InsetsTestCase::testTriangleSpurFill() {
 	Regioner regioner(config);
 
+	//std::list<LoopList> triangleSpurLoopsPerShell;
+	//triangleSpurLoopsPerShell.push_back(LoopList());
+	LoopList triangleSpurLoops;
+	triangleSpurLoops.push_back(triangleSpurLoop);
+
 	OpenPathList spurs;
-	regioner.fillSpurLoops(triangleSpurLoops.front(), layermeasure, spurs);
+	regioner.fillSpurLoops(triangleSpurLoops, layermeasure, spurs);
 }
