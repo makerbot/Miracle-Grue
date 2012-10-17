@@ -148,11 +148,15 @@ void SlicerTestCase::testSlicyKnot_44() {
     cout << endl;
     string modelFile = "inputs/3D_Knot.stl";
 
-    Configuration config;
-    initConfig(config);
     Meshy mesh;
-    GrueConfig grueCfg;
-    grueCfg.loadFromFile(config);
+    class TestConfig : public GrueConfig {
+    public:
+        TestConfig() {
+            firstLayerZ = 0;
+            layerH = 0.35;
+        }
+    };
+    TestConfig grueCfg;
     Segmenter seg(grueCfg); // 0.35
     mesh.readStlFile(modelFile.c_str());
     seg.tablaturize(mesh);

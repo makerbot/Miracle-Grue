@@ -82,9 +82,11 @@ void testModel(const char *model, const char* configFile) {
 				gcodeFileStream, -1, -1,
 				skeleton,
 				slices);
-	} catch (mgl::Exception mgle) {
+    } catch (const mgl::Exception& mgle) {
 		CPPUNIT_FAIL(mgle.error);
-	}
+	} catch(const std::exception& e) {
+        CPPUNIT_FAIL(e.what());
+    }
 
 	gcodeFileStream.close();
 }
@@ -124,10 +126,13 @@ void SlicerCupTestCase::testIndividuals() {
 	try {
 
 		testModels(models, "miracle.config");
-	}	catch (mgl::Exception &e) {
-		cout << e.error << endl;
-	}	catch (...) {
+	}	catch (const mgl::Exception &e) {
+		CPPUNIT_FAIL(e.error);
+	}   catch (const std::exception& e)	{
+        CPPUNIT_FAIL(e.what());
+    }   catch (...) {
 		CPPUNIT_FAIL("unknown error during slicing");
+        throw;
 	}
 }
 
