@@ -348,14 +348,13 @@ struct SegPairLess {
 	}
 };
 
-struct Intersection {
-	LineSegment2 seg;
-	Vector2 point;
-};
-typedef vector<Intersection> IntersectionList;
+#include "intersection_index.h"
+#include "basic_boxlist.h"
+
 typedef set<SegmentPair, SegPairLess> SegmentPairSet;
 typedef vector<LineSegment2> SegmentList;
 
+typedef basic_boxlist<LineSegment2> SegmentIndex;
 
 Vector2 getSegmentVector(const LineSegment2 &seg) {
 	return seg.a - seg.b;
@@ -415,7 +414,7 @@ EVector toEVector(const Vector2 &orig) {
 }
 
 Vector2 toVector2(const EVector &orig) {
-	return Vector2(orig(1), orig(2));
+	return Vector2(orig(0), orig(1));
 }
 
 LineSegment2 triangleBase(const EVector firstUnit,
@@ -464,6 +463,19 @@ Vector2 midPoint(const LineSegment2 &seg) {
 	return seg.a + ((seg.b - seg.a) * 0.5);
 }
 
+void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
+					  SegmentList &intersecting) {
+	SegmentList found;
+	index.search(found, LineSegmentFilter(subject));
+
+	for (SegmentList::const_iterator possible = found.begin();
+		 possible != found.end(); ++possible) {
+		if (possible->intersects(subject)) 
+			intersecting.push_back(*possible);
+	}
+}
+
+
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 const LayerMeasure &layermeasure,
 							 OpenPathList &spurs) {
@@ -474,6 +486,7 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 	
 	//get loop line segments
 	SegmentList segs;
+	SegmentIndex index;
 	for (LoopList::const_iterator loop = spurLoops.begin();
 		 loop != spurLoops.end(); ++loop) {
 
@@ -482,12 +495,11 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 			segs.push_back(LineSegment2());
 			LineSegment2 &seg = segs.back();
 			seg = loop->segmentAfterPoint(pn);
+
+			index.insert(seg);
 		}
 
 	}
-
-	//SegIndex index;
-	//index->insert(segs);
 
 	//find wall pairs
 	SegmentPairSet allWalls;
@@ -497,13 +509,13 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a,
 											   maxSpurWidth);
 
-		IntersectionList intersecting;
-		//index.findIntersecting(normal, intersecting);
+		SegmentList intersecting;
+		findIntersecting(index, normal, intersecting);
 
 		if (intersecting.size() > 0) {
 			//we only care about the closest intersection
 			SegmentPair curWalls =
-				normalizeWalls(*curSeg, intersecting.front().seg);
+				normalizeWalls(*curSeg, intersecting.front());
 			allWalls.insert(curWalls);
 		}
 	}
