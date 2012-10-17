@@ -16,6 +16,7 @@
 
 #include "mgl/shrinky.h"
 #include "mgl/meshy.h"
+#include "mgl/gcoder.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SlicerTestCase);
 
@@ -147,11 +148,16 @@ void SlicerTestCase::testSlicyKnot_44() {
     cout << endl;
     string modelFile = "inputs/3D_Knot.stl";
 
-    Configuration config;
-    initConfig(config);
     Meshy mesh;
-    Segmenter seg(config["slicer"]["firstLayerZ"].asDouble(),
-            config["slicer"]["layerH"].asDouble()); // 0.35
+    class TestConfig : public GrueConfig {
+    public:
+        TestConfig() {
+            firstLayerZ = 0;
+            layerH = 0.35;
+        }
+    };
+    TestConfig grueCfg;
+    Segmenter seg(grueCfg); // 0.35
     mesh.readStlFile(modelFile.c_str());
     seg.tablaturize(mesh);
 

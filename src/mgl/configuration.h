@@ -128,14 +128,14 @@ public:
     Scalar segmentVolume(const Extruder& extruder, const Extrusion& extrusion, 
             const libthing::LineSegment2& segment, Scalar h, Scalar w) const;
 #define GRUECONFIG_PUBLIC_CONST_ACCESSOR(TYPE, NAME) \
-    private: \
+    protected: \
     TYPE NAME; \
     public: \
     TYPE get_##NAME() const { return NAME; } \
     TYPE get_##NAME() { return NAME; }
 
 #define GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(TYPE, NAME) \
-    private: \
+    protected: \
     TYPE NAME; \
     public: \
     const TYPE& get_##NAME() const { return NAME; } \
@@ -220,6 +220,46 @@ private:
 #undef GRUECONFIG_PUBLIC_CONST_ACCESSOR
 #undef GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR
 };
+/// Properties common to a single hardware extruder
+class Extruder {
+public:
 
+    Extruder() {
+    }
+
+    Scalar feedCrossSectionArea() const;
+
+    bool isVolumetric() const {
+        return true;
+    };
+
+    Scalar feedDiameter;
+    Scalar nozzleDiameter;
+    unsigned char code;
+    int id;
+
+    Scalar retractDistance;
+    Scalar retractRate;
+    Scalar restartExtraDistance;
+
+    std::string firstLayerExtrusionProfile;
+    std::string insetsExtrusionProfile;
+    std::string infillsExtrusionProfile;
+    std::string outlinesExtrusionProfile;
+};
+
+/// Properties of an extrusion profile
+/// an extruder may have multiple extrusion profiles
+/// EG: large, fast, 'first layer'
+class Extrusion {
+public:
+
+    Extrusion() {}
+
+    Scalar crossSectionArea(Scalar height, Scalar width) const;
+
+    Scalar feedrate;
+    Scalar temperature;
+};
 }
 #endif /* CONFIGURATION_H_ */
