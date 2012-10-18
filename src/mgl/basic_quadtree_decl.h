@@ -44,10 +44,12 @@ public:
     iterator insert(const value_type& value);
     void erase(iterator) {}
     template <typename COLLECTION, typename FILTER>
-    void search(COLLECTION& result, const FILTER& filt);
+    void search(COLLECTION& result, const FILTER& filt) const;
     
     iterator begin() { return iterator(); }
     iterator end() { return iterator(); }
+    const_iterator begin() const { return const_iterator(); }
+    const_iterator end() const { return const_iterator(); }
     
     void repr(std::ostream& out, size_t recursionLevel = 0);
     void repr_svg(std::ostream& out, size_t recursionLevel = 0);

@@ -91,7 +91,7 @@ template <typename T, size_t C>
 void basic_rtree<T, C>::erase(iterator) {}
 template <typename T, size_t C>
 template <typename COLLECTION, typename FILTER>
-void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) {
+void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) const {
     if(!filt.filter(myBounds))
         return;
     if(isLeaf()) {

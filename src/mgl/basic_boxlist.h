@@ -32,7 +32,7 @@ public:
         data.erase(iter);
     }
     template <typename COLLECTION, typename FILTER>
-    void search(COLLECTION& result, const FILTER& filt) {
+    void search(COLLECTION& result, const FILTER& filt) const {
         for(const_iterator iter = data.begin(); 
                 iter != data.end(); 
                 ++iter) {
