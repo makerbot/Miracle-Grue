@@ -5,6 +5,8 @@
 #include "InsetsTestCase.h"
 #include "mgl/regioner.h"
 #include "libthing/LineSegment2.h"
+#include "mgl/intersection_index.h"
+#include "mgl/basic_boxlist.h"
 
 using namespace std;
 using namespace mgl;
@@ -106,6 +108,10 @@ void InsetsTestCase::setUp() {
 										  triangleSpurLoop.clockwiseEnd());
 	at = triangleSpurLoop.insertPointAfter(Vector2(0, 10), at);
 	at = triangleSpurLoop.insertPointAfter(Vector2(1, 0), at);
+
+    triangleSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(0, 10));
+    triangleSpurWalls.second = LineSegment2(Vector2(2, 0), Vector2(.2, 10));
+    
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -199,10 +205,120 @@ void InsetsTestCase::testTriangleSpurFill() {
 	OpenPathList spurs;
 	regioner.fillSpurLoops(triangleSpurLoops, layermeasure, spurs);
 
-	cout << "Spurs: " << spurs.size() << endl;
+	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
 
 	svgBegin();
-	loopToSVG(triangleSpurLoop, "black", 20, 20);
+    loopToSVG(triangleSpurLoop, "black", 20, 20);
 	openPathListToSVG(spurs, "green", 20, 20);
 	svgEnd();
+}
+
+typedef pair<LineSegment2, LineSegment2> SegmentPair;
+bool VectorLess(const Vector2 &first, const Vector2 &second);
+
+bool SegLess(const LineSegment2 &first, const LineSegment2 &second);
+
+struct SegPairLess {
+	bool operator()(const SegmentPair first, const SegmentPair second) {
+		if (SegLess(first.first, second.first))
+			return true;
+		else if (SegLess(second.first, first.first))
+			return false;
+		else if (SegLess(first.second, second.second))
+			return true;
+		else 
+			return false;
+	}
+};
+
+typedef set<SegmentPair, SegPairLess> SegmentPairSet;
+typedef vector<LineSegment2> SegmentList;
+typedef basic_boxlist<LineSegment2> SegmentIndex;
+
+void findWallPairs(const Scalar span, const SegmentList segs,
+				   SegmentIndex &index, SegmentPairSet &walls);
+
+void InsetsTestCase::testFindWallPairs() {
+	Regioner regioner(config);
+
+    //get loop line segments
+	SegmentList segs;
+	SegmentIndex index;
+
+    for (Loop::finite_cw_iterator pn = triangleSpurLoop.clockwiseFinite();
+         pn != triangleSpurLoop.clockwiseEnd(); ++pn) {
+        segs.push_back(LineSegment2());
+        LineSegment2 &seg = segs.back();
+        seg = triangleSpurLoop.segmentAfterPoint(pn);
+
+        index.insert(seg);
+    }
+
+	//find wall pairs
+	SegmentPairSet allWalls;
+	findWallPairs(layermeasure.getLayerW() * 1.5, segs, index, allWalls);
+    
+    /*svgBegin();
+    for (SegmentPairSet::iterator walls = allWalls.begin();
+         walls != allWalls.end(); ++walls) {
+
+        segToSVG(walls->first, "black", 20, 20);
+        segToSVG(walls->second, "blue", 20, 20);
+    }
+    svgEnd();*/
+
+    CPPUNIT_ASSERT_EQUAL(1, (int)allWalls.size());
+}
+
+double sigdig(double subject, int digits) {
+    int power  = 1;
+    for (int i = 0; i < digits; i++)
+        power *= 10;
+
+    int tmp = (int)(subject * power);
+    return (double)tmp / power;
+}
+
+SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
+							  const SegmentPair &sides);
+
+void InsetsTestCase::testCompleteTrapezoid() {
+    SegmentPair spans =
+        completeTrapezoid(layermeasure.getLayerW() *0.5,
+                          layermeasure.getLayerW() *1.5, triangleSpurWalls);
+
+    /*svgBegin();
+    segToSVG(triangleSpurWalls.first, "black", 20, 20);
+    segToSVG(triangleSpurWalls.second, "black", 20, 20);
+
+    segToSVG(spans.first, "red", 20, 20);
+    segToSVG(spans.second, "red", 20, 20);
+    svgEnd();*/
+
+    CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *0.5,
+                         sigdig(spans.first.length(), 5));
+    CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *1.5,
+                         sigdig(spans.second.length(), 5));
+}
+
+LineSegment2 bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
+                         const SegmentPair &walls);
+
+void InsetsTestCase::testBisectWalls() {
+    LineSegment2 bisect = bisectWalls(layermeasure.getLayerW() * 0.5,
+                                      layermeasure.getLayerW() * 1.5,
+                                      triangleSpurWalls);
+
+    /*svgBegin();
+    segToSVG(triangleSpurWalls.first, "black", 20, 20);
+    segToSVG(triangleSpurWalls.second, "black", 20, 20);
+
+    segToSVG(bisect, "red", 20, 20);
+    svgEnd();*/
+
+    //check that we haven't reversed anything
+    CPPUNIT_ASSERT(bisect.a.x > 0);
+    CPPUNIT_ASSERT(bisect.a.y > 0);
+    CPPUNIT_ASSERT(bisect.b.x > 0);
+    CPPUNIT_ASSERT(bisect.b.y > 0);
 }
