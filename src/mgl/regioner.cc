@@ -434,15 +434,17 @@ LineSegment2 triangleBase(const EVector firstUnit,
 
 SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
 							  const SegmentPair &sides) {
-	ELine firstLine(toEVector(sides.first.a), toEVector(sides.first.b));
-	ELine secondLine(toEVector(sides.second.a), toEVector(sides.second.b));
+	ELine firstLine =
+        ELine::Through(toEVector(sides.first.a), toEVector(sides.first.b));
+	ELine secondLine =
+        ELine::Through(toEVector(sides.second.a), toEVector(sides.second.b));
 
 	EVector intersection;
 	Scalar angle;
 	lineIntersection(firstLine, secondLine, intersection, angle);
 
-	EVector firstUnit = firstLine.direction();
-	EVector secondUnit = secondLine.direction();
+	EVector firstUnit = -firstLine.direction();
+	EVector secondUnit = -secondLine.direction();
 
 	SegmentPair parallels;
 	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
@@ -476,6 +478,33 @@ void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
 }
 
 
+void findWallPairs(const Scalar span, const SegmentList segs,
+				   SegmentIndex &index, SegmentPairSet &walls) {
+
+	for (SegmentList::const_iterator curSeg = segs.begin();
+		 curSeg != segs.end(); ++curSeg) {
+		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a, span);
+
+		SegmentList intersecting;
+		findIntersecting(index, normal, intersecting);
+
+		if (intersecting.size() > 0) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, intersecting.front());
+			walls.insert(curWalls);
+		}
+	}
+}
+
+LineSegment2 bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
+                 const SegmentPair &walls) {
+		SegmentPair spans =
+			completeTrapezoid(minSpurWidth, maxSpurWidth, walls);
+		
+		return LineSegment2(midPoint(spans.first), midPoint(spans.second));
+}
+
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 const LayerMeasure &layermeasure,
 							 OpenPathList &spurs) {
@@ -503,33 +532,14 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 
 	//find wall pairs
 	SegmentPairSet allWalls;
-
-	for (SegmentList::const_iterator curSeg = segs.begin();
-		 curSeg != segs.end(); ++curSeg) {
-		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a,
-											   maxSpurWidth);
-
-		SegmentList intersecting;
-		findIntersecting(index, normal, intersecting);
-
-		if (intersecting.size() > 0) {
-			//we only care about the closest intersection
-			SegmentPair curWalls =
-				normalizeWalls(*curSeg, intersecting.front());
-			allWalls.insert(curWalls);
-		}
-	}
+	findWallPairs(maxSpurWidth, segs, index, allWalls);
 
 	SegmentList pieces;
 
 	// complete trapezoids and pull out the bottom and top
 	for (SegmentPairSet::const_iterator walls = allWalls.begin();
 		 walls != allWalls.end(); ++walls) {
-		SegmentPair spans =
-			completeTrapezoid(minSpurWidth, maxSpurWidth, *walls);
-		
-		pieces.push_back(LineSegment2(midPoint(spans.first),
-									  midPoint(spans.second)));
+		pieces.push_back(bisectWalls(minSpurWidth, maxSpurWidth, *walls));
 	}
 
 	//TODO: join segments into a chain
