@@ -49,8 +49,8 @@ public:
         data.erase(iter);
     }
     template <typename COLLECTION, typename FILTER>
-    void search(COLLECTION& result, const FILTER& filt) {
-        for(typename internal_container::iterator iter = data.begin(); 
+    void search(COLLECTION& result, const FILTER& filt) const {
+        for(typename internal_container::const_iterator iter = data.begin(); 
                 iter != data.end(); 
                 ++iter) {
             if(filt.filter(iter->second))

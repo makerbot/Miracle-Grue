@@ -64,7 +64,7 @@ typename basic_quadtree<T>::iterator basic_quadtree<T>::insert(const value_type&
 }
 template <typename T>
 template <typename COLLECTION, typename FILTER>
-void basic_quadtree<T>::search(COLLECTION& result, const FILTER& filt) {
+void basic_quadtree<T>::search(COLLECTION& result, const FILTER& filt) const {
     if(!filt.filter(myBounds))
         return;
     for(typename data_container::const_iterator iter = myData.begin(); 
