@@ -161,6 +161,8 @@ GrueConfig::GrueConfig()
         doInsets(INVALID_BOOL), doInfills(INVALID_BOOL), 
         doFanCommand(INVALID_BOOL), fanLayer(INVALID_UINT), 
         doPrintLayerMessages(INVALID_BOOL), doPrintProgress(INVALID_BOOL), 
+        coarseness(INVALID_SCALAR), preCoarseness(INVALID_SCALAR), 
+        directionWeight(INVALID_SCALAR), 
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
         infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
         layerWidthRatio(INVALID_SCALAR), 
@@ -171,7 +173,6 @@ GrueConfig::GrueConfig()
         raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
         doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
         supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
-        coarseness(INVALID_SCALAR), directionWeight(INVALID_SCALAR), 
         rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
         useEaxis(INVALID_BOOL), scalingFactor(INVALID_BOOL), 
         startingX(INVALID_SCALAR), startingY(INVALID_SCALAR), 
@@ -196,6 +197,10 @@ void GrueConfig::loadFromFile(const Configuration& config) {
 void GrueConfig::loadSlicingParams(const Configuration& config) {
     coarseness = (doubleCheck(
             config["coarseness"], "coarseness"));
+    preCoarseness = (doubleCheck(
+            config["preCoarseness"], "preCoarseness"));
+    directionWeight = doubleCheck(config["directionWeight"],
+            "directionWeight");
     layerH = (doubleCheck(
             config["layerHeight"], "layerHeight"));
     firstLayerZ = doubleCheck(config["bedZOffset"], 
