@@ -129,8 +129,11 @@ private:
     };
     class LabelPriorityComparator : public AbstractLabelComparator {
     public:
+        LabelPriorityComparator(const GrueConfig& grueConf) : grueCfg(grueConf) {}
         typedef AbstractLabelComparator::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
+    protected:
+        const GrueConfig& grueCfg;
     };
     typedef composite_predicate<PathLabel, LabelTypeComparator, LabelPriorityComparator> 
             LabelComparator;

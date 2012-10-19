@@ -35,6 +35,8 @@ int pather_optimizer_fastgraph::LabelTypeComparator::compare(
             grueCfg.get_nbOfShells() - 1;
     if(lhs.myValue == rhs.myValue)
             return SAME;
+//    return lhs.isInset() && !rhs.isInset() ? BETTER : 
+//        (rhs.isInset() && !lhs.isInset() ? WORSE : SAME);
     //fail outermost shell always
     if(lhs.myValue == OUTLINE_VALUE && rhs.myValue != OUTLINE_VALUE)
         return WORSE;
@@ -111,6 +113,9 @@ bool pather_optimizer_fastgraph::bucketSorter::operator ()(const bucket& lhs,
     size_t lhsCount = countIntersections(lhsLine, m_bounds);
     size_t rhsCount = countIntersections(rhsLine, m_bounds);
     return lhsCount > rhsCount;
+//    size_t lhsCount = countIntersections(lhsLine, rhs.m_bounds);
+//    size_t rhsCount = countIntersections(rhsLine, lhs.m_bounds);
+//    return (lhsCount & 1) && !(rhsCount & 1);
 }
 
 pather_optimizer_fastgraph::node::forward_link_iterator
@@ -242,7 +247,8 @@ void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths,
         LabeledOpenPath activePath;
         if(!currentGraph[currentIndex].forwardEmpty()) {
             smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
-                    PathLabel(), labeledpaths, activePath, entryPoint);
+                    currentGraph[currentIndex].data().getLabel(), 
+                    labeledpaths, activePath, entryPoint);
         }
         while((next = bestLink(currentGraph[currentIndex], 
                 currentGraph, currentBounds, currentUnit)) != 
@@ -382,9 +388,10 @@ void pather_optimizer_fastgraph::smartAppendPoint(PointType point,
     } else if(path.myLabel == label) {
         path.myPath.appendPoint(point);
     } else {
-        path.myPath.appendPoint(point);
+        PointType prevPoint = path.myPath.empty() ? point : *path.myPath.fromEnd();
         smartAppendPath(labeledpaths, path);
         path.myLabel = label;
+        path.myPath.appendPoint(prevPoint);
         path.myPath.appendPoint(point);
     }
     entryPoint = point;

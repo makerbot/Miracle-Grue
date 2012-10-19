@@ -488,7 +488,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		--aboveMargins;
 		tick();
 	}
-	
+	//return;
 	current = regionsBegin;
 	currentMargins = marginsList.begin();
 	above = current;
