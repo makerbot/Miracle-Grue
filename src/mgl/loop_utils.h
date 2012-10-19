@@ -135,6 +135,16 @@ void smooth(LOOP_OR_PATH& input, Scalar smoothness, Scalar factor = 1.0) {
     smooth(input, smoothness, output, factor);
     input = output;
 }
+template <typename LOOP_OR_PATH_COLLECTION>
+void smoothCollection(LOOP_OR_PATH_COLLECTION& input, Scalar smoothness, 
+        Scalar factor = 1.0) {
+    typedef typename LOOP_OR_PATH_COLLECTION::iterator iterator;
+    for(iterator iter = input.begin();
+            iter != input.end();
+            ++iter) {
+        smooth(*iter, smoothness, factor);
+    }
+}
 
 }
 
