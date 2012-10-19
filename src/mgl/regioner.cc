@@ -390,7 +390,13 @@ void lineIntersection(const ELine first, const ELine second,
 	EVector firstUnit = first.direction();
 	EVector secondUnit = second.direction();
 
-	angle = acos(firstUnit.dot(secondUnit));
+    Scalar dot = firstUnit.dot(secondUnit);
+    if (dot < 0) {
+        secondUnit = -secondUnit;
+        dot = firstUnit.dot(secondUnit);
+    }
+
+	angle = acos(dot);
 }
 
 SegmentPair normalizeWalls(const LineSegment2 &first,
@@ -443,8 +449,14 @@ SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
 	Scalar angle;
 	lineIntersection(firstLine, secondLine, intersection, angle);
 
+    cout << "intersection: " << intersection(0) << intersection(1) << endl;
+
 	EVector firstUnit = -firstLine.direction();
 	EVector secondUnit = -secondLine.direction();
+
+    Scalar dot = firstUnit.dot(secondUnit);
+    if (dot < 0) 
+        secondUnit = -secondUnit;
 
 	SegmentPair parallels;
 	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
@@ -539,7 +551,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 	// complete trapezoids and pull out the bottom and top
 	for (SegmentPairSet::const_iterator walls = allWalls.begin();
 		 walls != allWalls.end(); ++walls) {
-		pieces.push_back(bisectWalls(minSpurWidth, maxSpurWidth, *walls));
+		LineSegment2 bisect = bisectWalls(minSpurWidth, maxSpurWidth, *walls);
+        pieces.push_back(bisect);
 	}
 
 	//TODO: join segments into a chain
