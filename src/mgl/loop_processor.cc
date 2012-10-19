@@ -30,7 +30,7 @@ void LoopProcessor::processLoops(const LayerLoops& input, LayerLoops& output) {
                 loopIter != currentInputLayer.end(); 
                 ++loopIter) {
             Loop processed;
-            smooth(*loopIter, grueCfg.get_coarseness(), processed, 
+            smooth(*loopIter, grueCfg.get_preCoarseness(), processed, 
                     grueCfg.get_directionWeight());
             currentOutputLayer.push_back(processed);
         }

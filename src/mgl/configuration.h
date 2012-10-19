@@ -177,6 +177,9 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, fanLayer)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, preCoarseness)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, directionWeight)
     //slicer
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerH)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, firstLayerZ)
@@ -202,8 +205,6 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportDensity)
     //pather
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doGraphOptimization)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, directionWeight)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, iterativeEffort)
     //gantry
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateXY)
