@@ -94,16 +94,34 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		
         if(grueCfg.get_doOutlines()) {
-            optimizer->addBoundaries(layerRegions->outlines);
-            optimizer->addBoundaries(layerRegions->supportLoops);
-            optimizer->addPaths(layerRegions->outlines, 
-                    PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
-            optimizer->optimize(extruderlayer.paths);
-            optimizer->addPaths(layerRegions->supportLoops, 
-                    PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
-            optimizer->optimize(extruderlayer.paths);
-            optimizer->clearBoundaries();
-            optimizer->clearPaths();
+            for(LoopList::const_iterator iter = layerRegions->outlines.begin(); 
+                    iter != layerRegions->outlines.end(); 
+                    ++iter) {
+                const LoopPath outlinePath(*iter, iter->clockwise(), 
+                        iter->counterClockwise());
+                extruderlayer.paths.push_back(PathLabel(PathLabel::TYP_OUTLINE, 
+                        PathLabel::OWN_MODEL));
+                OpenPath& path = extruderlayer.paths.back().myPath;
+                for(LoopPath::const_iterator pointIter = outlinePath.fromStart(); 
+                        pointIter != outlinePath.end(); 
+                        ++pointIter) {
+                    path.appendPoint(*pointIter);
+                }
+            }
+            for(LoopList::const_iterator iter = layerRegions->supportLoops.begin(); 
+                    iter != layerRegions->supportLoops.end(); 
+                    ++iter) {
+                const LoopPath outlinePath(*iter, iter->clockwise(), 
+                        iter->counterClockwise());
+                extruderlayer.paths.push_back(PathLabel(PathLabel::TYP_OUTLINE, 
+                        PathLabel::OWN_SUPPORT));
+                OpenPath& path = extruderlayer.paths.back().myPath;
+                for(LoopPath::const_iterator pointIter = outlinePath.fromStart(); 
+                        pointIter != outlinePath.end(); 
+                        ++pointIter) {
+                    path.appendPoint(*pointIter);
+                }
+            }
         }
 		
 		optimizer->addBoundaries(layerRegions->outlines);	
