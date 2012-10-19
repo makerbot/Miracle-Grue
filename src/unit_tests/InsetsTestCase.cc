@@ -110,7 +110,7 @@ void InsetsTestCase::setUp() {
 	at = triangleSpurLoop.insertPointAfter(Vector2(1, 0), at);
 
     triangleSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(0, 10));
-    triangleSpurWalls.second = LineSegment2(Vector2(2, 0), Vector2(.2, 10));
+    triangleSpurWalls.second = LineSegment2(Vector2(0, 10), Vector2(1, 0));
     
 }
 
@@ -205,12 +205,12 @@ void InsetsTestCase::testTriangleSpurFill() {
 	OpenPathList spurs;
 	regioner.fillSpurLoops(triangleSpurLoops, layermeasure, spurs);
 
-	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
-
 	svgBegin();
     loopToSVG(triangleSpurLoop, "black", 20, 20);
-	openPathListToSVG(spurs, "green", 20, 20);
+	openPathListToSVG(spurs, "red", 20, 20);
 	svgEnd();
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
 }
 
 typedef pair<LineSegment2, LineSegment2> SegmentPair;
