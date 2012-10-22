@@ -40,7 +40,8 @@ public:
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
     pather_optimizer_fastgraph(const GrueConfig& grueConf)
-            : grueCfg(grueConf), historyPoint(std::numeric_limits<Scalar>::min(), 
+            : grueCfg(grueConf), bucketsSorted(false), 
+            historyPoint(std::numeric_limits<Scalar>::min(), 
             std::numeric_limits<Scalar>::min()) {}
     //addPath builds up the correct interior graph (the correct bucket)
     void addPath(const OpenPath& path, const PathLabel& label);
@@ -109,8 +110,11 @@ private:
     
     class bucket {
     public:
+        bucket() : m_insideCount(0) {}
         boundary_container m_bounds;
         graph_type m_graph;
+        PointType m_testPoint;
+        size_t m_insideCount; //how many others this is inside of
     };
     
     typedef graph_type::forward_node_iterator node_iterator;
@@ -209,11 +213,12 @@ private:
             PointType unit = PointType()); //can return node::forwardEnd()
     void buildLinks(node& from, graph_type& graph, 
             boundary_container& boundaries);
+    void sortBuckets();
     
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);
     static size_t countIntersections(libthing::LineSegment2& line, 
-            boundary_container& boundContainer);
+            const boundary_container& boundContainer);
     
     class connectionComparator {
     public:
@@ -241,12 +246,7 @@ private:
     
     class bucketSorter {
     public:
-        bucketSorter(boundary_container& bounds, PointType frompoint) 
-                : m_bounds(bounds), m_from(frompoint) {}
         bool operator ()(const bucket& lhs, const bucket& rhs) const;
-    private:
-        boundary_container& m_bounds;
-        PointType m_from;
     };
     
     bool crossesBounds(const libthing::LineSegment2& line, 
@@ -265,6 +265,7 @@ private:
     
     boundary_container m_boundaries;
     bucket_list buckets;
+    bool bucketsSorted;
     graph_type m_graph;
     AABBox boundaryLimits;
     PointType historyPoint;

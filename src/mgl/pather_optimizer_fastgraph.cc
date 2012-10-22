@@ -7,6 +7,7 @@ namespace mgl {
 
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
+    sortBuckets();
     node_index last = -1;
     bucket_list::iterator bucketIter = pickBucket(*path.fromStart());
     if(bucketIter == buckets.end()) {
@@ -49,6 +50,7 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
 }
 void pather_optimizer_fastgraph::addPath(const Loop& loop, 
         const PathLabel& label) {
+    sortBuckets();
     node_index last = -1;
     node_index first = -1;
     bucket_list::iterator bucketIter = pickBucket(*loop.clockwise());
@@ -113,6 +115,7 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
+    bucketsSorted = false;
     bucket_list::iterator iter = buckets.insert(buckets.end(), bucket());
     bucket& destBucket = *iter;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
@@ -123,9 +126,8 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
         boundaryLimits.expandTo(segment.b);
         m_boundaries.insert(segment);
         destBucket.m_bounds.insert(segment);
+        destBucket.m_testPoint = segment.a;
     }
-    buckets.sort(bucketSorter(m_boundaries, 
-            boundaryLimits.bottom_left() - PointType(20, 20)));
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
     m_boundaries = boundary_container();
@@ -139,6 +141,32 @@ void pather_optimizer_fastgraph::clearPaths() {
             ++iter) {
         iter->m_graph.clear();
     }
+}
+void pather_optimizer_fastgraph::sortBuckets() {
+    if(bucketsSorted)
+        return;
+    bucketsSorted = true;
+    //point at infinity (outside our limits)
+    PointType infinityPoint(boundaryLimits.bottom_left() - PointType(20,20));
+    //determine how many buckets each is inside of
+    for(bucket_list::iterator currentIter = buckets.begin(); 
+            currentIter != buckets.end(); 
+            ++currentIter) {
+        libthing::LineSegment2 currentLine(infinityPoint, 
+                currentIter->m_testPoint);
+        currentIter->m_insideCount = 0;
+        for(bucket_list::const_iterator testIter = buckets.begin(); 
+                testIter != buckets.end();
+                ++testIter) {
+            if(testIter == currentIter)
+                continue;   //no self tests
+            size_t intersectionsCount = countIntersections(currentLine, 
+                    testIter->m_bounds);
+            currentIter->m_insideCount += intersectionsCount & 1;
+        }
+    }
+    //sort by that number
+    buckets.sort(bucketSorter());
 }
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {
@@ -192,7 +220,7 @@ Scalar pather_optimizer_fastgraph::splitPaths(multipath_type& destionation,
     return ret;
 }
 size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& line, 
-        boundary_container& boundContainer) {
+        const boundary_container& boundContainer) {
     typedef std::vector<libthing::LineSegment2> result_type;
     result_type result;
     size_t count = 0;

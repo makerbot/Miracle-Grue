@@ -106,16 +106,7 @@ bool pather_optimizer_fastgraph::probeCompare::operator ()(
 }
 bool pather_optimizer_fastgraph::bucketSorter::operator ()(const bucket& lhs, 
         const bucket& rhs) const {
-    libthing::LineSegment2 lhsLine = libthing::LineSegment2(m_from, 
-            lhs.m_bounds.begin()->a);
-    libthing::LineSegment2 rhsLine = libthing::LineSegment2(m_from, 
-            rhs.m_bounds.begin()->a);
-    size_t lhsCount = countIntersections(lhsLine, m_bounds);
-    size_t rhsCount = countIntersections(rhsLine, m_bounds);
-    return lhsCount > rhsCount;
-//    size_t lhsCount = countIntersections(lhsLine, rhs.m_bounds);
-//    size_t rhsCount = countIntersections(rhsLine, lhs.m_bounds);
-//    return (lhsCount & 1) && !(rhsCount & 1);
+    return lhs.m_insideCount > rhs.m_insideCount;
 }
 
 pather_optimizer_fastgraph::node::forward_link_iterator
