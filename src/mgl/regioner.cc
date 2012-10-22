@@ -382,10 +382,23 @@ LineSegment2 getSegmentNormal(const LineSegment2 &orig,
 
 typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
 typedef Eigen::Vector2d EVector;
+typedef Eigen::Hyperplane<Scalar, 2> EHyperplane;
+
+EVector toEVector(const Vector2 &orig) {
+	return EVector(orig.x, orig.y);
+}
+
+Vector2 toVector2(const EVector &orig) {
+	return Vector2(orig(0), orig(1));
+}
+
+Vector2 midPoint(const LineSegment2 &seg) {
+	return seg.a + ((seg.b - seg.a) * 0.5);
+}
 
 void lineIntersection(const ELine first, const ELine second,
 					  EVector &point, Scalar &angle) {
-	point = first.intersectionPoint(Eigen::Hyperplane<Scalar, 2>(second));
+	point = first.intersectionPoint(EHyperplane(second));
 	
 	EVector firstUnit = first.direction();
 	EVector secondUnit = second.direction();
@@ -398,6 +411,18 @@ void lineIntersection(const ELine first, const ELine second,
 
 	angle = acos(dot);
 }
+
+bool segmentIntersection(const LineSegment2 &first,const LineSegment2 &second,
+                         Vector2 &point) {
+    if (!first.intersects(second))
+        return false;
+
+    ELine firstline = ELine::Through(toEVector(first.a), toEVector(first.b));
+    ELine secondline = ELine::Through(toEVector(second.a), toEVector(second.b));
+
+    point = toVector2(firstline.intersectionPoint(EHyperplane(secondline)));
+    return true;
+} 
 
 SegmentPair normalizeWalls(const LineSegment2 &first,
 						   const LineSegment2 &second) {
@@ -415,13 +440,74 @@ SegmentPair normalizeWalls(const LineSegment2 &first,
 	return segs;
 }
 
-EVector toEVector(const Vector2 &orig) {
-	return EVector(orig.x, orig.y);
+SegmentPair completeParallel(const Scalar toplen, const Scalar bottomlen,
+                            const SegmentPair &sides) {
+    LineSegment2 span = getSegmentNormal(sides.first, sides.first.a,
+                                           bottomlen);
+    Vector2 intersection;
+    if (segmentIntersection(span, sides.second, intersection))
+        span.b = intersection;
+    else {
+        span = getSegmentNormal(sides.first, sides.first.b, bottomlen);
+
+        if (segmentIntersection(span, sides.second, intersection))
+            span.b = intersection;
+        else {
+            span = getSegmentNormal(sides.second, sides.second.a, bottomlen);
+
+            if (segmentIntersection(span, sides.first, intersection))
+                span.b = intersection;
+            else {
+                span = getSegmentNormal(sides.second, sides.second.b,
+                                        bottomlen);
+
+                if (segmentIntersection(span, sides.first, intersection))
+                    span.b = intersection;
+                else {
+                    //shouldn't get here
+                }
+            }
+        }
+    }
+
+    //should be checking for paralels too close here
+
+    Vector2 center = midPoint(span);
+
+    Vector2 leftPoint;
+    LineSegment2 leftSide;
+    Scalar leftDistSq;
+
+    Vector2 rightPoint;
+    LineSegment2 rightSide;
+    Scalar rightDistSq;
+
+    //assuming clockwise
+
+    leftPoint = sides.first.a;
+    leftDistSq = LineSegment2(center, sides.first.a).squaredLength();
+    leftSide = sides.first;
+    
+    if (LineSegment2(center, sides.second.b).squaredLength() > leftDistSq) {
+        leftPoint = sides.second.b;
+        leftSide = sides.second;
+    }
+
+    rightPoint = sides.first.b;
+    rightDistSq = LineSegment2(center, sides.first.b).squaredLength();
+    rightSide = sides.first;
+
+    if (LineSegment2(center, sides.second.a).squaredLength() > rightDistSq) {
+        rightPoint = sides.second.a;
+        rightSide = sides.second;
+    }
+
+    Scalar spanlen = span.length();
+
+    return SegmentPair(getSegmentNormal(leftSide, leftPoint, spanlen),
+                       getSegmentNormal(rightSide, rightPoint, spanlen));
 }
 
-Vector2 toVector2(const EVector &orig) {
-	return Vector2(orig(0), orig(1));
-}
 
 LineSegment2 triangleBase(const EVector firstUnit,
 						  const EVector secondUnit,
@@ -438,7 +524,7 @@ LineSegment2 triangleBase(const EVector firstUnit,
 }	
 
 
-SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
+SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
 							  const SegmentPair &sides) {
 
     EVector firsta = toEVector(sides.first.a);
@@ -449,12 +535,15 @@ SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
 	ELine firstLine = ELine::Through(firsta, firstb);
 	ELine secondLine = ELine::Through(seconda, secondb);
 
+	EVector firstUnit = firstLine.direction();
+	EVector secondUnit = secondLine.direction();
+
+    if (firstUnit == secondUnit || firstUnit == -secondUnit)
+        return completeParallel(toplen, bottomlen, sides);
+
 	EVector intersection;
 	Scalar angle;
 	lineIntersection(firstLine, secondLine, intersection, angle);
-
-	EVector firstUnit = firstLine.direction();
-	EVector secondUnit = secondLine.direction();
 
     EVector testpoint = firsta;
     if (testpoint == intersection)
@@ -483,10 +572,6 @@ LineSegment2 cutInteriorSegment(const LineSegment2 &orig, const Scalar margin) {
 								//const SegIndex &boundaries) {
 	//STUB
 	return orig;
-}
-
-Vector2 midPoint(const LineSegment2 &seg) {
-	return seg.a + ((seg.b - seg.a) * 0.5);
 }
 
 void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,

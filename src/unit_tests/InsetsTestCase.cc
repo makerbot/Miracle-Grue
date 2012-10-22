@@ -117,6 +117,9 @@ void InsetsTestCase::setUp() {
     
     revTriangleSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(0, 10));
     revTriangleSpurWalls.second = LineSegment2(Vector2(1, 10), Vector2(0, 0));
+
+    parallelSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(.5, 5));
+    parallelSpurWalls.second = LineSegment2(Vector2(2, 10), Vector2(1, 0));
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -292,13 +295,13 @@ void InsetsTestCase::testCompleteTrapezoid() {
         completeTrapezoid(layermeasure.getLayerW() *0.5,
                           layermeasure.getLayerW() *1.5, triangleSpurWalls);
 
-    svgBegin();
+    /*svgBegin();
     segToSVG(triangleSpurWalls.first, "black", 20, 20);
     segToSVG(triangleSpurWalls.second, "black", 20, 20);
 
     segToSVG(spans.first, "red", 20, 20);
     segToSVG(spans.second, "red", 20, 20);
-    svgEnd();
+    svgEnd();*/
 
     CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *0.5,
                          sigdig(spans.first.length(), 5));
@@ -322,6 +325,25 @@ void InsetsTestCase::testCompleteTrapezoidRev() {
     CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *0.5,
                          sigdig(spans.first.length(), 5));
     CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *1.5,
+                         sigdig(spans.second.length(), 5));
+}
+
+void InsetsTestCase::testCompleteParallel() {
+    SegmentPair spans =
+        completeTrapezoid(layermeasure.getLayerW() *0.5,
+                          layermeasure.getLayerW() *1.5, parallelSpurWalls);
+
+    svgBegin();
+    segToSVG(parallelSpurWalls.first, "black", 20, 20);
+    segToSVG(parallelSpurWalls.second, "black", 20, 20);
+
+    segToSVG(spans.first, "red", 20, 20);
+    segToSVG(spans.second, "red", 20, 20);
+    svgEnd();
+
+    CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW(),
+                         sigdig(spans.first.length(), 5));
+    CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW(),
                          sigdig(spans.second.length(), 5));
 }
 
@@ -365,3 +387,4 @@ void InsetsTestCase::testBisectReverseWalls() {
     CPPUNIT_ASSERT(bisect.b.x > 0);
     CPPUNIT_ASSERT(bisect.b.y > 0);
 }
+
