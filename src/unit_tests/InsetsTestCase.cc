@@ -112,6 +112,11 @@ void InsetsTestCase::setUp() {
     triangleSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(0, 10));
     triangleSpurWalls.second = LineSegment2(Vector2(0, 10), Vector2(1, 0));
     
+    triangleSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(0, 10));
+    triangleSpurWalls.second = LineSegment2(Vector2(0, 10), Vector2(1, 0));
+    
+    revTriangleSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(0, 10));
+    revTriangleSpurWalls.second = LineSegment2(Vector2(1, 10), Vector2(0, 0));
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -205,10 +210,10 @@ void InsetsTestCase::testTriangleSpurFill() {
 	OpenPathList spurs;
 	regioner.fillSpurLoops(triangleSpurLoops, layermeasure, spurs);
 
-	svgBegin();
+	/*svgBegin();
     loopToSVG(triangleSpurLoop, "black", 20, 20);
 	openPathListToSVG(spurs, "red", 20, 20);
-	svgEnd();
+	svgEnd();*/
 
 	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
 }
@@ -287,9 +292,28 @@ void InsetsTestCase::testCompleteTrapezoid() {
         completeTrapezoid(layermeasure.getLayerW() *0.5,
                           layermeasure.getLayerW() *1.5, triangleSpurWalls);
 
-    /*svgBegin();
+    svgBegin();
     segToSVG(triangleSpurWalls.first, "black", 20, 20);
     segToSVG(triangleSpurWalls.second, "black", 20, 20);
+
+    segToSVG(spans.first, "red", 20, 20);
+    segToSVG(spans.second, "red", 20, 20);
+    svgEnd();
+
+    CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *0.5,
+                         sigdig(spans.first.length(), 5));
+    CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW() *1.5,
+                         sigdig(spans.second.length(), 5));
+}
+
+void InsetsTestCase::testCompleteTrapezoidRev() {
+    SegmentPair spans =
+        completeTrapezoid(layermeasure.getLayerW() *0.5,
+                          layermeasure.getLayerW() *1.5, revTriangleSpurWalls);
+
+    /*svgBegin();
+    segToSVG(revTriangleSpurWalls.first, "black", 20, 20);
+    segToSVG(revTriangleSpurWalls.second, "black", 20, 20);
 
     segToSVG(spans.first, "red", 20, 20);
     segToSVG(spans.second, "red", 20, 20);
@@ -308,6 +332,25 @@ void InsetsTestCase::testBisectWalls() {
     LineSegment2 bisect = bisectWalls(layermeasure.getLayerW() * 0.5,
                                       layermeasure.getLayerW() * 1.5,
                                       triangleSpurWalls);
+
+    /*svgBegin();
+    segToSVG(triangleSpurWalls.first, "black", 20, 20);
+    segToSVG(triangleSpurWalls.second, "black", 20, 20);
+
+    segToSVG(bisect, "red", 20, 20);
+    svgEnd();*/
+
+    //check that we haven't reversed anything
+    CPPUNIT_ASSERT(bisect.a.x > 0);
+    CPPUNIT_ASSERT(bisect.a.y > 0);
+    CPPUNIT_ASSERT(bisect.b.x > 0);
+    CPPUNIT_ASSERT(bisect.b.y > 0);
+}
+
+void InsetsTestCase::testBisectReverseWalls() {
+    LineSegment2 bisect = bisectWalls(layermeasure.getLayerW() * 0.5,
+                                      layermeasure.getLayerW() * 1.5,
+                                      revTriangleSpurWalls);
 
     /*svgBegin();
     segToSVG(triangleSpurWalls.first, "black", 20, 20);

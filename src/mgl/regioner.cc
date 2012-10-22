@@ -440,19 +440,31 @@ LineSegment2 triangleBase(const EVector firstUnit,
 
 SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
 							  const SegmentPair &sides) {
-	ELine firstLine =
-        ELine::Through(toEVector(sides.first.a), toEVector(sides.first.b));
-	ELine secondLine =
-        ELine::Through(toEVector(sides.second.a), toEVector(sides.second.b));
+
+    EVector firsta = toEVector(sides.first.a);
+    EVector firstb = toEVector(sides.first.b);
+    EVector seconda = toEVector(sides.second.a);
+    EVector secondb = toEVector(sides.second.b);
+    
+	ELine firstLine = ELine::Through(firsta, firstb);
+	ELine secondLine = ELine::Through(seconda, secondb);
 
 	EVector intersection;
 	Scalar angle;
 	lineIntersection(firstLine, secondLine, intersection, angle);
 
-    cout << "intersection: " << intersection(0) << intersection(1) << endl;
+	EVector firstUnit = firstLine.direction();
+	EVector secondUnit = secondLine.direction();
 
-	EVector firstUnit = -firstLine.direction();
-	EVector secondUnit = -secondLine.direction();
+    EVector testpoint = firsta;
+    if (testpoint == intersection)
+        testpoint = firstb;
+
+    ELine testline = ELine::Through(testpoint, intersection);
+    if (testline.direction() == firstUnit) {
+        firstUnit = -firstUnit;
+        secondUnit = -secondUnit;
+    }
 
     Scalar dot = firstUnit.dot(secondUnit);
     if (dot < 0) 

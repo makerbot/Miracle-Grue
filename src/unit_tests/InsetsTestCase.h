@@ -31,7 +31,9 @@ class InsetsTestCase : public CPPUNIT_NS::TestFixture{
 	CPPUNIT_TEST( testTriangleSpurFill );
 	CPPUNIT_TEST( testFindWallPairs );
     CPPUNIT_TEST( testCompleteTrapezoid );
+    CPPUNIT_TEST( testCompleteTrapezoidRev );
     CPPUNIT_TEST( testBisectWalls );
+    CPPUNIT_TEST( testBisectReverseWalls );
 
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -46,7 +48,9 @@ protected:
 	void testTriangleSpurFill();
     void testFindWallPairs();
     void testCompleteTrapezoid();
+    void testCompleteTrapezoidRev();
     void testBisectWalls();
+    void testBisectReverseWalls();
 
 	//not yet implemented
 	void testSquareSpurFill() {}
@@ -59,6 +63,7 @@ private:
 	mgl::Loop triangleSpurShell;
 	mgl::Loop triangleSpurLoop;
     std::pair<libthing::LineSegment2, libthing::LineSegment2> triangleSpurWalls;
+    std::pair<libthing::LineSegment2, libthing::LineSegment2> revTriangleSpurWalls;
 	mgl::LayerMeasure layermeasure;
 };
 
