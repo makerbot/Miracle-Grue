@@ -144,11 +144,11 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
     }
     std::sort(probes.begin(), probes.end(), 
             probeCompare(from.getIndex(), graph, grueCfg));
-    LabelTypeComparator typeCompare(grueCfg);
+    LinkBuildingConnectionCutoffComparator connectCompare(grueCfg);
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
-        if(typeCompare(graph[probes.front().first].data().getLabel(), 
+        if(connectCompare(graph[probes.front().first].data().getLabel(), 
                 graph[iter->first].data().getLabel()))
             break;  //make no connections to things of lower priority
         libthing::LineSegment2 probeline(from.data().getPosition(), 

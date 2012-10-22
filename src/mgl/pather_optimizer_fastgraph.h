@@ -118,32 +118,36 @@ private:
     class AbstractLabelComparator : public abstract_predicate<PathLabel> {
     public:
         typedef abstract_predicate<PathLabel>::value_type value_type;
+        AbstractLabelComparator(const GrueConfig& grueConf) 
+                : grueCfg(grueConf) {}
+    protected:
+        const GrueConfig& grueCfg;
     };
     class LabelTypeComparator : public AbstractLabelComparator {
     public:
-        LabelTypeComparator(const GrueConfig& grueConf) : grueCfg(grueConf) {}
+        LabelTypeComparator(const GrueConfig& grueConf) 
+                : AbstractLabelComparator(grueConf) {}
         typedef AbstractLabelComparator::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
-    protected:
-        const GrueConfig& grueCfg;
     };
     class LabelPriorityComparator : public AbstractLabelComparator {
     public:
-        LabelPriorityComparator(const GrueConfig& grueConf) : grueCfg(grueConf) {}
+        LabelPriorityComparator(const GrueConfig& grueConf) 
+                : AbstractLabelComparator(grueConf) {}
         typedef AbstractLabelComparator::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
-    protected:
-        const GrueConfig& grueCfg;
     };
     typedef composite_predicate<PathLabel, LabelTypeComparator, LabelPriorityComparator> 
             LabelComparator;
     class NodeComparator : public abstract_predicate<node> {
     public:
-        NodeComparator(const GrueConfig& grueConf) : m_labelCompare(grueConf) {}
+        NodeComparator(const GrueConfig& grueConf) 
+                : m_labelCompare(LabelTypeComparator(grueConf), 
+                        LabelPriorityComparator(grueConf)) {}
         typedef abstract_predicate<node>::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
-        LabelTypeComparator m_labelCompare;
+        LabelComparator m_labelCompare;
     };
     class NodeConnectionComparator : public abstract_predicate<node::connection> {
     public:
@@ -156,6 +160,10 @@ private:
         NodeComparator m_nodeCompare;
         PointType m_unit;
     };
+    
+    typedef NodeComparator LinkBuildingSortComparator;
+    typedef LabelTypeComparator LinkBuildingConnectionCutoffComparator;
+    
     
     class entry_iterator {
     public:
@@ -193,7 +201,7 @@ private:
     private:
         node_index m_from;
         graph_type& m_graph;
-        NodeComparator m_nodeCompare;
+        LinkBuildingSortComparator m_nodeCompare;
     };
     
     node::forward_link_iterator bestLink(node& from, graph_type& graph, 
@@ -260,7 +268,6 @@ private:
     graph_type m_graph;
     AABBox boundaryLimits;
     PointType historyPoint;
-    
     
 };
 

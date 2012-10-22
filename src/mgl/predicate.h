@@ -37,6 +37,8 @@ template <typename T, typename U, typename V>
 class composite_predicate : public abstract_predicate<T> {
 public:
     typedef typename abstract_predicate<T>::value_type value_type;
+    typedef U first_type;
+    typedef V second_type;
     composite_predicate(const U& u = U(), const V& v = V())
             : m_u(u), m_v(v) {}
     int compare(const value_type& lhs, const value_type& rhs) const {
