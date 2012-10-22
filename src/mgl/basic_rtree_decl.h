@@ -17,7 +17,7 @@
 
 namespace mgl {
 
-template <typename T, size_t C>
+template <typename T, size_t C, typename DIAG>
 class basic_rtree_intersect_comparator;
 
 class TreeException : public Exception {
@@ -26,9 +26,23 @@ public:
     TreeException(const T& arg) : Exception(arg) {}
 };
 
+class TreeDiagnosticStub {
+public:
+    inline void addOperations(int) {}
+    inline void displayOperations() {}
+};
+class TreeDiagnostic {
+public:
+    TreeDiagnostic() : m_ops(0) {}
+    void addOperations(int ops) { m_ops += ops; }
+    void displayOperations() { std::cerr << "Operations: " << m_ops << std::endl; }
+private:
+    int m_ops;
+};
+
 static const size_t RTREE_DEFAULT_BRANCH = 4;
 
-template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
+template <typename T, size_t C = RTREE_DEFAULT_BRANCH, typename DIAG = TreeDiagnosticStub>
 class basic_rtree {
 public:
     typedef T value_type;
@@ -67,8 +81,10 @@ public:
     
 private:
     
+    template <typename COLLECTION, typename FILTER>
+    void searchPrivate(COLLECTION& result, const FILTER& filt, DIAG& diag) const;
 
-    template <typename U, size_t V> 
+    template <typename U, size_t V, typename W> 
     friend class basic_rtree_intersect_comparator;
     
     explicit basic_rtree(const value_type& value);
@@ -79,18 +95,18 @@ private:
     typedef std::pair<size_t, size_t> child_index_pair;
     typedef typename std::pair<basic_rtree*, basic_rtree*> child_ptr_pair;
     
-    void insert(basic_rtree* child);
+    void insert(basic_rtree* child, DIAG& diag);
     void insertDumb(basic_rtree* child);
     void unlinkChild(size_t childIndex);
-    void insertIntelligently(basic_rtree* child);   //here is rtree logic
-    void split(basic_rtree* child);   //clone child, distribute its children
+    void insertIntelligently(basic_rtree* child, DIAG& diag);   //here is rtree logic
+    void split(basic_rtree* child, DIAG& diag);   //clone child, distribute its children
     
     child_index_pair pick_furthest_children() const;
-    void distributeChildPair(child_ptr_pair childs, child_ptr_pair to);
-    void distributeChild(basic_rtree* child, child_ptr_pair to);
+    void distributeChildPair(child_ptr_pair childs, child_ptr_pair to, DIAG& diag);
+    void distributeChild(basic_rtree* child, child_ptr_pair to, DIAG& diag);
     
     void adopt(basic_rtree* from);
-    void growTree();
+    void growTree(DIAG& diag = DIAG());
     void regrowBounds();
     
     bool isLeaf() const { return myData; }
@@ -113,9 +129,9 @@ private:
     value_alloc_t myDataAllocator;
 };
 
-template <typename T, size_t C>
+template <typename T, size_t C, typename DIAG>
 class basic_rtree_intersect_comparator {
-    typedef basic_rtree<T, C> tree_type;
+    typedef basic_rtree<T, C, DIAG> tree_type;
 public:
     basic_rtree_intersect_comparator(tree_type* b) : base(b) {}
     bool operator ()(const tree_type* a, const tree_type* b) const {
