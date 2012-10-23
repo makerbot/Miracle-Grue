@@ -2,6 +2,9 @@
 #include <vector>
 #include "UnitTestUtils.h"
 #include "SpacialTestCase.h"
+
+#define RTREE_DIAG (1)
+
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
 #include "mgl/basic_rtree.h"
@@ -355,8 +358,8 @@ void SpacialTestCase::testPerformance() {
     typedef std::vector<SegmentType> vector;
     
     vector dataset;
-    basic_boxlist<SegmentType> boxlist;
-    basic_rtree<SegmentType> rtree;
+    //basic_boxlist<SegmentType> boxlist;
+    basic_rtree<SegmentType, 7, TreeDiagnostic> rtree;
     vector testset;
     
     static const size_t SET_SIZE = TEST_SET_SIZE;

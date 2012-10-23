@@ -82,8 +82,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             } catch (const libthing::Exception& le) {}
             Scalar distance = connection.length();
             Cost frontCost(label, distance, normal);
-            Cost backCost(label, distance, normal * -1.0);
-            curNode.connect(lastNode, backCost);
+            //Cost backCost(label, distance, normal * -1.0);
+            //curNode.connect(lastNode, backCost);
             lastNode.connect(curNode, frontCost);
             last = curNode.getIndex();
         }
@@ -99,8 +99,8 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     } catch (const libthing::Exception& le) {}
     Scalar distance = connection.length();
     Cost frontCost(label, distance, normal);
-    Cost backCost(label, distance, normal * -1.0);
-    curNode.connect(lastNode, backCost);
+    //Cost backCost(label, distance, normal * -1.0);
+    //curNode.connect(lastNode, backCost);
     lastNode.connect(curNode, frontCost);
 }
 void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {

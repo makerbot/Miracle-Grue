@@ -28,21 +28,32 @@ public:
 
 class TreeDiagnosticStub {
 public:
+    template <typename T>
+    TreeDiagnosticStub(const T&) {}
     inline void addOperations(int) {}
-    inline void displayOperations() {}
+    inline void noOp() {}
 };
 class TreeDiagnostic {
 public:
+    template <typename T>
+    TreeDiagnostic(const T& arg) : m_ops(0) { std::cerr << arg << std::endl; }
     TreeDiagnostic() : m_ops(0) {}
+    ~TreeDiagnostic() { std::cerr << m_ops << std::endl; }
     void addOperations(int ops) { m_ops += ops; }
-    void displayOperations() { std::cerr << "Operations: " << m_ops << std::endl; }
+    inline void noOp() {}
 private:
     int m_ops;
 };
 
+#if RTREE_DIAG
+typedef TreeDiagnostic TreeDefaultDiagnostic;
+#else
+typedef TreeDiagnosticStub TreeDefaultDiagnostic;
+#endif
+
 static const size_t RTREE_DEFAULT_BRANCH = 4;
 
-template <typename T, size_t C = RTREE_DEFAULT_BRANCH, typename DIAG = TreeDiagnosticStub>
+template <typename T, size_t C = RTREE_DEFAULT_BRANCH, typename DIAG = TreeDefaultDiagnostic>
 class basic_rtree {
 public:
     typedef T value_type;

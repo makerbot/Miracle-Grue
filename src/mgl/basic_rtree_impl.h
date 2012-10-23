@@ -16,6 +16,12 @@
 
 namespace mgl {
 
+#if RTREE_DIAG
+#define RTREE_DIAG_CALL(object, function, param) object.function(param)
+#else
+#define RTREE_DIAG_CALL(object, function, param) object.noOp()
+#endif
+
 template <typename T, size_t C, typename DIAG>
 basic_rtree<T, C, DIAG>::basic_rtree() 
         : splitMyself(true), myChildrenCount(0), myData(DEFAULT_DATA_PTR()){
@@ -83,10 +89,9 @@ typename basic_rtree<T, C, DIAG>::iterator basic_rtree<T, C, DIAG>::insert(
         const basic_rtree::value_type& value) {
     basic_rtree* child = myTreeAllocator.allocate(1, this);
     myTreeAllocator.construct(child, basic_rtree(value));
-    DIAG diag;
+    DIAG diag("Insert");
     insert(child, diag);
     return iterator(child);
-    diag.displayOperations();
 }
 /* End Public insert */
 template <typename T, size_t C, typename DIAG>
@@ -94,15 +99,14 @@ void basic_rtree<T, C, DIAG>::erase(iterator) {}
 template <typename T, size_t C, typename DIAG>
 template <typename COLLECTION, typename FILTER>
 void basic_rtree<T, C, DIAG>::search(COLLECTION& result, const FILTER& filt) const {
-    DIAG diag;
+    DIAG diag("Search");
     searchPrivate(result, filt, diag);
-    diag.displayOperations();
 }
 template <typename T, size_t C, typename DIAG>
 template <typename COLLECTION, typename FILTER>
 void basic_rtree<T, C, DIAG>::searchPrivate(COLLECTION& result, 
         const FILTER& filt, DIAG& diag) const {
-    diag.addOperations(1);
+    RTREE_DIAG_CALL(diag, addOperations, 1);
     if(!filt.filter(myBounds))
         return;
     if(isLeaf()) {
@@ -160,7 +164,7 @@ void basic_rtree<T, C, DIAG>::insert(basic_rtree* child, DIAG& diag) {
     }
     if(isEmpty()) {
         insertDumb(child);
-        diag.addOperations(1);
+        RTREE_DIAG_CALL(diag, addOperations, 1);
     } else if(isLeaf()) {
         basic_rtree* otherchild = myTreeAllocator.allocate(1, this);
         myTreeAllocator.construct(otherchild, basic_rtree(false));
@@ -175,7 +179,7 @@ void basic_rtree<T, C, DIAG>::insert(basic_rtree* child, DIAG& diag) {
             //make a sibling
             if(child->isLeaf()) {
                 insertDumb(child);
-                diag.addOperations(1);
+                RTREE_DIAG_CALL(diag, addOperations, 1);
             } else {
                 throw TreeException("Leaf level mismatch!");
             }
@@ -209,7 +213,7 @@ void basic_rtree<T, C, DIAG>::insertIntelligently(basic_rtree* child, DIAG& diag
     size_t best = 0;
     Scalar bestVal = std::numeric_limits<Scalar>::max();
     for(size_t i = 0; i < size(); ++i) {
-        diag.addOperations(1);
+        RTREE_DIAG_CALL(diag, addOperations, 1);
         Scalar val = myChildren[i]->myBounds.expandedTo(child->myBounds).perimeter() - 
                 myChildren[i]->myBounds.perimeter();
         if(val < bestVal) {
@@ -236,7 +240,7 @@ void basic_rtree<T, C, DIAG>::split(basic_rtree* child, DIAG& diag) {
     bool hasLeftover = false;
     basic_rtree* leftover = DEFAULT_CHILD_PTR();
     while(child->size() > 1) {
-        diag.addOperations(child->size() * child->size());
+        RTREE_DIAG_CALL(diag, addOperations, child->size() * child->size());
         child_index_pair furthest = child->pick_furthest_children();
         splittings.push_back(child_ptr_pair(child->myChildren[furthest.first], 
                 child->myChildren[furthest.second]));
@@ -312,7 +316,7 @@ void basic_rtree<T, C, DIAG>::distributeChildPair(child_ptr_pair childs,
             to.first->insertDumb(childs.first);
             to.second->insertDumb(childs.second);
         }
-        diag.addOperations(2);
+        RTREE_DIAG_CALL(diag, addOperations, 2);
     }
 }
 template <typename T, size_t C, typename DIAG>
@@ -329,7 +333,7 @@ void basic_rtree<T, C, DIAG>::distributeChild(basic_rtree* child,
     } else {
         to.first->insertDumb(child);
     }
-    diag.addOperations(1);
+    RTREE_DIAG_CALL(diag, addOperations, 1);
 }
 template <typename T, size_t C, typename DIAG>
 void basic_rtree<T, C, DIAG>::adopt(basic_rtree* from) {
@@ -366,6 +370,8 @@ void basic_rtree<T, C, DIAG>::regrowBounds() {
         myBounds.expandTo(myChildren[i]->myBounds);
     }
 }
+
+#undef RTREE_DIAG_CALL
 
 }
 
