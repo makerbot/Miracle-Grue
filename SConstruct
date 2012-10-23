@@ -230,7 +230,6 @@ mgl_cc = [
           'src/mgl/slicer_loops.cc',
           'src/mgl/slicy.cc',
           'src/mgl/spacial_data.cc',
-          'src/mgl/loop_utils.cc']
           'src/mgl/loop_utils.cc',
           #libthing objects go here
           'src/mgl/Scalar.cc', 
