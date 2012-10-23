@@ -14,14 +14,12 @@
 #include <list>
 #include <ostream>
 #include <algorithm>
-#include "libthing/Vector2.h"
-#include "libthing/LineSegment2.h"
 #include "mgl.h"
 
 namespace mgl {
 
-typedef std::vector<PointType> PointList;
-typedef std::vector<PointType> VectorList;
+typedef std::vector<Point2Type> PointList;
+typedef std::vector<Point2Type> VectorList;
 
 /*!
  * /brief An open ended path
@@ -112,7 +110,7 @@ public:
 	/*! Add a single point to the end of a path. This copies the point
 	 *  /param point value to be appended
 	 */
-	void appendPoint(const PointType &point);
+	void appendPoint(const Point2Type &point);
 
 	/*! Add points to the beginning of a path. This makes coppies of the points.
 	 *  /param first iterator to the first point to append
@@ -127,7 +125,7 @@ public:
 	/*! Add a single point to the beginning of a path. This copies the point
 	 *  /param point value to be appended
 	 */
-	void prependPoint(const PointType &point);
+	void prependPoint(const Point2Type &point);
 
 	/*! Retrieve the LineSegment2 in the path that starts with a provided point.
 	 *  This creates a new LineSegment2 value
@@ -136,16 +134,16 @@ public:
 	 *          length segment if this is the last point in the path
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint(ITER &beginning) const{
+	Segment2Type segmentAfterPoint(ITER &beginning) const{
 		ITER endpoint = beginning;
 		++endpoint;
 
 		if (isEnd(endpoint))
 			//0 len segment if we're at the last point
-			return libthing::LineSegment2(*beginning, *beginning);
+			return Segment2Type(*beginning, *beginning);
 
 		else
-			return libthing::LineSegment2(*beginning, *endpoint);
+			return Segment2Type(*beginning, *endpoint);
 	}
 
 	/*! Find points you can start extrusion on for this path.  For an
@@ -156,8 +154,8 @@ public:
 	const_entry_iterator entryBegin() const;
 	entry_iterator entryEnd();
 	const_entry_iterator entryEnd() const;
-	PointType& getExitPoint(PointType entry);
-	const PointType& getExitPoint(PointType entry) const;
+	Point2Type& getExitPoint(Point2Type entry);
+	const Point2Type& getExitPoint(Point2Type entry) const;
 
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
@@ -292,25 +290,25 @@ public:
 	public:
 		
 		typedef iterator_gen<PointNormalList::iterator> myIteratorType;
-		PointNormal(const PointType& point);
+		PointNormal(const Point2Type& point);
 		PointNormal();
 		PointNormal(const PointNormal& orig);
 		PointNormal& operator=(const PointNormal& orig);
 		~PointNormal();
-		operator PointType() const;
-		const PointType& getPoint() const;
-		const PointType& getNormal() const;
-		void setPoint(const PointType& npoint);
+		operator Point2Type() const;
+		const Point2Type& getPoint() const;
+		const Point2Type& getNormal() const;
+		void setPoint(const Point2Type& npoint);
 		void setIterator(const myIteratorType& iter);
 		
 	private:
 		void recalculateNormal() const;
 		void recalculateNormal(const PointNormal& A, 
 				const PointNormal& C) const;
-		PointType point;
+		Point2Type point;
 		//true when need to recalculate normal
 		mutable bool normalDirty;
-		mutable PointType normal;
+		mutable Point2Type normal;
 		myIteratorType* myIteratorPointer;
 	};
 	
@@ -325,7 +323,7 @@ public:
 	typedef iterator_finite_gen<PointNormalList::const_reverse_iterator> const_finite_ccw_iterator;
 
 	Loop();
-	Loop(const PointType &first);
+	Loop(const Point2Type &first);
 	/*! Insert a point into the loop at a specific location.
 	 *  The iterator passed to after is not guaranteed valid when this operation
 	 *  is done
@@ -334,13 +332,13 @@ public:
 	 *  /return iterator for the location of the new point
 	 */
 	template <typename ITER>
-	cw_iterator insertPointAfter(const PointType &point, ITER after){
+	cw_iterator insertPointAfter(const Point2Type &point, ITER after){
 		typename ITER::iterator afterbase = &(++after);
 		afterbase = pointNormals.insert(afterbase, point);
 		return cw_iterator(afterbase, pointNormals.begin(), pointNormals.end());
 	}
 	template <typename ITER>
-	cw_iterator insertPointBefore(const PointType &point, ITER before){
+	cw_iterator insertPointBefore(const Point2Type &point, ITER before){
 		typename ITER::iterator beforebase = &before;
 		beforebase = pointNormals.insert(beforebase, point);
 		return cw_iterator(beforebase, pointNormals.begin(), pointNormals.end());
@@ -363,8 +361,8 @@ public:
 	 *  /param startpoint Point value to start on
 	 *  /return clockwise iterator from the start point
 	 */
-	cw_iterator clockwise(const PointType &startpoint);
-	const_cw_iterator clockwise(const PointType &startpoint) const;
+	cw_iterator clockwise(const Point2Type &startpoint);
+	const_cw_iterator clockwise(const Point2Type &startpoint) const;
 	/*! Get an iterator that traverses around the loop clockwise from an
 	 *  arbitrary start point.  There is no end, the iterator will continue
 	 *  around the loop indefinitely.
@@ -389,8 +387,8 @@ public:
 	 *  /param startpoint Point value to start on
 	 *  /return counter clockwise iterator from the start point
 	 */
-	ccw_iterator counterClockwise(const PointType &startpoint);
-	const_ccw_iterator counterClockwise(const PointType& startpoint) const;
+	ccw_iterator counterClockwise(const Point2Type &startpoint);
+	const_ccw_iterator counterClockwise(const Point2Type& startpoint) const;
 
 	/*! Get an iterator that traverses around the loop counter clockwise from an
 	 *  arbitrary start point. There is no end, the iterator will continue
@@ -417,13 +415,13 @@ public:
 	 *  /return The line segment starting with the point at location
 	 */
 	template <typename ITER>
-	libthing::LineSegment2 segmentAfterPoint (ITER location) const {
+	Segment2Type segmentAfterPoint (ITER location) const {
 		ITER second = location;
 		++second;
-		return libthing::LineSegment2(*location, *second);
+		return Segment2Type(*location, *second);
 	}
 	template <typename BASE>
-	libthing::LineSegment2 segmentAfterPoint (iterator_finite_gen<BASE> location) const {
+	Segment2Type segmentAfterPoint (iterator_finite_gen<BASE> location) const {
 		return segmentAfterPoint(static_cast<iterator_gen<BASE> >(location));
 	}
 	
@@ -434,10 +432,10 @@ public:
 	 *  /return The normal vector at this location
 	 */
 	template <typename ITER>
-	PointType normalAfterPoint(ITER location) const {
+	Point2Type normalAfterPoint(ITER location) const {
 		ITER second = location;
 		++second;
-		PointType normals = (location->getNormal() + second->getNormal());
+		Point2Type normals = (location->getNormal() + second->getNormal());
 		return(normals.unit());
 	}
 
@@ -455,7 +453,7 @@ public:
 	/*! Get an exit point for a given entry point
 	 *  /return PointType representing the "end".
 	 */
-	PointType getExitPoint(entry_iterator entry) const;
+	Point2Type getExitPoint(entry_iterator entry) const;
 	/*! Find points that are suspended by material underneath.
 	 *  This is not implemented as the suspended property is not implemented.
 	 *  /return An iterator to retrieve all suspended points, currently
@@ -510,8 +508,8 @@ class LoopPath {
 		template <typename OTHERBASE>
 		explicit iterator_gen(const iterator_gen<OTHERBASE>& orig);
 
-		const PointType& operator*();
-		const PointType* operator->();
+		const Point2Type& operator*();
+		const Point2Type* operator->();
 		iterator operator&() const;
 		// ++iterator
 		iterator_gen<BASE>& operator++();

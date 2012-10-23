@@ -126,7 +126,7 @@ public:
     GrueConfig();
     void loadFromFile(const Configuration& config);
     Scalar segmentVolume(const Extruder& extruder, const Extrusion& extrusion, 
-            const libthing::LineSegment2& segment, Scalar h, Scalar w) const;
+            const Segment2Type& segment, Scalar h, Scalar w) const;
 #define GRUECONFIG_PUBLIC_CONST_ACCESSOR(TYPE, NAME) \
     protected: \
     TYPE NAME; \

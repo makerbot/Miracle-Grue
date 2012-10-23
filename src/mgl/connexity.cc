@@ -13,20 +13,20 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
+
 
 #include "log.h"
-#include <libthing/Scalar.h>
+#include "mgl.h"
 
 index_t mgl::findOrCreateVertexIndex(std::vector<Vertex>& vertices ,
-								const Vector3 &coords,
+								const Point3Type &coords,
 								Scalar tolerence)
 {
 
 	for(std::vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); it++)
 	{
 		//const Vector3 &p = (*it).point;
-		Vector3 &p = (*it).point;
+		Point3Type &p = (*it).point;
 		Scalar dx = coords.x - p.x;
 		Scalar dy = coords.y - p.y;
 		Scalar dz = coords.z - p.z;
@@ -135,8 +135,8 @@ void Connexity::fillEdgeList(Scalar z, std::list<index_t> & crossingEdges) const
 		index_t v0 = e.vertexIndices[0];
 		index_t v1 = e.vertexIndices[1];
 
-		const Vector3 &p0 = vertices[v0].point;
-		const Vector3 &p1 = vertices[v1].point;
+		const Point3Type &p0 = vertices[v0].point;
+		const Point3Type &p1 = vertices[v1].point;
 
 		Scalar min = p0.z;
 		Scalar max = p1.z;
@@ -258,7 +258,7 @@ void Connexity::getAllNeighbors(index_t startFaceIndex, std::set<index_t>& allNe
 index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
 						Scalar z,
 						index_t startFaceIndex,
-						LineSegment2& cut) const
+						Segment2Type& cut) const
 {
 	std::set<index_t> allNeighbors;
 	getAllNeighbors(startFaceIndex, allNeighbors);
@@ -283,7 +283,7 @@ index_t Connexity::cutNextFace(const std::list<index_t> &facesLeft,
 }
 
 
-bool Connexity::cutFace(Scalar z, const Face &face, LineSegment2& cut) const
+bool Connexity::cutFace(Scalar z, const Face &face, Segment2Type& cut) const
 {
 
 
@@ -291,9 +291,9 @@ bool Connexity::cutFace(Scalar z, const Face &face, LineSegment2& cut) const
 	const Vertex& v1 = vertices[face.vertexIndices[1]];
 	const Vertex& v2 = vertices[face.vertexIndices[2]];
 
-	Vector3 a(v0.point.x, v0.point.y, v0.point.z);
-	Vector3 b(v1.point.x, v1.point.y, v1.point.z);
-	Vector3 c(v2.point.x, v2.point.y, v2.point.z);
+	Point3Type a(v0.point.x, v0.point.y, v0.point.z);
+	Point3Type b(v1.point.x, v1.point.y, v1.point.z);
+	Point3Type c(v2.point.x, v2.point.y, v2.point.z);
 	Triangle3 triangle(a,b,c);
 
 	bool success = triangle.cut( z, a, b);
@@ -307,13 +307,13 @@ bool Connexity::cutFace(Scalar z, const Face &face, LineSegment2& cut) const
 }
 
 
-void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<LineSegment2> &loop) const
+void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Segment2Type> &loop) const
 {
 	assert(loop.size() == 0);
 	assert(facesLeft.size() > 0);
 
 	bool firstCutFound = false;
-	LineSegment2 cut;
+	Segment2Type cut;
 
 	index_t faceIndex;
 	while (!firstCutFound)
@@ -354,8 +354,8 @@ void Connexity::splitLoop(Scalar z, std::list<index_t> &facesLeft, std::list<Lin
 }
 
 
-index_t Connexity::findOrCreateNewEdge(const Vector3 &coords0, 
-		const Vector3 &coords1, size_t face) {
+index_t Connexity::findOrCreateNewEdge(const Point3Type &coords0, 
+		const Point3Type &coords1, size_t face) {
 	index_t v0 = findOrCreateVertex(coords0);
 	index_t v1 = findOrCreateVertex(coords1);
 	findOrCreateEdge(v0, v1, face);
@@ -383,7 +383,7 @@ index_t Connexity::findOrCreateEdge(index_t v0, index_t v1, size_t face)
 	return edgeIndex;
 }
 
-index_t Connexity::findOrCreateVertex(const Vector3 &coords)
+index_t Connexity::findOrCreateVertex(const Point3Type &coords)
 {
 	return findOrCreateVertexIndex(vertices, coords, tolerence);
 }

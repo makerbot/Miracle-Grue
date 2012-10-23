@@ -17,7 +17,7 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
+
 
 
 static const Scalar DBLTOINT = 1000;
@@ -37,7 +37,7 @@ void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
         unsigned int loopCount = loopsForCurrentShell.size();
         Polygons & polygons = insetsPolys[shellId];
         for(unsigned int outlineId = 0;outlineId < loopCount;outlineId++){
-            const std::vector<LineSegment2> & segments = loopsForCurrentShell[outlineId];
+            const std::vector<Segment2Type> & segments = loopsForCurrentShell[outlineId];
             if(segments.size() > 2){
                 polygons.push_back(Polygon());
                 Polygon & polygon = *polygons.rbegin();
@@ -54,8 +54,8 @@ void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
 	for(size_t i=0; i < loopCount; i++)
 	{
 		const ClipperLib::Polygon &loop = polys[i];
-		outlinesSegments.push_back(std::vector<LineSegment2 > ());
-		std::vector<LineSegment2 > &segments = *outlinesSegments.rbegin();
+		outlinesSegments.push_back(std::vector<Segment2Type > ());
+		std::vector<Segment2Type > &segments = *outlinesSegments.rbegin();
 		unsigned int loopCount = loop.size();
 		segments.resize(loopCount);
 		for(size_t j=0; j < loopCount; j++)
@@ -64,7 +64,7 @@ void mgl::polygonsFromLoopSegmentTables( unsigned int nbOfShells,
 			const ClipperLib::IntPoint &point = loop[j];
 			const ClipperLib::IntPoint &nextPoint = loop[next];
 
-			LineSegment2 s;
+			Segment2Type s;
 			s.b[0] = point.X / (Scalar)DBLTOINT;
 			s.b[1] = point.Y / (Scalar)DBLTOINT;
 			s.a[0] = nextPoint.X / (Scalar)DBLTOINT;
@@ -84,11 +84,11 @@ void  mglToClipper(const SegmentVector &segmentTable, ClipperLib::Polygons &out_
 		out_polys.push_back(vector<ClipperLib::IntPoint>());
 		vector<ClipperLib::IntPoint>& poly = *out_polys.rbegin();
 
-		const vector<LineSegment2> &loop = segmentTable[i];
+		const vector<Segment2Type> &loop = segmentTable[i];
 		for(size_t j=0; j < loop.size(); j++)
 		{
 			size_t reverseIndex = loop.size()-1 -j;
-			const LineSegment2 &seg = loop[reverseIndex];
+			const Segment2Type &seg = loop[reverseIndex];
 			ClipperLib::IntPoint p;
 			p.X = seg.a[0] * DBLTOINT;
 			p.Y = seg.a[1] * DBLTOINT;
@@ -101,7 +101,7 @@ void  dumpSegmentTable(const char* name, const SegmentTable & outTable)
 {
     for(size_t i = 0;i < outTable.size();i++)
     {
-        const vector<LineSegment2> & segs = outTable[i];
+        const vector<Segment2Type> & segs = outTable[i];
         stringstream ss;
         ss << name << "_" << i;
         ScadDebugFile::segment3(cout, "", ss.str().c_str(), segs, 0, 0);
@@ -123,9 +123,9 @@ void  dumpClipperPolys(const char*name, const ClipperLib::Polygons  &polys)
 	}
 }
 
-void ClipperInsetter::inset( const libthing::SegmentVector &inputPolys,
+void ClipperInsetter::inset( const SegmentVector &inputPolys,
 							 Scalar insetDist,
-							 libthing::SegmentVector& outputPolys)
+							 SegmentVector& outputPolys)
 {
 
 	ClipperLib::Polygons in_polys, out_polys;
@@ -209,7 +209,7 @@ void mgl::inshelligence( SegmentTable const& inOutlinesSegments,
 			for (unsigned int shellId=0; shellId < nShells; shellId++)
 			{
 				const SegmentTable &loopsForCurrentShell = insetsForLoops[shellId];
-				const vector<LineSegment2> &segmentsForLoop = loopsForCurrentShell[loop];
+				const vector<Segment2Type> &segmentsForLoop = loopsForCurrentShell[loop];
 				if(segmentsForLoop.size() > 2)
 				{
 					lastKnownShell = shellId;

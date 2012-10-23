@@ -43,14 +43,14 @@ class Vertex
 
 public:
 	// Vector3 point;
-	libthing::Vector3 point;
+	Point3Type point;
 	std::vector<index_t> faces;
 };
 std::ostream& operator<<(std::ostream& os, const Vertex& v);
 
 
 index_t findOrCreateVertexIndex(std::vector<Vertex>& vertices,
-								const libthing::Vector3 &coords,
+								const Point3Type &coords,
 								Scalar tolerence);
 
 
@@ -79,7 +79,7 @@ public:
 
 	const std::vector<Vertex>& readVertices() const;
 
-	index_t addTriangle(const libthing::Triangle3 &t);
+	index_t addTriangle(const Triangle3Type &t);
 
 
 	// given a face index, this method returns the cached
@@ -102,21 +102,21 @@ public:
 	index_t cutNextFace(const std::list<index_t> &facesLeft,
 							Scalar z,
 							index_t startFaceIndex,
-							libthing::LineSegment2& cut) const;
+							Segment2Type& cut) const;
 
-	bool cutFace(Scalar z, const Face &face, libthing::LineSegment2& cut) const;
+	bool cutFace(Scalar z, const Face &face, Segment2Type& cut) const;
 
 	void splitLoop(Scalar z, std::list<index_t> &facesLeft,
-			std::list<libthing::LineSegment2> &loop) const;
+			std::list<Segment2Type> &loop) const;
 
 private:
 
 
-	index_t findOrCreateNewEdge(const libthing::Vector3 &coords0, const libthing::Vector3 &coords1, size_t face);
+	index_t findOrCreateNewEdge(const Point3Type &coords0, const Point3Type &coords1, size_t face);
 
 	index_t findOrCreateEdge(index_t v0, index_t v1, size_t face);
 
-	index_t findOrCreateVertex(const libthing::Vector3 &coords);
+	index_t findOrCreateVertex(const Point3Type &coords);
 
 };
 

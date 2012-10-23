@@ -38,12 +38,12 @@ class Shrinky
 	int color;
 	unsigned int counter;
 
-    void writeScadBisectors(const std::vector<libthing::Vector2> & bisectors,
-    						const std::vector<libthing::LineSegment2> & originalSegments);
+    void writeScadBisectors(const std::vector<Point2Type> & bisectors,
+    						const std::vector<Segment2Type> & originalSegments);
 
     void writeScadSegments(	const char* segNames,
 							const char* prefix,
-							const std::vector<libthing::LineSegment2> & segments);
+							const std::vector<Segment2Type> & segments);
 
     void closeScadFile();
 public:
@@ -61,18 +61,18 @@ public:
 
 
 
-	void inset(const std::vector<libthing::LineSegment2> & segments,
+	void inset(const std::vector<Segment2Type> & segments,
 			Scalar insetDist,
-			std::vector<libthing::LineSegment2> & finalInsets);
+			std::vector<Segment2Type> & finalInsets);
 
 	~Shrinky();
 
 private:
-	Scalar insetStep(const std::vector<libthing::LineSegment2> & segments,
+	Scalar insetStep(const std::vector<Segment2Type> & segments,
 			Scalar insetDist,
 			Scalar cutoffLength,
 			bool writeThisStep,
-			std::vector<libthing::LineSegment2> & finalInsets);
+			std::vector<Segment2Type> & finalInsets);
 };
 
 /// uses a Straight Skeleton algorithm to 'shrink' the outlines to create
@@ -83,14 +83,14 @@ private:
 /// c) stores them in insetsForLoops (a list of segment tables: one table per loop,
 /// and nbOffShels insets)
 ///
-void createShellsForSliceUsingShrinky(const libthing::SegmentVector & 	outlinesSegments,
+void createShellsForSliceUsingShrinky(const SegmentVector & 	outlinesSegments,
 		const std::vector<Scalar> &insetDistances,
 		unsigned int sliceId,
 		const char *scadFile,
-		std::vector<libthing::SegmentVector> & insetsForLoops);
+		std::vector<SegmentVector> & insetsForLoops);
 
-bool attachSegments(libthing::LineSegment2 &first, 
-		libthing::LineSegment2 &second, Scalar elongation);
+bool attachSegments(Segment2Type &first, 
+		Segment2Type &second, Scalar elongation);
 
 }
 

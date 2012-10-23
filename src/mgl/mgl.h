@@ -22,11 +22,11 @@
 #include <sstream>
 
 #include "Exception.h"
-#include "libthing/Scalar.h"
-#include "libthing/Vector2.h"
-#include "libthing/Vector3.h"
-#include "libthing/LineSegment2.h"
-#include "libthing/Triangle3.h"
+#include "Scalar.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "LineSegment2.h"
+#include "Triangle3.h"
 
 
 //#define M_TAU M_PI*2
@@ -36,6 +36,12 @@
 #define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
 #define dbgs__(s) std::cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << std::endl;
 
+namespace libthing {
+
+typedef mgl::GeometryException GeometryException;
+
+}
+
 
 namespace mgl {
 
@@ -43,6 +49,19 @@ static const Scalar M_TAU = M_PI * 2;
 
 std::string getMiracleGrueProgramName();
 std::string getMiracleGrueVersionStr();
+
+typedef libthing::Vector2 Point2Type;
+typedef libthing::Vector3 Point3Type;
+typedef libthing::LineSegment2 Segment2Type;
+typedef libthing::Triangle3 Triangle3Type;
+
+typedef std::vector<Point2Type> PointList;
+typedef std::vector<Point2Type> VectorList;
+typedef libthing::SegmentTable SegmentTable;
+typedef libthing::SegmentVector SegmentVector;
+typedef libthing::Insets Insets;
+using libthing::tequals;
+using libthing::tlower;
 
 /// Structure contains list of triangle 'id's, used to
 /// reference which triangle in the master list is related.
@@ -63,22 +82,22 @@ enum axis_e {
 
 
 // Bring over from mgl.cc
-Scalar AreaSign(const libthing::Vector2& a,
-		const libthing::Vector2& b,
-		const libthing::Vector2& c);
-bool convexVertex(const libthing::Vector2& i,
-		const libthing::Vector2& j,
-		const libthing::Vector2& k);
+Scalar AreaSign(const Point2Type& a,
+		const Point2Type& b,
+		const Point2Type& c);
+bool convexVertex(const Point2Type& i,
+		const Point2Type& j,
+		const Point2Type& k);
 
 std::ostream& operator <<(std::ostream& os,
-		const libthing::Vector2& pt);
+		const Point2Type& pt);
 std::ostream& operator <<(std::ostream& os,
-		const libthing::Vector3& v);
+		const Point3Type& v);
 //std::ostream& operator<<(std::ostream& os, libthing::LineSegment2 const& line);
 
-bool collinear(const libthing::LineSegment2 &prev,
-		const libthing::LineSegment2 &current,
-		Scalar tol, libthing::Vector2 &mid);
+bool collinear(const Segment2Type &prev,
+		const Segment2Type &current,
+		Scalar tol, Point2Type &mid);
 
 class LayerException : public Exception {
 public:
@@ -152,9 +171,9 @@ private:
 };
 
 /// A polygon is an arbitarty collection of 2d points
-typedef std::vector<libthing::Vector2> Polygon;
+typedef std::vector<Point2Type> Polygon;
 
-/// Verifies each libthing::Vector2in the passed Polygon are in tolerance
+/// Verifies each Point2Typein the passed Polygon are in tolerance
 // tol
 bool tequalsPolygonCompare(Polygon& poly1, Polygon& poly2, Scalar tol);
 

@@ -135,20 +135,20 @@ void  MglCoreTestCase::Vector2Maths()
 
 void MglCoreTestCase::testLineSegment2dBasics()
 {
-	LineSegment2 seg1;
+	Segment2Type seg1;
 	CPPUNIT_ASSERT( seg1.a.x == 0);
 	CPPUNIT_ASSERT( seg1.a.y == 0);
 	CPPUNIT_ASSERT( seg1.b.x == 0);
 	CPPUNIT_ASSERT( seg1.b.y == 0);
 
 	Vector2 v1(10,20), v2(100,200);
-	LineSegment2 seg2(v1, v2);
+	Segment2Type seg2(v1, v2);
 	CPPUNIT_ASSERT( seg2.a.x == 10);
 	CPPUNIT_ASSERT( seg2.a.y == 20);
 	CPPUNIT_ASSERT( seg2.b.x == 100);
 	CPPUNIT_ASSERT( seg2.b.y == 200);
 
-	LineSegment2 seg3 = seg2;
+	Segment2Type seg3 = seg2;
 	CPPUNIT_ASSERT( (void*)&seg2 != (void*)&seg3);
 	CPPUNIT_ASSERT( (void*)&seg2.a != (void*)&seg3.a);
 	CPPUNIT_ASSERT( (void*)&seg2.a.x != (void*)&seg3.a.x);
@@ -157,15 +157,15 @@ void MglCoreTestCase::testLineSegment2dBasics()
 
 void MglCoreTestCase::testVector3Basics()
 {
-	Vector3 foo;
+	Point3Type foo;
 	CPPUNIT_ASSERT( foo.x == 0);
 	CPPUNIT_ASSERT( foo.y == 0);
 	CPPUNIT_ASSERT( foo.z == 0);
-	Vector3 bar = foo;
+	Point3Type bar = foo;
 	CPPUNIT_ASSERT( (void*)&bar != (void*)&foo);
 	CPPUNIT_ASSERT( (void*)&bar.x != (void*)&foo.x);
 
-	Vector3 baz(10, 40, 50 );
+	Point3Type baz(10, 40, 50 );
 	CPPUNIT_ASSERT( baz[0] == 10);
 	CPPUNIT_ASSERT( baz[1] == 40);
 	CPPUNIT_ASSERT( baz[2] == 50);
@@ -177,11 +177,11 @@ void MglCoreTestCase::testVector3Basics()
 	CPPUNIT_ASSERT( baz.z == 500);
 
 	//verify Vector3.tequals
-	Vector3 v0(0,0,0);
-	Vector3 v1(0,0,SCALAR_EPSILON*2);
+	Point3Type v0(0,0,0);
+	Point3Type v1(0,0,SCALAR_EPSILON*2);
 	CPPUNIT_ASSERT( v0.tequals(v1,SCALAR_EPSILON ) == false );
-	Vector3 v2(0,0,0);
-	Vector3 v3(0,0,SCALAR_EPSILON/2);
+	Point3Type v2(0,0,0);
+	Point3Type v3(0,0,SCALAR_EPSILON/2);
 	CPPUNIT_ASSERT( v2.tequals(v3,SCALAR_EPSILON ) == true );
 
 }
@@ -189,25 +189,25 @@ void MglCoreTestCase::testVector3Basics()
 void MglCoreTestCase::testTriangle3Maths() {
 
 	//Vector3 v0, v1, v2;
-	Vector3 v0(0,0,0);
-	Vector3 v1(0,0,0);
-	Vector3 v2(0,0,0);
-	Triangle3 foo(v0,v1,v2);
+	Point3Type v0(0,0,0);
+	Point3Type v1(0,0,0);
+	Point3Type v2(0,0,0);
+	Triangle3Type foo(v0,v1,v2);
 
-	Vector3 x1= foo[0];
-	Vector3 x2= foo[1];
-	Vector3 x3= foo[2];
+	Point3Type x1= foo[0];
+	Point3Type x2= foo[1];
+	Point3Type x3= foo[2];
 	CPPUNIT_ASSERT( x1.tequals(foo[0],SCALAR_EPSILON ) );
 	CPPUNIT_ASSERT( x2.tequals(foo[1],SCALAR_EPSILON ) );
 	CPPUNIT_ASSERT( x3.tequals(foo[2],SCALAR_EPSILON ) );
 
-	Vector3 value = foo.normal();
+	Point3Type value = foo.normal();
 	CPPUNIT_ASSERT( v0.tequals(value,SCALAR_EPSILON ) );
 
-	Vector3 v3(0,0,0);
-	Vector3 v4(0,0,0);
-	Vector3 v5(0,0,0);
-	Triangle3 foo2(v0,v1,v2);
+	Point3Type v3(0,0,0);
+	Point3Type v4(0,0,0);
+	Point3Type v5(0,0,0);
+	Triangle3Type foo2(v0,v1,v2);
 }
 
 

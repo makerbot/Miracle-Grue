@@ -17,7 +17,7 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
+
 
 Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
@@ -46,11 +46,17 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	}
 
 	//optionally inflate if rafts present
-	if (grueCfg.get_doRaft()) {
-		limits.inflate(0, 0,
-				grueCfg.get_raftBaseThickness() +
-				grueCfg.get_raftInterfaceThickness() *
-				(grueCfg.get_raftLayers() - 1));
+	if (grueCfg.get_doRaft() && grueCfg.get_raftLayers() > 0) {
+        Scalar raftHeight = grueCfg.get_raftBaseThickness() + 
+                grueCfg.get_raftInterfaceThickness() * 
+                (grueCfg.get_raftLayers() - 1);
+        Scalar raftOutsetOverhead = grueCfg.get_raftOutset() * 4;
+        //increase height by raft height
+        limits.grow(Point3Type(
+                limits.center().x, limits.center().y, 
+                limits.zMax + raftHeight));
+        //grow sides by raft outset
+        limits.inflate(raftOutsetOverhead, raftOutsetOverhead, 0);
 	}
 
 	grid.init(limits, layerMeasure.getLayerW() *
@@ -165,7 +171,7 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	tick();
 
 	SegmentTable convexSegs;
-	convexSegs.push_back(std::vector<LineSegment2 > ());
+	convexSegs.push_back(std::vector<Segment2Type > ());
 
 	for (Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite();
 			iter != convexLoop.clockwiseEnd(); ++iter) {
@@ -174,14 +180,14 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	}
 
 	SegmentTable outsetSegs;
-	outsetSegs.push_back(std::vector<LineSegment2 > ());
+	outsetSegs.push_back(std::vector<Segment2Type > ());
 
 	//outset the convex hull by the configured distance
 	ClipperInsetter().inset(convexSegs, -grueCfg.get_raftOutset(), outsetSegs);
 	tick();
 
 	Loop raftLoop;
-	for (std::vector<LineSegment2>::const_iterator iter =
+	for (std::vector<Segment2Type>::const_iterator iter =
 			outsetSegs.back().begin();
 			iter != outsetSegs.back().end();
 			++iter) {
@@ -243,8 +249,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		LayerMeasure& layermeasure,
 		const char* scadFile) {
 
-	libthing::SegmentTable sliceOutlinesOld;
-	libthing::Insets sliceInsetsOld;
+	SegmentTable sliceOutlinesOld;
+	Insets sliceInsetsOld;
 
 	/*
 	 This function makes use of inshelligence, which indirectly makes use of 
@@ -258,7 +264,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	for (LoopList::const_iterator iter = sliceOutlines.begin();
 			iter != sliceOutlines.end();
 			++iter) {
-		sliceOutlinesOld.push_back(std::vector<libthing::LineSegment2 > ());
+		sliceOutlinesOld.push_back(std::vector<Segment2Type > ());
 		const Loop& currentLoop = *iter;
 		//Convert current loop to a vector of segments
 		for (Loop::const_finite_cw_iterator loopiter =
@@ -280,22 +286,22 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 			sliceInsetsOld);
 
 	//Recover loops from the resulting SegmentTable
-	for (libthing::Insets::const_iterator iter = sliceInsetsOld.begin();
+	for (Insets::const_iterator iter = sliceInsetsOld.begin();
 			iter != sliceInsetsOld.end();
 			++iter) {
 		sliceInsets.push_back(LoopList());
 		LoopList& currentLoopList = sliceInsets.back();
 		//Convert each group of insets into a list of Loops
-		for (libthing::SegmentTable::const_iterator setIter = iter->begin();
+		for (SegmentTable::const_iterator setIter = iter->begin();
 				setIter != iter->end();
 				++setIter) {
 			currentLoopList.push_back(Loop());
-			const std::vector<libthing::LineSegment2>& currentPoly = *setIter;
+			const std::vector<Segment2Type>& currentPoly = *setIter;
 			Loop& currentLoop = currentLoopList.back();
 			Loop::cw_iterator loopIter = currentLoop.clockwiseEnd();
 			//Convert each individual inset to a Loop
 			//Insert points 1 - N
-			for (std::vector<libthing::LineSegment2>::const_iterator polyIter =
+			for (std::vector<Segment2Type>::const_iterator polyIter =
 					currentPoly.begin();
 					polyIter != currentPoly.end();
 					++polyIter) {
@@ -308,8 +314,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	}
 }
 
-//void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
-//		std::vector<libthing::Insets> & insets) {
+//void Regioner::insets(const std::vector<SegmentTable> & outlinesSegments,
+//		std::vector<Insets> & insets) {
 //
 //	unsigned int sliceCount = outlinesSegments.size();
 //	initProgress("insets", sliceCount);
@@ -318,8 +324,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //	// slice id must be adjusted for
 //	for (size_t i = 0; i < sliceCount; i++) {
 //		tick();
-//		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
-//		libthing::Insets & sliceInsets = insets[i];
+//		const SegmentTable & sliceOutlines = outlinesSegments[i];
+//		Insets & sliceInsets = insets[i];
 //
 //		insetsForSlice(sliceOutlines, sliceInsets);
 //	}

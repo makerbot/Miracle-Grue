@@ -115,8 +115,8 @@ public:
 			   LayerMeasure &layerMeasure,
 			   RegionList &regionlist);
 
-	void insetsForSlice(const libthing::SegmentTable &sliceOutlines,
-			libthing::Insets &sliceInsets,
+	void insetsForSlice(const SegmentTable &sliceOutlines,
+			Insets &sliceInsets,
 			const char* scadFile = NULL);
 	void insetsForSlice(const LoopList& sliceOutlines,
 			std::list<LoopList>& sliceInsets,

@@ -77,13 +77,13 @@ public:
 	static Scalar segment3(	std::ostream &out,
 							const char* indent,
 							const char* variableName,
-							const std::vector<libthing::LineSegment2> &segments,
+							const std::vector<Segment2Type> &segments,
 							Scalar z,
 							Scalar dz);
 
 	Scalar writeSegments3(	const char* name,
 							const char* implementation,
-							const std::vector<libthing::LineSegment2> &segments,
+							const std::vector<Segment2Type> &segments,
 							Scalar z,
 							Scalar dz,
 							int slice);
@@ -91,7 +91,7 @@ public:
 
 	void writeSegments2(	const char* name,
 							const char* implementation,
-							const std::vector<libthing::LineSegment2> &segments,
+							const std::vector<Segment2Type> &segments,
 							Scalar z,
 							int slice);
 
@@ -99,7 +99,7 @@ public:
 	// It is used to display the triangles involved in a slice (layerIndex).
 
 	void writeTrianglesModule(	const char* name,
-								const std::vector<libthing::Triangle3>  &allTriangles,
+								const std::vector<Triangle3Type>  &allTriangles,
 								const TriangleIndices &trianglesForSlice,
 								unsigned int layerIndex);
 	/*
