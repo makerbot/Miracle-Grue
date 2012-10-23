@@ -359,7 +359,7 @@ void SpacialTestCase::testPerformance() {
     
     vector dataset;
     //basic_boxlist<SegmentType> boxlist;
-    basic_rtree<SegmentType, 7, TreeDiagnostic> rtree;
+    basic_rtree<SegmentType, 4> rtree;
     vector testset;
     
     static const size_t SET_SIZE = TEST_SET_SIZE;

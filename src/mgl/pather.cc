@@ -132,12 +132,13 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
                     listIter != insetLoops.end(); 
                     ++listIter, ++shellSequence) {
+                int shellVal = currentShell;
+//                shellVal = shellSequence !=0 && grueCfg.get_nbOfShells() > 1 ? 
+//                        shellVal : 
+//                        LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
                 optimizer->addPaths(*listIter, 
                         PathLabel(PathLabel::TYP_INSET, 
-                        PathLabel::OWN_MODEL, (shellSequence != 0 && 
-                            grueCfg.get_nbOfShells() > 1) ? 
-                            currentShell : 
-                            LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE));
+                        PathLabel::OWN_MODEL, shellVal));
                 ++currentShell;
             }
         }

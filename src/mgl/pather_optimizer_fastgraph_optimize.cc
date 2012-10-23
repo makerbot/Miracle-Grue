@@ -35,8 +35,8 @@ int pather_optimizer_fastgraph::LabelTypeComparator::compare(
             grueCfg.get_nbOfShells() - 1;
     if(lhs.myValue == rhs.myValue)
             return SAME;
-//    return lhs.isInset() && !rhs.isInset() ? BETTER : 
-//        (rhs.isInset() && !lhs.isInset() ? WORSE : SAME);
+    return lhs.isInset() && !rhs.isInset() ? BETTER : 
+        (rhs.isInset() && !lhs.isInset() ? WORSE : SAME);
     //fail outermost shell always
     if(lhs.myValue == OUTLINE_VALUE && rhs.myValue != OUTLINE_VALUE)
         return WORSE;
