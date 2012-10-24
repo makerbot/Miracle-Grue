@@ -124,7 +124,6 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
             bucketIter != buckets.end(); 
             ++bucketIter) {
         if(bucketIter->contains(testPoint)) {
-            std::cout << "Fastgraph child contains a loop!" << std::endl;
             iter = bucketIter;
             break;
         }
@@ -138,8 +137,6 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
             if(createdBucket.contains(bucketIter->m_testPoint))
                 thingsToMove.push_back(bucketIter);
         }
-        std::cout << "Reparenting " << thingsToMove.size() << 
-                " children in fastgraph" << std::endl;
         while(!thingsToMove.empty()) {
             createdBucket.insertNoCross(thingsToMove.front()->m_loop);
             createdBucket.m_children.splice(

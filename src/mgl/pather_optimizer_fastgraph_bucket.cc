@@ -21,7 +21,8 @@ BUCKET::bucket(const Loop& loop)
 }
 bool BUCKET::contains(Point2Type point) const {
     Segment2Type testLine(m_infinitePoint, point);
-    return countIntersections(testLine, m_bounds) & 1;  //even-odd test
+    bool result = (countIntersections(testLine, m_bounds) & 1) != 0;  //even-odd test
+    return result;
 }
 bool BUCKET::contains(const bucket& other) const {
     return contains(other.m_testPoint);
@@ -45,7 +46,6 @@ void BUCKET::insertBoundary(const Loop& loop) {
             childIter != m_children.end(); 
             ++childIter) {
         if(childIter->contains(testPoint)) {
-            std::cout << "Bucket child contains a loop!" << std::endl;
             childIter->insertBoundary(loop);
             m_limits.expandTo(childIter->m_limits);
             updateInfinity();
@@ -60,8 +60,6 @@ void BUCKET::insertBoundary(const Loop& loop) {
         if(createdBucket.contains(bucketIter->m_testPoint))
             thingsToMove.push_back(bucketIter);
     }
-    std::cout << "Reparenting " << thingsToMove.size() << 
-                " children in bucket" << std::endl;
     while(!thingsToMove.empty()) {
         createdBucket.insertNoCross(thingsToMove.front()->m_loop);
         createdBucket.m_children.splice(
@@ -140,6 +138,7 @@ void BUCKET::swap(bucket& other) {
     std::swap(m_infinitePoint, other.m_infinitePoint);
     std::swap(m_empty, other.m_empty);
     m_children.swap(other.m_children);
+    std::swap(m_loop, other.m_loop);
 }
 BUCKET::edge_iterator BUCKET::edgeBegin() const { 
     return edge_iterator(m_loop.clockwiseFinite()); 
