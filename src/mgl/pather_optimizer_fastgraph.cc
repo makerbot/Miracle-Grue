@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "pather_optimizer_fastgraph.h"
+#include "mgl.h"
 
 namespace mgl {
 
@@ -30,7 +31,7 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
             node& curNode = currentGraph.createNode(NodeData(*next, 
                     label, future==path.end()));
             node& lastNode = currentGraph[last];
-            libthing::LineSegment2 connection( 
+            Segment2Type connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
             Point2Type normal;
@@ -73,7 +74,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             NodeData curNodeData(*next, label, true);
             node& curNode = currentGraph.createNode(curNodeData);
             node& lastNode = currentGraph[last];
-            libthing::LineSegment2 connection( 
+            Segment2Type connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
             Point2Type normal;
@@ -90,7 +91,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     }
     node& lastNode = currentGraph[last];
     node& curNode = currentGraph[first];
-    libthing::LineSegment2 connection( 
+    Segment2Type connection( 
             curNode.data().getPosition(), 
             lastNode.data().getPosition());
     Point2Type normal;
@@ -110,7 +111,7 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
         OpenPath::const_iterator next = iter;
         ++next;
         if(next != path.end()) {
-            m_boundaries.insert(libthing::LineSegment2(*iter, *next));
+            m_boundaries.insert(Segment2Type(*iter, *next));
         }
     }
 }
@@ -121,7 +122,7 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
             ++iter) {
-        libthing::LineSegment2 segment = loop.segmentAfterPoint(iter);
+        Segment2Type segment = loop.segmentAfterPoint(iter);
         boundaryLimits.expandTo(segment.a);
         boundaryLimits.expandTo(segment.b);
         m_boundaries.insert(segment);
@@ -152,7 +153,7 @@ void pather_optimizer_fastgraph::sortBuckets() {
     for(bucket_list::iterator currentIter = buckets.begin(); 
             currentIter != buckets.end(); 
             ++currentIter) {
-        libthing::LineSegment2 currentLine(infinityPoint, 
+        Segment2Type currentLine(infinityPoint, 
                 currentIter->m_testPoint);
         currentIter->m_insideCount = 0;
         for(bucket_list::const_iterator testIter = buckets.begin(); 
@@ -219,9 +220,9 @@ Scalar pather_optimizer_fastgraph::splitPaths(multipath_type& destionation,
     }
     return ret;
 }
-size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& line, 
+size_t pather_optimizer_fastgraph::countIntersections(Segment2Type& line, 
         const boundary_container& boundContainer) {
-    typedef std::vector<libthing::LineSegment2> result_type;
+    typedef std::vector<Segment2Type> result_type;
     result_type result;
     size_t count = 0;
     boundContainer.search(result, LineSegmentFilter(line));
@@ -236,7 +237,7 @@ size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& li
 
 pather_optimizer_fastgraph::bucket_list::iterator 
         pather_optimizer_fastgraph::pickBucket(Point2Type point) {
-    libthing::LineSegment2 testLine(point, 
+    Segment2Type testLine(point, 
             boundaryLimits.bottom_left() - Point2Type(20,20));
     bucket_list::iterator iter = buckets.begin();
     for(; 

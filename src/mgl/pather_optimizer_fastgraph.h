@@ -16,6 +16,7 @@
 #include "Exception.h"
 #include "configuration.h"
 #include "labeled_path.h"
+#include "mgl.h"
 #include <iostream>
 #include <list>
 
@@ -103,7 +104,7 @@ private:
         bool m_isentry;
     };
     
-    typedef basic_boxlist<libthing::LineSegment2> boundary_container;
+    typedef basic_boxlist<Segment2Type> boundary_container;
     typedef topo::simple_graph<NodeData, Cost> graph_type;
     typedef graph_type::node node;
     typedef graph_type::node_index node_index;
@@ -218,7 +219,7 @@ private:
     
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);
-    static size_t countIntersections(libthing::LineSegment2& line, 
+    static size_t countIntersections(Segment2Type& line, 
             const boundary_container& boundContainer);
     
     class connectionComparator {
@@ -250,7 +251,7 @@ private:
         bool operator ()(const bucket& lhs, const bucket& rhs) const;
     };
     
-    bool crossesBounds(const libthing::LineSegment2& line, 
+    bool crossesBounds(const Segment2Type& line, 
             boundary_container& boundaries);
     
     void smartAppendPoint(Point2Type point, PathLabel label, 

@@ -12,11 +12,11 @@ bool pather_optimizer_fastgraph::comparePathLists(const LabeledOpenPaths& lhs,
     return lhs.front().myLabel.myValue > rhs.front().myLabel.myValue;
 }
 bool pather_optimizer_fastgraph::crossesBounds(
-        const libthing::LineSegment2& line, 
+        const Segment2Type& line, 
         boundary_container& boundaries) {
-    std::vector<libthing::LineSegment2> filtered;
+    std::vector<Segment2Type> filtered;
     boundaries.search(filtered, LineSegmentFilter(line));
-    for(std::vector<libthing::LineSegment2>::const_iterator iter = 
+    for(std::vector<Segment2Type>::const_iterator iter = 
             filtered.begin(); 
             iter != filtered.end(); 
             ++iter) {
@@ -58,7 +58,7 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
         if(connectCompare(graph[probes.front().first].data().getLabel(), 
                 graph[iter->first].data().getLabel()))
             break;  //make no connections to things of lower priority
-        libthing::LineSegment2 probeline(from.data().getPosition(), 
+        Segment2Type probeline(from.data().getPosition(), 
                 graph[iter->first].data().getPosition());
         Point2Type unit;
         try {
@@ -198,7 +198,7 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
     multipath_type::iterator connected;
     while(!split.empty()) {
         bool foundConnected = false;
-        libthing::LineSegment2 joint;
+        Segment2Type joint;
         Scalar length = std::numeric_limits<Scalar>::max();
         Scalar connectedLength = std::numeric_limits<Scalar>::max();
         other = current;
@@ -228,7 +228,7 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
             LabeledOpenPath& otherFront = otherList.front();
             Point2Type currentPoint = *(currentBack.myPath.fromEnd());
             Point2Type otherPoint = *(otherFront.myPath.fromStart());
-            libthing::LineSegment2 testJoint(currentPoint, 
+            Segment2Type testJoint(currentPoint, 
                     otherPoint);
             Scalar curLength = testJoint.length();
             bool closer = curLength < length;
