@@ -11,7 +11,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderRefactorTestCase );
 
 using namespace std;
-using namespace libthing;
 using namespace mgl;
 
 string inputsDir;

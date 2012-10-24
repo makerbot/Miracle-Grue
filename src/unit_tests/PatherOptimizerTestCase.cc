@@ -9,7 +9,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( PatherOptimizerTestCase );
 
 using namespace std;
-using namespace libthing;
 using namespace mgl;
 
 void PatherOptimizerTestCase::setUp() {
@@ -30,7 +29,7 @@ void PatherOptimizerTestCase::testBasics() {
 	loop.insertPointBefore(Point2Type(-1,1), loop.clockwiseEnd());
 	loop.insertPointBefore(Point2Type(1,1), loop.clockwiseEnd());
 	loop.insertPointBefore(Point2Type(1,-1), loop.clockwiseEnd());
-	//loop.insertPointBefore(PointType(-1,-1), loop.clockwiseEnd());
+	//loop.insertPointBefore(Point2Type(-1,-1), loop.clockwiseEnd());
 	//add loop to optimizer
 	cout << "Testing adding of a normal loop..." << endl;
 	CPPUNIT_ASSERT_NO_THROW(optimizer.addBoundary(loop));

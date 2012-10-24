@@ -28,7 +28,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 string outputsDir("outputs/test_cases/modelReaderTestCase/");
 string inputsDir("test_cases/modelReaderTestCase/");
@@ -390,14 +389,14 @@ void ModelReaderTestCase::testMeshyCycleMin()
 
 
 
-Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
+Point2Type rotateAroundPoint(const Point2Type &center, Scalar angle, const Point2Type &p)
 {
 	// translate point back to origin:
-	Vector2 translated = p - center;
+	Point2Type translated = p - center;
 
-	Vector2 rotated = translated.rotate2d( angle );
+	Point2Type rotated = translated.rotate2d( angle );
 	// translate point back:
-	Vector2 r = rotated + center;
+	Point2Type r = rotated + center;
 	return r;
 }
 
@@ -475,11 +474,11 @@ void ModelReaderTestCase::testRotate()
 {
 	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	Vector2 center(4,4);
-	Vector2 a(4,3);
+	Point2Type center(4,4);
+	Point2Type a(4,3);
 
 	Scalar angle = M_PI /2;
-	Vector2 b = rotateAroundPoint(center, angle, a);
+	Point2Type b = rotateAroundPoint(center, angle, a);
 
 	cout << endl << "rotated " << a << " around " << center << " by " << angle << " rads and got " << b << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 5.0, b.x, 0.00001 );

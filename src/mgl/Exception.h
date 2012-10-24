@@ -32,4 +32,10 @@ public:
 
 } /*end namespace mgl; */
 
+namespace libthing {
+
+typedef mgl::GeometryException GeometryException;
+
+}
+
 #endif //MGL_EXCEPTION_H_

@@ -2,7 +2,8 @@
 #include "Scalar.h"
 #include "mgl.h"
 
-using namespace libthing;
+
+namespace libthing {
 using namespace std;
 
 Vector3::Vector3():x(0),y(0),z(0){}
@@ -132,4 +133,6 @@ Vector3 Vector3::unit() const
 	Vector3 result = *this;
 	result.normalise();
 	return result;
+}
+
 }

@@ -7,12 +7,12 @@ namespace mgl {
 
 static const Scalar DBLTOINT = 20000;
 
-void PointTypeToIntPoint(const Point2Type pt, ClipperLib::IntPoint &ip) {
+void Point2TypeToIntPoint(const Point2Type pt, ClipperLib::IntPoint &ip) {
 	ip.X = pt.x * DBLTOINT;
 	ip.Y = pt.y * DBLTOINT;
 }
 
-void IntPointToPointType(const ClipperLib::IntPoint ip, Point2Type &pt) {
+void IntPointToPoint2Type(const ClipperLib::IntPoint ip, Point2Type &pt) {
 	pt.x = ip.X / DBLTOINT;
 	pt.y = ip.Y / DBLTOINT;
 }
@@ -27,7 +27,7 @@ void loopToClPolygon(const Loop &loop,
 		clpoly.push_back(ClipperLib::IntPoint());
 		ClipperLib::IntPoint &ip = clpoly.back();
 
-		PointTypeToIntPoint(pn->getPoint(), ip);
+		Point2TypeToIntPoint(pn->getPoint(), ip);
 	}
 }	
 
@@ -50,7 +50,7 @@ void ClPolygonToLoop(const ClipperLib::Polygon &clpoly,
 	for (ClipperLib::Polygon::const_reverse_iterator ip = clpoly.rbegin();
 		 ip != clpoly.rend(); ++ip) {
 		Point2Type pt;
-		IntPointToPointType(*ip, pt);
+		IntPointToPoint2Type(*ip, pt);
 
 		loop.insertPointBefore(pt, loop.clockwiseEnd());
 	}

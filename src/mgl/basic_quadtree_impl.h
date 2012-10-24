@@ -104,7 +104,7 @@ void basic_quadtree<T>::repr_svg(std::ostream& out, unsigned int recursionLevel)
     unsigned int rgbcolor = (255 << (recursionLevel*8)) | 
             (255 >> ((1+recursionLevel)*8));
     Scalar factor = 0.0 * recursionLevel;
-    AABBox bounds = myBounds.adjusted(PointType(factor, factor), PointType(-factor, -factor));
+    AABBox bounds = myBounds.adjusted(Point2Type(factor, factor), Point2Type(-factor, -factor));
     out << "<rect x=\"" << bounds.left() << "\" y=\"" << bounds.bottom() << 
             "\" width=\"" << bounds.size_x() << "\" height=\"" << 
             bounds.size_y() << "\" " << 

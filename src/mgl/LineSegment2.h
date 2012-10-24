@@ -38,24 +38,24 @@ public:
 	LineSegment2 elongate(const Scalar& dist) const;
 	LineSegment2 prelongate(const Scalar& dist) const;
 	
-	bool intersects(const libthing::LineSegment2& rhs) const;
+	bool intersects(const LineSegment2& rhs) const;
 
 };
 
 /// List of Lists of line segments. Used to lookup
 /// A SegmentTable may contain, for example, a perimeter
 /// and hole(s) in that perimeter of a slice.
-typedef std::vector< std::vector<libthing::LineSegment2 > > SegmentTable;
+typedef std::vector< std::vector<LineSegment2 > > SegmentTable;
 typedef std::vector<SegmentTable> Insets;
 
-std::ostream& operator << (std::ostream &os, const libthing::LineSegment2 &s);
+std::ostream& operator << (std::ostream &os, const LineSegment2 &s);
 
-bool collinear(const libthing::LineSegment2 &prev, 
-		const libthing::LineSegment2 &current, Scalar tol, Vector2 &mid);
-bool intersects(const libthing::LineSegment2& lhs, 
-		const libthing::LineSegment2& rhs);
+bool collinear(const LineSegment2 &prev, 
+		const LineSegment2 &current, Scalar tol, Vector2 &mid);
+bool intersects(const LineSegment2& lhs, 
+		const LineSegment2& rhs);
 
-typedef std::vector< std::vector<libthing::LineSegment2 > > SegmentVector;
+typedef std::vector< std::vector<LineSegment2 > > SegmentVector;
 
 }//end namespace libthing
 

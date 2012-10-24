@@ -1,6 +1,7 @@
 #ifndef TRIANGLE_3
 #define TRIANGLE_3 (1)
 
+#include "Scalar.h"
 #include "Vector2.h"
 #include "Vector3.h"
 

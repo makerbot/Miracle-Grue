@@ -1,10 +1,10 @@
 #include <stdexcept>
+#include "Exception.h"
 #include "Triangle3.h"
 #include "Scalar.h"
-#include "mgl.h"
 
-using namespace libthing;
-using namespace std;
+
+namespace libthing {
 
 
 Triangle3::Triangle3():v0(0.0,0.0,0.0), v1(0.0,0.0,0.0), v2(0.0,0.0,0.0)
@@ -347,4 +347,6 @@ FaceNormTriangle3::FaceNormTriangle3(
 Vector3  FaceNormTriangle3::normal() const
 {
 	return f0;
+}
+
 }

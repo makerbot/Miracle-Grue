@@ -3,8 +3,7 @@
 #include "Exception.h"
 
 
-using namespace libthing;
-using namespace std;
+namespace libthing {
 
 #ifndef SIGN
 #define SIGN(x) ((x)>=0 ?  1  :  -1)
@@ -64,24 +63,26 @@ LineSegment2 LineSegment2::prelongate(const Scalar& dist) const {
 	return segment;
 }
 
-bool LineSegment2::intersects(const libthing::LineSegment2& rhs) const {
-	return ::intersects(*this, rhs);
+bool LineSegment2::intersects(const LineSegment2& rhs) const {
+    libthing::Vector2 lhsvec = b - a;
+	libthing::Vector2 rhsvec = rhs.b - rhs.a;
+	
+	return SIGN((rhs.b - a).crossProduct(lhsvec)) != 
+			SIGN((rhs.a - a).crossProduct(lhsvec)) && 
+			SIGN((b - rhs.a).crossProduct(rhsvec)) != 
+			SIGN((a - rhs.a).crossProduct(rhsvec));
 }
 
-std::ostream& libthing::operator <<(std::ostream &os,
+std::ostream& operator <<(std::ostream &os,
 		const LineSegment2& /*s*/) {
 	//os << "[ " << s.a << ", " << s.b << "]";
 	return os;
 }
 
-bool libthing::intersects(const libthing::LineSegment2& lhs, 
-		const libthing::LineSegment2& rhs) {
-	libthing::Vector2 lhsvec = lhs.b - lhs.a;
-	libthing::Vector2 rhsvec = rhs.b - rhs.a;
-	
-	return SIGN((rhs.b - lhs.a).crossProduct(lhsvec)) != 
-			SIGN((rhs.a - lhs.a).crossProduct(lhsvec)) && 
-			SIGN((lhs.b - rhs.a).crossProduct(rhsvec)) != 
-			SIGN((lhs.a - rhs.a).crossProduct(rhsvec));
+bool intersects(const LineSegment2& lhs, 
+		const LineSegment2& rhs) {
+	return lhs.intersects(rhs);
+}
+
 }
 

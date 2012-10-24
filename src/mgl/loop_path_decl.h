@@ -376,7 +376,7 @@ public:
 	
 	/*! Get an iterator that represents an end of the loop.
 	 *  This is not a point on the loop, but is returned upon failure to
-	 *  find a point using clockwise(const PointType&)
+	 *  find a point using clockwise(const Point2Type&)
 	 *  /return cw_iterator representing the "end"
 	 */
 	cw_iterator clockwiseEnd();
@@ -403,7 +403,7 @@ public:
 	
 	/*! Get an iterator that represents an end of the loop.
 	 *  This is not a point on the loop, but is returned upon failure to
-	 *  find a point using counterClockwise(const PointType&)
+	 *  find a point using counterClockwise(const Point2Type&)
 	 *  /return ccw_iterator representing the "end"
 	 */
 	ccw_iterator counterClockwiseEnd();
@@ -451,7 +451,7 @@ public:
 	entry_iterator entryEnd() const;
 	
 	/*! Get an exit point for a given entry point
-	 *  /return PointType representing the "end".
+	 *  /return Point2Type representing the "end".
 	 */
 	Point2Type getExitPoint(entry_iterator entry) const;
 	/*! Find points that are suspended by material underneath.

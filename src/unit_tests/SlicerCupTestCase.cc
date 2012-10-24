@@ -11,7 +11,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SlicerCupTestCase);
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
+
 
 MyComputer computer;
 
@@ -162,13 +162,13 @@ void SlicerCupTestCase::testSpecificIssuesC() {
 }
 
 void addPoints(mgl::Polygon& pol) {
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
 }
 
 void addPolys(Polygons& pol) {

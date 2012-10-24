@@ -12,7 +12,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( SpacialTestCase );
 
 using namespace mgl;
-typedef libthing::LineSegment2 SegmentType;
 
 void SpacialTestCase::setUp() {
     //nothing
@@ -20,12 +19,12 @@ void SpacialTestCase::setUp() {
 }
 
 void SpacialTestCase::testInsertion() {
-    typedef basic_boxlist<SegmentType> lineIndexType;
+    typedef basic_boxlist<Segment2Type> lineIndexType;
     std::cout << "Testing insertion of things" << std::endl;
     lineIndexType  lines;
-    SegmentType line1(PointType(-1,0), PointType(0,1));
-    SegmentType line2(PointType(-1,1), PointType(0,2));
-    SegmentType line3(PointType(0,1), PointType(1,0));
+    Segment2Type line1(Point2Type(-1,0), Point2Type(0,1));
+    Segment2Type line2(Point2Type(-1,1), Point2Type(0,2));
+    Segment2Type line3(Point2Type(0,1), Point2Type(1,0));
     std::cout << "Inserting the things" << std::endl;
     lines.insert(line1);
     lines.insert(line2);
@@ -43,18 +42,18 @@ void SpacialTestCase::testInsertion() {
 }
 
 void SpacialTestCase::testFilter() {
-    typedef basic_boxlist<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_boxlist<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     std::cout << "Testing filtering of things" << std::endl;
     lineIndexType lines;
-    SegmentType line1(PointType(-1,0), PointType(0,1));
-    SegmentType line2(PointType(-1,1), PointType(0,2));
-    SegmentType line3(PointType(0,1), PointType(1,0));
+    Segment2Type line1(Point2Type(-1,0), Point2Type(0,1));
+    Segment2Type line2(Point2Type(-1,1), Point2Type(0,2));
+    Segment2Type line3(Point2Type(0,1), Point2Type(1,0));
     std::cout << "Inserting the things" << std::endl;
     lines.insert(line1);
     lines.insert(line2);
     lines.insert(line3);
-    SegmentType testLine(PointType(-0.5,0.1), PointType(-0.5,2));
+    Segment2Type testLine(Point2Type(-0.5,0.1), Point2Type(-0.5,2));
     simpleCollectionType result;
     std::cout << "Testing the things" << std::endl;
     lines.search(result, LineSegmentFilter(testLine));
@@ -73,17 +72,17 @@ void SpacialTestCase::testFilter() {
 }
 
 void SpacialTestCase::testEmpty() {
-    typedef basic_boxlist<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_boxlist<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     lineIndexType lines;
-    SegmentType testLine(PointType(-1.0,0.0), PointType(1.0,0.0));
+    Segment2Type testLine(Point2Type(-1.0,0.0), Point2Type(1.0,0.0));
     simpleCollectionType result;
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.empty());
-    lines.insert(SegmentType(PointType(-1.0,1.0),PointType(1.0,1.0)));
+    lines.insert(Segment2Type(Point2Type(-1.0,1.0),Point2Type(1.0,1.0)));
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.empty());
-    lines.insert(SegmentType(PointType(0.0,1.0),PointType(0.0,-1.0)));
+    lines.insert(Segment2Type(Point2Type(0.0,1.0),Point2Type(0.0,-1.0)));
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.size() == 1);
 }
@@ -91,18 +90,18 @@ void SpacialTestCase::testEmpty() {
 Scalar randScalar(Scalar Range) {
     return (Scalar(rand()) * Range) / RAND_MAX;
 }
-PointType randVector(Scalar Range) {
-    return PointType(randScalar(Range), randScalar(Range));
+Point2Type randVector(Scalar Range) {
+    return Point2Type(randScalar(Range), randScalar(Range));
 }
-SegmentType randSegment(Scalar Range, Scalar Range2) {
-    PointType a = randVector(Range);
-    PointType b = PointType(-0.5 * Range2, -0.5 * Range2) + randVector(Range2);
-    return SegmentType(a, a+b);
+Segment2Type randSegment(Scalar Range, Scalar Range2) {
+    Point2Type a = randVector(Range);
+    Point2Type b = Point2Type(-0.5 * Range2, -0.5 * Range2) + randVector(Range2);
+    return Segment2Type(a, a+b);
 }
 
 void SpacialTestCase::testStress() {
-    typedef basic_boxlist<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_boxlist<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     srand(static_cast<unsigned int>(time(NULL)));
     simpleCollectionType dataset;
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
@@ -111,7 +110,7 @@ void SpacialTestCase::testStress() {
     for(size_t i=0; i < SET_SIZE; ++i) {
         dataset.push_back(randSegment(range, range2));
     }
-    SegmentType testLine = randSegment(range, range2);
+    Segment2Type testLine = randSegment(range, range2);
     lineIndexType boxlist;
     std::cout << "Building index" << std::endl;
     for(simpleCollectionType::const_iterator iter = dataset.begin(); 
@@ -150,18 +149,18 @@ void SpacialTestCase::testStress() {
 }
 
 void SpacialTestCase::testRtreeFilter() {
-    typedef basic_rtree<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_rtree<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     std::cout << "Testing filtering of things" << std::endl;
     lineIndexType lines;
-    SegmentType line1(PointType(-1,0), PointType(0,1));
-    SegmentType line2(PointType(-1,1), PointType(0,2));
-    SegmentType line3(PointType(0,1), PointType(1,0));
+    Segment2Type line1(Point2Type(-1,0), Point2Type(0,1));
+    Segment2Type line2(Point2Type(-1,1), Point2Type(0,2));
+    Segment2Type line3(Point2Type(0,1), Point2Type(1,0));
     std::cout << "Inserting the things" << std::endl;
     lines.insert(line1);
     lines.insert(line2);
     lines.insert(line3);
-    SegmentType testLine(PointType(-0.5,0.1), PointType(-0.5,2));
+    Segment2Type testLine(Point2Type(-0.5,0.1), Point2Type(-0.5,2));
     simpleCollectionType result;
     std::cout << "Testing the things" << std::endl;
     lines.search(result, LineSegmentFilter(testLine));
@@ -180,24 +179,24 @@ void SpacialTestCase::testRtreeFilter() {
 }
 
 void SpacialTestCase::testRtreeEmpty() {
-    typedef basic_rtree<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_rtree<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     lineIndexType lines;
-    SegmentType testLine(PointType(-1.0,0.0), PointType(1.0,0.0));
+    Segment2Type testLine(Point2Type(-1.0,0.0), Point2Type(1.0,0.0));
     simpleCollectionType result;
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.empty());
-    lines.insert(SegmentType(PointType(-1.0,1.0),PointType(1.0,1.0)));
+    lines.insert(Segment2Type(Point2Type(-1.0,1.0),Point2Type(1.0,1.0)));
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.empty());
-    lines.insert(SegmentType(PointType(0.0,1.0),PointType(0.0,-1.0)));
+    lines.insert(Segment2Type(Point2Type(0.0,1.0),Point2Type(0.0,-1.0)));
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.size() == 1);
 }
 
 void SpacialTestCase::testRtreeStress() {
-    typedef basic_rtree<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_rtree<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     srand(static_cast<unsigned int>(time(NULL)));
     srand(rand());
     simpleCollectionType dataset;
@@ -208,7 +207,7 @@ void SpacialTestCase::testRtreeStress() {
     for(size_t i=0; i < SET_SIZE; ++i) {
         dataset.push_back(randSegment(range, range2));
     }
-    SegmentType testLine = randSegment(range, range2);
+    Segment2Type testLine = randSegment(range, range2);
     lineIndexType boxlist;
     std::cout << "Building index" << std::endl;
     clock_t start = clock();
@@ -250,18 +249,18 @@ void SpacialTestCase::testRtreeStress() {
 }
 
 void SpacialTestCase::testQtreeFilter() {
-    typedef basic_quadtree<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_quadtree<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     std::cout << "Testing filtering of things" << std::endl;
-    lineIndexType lines(AABBox(PointType(-2,-2), PointType(2,2)));
-    SegmentType line1(PointType(-1,0), PointType(0,1));
-    SegmentType line2(PointType(-1,1), PointType(0,2));
-    SegmentType line3(PointType(0,1), PointType(1,0));
+    lineIndexType lines(AABBox(Point2Type(-2,-2), Point2Type(2,2)));
+    Segment2Type line1(Point2Type(-1,0), Point2Type(0,1));
+    Segment2Type line2(Point2Type(-1,1), Point2Type(0,2));
+    Segment2Type line3(Point2Type(0,1), Point2Type(1,0));
     std::cout << "Inserting the things" << std::endl;
     lines.insert(line1);
     lines.insert(line2);
     lines.insert(line3);
-    SegmentType testLine(PointType(-0.5,0.1), PointType(-0.5,2));
+    Segment2Type testLine(Point2Type(-0.5,0.1), Point2Type(-0.5,2));
     simpleCollectionType result;
     std::cout << "Testing the things" << std::endl;
     lines.search(result, LineSegmentFilter(testLine));
@@ -280,24 +279,24 @@ void SpacialTestCase::testQtreeFilter() {
 }
 
 void SpacialTestCase::testQtreeEmpty() {
-    typedef basic_quadtree<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
-    lineIndexType lines(AABBox(PointType(-2,-2), PointType(2,2)));
-    SegmentType testLine(PointType(-1.0,0.0), PointType(1.0,0.0));
+    typedef basic_quadtree<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
+    lineIndexType lines(AABBox(Point2Type(-2,-2), Point2Type(2,2)));
+    Segment2Type testLine(Point2Type(-1.0,0.0), Point2Type(1.0,0.0));
     simpleCollectionType result;
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.empty());
-    lines.insert(SegmentType(PointType(-1.0,1.0),PointType(1.0,1.0)));
+    lines.insert(Segment2Type(Point2Type(-1.0,1.0),Point2Type(1.0,1.0)));
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.empty());
-    lines.insert(SegmentType(PointType(0.0,1.0),PointType(0.0,-1.0)));
+    lines.insert(Segment2Type(Point2Type(0.0,1.0),Point2Type(0.0,-1.0)));
     lines.search(result, LineSegmentFilter(testLine));
     CPPUNIT_ASSERT(result.size() == 1);
 }
 
 void SpacialTestCase::testQtreeStress() {
-    typedef basic_quadtree<SegmentType> lineIndexType;
-    typedef std::vector<SegmentType> simpleCollectionType;
+    typedef basic_quadtree<Segment2Type> lineIndexType;
+    typedef std::vector<Segment2Type> simpleCollectionType;
     srand(static_cast<unsigned int>(time(NULL)));
     srand(rand());
     simpleCollectionType dataset;
@@ -308,8 +307,8 @@ void SpacialTestCase::testQtreeStress() {
     for(size_t i=0; i < SET_SIZE; ++i) {
         dataset.push_back(randSegment(range, range2));
     }
-    SegmentType testLine = SegmentType(randVector(range), randVector(range));
-    lineIndexType boxlist(AABBox(PointType(-2,-2), PointType(range + 2,range + 2)));
+    Segment2Type testLine = Segment2Type(randVector(range), randVector(range));
+    lineIndexType boxlist(AABBox(Point2Type(-2,-2), Point2Type(range + 2,range + 2)));
     std::cout << "Building index" << std::endl;
     clock_t start = clock();
     for(simpleCollectionType::const_iterator iter = dataset.begin(); 
@@ -352,11 +351,11 @@ void SpacialTestCase::testQtreeStress() {
 void SpacialTestCase::testPerformance() {
 //    srand(static_cast<unsigned int>(time(NULL)));
     srand(0);
-    typedef std::vector<SegmentType> vector;
+    typedef std::vector<Segment2Type> vector;
     
     vector dataset;
-    basic_boxlist<SegmentType> boxlist;
-    basic_rtree<SegmentType> rtree;
+    basic_boxlist<Segment2Type> boxlist;
+    basic_rtree<Segment2Type> rtree;
     vector testset;
     
     static const size_t SET_SIZE = TEST_SET_SIZE;
@@ -413,10 +412,10 @@ void SpacialTestCase::testPerformance() {
 void SpacialTestCase::testQPerformance() {
 //    srand(static_cast<unsigned int>(time(NULL)));
     srand(0);
-    typedef std::vector<SegmentType> vector;
+    typedef std::vector<Segment2Type> vector;
     
     vector dataset;
-    basic_boxlist<SegmentType> boxlist;
+    basic_boxlist<Segment2Type> boxlist;
     vector testset;
     
     static const size_t SET_SIZE = TEST_SET_SIZE;
@@ -424,7 +423,7 @@ void SpacialTestCase::testQPerformance() {
     Scalar range = 200;
     Scalar range2 = 20;
     
-    basic_quadtree<SegmentType> rtree(AABBox(PointType(-2,-2), PointType(range + 2,range + 2)));
+    basic_quadtree<Segment2Type> rtree(AABBox(Point2Type(-2,-2), Point2Type(range + 2,range + 2)));
     
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     for(size_t i=0; i < SET_SIZE; ++i) {

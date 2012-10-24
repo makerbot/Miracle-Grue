@@ -36,13 +36,6 @@
 #define dbg__ std::cout <<  __FUNCTION__ << "::" << __LINE__  << "*" << std::endl;
 #define dbgs__(s) std::cout <<  __FUNCTION__ << "::" << __LINE__  << " > "<< s << std::endl;
 
-namespace libthing {
-
-typedef mgl::GeometryException GeometryException;
-
-}
-
-
 namespace mgl {
 
 static const Scalar M_TAU = M_PI * 2;
@@ -73,7 +66,6 @@ typedef std::vector<index_t> TriangleIndices;
 typedef std::vector<TriangleIndices> SliceTable;
 
 typedef int layer_measure_index_t;
-typedef libthing::Vector2 PointType;
 
 enum axis_e {
 	X_AXIS, 
