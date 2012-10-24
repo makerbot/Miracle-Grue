@@ -112,11 +112,22 @@ private:
     
     class bucket {
     public:
-        bucket() : m_insideCount(0) {}
+        bucket(Point2Type testPoint = Point2Type());
+        bool contains(Point2Type point) const;
+        bool contains(const bucket& other) const;
+        void insertBoundary(const Segment2Type& line);
+        void insertBoundary(const Loop& loop);
+        bucket& select(Point2Type point);
+        void optimize(LabeledOpenPaths& output, Point2Type& entryPoint);
         boundary_container m_bounds;
+        AABBox m_limits;
         graph_type m_graph;
         Point2Type m_testPoint;
+        Point2Type m_infinitePoint;
         size_t m_insideCount; //how many others this is inside of
+        bool m_empty;
+    private:
+        bucket_list m_children;
     };
     
     typedef graph_type::forward_node_iterator node_iterator;
@@ -193,8 +204,8 @@ private:
         node_iterator m_end;
     };
     
-    entry_iterator entryBegin(graph_type& graph);
-    entry_iterator entryEnd(graph_type& graph);
+    static entry_iterator entryBegin(graph_type& graph);
+    static entry_iterator entryEnd(graph_type& graph);
     
     class probeCompare {
     public:
