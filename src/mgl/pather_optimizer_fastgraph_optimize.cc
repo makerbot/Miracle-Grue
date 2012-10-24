@@ -129,48 +129,6 @@ void pather_optimizer_fastgraph::optimize1(multipath_type& output,
         buckets.erase(currentNearest);
     }
 }
-void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths, 
-        bucket_list::iterator input, Point2Type& entryPoint) {
-    node_index currentIndex = -1;
-    node::forward_link_iterator next;
-    graph_type& currentGraph = input->m_graph;
-    boundary_container& currentBounds = m_boundaries;
-    Point2Type currentUnit;
-    while(!currentGraph.empty()) {
-        currentIndex = std::min_element(entryBegin(currentGraph), 
-                entryEnd(currentGraph), 
-                nodeComparator(grueCfg, currentGraph, entryPoint))->getIndex();
-        LabeledOpenPath activePath;
-        if(!currentGraph[currentIndex].forwardEmpty()) {
-            smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
-                    currentGraph[currentIndex].data().getLabel(), 
-                    labeledpaths, activePath, entryPoint);
-        }
-        while((next = bestLink(currentGraph[currentIndex], 
-                currentGraph, currentBounds, grueCfg, currentUnit)) != 
-                currentGraph[currentIndex].forwardEnd()) {
-            node::connection nextConnection = *next;
-            currentUnit = nextConnection.second->normal();
-            PathLabel currentCost(*nextConnection.second);
-            smartAppendPoint(nextConnection.first->data().getPosition(), 
-                    currentCost, labeledpaths, activePath, entryPoint);
-            currentGraph[currentIndex].disconnect(*nextConnection.first);
-            nextConnection.first->disconnect(currentGraph[currentIndex]);
-            if(currentGraph[currentIndex].forwardEmpty() && 
-                    currentGraph[currentIndex].reverseEmpty()) {
-                currentGraph.destroyNode(currentGraph[currentIndex]);
-            }
-            currentIndex = nextConnection.first->getIndex();
-            //std::cout << "Inner Count: " << graph.count() << std::endl;
-        }
-        if(currentGraph[currentIndex].forwardEmpty() && 
-                currentGraph[currentIndex].reverseEmpty()) {
-            currentGraph.destroyNode(currentGraph[currentIndex]);
-        }
-        //recover from corners here
-        smartAppendPath(labeledpaths, activePath);
-    }
-}
 bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths, 
         LabeledOpenPaths& intermediate) {
     multipath_type split;

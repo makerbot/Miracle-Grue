@@ -83,9 +83,20 @@ BUCKET& BUCKET::select(Point2Type point) {
 }
 void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
         const GrueConfig& grueConf) {
+    Scalar myDistance = std::numeric_limits<Scalar>::max();
+    for(edge_iterator edge = edgeBegin(); 
+            edge != edgeEnd(); 
+            ++edge) {
+        Scalar distance = (entryPoint - *edge).squaredMagnitude();
+        if(distance < myDistance)
+            myDistance = distance;
+    }
     bucket_list::iterator bestRecursiveChoice;
+    Scalar bestDistance;
     while((bestRecursiveChoice = pickBestChild(m_children.begin(), 
-            m_children.end(), entryPoint)) != m_children.end()) {
+            m_children.end(), entryPoint, bestDistance)) != m_children.end()) {
+        if(bestDistance > myDistance)
+            break;
         bestRecursiveChoice->optimize(output, entryPoint, grueConf);
         m_children.erase(bestRecursiveChoice);
     }
@@ -128,6 +139,11 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
         //recover from corners here
         smartAppendPath(output, activePath);
     }
+    while((bestRecursiveChoice = pickBestChild(m_children.begin(), 
+            m_children.end(), entryPoint)) != m_children.end()) {
+        bestRecursiveChoice->optimize(output, entryPoint, grueConf);
+        m_children.erase(bestRecursiveChoice);
+    }
 }
 void BUCKET::swap(bucket& other) {
     m_bounds.swap(other.m_bounds);
@@ -164,7 +180,8 @@ pather_optimizer_fastgraph::bucket_list::iterator
         BUCKET::pickBestChild(
         bucket_list::iterator begin, 
         bucket_list::iterator end, 
-        const Point2Type& entryPoint) {
+        const Point2Type& entryPoint, 
+        Scalar& bestDistanceOutput) {
     typedef bucket_list::iterator iterator;
     Scalar bestDistance = std::numeric_limits<Scalar>::max();
     iterator best = begin;
@@ -179,8 +196,16 @@ pather_optimizer_fastgraph::bucket_list::iterator
             }
         }
     }
+    bestDistanceOutput = bestDistance;
     return best;
 }
+pather_optimizer_fastgraph::bucket_list::iterator BUCKET::pickBestChild(
+                bucket_list::iterator begin, 
+                bucket_list::iterator end, 
+                const Point2Type& entryPoint) {
+            Scalar dummy;
+            return pickBestChild(begin, end, entryPoint, dummy);
+        }
 
 #undef BUCKET
 

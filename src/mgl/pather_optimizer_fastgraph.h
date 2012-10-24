@@ -72,9 +72,6 @@ private:
     //format is void foo(output, [input]);
     //pick the best bucket to start optimizing, optimize it, repeat until done
     void optimize1(multipath_type& output, Point2Type& entryPoint);
-    //optimize the bucket selected by above
-    void optimize1Inner(LabeledOpenPaths& labeledpaths, bucket_list::iterator input, 
-            Point2Type& entryPoint);
     //Run v-opt on results of above function
     bool optimize2(LabeledOpenPaths& labeledopenpaths, 
             LabeledOpenPaths& intermediate);
@@ -134,6 +131,11 @@ private:
         edge_iterator edgeBegin() const;
         edge_iterator edgeEnd() const;
         
+        static bucket_list::iterator pickBestChild(
+                bucket_list::iterator begin, 
+                bucket_list::iterator end, 
+                const Point2Type& entryPoint, 
+                Scalar& bestDistanceOutput);
         static bucket_list::iterator pickBestChild(
                 bucket_list::iterator begin, 
                 bucket_list::iterator end, 
