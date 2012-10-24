@@ -112,7 +112,7 @@ bool pather_optimizer_fastgraph::bucketSorter::operator ()(const bucket& lhs,
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from, 
         graph_type& graph, boundary_container& boundaries, 
-        PointType unit) {
+        Point2Type unit) {
     if(from.forwardEmpty()) {
         //return from.forwardEnd();
         buildLinks(from, graph, boundaries);
@@ -144,11 +144,11 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
             break;  //make no connections to things of lower priority
         libthing::LineSegment2 probeline(from.data().getPosition(), 
                 graph[iter->first].data().getPosition());
-        PointType unit;
+        Point2Type unit;
         try {
             unit = (graph[iter->first].data().getPosition() - 
                     from.data().getPosition()).unit();
-        } catch (const libthing::Exception& le) {}
+        } catch (const GeometryException& le) {}
         if(!crossesBounds(probeline, boundaries)) {
             from.connect(graph[iter->first], 
                     Cost(PathLabel(PathLabel::TYP_CONNECTION, 
@@ -197,7 +197,7 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
     }
 }
 void pather_optimizer_fastgraph::optimize1(multipath_type& output, 
-        PointType& entryPoint) {
+        Point2Type& entryPoint) {
     while(!buckets.empty()) {
         Scalar distanceToEntry = std::numeric_limits<Scalar>::max();
         bucket_list::iterator currentNearest = buckets.begin();
@@ -225,12 +225,12 @@ void pather_optimizer_fastgraph::optimize1(multipath_type& output,
     }
 }
 void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths, 
-        bucket_list::iterator input, PointType& entryPoint) {
+        bucket_list::iterator input, Point2Type& entryPoint) {
     node_index currentIndex = -1;
     node::forward_link_iterator next;
     graph_type& currentGraph = input->m_graph;
     boundary_container& currentBounds = m_boundaries;
-    PointType currentUnit;
+    Point2Type currentUnit;
     while(!currentGraph.empty()) {
         currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
@@ -310,8 +310,8 @@ bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths,
             LabeledOpenPaths& otherList = *other;
             LabeledOpenPath& currentBack = currentList.back();
             LabeledOpenPath& otherFront = otherList.front();
-            PointType currentPoint = *(currentBack.myPath.fromEnd());
-            PointType otherPoint = *(otherFront.myPath.fromStart());
+            Point2Type currentPoint = *(currentBack.myPath.fromEnd());
+            Point2Type otherPoint = *(otherFront.myPath.fromStart());
             libthing::LineSegment2 testJoint(currentPoint, 
                     otherPoint);
             Scalar curLength = testJoint.length();
@@ -369,9 +369,9 @@ void pather_optimizer_fastgraph::smartAppendPath(LabeledOpenPaths& labeledpaths,
     path.myPath.clear();
 }
 
-void pather_optimizer_fastgraph::smartAppendPoint(PointType point, 
+void pather_optimizer_fastgraph::smartAppendPoint(Point2Type point, 
         PathLabel label, LabeledOpenPaths& labeledpaths, 
-        LabeledOpenPath& path, PointType& entryPoint) {
+        LabeledOpenPath& path, Point2Type& entryPoint) {
     if(path.myLabel.isInvalid()) {
         path.myLabel = label;
         //path.myPath.clear();
@@ -379,7 +379,7 @@ void pather_optimizer_fastgraph::smartAppendPoint(PointType point,
     } else if(path.myLabel == label) {
         path.myPath.appendPoint(point);
     } else {
-        PointType prevPoint = path.myPath.empty() ? point : *path.myPath.fromEnd();
+        Point2Type prevPoint = path.myPath.empty() ? point : *path.myPath.fromEnd();
         smartAppendPath(labeledpaths, path);
         path.myLabel = label;
         path.myPath.appendPoint(prevPoint);

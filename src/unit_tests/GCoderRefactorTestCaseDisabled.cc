@@ -11,7 +11,6 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( GCoderRefactorTestCase );
 
 using namespace std;
-using namespace libthing;
 using namespace mgl;
 
 string inputsDir;
@@ -40,16 +39,16 @@ void GCoderRefactorTestCase::testPathGcode() {
 	Loop oneLoop;
 	
 	//Make a square
-	onePoly.push_back(PointType(0.0, 0.0));
-	onePoly.push_back(PointType(1.0, 0.0));
-	onePoly.push_back(PointType(1.0, 1.0));
-	onePoly.push_back(PointType(0.0, 1.0));
-	onePoly.push_back(PointType(0.0, 0.0));
+	onePoly.push_back(Point2Type(0.0, 0.0));
+	onePoly.push_back(Point2Type(1.0, 0.0));
+	onePoly.push_back(Point2Type(1.0, 1.0));
+	onePoly.push_back(Point2Type(0.0, 1.0));
+	onePoly.push_back(Point2Type(0.0, 0.0));
 	//Same OpenPath
-	onePath.appendPoint(PointType(0.0, 0.0));
-	onePath.appendPoint(PointType(1.0, 0.0));
-	onePath.appendPoint(PointType(1.0, 1.0));
-	onePath.appendPoint(PointType(0.0, 1.0));
+	onePath.appendPoint(Point2Type(0.0, 0.0));
+	onePath.appendPoint(Point2Type(1.0, 0.0));
+	onePath.appendPoint(Point2Type(1.0, 1.0));
+	onePath.appendPoint(Point2Type(0.0, 1.0));
 	
 	
 	cout << "Test that OpenPath and Polygon behave identically" << endl;

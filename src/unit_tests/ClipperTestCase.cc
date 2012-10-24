@@ -15,7 +15,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ClipperTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 string outputDir("outputs/test_cases/ClipperTestCase/");
 
@@ -40,21 +39,21 @@ void ClipperTestCase::test_conversion()
 {
 	cout << endl;
 	SegmentVector table;
-	table.push_back(vector<LineSegment2>());
-	vector<LineSegment2> &segs = *table.rbegin();
+	table.push_back(vector<Segment2Type>());
+	vector<Segment2Type> &segs = *table.rbegin();
 
-	segs.push_back(LineSegment2(Vector2(-25.867, 20.72951), Vector2(-24.93132, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(-24.93132, 20.72951), Vector2(25.867, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(25.867, 20.72951), Vector2(25.867, -22.01515)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.01515), Vector2(25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.80249), Vector2(24.93132, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(24.93132, -22.80249), Vector2(-25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(-25.867, -22.80249), Vector2(-25.867, 19.94217)));
-	segs.push_back(LineSegment2(Vector2(-25.867, 19.94217), Vector2(-25.867, 20.72951)));
+	segs.push_back(Segment2Type(Point2Type(-25.867, 20.72951), Point2Type(-24.93132, 20.72951)));
+	segs.push_back(Segment2Type(Point2Type(-24.93132, 20.72951), Point2Type(25.867, 20.72951)));
+	segs.push_back(Segment2Type(Point2Type(25.867, 20.72951), Point2Type(25.867, -22.01515)));
+	segs.push_back(Segment2Type(Point2Type(25.867, -22.01515), Point2Type(25.867, -22.80249)));
+	segs.push_back(Segment2Type(Point2Type(25.867, -22.80249), Point2Type(24.93132, -22.80249)));
+	segs.push_back(Segment2Type(Point2Type(24.93132, -22.80249), Point2Type(-25.867, -22.80249)));
+	segs.push_back(Segment2Type(Point2Type(-25.867, -22.80249), Point2Type(-25.867, 19.94217)));
+	segs.push_back(Segment2Type(Point2Type(-25.867, 19.94217), Point2Type(-25.867, 20.72951)));
 	/*
-	segs.push_back(LineSegment2(Vector2(1,0), Vector2(0,1)) );
-	segs.push_back(LineSegment2(Vector2(0,1), Vector2(1,1)) );
-	segs.push_back(LineSegment2(Vector2(1,1), Vector2(1,0)) );
+	segs.push_back(LineSegment2(Point2Type(1,0), Point2Type(0,1)) );
+	segs.push_back(LineSegment2(Point2Type(0,1), Point2Type(1,1)) );
+	segs.push_back(LineSegment2(Point2Type(1,1), Point2Type(1,0)) );
 	*/
 	dumpSegmentTable("table", table);
 
@@ -129,17 +128,17 @@ void ClipperTestCase::testSimpleInset()
 	cout << endl;
 	SegmentTable table;
 
-	table.push_back(vector<LineSegment2>());
-	vector<LineSegment2> &segs = *table.rbegin();
+	table.push_back(vector<Segment2Type>());
+	vector<Segment2Type> &segs = *table.rbegin();
 
-	segs.push_back(LineSegment2(Vector2(-25.867, 20.72951), Vector2(-24.93132, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(-24.93132, 20.72951), Vector2(25.867, 20.72951)));
-	segs.push_back(LineSegment2(Vector2(25.867, 20.72951), Vector2(25.867, -22.01515)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.01515), Vector2(25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(25.867, -22.80249), Vector2(24.93132, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(24.93132, -22.80249), Vector2(-25.867, -22.80249)));
-	segs.push_back(LineSegment2(Vector2(-25.867, -22.80249), Vector2(-25.867, 19.94217)));
-	segs.push_back(LineSegment2(Vector2(-25.867, 19.94217), Vector2(-25.867, 20.72951)));
+	segs.push_back(Segment2Type(Point2Type(-25.867, 20.72951), Point2Type(-24.93132, 20.72951)));
+	segs.push_back(Segment2Type(Point2Type(-24.93132, 20.72951), Point2Type(25.867, 20.72951)));
+	segs.push_back(Segment2Type(Point2Type(25.867, 20.72951), Point2Type(25.867, -22.01515)));
+	segs.push_back(Segment2Type(Point2Type(25.867, -22.01515), Point2Type(25.867, -22.80249)));
+	segs.push_back(Segment2Type(Point2Type(25.867, -22.80249), Point2Type(24.93132, -22.80249)));
+	segs.push_back(Segment2Type(Point2Type(24.93132, -22.80249), Point2Type(-25.867, -22.80249)));
+	segs.push_back(Segment2Type(Point2Type(-25.867, -22.80249), Point2Type(-25.867, 19.94217)));
+	segs.push_back(Segment2Type(Point2Type(-25.867, 19.94217), Point2Type(-25.867, 20.72951)));
 
 	// std::reverse(segs.begin(), segs.end());
 

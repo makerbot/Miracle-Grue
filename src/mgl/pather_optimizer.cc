@@ -67,7 +67,7 @@ void pather_optimizer::clearPaths() {
 
 void pather_optimizer::optimizeInternal(
 		abstract_optimizer::LabeledOpenPaths& labeledpaths) {
-	PointType lastPoint;
+	Point2Type lastPoint;
 	LabeledOpenPath currentClosest;
 	if(!myLoops.empty())
 		lastPoint = *(myLoops.begin()->myPath.entryBegin());
@@ -153,7 +153,7 @@ LabeledOpenPath pather_optimizer::closestPath(
 	return retLabeled;
 }
 
-void pather_optimizer::findClosestLoop(const PointType& point, 
+void pather_optimizer::findClosestLoop(const Point2Type& point, 
 		LabeledLoopList::iterator& loopIter, 
 		Loop::entry_iterator& entryIter) {
 	
@@ -178,7 +178,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 			int value = currentIter->myLabel.myValue;
 			if(value > closestValue || 
 					(value == closestValue && 
-					libthing::tlower(distance, closestDistance, 
+					tlower(distance, closestDistance, 
 					DISTANCE_THRESHOLD))) {
 				closestDistance = distance;
 				entryIter = currentEntry;
@@ -189,7 +189,7 @@ void pather_optimizer::findClosestLoop(const PointType& point,
 	}
 }
 
-void pather_optimizer::findClosestPath(const PointType& point, 
+void pather_optimizer::findClosestPath(const Point2Type& point, 
 		LabeledPathList::iterator& pathIter, 
 		OpenPath::entry_iterator& entryIter) {
 	if(myPaths.empty()) {
@@ -213,7 +213,7 @@ void pather_optimizer::findClosestPath(const PointType& point,
 			int value = currentIter->myLabel.myValue;
 			if(value > closestValue || 
 					(value == closestValue && 
-					libthing::tlower(distance, closestDistance, 
+					tlower(distance, closestDistance, 
 					DISTANCE_THRESHOLD))) {
 				closestDistance = distance;
 				entryIter = currentEntry;
@@ -223,7 +223,7 @@ void pather_optimizer::findClosestPath(const PointType& point,
 	}
 }
 
-bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) {
+bool pather_optimizer::closest(const Point2Type& point, LabeledOpenPath& result) {
 	LabeledLoopList::iterator loopIter;
 	Loop::entry_iterator loopEntry;
 	LabeledPathList::iterator pathIter;
@@ -240,7 +240,7 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 		Scalar loopDistance = (point - *loopEntry).magnitude();
 		Scalar pathDistance = (point - *pathEntry).magnitude();
 		if(loopVal > pathVal || (loopVal == pathVal && 
-				libthing::tlower(loopDistance, pathDistance, 
+				tlower(loopDistance, pathDistance, 
 				DISTANCE_THRESHOLD))) {
 			//loop wins
 			result = closestLoop(loopIter, loopEntry);
@@ -259,13 +259,13 @@ bool pather_optimizer::closest(const PointType& point, LabeledOpenPath& result) 
 	return true;
 }
 
-bool pather_optimizer::crossesBoundaries(const libthing::LineSegment2& seg) {
+bool pather_optimizer::crossesBoundaries(const Segment2Type& seg) {
 	//test if this linesegment crosses any boundaries
 	for(BoundaryList::const_iterator iter = 
 			boundaries.begin(); 
 			iter != boundaries.end(); 
 			++iter) {
-		const libthing::LineSegment2& currentBoundary = *iter;
+		const Segment2Type& currentBoundary = *iter;
 		if(seg.intersects(currentBoundary))
 			return true;
 	}
@@ -285,14 +285,14 @@ void pather_optimizer::link(
 			--lastIter;
 			LabeledOpenPath& last = *lastIter;
 			LabeledOpenPath& current = *iter;
-			PointType lastPoint = *(last.myPath.fromEnd());
-			PointType currentPoint = *(current.myPath.fromStart());
+			Point2Type lastPoint = *(last.myPath.fromEnd());
+			Point2Type currentPoint = *(current.myPath.fromStart());
 			if(current.myLabel.myType == PathLabel::TYP_CONNECTION || 
 					last.myLabel.myType == PathLabel::TYP_CONNECTION)
 				continue;
 			if(lastPoint == currentPoint)
 				continue;
-			libthing::LineSegment2 transition(lastPoint, currentPoint);
+			Segment2Type transition(lastPoint, currentPoint);
 			if(crossesBoundaries(transition))
 				continue;
 			LabeledOpenPath connection;

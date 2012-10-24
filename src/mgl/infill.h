@@ -22,7 +22,7 @@ namespace mgl
 //
 // infillosophy: the operation that generate infill patterns from polygons
 //
-void infillosophy(const  libthing::SegmentTable &outlineSegments,
+void infillosophy(const  SegmentTable &outlineSegments,
 				const Limits& limits,
 				double z,
                 double layerW,

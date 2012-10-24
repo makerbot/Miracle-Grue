@@ -54,7 +54,7 @@ public:
 		zMax = kat.zMax;
 	}
 	 */
-	void grow(const libthing::Vector3 &p) {
+	void grow(const Point3Type &p) {
 		if (p.x < xMin) xMin = p.x;
 		if (p.x > xMax) xMax = p.x;
 		if (p.y < yMin) yMin = p.y;
@@ -78,22 +78,22 @@ public:
 	// the XY center point and Z axis
 
 	void tubularZ() {
-		libthing::Vector3 c = center();
+		Point3Type c = center();
 		Scalar dx = 0.5 * (xMax - xMin);
 		Scalar dy = 0.5 * (yMax - yMin);
 
 		Scalar radius = sqrt(dx * dx + dy * dy);
 
-		libthing::Vector3 north = c;
+		Point3Type north = c;
 		north.y += radius;
 
-		libthing::Vector3 south = c;
+		Point3Type south = c;
 		south.y -= radius;
 
-		libthing::Vector3 east = c;
+		Point3Type east = c;
 		east.x += radius;
 
-		libthing::Vector3 west = c;
+		Point3Type west = c;
 		west.x -= radius;
 
 		grow(north);
@@ -102,8 +102,8 @@ public:
 		grow(west);
 	}
 
-	libthing::Vector3 center() const {
-		libthing::Vector3 c(0.5 * (xMin + xMax), 0.5 * (yMin + yMax), 0.5 * (zMin + zMax));
+	Point3Type center() const {
+		Point3Type c(0.5 * (xMin + xMax), 0.5 * (yMin + yMax), 0.5 * (zMin + zMax));
 		return c;
 	}
 

@@ -22,14 +22,17 @@ namespace mgl {
 #define RTREE_DIAG_CALL(object, function, param) object.noOp()
 #endif
 
-template <typename T, size_t C, typename DIAG>
-basic_rtree<T, C, DIAG>::basic_rtree() 
+#define RTREE_TEMPLATE template <typename T, size_t C, typename DIAG>
+#define RTREE_TYPE basic_rtree<T, C, DIAG>
+
+RTREE_TEMPLATE
+RTREE_TYPE::basic_rtree() 
         : splitMyself(true), myChildrenCount(0), myData(DEFAULT_DATA_PTR()){
     for(size_t i = 0; i != CAPACITY; ++i)
         myChildren[i] = DEFAULT_CHILD_PTR();
 }
-template <typename T, size_t C, typename DIAG>
-basic_rtree<T, C, DIAG>::basic_rtree(const basic_rtree& other) 
+RTREE_TEMPLATE
+RTREE_TYPE::basic_rtree(const basic_rtree& other) 
         : splitMyself(other.splitMyself), myBounds(other.myBounds), 
         myChildrenCount(other.myChildrenCount), myData(DEFAULT_DATA_PTR()) {
     for(size_t i = 0; i != CAPACITY; ++i) {
@@ -44,8 +47,8 @@ basic_rtree<T, C, DIAG>::basic_rtree(const basic_rtree& other)
         myDataAllocator.construct(myData, *other.myData);
     }
 }
-template <typename T, size_t C, typename DIAG>
-basic_rtree<T, C, DIAG>& basic_rtree<T, C, DIAG>::operator =(const basic_rtree& other) {
+RTREE_TEMPLATE
+RTREE_TYPE& RTREE_TYPE::operator =(const basic_rtree& other) {
     if(this == &other)
         return *this;
     tree_alloc_t tmpAllocator;
@@ -55,8 +58,8 @@ basic_rtree<T, C, DIAG>& basic_rtree<T, C, DIAG>::operator =(const basic_rtree& 
     tmpAllocator.construct(this, tmpStorage);
     return *this;
 }
-template <typename T, size_t C, typename DIAG>
-basic_rtree<T, C, DIAG>::~basic_rtree() {
+RTREE_TEMPLATE
+RTREE_TYPE::~basic_rtree() {
     for(size_t i = 0; i != CAPACITY; ++i) {
         if(myChildren[i]) {
             myTreeAllocator.destroy(myChildren[i]);
@@ -69,23 +72,23 @@ basic_rtree<T, C, DIAG>::~basic_rtree() {
     }
 }
 /* Private constructors */
-template <typename T, size_t C, typename DIAG>
-basic_rtree<T, C, DIAG>::basic_rtree(const value_type& value) {
+RTREE_TEMPLATE
+RTREE_TYPE::basic_rtree(const value_type& value) {
     myTreeAllocator.construct(this, basic_rtree(false));
     myData = myDataAllocator.allocate(1, this);
     myDataAllocator.construct(myData, value);
     myBounds = to_bbox<value_type>::bound(value);
 }
-template <typename T, size_t C, typename DIAG>
-basic_rtree<T, C, DIAG>::basic_rtree(bool canReproduce) 
+RTREE_TEMPLATE
+RTREE_TYPE::basic_rtree(bool canReproduce) 
         : splitMyself(canReproduce), myChildrenCount(0), myData(DEFAULT_DATA_PTR()) {
     for(size_t i = 0; i != CAPACITY; ++i)
         myChildren[i] = DEFAULT_CHILD_PTR();
 }
 /* End Private constructors */
 /* Public insert */
-template <typename T, size_t C, typename DIAG>
-typename basic_rtree<T, C, DIAG>::iterator basic_rtree<T, C, DIAG>::insert(
+RTREE_TEMPLATE
+typename RTREE_TYPE::iterator RTREE_TYPE::insert(
         const basic_rtree::value_type& value) {
     basic_rtree* child = myTreeAllocator.allocate(1, this);
     myTreeAllocator.construct(child, basic_rtree(value));
@@ -94,17 +97,17 @@ typename basic_rtree<T, C, DIAG>::iterator basic_rtree<T, C, DIAG>::insert(
     return iterator(child);
 }
 /* End Public insert */
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::erase(iterator) {}
-template <typename T, size_t C, typename DIAG>
+RTREE_TEMPLATE
+void RTREE_TYPE::erase(iterator) {}
+RTREE_TEMPLATE
 template <typename COLLECTION, typename FILTER>
-void basic_rtree<T, C, DIAG>::search(COLLECTION& result, const FILTER& filt) const {
+void RTREE_TYPE::search(COLLECTION& result, const FILTER& filt) const {
     DIAG diag("Search");
     searchPrivate(result, filt, diag);
 }
-template <typename T, size_t C, typename DIAG>
+RTREE_TEMPLATE
 template <typename COLLECTION, typename FILTER>
-void basic_rtree<T, C, DIAG>::searchPrivate(COLLECTION& result, 
+void RTREE_TYPE::searchPrivate(COLLECTION& result, 
         const FILTER& filt, DIAG& diag) const {
     RTREE_DIAG_CALL(diag, addOperations, 1);
     if(!filt.filter(myBounds))
@@ -117,8 +120,21 @@ void basic_rtree<T, C, DIAG>::searchPrivate(COLLECTION& result,
         }
     }
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::repr(std::ostream& out, unsigned int recursionLevel) {
+RTREE_TEMPLATE
+void RTREE_TYPE::swap(basic_rtree& other) {
+    //swap all pointers, primitives, and POD's
+    std::swap(splitMyself, other.splitMyself);
+    std::swap(myBounds, other.myBounds);
+    for(size_t i = 0; i < CAPACITY; ++i) {
+        std::swap(myChildren[i], other.myChildren[i]);
+    }
+    std::swap(myChildrenCount, other.myChildrenCount);
+    std::swap(myData, other.myData);
+    std::swap(myTreeAllocator, other.myTreeAllocator);
+    std::swap(myDataAllocator, other.myDataAllocator);
+}
+RTREE_TEMPLATE
+void RTREE_TYPE::repr(std::ostream& out, unsigned int recursionLevel) {
     std::string tabs(recursionLevel, '|');
     out << tabs << 'N';//myBounds.m_min << " - " << myBounds.m_max;
     if(isLeaf())
@@ -130,8 +146,8 @@ void basic_rtree<T, C, DIAG>::repr(std::ostream& out, unsigned int recursionLeve
         myChildren[i]->repr(out, recursionLevel + 1);
     }
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::repr_svg(std::ostream& out, unsigned int recursionLevel) {
+RTREE_TEMPLATE
+void RTREE_TYPE::repr_svg(std::ostream& out, unsigned int recursionLevel) {
     if(!recursionLevel) {
         out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
         out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
@@ -143,7 +159,7 @@ void basic_rtree<T, C, DIAG>::repr_svg(std::ostream& out, unsigned int recursion
     unsigned int rgbcolor = (255 << (recursionLevel*8)) | 
             (255 >> ((1+recursionLevel)*8));
     Scalar factor = -1.0 * recursionLevel;
-    AABBox bounds = myBounds.adjusted(PointType(factor, factor), PointType(-factor, -factor));
+    AABBox bounds = myBounds.adjusted(Point2Type(factor, factor), Point2Type(-factor, -factor));
     out << "<rect x=\"" << bounds.left() << "\" y=\"" << bounds.bottom() << 
             "\" width=\"" << bounds.size_x() << "\" height=\"" << 
             bounds.size_y() << "\" " << 
@@ -157,8 +173,8 @@ void basic_rtree<T, C, DIAG>::repr_svg(std::ostream& out, unsigned int recursion
         myChildren[i]->repr_svg(out, recursionLevel + 1);
     }
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::insert(basic_rtree* child, DIAG& diag) {
+RTREE_TEMPLATE
+void RTREE_TYPE::insert(basic_rtree* child, DIAG& diag) {
     if(isFull()) {
         throw TreeException("Overfilled R Tree node!");
     }
@@ -193,23 +209,23 @@ void basic_rtree<T, C, DIAG>::insert(basic_rtree* child, DIAG& diag) {
     }
     regrowBounds();
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::insertDumb(basic_rtree* child) {
+RTREE_TEMPLATE
+void RTREE_TYPE::insertDumb(basic_rtree* child) {
     myChildren[myChildrenCount++] = child;
     if(myChildrenCount == 1)
         myBounds = child->myBounds;
     else
         myBounds.expandTo(child->myBounds);
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::unlinkChild(size_t childIndex) {
+RTREE_TEMPLATE
+void RTREE_TYPE::unlinkChild(size_t childIndex) {
     if(childIndex < myChildrenCount) {
         myChildren[childIndex] = myChildren[--myChildrenCount];
         myChildren[myChildrenCount] = DEFAULT_CHILD_PTR();
     }
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::insertIntelligently(basic_rtree* child, DIAG& diag) {
+RTREE_TEMPLATE
+void RTREE_TYPE::insertIntelligently(basic_rtree* child, DIAG& diag) {
     size_t best = 0;
     Scalar bestVal = std::numeric_limits<Scalar>::max();
     for(size_t i = 0; i < size(); ++i) {
@@ -227,8 +243,8 @@ void basic_rtree<T, C, DIAG>::insertIntelligently(basic_rtree* child, DIAG& diag
     if(winner->needSplitting())
         split(winner, diag);
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::split(basic_rtree* child, DIAG& diag) {
+RTREE_TEMPLATE
+void RTREE_TYPE::split(basic_rtree* child, DIAG& diag) {
     using std::min;
     using std::max;
     if(child->isLeaf())
@@ -272,9 +288,9 @@ void basic_rtree<T, C, DIAG>::split(basic_rtree* child, DIAG& diag) {
         growTree(diag);
     }
 }
-template <typename T, size_t C, typename DIAG>
-typename basic_rtree<T, C, DIAG>::child_index_pair 
-        basic_rtree<T, C, DIAG>::pick_furthest_children() const {
+RTREE_TEMPLATE
+typename RTREE_TYPE::child_index_pair 
+        RTREE_TYPE::pick_furthest_children() const {
     child_index_pair ret;
     ret.first = 0;
     ret.second = 0;
@@ -292,8 +308,8 @@ typename basic_rtree<T, C, DIAG>::child_index_pair
     }
     return ret;
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::distributeChildPair(child_ptr_pair childs, 
+RTREE_TEMPLATE
+void RTREE_TYPE::distributeChildPair(child_ptr_pair childs, 
         child_ptr_pair to, DIAG& diag) {
     if(!to.first->hasChildren() && !to.second->hasChildren()) {
         to.first->insert(childs.first, diag);
@@ -319,8 +335,8 @@ void basic_rtree<T, C, DIAG>::distributeChildPair(child_ptr_pair childs,
         RTREE_DIAG_CALL(diag, addOperations, 2);
     }
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::distributeChild(basic_rtree* child, 
+RTREE_TEMPLATE
+void RTREE_TYPE::distributeChild(basic_rtree* child, 
         child_ptr_pair to, DIAG& diag) {
     Scalar firstVal = to.first->myBounds.perimeter();
     Scalar secondVal = to.second->myBounds.perimeter();
@@ -335,8 +351,8 @@ void basic_rtree<T, C, DIAG>::distributeChild(basic_rtree* child,
     }
     RTREE_DIAG_CALL(diag, addOperations, 1);
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::adopt(basic_rtree* from) {
+RTREE_TEMPLATE
+void RTREE_TYPE::adopt(basic_rtree* from) {
     *this = basic_rtree(false);
     for(size_t i = 0; i < CAPACITY; ++i) {
         myChildren[i] = from->myChildren[i];
@@ -352,8 +368,8 @@ void basic_rtree<T, C, DIAG>::adopt(basic_rtree* from) {
     from->myBounds.reset();
     
 }
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::growTree(DIAG& diag) {
+RTREE_TEMPLATE
+void RTREE_TYPE::growTree(DIAG& diag) {
     basic_rtree* childling = myTreeAllocator.allocate(1, this);
     myTreeAllocator.construct(childling, basic_rtree(false));
     childling->adopt(this);
@@ -362,14 +378,17 @@ void basic_rtree<T, C, DIAG>::growTree(DIAG& diag) {
     regrowBounds();
 }
 
-template <typename T, size_t C, typename DIAG>
-void basic_rtree<T, C, DIAG>::regrowBounds() {
+RTREE_TEMPLATE
+void RTREE_TYPE::regrowBounds() {
     if(!isEmpty())
         myBounds = myChildren[0]->myBounds;
     for(size_t i = 0; i < size(); ++i) {
         myBounds.expandTo(myChildren[i]->myBounds);
     }
 }
+
+#undef RTREE_TYPE
+#undef RTREE_TEMPLATE
 
 #undef RTREE_DIAG_CALL
 

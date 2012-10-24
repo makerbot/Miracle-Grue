@@ -15,7 +15,6 @@
 
 #include "mgl.h"
 #include "obj_limits.h"
-#include "libthing/LineSegment2.h"
 #include "segment.h"
 #include "loop_path.h"
 #include <list>
@@ -132,8 +131,8 @@ void castRaysOnSliceAlongY(const std::list<Loop>& outlineLoops,
 		Scalar min,
 		Scalar max,
 		ScalarRangeTable &rangeTable);
-bool crossesOutline(const libthing::LineSegment2 &seg,
-		const libthing::SegmentTable &outline);
+bool crossesOutline(const Segment2Type &seg,
+		const SegmentTable &outline);
 
 
 ///  A grid is a set of intersecting lines that is subsampled to create
@@ -144,7 +143,7 @@ class Grid
 {
     std::vector<Scalar> xValues; ///< list of spacing between lines along y axis(mm)
     std::vector<Scalar> yValues; ///< list of spacing between lines along x axis(mm)
-    libthing::Vector2 gridOrigin; ///< origin of our grid system
+    Point2Type gridOrigin; ///< origin of our grid system
 
 public:
     Grid();
@@ -159,7 +158,7 @@ public:
     void init(const Limits &limits, Scalar gridSpacing);
 
 
-    libthing::Vector2 getOrigin() const {return gridOrigin;}
+    Point2Type getOrigin() const {return gridOrigin;}
 
     const std::vector<Scalar>& getXValues() const{return xValues;}
 

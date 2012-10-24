@@ -30,7 +30,7 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 				layerloops.layerMeasure.sliceIndexToHeight(sliceId), 
 				layerloops.layerMeasure.getLayerH(), 
                 layerloops.layerMeasure.getLayerWidthRatio());
-		libthing::SegmentTable segments;
+		SegmentTable segments;
 		/*
 		 Function outlinesForSlice is designed to use segmentTable rather than
 		 the new Loop class. It makes use of clipper.cc, which was machine 
@@ -41,13 +41,13 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 		 */
 		outlinesForSlice(seg, sliceId, segments);
 		//convert all SegmentTables into loops
-		for(libthing::SegmentTable::iterator it = segments.begin();
+		for(SegmentTable::iterator it = segments.begin();
 				it != segments.end();
 				++it){
 			Loop currentLoop;
 			Loop::cw_iterator iter = currentLoop.clockwiseEnd();
 			//convert current SegmentTable into a loop
-			for(std::vector<libthing::LineSegment2>::iterator it2 = it->begin(); 
+			for(std::vector<Segment2Type>::iterator it2 = it->begin(); 
 					it2 != it->end(); 
 					++it2){
 				//add points 1 - N
@@ -79,15 +79,15 @@ void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {
 
 
 
-void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::SegmentTable & segments)
+void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, SegmentTable & segments)
 {
 	Scalar tol = 1e-6;
 	const LayerMeasure & layerMeasure = seg.readLayerMeasure();
 	Scalar z = layerMeasure.sliceIndexToHeight(sliceId) + 
 			0.5 * layerMeasure.getLayerH();
-	const std::vector<libthing::Triangle3> & allTriangles = seg.readAllTriangles();
+	const std::vector<Triangle3Type> & allTriangles = seg.readAllTriangles();
 	const TriangleIndices & trianglesForSlice = seg.readSliceTable()[sliceId];
-	std::vector<libthing::LineSegment2> unorderedSegments;
+	std::vector<Segment2Type> unorderedSegments;
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, unorderedSegments);
 	assert(segments.size() ==0);
 
@@ -99,13 +99,13 @@ void Slicer::outlinesForSlice(const Segmenter& seg, size_t sliceId, libthing::Se
 
 
 
-void Slicer::loopsFromLineSegments(const std::vector<libthing::LineSegment2>& unorderedSegments, Scalar tol, libthing::SegmentTable & segments)
+void Slicer::loopsFromLineSegments(const std::vector<Segment2Type>& unorderedSegments, Scalar tol, SegmentTable & segments)
 {
 	// dumpSegments("unordered_", unorderedSegments);
 	// cout << segments << endl;
 	if(unorderedSegments.size() > 0){
 		//cout << " loopsAndHoleOgy " << endl;
-		std::vector<libthing::LineSegment2> segs =  unorderedSegments;
+		std::vector<Segment2Type> segs =  unorderedSegments;
 		loopsAndHoleOgy(segs, tol, segments);
 	}
 }

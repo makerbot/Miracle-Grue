@@ -28,7 +28,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ModelReaderTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
 
 string outputsDir("outputs/test_cases/modelReaderTestCase/");
 string inputsDir("test_cases/modelReaderTestCase/");
@@ -111,7 +110,7 @@ void ModelReaderTestCase::testMeshySimple()
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
 
-	Triangle3  t(Vector3(0,10,0), Vector3(0,10,3.4), Vector3(0,10,1));
+	Triangle3Type  t(Point3Type(0,10,0), Point3Type(0,10,3.4), Point3Type(0,10,1));
 
 	cout << endl << endl;
 	cout << "t " << t[0] << ", " << t[1] << ", " << t[2] << endl;
@@ -135,9 +134,9 @@ void ModelReaderTestCase::testMeshySimple()
     CPPUNIT_ASSERT_EQUAL((size_t)1, slice2.size());
 
 
-    t[0] =Vector3(0,10, 0);
-    t[1] =Vector3(0,10, 3.6);
-    t[2] =Vector3(0,10, 1);
+    t[0] =Point3Type(0,10, 0);
+    t[1] =Point3Type(0,10, 3.6);
+    t[2] =Point3Type(0,10, 1);
 
 	mesh.addTriangle(t);
 	CPPUNIT_ASSERT_EQUAL((size_t)3, seg.readSliceTable().size());
@@ -390,19 +389,19 @@ void ModelReaderTestCase::testMeshyCycleMin()
 
 
 
-Vector2 rotateAroundPoint(const Vector2 &center, Scalar angle, const Vector2 &p)
+Point2Type rotateAroundPoint(const Point2Type &center, Scalar angle, const Point2Type &p)
 {
 	// translate point back to origin:
-	Vector2 translated = p - center;
+	Point2Type translated = p - center;
 
-	Vector2 rotated = translated.rotate2d( angle );
+	Point2Type rotated = translated.rotate2d( angle );
 	// translate point back:
-	Vector2 r = rotated + center;
+	Point2Type r = rotated + center;
 	return r;
 }
 
 // openscad debugging
-string visibleCut(const Triangle3& t, const Vector3 &a, const Vector3 &b)
+string visibleCut(const Triangle3Type& t, const Point3Type &a, const Point3Type &b)
 {
 	stringstream out;
 
@@ -424,13 +423,13 @@ void ModelReaderTestCase::testCutTriangle()
 {
 	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	Vector3 v0(-1, 0, 0);
-	Vector3 v1(1, 0, 0);
-	Vector3 v2(0,0,1);
+	Point3Type v0(-1, 0, 0);
+	Point3Type v1(1, 0, 0);
+	Point3Type v2(0,0,1);
 
-	Triangle3 t(v0,v1,v2);
+	Triangle3Type t(v0,v1,v2);
 
-	Vector3 a,b;
+	Point3Type a,b;
 	bool cut;
 	Scalar z = 0.5;
 	cut = t.cut( z, a, b);
@@ -450,10 +449,10 @@ void ModelReaderTestCase::testCutTriangle()
 //	    endloop
 //	  endfacet
 
-	Vector3 v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
-	Vector3 v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
-	Vector3 v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
-	Triangle3 tb(v0b,v1b,v2b);
+	Point3Type v0b(-1.556260e+01, 5.680465e+00, 2.200485e+01);
+	Point3Type v1b(-1.832293e+01, 4.436024e+00, 1.892443e+01 );
+	Point3Type v2b( -1.800681e+01, 6.473042e+00, 2.197871e+01);
+	Triangle3Type tb(v0b,v1b,v2b);
 
 
 
@@ -475,11 +474,11 @@ void ModelReaderTestCase::testRotate()
 {
 	std::cout << endl << "Starting: " <<__FUNCTION__ << endl;
 
-	Vector2 center(4,4);
-	Vector2 a(4,3);
+	Point2Type center(4,4);
+	Point2Type a(4,3);
 
 	Scalar angle = M_PI /2;
-	Vector2 b = rotateAroundPoint(center, angle, a);
+	Point2Type b = rotateAroundPoint(center, angle, a);
 
 	cout << endl << "rotated " << a << " around " << center << " by " << angle << " rads and got " << b << endl;
 	CPPUNIT_ASSERT_DOUBLES_EQUAL( 5.0, b.x, 0.00001 );
@@ -656,8 +655,8 @@ void ModelReaderTestCase::testTubularInflate()
 
 	Limits l0;
 
-	Vector3 p0(0,0,0);
-	Vector3 p1(8,4,1);
+	Point3Type p0(0,0,0);
+	Point3Type p1(8,4,1);
 
 	l0.grow(p0);
 	l0.grow(p1);
@@ -699,12 +698,12 @@ void ModelReaderTestCase::fixContourProblem()
 
 	Scalar z = zTapeMeasure.sliceIndexToHeight(30);
 
-	const std::vector<Triangle3> &allTriangles = mesh.readAllTriangles();
+	const std::vector<Triangle3Type> &allTriangles = mesh.readAllTriangles();
 	seg.tablaturize(mesh);
 	const SliceTable &sliceTable = seg.readSliceTable();
 	const TriangleIndices &trianglesForSlice = sliceTable[30];
 
-	std::vector<LineSegment2> segments;
+	std::vector<Segment2Type> segments;
 	// get 2D paths for outline
 	segmentationOfTriangles(trianglesForSlice, allTriangles, z, segments);
 	SegmentTable outlinesSegments;
@@ -718,9 +717,9 @@ void ModelReaderTestCase::fixContourProblem()
 	for (unsigned i=0; i < triangleCount; i++)
 	{
 		index_t idx = trianglesForSlice[i];
-		const Triangle3 &t = allTriangles[idx];
+		const Triangle3Type &t = allTriangles[idx];
 
-		Vector3 a,b,c;
+		Point3Type a,b,c;
 		t.zSort(a,b,c);
 
 		minsAndMaxes.push_back(std::pair<Scalar, Scalar>(a.z, c.z) );

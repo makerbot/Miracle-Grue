@@ -44,14 +44,14 @@ class Slicy {
 	ScadDebugFile fscad;
 
 	//Mesh info
-	const std::vector<libthing::Triangle3> &allTriangles;
+	const std::vector<Triangle3Type> &allTriangles;
 	const Limits& limits;
 	//-const LayerMeasure& zTapeMeasure;
 
 	// state
 	Scalar layerH;
-	libthing::Vector2 toRotationCenter;
-	libthing::Vector2 backToOrigin;
+	Point2Type toRotationCenter;
+	Point2Type backToOrigin;
 	Limits tubularLimits;
 
 
@@ -69,7 +69,7 @@ class Slicy {
 
 
 public:
-	Slicy(const std::vector<libthing::Triangle3> &allTriangles,
+	Slicy(const std::vector<Triangle3Type> &allTriangles,
 			const Limits& limits,
 			Scalar layerW,
 			Scalar layerH,

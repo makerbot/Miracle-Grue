@@ -33,10 +33,10 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
-            PointType normal;
+            Point2Type normal;
             try {
                 normal = (connection.b - connection.a).unit();
-            } catch (const libthing::Exception& le) {}
+            } catch (const GeometryException& le) {}
             Scalar distance = connection.length();
             Cost frontCost(label, distance, normal);
             Cost backCost(label, distance, normal * -1.0);
@@ -76,10 +76,10 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
             libthing::LineSegment2 connection( 
                     curNode.data().getPosition(), 
                     lastNode.data().getPosition());
-            PointType normal;
+            Point2Type normal;
             try {
                 normal = (connection.b - connection.a).unit();
-            } catch (const libthing::Exception& le) {}
+            } catch (const GeometryException& le) {}
             Scalar distance = connection.length();
             Cost frontCost(label, distance, normal);
             //Cost backCost(label, distance, normal * -1.0);
@@ -93,10 +93,10 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     libthing::LineSegment2 connection( 
             curNode.data().getPosition(), 
             lastNode.data().getPosition());
-    PointType normal;
+    Point2Type normal;
     try {
         normal = (connection.b - connection.a).unit();
-    } catch (const libthing::Exception& le) {}
+    } catch (const GeometryException& le) {}
     Scalar distance = connection.length();
     Cost frontCost(label, distance, normal);
     //Cost backCost(label, distance, normal * -1.0);
@@ -147,7 +147,7 @@ void pather_optimizer_fastgraph::sortBuckets() {
         return;
     bucketsSorted = true;
     //point at infinity (outside our limits)
-    PointType infinityPoint(boundaryLimits.bottom_left() - PointType(20,20));
+    Point2Type infinityPoint(boundaryLimits.bottom_left() - Point2Type(20,20));
     //determine how many buckets each is inside of
     for(bucket_list::iterator currentIter = buckets.begin(); 
             currentIter != buckets.end(); 
@@ -200,7 +200,7 @@ pather_optimizer_fastgraph::entry_iterator
 }
 Scalar pather_optimizer_fastgraph::splitPaths(multipath_type& destionation, 
         const LabeledOpenPaths& source) {
-    PointType lastPoint(std::numeric_limits<Scalar>::min(), 
+    Point2Type lastPoint(std::numeric_limits<Scalar>::min(), 
             std::numeric_limits<Scalar>::min());
     Scalar ret = 0;
     for(LabeledOpenPaths::const_iterator iter = source.begin(); 
@@ -235,9 +235,9 @@ size_t pather_optimizer_fastgraph::countIntersections(libthing::LineSegment2& li
 }
 
 pather_optimizer_fastgraph::bucket_list::iterator 
-        pather_optimizer_fastgraph::pickBucket(PointType point) {
+        pather_optimizer_fastgraph::pickBucket(Point2Type point) {
     libthing::LineSegment2 testLine(point, 
-            boundaryLimits.bottom_left() - PointType(20,20));
+            boundaryLimits.bottom_left() - Point2Type(20,20));
     bucket_list::iterator iter = buckets.begin();
     for(; 
             iter != buckets.end(); 

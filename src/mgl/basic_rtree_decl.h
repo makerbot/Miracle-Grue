@@ -13,12 +13,8 @@
 #include <sstream>
 #include <memory>
 #include <utility>
-//#include "FSBAllocator.h"
 
 namespace mgl {
-
-template <typename T, size_t C, typename DIAG>
-class basic_rtree_intersect_comparator;
 
 class TreeException : public Exception {
 public:
@@ -53,6 +49,48 @@ typedef TreeDiagnosticStub TreeDefaultDiagnostic;
 
 static const size_t RTREE_DEFAULT_BRANCH = 4;
 
+/*
+ basic_rtree implements the interface for a spacial index.
+ A spacial index is a class that contains two-dimensional objects and 
+ allows queries for these objects based on their location and geometry.
+ 
+ Internally, spacial data structures work on AABBox (axis aligned 
+ bounding box). They must be able to construct a bounding box for 
+ the type that they contain. This is done by calling the static function
+ AABBox boundingBox = to_bbox<value_type>::bound(value);
+ 
+ YOU MUST PROVIDE A TEMPLATE SPECIALIZATION FOR to_bbox<>::bound(...);
+ following this form:
+ template <>
+ struct to_bbox<YourType> {
+    static AABBox bound(const YourType&) {
+        //see spacial_data.h for interface to AABBox
+    }
+ }
+ 
+ Spacial indexes are safe to copy construct and assign. They store copies 
+ of all things inserted into them and fill search results with copies of 
+ their contents. You may have an index of pointers if you implement 
+ the correct specialization of to_bbox.
+ 
+ Spacial data structures may be queried by calling search(collection, filter)
+ collection is any object that supports push_back(const value_type&). This 
+ would usually be a list or vector of the same type as the spacial index.
+ filter is any object with a function bool object::filter(const AABBox&) const; 
+ This function should return true for bounding boxes that meet the criteria of 
+ what you wish to search for, and false otherwise.
+ 
+ Removal from spacial indexes is not universally implemented yet.
+ 
+ Interface methods:
+ 
+ void insert(const value_type& value);  //store a copy of value in this index
+ template <typename CONTAINER, typename FILTER>
+ void search(CONTAINER& result, const FILTER& filt); //query container
+ void swap(spacial_index& other);   //fast swap implementation
+ 
+ */
+
 template <typename T, size_t C = RTREE_DEFAULT_BRANCH, typename DIAG = TreeDefaultDiagnostic>
 class basic_rtree {
 public:
@@ -77,14 +115,33 @@ public:
     basic_rtree& operator =(const basic_rtree& other);
     ~basic_rtree();
     
+    /*!Insert a value into the spacial index
+     @value: a const reference of what should be inserted.
+     a copy of this will be stored.
+     @return: an iterator to what you just inserted (not implemented)*/
     iterator insert(const value_type& value);
+    /*!Not implemented, do not use!*/
     void erase(iterator iter);
+    /*!Search for values that meet criteria of filt.filter(AABBox)
+     @result: Object supporting push_back(...) where output is placed
+     @filter: object supporting filter(...) that defines the criteria
+     Contents of index are not modified, copies of values that pass 
+     the filter are placed in result.*/
     template <typename COLLECTION, typename FILTER>
     void search(COLLECTION& result, const FILTER& filt) const;
+    /*!Swap contents of this object with that of another
+     @other: The object with which to swap contents
+     In general, this should be a constant time swap that involves 
+     no copying of data elements*/
+    void swap(basic_rtree& other);
     
+    /*!Not implemented, do not use!*/
     iterator begin() { return iterator(); }
+    /*!Not implemented, do not use!*/
     iterator end() { return iterator(); }
+    /*!Not implemented, do not use!*/
     const_iterator begin() const { return const_iterator(); }
+    /*!Not implemented, do not use!*/
     const_iterator end() const { return const_iterator(); }
     
     void repr(std::ostream& out, size_t recursionLevel = 0);
@@ -95,9 +152,7 @@ private:
     template <typename COLLECTION, typename FILTER>
     void searchPrivate(COLLECTION& result, const FILTER& filt, DIAG& diag) const;
 
-    template <typename U, size_t V, typename W> 
-    friend class basic_rtree_intersect_comparator;
-    
+
     explicit basic_rtree(const value_type& value);
     basic_rtree(bool canReproduce);
     
@@ -139,22 +194,6 @@ private:
     tree_alloc_t myTreeAllocator;
     value_alloc_t myDataAllocator;
 };
-
-template <typename T, size_t C, typename DIAG>
-class basic_rtree_intersect_comparator {
-    typedef basic_rtree<T, C, DIAG> tree_type;
-public:
-    basic_rtree_intersect_comparator(tree_type* b) : base(b) {}
-    bool operator ()(const tree_type* a, const tree_type* b) const {
-        Scalar origPerimeter = base->myBounds.perimeter();
-        return base->myBounds.expandedTo(a->myBounds).perimeter() - origPerimeter < 
-                base->myBounds.expandedTo(b->myBounds).perimeter() - origPerimeter;
-    }
-private:
-    tree_type* base;
-};
-
-
 
 }
 

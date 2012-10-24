@@ -63,10 +63,10 @@ private:
     typedef std::list<bucket> bucket_list;
     //format is void foo(output, [input]);
     //pick the best bucket to start optimizing, optimize it, repeat until done
-    void optimize1(multipath_type& output, PointType& entryPoint);
+    void optimize1(multipath_type& output, Point2Type& entryPoint);
     //optimize the bucket selected by above
     void optimize1Inner(LabeledOpenPaths& labeledpaths, bucket_list::iterator input, 
-            PointType& entryPoint);
+            Point2Type& entryPoint);
     //Run v-opt on results of above function
     bool optimize2(LabeledOpenPaths& labeledopenpaths, 
             LabeledOpenPaths& intermediate);
@@ -74,30 +74,30 @@ private:
     public:
         Cost(const PathLabel& label = PathLabel(), 
                 Scalar distance = 0, 
-                PointType normal = PointType()) 
+                Point2Type normal = Point2Type()) 
                 : PathLabel(label), m_distance(distance), m_normal(normal) {}
         Cost(const Cost& other) : PathLabel(other), 
                 m_distance(other.m_distance), m_normal(other.m_normal) {}
         Scalar distance() const { return m_distance; }
-        const PointType& normal() const { return m_normal; }
+        const Point2Type& normal() const { return m_normal; }
     private:
         Scalar m_distance;
-        PointType m_normal;
+        Point2Type m_normal;
     };
     class NodeData {
     public:
-        NodeData(PointType position, 
+        NodeData(Point2Type position, 
                 PathLabel label, 
                 bool entry) 
                 : m_position(position), 
                 m_label(label), 
                 m_isentry(entry) {}
         NodeData() : m_isentry(false) {}
-        const PointType& getPosition() const { return m_position; }
+        const Point2Type& getPosition() const { return m_position; }
         const PathLabel& getLabel() const { return m_label; }
         bool isEntry() const { return m_isentry; }
     private:
-        PointType m_position;
+        Point2Type m_position;
         PathLabel m_label;
         bool m_isentry;
     };
@@ -113,7 +113,7 @@ private:
         bucket() : m_insideCount(0) {}
         boundary_container m_bounds;
         graph_type m_graph;
-        PointType m_testPoint;
+        Point2Type m_testPoint;
         size_t m_insideCount; //how many others this is inside of
     };
     
@@ -156,13 +156,13 @@ private:
     class NodeConnectionComparator : public abstract_predicate<node::connection> {
     public:
         NodeConnectionComparator(const GrueConfig& grueConf, 
-                PointType unit = PointType()) 
+                Point2Type unit = Point2Type()) 
                 : m_nodeCompare(grueConf), m_unit(unit) {}
         typedef abstract_predicate<node::connection>::value_type value_type;
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
         NodeComparator m_nodeCompare;
-        PointType m_unit;
+        Point2Type m_unit;
     };
     
     typedef NodeComparator LinkBuildingSortComparator;
@@ -210,7 +210,7 @@ private:
     
     node::forward_link_iterator bestLink(node& from, graph_type& graph, 
             boundary_container& boundaries, 
-            PointType unit = PointType()); //can return node::forwardEnd()
+            Point2Type unit = Point2Type()); //can return node::forwardEnd()
     void buildLinks(node& from, graph_type& graph, 
             boundary_container& boundaries);
     void sortBuckets();
@@ -222,17 +222,17 @@ private:
     
     class connectionComparator {
     public:
-        connectionComparator(PointType unit = PointType()) : m_unit(unit) {}
+        connectionComparator(Point2Type unit = Point2Type()) : m_unit(unit) {}
         bool operator ()(const node::connection& lhs, 
                 const node::connection& rhs) const;
     private:
-        PointType m_unit;
+        Point2Type m_unit;
     };
     
     class nodeComparator {
     public:
-        nodeComparator(const GrueConfig& grueConf, graph_type& graph, PointType point = 
-                PointType(std::numeric_limits<Scalar>::min(), 
+        nodeComparator(const GrueConfig& grueConf, graph_type& graph, Point2Type point = 
+                Point2Type(std::numeric_limits<Scalar>::min(), 
                 std::numeric_limits<Scalar>::min()))
                 : m_graph(graph), m_position(point), 
                 m_nodeCompare(grueConf) {}
@@ -240,7 +240,7 @@ private:
         bool operator ()(node_index lhs, node_index rhs) const;
     private:
         graph_type& m_graph;
-        PointType m_position;
+        Point2Type m_position;
         NodeComparator m_nodeCompare;
     };
     
@@ -252,13 +252,13 @@ private:
     bool crossesBounds(const libthing::LineSegment2& line, 
             boundary_container& boundaries);
     
-    void smartAppendPoint(PointType point, PathLabel label, 
+    void smartAppendPoint(Point2Type point, PathLabel label, 
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
-            PointType& entryPoint);
+            Point2Type& entryPoint);
     void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
-    bucket_list::iterator pickBucket(PointType point);
+    bucket_list::iterator pickBucket(Point2Type point);
     
     
     const GrueConfig& grueCfg;
@@ -268,7 +268,7 @@ private:
     bool bucketsSorted;
     graph_type m_graph;
     AABBox boundaryLimits;
-    PointType historyPoint;
+    Point2Type historyPoint;
     
 };
 

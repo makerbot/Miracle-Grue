@@ -2,7 +2,7 @@
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
+
 
 #include "log.h"
 
@@ -191,14 +191,14 @@ void ScadDebugFile::writePolygons(const char* moduleName,
 Scalar ScadDebugFile::segment3(	ostream &out,
 						const char* indent,
 						const char* variableName,
-						const vector<LineSegment2> &segments,
+						const vector<Segment2Type> &segments,
 						Scalar z,
 						Scalar dz)
 {
 	out << indent << variableName<< " =[" << endl;
 	for (size_t i=0; i < segments.size(); i++)
 	{
-		const LineSegment2& segment  = segments[i];
+		const Segment2Type& segment  = segments[i];
 		Scalar ax = segment.a[0];
 		Scalar ay = segment.a[1];
 		Scalar az = z;
@@ -219,7 +219,7 @@ Scalar ScadDebugFile::segment3(	ostream &out,
 
 Scalar ScadDebugFile::writeSegments3(	const char* name,
 						const char* implementation,
-						const vector<LineSegment2> &segments,
+						const vector<Segment2Type> &segments,
 						Scalar z,
 						Scalar dz,
 						int slice)
@@ -235,7 +235,7 @@ Scalar ScadDebugFile::writeSegments3(	const char* name,
 
 void ScadDebugFile::writeSegments2(	const char* name,
 						const char* implementation,
-						const vector<LineSegment2> &segments,
+						const vector<Segment2Type> &segments,
 						Scalar z,
 						int slice)
 {
@@ -244,7 +244,7 @@ void ScadDebugFile::writeSegments2(	const char* name,
 	out << "    segments =[" << endl;
 	for (size_t i=0; i < segments.size(); i++)
 	{
-		const LineSegment2& segment  = segments[i];
+		const Segment2Type& segment  = segments[i];
 		Scalar ax = segment.a[0];
 		Scalar ay = segment.a[1];
 		Scalar bx = segment.b[0];
@@ -266,7 +266,7 @@ void ScadDebugFile::writeSegments2(	const char* name,
 // It is used to display the triangles involved in a slice (layerIndex).
 
 void ScadDebugFile::writeTrianglesModule(	const char* name,
-							const vector<Triangle3>  &allTriangles,
+							const vector<Triangle3Type>  &allTriangles,
 							const TriangleIndices &trianglesForSlice,
 							unsigned int layerIndex)
 {
@@ -283,7 +283,7 @@ void ScadDebugFile::writeTrianglesModule(	const char* name,
 	{
 
 		index_t index = trianglesForSlice[i];
-		const Triangle3 &t = allTriangles[index];
+		const Triangle3Type &t = allTriangles[index];
 		ss << "    [" << t[0].x << ", " << t[0].y << ", " << t[0].z << "], ";
 		ss <<     "[" << t[1].x << ", " << t[1].y << ", " << t[1].z << "], ";
 		ss <<     "[" << t[2].x << ", " << t[2].y << ", " << t[2].z << "], // tri " << i << endl;
@@ -309,7 +309,7 @@ void ScadDebugFile::writeTrianglesModule(	const char* name,
 								unsigned int layerIndex)
 	{
 		const TriangleIndices &trianglesForSlice = mesh.readSliceTable()[layerIndex];
-		const vector<Triangle3>  &allTriangles = mesh.readAllTriangles();
+		const vector<Triangle3Type>  &allTriangles = mesh.readAllTriangles();
 		writeTrianglesModule(name, allTriangles, trianglesForSlice, layerIndex);
 	}
 */
