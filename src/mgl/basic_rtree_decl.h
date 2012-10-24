@@ -57,6 +57,13 @@ static const size_t RTREE_DEFAULT_BRANCH = 4;
  
  Removal from spacial indexes is not universally implemented yet.
  
+ Interface methods:
+ 
+ void insert(const value_type& value);  //store a copy of value in this index
+ template <typename CONTAINER, typename FILTER>
+ void search(CONTAINER& result, const FILTER& filt); //query container
+ void swap(spacial_index& other);   //fast swap implementation
+ 
  */
 
 template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
@@ -97,6 +104,11 @@ public:
      the filter are placed in result.*/
     template <typename COLLECTION, typename FILTER>
     void search(COLLECTION& result, const FILTER& filt) const;
+    /*!Swap contents of this object with that of another
+     @other: The object with which to swap contents
+     In general, this should be a constant time swap that involves 
+     no copying of data elements*/
+    void swap(basic_rtree& other);
     
     /*!Not implemented, do not use!*/
     iterator begin() { return iterator(); }

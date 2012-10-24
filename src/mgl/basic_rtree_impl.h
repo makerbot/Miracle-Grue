@@ -103,6 +103,19 @@ void basic_rtree<T, C>::search(COLLECTION& result, const FILTER& filt) const {
     }
 }
 template <typename T, size_t C>
+void basic_rtree<T, C>::swap(basic_rtree& other) {
+    //swap all pointers, primitives, and POD's
+    std::swap(splitMyself, other.splitMyself);
+    std::swap(myBounds, other.myBounds);
+    for(size_t i = 0; i < CAPACITY; ++i) {
+        std::swap(myChildren[i], other.myChildren[i]);
+    }
+    std::swap(myChildrenCount, other.myChildrenCount);
+    std::swap(myData, other.myData);
+    std::swap(myTreeAllocator, other.myTreeAllocator);
+    std::swap(myDataAllocator, other.myDataAllocator);
+}
+template <typename T, size_t C>
 void basic_rtree<T, C>::repr(std::ostream& out, unsigned int recursionLevel) {
     std::string tabs(recursionLevel, '|');
     out << tabs << 'N';//myBounds.m_min << " - " << myBounds.m_max;

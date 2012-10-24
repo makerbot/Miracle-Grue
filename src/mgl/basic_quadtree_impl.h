@@ -79,6 +79,19 @@ void basic_quadtree<T>::search(COLLECTION& result, const FILTER& filt) const {
         }
 }
 template <typename T>
+void basic_quadtree<T>::swap(basic_quadtree& other) {
+    //swap all pointers, primitives, and POD's
+    std::swap(myBounds, other.myBounds);
+    for(size_t i = 0; i < CAPACITY; ++i) {
+        std::swap(myChildren[i], other.myChildren[i]);
+    }
+    //let deta_container do its own smart swap
+    myData.swap(other.myData);
+    std::swap(childrenExist, other.childrenExist);
+    std::swap(myTreeAllocator, other.myTreeAllocator);
+    std::swap(myDataAllocator, other.myDataAllocator);
+}
+template <typename T>
 void basic_quadtree<T>::repr(std::ostream& out, unsigned int recursionLevel) {
     std::string tabs(recursionLevel, '|');
     out << tabs << 'N';//myBounds.m_min << " - " << myBounds.m_max;
