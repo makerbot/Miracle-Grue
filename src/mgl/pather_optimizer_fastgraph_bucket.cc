@@ -1,10 +1,12 @@
 #include <list>
+#include <vector>
 
 #include "pather_optimizer_fastgraph.h"
 
 namespace mgl {
 
 #define BUCKET pather_optimizer_fastgraph::bucket
+#define HIERARCHY BUCKET::LoopHierarchy
 
 BUCKET::bucket(Point2Type testPoint) 
         : m_testPoint(testPoint), m_empty(true) {}
@@ -105,6 +107,8 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
     graph_type& currentGraph = m_graph;
     boundary_container& currentBounds = m_noCrossing;
     Point2Type currentUnit;
+    m_hierarchy.optimize(output, entryPoint, currentGraph, 
+            currentBounds, grueConf);
     while(!currentGraph.empty()) {
         currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
@@ -155,6 +159,7 @@ void BUCKET::swap(bucket& other) {
     std::swap(m_empty, other.m_empty);
     m_children.swap(other.m_children);
     std::swap(m_loop, other.m_loop);
+    m_hierarchy.swap(other.m_hierarchy);
 }
 BUCKET::edge_iterator BUCKET::edgeBegin() const { 
     return edge_iterator(m_loop.clockwiseFinite()); 
@@ -200,13 +205,183 @@ pather_optimizer_fastgraph::bucket_list::iterator
     return best;
 }
 pather_optimizer_fastgraph::bucket_list::iterator BUCKET::pickBestChild(
-                bucket_list::iterator begin, 
-                bucket_list::iterator end, 
-                const Point2Type& entryPoint) {
-            Scalar dummy;
-            return pickBestChild(begin, end, entryPoint, dummy);
-        }
+        bucket_list::iterator begin, 
+        bucket_list::iterator end, 
+        const Point2Type& entryPoint) {
+    Scalar dummy;
+    return pickBestChild(begin, end, entryPoint, dummy);
+}
 
+HIERARCHY::LoopHierarchy() {}
+HIERARCHY::LoopHierarchy(const LabeledLoop& loop) 
+        : m_label(loop.myLabel) {
+    m_testPoint = *loop.myPath.clockwise();
+    m_limits = AABBox(m_testPoint);
+    insertBoundary(loop.myPath);
+}
+HIERARCHY::LoopHierarchy(const Loop& loop, const PathLabel& label) 
+        : m_label(label) {
+    m_testPoint = *loop.clockwise();
+    m_limits = AABBox(m_testPoint);
+    insertBoundary(loop);
+}
+HIERARCHY& HIERARCHY::insert(const LabeledLoop& loop) {
+    return insert(loop.myPath, loop.myLabel);
+}
+HIERARCHY& HIERARCHY::insert(const Loop& loop, const PathLabel& label) {
+    for(hierarchy_list::iterator childIter = m_children.begin(); 
+            childIter != m_children.end(); 
+            ++childIter) {
+        if(childIter->contains(*loop.clockwise()))
+            return childIter->insert(loop, label);
+    }
+    LoopHierarchy createdHierarchy(loop, label);
+    std::list<hierarchy_list::iterator> thingsToMove;
+    for(hierarchy_list::iterator childIter = m_children.begin(); 
+            childIter != m_children.end(); 
+            ++childIter) {
+        if(createdHierarchy.contains(*childIter))
+            thingsToMove.push_back(childIter);
+    }
+    while(!thingsToMove.empty()) {
+        createdHierarchy.m_children.splice(
+                createdHierarchy.m_children.end(), 
+                m_children, thingsToMove.front());
+        thingsToMove.pop_front();
+    }
+    m_children.push_back(LoopHierarchy());
+    m_children.back().swap(createdHierarchy);
+    return m_children.back();
+}
+void HIERARCHY::insert(graph_type::node_index index) {
+    m_entries.push_back(index);
+}
+bool HIERARCHY::contains(Point2Type point) const {
+    Segment2Type testLine(m_infinitePoint, point);
+    bool result = (countIntersections(testLine, m_bounds) & 1) != 0;  //even-odd test
+    return result;
+}
+bool HIERARCHY::contains(const LoopHierarchy& other) const {
+    return contains(other.m_testPoint);
+}
+void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
+        graph_type& graph, boundary_container& bounds, 
+        const GrueConfig& grueConf) {
+    if(m_entries.empty())
+        return;
+    Scalar bestDistance = std::numeric_limits<Scalar>::max();
+    graph_type::node_index bestIndex = m_entries.front();
+    for(entryIndexVector::iterator iter = m_entries.begin(); 
+            iter != m_entries.end(); 
+            ++iter) {
+        Scalar distance = (graph[*iter].data().getPosition() - 
+                entryPoint).squaredMagnitude();
+        if(distance < bestDistance) {
+            bestDistance = distance;
+            bestIndex = *iter;
+        }
+    }
+    optimize(output, entryPoint, graph, bestIndex, bounds, grueConf);
+}
+void HIERARCHY::optimize(LabeledOpenPaths& output, 
+        Point2Type& entryPoint, 
+        graph_type& graph, graph_type::node_index& from, 
+        boundary_container& bounds, 
+        const GrueConfig& grueConf) {
+    if(m_entries.empty())
+        return;
+    hierarchy_list::iterator bestChoice;
+    while((bestChoice = std::min_element(m_children.begin(), 
+            m_children.end(), LoopHierarchyComparator(grueConf))) 
+            != m_children.end()) {
+        if(LoopHierarchyComparator(grueConf).compare(*this, *bestChoice))
+            break;
+        bestChoice->optimize(output, entryPoint, graph, from, 
+                bounds, grueConf);
+        m_children.erase(bestChoice);
+    }
+    node_index& currentIndex = from;
+    node::forward_link_iterator next;
+    graph_type& currentGraph = graph;
+    boundary_container& currentBounds = bounds;
+    Point2Type currentUnit;
+    while(!m_entries.empty()) {
+        LabeledOpenPath activePath;
+        while((next = bestLink(currentGraph[currentIndex], 
+                currentGraph, currentBounds, m_entries, grueConf, currentUnit)) != 
+                currentGraph[currentIndex].forwardEnd()) {
+            m_entries.clear();
+            node::connection nextConnection = *next;
+            currentUnit = nextConnection.second->normal();
+            PathLabel currentCost(*nextConnection.second);
+            smartAppendPoint(nextConnection.first->data().getPosition(), 
+                    currentCost, output, activePath, entryPoint);
+            currentGraph[currentIndex].disconnect(*nextConnection.first);
+            nextConnection.first->disconnect(currentGraph[currentIndex]);
+            if(currentGraph[currentIndex].forwardEmpty() && 
+                    currentGraph[currentIndex].reverseEmpty()) {
+                currentGraph.destroyNode(currentGraph[currentIndex]);
+            }
+            currentIndex = nextConnection.first->getIndex();
+            //std::cout << "Inner Count: " << graph.count() << std::endl;
+        }
+        if(currentGraph[currentIndex].forwardEmpty() && 
+                currentGraph[currentIndex].reverseEmpty()) {
+            currentGraph.destroyNode(currentGraph[currentIndex]);
+        }
+        //recover from corners here
+        if(!m_entries.empty()) {
+            Scalar bestDistance = std::numeric_limits<Scalar>::max();
+            graph_type::node_index bestIndex = m_entries.front();
+            for(entryIndexVector::iterator iter = m_entries.begin(); 
+                    iter != m_entries.end(); 
+                    ++iter) {
+                Scalar distance = (currentGraph[*iter].data().getPosition() - 
+                        entryPoint).squaredMagnitude();
+                if(distance < bestDistance) {
+                    bestDistance = distance;
+                    bestIndex = *iter;
+                }
+            }
+            currentIndex = bestIndex;
+        }
+        smartAppendPath(output, activePath);
+    }
+    while((bestChoice = std::min_element(m_children.begin(), 
+            m_children.end(), LoopHierarchyComparator(grueConf))) 
+            != m_children.end()) {
+        bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
+        m_children.erase(bestChoice);
+    }
+}
+void HIERARCHY::swap(LoopHierarchy& other) {
+    std::swap(m_label, other.m_label);
+    m_bounds.swap(other.m_bounds);
+    m_entries.swap(other.m_entries);
+    m_children.swap(other.m_children);
+    std::swap(m_limits, other.m_limits);
+    std::swap(m_testPoint, other.m_testPoint);
+    std::swap(m_infinitePoint, other.m_infinitePoint);
+}
+void HIERARCHY::insertBoundary(const Loop& loop) {
+    for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
+            iter != loop.clockwiseEnd(); 
+            ++iter) {
+        insertBoundary(loop.segmentAfterPoint(iter));
+    }
+    updateInfinity();
+}
+void HIERARCHY::insertBoundary(const Segment2Type& line) {
+    m_bounds.insert(line);
+    m_limits.expandTo(line.a);
+    m_limits.expandTo(line.b);
+}
+void HIERARCHY::updateInfinity() {
+    m_infinitePoint = m_limits.bottom_left() - Point2Type(20, 20);
+}
+
+
+#undef HIERARCHY
 #undef BUCKET
 
 }

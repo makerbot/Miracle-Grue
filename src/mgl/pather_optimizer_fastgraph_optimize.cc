@@ -37,10 +37,22 @@ pather_optimizer_fastgraph::node::forward_link_iterator
     return std::min_element(from.forwardBegin(), 
             from.forwardEnd(), NodeConnectionComparator(grueConf, unit));
 }
+pather_optimizer_fastgraph::node::forward_link_iterator
+        pather_optimizer_fastgraph::bestLink(node& from, 
+        graph_type& graph, boundary_container& boundaries, 
+        bucket::LoopHierarchy::entryIndexVector& entries, 
+        const GrueConfig& grueConf, 
+        Point2Type unit) {
+    if(from.forwardEmpty()) {
+        //return from.forwardEnd();
+        buildLinks(from, graph, boundaries, entries, grueConf);
+    }
+    return std::min_element(from.forwardBegin(), 
+            from.forwardEnd(), NodeConnectionComparator(grueConf, unit));
+}
 void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
         boundary_container& boundaries, const GrueConfig& grueConf) {
-    typedef std::vector<probe_link_type> probe_collection;
-    probe_collection probes;
+    std::vector<probe_link_type> probes;
     for(entry_iterator iter = entryBegin(graph); 
             iter != entryEnd(graph); 
             ++iter) {
@@ -52,11 +64,36 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
     }
     std::sort(probes.begin(), probes.end(), 
             probeCompare(from.getIndex(), graph, grueConf));
-    LinkBuildingConnectionCutoffComparator connectCompare(grueConf);
-    for(probe_collection::iterator iter = probes.begin(); 
-            iter != probes.end(); 
+    buildLinks(from, graph, boundaries, probes, grueConf);
+}
+void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
+        boundary_container& boundaries, 
+        bucket::LoopHierarchy::entryIndexVector& entries, 
+        const GrueConfig& grueConf) {
+    typedef bucket::LoopHierarchy::entryIndexVector::iterator iterator;
+    std::vector<probe_link_type> probes;
+    for(iterator iter = entries.begin(); 
+            iter != entries.end(); 
             ++iter) {
-        if(connectCompare(graph[probes.front().first].data().getLabel(), 
+        if(*iter == from.getIndex())
+            continue;
+        probes.push_back(probe_link_type(*iter, 
+                (from.data().getPosition() - 
+                graph[*iter].data().getPosition()).magnitude()));
+    }
+    std::sort(probes.begin(), probes.end(), 
+            probeCompare(from.getIndex(), graph, grueConf));
+    buildLinks(from, graph, boundaries, probes, grueConf);
+}
+void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
+        boundary_container& boundaries, 
+        std::vector<probe_link_type>& sortedProbes, 
+        const GrueConfig& grueConf) {
+    LinkBuildingConnectionCutoffComparator connectCompare(grueConf);
+    for(std::vector<probe_link_type>::iterator iter = sortedProbes.begin(); 
+            iter != sortedProbes.end(); 
+            ++iter) {
+        if(connectCompare(graph[sortedProbes.front().first].data().getLabel(), 
                 graph[iter->first].data().getLabel()))
             break;  //make no connections to things of lower priority
         Segment2Type probeline(from.data().getPosition(), 

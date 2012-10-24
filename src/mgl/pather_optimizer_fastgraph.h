@@ -118,6 +118,42 @@ private:
         
         typedef Loop::const_finite_cw_iterator edge_iterator;
         
+        class LoopHierarchy;
+        typedef std::list<LoopHierarchy> hierarchy_list;
+        
+        class LoopHierarchy {
+        public:
+            LoopHierarchy();
+            LoopHierarchy(const LabeledLoop& loop);
+            LoopHierarchy(const Loop& loop, const PathLabel& label);
+            typedef std::vector<graph_type::node_index> entryIndexVector;
+            LoopHierarchy& insert(const LabeledLoop& loop);
+            LoopHierarchy& insert(const Loop& loop, const PathLabel& label);
+            void insert(graph_type::node_index index);
+            bool contains(Point2Type point) const;
+            bool contains(const LoopHierarchy& other) const;
+            void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                    graph_type& graph, boundary_container& bounds, 
+                    const GrueConfig& grueConf);
+            void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                    graph_type& graph, graph_type::node_index& from, 
+                    boundary_container& bounds, 
+                    const GrueConfig& grueConf);
+            void swap(LoopHierarchy& other);
+            PathLabel m_label;
+            boundary_container m_bounds;
+            entryIndexVector m_entries;
+            hierarchy_list m_children;
+            AABBox m_limits;
+            Point2Type m_testPoint;
+            Point2Type m_infinitePoint;
+            
+        private:
+            void insertBoundary(const Loop& loop);
+            void insertBoundary(const Segment2Type& line);
+            void updateInfinity();
+        };
+        
         bucket(Point2Type testPoint = Point2Type());
         bucket(const Loop& loop);
         bool contains(Point2Type point) const;
@@ -150,11 +186,13 @@ private:
         bool m_empty;
         bucket_list m_children;
         Loop m_loop;
+        LoopHierarchy m_hierarchy;
     private:
         void insertBoundary(const Segment2Type& line);
         void insertNoCross(const Segment2Type& line);
         void updateInfinity();
     };
+    
     
     typedef graph_type::forward_node_iterator node_iterator;
     
@@ -207,6 +245,20 @@ private:
     typedef NodeComparator LinkBuildingSortComparator;
     typedef LabelTypeComparator LinkBuildingConnectionCutoffComparator;
     
+    class LoopHierarchyComparator : public abstract_predicate<bucket::LoopHierarchy> {
+    public:
+        typedef abstract_predicate<bucket::LoopHierarchy>::value_type value_type;
+        LoopHierarchyComparator(const GrueConfig& grueConf) 
+                : m_compare(LabelTypeComparator(grueConf), 
+                LabelPriorityComparator(grueConf)) {}
+        int compare(const value_type& lhs, 
+                const value_type& rhs) const {
+            return m_compare(lhs.m_label, rhs.m_label);
+        }
+    protected:
+        LabelComparator m_compare;
+    };
+    
     
     class entry_iterator {
     public:
@@ -250,8 +302,21 @@ private:
     static node::forward_link_iterator bestLink(node& from, graph_type& graph, 
             boundary_container& boundaries, const GrueConfig& grueConf, 
             Point2Type unit = Point2Type()); //can return node::forwardEnd()
+    static node::forward_link_iterator bestLink(node& from, graph_type& graph, 
+            boundary_container& boundaries, 
+            bucket::LoopHierarchy::entryIndexVector& entries, 
+            const GrueConfig& grueConf, 
+            Point2Type unit = Point2Type());
     static void buildLinks(node& from, graph_type& graph, 
             boundary_container& boundaries, const GrueConfig& grueConf);
+    static void buildLinks(node& from, graph_type& graph,
+            boundary_container& boundaries, 
+            bucket::LoopHierarchy::entryIndexVector& entries, 
+            const GrueConfig& grueConf);
+    static void buildLinks(node& from, graph_type& graph, 
+            boundary_container& boundaries, 
+            std::vector<probe_link_type>& sortedProbes, 
+            const GrueConfig& grueConf);
     
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);

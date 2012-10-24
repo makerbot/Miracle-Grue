@@ -109,7 +109,7 @@ public:
         bool forwardEmpty() const;
         bool reverseEmpty() const;
         
-        inline size_t getIndex() const { return m_index; }
+        inline const size_t& getIndex() const { return m_index; }
         
         bool operator ==(const node& other) { return m_index == other.m_index; }
         bool operator !=(const node& other) { return !(*this==other); } 
