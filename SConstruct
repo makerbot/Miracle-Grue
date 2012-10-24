@@ -224,6 +224,7 @@ mgl_cc = [
           'src/mgl/pather_optimizer_graph.cc',
           'src/mgl/pather_optimizer_fastgraph.cc',
           'src/mgl/pather_optimizer_fastgraph_optimize.cc',
+          'src/mgl/pather_optimizer_fastgraph_comparators.cc',
           'src/mgl/regioner.cc',
           'src/mgl/segment.cc',
           'src/mgl/segmenter.cc',

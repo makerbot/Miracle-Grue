@@ -15,6 +15,7 @@
 #include "intersection_index.h"
 #include "Exception.h"
 #include "configuration.h"
+#include "labeled_path.h"
 #include <iostream>
 #include <list>
 
