@@ -109,6 +109,15 @@ typename SG_NODE& SG_TYPE::operator [](node_index i) {
     return retNode;
 }
 SG_TEMPLATE
+void SG_TYPE::swap(simple_graph& other) {
+    nodes.swap(other.nodes);
+    costs.swap(other.costs);
+    free_nodes.swap(other.free_nodes);
+    free_costs.swap(other.free_costs);
+    std::swap(node_allocator, other.node_allocator);
+    std::swap(cost_allocator, other.cost_allocator);
+}
+SG_TEMPLATE
 typename SG_NODE& SG_TYPE::createNode(const node_data_type& data) {
     size_t index = -1;
     if(!free_nodes.empty()) {

@@ -82,10 +82,6 @@ bool pather_optimizer_fastgraph::probeCompare::operator ()(
     Scalar distDifference = lhs.second - rhs.second;
     return distDifference < 0;
 }
-bool pather_optimizer_fastgraph::bucketSorter::operator ()(const bucket& lhs, 
-        const bucket& rhs) const {
-    return lhs.m_insideCount > rhs.m_insideCount;
-}
 
 }
 

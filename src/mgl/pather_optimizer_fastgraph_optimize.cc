@@ -28,16 +28,17 @@ bool pather_optimizer_fastgraph::crossesBounds(
 pather_optimizer_fastgraph::node::forward_link_iterator
         pather_optimizer_fastgraph::bestLink(node& from, 
         graph_type& graph, boundary_container& boundaries, 
+        const GrueConfig& grueConf, 
         Point2Type unit) {
     if(from.forwardEmpty()) {
         //return from.forwardEnd();
-        buildLinks(from, graph, boundaries);
+        buildLinks(from, graph, boundaries, grueConf);
     }
     return std::min_element(from.forwardBegin(), 
-            from.forwardEnd(), NodeConnectionComparator(grueCfg, unit));
+            from.forwardEnd(), NodeConnectionComparator(grueConf, unit));
 }
 void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph, 
-        boundary_container& boundaries) {
+        boundary_container& boundaries, const GrueConfig& grueConf) {
     typedef std::vector<probe_link_type> probe_collection;
     probe_collection probes;
     for(entry_iterator iter = entryBegin(graph); 
@@ -50,8 +51,8 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
                 iter->data().getPosition()).magnitude()));
     }
     std::sort(probes.begin(), probes.end(), 
-            probeCompare(from.getIndex(), graph, grueCfg));
-    LinkBuildingConnectionCutoffComparator connectCompare(grueCfg);
+            probeCompare(from.getIndex(), graph, grueConf));
+    LinkBuildingConnectionCutoffComparator connectCompare(grueConf);
     for(probe_collection::iterator iter = probes.begin(); 
             iter != probes.end(); 
             ++iter) {
@@ -115,24 +116,12 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
 void pather_optimizer_fastgraph::optimize1(multipath_type& output, 
         Point2Type& entryPoint) {
     while(!buckets.empty()) {
-        Scalar distanceToEntry = std::numeric_limits<Scalar>::max();
         bucket_list::iterator currentNearest = buckets.begin();
-        for(bucket_list::iterator iter = buckets.begin(); 
-                iter != buckets.end(); 
-                ++iter) {
-            for(entry_iterator entryIter = entryBegin(iter->m_graph); 
-                    entryIter != entryEnd(iter->m_graph); 
-                    ++entryIter) {
-                Scalar entryDistance = (entryIter->data().getPosition() - 
-                        entryPoint).squaredMagnitude();
-                if(entryDistance < distanceToEntry) {
-                    distanceToEntry = entryDistance;
-                    currentNearest = iter;
-                }
-            }
-        }
+        currentNearest = bucket::pickBestChild(buckets.begin(), 
+                buckets.end(), entryPoint);
         LabeledOpenPaths currentResult;
-        optimize1Inner(currentResult, currentNearest, entryPoint);
+        //optimize1Inner(currentResult, currentNearest, entryPoint);
+        currentNearest->optimize(currentResult, entryPoint, grueCfg);
         
         output.push_back(LabeledOpenPaths());
         
@@ -158,7 +147,7 @@ void pather_optimizer_fastgraph::optimize1Inner(LabeledOpenPaths& labeledpaths,
                     labeledpaths, activePath, entryPoint);
         }
         while((next = bestLink(currentGraph[currentIndex], 
-                currentGraph, currentBounds, currentUnit)) != 
+                currentGraph, currentBounds, grueCfg, currentUnit)) != 
                 currentGraph[currentIndex].forwardEnd()) {
             node::connection nextConnection = *next;
             currentUnit = nextConnection.second->normal();

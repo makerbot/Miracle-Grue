@@ -28,6 +28,12 @@ public:
     GraphException(const T& arg) : Exception(arg) {}
 };
 
+class PathingException : public Exception {
+public:
+    template <typename T>
+    PathingException(const T& arg) : Exception(arg) {}
+};
+
 /* 
  Implementation of interface put forth in abstract_optimizer
    One of the several different options for optimizing paths. 
@@ -42,7 +48,7 @@ public:
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
     pather_optimizer_fastgraph(const GrueConfig& grueConf)
-            : grueCfg(grueConf), bucketsSorted(false), 
+            : grueCfg(grueConf),  
             historyPoint(std::numeric_limits<Scalar>::min(), 
             std::numeric_limits<Scalar>::min()) {}
     //addPath builds up the correct interior graph (the correct bucket)
@@ -112,22 +118,40 @@ private:
     
     class bucket {
     public:
+        
+        typedef Loop::const_finite_cw_iterator edge_iterator;
+        
         bucket(Point2Type testPoint = Point2Type());
+        bucket(const Loop& loop);
         bool contains(Point2Type point) const;
         bool contains(const bucket& other) const;
-        void insertBoundary(const Segment2Type& line);
         void insertBoundary(const Loop& loop);
+        void insertNoCross(const Loop& loop);
         bucket& select(Point2Type point);
-        void optimize(LabeledOpenPaths& output, Point2Type& entryPoint);
+        void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                const GrueConfig& grueConf);
+        void swap(bucket& other);
+        edge_iterator edgeBegin() const;
+        edge_iterator edgeEnd() const;
+        
+        static bucket_list::iterator pickBestChild(
+                bucket_list::iterator begin, 
+                bucket_list::iterator end, 
+                const Point2Type& entryPoint);
+        
         boundary_container m_bounds;
+        boundary_container m_noCrossing;
         AABBox m_limits;
         graph_type m_graph;
         Point2Type m_testPoint;
         Point2Type m_infinitePoint;
-        size_t m_insideCount; //how many others this is inside of
         bool m_empty;
-    private:
         bucket_list m_children;
+        Loop m_loop;
+    private:
+        void insertBoundary(const Segment2Type& line);
+        void insertNoCross(const Segment2Type& line);
+        void updateInfinity();
     };
     
     typedef graph_type::forward_node_iterator node_iterator;
@@ -221,12 +245,11 @@ private:
         LinkBuildingSortComparator m_nodeCompare;
     };
     
-    node::forward_link_iterator bestLink(node& from, graph_type& graph, 
-            boundary_container& boundaries, 
+    static node::forward_link_iterator bestLink(node& from, graph_type& graph, 
+            boundary_container& boundaries, const GrueConfig& grueConf, 
             Point2Type unit = Point2Type()); //can return node::forwardEnd()
-    void buildLinks(node& from, graph_type& graph, 
-            boundary_container& boundaries);
-    void sortBuckets();
+    static void buildLinks(node& from, graph_type& graph, 
+            boundary_container& boundaries, const GrueConfig& grueConf);
     
     static bool comparePathLists(const LabeledOpenPaths& lhs, 
             const LabeledOpenPaths& rhs);
@@ -257,18 +280,13 @@ private:
         NodeComparator m_nodeCompare;
     };
     
-    class bucketSorter {
-    public:
-        bool operator ()(const bucket& lhs, const bucket& rhs) const;
-    };
-    
-    bool crossesBounds(const Segment2Type& line, 
+    static bool crossesBounds(const Segment2Type& line, 
             boundary_container& boundaries);
     
-    void smartAppendPoint(Point2Type point, PathLabel label, 
+    static void smartAppendPoint(Point2Type point, PathLabel label, 
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
             Point2Type& entryPoint);
-    void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+    static void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
     bucket_list::iterator pickBucket(Point2Type point);
@@ -278,7 +296,6 @@ private:
     
     boundary_container m_boundaries;
     bucket_list buckets;
-    bool bucketsSorted;
     graph_type m_graph;
     AABBox boundaryLimits;
     Point2Type historyPoint;

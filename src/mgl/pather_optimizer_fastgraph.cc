@@ -8,13 +8,14 @@ namespace mgl {
 
 void pather_optimizer_fastgraph::addPath(const OpenPath& path, 
         const PathLabel& label) {
-    sortBuckets();
     node_index last = -1;
-    bucket_list::iterator bucketIter = pickBucket(*path.fromStart());
+    Point2Type testPoint = *path.fromStart();
+    bucket_list::iterator bucketIter = pickBucket(testPoint);
     if(bucketIter == buckets.end()) {
         throw GraphException("No bucket for path!");
     }
-    bucket& currentBucket = *bucketIter;
+    //find the deepest thing you can
+    bucket& currentBucket = bucketIter->select(testPoint);
     graph_type& currentGraph = currentBucket.m_graph;
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
@@ -51,14 +52,14 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
 }
 void pather_optimizer_fastgraph::addPath(const Loop& loop, 
         const PathLabel& label) {
-    sortBuckets();
     node_index last = -1;
     node_index first = -1;
-    bucket_list::iterator bucketIter = pickBucket(*loop.clockwise());
+    Point2Type testPoint = *loop.clockwise();
+    bucket_list::iterator bucketIter = pickBucket(testPoint);
     if(bucketIter == buckets.end()) {
         throw GraphException("No bucket for path!");
     }
-    bucket& currentBucket = *bucketIter;
+    bucket& currentBucket = bucketIter->select(testPoint);
     graph_type& currentGraph = currentBucket.m_graph;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
@@ -105,6 +106,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     lastNode.connect(curNode, frontCost);
 }
 void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
+    throw PathingException("OpenPath boundaries temporarily not supported!");
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
             ++iter) {
@@ -116,18 +118,47 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
     }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
-    bucketsSorted = false;
-    bucket_list::iterator iter = buckets.insert(buckets.end(), bucket());
-    bucket& destBucket = *iter;
-    for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
-            iter != loop.clockwiseEnd(); 
-            ++iter) {
-        Segment2Type segment = loop.segmentAfterPoint(iter);
+    bucket_list::iterator iter = buckets.end();
+    Point2Type testPoint = *loop.clockwise();
+    for(bucket_list::iterator bucketIter = buckets.begin(); 
+            bucketIter != buckets.end(); 
+            ++bucketIter) {
+        if(bucketIter->contains(testPoint)) {
+            std::cout << "Fastgraph child contains a loop!" << std::endl;
+            iter = bucketIter;
+            break;
+        }
+    }
+    if(iter == buckets.end()) {
+        bucket createdBucket(loop);
+        std::list<bucket_list::iterator> thingsToMove;
+        for(bucket_list::iterator bucketIter = buckets.begin(); 
+                bucketIter != buckets.end(); 
+                ++bucketIter) {
+            if(createdBucket.contains(bucketIter->m_testPoint))
+                thingsToMove.push_back(bucketIter);
+        }
+        std::cout << "Reparenting " << thingsToMove.size() << 
+                " children in fastgraph" << std::endl;
+        while(!thingsToMove.empty()) {
+            createdBucket.insertNoCross(thingsToMove.front()->m_loop);
+            createdBucket.m_children.splice(
+                    createdBucket.m_children.end(), 
+                    buckets, thingsToMove.front());
+            thingsToMove.pop_front();
+        }
+        buckets.push_back(bucket());
+        buckets.back().swap(createdBucket);
+    } else {
+        iter->insertBoundary(loop);
+    }
+    for(Loop::const_finite_cw_iterator loopIter = loop.clockwiseFinite(); 
+            loopIter != loop.clockwiseEnd(); 
+            ++loopIter) {
+        Segment2Type segment = loop.segmentAfterPoint(loopIter);
         boundaryLimits.expandTo(segment.a);
         boundaryLimits.expandTo(segment.b);
         m_boundaries.insert(segment);
-        destBucket.m_bounds.insert(segment);
-        destBucket.m_testPoint = segment.a;
     }
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
@@ -142,32 +173,6 @@ void pather_optimizer_fastgraph::clearPaths() {
             ++iter) {
         iter->m_graph.clear();
     }
-}
-void pather_optimizer_fastgraph::sortBuckets() {
-    if(bucketsSorted)
-        return;
-    bucketsSorted = true;
-    //point at infinity (outside our limits)
-    Point2Type infinityPoint(boundaryLimits.bottom_left() - Point2Type(20,20));
-    //determine how many buckets each is inside of
-    for(bucket_list::iterator currentIter = buckets.begin(); 
-            currentIter != buckets.end(); 
-            ++currentIter) {
-        Segment2Type currentLine(infinityPoint, 
-                currentIter->m_testPoint);
-        currentIter->m_insideCount = 0;
-        for(bucket_list::const_iterator testIter = buckets.begin(); 
-                testIter != buckets.end();
-                ++testIter) {
-            if(testIter == currentIter)
-                continue;   //no self tests
-            size_t intersectionsCount = countIntersections(currentLine, 
-                    testIter->m_bounds);
-            currentIter->m_insideCount += intersectionsCount & 1;
-        }
-    }
-    //sort by that number
-    buckets.sort(bucketSorter());
 }
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {
