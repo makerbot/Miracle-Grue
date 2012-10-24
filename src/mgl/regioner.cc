@@ -568,12 +568,6 @@ SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
 	return parallels;
 }
 
-LineSegment2 cutInteriorSegment(const LineSegment2 &orig, const Scalar margin) {
-								//const SegIndex &boundaries) {
-	//STUB
-	return orig;
-}
-
 void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
 					  SegmentList &intersecting) {
 	SegmentList found;
@@ -603,15 +597,47 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 				normalizeWalls(*curSeg, intersecting.front());
 			walls.insert(curWalls);
 		}
+
+		normal = getSegmentNormal(*curSeg, curSeg->b, span);
+
+		findIntersecting(index, normal, intersecting);
+
+		if (intersecting.size() > 0) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, intersecting.front());
+			walls.insert(curWalls);
+		}
 	}
 }
+
+void segToSVG(const LineSegment2 seg, const string &color,
+              const Scalar xoff, const Scalar yoff);
 
 LineSegment2 bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
                  const SegmentPair &walls) {
 		SegmentPair spans =
 			completeTrapezoid(minSpurWidth, maxSpurWidth, walls);
 		
+        segToSVG(spans.first, "green", 20, 20);
+        segToSVG(spans.second, "green", 20, 20);
+        
+
 		return LineSegment2(midPoint(spans.first), midPoint(spans.second));
+}
+
+void cutInteriorSegment(SegmentIndex &index, const Scalar margin,
+                        LineSegment2 &orig) {
+    SegmentList intersecting;
+    findIntersecting(index, segment, intersecting);
+
+    for (SegmentList::const_iterator outline = intersecting.begin();
+         outline != intersecting.end(); ++outline) {
+        Vector2 intersectPoint;
+        segmentIntersection(orig, *outline, intersectionPoint);
+
+        EVector leftUnit = segment
+    }
 }
 
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
@@ -645,12 +671,18 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 
 	SegmentList pieces;
 
-	// complete trapezoids and pull out the bottom and top
+	// Bisect each pair
 	for (SegmentPairSet::const_iterator walls = allWalls.begin();
 		 walls != allWalls.end(); ++walls) {
 		LineSegment2 bisect = bisectWalls(minSpurWidth, maxSpurWidth, *walls);
         pieces.push_back(bisect);
 	}
+
+    //cut each segment so it fits in the outline
+    for (SegmentList::iterator piece = pieces.begin();
+         piece != pieces.end(); ++piece) {
+        segmentInsideLoops(index, minSpurWidth, piece);
+    }
 
 	//TODO: join segments into a chain
 	for (SegmentList::const_iterator piece = pieces.begin();

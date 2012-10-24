@@ -15,10 +15,11 @@ using namespace libthing;
 CPPUNIT_TEST_SUITE_REGISTRATION( InsetsTestCase );
 
 
-
+bool begun = false;
 
 void svgBegin() {
 	cerr << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?><svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" x=\"loops\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"  >\"" << endl;
+    begun = true;
 }
 
 void svgEnd() {
@@ -27,6 +28,8 @@ void svgEnd() {
 
 void segToSVG(const LineSegment2 seg, const string &color,
 			  const Scalar xoff, const Scalar yoff) {
+    if (!begun) return;
+
 	cerr << "<line x1=\"" << (xoff + seg.a.x) * 10 
 		 << "\" y1=\""  << (yoff + seg.a.y) * 10
 		 << "\" x2=\"" << (xoff + seg.b.x) * 10 
@@ -120,6 +123,21 @@ void InsetsTestCase::setUp() {
 
     parallelSpurWalls.first = LineSegment2(Vector2(0, 0), Vector2(.5, 5));
     parallelSpurWalls.second = LineSegment2(Vector2(2, 10), Vector2(1, 0));
+
+    at = twoPairShell.insertPointAfter(Vector2(0, 0),
+                                       twoPairShell.clockwiseEnd());
+    at = twoPairShell.insertPointAfter(Vector2(0, 10), at);
+    at = twoPairShell.insertPointAfter(Vector2(2, 20), at);
+    at = twoPairShell.insertPointAfter(Vector2(1, 9), at);
+    at = twoPairShell.insertPointAfter(Vector2(1, 0), at);
+
+    at = threePairShell.insertPointAfter(Vector2(0, 0),
+                                       threePairShell.clockwiseEnd());
+    at = threePairShell.insertPointAfter(Vector2(1, 10), at);
+    at = threePairShell.insertPointAfter(Vector2(1, 20), at);
+    at = threePairShell.insertPointAfter(Vector2(3, 30), at);
+    at = threePairShell.insertPointAfter(Vector2(2, 20), at);
+    at = threePairShell.insertPointAfter(Vector2(2, 10), at);
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -333,13 +351,13 @@ void InsetsTestCase::testCompleteParallel() {
         completeTrapezoid(layermeasure.getLayerW() *0.5,
                           layermeasure.getLayerW() *1.5, parallelSpurWalls);
 
-    svgBegin();
+    /*svgBegin();
     segToSVG(parallelSpurWalls.first, "black", 20, 20);
     segToSVG(parallelSpurWalls.second, "black", 20, 20);
 
     segToSVG(spans.first, "red", 20, 20);
     segToSVG(spans.second, "red", 20, 20);
-    svgEnd();
+    svgEnd();*/
 
     CPPUNIT_ASSERT_EQUAL(layermeasure.getLayerW(),
                          sigdig(spans.first.length(), 5));
@@ -388,3 +406,36 @@ void InsetsTestCase::testBisectReverseWalls() {
     CPPUNIT_ASSERT(bisect.b.y > 0);
 }
 
+void InsetsTestCase::testTwoPairFill() {
+	Regioner regioner(config);
+
+	LoopList loops;
+	loops.push_back(twoPairShell);
+
+	OpenPathList spurs;
+	regioner.fillSpurLoops(loops, layermeasure, spurs);
+
+	/*svgBegin();
+    loopToSVG(twoPairShell, "black", 20, 20);
+	openPathListToSVG(spurs, "red", 20, 20);
+	svgEnd();*/
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
+}
+
+void InsetsTestCase::testThreePairFill() {
+	Regioner regioner(config);
+	svgBegin();
+
+	LoopList loops;
+	loops.push_back(threePairShell);
+
+	OpenPathList spurs;
+	regioner.fillSpurLoops(loops, layermeasure, spurs);
+
+    loopToSVG(threePairShell, "black", 20, 20);
+	openPathListToSVG(spurs, "red", 20, 20);
+	svgEnd();
+
+	CPPUNIT_ASSERT_EQUAL(1, (int)spurs.size());
+}
