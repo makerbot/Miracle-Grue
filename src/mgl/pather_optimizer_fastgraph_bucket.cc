@@ -267,8 +267,14 @@ bool HIERARCHY::contains(const LoopHierarchy& other) const {
 void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
         graph_type& graph, boundary_container& bounds, 
         const GrueConfig& grueConf) {
-    if(m_entries.empty())
+    if(m_entries.empty()) {
+        for(hierarchy_list::iterator iter = m_children.begin(); 
+                iter != m_children.end(); 
+                ++iter) {
+            iter->optimize(output, entryPoint, graph, bounds, grueConf);
+        }
         return;
+    }
     Scalar bestDistance = std::numeric_limits<Scalar>::max();
     graph_type::node_index bestIndex = m_entries.front();
     for(entryIndexVector::iterator iter = m_entries.begin(); 
@@ -288,16 +294,19 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         graph_type& graph, graph_type::node_index& from, 
         boundary_container& bounds, 
         const GrueConfig& grueConf) {
-    if(m_entries.empty())
-        return;
     hierarchy_list::iterator bestChoice;
     while((bestChoice = std::min_element(m_children.begin(), 
             m_children.end(), LoopHierarchyComparator(grueConf))) 
             != m_children.end()) {
-        if(LoopHierarchyComparator(grueConf).compare(*this, *bestChoice))
+        if(!m_entries.empty() && 
+                LoopHierarchyComparator(grueConf).compare(*this, *bestChoice))
             break;
-        bestChoice->optimize(output, entryPoint, graph, from, 
-                bounds, grueConf);
+//        graph_type::node::forward_link_iterator best = 
+//                bestLink(graph[from], graph, 
+//                bounds, bestChoice->m_entries, grueConf);
+//        if(best != graph[from].forwardEnd())
+//            from = (*best).first->getIndex();
+        bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
         m_children.erase(bestChoice);
     }
     node_index& currentIndex = from;
@@ -305,8 +314,11 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
     graph_type& currentGraph = graph;
     boundary_container& currentBounds = bounds;
     Point2Type currentUnit;
+    LabeledOpenPath activePath;
     while(!m_entries.empty()) {
-        LabeledOpenPath activePath;
+        smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
+                currentGraph[currentIndex].data().getLabel(), 
+                output, activePath, entryPoint);
         while((next = bestLink(currentGraph[currentIndex], 
                 currentGraph, currentBounds, m_entries, grueConf, currentUnit)) != 
                 currentGraph[currentIndex].forwardEnd()) {
@@ -325,10 +337,6 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
             currentIndex = nextConnection.first->getIndex();
             //std::cout << "Inner Count: " << graph.count() << std::endl;
         }
-        if(currentGraph[currentIndex].forwardEmpty() && 
-                currentGraph[currentIndex].reverseEmpty()) {
-            currentGraph.destroyNode(currentGraph[currentIndex]);
-        }
         //recover from corners here
         if(!m_entries.empty()) {
             Scalar bestDistance = std::numeric_limits<Scalar>::max();
@@ -345,11 +353,19 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
             }
             currentIndex = bestIndex;
         }
+//        smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
+//                currentGraph[currentIndex].data().getLabel(), 
+//                output, activePath, entryPoint);
         smartAppendPath(output, activePath);
     }
     while((bestChoice = std::min_element(m_children.begin(), 
             m_children.end(), LoopHierarchyComparator(grueConf))) 
             != m_children.end()) {
+//        graph_type::node::forward_link_iterator best = 
+//                bestLink(currentGraph[from], currentGraph, 
+//                currentBounds, bestChoice->m_entries, grueConf);
+//        if(best != currentGraph[from].forwardEnd())
+//            from = (*best).first->getIndex();
         bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
         m_children.erase(bestChoice);
     }
