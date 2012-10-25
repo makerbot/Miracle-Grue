@@ -140,6 +140,7 @@ private:
                     boundary_container& bounds, 
                     const GrueConfig& grueConf);
             void swap(LoopHierarchy& other);
+            void repr(std::ostream& out, size_t level = 0);
             PathLabel m_label;
             boundary_container m_bounds;
             entryIndexVector m_entries;
@@ -248,14 +249,17 @@ private:
     class LoopHierarchyComparator : public abstract_predicate<bucket::LoopHierarchy> {
     public:
         typedef abstract_predicate<bucket::LoopHierarchy>::value_type value_type;
-        LoopHierarchyComparator(const GrueConfig& grueConf) 
-                : m_compare(LabelTypeComparator(grueConf), 
+        LoopHierarchyComparator(Point2Type& entryPoint, 
+                const graph_type& graph, 
+                const GrueConfig& grueConf) 
+                : m_entryPoint(entryPoint), 
+                m_graph(graph), 
+                m_compare(LabelTypeComparator(grueConf), 
                 LabelPriorityComparator(grueConf)) {}
-        int compare(const value_type& lhs, 
-                const value_type& rhs) const {
-            return m_compare(lhs.m_label, rhs.m_label);
-        }
+        int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
+        Point2Type& m_entryPoint;
+        const graph_type& m_graph;
         LabelComparator m_compare;
     };
     

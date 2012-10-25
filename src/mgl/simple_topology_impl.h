@@ -109,6 +109,11 @@ typename SG_NODE& SG_TYPE::operator [](node_index i) {
     return retNode;
 }
 SG_TEMPLATE
+const typename SG_NODE& SG_TYPE::operator [](node_index i) const {
+    const node& retNode = nodes.at(i).m_node;
+    return retNode;
+}
+SG_TEMPLATE
 void SG_TYPE::swap(simple_graph& other) {
     nodes.swap(other.nodes);
     costs.swap(other.costs);

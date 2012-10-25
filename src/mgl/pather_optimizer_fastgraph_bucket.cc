@@ -107,6 +107,7 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
     graph_type& currentGraph = m_graph;
     boundary_container& currentBounds = m_noCrossing;
     Point2Type currentUnit;
+    m_hierarchy.repr(std::cerr);
     m_hierarchy.optimize(output, entryPoint, currentGraph, 
             currentBounds, grueConf);
     while(!currentGraph.empty()) {
@@ -295,12 +296,16 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         boundary_container& bounds, 
         const GrueConfig& grueConf) {
     hierarchy_list::iterator bestChoice;
+    LoopHierarchyComparator comparator(entryPoint, graph, grueConf);
     while((bestChoice = std::min_element(m_children.begin(), 
-            m_children.end(), LoopHierarchyComparator(grueConf))) 
+            m_children.end(),comparator)) 
             != m_children.end()) {
-        if(!m_entries.empty() && 
-                LoopHierarchyComparator(grueConf).compare(*this, *bestChoice))
+        if(comparator(*this, *bestChoice)) {
+            std::cout << "Breaking out of loop!" << std::endl;
             break;
+        } else {
+            std::cout << "Recursing down!" << std::endl;
+        }
 //        graph_type::node::forward_link_iterator best = 
 //                bestLink(graph[from], graph, 
 //                bounds, bestChoice->m_entries, grueConf);
@@ -309,6 +314,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
         m_children.erase(bestChoice);
     }
+    std::cout << "Optimizing priority " << m_label.myValue << std::endl;
     node_index& currentIndex = from;
     node::forward_link_iterator next;
     graph_type& currentGraph = graph;
@@ -358,14 +364,16 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
 //                output, activePath, entryPoint);
         smartAppendPath(output, activePath);
     }
+    std::cout << "Optimizing priority " << m_label.myValue << " done" << std::endl;
     while((bestChoice = std::min_element(m_children.begin(), 
-            m_children.end(), LoopHierarchyComparator(grueConf))) 
+            m_children.end(),comparator)) 
             != m_children.end()) {
 //        graph_type::node::forward_link_iterator best = 
 //                bestLink(currentGraph[from], currentGraph, 
 //                currentBounds, bestChoice->m_entries, grueConf);
 //        if(best != currentGraph[from].forwardEnd())
 //            from = (*best).first->getIndex();
+        std::cout << "Tail recursion into priority " << bestChoice->m_label.myValue << std::endl;
         bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
         m_children.erase(bestChoice);
     }
@@ -378,6 +386,22 @@ void HIERARCHY::swap(LoopHierarchy& other) {
     std::swap(m_limits, other.m_limits);
     std::swap(m_testPoint, other.m_testPoint);
     std::swap(m_infinitePoint, other.m_infinitePoint);
+}
+void HIERARCHY::repr(std::ostream& out, size_t level) {
+    if(!level)
+        std::cout << std::endl;
+    std::string indent(level + 1, '|');
+    out << indent << "L-" << m_entries.size() << "-(" << m_children.size() 
+            << ")-" << m_label.myValue << std::endl;
+    if(m_children.empty()) {
+        std::cout << indent << std::endl;
+    } else {
+        for(hierarchy_list::iterator iter = m_children.begin(); 
+                iter != m_children.end(); 
+                ++iter) {
+            iter->repr(out, level + 1);
+        }
+    }
 }
 void HIERARCHY::insertBoundary(const Loop& loop) {
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 

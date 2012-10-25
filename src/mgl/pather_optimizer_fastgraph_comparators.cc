@@ -51,6 +51,34 @@ int pather_optimizer_fastgraph::NodeConnectionComparator::compare(
         BETTER : (runit < lunit ? 
             WORSE : SAME));
 }
+int pather_optimizer_fastgraph::LoopHierarchyComparator::compare(
+        const value_type& lhs, const value_type& rhs) const {
+    int ret = m_compare(lhs.m_label, rhs.m_label);
+    if(ret)
+        return ret;
+    Scalar lDist = std::numeric_limits<Scalar>::max();
+    Scalar rDist = std::numeric_limits<Scalar>::max();
+    for(bucket::LoopHierarchy::entryIndexVector::const_iterator iter = 
+            lhs.m_entries.begin(); 
+            iter != lhs.m_entries.end(); 
+            ++iter) {
+        Scalar distance = (m_entryPoint -
+                m_graph[*iter].data().getPosition()).squaredMagnitude();
+        if(distance < lDist)
+            lDist = distance;
+    }
+    for(bucket::LoopHierarchy::entryIndexVector::const_iterator iter = 
+            rhs.m_entries.begin(); 
+            iter != rhs.m_entries.end(); 
+            ++iter) {
+        Scalar distance = (m_entryPoint -
+                m_graph[*iter].data().getPosition()).squaredMagnitude();
+        if(distance < lDist)
+            rDist = distance;
+    }
+    return lDist < rDist ? BETTER : 
+        (rDist < lDist ? WORSE : SAME);
+}
 bool pather_optimizer_fastgraph::connectionComparator::operator ()(
         const node::connection& lhs, const node::connection& rhs) const {
     if(lhs.second->myValue != rhs.second->myValue)

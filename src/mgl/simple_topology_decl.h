@@ -128,6 +128,8 @@ public:
     void disconnect(const node& a, const node& b);
     
     node& operator [](node_index i);
+    const node& operator [](node_index i) const;
+    
     void swap(simple_graph& other);
     
     //create node with this data contents
