@@ -63,6 +63,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     graph_type& currentGraph = currentBucket.m_graph;
     bucket::LoopHierarchy& currentLoops = 
             currentBucket.m_hierarchy.insert(loop, label);
+    return;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 
             ++iter) {
@@ -76,7 +77,6 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         if(next != loop.clockwiseEnd()) {
             NodeData curNodeData(*next, label, true);
             node& curNode = currentGraph.createNode(curNodeData);
-            currentLoops.insert(curNode.getIndex());
             node& lastNode = currentGraph[last];
             Segment2Type connection( 
                     curNode.data().getPosition(), 

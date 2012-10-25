@@ -131,7 +131,6 @@ private:
             typedef std::vector<graph_type::node_index> entryIndexVector;
             LoopHierarchy& insert(const LabeledLoop& loop);
             LoopHierarchy& insert(const Loop& loop, const PathLabel& label);
-            void insert(graph_type::node_index index);
             bool contains(Point2Type point) const;
             bool contains(const LoopHierarchy& other) const;
             void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
@@ -145,11 +144,11 @@ private:
             void repr(std::ostream& out, size_t level = 0);
             PathLabel m_label;
             boundary_container m_bounds;
-            entryIndexVector m_entries;
             hierarchy_list m_children;
             AABBox m_limits;
             Point2Type m_testPoint;
             Point2Type m_infinitePoint;
+            Loop m_loop;
             
         private:
             hierarchy_list::iterator bestChild(

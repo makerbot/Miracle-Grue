@@ -30,9 +30,8 @@ int pather_optimizer_fastgraph::LabelTypeComparator::compare(
 int pather_optimizer_fastgraph::LabelPriorityComparator::compare(
         const value_type& lhs, 
         const value_type& rhs) const {
-    int diff = lhs.myValue - rhs.myValue;
-    return (diff < 0 ? WORSE : 
-        (diff > 0 ? BETTER : 
+    return (lhs.myValue < rhs.myValue ? WORSE : 
+        (rhs.myValue < lhs.myValue ? BETTER : 
             SAME));
 }
 int pather_optimizer_fastgraph::NodeComparator::compare(const value_type& lhs, 
@@ -53,26 +52,32 @@ int pather_optimizer_fastgraph::NodeConnectionComparator::compare(
 }
 int pather_optimizer_fastgraph::LoopHierarchyComparator::compare(
         const value_type& lhs, const value_type& rhs) const {
-    int ret = m_compare(lhs.m_label, rhs.m_label);
-    if(ret)
+    int ret = m_compare.compare(lhs.m_label, rhs.m_label);
+    if(ret) {
+//        std::cout << "Compared priorities " << lhs.m_label.myValue 
+//                << ", " << rhs.m_label.myValue << std::endl;
         return ret;
+    } else {
+//        std::cout << "Compared distances for " << lhs.m_label.myValue 
+//                << std::endl;
+    }
     Scalar lDist = std::numeric_limits<Scalar>::max();
     Scalar rDist = std::numeric_limits<Scalar>::max();
-    for(bucket::LoopHierarchy::entryIndexVector::const_iterator iter = 
-            lhs.m_entries.begin(); 
-            iter != lhs.m_entries.end(); 
+    for(Loop::const_finite_cw_iterator iter = 
+            lhs.m_loop.clockwiseFinite(); 
+            iter != lhs.m_loop.clockwiseEnd(); 
             ++iter) {
         Scalar distance = (m_entryPoint -
-                m_graph[*iter].data().getPosition()).squaredMagnitude();
+                *iter).squaredMagnitude();
         if(distance < lDist)
             lDist = distance;
     }
-    for(bucket::LoopHierarchy::entryIndexVector::const_iterator iter = 
-            rhs.m_entries.begin(); 
-            iter != rhs.m_entries.end(); 
+    for(Loop::const_finite_cw_iterator iter = 
+            rhs.m_loop.clockwiseFinite(); 
+            iter != rhs.m_loop.clockwiseEnd(); 
             ++iter) {
         Scalar distance = (m_entryPoint -
-                m_graph[*iter].data().getPosition()).squaredMagnitude();
+                *iter).squaredMagnitude();
         if(distance < lDist)
             rDist = distance;
     }

@@ -227,6 +227,7 @@ HIERARCHY::LoopHierarchy(const Loop& loop, const PathLabel& label)
         : m_label(label) {
     m_testPoint = *loop.clockwise();
     m_limits = AABBox(m_testPoint);
+    m_loop = loop;
     insertBoundary(loop);
 }
 HIERARCHY& HIERARCHY::insert(const LabeledLoop& loop) {
@@ -269,9 +270,6 @@ HIERARCHY& HIERARCHY::insert(LoopHierarchy& constructed) {
     m_children.back().swap(constructed);
     return m_children.back();
 }
-void HIERARCHY::insert(graph_type::node_index index) {
-    m_entries.push_back(index);
-}
 bool HIERARCHY::contains(Point2Type point) const {
     Segment2Type testLine(m_infinitePoint, point);
     bool result = (countIntersections(testLine, m_bounds) & 1) != 0;  //even-odd test
@@ -285,7 +283,7 @@ bool HIERARCHY::contains(const LoopHierarchy& other) const {
 void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
         graph_type& graph, boundary_container& bounds, 
         const GrueConfig& grueConf) {
-    if(m_entries.empty()) {
+    if(m_loop.empty()) {
         LoopHierarchyComparator compare(entryPoint, graph, grueConf);
         hierarchy_list::iterator bestChoice;
         while((bestChoice = bestChild(compare)) != m_children.end()) {
@@ -294,19 +292,8 @@ void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
         }
         return;
     }
-    Scalar bestDistance = std::numeric_limits<Scalar>::max();
-    graph_type::node_index bestIndex = m_entries.front();
-    for(entryIndexVector::iterator iter = m_entries.begin(); 
-            iter != m_entries.end(); 
-            ++iter) {
-        Scalar distance = (graph[*iter].data().getPosition() - 
-                entryPoint).squaredMagnitude();
-        if(distance < bestDistance) {
-            bestDistance = distance;
-            bestIndex = *iter;
-        }
-    }
-    optimize(output, entryPoint, graph, bestIndex, bounds, grueConf);
+    graph_type::node_index dummy = 0;
+    optimize(output, entryPoint, graph, dummy, bounds, grueConf);
 }
 void HIERARCHY::optimize(LabeledOpenPaths& output, 
         Point2Type& entryPoint, 
@@ -315,66 +302,53 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         const GrueConfig& grueConf) {
     LoopHierarchyComparator comparator(entryPoint, graph, grueConf);
     hierarchy_list::iterator bestChoice = bestChild(comparator);
-    if(bestChoice != m_children.end() && comparator(*bestChoice, *this)) {
-        do {
+    while((bestChoice = bestChild(comparator)) 
+           != m_children.end()) {
 //            std::cout << "Head recursion into priority " << 
 //                    bestChoice->m_label.myValue << std::endl;
-            bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
-            m_children.erase(bestChoice);
-        } while((bestChoice = bestChild(comparator)) 
-                != m_children.end());
+       if(!comparator(*bestChoice, *this)) {
+//           std::cout << bestChoice->m_label.myValue << " Not better than " << 
+//                   m_label.myValue << std::endl;
+           break;
+       } else {
+//           std::cout << bestChoice->m_label.myValue << " Good to recurse " << 
+//                   m_label.myValue << std::endl;
+       }
+       bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
+       m_children.erase(bestChoice);
     }
     std::cout << "Optimizing priority " << m_label.myValue << 
-            "count " << m_entries.size() << std::endl;
-    node_index& currentIndex = from;
-    node::forward_link_iterator next;
-    graph_type& currentGraph = graph;
-    boundary_container& currentBounds = bounds;
-    Point2Type currentUnit;
-    LabeledOpenPath activePath;
-    while(!m_entries.empty()) {
-        smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
-                currentGraph[currentIndex].data().getLabel(), 
-                output, activePath, entryPoint);
-        while((next = bestLink(currentGraph[currentIndex], 
-                currentGraph, currentBounds, m_entries, grueConf, currentUnit)) != 
-                currentGraph[currentIndex].forwardEnd()) {
-            m_entries.clear();
-            node::connection nextConnection = *next;
-            currentUnit = nextConnection.second->normal();
-            PathLabel currentCost(*nextConnection.second);
-            smartAppendPoint(nextConnection.first->data().getPosition(), 
-                    currentCost, output, activePath, entryPoint);
-            currentGraph[currentIndex].disconnect(*nextConnection.first);
-            nextConnection.first->disconnect(currentGraph[currentIndex]);
-            if(currentGraph[currentIndex].forwardEmpty() && 
-                    currentGraph[currentIndex].reverseEmpty()) {
-                currentGraph.destroyNode(currentGraph[currentIndex]);
-            }
-            currentIndex = nextConnection.first->getIndex();
-            //std::cout << "Inner Count: " << graph.count() << std::endl;
+            " count " << m_loop.size() << std::endl;
+
+    Scalar minDistance = std::numeric_limits<Scalar>::max();
+    Loop::cw_iterator minStart = m_loop.clockwise();
+    for(Loop::finite_cw_iterator iter = m_loop.clockwiseFinite(); 
+            iter != m_loop.clockwiseEnd(); 
+            ++iter) {
+        Scalar distance = (entryPoint - *iter).squaredMagnitude();
+        if(distance < minDistance) {
+            minDistance = distance;
+            minStart = Loop::cw_iterator(iter);
         }
-        //recover from corners here
-        if(!m_entries.empty()) {
-            Scalar bestDistance = std::numeric_limits<Scalar>::max();
-            graph_type::node_index bestIndex = m_entries.front();
-            for(entryIndexVector::iterator iter = m_entries.begin(); 
-                    iter != m_entries.end(); 
-                    ++iter) {
-                Scalar distance = (currentGraph[*iter].data().getPosition() - 
-                        entryPoint).squaredMagnitude();
-                if(distance < bestDistance) {
-                    bestDistance = distance;
-                    bestIndex = *iter;
-                }
-            }
-            currentIndex = bestIndex;
-        }
-//        smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
-//                currentGraph[currentIndex].data().getLabel(), 
-//                output, activePath, entryPoint);
-        smartAppendPath(output, activePath);
     }
+    Segment2Type connectLine(entryPoint, *minStart);
+    if(!crossesBounds(connectLine, bounds)) {
+        LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
+                PathLabel::OWN_MODEL, 1));
+        connection.myPath.appendPoint(connectLine.a);
+        connection.myPath.appendPoint(connectLine.b);
+        output.push_back(connection);
+    }
+    entryPoint = connectLine.b;
+    LabeledOpenPath thisLoop(m_label);
+    LoopPath lp(m_loop, minStart, Loop::ccw_iterator(minStart));
+    for(LoopPath::iterator iter = lp.fromStart(); 
+            iter != lp.end(); 
+            ++iter) {
+        thisLoop.myPath.appendPoint(*iter);
+    }
+    output.push_back(thisLoop);
+    
     if(bestChoice != m_children.end()) {
         do {
 //            std::cout << "Tail recursion into priority " << 
@@ -385,22 +359,22 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
                 != m_children.end());
     }
     std::cout << "Optimizing priority " << m_label.myValue 
-            << " done" << std::endl;
+            << " done " << m_loop.size() << std::endl;
 }
 void HIERARCHY::swap(LoopHierarchy& other) {
     std::swap(m_label, other.m_label);
     m_bounds.swap(other.m_bounds);
-    m_entries.swap(other.m_entries);
     m_children.swap(other.m_children);
     std::swap(m_limits, other.m_limits);
     std::swap(m_testPoint, other.m_testPoint);
     std::swap(m_infinitePoint, other.m_infinitePoint);
+    std::swap(m_loop, other.m_loop);
 }
 void HIERARCHY::repr(std::ostream& out, size_t level) {
     if(!level)
         std::cout << std::endl;
     std::string indent(level + 1, '|');
-    out << indent << "L-" << m_entries.size() << "-(" << m_children.size() 
+    out << indent << "L-" << m_loop.size() << "-(" << m_children.size() 
             << ")-" << m_label.myValue << std::endl;
     if(m_children.empty()) {
         std::cout << indent << std::endl;
