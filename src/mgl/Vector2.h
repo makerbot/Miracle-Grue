@@ -78,6 +78,8 @@ public:
     Vector2 rotate2d(Scalar angle) const;
 };
 
+Vector2 operator -(const Vector2& rhs);
+
 } /* close namespace mgl */
 
 //// A line segment that also contains cut direction

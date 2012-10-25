@@ -157,6 +157,10 @@ Vector2 Vector2::rotate2d(Scalar angle) const {
 	return rotated;
 }
 
+Vector2 operator -(const Vector2& rhs) {
+    return Vector2(-rhs.x, -rhs.y);
+}
+
 
 
 //// A line segment that also contains cut direction

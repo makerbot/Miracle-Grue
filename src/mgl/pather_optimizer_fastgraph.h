@@ -113,6 +113,8 @@ private:
     typedef graph_type::node_index node_index;
     typedef std::pair<node_index, Scalar> probe_link_type;
     
+    class LoopHierarchyComparator;
+    
     class bucket {
     public:
         
@@ -150,6 +152,9 @@ private:
             Point2Type m_infinitePoint;
             
         private:
+            hierarchy_list::iterator bestChild(
+                    const LoopHierarchyComparator& compare);
+            LoopHierarchy& insert(LoopHierarchy& constructed);
             void insertBoundary(const Loop& loop);
             void insertBoundary(const Segment2Type& line);
             void updateInfinity();
@@ -254,13 +259,12 @@ private:
                 const GrueConfig& grueConf) 
                 : m_entryPoint(entryPoint), 
                 m_graph(graph), 
-                m_compare(LabelTypeComparator(grueConf), 
-                LabelPriorityComparator(grueConf)) {}
+                m_compare(grueConf) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
         Point2Type& m_entryPoint;
         const graph_type& m_graph;
-        LabelComparator m_compare;
+        LabelPriorityComparator m_compare;
     };
     
     
