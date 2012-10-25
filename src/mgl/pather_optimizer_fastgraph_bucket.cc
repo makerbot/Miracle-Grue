@@ -107,7 +107,7 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
     graph_type& currentGraph = m_graph;
     boundary_container& currentBounds = m_noCrossing;
     Point2Type currentUnit;
-    m_hierarchy.repr(std::cerr);
+    //m_hierarchy.repr(std::cerr);
     m_hierarchy.optimize(output, entryPoint, currentGraph, 
             currentBounds, grueConf);
     while(!currentGraph.empty()) {
@@ -130,9 +130,9 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
                     currentCost, output, activePath, entryPoint);
             currentGraph[currentIndex].disconnect(*nextConnection.first);
             nextConnection.first->disconnect(currentGraph[currentIndex]);
-            std::cout << "Label: " << 
-                    nextConnection.first->data().getLabel().myValue << 
-                    std::endl;
+//            std::cout << "Label: " << 
+//                    nextConnection.first->data().getLabel().myValue << 
+//                    std::endl;
             if(currentGraph[currentIndex].forwardEmpty() && 
                     currentGraph[currentIndex].reverseEmpty()) {
                 currentGraph.destroyNode(currentGraph[currentIndex]);
@@ -317,8 +317,8 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
        bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
        m_children.erase(bestChoice);
     }
-    std::cout << "Optimizing priority " << m_label.myValue << 
-            " count " << m_loop.size() << std::endl;
+//    std::cout << "Optimizing priority " << m_label.myValue << 
+//            " count " << m_loop.size() << std::endl;
 
     Scalar minDistance = std::numeric_limits<Scalar>::max();
     Loop::cw_iterator minStart = m_loop.clockwise();
@@ -358,8 +358,8 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         } while((bestChoice = bestChild(comparator)) 
                 != m_children.end());
     }
-    std::cout << "Optimizing priority " << m_label.myValue 
-            << " done " << m_loop.size() << std::endl;
+//    std::cout << "Optimizing priority " << m_label.myValue 
+//            << " done " << m_loop.size() << std::endl;
 }
 void HIERARCHY::swap(LoopHierarchy& other) {
     std::swap(m_label, other.m_label);
