@@ -710,7 +710,7 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     //cut each segment so it fits in the outline
     for (SegmentList::iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
-        cutInteriorSegment(index, minSpurWidth, *piece);
+        cutInteriorSegment(index, minSpurWidth / 2, *piece);
     }
 
 	//TODO: join segments into a chain
