@@ -541,6 +541,11 @@ SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
     if (firstUnit == secondUnit || firstUnit == -secondUnit)
         return completeParallel(toplen, bottomlen, sides);
 
+    if (firstUnit.dot(secondUnit) < 0) {
+        secondLine = ELine::Through(secondb, seconda);
+        secondUnit = secondLine.direction();
+    }
+
 	EVector intersection;
 	Scalar angle;
 	lineIntersection(firstLine, secondLine, intersection, angle);
@@ -549,15 +554,15 @@ SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
     if (testpoint == intersection)
         testpoint = firstb;
 
+    Vector2 vtestpoint = toVector2(testpoint);
+    Vector2 vfirstUnit = toVector2(firstUnit);
+    Vector2 vsecondUnit = toVector2(secondUnit);
+
     ELine testline = ELine::Through(testpoint, intersection);
-    if (testline.direction() == firstUnit) {
+    if (testline.direction().dot(firstUnit) > 0) {
         firstUnit = -firstUnit;
         secondUnit = -secondUnit;
     }
-
-    Scalar dot = firstUnit.dot(secondUnit);
-    if (dot < 0) 
-        secondUnit = -secondUnit;
 
 	SegmentPair parallels;
 	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
@@ -611,33 +616,57 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 	}
 }
 
-void segToSVG(const LineSegment2 seg, const string &color,
-              const Scalar xoff, const Scalar yoff);
+/*void segToSVG(const LineSegment2 seg, const string &color,
+  const Scalar xoff, const Scalar yoff);*/
 
 LineSegment2 bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
                  const SegmentPair &walls) {
 		SegmentPair spans =
 			completeTrapezoid(minSpurWidth, maxSpurWidth, walls);
 		
-        segToSVG(spans.first, "green", 20, 20);
-        segToSVG(spans.second, "green", 20, 20);
+        /*segToSVG(spans.first, "green", 20, 20);
+          segToSVG(spans.second, "green", 20, 20);*/
         
 
 		return LineSegment2(midPoint(spans.first), midPoint(spans.second));
 }
 
+Vector2 segmentDirection(const LineSegment2 &seg) {
+    return seg.b - seg.a;
+}
+
 void cutInteriorSegment(SegmentIndex &index, const Scalar margin,
                         LineSegment2 &orig) {
     SegmentList intersecting;
-    findIntersecting(index, segment, intersecting);
+    findIntersecting(index, orig, intersecting);
 
     for (SegmentList::const_iterator outline = intersecting.begin();
          outline != intersecting.end(); ++outline) {
         Vector2 intersectPoint;
-        segmentIntersection(orig, *outline, intersectionPoint);
+        if (segmentIntersection(orig, *outline, intersectPoint)) {
+            Vector2 normal = segmentDirection(getSegmentNormal(*outline, 
+                                                               outline->a, 1));
 
-        EVector leftUnit = segment
+            Vector2 direction = segmentDirection(orig);
+            direction.normalise();
+            
+            LineSegment2 left = LineSegment2(intersectPoint
+                                                - direction * margin,
+                                             orig.a);
+            LineSegment2 right = LineSegment2(intersectPoint
+                                                - direction * margin,
+                                              orig.b );
+
+
+            if (segmentDirection(left).dotProduct(normal) > 0) {
+                orig = left;
+            }
+            else if (segmentDirection(right).dotProduct(normal) > 0) {
+                orig = right;
+            }
+        }
     }
+                
 }
 
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
@@ -681,7 +710,7 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     //cut each segment so it fits in the outline
     for (SegmentList::iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
-        segmentInsideLoops(index, minSpurWidth, piece);
+        cutInteriorSegment(index, minSpurWidth, *piece);
     }
 
 	//TODO: join segments into a chain

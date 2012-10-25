@@ -135,7 +135,8 @@ void InsetsTestCase::setUp() {
                                        threePairShell.clockwiseEnd());
     at = threePairShell.insertPointAfter(Vector2(1, 10), at);
     at = threePairShell.insertPointAfter(Vector2(1, 20), at);
-    at = threePairShell.insertPointAfter(Vector2(3, 30), at);
+    at = threePairShell.insertPointAfter(Vector2(2.5, 25), at);
+    at = threePairShell.insertPointAfter(Vector2(3.1, 25), at);
     at = threePairShell.insertPointAfter(Vector2(2, 20), at);
     at = threePairShell.insertPointAfter(Vector2(2, 10), at);
 }
