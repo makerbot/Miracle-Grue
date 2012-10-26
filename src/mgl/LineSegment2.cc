@@ -73,6 +73,14 @@ bool LineSegment2::intersects(const LineSegment2& rhs) const {
 			SIGN((a - rhs.a).crossProduct(rhsvec));
 }
 
+Scalar LineSegment2::testLeft(const Vector2& point) const {
+    return (b.x - a.x) * (point.y - a.y) - (point.x - a.x) * (b.y - a.y);
+}
+
+Scalar LineSegment2::testRight(const Vector2& point) const {
+    return (a.x - b.x) * (point.y - b.y) - (point.x - b.x) * (a.y - b.y);
+}
+
 std::ostream& operator <<(std::ostream &os,
 		const LineSegment2& /*s*/) {
 	//os << "[ " << s.a << ", " << s.b << "]";

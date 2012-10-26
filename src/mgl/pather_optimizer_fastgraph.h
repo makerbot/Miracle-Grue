@@ -151,6 +151,7 @@ private:
             Loop m_loop;
             
         private:
+            bool isValid() const;
             hierarchy_list::iterator bestChild(
                     const LoopHierarchyComparator& compare);
             LoopHierarchy& insert(LoopHierarchy& constructed);

@@ -93,6 +93,9 @@ void Vector2::normalise() {
 	if (l > 0) {
 		(*this) *= Scalar(1) / l;
 	} else {
+        x = 0;
+        y = 0;
+        return;
 		GeometryException mixup("Attempting to normalize Vector2 of 0 length");
 		throw mixup;
 	}
@@ -151,10 +154,16 @@ Vector2 Vector2::rotate2d(Scalar angle) const {
 	// rotate point
 	Scalar s = SCALAR_SIN(angle); // radians
 	Scalar c = SCALAR_COS(angle);
-	Vector2 rotated;
-	rotated.x = x * c - y * s;
-	rotated.y = x * s + y * c;
-	return rotated;
+	return rotate2d(c, s);
+}
+
+Vector2 Vector2::rotate2d(const Vector2& cs) const {
+    return rotate2d(cs.x, cs.y);
+}
+
+Vector2 Vector2::rotate2d(Scalar c, Scalar s) const {
+	return Vector2(x * c - y * s, 
+            x * s + y * c);
 }
 
 Vector2 operator -(const Vector2& rhs) {

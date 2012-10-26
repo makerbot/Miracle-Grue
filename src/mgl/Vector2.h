@@ -76,6 +76,8 @@ public:
     // around 0,0
     //@ returns a new vector rotated around point 0,0
     Vector2 rotate2d(Scalar angle) const;
+    Vector2 rotate2d(const Vector2& cs) const;
+    Vector2 rotate2d(Scalar c, Scalar s) const;
 };
 
 Vector2 operator -(const Vector2& rhs);

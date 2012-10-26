@@ -107,9 +107,10 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
     graph_type& currentGraph = m_graph;
     boundary_container& currentBounds = m_noCrossing;
     Point2Type currentUnit;
-    //m_hierarchy.repr(std::cerr);
+    m_hierarchy.repr(std::cerr);
     m_hierarchy.optimize(output, entryPoint, currentGraph, 
             currentBounds, grueConf);
+    std::cout << "That was it for this bucket!" << std::endl;
     while(!currentGraph.empty()) {
         currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 
@@ -225,7 +226,8 @@ pather_optimizer_fastgraph::bucket_list::iterator BUCKET::pickBestChild(
     return pickBestChild(begin, end, entryPoint, dummy);
 }
 
-HIERARCHY::LoopHierarchy() {}
+HIERARCHY::LoopHierarchy() : m_testPoint(std::numeric_limits<Scalar>::min(), 
+        std::numeric_limits<Scalar>::min()) {}
 HIERARCHY::LoopHierarchy(const LabeledLoop& loop) 
         : m_label(loop.myLabel) {
     m_testPoint = *loop.myPath.clockwise();
@@ -247,11 +249,12 @@ HIERARCHY& HIERARCHY::insert(const Loop& loop, const PathLabel& label) {
     return insert(temporary);
 }
 HIERARCHY& HIERARCHY::insert(LoopHierarchy& constructed) {
-    if(m_label.isInvalid()) {
-        constructed.swap(*this);
-        return *this;
-    }
-    if(constructed.contains(*this)) {
+//    if(m_label.isInvalid()) {
+//        constructed.swap(*this);
+//        return *this;
+//    }
+    if(isValid() && constructed.contains(*this)) {
+//        std::cout << "Parent-Child inversion!" << std::endl;
         constructed.swap(*this);    //this is actually perfectly safe!
         m_children.push_back(LoopHierarchy());
         m_children.back().swap(constructed);
@@ -270,11 +273,18 @@ HIERARCHY& HIERARCHY::insert(LoopHierarchy& constructed) {
         if(constructed.contains(*childIter))
             thingsToMove.push_back(childIter);
     }
-    while(!thingsToMove.empty()) {
-        constructed.insert(*thingsToMove.front());
-        m_children.erase(thingsToMove.front());
-        thingsToMove.pop_front();
+    if(!thingsToMove.empty()) {
+//        std::cout << "Donating " << thingsToMove.size() << " children from " 
+//                << m_label.myValue << " to "
+//                << constructed.m_label.myValue << std::endl;
+        while(!thingsToMove.empty()) {
+            constructed.insert(*thingsToMove.front());
+            m_children.erase(thingsToMove.front());
+            thingsToMove.pop_front();
+        }
     }
+//    std::cout << "Inserting " << constructed.m_label.myValue 
+//            << " into " << m_label.myValue << std::endl;
     m_children.push_back(LoopHierarchy());
     m_children.back().swap(constructed);
     return m_children.back();
@@ -282,12 +292,14 @@ HIERARCHY& HIERARCHY::insert(LoopHierarchy& constructed) {
 bool HIERARCHY::contains(Point2Type point) const {
     Segment2Type testLine(m_infinitePoint, point);
     bool result = (countIntersections(testLine, m_bounds) & 1) != 0;  //even-odd test
+    //bool result2 = m_loop.windingContains(point);
+    //std::cout << "NewResult: " << result2 << "\tOldResult: " << result << std::endl;
     return result;
 }
 bool HIERARCHY::contains(const LoopHierarchy& other) const {
     bool myResult = contains(other.m_testPoint);
-    bool otherResult = !other.contains(m_testPoint);
-    return myResult && otherResult;
+    bool otherResult = other.contains(m_testPoint);
+    return myResult && !otherResult;
 }
 void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
         graph_type& graph, boundary_container& bounds, 
@@ -328,35 +340,36 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
     }
 //    std::cout << "Optimizing priority " << m_label.myValue << 
 //            " count " << m_loop.size() << std::endl;
-
-    Scalar minDistance = std::numeric_limits<Scalar>::max();
-    Loop::cw_iterator minStart = m_loop.clockwise();
-    for(Loop::finite_cw_iterator iter = m_loop.clockwiseFinite(); 
-            iter != m_loop.clockwiseEnd(); 
-            ++iter) {
-        Scalar distance = (entryPoint - *iter).squaredMagnitude();
-        if(distance < minDistance) {
-            minDistance = distance;
-            minStart = Loop::cw_iterator(iter);
+    if(!m_loop.empty()) {
+        Scalar minDistance = std::numeric_limits<Scalar>::max();
+        Loop::cw_iterator minStart = m_loop.clockwise();
+        for(Loop::finite_cw_iterator iter = m_loop.clockwiseFinite(); 
+                iter != m_loop.clockwiseEnd(); 
+                ++iter) {
+            Scalar distance = (entryPoint - *iter).squaredMagnitude();
+            if(distance < minDistance) {
+                minDistance = distance;
+                minStart = Loop::cw_iterator(iter);
+            }
         }
+        Segment2Type connectLine(entryPoint, *minStart);
+        if(!crossesBounds(connectLine, bounds)) {
+            LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
+                    PathLabel::OWN_MODEL, 1));
+            connection.myPath.appendPoint(connectLine.a);
+            connection.myPath.appendPoint(connectLine.b);
+            output.push_back(connection);
+        }
+        entryPoint = connectLine.b;
+        LabeledOpenPath thisLoop(m_label);
+        LoopPath lp(m_loop, minStart, Loop::ccw_iterator(minStart));
+        for(LoopPath::iterator iter = lp.fromStart(); 
+                iter != lp.end(); 
+                ++iter) {
+            thisLoop.myPath.appendPoint(*iter);
+        }
+        output.push_back(thisLoop);
     }
-    Segment2Type connectLine(entryPoint, *minStart);
-    if(!crossesBounds(connectLine, bounds)) {
-        LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
-                PathLabel::OWN_MODEL, 1));
-        connection.myPath.appendPoint(connectLine.a);
-        connection.myPath.appendPoint(connectLine.b);
-        output.push_back(connection);
-    }
-    entryPoint = connectLine.b;
-    LabeledOpenPath thisLoop(m_label);
-    LoopPath lp(m_loop, minStart, Loop::ccw_iterator(minStart));
-    for(LoopPath::iterator iter = lp.fromStart(); 
-            iter != lp.end(); 
-            ++iter) {
-        thisLoop.myPath.appendPoint(*iter);
-    }
-    output.push_back(thisLoop);
     
     if(bestChoice != m_children.end()) {
         do {
@@ -394,6 +407,9 @@ void HIERARCHY::repr(std::ostream& out, size_t level) {
             iter->repr(out, level + 1);
         }
     }
+}
+bool HIERARCHY::isValid() const {
+    return !m_loop.empty();
 }
 BUCKET::hierarchy_list::iterator HIERARCHY::bestChild(const 
         LoopHierarchyComparator& compare) {
