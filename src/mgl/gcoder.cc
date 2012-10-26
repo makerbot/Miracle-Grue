@@ -461,7 +461,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     strusion);
             const Scalar currentZ = it->layerZ + it->layerHeight;
             const Scalar currentH = it->layerHeight;
-            const Scalar currentW = it->layerW;
+            const Scalar currentW = it->layerW * 2.0;
             gantry.g1(gout, struder, 
                     strusion, grueCfg.get_startingX(), 
                     grueCfg.get_startingY(), currentZ, 
