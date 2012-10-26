@@ -585,6 +585,19 @@ void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
 	}
 }
 
+void findIntersectPoints(SegmentIndex &index, const LineSegment2 &subject,
+                         PointList &intersections) {
+	SegmentList found;
+	index.search(found, LineSegmentFilter(subject));
+
+	for (SegmentList::const_iterator possible = found.begin();
+		 possible != found.end(); ++possible) {
+        Vector2 point;
+        if (segmentIntersection(subject, possible, point))
+            intersections.push_back(point);
+    }
+}
+
 
 void findWallPairs(const Scalar span, const SegmentList segs,
 				   SegmentIndex &index, SegmentPairSet &walls) {
@@ -669,6 +682,60 @@ void cutInteriorSegment(SegmentIndex &index, const Scalar margin,
                 
 }
 
+#include <algorithm>
+
+class DistanceCmp {
+public:
+    DistanceCmp(const Vector2 &anchor) : m_anchor(anchor) {}
+    bool operator()(const Vector2 &a, const Vector2 &b) {
+        return LineSegment2(m_anchor, a).squaredLength() <
+               LineSegment2(m_anchor, b).squaredLength();
+    }
+private:
+    Vector2 m_anchor;
+};
+
+void clipInteriorSegments(SegmentIndex &outline, const Scalar margin,
+                          const SegmentList &origPieces,
+                          SegmentList &clippedPieces) {
+
+    //Build an index of the spur segments
+    SegmentIndex pieceIndex;
+    for (SegmentList::const_iterator piece = origPieces.begin();
+         piece != origPieces.end(); piece++)
+        pieceIndex.insert(*piece);
+
+    // a parallel vector to origPieces tracking all the intersection points
+    // on each segment
+    vector<vector<Vector2> > intersectionPoints;
+
+    for (SegmentList::const_iterator piece = origPieces.begin();
+         piece != origPieces.end(); piece++) {
+        intersectionPoints.push_back(PointList());
+        PointList &cur = intersectionPoints.back();
+        findIntersectPoints(outline, *piece, cur);
+    }
+
+    for (int i = 0; i <= origPieces.size(); ++i) {
+        LineSegment2 &orig = origPieces[i];
+        PointList &points = intersectionPoints[i];
+        
+        Vector2 start;
+
+        if (endPointValid(outline, orig, orig.a)) {
+            start = orig.a;
+            points.push_back(orig.a);
+        }
+        else {
+            start = closest(points, orig.a);
+        }
+
+        if (endPointValid(outline, orig, orig.b))
+            points.push_back(orig.b);
+
+        sort(
+}
+
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 const LayerMeasure &layermeasure,
 							 OpenPathList &spurs) {
@@ -713,7 +780,9 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
         cutInteriorSegment(index, minSpurWidth / 2, *piece);
     }
 
-	//TODO: join segments into a chain
+    SegmentList clippedPieces;
+    clipDanglingSegments(index, minSpurWidth, pieces, clippedPieces);
+
 	for (SegmentList::const_iterator piece = pieces.begin();
 		 piece != pieces.end(); ++piece) {
 		spurs.push_back(OpenPath());
