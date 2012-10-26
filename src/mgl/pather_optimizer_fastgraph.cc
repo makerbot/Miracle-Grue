@@ -63,7 +63,6 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     graph_type& currentGraph = currentBucket.m_graph;
     //bucket::LoopHierarchy& currentLoops = 
             currentBucket.m_hierarchy.insert(loop, label);
-    currentBucket.m_hierarchy.repr(std::cerr);
     return;
     for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
             iter != loop.clockwiseEnd(); 

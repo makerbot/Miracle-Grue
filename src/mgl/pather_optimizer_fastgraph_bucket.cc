@@ -107,10 +107,10 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
     graph_type& currentGraph = m_graph;
     boundary_container& currentBounds = m_noCrossing;
     Point2Type currentUnit;
-    m_hierarchy.repr(std::cerr);
+//    m_hierarchy.repr(std::cerr);
+//    std::cout << "That was it for this bucket!" << std::endl;
     m_hierarchy.optimize(output, entryPoint, currentGraph, 
             currentBounds, grueConf);
-    std::cout << "That was it for this bucket!" << std::endl;
     while(!currentGraph.empty()) {
         currentIndex = std::min_element(entryBegin(currentGraph), 
                 entryEnd(currentGraph), 

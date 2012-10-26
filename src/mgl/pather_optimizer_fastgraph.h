@@ -62,6 +62,10 @@ public:
 	void clearPaths();
     //debugging: Make a nice svg of this graph
     void repr_svg(std::ostream& out);
+    
+#ifdef FASTGRAPH_FRIENDS_LIST
+    FASTGRAPH_FRIENDS_LIST
+#endif
 protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
 private:
