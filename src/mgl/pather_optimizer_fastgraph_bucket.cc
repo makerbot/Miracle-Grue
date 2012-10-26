@@ -116,6 +116,15 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
                 nodeComparator(grueConf, currentGraph, entryPoint))->getIndex();
         LabeledOpenPath activePath;
         if(!currentGraph[currentIndex].forwardEmpty()) {
+            //can a connection be made from the last entry to here?
+            Segment2Type crossingTest(entryPoint, 
+                    currentGraph[currentIndex].data().getPosition());
+            if(!crossesBounds(crossingTest, currentBounds)) {
+                smartAppendPoint(entryPoint, 
+                        PathLabel(PathLabel::TYP_CONNECTION, 
+                        PathLabel::OWN_MODEL, 1), output, activePath, 
+                        entryPoint);
+            }
             smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
                     currentGraph[currentIndex].data().getLabel(), 
                     output, activePath, entryPoint);
@@ -306,7 +315,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
            != m_children.end()) {
 //            std::cout << "Head recursion into priority " << 
 //                    bestChoice->m_label.myValue << std::endl;
-       if(!comparator(*bestChoice, *this)) {
+       if(comparator(*this, *bestChoice)) {
 //           std::cout << bestChoice->m_label.myValue << " Not better than " << 
 //                   m_label.myValue << std::endl;
            break;
