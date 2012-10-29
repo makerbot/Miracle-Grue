@@ -440,7 +440,7 @@ SegmentPair normalizeWalls(const LineSegment2 &first,
 	return segs;
 }
 
-SegmentPair completeParallel(const Scalar toplen, const Scalar bottomlen,
+SegmentPair completeParallel(const Scalar, const Scalar bottomlen,
                             const SegmentPair &sides) {
     LineSegment2 span = getSegmentNormal(sides.first, sides.first.a,
                                            bottomlen);
@@ -554,10 +554,6 @@ SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
     if (testpoint == intersection)
         testpoint = firstb;
 
-    Vector2 vtestpoint = toVector2(testpoint);
-    Vector2 vfirstUnit = toVector2(firstUnit);
-    Vector2 vsecondUnit = toVector2(secondUnit);
-
     ELine testline = ELine::Through(testpoint, intersection);
     if (testline.direction().dot(firstUnit) > 0) {
         firstUnit = -firstUnit;
@@ -593,7 +589,7 @@ void findIntersectPoints(SegmentIndex &index, const LineSegment2 &subject,
 	for (SegmentList::const_iterator possible = found.begin();
 		 possible != found.end(); ++possible) {
         Vector2 point;
-        if (segmentIntersection(subject, possible, point))
+        if (segmentIntersection(subject, *possible, point))
             intersections.push_back(point);
     }
 }
@@ -695,9 +691,45 @@ private:
     Vector2 m_anchor;
 };
 
-void clipInteriorSegments(SegmentIndex &outline, const Scalar margin,
-                          const SegmentList &origPieces,
-                          SegmentList &clippedPieces) {
+bool endPointValid(SegmentIndex &outline, SegmentIndex spurs,
+                   const LineSegment2 &segment,
+                   const Vector2 &endpoint, const Scalar margin) {
+    LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
+    LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
+    LineSegment2 tangent(left.b, right.b);
+
+    SegmentList intersecting;
+
+    findIntersecting(outline, tangent, intersecting);
+
+    if (intersecting.size() > 0)
+        return false;
+
+    intersecting.clear();
+    findIntersecting(spurs, tangent, intersecting);
+
+    return intersecting.size() == 0;
+}
+
+Vector2 closestPoint(const PointList points, const Vector2 orig) {
+    Vector2 closest = points.front();
+
+    for (PointList::const_iterator point = points.begin();
+         point != points.end(); ++point) {
+        
+        if (LineSegment2(orig, *point).squaredLength() <
+            LineSegment2(orig, closest).squaredLength()) {
+            closest = *point;
+        }
+    }
+
+    return closest;
+}
+
+
+void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
+                       const SegmentList &origPieces,
+                       OpenPathList &chained) {
 
     //Build an index of the spur segments
     SegmentIndex pieceIndex;
@@ -707,33 +739,53 @@ void clipInteriorSegments(SegmentIndex &outline, const Scalar margin,
 
     // a parallel vector to origPieces tracking all the intersection points
     // on each segment
-    vector<vector<Vector2> > intersectionPoints;
+    vector<PointList > intersectionPoints;
 
     for (SegmentList::const_iterator piece = origPieces.begin();
          piece != origPieces.end(); piece++) {
         intersectionPoints.push_back(PointList());
         PointList &cur = intersectionPoints.back();
-        findIntersectPoints(outline, *piece, cur);
+        findIntersectPoints(pieceIndex, *piece, cur);
     }
 
-    for (int i = 0; i <= origPieces.size(); ++i) {
-        LineSegment2 &orig = origPieces[i];
-        PointList &points = intersectionPoints[i];
+    SegmentList::const_iterator orig = origPieces.begin();
+    vector<PointList>::iterator points = intersectionPoints.begin();
+    while (orig != origPieces.end()) {
+        chained.push_back(OpenPath());
+        OpenPath &chain = chained.back();
         
         Vector2 start;
-
-        if (endPointValid(outline, orig, orig.a)) {
-            start = orig.a;
-            points.push_back(orig.a);
+        
+        if (points->size() == 0) {
+            chain.appendPoint(orig->a);
+            chain.appendPoint(orig->b);
         }
         else {
-            start = closest(points, orig.a);
+            if (endPointValid(outline, pieceIndex,
+                              *orig, orig->a, margin / 2)) {
+                start = orig->a;
+                points->push_back(orig->a);
+            }
+            else {
+                start = closestPoint(*points, orig->a);
+            }
+
+            if (endPointValid(outline, pieceIndex,
+                              *orig, orig->b, margin / 2))
+                points->push_back(orig->b);
+
+            sort(points->begin(), points->end(), DistanceCmp(start));
+        
+            for (PointList::const_iterator point = points->begin();
+                 point != points->end(); ++point) {
+                chain.appendPoint(*point);
+            }
+
         }
 
-        if (endPointValid(outline, orig, orig.b))
-            points.push_back(orig.b);
-
-        sort(
+        ++orig;
+        ++points;
+    }
 }
 
 void Regioner::fillSpurLoops(const LoopList &spurLoops,
@@ -780,16 +832,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
         cutInteriorSegment(index, minSpurWidth / 2, *piece);
     }
 
-    SegmentList clippedPieces;
-    clipDanglingSegments(index, minSpurWidth, pieces, clippedPieces);
 
-	for (SegmentList::const_iterator piece = pieces.begin();
-		 piece != pieces.end(); ++piece) {
-		spurs.push_back(OpenPath());
-		OpenPath &spur = spurs.back();
-		spur.appendPoint(piece->a);
-		spur.appendPoint(piece->b);
-	}
+    chainSpurSegments(index, minSpurWidth, pieces, spurs);
 }
 
 
