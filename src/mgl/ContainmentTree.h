@@ -13,6 +13,17 @@
 
 namespace mgl {
 
+
+/**
+ @brief A tree that represents objects containing other objects
+ 
+ A tree represents a single region (outline loop), and those 
+ regions that fall inside this region. A tree contains its children 
+ both in the OOP sense and in the spacial sense.
+ Specializations of this class will store at each level other things
+ that are contained by this boundary but NOT contained by the boundaries 
+ of the children
+ */
 class ContainmentTree {
 public:
     /**
@@ -62,6 +73,23 @@ public:
      @return reference to deepest tree that contains @a point
      */
     const ContainmentTree& select(const Point2Type& point) const;
+    /**
+     @brief Insert tree @a other into this tree
+     @param other the tree to be inserted. This variable WILL be 
+     invalidated after insertion. The returned reference will point 
+     to the new tree which holds the contents of @a other
+     @return reference to the tree with the contents of @a other
+     
+     Insert @a other into this tree. @a other will be invalidated by 
+     this process, but a reference to a tree with the contents of 
+     @a other is returned. This function will correctly handle cases 
+     where @a other contains this or the children of this.
+     
+     Cost is proportional to the depth at which @a other is placed in 
+     this tree times the branching factor of each tree traversed 
+     while reaching that depth times the cost of each winding test.
+     */
+    ContainmentTree& insert(ContainmentTree& other);
     /**
      @brief Swap the contents of this tree with other.
      @param other The tree with which to swap contents

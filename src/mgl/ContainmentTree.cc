@@ -60,6 +60,41 @@ const ContainmentTree& ContainmentTree::select(const Point2Type& point) const {
     }
     return *this;
 }
+ContainmentTree& ContainmentTree::insert(ContainmentTree& other) {
+    if(other.contains(*this)) {
+        /*
+         This node will be placed inside other node. Since only other node
+         is ok to invalidate and doing other.insert(*this) will invalidate
+         this, we swap first.
+         */
+        swap(other);
+        insert(other);
+        return *this;
+    } else {
+        typedef std::list<containment_list::iterator> move_list;
+        move_list thingsToMove;
+        /*
+         Some of my children might end up inside other. Now is the
+         time to transfer them.
+         */
+        for(containment_list::iterator childIter = m_children.begin(); 
+                childIter != m_children.end(); 
+                ++childIter) {
+            if(other.contains(*childIter))
+                thingsToMove.push_back(childIter);
+        }
+        for(move_list::iterator moveIter = thingsToMove.begin(); 
+                moveIter != thingsToMove.end(); 
+                ++moveIter) {
+            other.insert(**moveIter);
+            m_children.erase(*moveIter);
+        }
+        // the hierarchy is in order.
+        m_children.push_back(ContainmentTree());
+        m_children.back().swap(other);
+        return m_children.back();
+    }
+}
 void ContainmentTree::swap(ContainmentTree& other) {
     m_loop.swap(other.m_loop);
     m_children.swap(other.m_children);
