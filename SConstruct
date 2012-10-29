@@ -204,6 +204,7 @@ mgl_cc = [
           'src/mgl/ScadDebugFile.cc',
           'src/mgl/abstractable.cc',
           'src/mgl/clipper.cc',
+          'src/mgl/ContainmentTree.cc',
           'src/mgl/configuration.cc',
 #         'src/mgl/connexity.cc',
           'src/mgl/gcoder.cc',

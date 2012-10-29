@@ -471,6 +471,12 @@ public:
 	size_t size() const { return pointNormals.size(); }
 	
 	Scalar curl() const;
+        
+        void swap(Loop& rhs) {
+            points.swap(rhs.points);
+            normals.swap(rhs.normals);
+            pointNormals.swap(rhs.pointNormals);
+        }
 
 	friend class LoopPath;
 private:
@@ -592,6 +598,12 @@ private:
 typedef std::list<OpenPath> OpenPathList;
 typedef std::list<Loop> LoopList;
 typedef std::list<LoopPath> LoopPathList;
+
+}
+
+namespace std {
+
+void swap(mgl::Loop& lhs, mgl::Loop& rhs);
 
 }
 

@@ -291,6 +291,13 @@ bool operator!=(const Loop::PointNormal& lhs, const Loop::PointNormal& rhs) {
 
 }
 
+namespace std {
+
+void swap(mgl::Loop& lhs, mgl::Loop& rhs) {
+    lhs.swap(rhs);
+}
+
+}
 
 
 
