@@ -39,6 +39,9 @@ public:
 	LineSegment2 prelongate(const Scalar& dist) const;
 	
 	bool intersects(const LineSegment2& rhs) const;
+        
+        Scalar testLeft(const Vector2& point) const;
+        Scalar testRight(const Vector2& point) const;
 
 };
 

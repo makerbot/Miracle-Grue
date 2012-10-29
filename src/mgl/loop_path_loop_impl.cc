@@ -234,6 +234,27 @@ bool Loop::empty() const {
 	return pointNormals.empty();
 }
 
+bool Loop::windingContains(const Point2Type& point) const {
+    int accum = 0;
+    for(const_finite_cw_iterator iter = clockwiseFinite(); 
+            iter != clockwiseEnd(); 
+            ++iter) {
+        Segment2Type segment = segmentAfterPoint(iter);
+        if(segment.a.y <= point.y) {
+            if(segment.b.y > point.y) {
+                if(segment.testLeft(point) > 0)
+                    ++accum;
+            }
+        } else {
+            if(segment.b.y <= point.y) {
+                if(segment.testRight(point) > 0)
+                    --accum;
+            }
+        }
+    }
+    return accum != 0;
+}
+
 Scalar Loop::curl() const {
 	Scalar accum = 0;
 	for(const_finite_ccw_iterator curIter = counterClockwiseFinite(); 
