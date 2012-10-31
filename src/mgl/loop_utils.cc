@@ -21,6 +21,7 @@ void IntPointToPointType(const ClipperLib::IntPoint ip, PointType &pt) {
 void loopToClPolygon(const Loop &loop,
 					 ClipperLib::Polygon &clpoly) {
 	clpoly.clear();
+    if (loop.size() == 0) return;
 
 	for (Loop::const_finite_ccw_iterator pn = loop.counterClockwiseFinite();
 		 pn != loop.counterClockwiseEnd(); ++pn) {

@@ -72,6 +72,9 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 			firstModelRegion, regionlist.end(),
 			layerMeasure);
 
+    initProgress("spurs", sliceCount);
+    spurs(firstModelRegion, regionlist.end(), layerMeasure);
+
 	initProgress("flat surfaces", sliceCount);
 	flatSurfaces(regionlist.begin(), regionlist.end(), grid);
 
@@ -281,17 +284,19 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
 	std::list<LoopList>::const_iterator outer = inner;
 	++inner;
 
-	while (inner != sliceInsets.begin()) {
-		outset.clear();
-		loopsOffset(outset, *inner,
-					grueCfg.get_insetDistanceMultiplier() * 
-					  layermeasure.getLayerW()
-					  + fudgefactor, false);
-        
+	while (inner != sliceInsets.end()) {
         spurLoops.push_back(LoopList());
         LoopList &spurs = spurLoops.back();
 
-        loopsDifference(spurs, *outer, outset);
+        if (inner->size() > 0) {
+            outset.clear();
+            loopsOffset(outset, *inner,
+                        grueCfg.get_insetDistanceMultiplier() * 
+                        layermeasure.getLayerW()
+                        + fudgefactor, false);
+        
+            loopsDifference(spurs, *outer, outset);
+        }
 
         outer = inner;
         ++inner;
@@ -872,6 +877,23 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		++outline;
 		++region;
 	}
+
+    tick();
+}
+
+void Regioner::spurs(RegionList::iterator regionsBegin,
+                     RegionList::iterator regionsEnd,
+                     LayerMeasure &layermeasure) {
+    for (RegionList::iterator region = regionsBegin;
+         region != regionsEnd; ++region) {
+        tick();
+
+        spurLoopsForSlice(region->outlines, region->insetLoops,
+                           layermeasure, region->spurLoops);
+        fillSpursForSlice(region->spurLoops, layermeasure, region->spurs);
+    }
+
+    tick();
 }
 
 void Regioner::flatSurfaces(RegionList::iterator regionsBegin,

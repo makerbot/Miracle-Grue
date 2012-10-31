@@ -69,8 +69,11 @@ class LayerRegions {
 public:
 	LoopList outlines;
 	std::list<LoopList> insetLoops;
+    std::list<LoopList> spurLoops;
 	LoopList supportLoops;
 	LoopList interiorLoops;
+
+    std::list<OpenPathList> spurs;
 
 	GridRanges flatSurface; // # number of slices + roofCount * 2
 	GridRanges supportSurface; //flat surface outside of the actual object
@@ -126,11 +129,6 @@ public:
 				RegionList::iterator regionsEnd,
 				LayerMeasure& layermeasure);
 
-	void spurLoopsForSlice(const LoopList& sliceOutlines,
-						   const std::list<LoopList>& sliceInsets,
-						   const LayerMeasure &layermeasure,
-						   std::list<LoopList>& spurLoops);
-
 	void flatSurfaces(RegionList::iterator regionsBegin,
 					  RegionList::iterator regionsEnd,
 					  const Grid& grid);
@@ -162,12 +160,22 @@ public:
 				 RegionList::iterator regionsEnd,
 				 const Grid &grid);
 
+
 	void gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice, 
 							const Grid& grid, 
 							GridRanges& surface);
 	void gridRangesForSlice(const LoopList& innerMostLoops, 
 							const Grid& grid, 
 							GridRanges& surface);
+
+    void spurs(RegionList::iterator regionsBegin,
+               RegionList::iterator regionsEnd,
+               LayerMeasure &layermeasure);
+
+	void spurLoopsForSlice(const LoopList& sliceOutlines,
+						   const std::list<LoopList>& sliceInsets,
+						   const LayerMeasure &layermeasure,
+						   std::list<LoopList>& spurLoops);
 
 	void fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
 						   const LayerMeasure &layermeasure,

@@ -95,12 +95,19 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		preoptimizer.addBoundaries(layerRegions->outlines);	
 		
 		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+        std::list<OpenPathList>::const_iterator spurIter =
+            layerRegions->spurs.begin();
 		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
 				listIter != insetLoops.end(); 
 				++listIter) {
 			preoptimizer.addPaths(*listIter, 
 					PathLabel(PathLabel::TYP_INSET, 
 					PathLabel::OWN_MODEL, currentShell));
+            preoptimizer.addPaths(*spurIter,
+					PathLabel(PathLabel::TYP_INSET, 
+					PathLabel::OWN_MODEL, currentShell));
+            
+            ++spurIter;
 			++currentShell;
 		}
 
