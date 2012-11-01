@@ -7,6 +7,7 @@
 #include "libthing/LineSegment2.h"
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
+#include "mgl/dump_restore.h"
 
 using namespace std;
 using namespace mgl;
@@ -80,6 +81,38 @@ void loopTableToSVG(const list<LoopList> table, const string &color,
 	}
 }
 
+//needed because svg is stupid
+void makeLoopsPositive(LoopList &loops) {
+    Scalar minX = 9999999;
+    Scalar minY = 9999999;
+
+    for (LoopList::const_iterator loop = loops.begin();
+         loop != loops.end(); ++loop) {
+        for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
+             pn != loop->clockwiseEnd(); ++pn) {
+            Vector2 point = pn->getPoint();
+            if (point.x < minX)
+                minX = point.x;
+            if (point.y < minY)
+                minY = point.y;
+        }
+    }
+
+    for (LoopList::iterator loop = loops.begin();
+         loop != loops.end(); ++loop) {
+        for (Loop::finite_cw_iterator pn = loop->clockwiseFinite();
+             pn != loop->clockwiseEnd(); ++pn) {
+            Vector2 point = pn->getPoint();
+
+            point.x -= minX;
+            point.y -= minY;
+
+            pn->setPoint(point);
+        }
+    }
+}
+
+            
 void InsetsTestCase::setUp() {
 	config = InsetsTestCaseConfig(2, .9);
 
@@ -139,6 +172,13 @@ void InsetsTestCase::setUp() {
     at = threePairShell.insertPointAfter(Vector2(3.1, 25), at);
     at = threePairShell.insertPointAfter(Vector2(2, 20), at);
     at = threePairShell.insertPointAfter(Vector2(2, 10), at);
+
+    Json::Value stretchletval;
+    Json::Reader reader;
+    ifstream file("inputs/Stretchlet_layer.json");
+    reader.parse(file, stretchletval);
+    restoreLoopList(stretchletval, stretchletLoops);
+    makeLoopsPositive(stretchletLoops);
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -424,7 +464,7 @@ void InsetsTestCase::testTwoPairFill() {
 
 void InsetsTestCase::testThreePairFill() {
 	Regioner regioner(config);
-	svgBegin();
+	//svgBegin();
 
 	LoopList loops;
 	loops.push_back(threePairShell);
@@ -432,9 +472,23 @@ void InsetsTestCase::testThreePairFill() {
 	OpenPathList spurs;
 	regioner.fillSpurLoops(loops, layermeasure, spurs);
 
-    loopToSVG(threePairShell, "black", 20, 20);
+    /*loopToSVG(threePairShell, "black", 20, 20);
 	openPathListToSVG(spurs, "red", 20, 20);
-	svgEnd();
+	svgEnd();*/
 
 	CPPUNIT_ASSERT_EQUAL(5, (int)spurs.size());
+}
+
+void InsetsTestCase::testStretchlet() {
+    Regioner regioner(config);
+
+    LayerMeasure reallayer(0.27, 0.27, 1.6);
+
+    OpenPathList spurs;
+    regioner.fillSpurLoops(stretchletLoops, reallayer, spurs);
+
+    svgBegin();
+    loopsToSVG(stretchletLoops, "black", 0, 0);
+    openPathListToSVG(spurs, "red", 0, 0);
+    svgEnd();
 }
