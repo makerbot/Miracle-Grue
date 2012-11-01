@@ -243,7 +243,8 @@ mgl_cc = [
           'src/mgl/slicer_loops.cc',
           'src/mgl/slicy.cc',
           'src/mgl/spacial_data.cc',
-          'src/mgl/loop_utils.cc']
+          'src/mgl/loop_utils.cc',
+          'src/mgl/dump_restore.cc']
 
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
