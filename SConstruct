@@ -288,6 +288,9 @@ p = env.Program('./bin/miracle_grue',
 
 target_list = [p]
 
+j = env.Program('./bin/get_slice',
+                mix(['src/miracle_grue/get_slice.cc'] ))
+
 if build_gui:
     print "Building miracle_gui"
     qtEnv = env.Clone()
