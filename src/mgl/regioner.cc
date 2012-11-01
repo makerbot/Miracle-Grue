@@ -798,7 +798,7 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 OpenPathList &spurs) {
 
 	//TODO: make these config values
-	const Scalar maxSpurWidth = layermeasure.getLayerW() * 1.5;
+	const Scalar maxSpurWidth = layermeasure.getLayerW() * 3;
 	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.5;
 	
 	//get loop line segments
@@ -809,11 +809,13 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 
 		for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
 			 pn != loop->clockwiseEnd(); ++pn) {
-			segs.push_back(LineSegment2());
-			LineSegment2 &seg = segs.back();
-			seg = loop->segmentAfterPoint(pn);
+            LineSegment2 seg;
+            seg = loop->segmentAfterPoint(pn);
 
-			index.insert(seg);
+            if (seg.squaredLength() > 0.00001) {
+                segs.push_back(seg);
+                index.insert(seg);
+            }
 		}
 
 	}
@@ -835,10 +837,16 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     for (SegmentList::iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         cutInteriorSegment(index, minSpurWidth / 2, *piece);
-    }
+        }
 
 
     chainSpurSegments(index, minSpurWidth, pieces, spurs);
+    /*for (SegmentList::const_iterator piece = pieces.begin();
+         piece != pieces.end(); ++piece) {
+        spurs.push_back(OpenPath());
+        spurs.back().appendPoint(piece->a);
+        spurs.back().appendPoint(piece->b);
+        }*/
 }
 
 
