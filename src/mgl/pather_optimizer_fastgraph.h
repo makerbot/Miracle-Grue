@@ -65,10 +65,16 @@ public:
     
 #ifdef FASTGRAPH_FRIENDS_LIST
     FASTGRAPH_FRIENDS_LIST
+#define FASTGRAPH_PRIVATE public
+#else
+#define FASTGRAPH_PRIVATE private
 #endif
 protected:
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
-private:
+FASTGRAPH_PRIVATE:
+
+#undef FASTGRAPH_PRIVATE
+
     typedef std::list<LabeledOpenPaths> multipath_type;
     
     class bucket;

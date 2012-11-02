@@ -290,6 +290,8 @@ HIERARCHY& HIERARCHY::insert(LoopHierarchy& constructed) {
     return m_children.back();
 }
 bool HIERARCHY::contains(Point2Type point) const {
+    if(!isValid())
+        return true;
     Segment2Type testLine(m_infinitePoint, point);
     bool result = (countIntersections(testLine, m_bounds) & 1) != 0;  //even-odd test
     //bool result2 = m_loop.windingContains(point);
@@ -394,12 +396,12 @@ void HIERARCHY::swap(LoopHierarchy& other) {
 }
 void HIERARCHY::repr(std::ostream& out, size_t level) {
     if(!level)
-        std::cout << std::endl;
+        out << std::endl;
     std::string indent(level + 1, '|');
     out << indent << "L-" << m_loop.size() << "-(" << m_children.size() 
             << ")-" << m_label.myValue << std::endl;
     if(m_children.empty()) {
-        std::cout << indent << std::endl;
+//        out << indent << std::endl;
     } else {
         for(hierarchy_list::iterator iter = m_children.begin(); 
                 iter != m_children.end(); 
