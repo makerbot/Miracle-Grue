@@ -334,6 +334,63 @@ void InsetsTestCase::testFindWallPairs() {
 
     CPPUNIT_ASSERT_EQUAL(1, (int)allWalls.size());
 }
+Vector2 midPoint(const LineSegment2 &seg);
+LineSegment2 getSegmentNormal(const LineSegment2 &orig,
+							  const Vector2 &startingPoint,
+							  const Scalar length);
+
+void InsetsTestCase::testStretchletWallPairs() {
+	Regioner regioner(config);
+
+    //get loop line segments
+	SegmentList segs;
+	SegmentIndex index;
+
+    for (LoopList::const_iterator loop = stretchletLoops.begin();
+         loop != stretchletLoops.end(); ++loop) {
+        for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
+             pn != loop->clockwiseEnd(); ++pn) {
+            LineSegment2 seg = loop->segmentAfterPoint(pn);
+
+            if (seg.squaredLength() > 0.00001) {
+                segs.push_back(seg);
+                index.insert(seg);
+            }
+        }
+    }
+
+	//find wall pairs
+	SegmentPairSet allWalls;
+	findWallPairs(layermeasure.getLayerW() * 1.5, segs, index, allWalls);
+    
+    /*svgBegin();
+    loopsToSVG(stretchletLoops, "red", 0, 0);
+    for (SegmentPairSet::iterator walls = allWalls.begin();
+         walls != allWalls.end(); ++walls) {
+
+        segToSVG(walls->first, "black", 0, 0);
+        segToSVG(walls->second, "blue", 0, 0);
+
+        //segToSVG(LineSegment2(midPoint(walls->first), midPoint(walls->second)),
+        //       "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->first.a,
+                                  layermeasure.getLayerW() * 1.5),
+                                  "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->first.b,
+                                  layermeasure.getLayerW() * 1.5),
+                                  "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->second.a,
+                                  layermeasure.getLayerW() * 1.5),
+                                  "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->second.b,
+                                  layermeasure.getLayerW() * 1.5),
+                                  "green", 0, 0);
+
+    }
+    svgEnd();*/
+
+    CPPUNIT_ASSERT_EQUAL(1, (int)allWalls.size());
+}
 
 double sigdig(double subject, int digits) {
     int power  = 1;
