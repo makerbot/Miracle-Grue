@@ -437,10 +437,22 @@ SegmentPair normalizeWalls(const LineSegment2 &first,
 		segs.first = first;
 		segs.second = second;
 	}
-	else {
+	else if (SegLess(second, first)) {
 		segs.first = second;
 		segs.second = first;
 	}
+    else if (first.a == second.a && first.b == second.b) {
+        segs.first = second;
+        segs.second = first;
+    }
+    else {
+        stringstream msg;
+        msg << "don't know which way to order pair:\nfirst.a.x " << first.a.x
+            << "\nfirst.a.y " << first.a.y
+            << "\nfirst.b.x " << first.b.x
+            << "\nfirst.b.y " << first.b.y << endl;
+        throw runtime_error(msg.str());
+    }
 
 	return segs;
 }
@@ -605,7 +617,9 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 
 	for (SegmentList::const_iterator curSeg = segs.begin();
 		 curSeg != segs.end(); ++curSeg) {
-		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a, span);
+		LineSegment2 in = getSegmentNormal(*curSeg, curSeg->a, span);
+		LineSegment2 out = getSegmentNormal(*curSeg, curSeg->a, -span);
+        LineSegment2 normal(in.b, out.b);
 
 		SegmentList intersecting;
 		findIntersecting(index, normal, intersecting);
@@ -840,13 +854,13 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     }
 
 
-    chainSpurSegments(index, minSpurWidth, pieces, spurs);
-    /*for (SegmentList::const_iterator piece = pieces.begin();
+    //chainSpurSegments(index, minSpurWidth, pieces, spurs);
+    for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         spurs.push_back(OpenPath());
         spurs.back().appendPoint(piece->a);
         spurs.back().appendPoint(piece->b);
-        }*/
+        }
 }
 
 
