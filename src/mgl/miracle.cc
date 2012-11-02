@@ -104,10 +104,15 @@ void mgl::getSliceJson(const GrueConfig& grueCfg,
 	//new interface
 	slicer.generateLoops(segmenter, layers);
 
+    LayerLoops processed;
+    
+    LoopProcessor processor(grueCfg, NULL);
+    processor.processLoops(layers, processed);
+
     int thisslice = 0;
 
-    for (LayerLoops::const_layer_iterator layer = layers.begin();
-         layer != layers.end(); ++layer) {
+    for (LayerLoops::const_layer_iterator layer = processed.begin();
+         layer != processed.end(); ++layer) {
         if (thisslice == slicenum) {
             Json::Value loopsval;
             dumpLoopList(layer->readLoops(), loopsval);
