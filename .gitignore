@@ -14,6 +14,9 @@ nbproject
 *.bak
 *.pyc
 
+# ignore stl folder
+stl/*
+
 #ignore build system files
 Makefile.*
 /miracle_gui.pro.user

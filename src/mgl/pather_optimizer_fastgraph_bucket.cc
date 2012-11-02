@@ -307,7 +307,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
         graph_type& graph, boundary_container& bounds, 
         const GrueConfig& grueConf) {
     if(m_loop.empty()) {
-        LoopHierarchyComparator compare(entryPoint, graph, grueConf);
+        LoopHierarchyStrictComparator compare(entryPoint, graph, grueConf);
         hierarchy_list::iterator bestChoice;
         while((bestChoice = bestChild(compare)) != m_children.end()) {
             bestChoice->optimize(output, entryPoint, graph, bounds, grueConf);
@@ -323,13 +323,14 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         graph_type& graph, graph_type::node_index& from, 
         boundary_container& bounds, 
         const GrueConfig& grueConf) {
-    LoopHierarchyComparator comparator(entryPoint, graph, grueConf);
-    hierarchy_list::iterator bestChoice = bestChild(comparator);
-    while((bestChoice = bestChild(comparator)) 
+    LoopHierarchyStrictComparator typeDistComparator(entryPoint, graph, grueConf);
+    LoopHierarchyBaseComparator typeComparator(entryPoint, graph, grueConf);
+    hierarchy_list::iterator bestChoice;
+    while((bestChoice = bestChild(typeDistComparator)) 
            != m_children.end()) {
 //            std::cout << "Head recursion into priority " << 
 //                    bestChoice->m_label.myValue << std::endl;
-       if(comparator(*this, *bestChoice)) {
+       if(typeComparator(*this, *bestChoice)) {
 //           std::cout << bestChoice->m_label.myValue << " Not better than " << 
 //                   m_label.myValue << std::endl;
            break;
@@ -379,7 +380,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
 //                    bestChoice->m_label.myValue << std::endl;
             bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
             m_children.erase(bestChoice);
-        } while((bestChoice = bestChild(comparator)) 
+        } while((bestChoice = bestChild(typeDistComparator)) 
                 != m_children.end());
     }
 //    std::cout << "Optimizing priority " << m_label.myValue 
@@ -414,7 +415,7 @@ bool HIERARCHY::isValid() const {
     return !m_loop.empty();
 }
 BUCKET::hierarchy_list::iterator HIERARCHY::bestChild(const 
-        LoopHierarchyComparator& compare) {
+        LoopHierarchyBaseComparator& compare) {
     return std::min_element(m_children.begin(), m_children.end(), 
             compare);
 }

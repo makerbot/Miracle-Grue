@@ -50,9 +50,13 @@ int pather_optimizer_fastgraph::NodeConnectionComparator::compare(
         BETTER : (runit < lunit ? 
             WORSE : SAME));
 }
-int pather_optimizer_fastgraph::LoopHierarchyComparator::compare(
+int pather_optimizer_fastgraph::LoopHierarchyBaseComparator::compare(
         const value_type& lhs, const value_type& rhs) const {
-    int ret = m_compare.compare(lhs.m_label, rhs.m_label);
+    return m_compare.compare(lhs.m_label, rhs.m_label);
+}
+int pather_optimizer_fastgraph::LoopHierarchyStrictComparator::compare(
+        const value_type& lhs, const value_type& rhs) const {
+    int ret = LoopHierarchyBaseComparator::compare(lhs, rhs);
     if(ret) {
 //        std::cout << "Compared priorities " << lhs.m_label.myValue 
 //                << ", " << rhs.m_label.myValue << std::endl;

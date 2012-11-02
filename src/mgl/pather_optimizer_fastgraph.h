@@ -123,7 +123,7 @@ FASTGRAPH_PRIVATE:
     typedef graph_type::node_index node_index;
     typedef std::pair<node_index, Scalar> probe_link_type;
     
-    class LoopHierarchyComparator;
+    class LoopHierarchyBaseComparator;
     
     class bucket {
     public:
@@ -163,7 +163,7 @@ FASTGRAPH_PRIVATE:
         private:
             bool isValid() const;
             hierarchy_list::iterator bestChild(
-                    const LoopHierarchyComparator& compare);
+                    const LoopHierarchyBaseComparator& compare);
             LoopHierarchy& insert(LoopHierarchy& constructed);
             void insertBoundary(const Loop& loop);
             void insertBoundary(const Segment2Type& line);
@@ -261,10 +261,10 @@ FASTGRAPH_PRIVATE:
     typedef NodeComparator LinkBuildingSortComparator;
     typedef LabelTypeComparator LinkBuildingConnectionCutoffComparator;
     
-    class LoopHierarchyComparator : public abstract_predicate<bucket::LoopHierarchy> {
+    class LoopHierarchyBaseComparator : public abstract_predicate<bucket::LoopHierarchy> {
     public:
         typedef abstract_predicate<bucket::LoopHierarchy>::value_type value_type;
-        LoopHierarchyComparator(Point2Type& entryPoint, 
+        LoopHierarchyBaseComparator(Point2Type& entryPoint, 
                 const graph_type& graph, 
                 const GrueConfig& grueConf) 
                 : m_entryPoint(entryPoint), 
@@ -275,6 +275,16 @@ FASTGRAPH_PRIVATE:
         Point2Type& m_entryPoint;
         const graph_type& m_graph;
         LabelPriorityComparator m_compare;
+    };
+    
+    class LoopHierarchyStrictComparator : public LoopHierarchyBaseComparator {
+    public:
+        typedef LoopHierarchyBaseComparator::value_type value_type;
+        LoopHierarchyStrictComparator(Point2Type& entryPoint, 
+                const graph_type& graph, 
+                const GrueConfig& grueConf) 
+                : LoopHierarchyBaseComparator(entryPoint, graph, grueConf) {}
+        int compare(const value_type& lhs, const value_type& rhs) const;
     };
     
     
