@@ -111,6 +111,11 @@ public:
      */
     const value_type& value() const;
     /**
+     @brief Get the loop that represents the extents of this tree
+     @return The loop that represents the extents of this tree
+     */
+    const Loop& boundary() const;
+    /**
      @brief Swap the contents of this tree with other.
      @param other The tree with which to swap contents
      

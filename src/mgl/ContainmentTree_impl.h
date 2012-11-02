@@ -118,6 +118,10 @@ const typename CONTAINMENT_TYPE::value_type& CONTAINMENT_TYPE::value() const {
     return m_value;
 }
 CONTAINMENT_TEMPLATE
+const Loop& CONTAINMENT_TYPE::boundary() const {
+    return m_loop;
+}
+CONTAINMENT_TEMPLATE
 void CONTAINMENT_TYPE::swap(ContainmentTree& other) {
     m_loop.swap(other.m_loop);
     m_children.swap(other.m_children);
