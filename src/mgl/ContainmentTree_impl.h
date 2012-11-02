@@ -125,6 +125,7 @@ CONTAINMENT_TEMPLATE
 void CONTAINMENT_TYPE::swap(ContainmentTree& other) {
     m_loop.swap(other.m_loop);
     m_children.swap(other.m_children);
+    std::swap(m_value, other.m_value);
 }
 
 
