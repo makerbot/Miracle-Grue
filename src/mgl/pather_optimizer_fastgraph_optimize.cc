@@ -7,10 +7,6 @@
 
 namespace mgl {
 
-bool pather_optimizer_fastgraph::comparePathLists(const LabeledOpenPaths& lhs, 
-        const LabeledOpenPaths& rhs) {
-    return lhs.front().myLabel.myValue > rhs.front().myLabel.myValue;
-}
 bool pather_optimizer_fastgraph::crossesBounds(
         const Segment2Type& line, 
         boundary_container& boundaries) {
@@ -117,7 +113,7 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
 void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths) {
     multipath_type firstPass;
     //LabeledOpenPaths innerIntermediate;
-    optimize1(firstPass, historyPoint);
+    optimizeBuckets(firstPass, historyPoint);
     for(multipath_type::iterator iter = firstPass.begin(); 
             iter != firstPass.end(); 
             ++iter) {
@@ -150,7 +146,7 @@ void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths
                 *iter);
     }
 }
-void pather_optimizer_fastgraph::optimize1(multipath_type& output, 
+void pather_optimizer_fastgraph::optimizeBuckets(multipath_type& output, 
         Point2Type& entryPoint) {
     while(!buckets.empty()) {
         bucket_list::iterator currentNearest = buckets.begin();
@@ -166,100 +162,102 @@ void pather_optimizer_fastgraph::optimize1(multipath_type& output,
         buckets.erase(currentNearest);
     }
 }
-bool pather_optimizer_fastgraph::optimize2(LabeledOpenPaths& labeledopenpaths, 
-        LabeledOpenPaths& intermediate) {
-    multipath_type split;
-    Scalar waste1, waste2;
-    waste1 = splitPaths(split, intermediate);
-    waste2 = 0;
-    //split.sort(comparePathLists);
-//    std::cout << "Size of split: " << split.size() << std::endl;;
-    if(split.empty())
-        return false;
-    multipath_type::iterator current = split.begin();
-    multipath_type::iterator other;
-    multipath_type::iterator nearest;
-    multipath_type::iterator connected;
-    while(!split.empty()) {
-        bool foundConnected = false;
-        Segment2Type joint;
-        Scalar length = std::numeric_limits<Scalar>::max();
-        Scalar connectedLength = std::numeric_limits<Scalar>::max();
-        other = current;
-        ++other;
-        if(other == split.end()) {
-            if(current == split.begin()) {
-                //current is last
-                if(!labeledopenpaths.empty()) {
-                    waste2 += (*labeledopenpaths.back().myPath.fromEnd() - 
-                        *(current->front().myPath.fromStart())).magnitude();
-                }
-                labeledopenpaths.splice(labeledopenpaths.end(), 
-                        *current);
-                split.erase(current);
-                return waste2 < waste1;
-            } else {
-                other = split.begin();
-            }
-        }
-        nearest = other;
-        LabeledOpenPaths& currentList = *current;
-        for(; other != split.end(); ++other) {
-            if(other == current)
-                continue;
-            LabeledOpenPaths& otherList = *other;
-            LabeledOpenPath& currentBack = currentList.back();
-            LabeledOpenPath& otherFront = otherList.front();
-            Point2Type currentPoint = *(currentBack.myPath.fromEnd());
-            Point2Type otherPoint = *(otherFront.myPath.fromStart());
-            Segment2Type testJoint(currentPoint, 
-                    otherPoint);
-            Scalar curLength = testJoint.length();
-            bool closer = curLength < length;
-            bool connects = !crossesBounds(testJoint, m_boundaries);
-            int otherValue = other->front().myLabel.myValue;
-            int nearestValue = nearest->front().myLabel.myValue;
-            if(connects) {
-                if(!foundConnected || (otherValue > nearestValue)) {
-                    foundConnected = true;
-                    joint = testJoint;
-                    connected = other;
-                    connectedLength = curLength;
-                }
-            }
-            if((otherValue > nearestValue) || closer) {
-                nearest = other;
-                length = testJoint.length();
-            }
-        }
-        //current goes to output
-        LabeledOpenPaths& currentRef = *current;
-        labeledopenpaths.splice(labeledopenpaths.end(), 
-                currentRef);
-        if(foundConnected && connected->front().myLabel.myValue >= 
-                nearest->front().myLabel.myValue) {
-            LabeledOpenPath connectingPath(PathLabel(PathLabel::TYP_CONNECTION, 
-                    PathLabel::OWN_MODEL));
-            connectingPath.myPath.appendPoint(joint.a);
-            connectingPath.myPath.appendPoint(joint.b);
-            //connection goes to output
-            labeledopenpaths.push_back(connectingPath);
-            //erase current
-            split.erase(current);
-            //search from the one you picked
-            current = connected;
-//            std::cout << "Connection made!" << std::endl;
-        } else {
-            //erase current
-            split.erase(current);
-            //search from the nearest one
-            current = nearest;
-//            std::cout << "No connection!" << std::endl;
-            waste2 += (*labeledopenpaths.back().myPath.fromEnd() - 
-                    *(current->front().myPath.fromStart())).magnitude();
-        }
-    }
-    return waste2 < waste1;
+bool pather_optimizer_fastgraph::optimizeIterative(LabeledOpenPaths&, // labeledopenpaths, 
+        LabeledOpenPaths& // intermediate
+        ) {
+    return false;
+//    multipath_type split;
+//    Scalar waste1, waste2;
+//    waste1 = splitPaths(split, intermediate);
+//    waste2 = 0;
+//    //split.sort(comparePathLists);
+////    std::cout << "Size of split: " << split.size() << std::endl;;
+//    if(split.empty())
+//        return false;
+//    multipath_type::iterator current = split.begin();
+//    multipath_type::iterator other;
+//    multipath_type::iterator nearest;
+//    multipath_type::iterator connected;
+//    while(!split.empty()) {
+//        bool foundConnected = false;
+//        Segment2Type joint;
+//        Scalar length = std::numeric_limits<Scalar>::max();
+//        Scalar connectedLength = std::numeric_limits<Scalar>::max();
+//        other = current;
+//        ++other;
+//        if(other == split.end()) {
+//            if(current == split.begin()) {
+//                //current is last
+//                if(!labeledopenpaths.empty()) {
+//                    waste2 += (*labeledopenpaths.back().myPath.fromEnd() - 
+//                        *(current->front().myPath.fromStart())).magnitude();
+//                }
+//                labeledopenpaths.splice(labeledopenpaths.end(), 
+//                        *current);
+//                split.erase(current);
+//                return waste2 < waste1;
+//            } else {
+//                other = split.begin();
+//            }
+//        }
+//        nearest = other;
+//        LabeledOpenPaths& currentList = *current;
+//        for(; other != split.end(); ++other) {
+//            if(other == current)
+//                continue;
+//            LabeledOpenPaths& otherList = *other;
+//            LabeledOpenPath& currentBack = currentList.back();
+//            LabeledOpenPath& otherFront = otherList.front();
+//            Point2Type currentPoint = *(currentBack.myPath.fromEnd());
+//            Point2Type otherPoint = *(otherFront.myPath.fromStart());
+//            Segment2Type testJoint(currentPoint, 
+//                    otherPoint);
+//            Scalar curLength = testJoint.length();
+//            bool closer = curLength < length;
+//            bool connects = !crossesBounds(testJoint, m_boundaries);
+//            int otherValue = other->front().myLabel.myValue;
+//            int nearestValue = nearest->front().myLabel.myValue;
+//            if(connects) {
+//                if(!foundConnected || (otherValue > nearestValue)) {
+//                    foundConnected = true;
+//                    joint = testJoint;
+//                    connected = other;
+//                    connectedLength = curLength;
+//                }
+//            }
+//            if((otherValue > nearestValue) || closer) {
+//                nearest = other;
+//                length = testJoint.length();
+//            }
+//        }
+//        //current goes to output
+//        LabeledOpenPaths& currentRef = *current;
+//        labeledopenpaths.splice(labeledopenpaths.end(), 
+//                currentRef);
+//        if(foundConnected && connected->front().myLabel.myValue >= 
+//                nearest->front().myLabel.myValue) {
+//            LabeledOpenPath connectingPath(PathLabel(PathLabel::TYP_CONNECTION, 
+//                    PathLabel::OWN_MODEL));
+//            connectingPath.myPath.appendPoint(joint.a);
+//            connectingPath.myPath.appendPoint(joint.b);
+//            //connection goes to output
+//            labeledopenpaths.push_back(connectingPath);
+//            //erase current
+//            split.erase(current);
+//            //search from the one you picked
+//            current = connected;
+////            std::cout << "Connection made!" << std::endl;
+//        } else {
+//            //erase current
+//            split.erase(current);
+//            //search from the nearest one
+//            current = nearest;
+////            std::cout << "No connection!" << std::endl;
+//            waste2 += (*labeledopenpaths.back().myPath.fromEnd() - 
+//                    *(current->front().myPath.fromStart())).magnitude();
+//        }
+//    }
+//    return waste2 < waste1;
 }
 void pather_optimizer_fastgraph::smartAppendPath(LabeledOpenPaths& labeledpaths, 
         LabeledOpenPath& path) {
@@ -291,22 +289,22 @@ void pather_optimizer_fastgraph::smartAppendPoint(Point2Type point,
 void pather_optimizer_fastgraph::repr_svg(std::ostream& out) {
     out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
-    for(graph_type::forward_node_iterator iter = m_graph.begin(); 
-            iter != m_graph.end(); 
-            ++iter) {
-        out << "<circle cx=\"" << 200 + iter->data().getPosition().x * 10
-                << "\" cy=\"" <<  200 + iter->data().getPosition().y * 10
-                << "\" r=\"2.0\" style=\"stroke:red; fill:red;\"/>" << std::endl;
-        for(node::forward_link_iterator linkiter = iter->forwardBegin(); 
-                linkiter != iter->forwardEnd(); 
-                ++linkiter) {
-            out << "<line x1=\"" << 200 + iter->data().getPosition().x * 10
-                    << "\" y1=\"" << 200 + iter->data().getPosition().y * 10
-                    << "\" x2=\"" << 200 + (*linkiter).first->data().getPosition().x * 10
-                    << "\" y2=\"" << 200 + (*linkiter).first->data().getPosition().y * 10
-                    << "\" style=\"stroke:black; stroke-width:1.0;\"/>" << std::endl;
-        }
-    }
+//    for(graph_type::forward_node_iterator iter = m_graph.begin(); 
+//            iter != m_graph.end(); 
+//            ++iter) {
+//        out << "<circle cx=\"" << 200 + iter->data().getPosition().x * 10
+//                << "\" cy=\"" <<  200 + iter->data().getPosition().y * 10
+//                << "\" r=\"2.0\" style=\"stroke:red; fill:red;\"/>" << std::endl;
+//        for(node::forward_link_iterator linkiter = iter->forwardBegin(); 
+//                linkiter != iter->forwardEnd(); 
+//                ++linkiter) {
+//            out << "<line x1=\"" << 200 + iter->data().getPosition().x * 10
+//                    << "\" y1=\"" << 200 + iter->data().getPosition().y * 10
+//                    << "\" x2=\"" << 200 + (*linkiter).first->data().getPosition().x * 10
+//                    << "\" y2=\"" << 200 + (*linkiter).first->data().getPosition().y * 10
+//                    << "\" style=\"stroke:black; stroke-width:1.0;\"/>" << std::endl;
+//        }
+//    }
     out << "</svg>" << std::endl;
 }
 

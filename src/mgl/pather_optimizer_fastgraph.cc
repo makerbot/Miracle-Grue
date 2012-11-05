@@ -108,17 +108,17 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     //curNode.connect(lastNode, backCost);
     lastNode.connect(curNode, frontCost);
 }
-void pather_optimizer_fastgraph::addBoundary(const OpenPath& path) {
+void pather_optimizer_fastgraph::addBoundary(const OpenPath&) {
     throw PathingException("OpenPath boundaries temporarily not supported!");
-    for(OpenPath::const_iterator iter = path.fromStart(); 
-            iter != path.end(); 
-            ++iter) {
-        OpenPath::const_iterator next = iter;
-        ++next;
-        if(next != path.end()) {
-            m_boundaries.insert(Segment2Type(*iter, *next));
-        }
-    }
+//    for(OpenPath::const_iterator iter = path.fromStart(); 
+//            iter != path.end(); 
+//            ++iter) {
+//        OpenPath::const_iterator next = iter;
+//        ++next;
+//        if(next != path.end()) {
+//            m_boundaries.insert(Segment2Type(*iter, *next));
+//        }
+//    }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
     bucket_list::iterator iter = buckets.end();
@@ -152,22 +152,11 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
     } else {
         iter->insertBoundary(loop);
     }
-    for(Loop::const_finite_cw_iterator loopIter = loop.clockwiseFinite(); 
-            loopIter != loop.clockwiseEnd(); 
-            ++loopIter) {
-        Segment2Type segment = loop.segmentAfterPoint(loopIter);
-        boundaryLimits.expandTo(segment.a);
-        boundaryLimits.expandTo(segment.b);
-        m_boundaries.insert(segment);
-    }
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
-    m_boundaries = boundary_container();
     buckets.clear();
-    boundaryLimits.reset();
 }
 void pather_optimizer_fastgraph::clearPaths() {
-    m_graph.clear();
     for(bucket_list::iterator iter = buckets.begin(); 
             iter != buckets.end(); 
             ++iter) {
@@ -242,22 +231,15 @@ size_t pather_optimizer_fastgraph::countIntersections(Segment2Type& line,
 
 pather_optimizer_fastgraph::bucket_list::iterator 
         pather_optimizer_fastgraph::pickBucket(Point2Type point) {
-    Segment2Type testLine(point, 
-            boundaryLimits.bottom_left() - Point2Type(20,20));
     bucket_list::iterator iter = buckets.begin();
     for(; 
             iter != buckets.end(); 
             ++iter) {
-        size_t intersections = countIntersections(testLine, 
-                iter->m_bounds);
-        if(intersections & 1) { //if odd, then inside
+        if(iter->contains(point)) { //if odd, then inside
             break;
         }
     }
     return iter;
-    std::cout << "Point Location: " << point << std::endl;
-    std::cout << "Bounds: " << boundaryLimits.bottom_left() <<
-            boundaryLimits.top_right() << std::endl;
     throw GraphException("Thing did not fall into any bucket!");
 }
 

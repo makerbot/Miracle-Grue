@@ -229,17 +229,12 @@ pather_optimizer_fastgraph::bucket_list::iterator BUCKET::pickBestChild(
 HIERARCHY::LoopHierarchy() : m_testPoint(std::numeric_limits<Scalar>::min(), 
         std::numeric_limits<Scalar>::min()) {}
 HIERARCHY::LoopHierarchy(const LabeledLoop& loop) 
-        : m_label(loop.myLabel) {
-    m_testPoint = *loop.myPath.clockwise();
-    m_limits = AABBox(m_testPoint);
-    insertBoundary(loop.myPath);
+        : m_label(loop.myLabel), m_loop(loop.myPath) {
+    m_testPoint = *m_loop.clockwise();
 }
 HIERARCHY::LoopHierarchy(const Loop& loop, const PathLabel& label) 
-        : m_label(label) {
-    m_testPoint = *loop.clockwise();
-    m_limits = AABBox(m_testPoint);
-    m_loop = loop;
-    insertBoundary(loop);
+        : m_label(label), m_loop(loop) {
+    m_testPoint = *m_loop.clockwise();
 }
 HIERARCHY& HIERARCHY::insert(const LabeledLoop& loop) {
     return insert(loop.myPath, loop.myLabel);
@@ -292,10 +287,7 @@ HIERARCHY& HIERARCHY::insert(LoopHierarchy& constructed) {
 bool HIERARCHY::contains(Point2Type point) const {
     if(!isValid())
         return true;
-    Segment2Type testLine(m_infinitePoint, point);
-    bool result = (countIntersections(testLine, m_bounds) & 1) != 0;  //even-odd test
-    //bool result2 = m_loop.windingContains(point);
-    //std::cout << "NewResult: " << result2 << "\tOldResult: " << result << std::endl;
+    bool result = m_loop.windingContains(point);
     return result;
 }
 bool HIERARCHY::contains(const LoopHierarchy& other) const {
@@ -388,11 +380,8 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
 }
 void HIERARCHY::swap(LoopHierarchy& other) {
     std::swap(m_label, other.m_label);
-    m_bounds.swap(other.m_bounds);
     m_children.swap(other.m_children);
-    std::swap(m_limits, other.m_limits);
     std::swap(m_testPoint, other.m_testPoint);
-    std::swap(m_infinitePoint, other.m_infinitePoint);
     std::swap(m_loop, other.m_loop);
 }
 void HIERARCHY::repr(std::ostream& out, size_t level) {
@@ -418,22 +407,6 @@ BUCKET::hierarchy_list::iterator HIERARCHY::bestChild(const
         LoopHierarchyBaseComparator& compare) {
     return std::min_element(m_children.begin(), m_children.end(), 
             compare);
-}
-void HIERARCHY::insertBoundary(const Loop& loop) {
-    for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
-            iter != loop.clockwiseEnd(); 
-            ++iter) {
-        insertBoundary(loop.segmentAfterPoint(iter));
-    }
-    updateInfinity();
-}
-void HIERARCHY::insertBoundary(const Segment2Type& line) {
-    m_bounds.insert(line);
-    m_limits.expandTo(line.a);
-    m_limits.expandTo(line.b);
-}
-void HIERARCHY::updateInfinity() {
-    m_infinitePoint = m_limits.bottom_left() - Point2Type(20, 20);
 }
 
 
