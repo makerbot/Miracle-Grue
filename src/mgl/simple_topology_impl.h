@@ -3,11 +3,11 @@
 
 #include "simple_topology_decl.h"
 
-namespace topo {
-
 #define SG_TEMPLATE template <typename _NODE_DATA_T, typename _COST_T>
 #define SG_TYPE simple_graph<_NODE_DATA_T, _COST_T>
 #define SG_NODE SG_TYPE::node
+
+namespace topo {
 
 SG_TEMPLATE
 SG_NODE::node(simple_graph& parent, size_t index, const node_data_type& data)
@@ -116,6 +116,16 @@ const typename SG_NODE& SG_TYPE::operator [](node_index i) const {
 SG_TEMPLATE
 void SG_TYPE::swap(simple_graph& other) {
     nodes.swap(other.nodes);
+    for(typename node_container_type::iterator iter = nodes.begin(); 
+            iter != nodes.end(); 
+            ++iter) {
+        iter->m_node.m_parent = this;
+    }
+    for(typename node_container_type::iterator iter = other.nodes.begin(); 
+            iter != other.nodes.end(); 
+            ++iter) {
+        iter->m_node.m_parent = &other;
+    }
     costs.swap(other.costs);
     free_nodes.swap(other.free_nodes);
     free_costs.swap(other.free_costs);
@@ -224,11 +234,13 @@ typename SG_TYPE::cost_index SG_TYPE::createCost(const cost_type& cost) {
     return ret;
 }
 
+}
+
 #undef SG_NODE
 #undef SG_TYPE
 #undef SG_TEMPLATE
 
-}
+
 
 #endif	/* SIMPLE_TOPOLOGY_IMPL_H */
 
