@@ -365,6 +365,24 @@ void InsetsTestCase::testStretchletWallPairs() {
     
     /*svgBegin();
     loopsToSVG(stretchletLoops, "red", 0, 0);
+
+    for (SegmentList::const_iterator seg = segs.begin();
+         seg != segs.end(); ++seg) {
+        segToSVG(getSegmentNormal(*seg, seg->a,
+                                  layermeasure.getLayerW() * 1.5),
+                                  "orange", 0, 0);
+        segToSVG(getSegmentNormal(*seg, seg->b,
+                                  layermeasure.getLayerW() * 1.5),
+                                  "orange", 0, 0);
+        segToSVG(getSegmentNormal(*seg, seg->a,
+                                  layermeasure.getLayerW() * -1.5),
+                                  "orange", 0, 0);
+        segToSVG(getSegmentNormal(*seg, seg->b,
+                                  layermeasure.getLayerW() * -1.5),
+                                  "orange", 0, 0);
+    }
+        
+
     for (SegmentPairSet::iterator walls = allWalls.begin();
          walls != allWalls.end(); ++walls) {
 
@@ -386,6 +404,18 @@ void InsetsTestCase::testStretchletWallPairs() {
                                   layermeasure.getLayerW() * 1.5),
                                   "green", 0, 0);
 
+        segToSVG(getSegmentNormal(walls->first, walls->first.a,
+                                  layermeasure.getLayerW() * -1.5),
+                                  "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->first.b,
+                                  layermeasure.getLayerW() * -1.5),
+                                  "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->second.a,
+                                  layermeasure.getLayerW() * -1.5),
+                                  "green", 0, 0);
+        segToSVG(getSegmentNormal(walls->first, walls->second.b,
+                                  layermeasure.getLayerW() * -1.5),
+                                  "green", 0, 0);
     }
     svgEnd();*/
 
@@ -401,13 +431,13 @@ double sigdig(double subject, int digits) {
     return (double)tmp / power;
 }
 
-SegmentPair completeTrapezoid(const Scalar toplen, Scalar bottomlen,
-							  const SegmentPair &sides);
+bool completeTrapezoid(const Scalar toplen, Scalar bottomlen,
+                       const SegmentPair &sides, SegmentPair &spans);
 
 void InsetsTestCase::testCompleteTrapezoid() {
-    SegmentPair spans =
-        completeTrapezoid(layermeasure.getLayerW() *0.5,
-                          layermeasure.getLayerW() *1.5, triangleSpurWalls);
+    SegmentPair spans;
+    completeTrapezoid(layermeasure.getLayerW() *0.5,
+                      layermeasure.getLayerW() *1.5, triangleSpurWalls, spans);
 
     /*svgBegin();
     segToSVG(triangleSpurWalls.first, "black", 20, 20);
@@ -424,9 +454,9 @@ void InsetsTestCase::testCompleteTrapezoid() {
 }
 
 void InsetsTestCase::testCompleteTrapezoidRev() {
-    SegmentPair spans =
-        completeTrapezoid(layermeasure.getLayerW() *0.5,
-                          layermeasure.getLayerW() *1.5, revTriangleSpurWalls);
+    SegmentPair spans;
+    completeTrapezoid(layermeasure.getLayerW() *0.5,
+                      layermeasure.getLayerW() *1.5, revTriangleSpurWalls, spans);
 
     /*svgBegin();
     segToSVG(revTriangleSpurWalls.first, "black", 20, 20);
@@ -443,9 +473,9 @@ void InsetsTestCase::testCompleteTrapezoidRev() {
 }
 
 void InsetsTestCase::testCompleteParallel() {
-    SegmentPair spans =
-        completeTrapezoid(layermeasure.getLayerW() *0.5,
-                          layermeasure.getLayerW() *1.5, parallelSpurWalls);
+    SegmentPair spans;
+    completeTrapezoid(layermeasure.getLayerW() *0.5,
+                      layermeasure.getLayerW() *1.5, parallelSpurWalls, spans);
 
     /*svgBegin();
     segToSVG(parallelSpurWalls.first, "black", 20, 20);
@@ -461,13 +491,14 @@ void InsetsTestCase::testCompleteParallel() {
                      sigdig(spans.second.length(), 5) < 0.01);
 }
 
-LineSegment2 bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
-                         const SegmentPair &walls);
+bool bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
+                 const SegmentPair &walls, LineSegment2 &bisect);
 
 void InsetsTestCase::testBisectWalls() {
-    LineSegment2 bisect = bisectWalls(layermeasure.getLayerW() * 0.5,
-                                      layermeasure.getLayerW() * 1.5,
-                                      triangleSpurWalls);
+    LineSegment2 bisect;
+    bisectWalls(layermeasure.getLayerW() * 0.5,
+                layermeasure.getLayerW() * 1.5,
+                triangleSpurWalls, bisect);
 
     /*svgBegin();
     segToSVG(triangleSpurWalls.first, "black", 20, 20);
@@ -484,9 +515,10 @@ void InsetsTestCase::testBisectWalls() {
 }
 
 void InsetsTestCase::testBisectReverseWalls() {
-    LineSegment2 bisect = bisectWalls(layermeasure.getLayerW() * 0.5,
-                                      layermeasure.getLayerW() * 1.5,
-                                      revTriangleSpurWalls);
+    LineSegment2 bisect;
+    bisectWalls(layermeasure.getLayerW() * 0.5,
+                layermeasure.getLayerW() * 1.5,
+                revTriangleSpurWalls, bisect);
 
     /*svgBegin();
     segToSVG(triangleSpurWalls.first, "black", 20, 20);

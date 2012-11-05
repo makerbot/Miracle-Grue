@@ -525,13 +525,21 @@ SegmentPair completeParallel(const Scalar, const Scalar bottomlen,
                        getSegmentNormal(rightSide, rightPoint, spanlen));
 }
 
+typedef enum {BASE_MIN, BASE_MAX} BaseLimitType;
 
 LineSegment2 triangleBase(const EVector firstUnit,
 						  const EVector secondUnit,
 						  const EVector point,
 						  const Scalar angle,
-						  const Scalar baseLen) {
+						  const Scalar baseLen,
+                          const Scalar limit,
+                          const BaseLimitType lt) {
 	Scalar triangleSide = baseLen / (2 * sin(angle / 2));
+
+    if (lt == BASE_MIN && triangleSide < limit)
+        triangleSide = limit;
+    else if (lt == BASE_MAX && triangleSide > limit)
+        triangleSide = limit;
 
 	EVector firstSide = firstUnit * triangleSide;
 	EVector secondSide = secondUnit * triangleSide;
@@ -540,9 +548,13 @@ LineSegment2 triangleBase(const EVector firstUnit,
 						toVector2(point + secondSide));
 }	
 
+Scalar pointDistance(const EVector &a, const EVector &b) {
+    return sqrt((b - a)(0) * (b - a)(0) +
+                (b - a)(1) * (b - a)(1));
+}
 
-SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
-							  const SegmentPair &sides) {
+bool completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
+                       const SegmentPair &sides, SegmentPair &parallels) {
 
     EVector firsta = toEVector(sides.first.a);
     EVector firstb = toEVector(sides.first.b);
@@ -555,8 +567,10 @@ SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
 	EVector firstUnit = firstLine.direction();
 	EVector secondUnit = secondLine.direction();
 
-    if (firstUnit == secondUnit || firstUnit == -secondUnit)
-        return completeParallel(toplen, bottomlen, sides);
+    if (firstUnit == secondUnit || firstUnit == -secondUnit) {
+        parallels = completeParallel(toplen, bottomlen, sides);
+        return true;
+    }
 
     if (firstUnit.dot(secondUnit) < 0) {
         secondLine = ELine::Through(secondb, seconda);
@@ -577,13 +591,22 @@ SegmentPair completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
         secondUnit = -secondUnit;
     }
 
-	SegmentPair parallels;
-	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
-								   angle, toplen);
-	parallels.second = triangleBase(firstUnit, secondUnit, intersection,
-									angle, bottomlen);
+    vector<Scalar> endpoints;
+    endpoints.push_back(pointDistance(intersection, firsta));
+    endpoints.push_back(pointDistance(intersection, firstb));
+    endpoints.push_back(pointDistance(intersection, seconda));
+    endpoints.push_back(pointDistance(intersection, secondb));
 
-	return parallels;
+    sort(endpoints.begin(), endpoints.end());
+
+	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
+								   angle, toplen, endpoints.front(),
+                                   BASE_MIN);
+	parallels.second = triangleBase(firstUnit, secondUnit, intersection,
+									angle, bottomlen, endpoints.back(),
+                                    BASE_MAX);
+
+    return true;
 }
 
 void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
@@ -619,7 +642,8 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 		 curSeg != segs.end(); ++curSeg) {
 		LineSegment2 in = getSegmentNormal(*curSeg, curSeg->a, span);
 		LineSegment2 out = getSegmentNormal(*curSeg, curSeg->a, -span);
-        LineSegment2 normal(in.b, out.b);
+        //LineSegment2 normal(in.b, out.b);
+        LineSegment2 normal(curSeg->a, in.b);
 
 		SegmentList intersecting;
 		findIntersecting(index, normal, intersecting);
@@ -631,7 +655,10 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 			walls.insert(curWalls);
 		}
 
-		normal = getSegmentNormal(*curSeg, curSeg->b, span);
+		in = getSegmentNormal(*curSeg, curSeg->b, span);
+		out = getSegmentNormal(*curSeg, curSeg->b, -span);
+        //normal = LineSegment2(in.b, out.b);
+        normal = LineSegment2(curSeg->b, in.b);
 
 		findIntersecting(index, normal, intersecting);
 
@@ -647,16 +674,18 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 /*void segToSVG(const LineSegment2 seg, const string &color,
   const Scalar xoff, const Scalar yoff);*/
 
-LineSegment2 bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
-                 const SegmentPair &walls) {
-		SegmentPair spans =
-			completeTrapezoid(minSpurWidth, maxSpurWidth, walls);
-		
-        /*segToSVG(spans.first, "green", 20, 20);
-          segToSVG(spans.second, "green", 20, 20);*/
-        
+bool bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
+                         const SegmentPair &walls, LineSegment2 &bisect) {
+    SegmentPair spans;
+    if (completeTrapezoid(minSpurWidth, maxSpurWidth, walls, spans)) {
+        bisect = LineSegment2(midPoint(spans.first), midPoint(spans.second));
+        return true;
+    }
+    else
+        return false;
 
-		return LineSegment2(midPoint(spans.first), midPoint(spans.second));
+    /*segToSVG(spans.first, "green", 20, 20);
+      segToSVG(spans.second, "green", 20, 20);*/
 }
 
 Vector2 segmentDirection(const LineSegment2 &seg) {
@@ -843,8 +872,9 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 	// Bisect each pair
 	for (SegmentPairSet::const_iterator walls = allWalls.begin();
 		 walls != allWalls.end(); ++walls) {
-		LineSegment2 bisect = bisectWalls(minSpurWidth, maxSpurWidth, *walls);
-        pieces.push_back(bisect);
+		LineSegment2 bisect;
+        if (bisectWalls(minSpurWidth, maxSpurWidth, *walls, bisect))
+            pieces.push_back(bisect);
 	}
 
     //cut each segment so it fits in the outline
@@ -854,13 +884,13 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     }
 
 
-    //chainSpurSegments(index, minSpurWidth, pieces, spurs);
-    for (SegmentList::const_iterator piece = pieces.begin();
+    chainSpurSegments(index, minSpurWidth, pieces, spurs);
+    /*for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         spurs.push_back(OpenPath());
         spurs.back().appendPoint(piece->a);
         spurs.back().appendPoint(piece->b);
-        }
+        }*/
 }
 
 
