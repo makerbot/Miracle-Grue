@@ -2,7 +2,7 @@
 #define	MGL_UNIT_TEST_FASTGRAPHDEEPTESTCASE_H_
 
 #include <cppunit/extensions/HelperMacros.h>
-#define FASTGRAPH_FRIENDS_LIST friend class FastgraphDeepTestCase;
+#define FASTGRAPH_FRIENDS_LIST
 #include "mgl/pather_optimizer_fastgraph.h"
 
 class FastgraphDeepTestCase : public CPPUNIT_NS::TestFixture {

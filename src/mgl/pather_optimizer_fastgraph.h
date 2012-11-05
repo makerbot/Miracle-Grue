@@ -34,7 +34,7 @@ public:
     PathingException(const T& arg) : Exception(arg) {}
 };
 
-/* 
+/** 
  Implementation of interface put forth in abstract_optimizer
    One of the several different options for optimizing paths. 
     Usage:
@@ -54,7 +54,7 @@ public:
     //addPath builds up the correct interior graph (the correct bucket)
     void addPath(const OpenPath& path, const PathLabel& label);
     void addPath(const Loop& loop, const PathLabel& label);
-    //Do not cross this path!
+    //Do not cross this path! TODO: Not supported by buckets
     void addBoundary(const OpenPath& path);
     //Creates a new bucket. Things inside of this loop will be added to this bucket
 	void addBoundary(const Loop& loop);
@@ -63,13 +63,22 @@ public:
     //debugging: Make a nice svg of this graph
     void repr_svg(std::ostream& out);
     
+    
+    // HACK FOR UNIT TESTS TO TOUCH PRIVATES
 #ifdef FASTGRAPH_FRIENDS_LIST
-    FASTGRAPH_FRIENDS_LIST
-#define FASTGRAPH_PRIVATE public
+    #define FASTGRAPH_PRIVATE public
 #else
-#define FASTGRAPH_PRIVATE private
+    #define FASTGRAPH_PRIVATE private
 #endif
+    // END HACK
 protected:
+    /**
+     @brief Starting point for all optimization
+     Whenever you call any_type_of_optimizer.optimize(anyContainer), inernally 
+     it will call optimizeInternal then copy results out of @a labeledpaths
+     @param labeledpaths where result is placed
+     This function is DESTRUCTIVE. 
+     */
     void optimizeInternal(LabeledOpenPaths& labeledpaths);
 FASTGRAPH_PRIVATE:
 
@@ -81,10 +90,24 @@ FASTGRAPH_PRIVATE:
     typedef std::list<bucket> bucket_list;
     //format is void foo(output, [input]);
     //pick the best bucket to start optimizing, optimize it, repeat until done
+    /**
+     @brief optimize the best bucket then erase it. Repeat until empty
+     @param output a list of lists of labeledopenpaths. Each entry in the top 
+     list represents the paths of a single top level bucket. Each entry in the 
+     bottom list represents a single path to traverse.
+     @param entryPoint A Point2Type reference to the most recently traversed 
+     point. This is persistent for the entire slice. It is used to determine 
+     which object to optimize next, and which node to optimize within objects. 
+     All optimizations will update this point. It is also what allows us to 
+     start a new layer where the previous layer ended.
+     */
     void optimize1(multipath_type& output, Point2Type& entryPoint);
-    //Run v-opt on results of above function
+    ///Run v-opt on results of above function, not used currently
     bool optimize2(LabeledOpenPaths& labeledopenpaths, 
             LabeledOpenPaths& intermediate);
+    /**
+     @brief a PathLabel that also stores precomputed distance and normal.
+     */
     class Cost : public PathLabel {
     public:
         Cost(const PathLabel& label = PathLabel(), 
@@ -99,6 +122,12 @@ FASTGRAPH_PRIVATE:
         Scalar m_distance;
         Point2Type m_normal;
     };
+    /**
+     @brief Data to store at each node in our graphs
+     @param position where in the layer this node is located
+     @param label the label of the path to which this node belongs
+     @param entry is this node a valid entry point
+     */
     class NodeData {
     public:
         NodeData(Point2Type position, 
@@ -125,6 +154,23 @@ FASTGRAPH_PRIVATE:
     
     class LoopHierarchyBaseComparator;
     
+    /**
+     @brief a description of the extents of a region and all regions 
+     contained within it.
+     
+     An outline loop defines a bucket. If there is a hole loop inside this 
+     outline loop, the outline loop will contain the hole loop.
+     
+     Each bucket contains its extents for testing containment, but also
+     contains the borders of itself and all its children for not crossing 
+     when making connections.
+     In addition, each bucket contains a loop hierarchy and a graph of things 
+     to optimize.
+     
+     TODO: Replace both bucket and loop hierarchy with specializations of 
+     Containment_tree
+     
+     */
     class bucket {
     public:
         
@@ -133,6 +179,9 @@ FASTGRAPH_PRIVATE:
         class LoopHierarchy;
         typedef std::list<LoopHierarchy> hierarchy_list;
         
+        /**
+         @brief a LoopHierarchy is a bucket for insets. All same things apply.
+         */
         class LoopHierarchy {
         public:
             LoopHierarchy();
@@ -143,9 +192,17 @@ FASTGRAPH_PRIVATE:
             LoopHierarchy& insert(const Loop& loop, const PathLabel& label);
             bool contains(Point2Type point) const;
             bool contains(const LoopHierarchy& other) const;
+            /**
+             @brief the entry point for optimizing a loop hierarchy
+             Selects the best valid child and optimizes it until no more remain
+             */
             void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
                     graph_type& graph, boundary_container& bounds, 
                     const GrueConfig& grueConf);
+            /**
+             @brief called by a parent hierarchy on its valid children
+             @param from dummy unused parameter to differentiate overloads
+             */
             void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
                     graph_type& graph, graph_type::node_index& from, 
                     boundary_container& bounds, 
@@ -211,7 +268,7 @@ FASTGRAPH_PRIVATE:
     
     
     typedef graph_type::forward_node_iterator node_iterator;
-    
+    //below here are many many comparators, should be cleaned up.
     class AbstractLabelComparator : public abstract_predicate<PathLabel> {
     public:
         typedef abstract_predicate<PathLabel>::value_type value_type;
