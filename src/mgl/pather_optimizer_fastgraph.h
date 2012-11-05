@@ -181,6 +181,11 @@ FASTGRAPH_PRIVATE:
         
         /**
          @brief a LoopHierarchy is a bucket for insets. All same things apply.
+         LoopHierarchies have code that will traverse loops always 
+         innermost to outermost, but will also group adjacent loops 
+         together.
+         This is simply a depth-first tree traversal with head or tail 
+         recursion dictated by a comparator.
          */
         class LoopHierarchy {
         public:
@@ -227,6 +232,7 @@ FASTGRAPH_PRIVATE:
         bool contains(const bucket& other) const;
         void insertBoundary(const Loop& loop);
         void insertNoCross(const Loop& loop);
+        void insertBucket(bucket& constructed);
         bucket& select(Point2Type point);
         void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
                 const GrueConfig& grueConf);
@@ -244,20 +250,15 @@ FASTGRAPH_PRIVATE:
                 bucket_list::iterator end, 
                 const Point2Type& entryPoint);
         
-        boundary_container m_bounds;
         boundary_container m_noCrossing;
-        AABBox m_limits;
         graph_type m_graph;
         Point2Type m_testPoint;
-        Point2Type m_infinitePoint;
         bool m_empty;
         bucket_list m_children;
         Loop m_loop;
         LoopHierarchy m_hierarchy;
     private:
-        void insertBoundary(const Segment2Type& line);
         void insertNoCross(const Segment2Type& line);
-        void updateInfinity();
     };
     
     
