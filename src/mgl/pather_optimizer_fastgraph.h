@@ -1,10 +1,10 @@
-/* 
- * File:   pather_optimizer_fastgraph.h
- * Author: Dev
- *
- * Created on October 9, 2012, 11:28 AM
+/**
+ @file pather_optimizer_fastgraph.h
+ @version 0
+ @author Filipp Gelman <filipp@makerbot.com>
+ @summary An incredibly convoluted recursive tree hierarchy based approach to 
+ approximately solving the a pseudo-traveling-salesman problem 
  */
-
 #ifndef MGL_PATHER_OPTIMIZER_FASTGRAPH_H
 #define	MGL_PATHER_OPTIMIZER_FASTGRAPH_H
 
@@ -189,13 +189,36 @@ FASTGRAPH_PRIVATE:
          */
         class LoopHierarchy {
         public:
+            /// Construct a hierarchy parent
             LoopHierarchy();
+            /// construct a normal hierarchy node
             LoopHierarchy(const LabeledLoop& loop);
+            /// construct a normal hierarchy node
             LoopHierarchy(const Loop& loop, const PathLabel& label);
             typedef std::vector<graph_type::node_index> entryIndexVector;
+            /**
+             @brief convenience function, invokes insert(loop, label);
+             */
             LoopHierarchy& insert(const LabeledLoop& loop);
+            /**
+             @brief insert this loop and its label into the hierarchy
+             @param loop the loop to insert. Must not intersect any loops 
+             already in the hierarchy.
+             @param label the label for @a loop
+             @return reference to the element that contains the loop you 
+             are trying to insert
+             
+             This will properly handle the case where @a loop contains this 
+             hierarchy or some of its children. It will may also cause 
+             a complete reorganization of the tree, invalidating all old 
+             references.
+             
+             LoopHierarchy will NOT handle non-manifold or intersecting loops.
+             */
             LoopHierarchy& insert(const Loop& loop, const PathLabel& label);
+            /// test if we contain the point
             bool contains(Point2Type point) const;
+            /// test if we contain other
             bool contains(const LoopHierarchy& other) const;
             /**
              @brief the entry point for optimizing a loop hierarchy
@@ -226,29 +249,72 @@ FASTGRAPH_PRIVATE:
             LoopHierarchy& insert(LoopHierarchy& constructed);
         };
         
+        /// construct a bucket parent
         bucket(Point2Type testPoint = Point2Type());
+        /// construct a normal bucket
         bucket(const Loop& loop);
+        /// test for containment
         bool contains(Point2Type point) const;
+        /// test for containment
         bool contains(const bucket& other) const;
+        /// invokes insertBucket with a boundary constructed from the loop
         void insertBoundary(const Loop& loop);
+        /// things optimized in this bucket should not cross this loop
         void insertNoCross(const Loop& loop);
+        /**
+         @brief insert the bucket into this one. 
+         
+         As in LoopHierarchy, it handles cases where constructed contains 
+         this bucket or some of its children. Invalidates old references, 
+         and does not handle non-manifoldness
+         
+         @param constructed the bucket you try to insert into this one. This 
+         will be invalidated after insertion.
+         */
         void insertBucket(bucket& constructed);
+        /**
+         @brief select the deepest child that contains point, or this bucket. 
+         @param point the point to test
+         @return the deepest child that contains point, or this bucket if no 
+         child contains
+         */
         bucket& select(Point2Type point);
+        /**
+         @brief optimize any loop hierarchies in this bucket followed by 
+         all things stored in this bucket's graph
+         */
         void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
                 const GrueConfig& grueConf);
+        /// Fast swap implementation, no memory allocation or deallocation
         void swap(bucket& other);
+        /// use for iterating over the extents of this bucket
         edge_iterator edgeBegin() const;
+        /// use for iterating over the extents of this bucket
         edge_iterator edgeEnd() const;
         
+        /**
+         @brief Convenience function that invokes pickBestChild below, but 
+         omits bestDistanceOutput
+         */
+        static bucket_list::iterator pickBestChild(
+                bucket_list::iterator begin, 
+                bucket_list::iterator end, 
+                const Point2Type& entryPoint);
+        /**
+         @brief Based on @a entryPoint, pick from the range [begin,end] the 
+         best bucket for optimizing.
+         @param begin start of the range to consider
+         @param end past-the-end of the range to consider
+         @param entryPoint find bucket nearest to this point
+         @param bestDistanceOutput distance from @a entryPoint to the 
+         nearest point in the returned bucket
+         @return iterator to the nearest bucket or @a end
+         */
         static bucket_list::iterator pickBestChild(
                 bucket_list::iterator begin, 
                 bucket_list::iterator end, 
                 const Point2Type& entryPoint, 
                 Scalar& bestDistanceOutput);
-        static bucket_list::iterator pickBestChild(
-                bucket_list::iterator begin, 
-                bucket_list::iterator end, 
-                const Point2Type& entryPoint);
         
         boundary_container m_noCrossing;
         graph_type m_graph;
@@ -263,7 +329,10 @@ FASTGRAPH_PRIVATE:
     
     
     typedef graph_type::forward_node_iterator node_iterator;
+    
+    
     //below here are many many comparators, should be cleaned up.
+    
     class AbstractLabelComparator : public abstract_predicate<PathLabel> {
     public:
         typedef abstract_predicate<PathLabel>::value_type value_type;
@@ -339,7 +408,10 @@ FASTGRAPH_PRIVATE:
         int compare(const value_type& lhs, const value_type& rhs) const;
     };
     
-    
+    /**
+     @brief A filter iterator that allows convenient access to only those 
+     nodes in a graph that are entry points.
+     */
     class entry_iterator {
     public:
         
@@ -362,9 +434,14 @@ FASTGRAPH_PRIVATE:
         node_iterator m_end;
     };
     
+    /// get the entry_iterator for graph
     static entry_iterator entryBegin(graph_type& graph);
+    /// get the entry_iterator for graph
     static entry_iterator entryEnd(graph_type& graph);
     
+    /**
+     @brief adapt a predicate for use when building up links
+     */
     class probeCompare {
     public:
         probeCompare(node_index from, graph_type& basis, 
@@ -480,6 +557,13 @@ FASTGRAPH_PRIVATE:
         NodeComparator m_nodeCompare;
     };
     
+    /**
+     @brief convenience function for testing if @a line crosses any 
+     element of @boundaries
+     @param line the line to test
+     @param boundaries the spacial index to test against
+     @return true if crossings exist, false otherwise
+     */
     static bool crossesBounds(const Segment2Type& line, 
             boundary_container& boundaries);
     
