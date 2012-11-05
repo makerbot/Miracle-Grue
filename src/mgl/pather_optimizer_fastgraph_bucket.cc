@@ -319,6 +319,8 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
                 minStart = Loop::cw_iterator(iter);
             }
         }
+        if(entryPoint == INVALID_POINT)
+            entryPoint = *minStart;
         Segment2Type connectLine(entryPoint, *minStart);
         if(!crossesBounds(connectLine, bounds)) {
             LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 

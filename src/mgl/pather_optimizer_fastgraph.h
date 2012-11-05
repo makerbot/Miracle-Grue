@@ -47,10 +47,10 @@ public:
  */
 class pather_optimizer_fastgraph : public abstract_optimizer {
 public:
+    static const Point2Type INVALID_POINT;
     pather_optimizer_fastgraph(const GrueConfig& grueConf)
             : grueCfg(grueConf),  
-            historyPoint(std::numeric_limits<Scalar>::min(), 
-            std::numeric_limits<Scalar>::min()) {}
+            historyPoint(INVALID_POINT) {}
     //addPath builds up the correct interior graph (the correct bucket)
     void addPath(const OpenPath& path, const PathLabel& label);
     void addPath(const Loop& loop, const PathLabel& label);
