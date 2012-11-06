@@ -292,7 +292,7 @@ void GrueConfig::loadSupportParams(const Configuration& config) {
 }
 void GrueConfig::loadPathingParams(const Configuration& config) {
     iterativeEffort = uintCheck(config["iterativeEffort"], 
-            "iterativeEffort");
+            "iterativeEffort", 999);
 }
 void GrueConfig::loadProfileParams(const Configuration& config) {
     loadExtruderParams(config);
