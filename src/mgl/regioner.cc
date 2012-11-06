@@ -707,19 +707,19 @@ void cutInteriorSegment(SegmentIndex &index, const Scalar margin,
             Vector2 direction = segmentDirection(orig);
             direction.normalise();
             
-            LineSegment2 left = LineSegment2(intersectPoint
-                                                - direction * margin,
+            LineSegment2 left = LineSegment2(intersectPoint,
                                              orig.a);
-            LineSegment2 right = LineSegment2(intersectPoint
-                                                - direction * margin,
+            LineSegment2 right = LineSegment2(intersectPoint,
                                               orig.b );
 
 
             if (segmentDirection(left).dotProduct(normal) > 0) {
                 orig = left;
+                orig.a = orig.a - direction * margin;
             }
             else if (segmentDirection(right).dotProduct(normal) > 0) {
                 orig = right;
+                orig.a = orig.a + direction * margin;
             }
         }
     }
@@ -841,7 +841,7 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 OpenPathList &spurs) {
 
 	//TODO: make these config values
-	const Scalar maxSpurWidth = layermeasure.getLayerW() * 3;
+	const Scalar maxSpurWidth = layermeasure.getLayerW() * 1.5;
 	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.5;
 	
 	//get loop line segments
@@ -885,6 +885,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 
 
     chainSpurSegments(index, minSpurWidth, pieces, spurs);
+
+    //for testing without segments chained
     /*for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         spurs.push_back(OpenPath());
