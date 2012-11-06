@@ -24,7 +24,7 @@ class InsetsTestCase : public CPPUNIT_NS::TestFixture{
 
 	CPPUNIT_TEST_SUITE( InsetsTestCase );
 
-	CPPUNIT_TEST( testSingleSquareInset );
+	/*CPPUNIT_TEST( testSingleSquareInset );
 	CPPUNIT_TEST( testSquareSpurRegion );
 	CPPUNIT_TEST( testSquareSpurFill );
 	CPPUNIT_TEST( testTriangleSpurRegion );
@@ -35,9 +35,9 @@ class InsetsTestCase : public CPPUNIT_NS::TestFixture{
     CPPUNIT_TEST( testBisectWalls );
     CPPUNIT_TEST( testBisectReverseWalls );
     CPPUNIT_TEST( testCompleteParallel );
-    CPPUNIT_TEST( testTwoPairFill );
-    CPPUNIT_TEST( testThreePairFill );
-    CPPUNIT_TEST( testStretchlet );
+    CPPUNIT_TEST( testTwoPairFill );*/
+    //CPPUNIT_TEST( testThreePairFill );
+    //CPPUNIT_TEST( testStretchlet );
     CPPUNIT_TEST( testStretchletWallPairs );
 
 	CPPUNIT_TEST_SUITE_END();

@@ -342,6 +342,8 @@ LineSegment2 getSegmentNormal(const LineSegment2 &orig,
 void InsetsTestCase::testStretchletWallPairs() {
 	Regioner regioner(config);
 
+    LayerMeasure reallayer(0.27, 0.27, 1.6);
+
     //get loop line segments
 	SegmentList segs;
 	SegmentIndex index;
@@ -361,25 +363,25 @@ void InsetsTestCase::testStretchletWallPairs() {
 
 	//find wall pairs
 	SegmentPairSet allWalls;
-	findWallPairs(layermeasure.getLayerW() * 1.5, segs, index, allWalls);
+	findWallPairs(reallayer.getLayerW() * 1.5, segs, index, allWalls);
     
-    /*svgBegin();
+    svgBegin();
     loopsToSVG(stretchletLoops, "red", 0, 0);
 
     for (SegmentList::const_iterator seg = segs.begin();
          seg != segs.end(); ++seg) {
         segToSVG(getSegmentNormal(*seg, seg->a,
-                                  layermeasure.getLayerW() * 1.5),
+                                  reallayer.getLayerW() * 1.5),
                                   "orange", 0, 0);
         segToSVG(getSegmentNormal(*seg, seg->b,
-                                  layermeasure.getLayerW() * 1.5),
+                                  reallayer.getLayerW() * 1.5),
                                   "orange", 0, 0);
-        segToSVG(getSegmentNormal(*seg, seg->a,
-                                  layermeasure.getLayerW() * -1.5),
+        /*segToSVG(getSegmentNormal(*seg, seg->a,
+                                  reallayer.getLayerW() * -1.5),
                                   "orange", 0, 0);
         segToSVG(getSegmentNormal(*seg, seg->b,
-                                  layermeasure.getLayerW() * -1.5),
-                                  "orange", 0, 0);
+                                  reallayer.getLayerW() * -1.5),
+                                  "orange", 0, 0);*/
     }
         
 
@@ -389,35 +391,35 @@ void InsetsTestCase::testStretchletWallPairs() {
         segToSVG(walls->first, "black", 0, 0);
         segToSVG(walls->second, "blue", 0, 0);
 
-        //segToSVG(LineSegment2(midPoint(walls->first), midPoint(walls->second)),
-        //       "green", 0, 0);
-        segToSVG(getSegmentNormal(walls->first, walls->first.a,
-                                  layermeasure.getLayerW() * 1.5),
+        segToSVG(LineSegment2(midPoint(walls->first), midPoint(walls->second)),
+               "green", 0, 0);
+        /*segToSVG(getSegmentNormal(walls->first, walls->first.a,
+                                  reallayer.getLayerW() * 1.5),
                                   "green", 0, 0);
         segToSVG(getSegmentNormal(walls->first, walls->first.b,
-                                  layermeasure.getLayerW() * 1.5),
+                                  reallayer.getLayerW() * 1.5),
                                   "green", 0, 0);
         segToSVG(getSegmentNormal(walls->first, walls->second.a,
-                                  layermeasure.getLayerW() * 1.5),
+                                  reallayer.getLayerW() * 1.5),
                                   "green", 0, 0);
         segToSVG(getSegmentNormal(walls->first, walls->second.b,
-                                  layermeasure.getLayerW() * 1.5),
+                                  reallayer.getLayerW() * 1.5),
                                   "green", 0, 0);
 
         segToSVG(getSegmentNormal(walls->first, walls->first.a,
-                                  layermeasure.getLayerW() * -1.5),
+                                  reallayer.getLayerW() * -1.5),
                                   "green", 0, 0);
         segToSVG(getSegmentNormal(walls->first, walls->first.b,
-                                  layermeasure.getLayerW() * -1.5),
+                                  reallayer.getLayerW() * -1.5),
                                   "green", 0, 0);
         segToSVG(getSegmentNormal(walls->first, walls->second.a,
-                                  layermeasure.getLayerW() * -1.5),
+                                  reallayer.getLayerW() * -1.5),
                                   "green", 0, 0);
         segToSVG(getSegmentNormal(walls->first, walls->second.b,
-                                  layermeasure.getLayerW() * -1.5),
-                                  "green", 0, 0);
+                                  reallayer.getLayerW() * -1.5),
+                                  "green", 0, 0);*/
     }
-    svgEnd();*/
+    svgEnd();
 
     CPPUNIT_ASSERT_EQUAL(1, (int)allWalls.size());
 }
@@ -553,7 +555,7 @@ void InsetsTestCase::testTwoPairFill() {
 
 void InsetsTestCase::testThreePairFill() {
 	Regioner regioner(config);
-	//svgBegin();
+	svgBegin();
 
 	LoopList loops;
 	loops.push_back(threePairShell);
@@ -561,9 +563,9 @@ void InsetsTestCase::testThreePairFill() {
 	OpenPathList spurs;
 	regioner.fillSpurLoops(loops, layermeasure, spurs);
 
-    /*loopToSVG(threePairShell, "black", 20, 20);
+    loopToSVG(threePairShell, "black", 20, 20);
 	openPathListToSVG(spurs, "red", 20, 20);
-	svgEnd();*/
+	svgEnd();
 
 	CPPUNIT_ASSERT_EQUAL(5, (int)spurs.size());
 }
