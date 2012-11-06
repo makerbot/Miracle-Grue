@@ -243,10 +243,6 @@ pather_optimizer_fastgraph::bucket_list::iterator
     throw GraphException("Thing did not fall into any bucket!");
 }
 
-const Point2Type pather_optimizer_fastgraph::INVALID_POINT(
-        -5000, 
-        -5000);
-
 
 }
 
