@@ -160,6 +160,8 @@ private:
     /* This is called from loadProfileParams */
     void loadExtruderParams(const Configuration& config);
     void loadExtrusionParams(const Configuration& config);
+    /* This is called from loadSlicingParams */
+    void loadSolidLayerParams(const Configuration& config);
     /* --END-- */
     
     //gcoder stuff

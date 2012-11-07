@@ -224,11 +224,7 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     insetDistanceMultiplier =
             doubleCheck(config["insetDistanceMultiplier"],
             "insetDistanceMultiplier");
-    roofLayerCount =
-            uintCheck(config["roofLayerCount"], "roofLayerCount");
-    floorLayerCount =
-            uintCheck(config["floorLayerCount"], "floorLayerCount");
-    
+    loadSolidLayerParams(config);
 }
 void GrueConfig::loadGantryParams(const Configuration& config) {
     rapidMoveFeedRateXY = (doubleCheck(
@@ -373,6 +369,24 @@ void GrueConfig::loadExtrusionParams(const Configuration& config) {
 
         extrusionProfiles.insert(pair<std::string,
                 Extrusion > (profileName, extrusion));
+    }
+}
+void GrueConfig::loadSolidLayerParams(const Configuration& config) {
+    try {
+        roofLayerCount =
+                uintCheck(config["roofLayerCount"], "roofLayerCount");
+    } catch (const ConfigException& ce) {
+        Scalar roofThickness = doubleCheck(config["roofThickness"], 
+                "roofThickness");
+        roofLayerCount = static_cast<unsigned>(ceil(roofThickness / layerH));
+    }
+    try {
+        floorLayerCount =
+                uintCheck(config["floorLayerCount"], "floorLayerCount");
+    } catch (const ConfigException& ce) {
+        Scalar floorThickness = doubleCheck(config["floorThickness"], 
+                "floorThickness");
+        floorLayerCount = static_cast<unsigned>(ceil(floorThickness / layerH));
     }
 }
 
