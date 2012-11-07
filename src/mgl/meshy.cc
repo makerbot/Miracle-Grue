@@ -15,7 +15,7 @@
 namespace mgl {
 
 using namespace std;
-using namespace libthing;
+
 
 #ifdef __BYTE_ORDER
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -70,11 +70,11 @@ void StlWriter::open(const char* fileName, const char *solid){
 	out << std::scientific;
 	out << "solid " << solidName << std::endl;
 }
-void StlWriter::writeTriangle(const libthing::Triangle3& t) {
+void StlWriter::writeTriangle(const Triangle3Type& t) {
 	// normalize( (v1-v0) cross (v2 - v0) )
 	// y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x
 
-	libthing::Vector3 n = t.normal();
+	Point3Type n = t.normal();
 	out << " facet normal " << n[0] << " " << n[1] << " " << n[2] << std::endl;
 	out << "  outer loop" << std::endl;
 	out << "    vertex " << t[0].x << " " << t[0].y << " " << t[0].z << std::endl;
@@ -92,7 +92,7 @@ void StlWriter::close() {
 
 Meshy::Meshy() {}
 
-const std::vector<Triangle3>& Meshy::readAllTriangles() const {
+const std::vector<Triangle3Type>& Meshy::readAllTriangles() const {
 	return allTriangles;
 }
 
@@ -117,7 +117,7 @@ void Meshy::flushBuffer() {
 // Adds a triangle to the buffer of triangles to be analyzed
 //
 
-void Meshy::bufferTriangle(libthing::Triangle3 t){
+void Meshy::bufferTriangle(Triangle3Type t){
 	bufferedTriangles.push_back(t);
 }
 
@@ -125,7 +125,7 @@ void Meshy::bufferTriangle(libthing::Triangle3 t){
 // Adds a triangle to the global array and for each slice of interest
 //
 
-void Meshy::addTriangle(Triangle3 &t) {
+void Meshy::addTriangle(Triangle3Type &t) {
 
 	allTriangles.push_back(t);
 
@@ -162,7 +162,7 @@ void Meshy::writeStlFile(const char* fileName) const {
 	out.open(fileName);
 	size_t triCount = allTriangles.size();
 	for (size_t i = 0; i < triCount; i++) {
-		const Triangle3 &t = allTriangles[i];
+		const Triangle3Type &t = allTriangles[i];
 		out.writeTriangle(t);
 	}
 	out.close();
@@ -178,7 +178,7 @@ void Meshy::writeStlFile(const char* fileName) const {
 //	const TriangleIndices &trianglesForSlice = sliceTable[layerIndex];
 //	for (std::vector<index_t>::const_iterator i = trianglesForSlice.begin(); i != trianglesForSlice.end(); i++) {
 //		index_t index = *i;
-//		const Triangle3 &t = allTriangles[index];
+//		const Triangle3Type &t = allTriangles[index];
 //		out.writeTriangle(t);
 //	}
 //	out.close();
@@ -274,11 +274,11 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 			convertFromLittleEndian16((uint8_t*) & tridata.vertexes.attrBytes);
 
 			vertexes_t &v = tridata.vertexes;
-			Vector3 pt1(v.x1, v.y1, v.z1);
-			Vector3 pt2(v.x2, v.y2, v.z2);
-			Vector3 pt3(v.x3, v.y3, v.z3);
+			Point3Type pt1(v.x1, v.y1, v.z1);
+			Point3Type pt2(v.x2, v.y2, v.z2);
+			Point3Type pt3(v.x3, v.y3, v.z3);
 
-			Triangle3 triangle(pt1, pt2, pt3);
+			Triangle3Type triangle(pt1, pt2, pt3);
 			bufferTriangle(triangle);
 
 			facecount++;
@@ -339,7 +339,7 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 				Log::info() << c << " " << q << endl;
 				throw(problem);
 			}
-			Triangle3 triangle(Vector3(v.x1, v.y1, v.z1), Vector3(v.x2, v.y2, v.z2), Vector3(v.x3, v.y3, v.z3));
+			Triangle3Type triangle(Point3Type(v.x1, v.y1, v.z1), Point3Type(v.x2, v.y2, v.z2), Point3Type(v.x3, v.y3, v.z3));
 			bufferTriangle(triangle);
 
 			facecount++;
@@ -353,25 +353,25 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 
 void Meshy::alignToPlate() {
 	if (!tequals(limits.zMin, 0, 0.0000001)) {
-		translate(Vector3(0, 0, -limits.zMin));
+		translate(Point3Type(0, 0, -limits.zMin));
 	}
 }
 
-void Meshy::translate(const Vector3 &change) {
+void Meshy::translate(const Point3Type &change) {
 	flushBuffer();
-	vector<Triangle3> oldTriangles(allTriangles.begin(), allTriangles.end());
+	vector<Triangle3Type> oldTriangles(allTriangles.begin(), allTriangles.end());
 
 	allTriangles.clear();
 
 	limits = Limits();
 
-	for (vector<Triangle3>::iterator i = oldTriangles.begin();
+	for (vector<Triangle3Type>::iterator i = oldTriangles.begin();
 		 i != oldTriangles.end(); i++) {
-		Vector3 point1 = (*i)[0] + change;
-		Vector3 point2 = (*i)[1] + change;
-		Vector3 point3 = (*i)[2] + change;
+		Point3Type point1 = (*i)[0] + change;
+		Point3Type point2 = (*i)[1] + change;
+		Point3Type point3 = (*i)[2] + change;
 
-		Triangle3 newTriangle(point1, point2, point3);
+		Triangle3Type newTriangle(point1, point2, point3);
 		bufferTriangle(newTriangle);
 	}
 	

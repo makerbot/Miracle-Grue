@@ -6,7 +6,7 @@
 #include "mgl/gcoder.h"
 #include "mgl/mgl.h"
 #include "mgl/regioner.h"
-#include "libthing/LineSegment2.h"
+#include "mgl/LineSegment2.h"
 
 
 

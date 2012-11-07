@@ -133,16 +133,11 @@ operating_system = sys.platform
 
 print "Operating system: [" + operating_system + "]"
 
-LIBTHING_PATH = 'submodule/libthing/src/main/cpp/'
-LIBTHING_INCLUDE = LIBTHING_PATH + 'include'
-LIBTHING_SRC = LIBTHING_PATH + 'src/'
-
 default_libs = []
 default_includes = ['submodule/json-cpp/include',
 		    'submodule/EzCppLog', 
 		    'submodule/optionparser/src',
-            '../eigen',
-		    LIBTHING_INCLUDE]
+            '../eigen']
 
 tools = ['default']
 
@@ -203,49 +198,46 @@ env.Append(CCFLAGS = ['-Wall', '-Wextra'])
 #	print "QT modules", qtModules
 #	env.EnableQt4Modules(qtModules)
 
-libthing_cc = [ LIBTHING_SRC+'Scalar.cc',
-		LIBTHING_SRC+'Vector2.cc', 
-		LIBTHING_SRC+'Vector3.cc',
-		LIBTHING_SRC+'Triangle3.cc',
-		LIBTHING_SRC+"LineSegment2.cc"
-]
+# mgl_cc = [
+          ## 'src/mgl/Edge.cc',
+          # 'src/mgl/ScadDebugFile.cc',
+          # 'src/mgl/abstractable.cc',
+          # 'src/mgl/clipper.cc',
+          # 'src/mgl/configuration.cc',
+          # 'src/mgl/connexity.cc',
+          # 'src/mgl/gcoder.cc',
+          # 'src/mgl/gcoder_gantry.cc',
+          # 'src/mgl/grid.cc',
+          # 'src/mgl/insets.cc',
+          # 'src/mgl/log.cc',
+          # 'src/mgl/loop_path_openpath_impl.cc',
+          # 'src/mgl/loop_path_loop_impl.cc',
+          # 'src/mgl/loop_path_looppath_impl.cc',
+          # 'src/mgl/loop_processor.cc',
+          # 'src/mgl/meshy.cc',
+          # 'src/mgl/mgl.cc',
+          # 'src/mgl/miracle.cc',
+          # 'src/mgl/pather.cc',
+          # 'src/mgl/pather_layerpaths.cc',
+          # 'src/mgl/pather_optimizer.cc',
+          # 'src/mgl/pather_optimizer_graph.cc',
+          # 'src/mgl/regioner.cc',
+          # 'src/mgl/segment.cc',
+          # 'src/mgl/segmenter.cc',
+          # 'src/mgl/shrinky.cc',
+          # 'src/mgl/slicer.cc',
+          # 'src/mgl/slicer_loops.cc',
+          # 'src/mgl/slicy.cc',
+          # 'src/mgl/spacial_data.cc',
+          # 'src/mgl/loop_utils.cc',
+          ## libthing objects go here
+          # 'src/mgl/Scalar.cc', 
+          # 'src/mgl/Vector2.cc', 
+          # 'src/mgl/Vector3.cc', 
+          # 'src/mgl/LineSegment2.cc',
+          # 'src/mgl/Triangle3.cc']
 
-
-
-mgl_cc = [
-#         'src/mgl/Edge.cc',
-          'src/mgl/ScadDebugFile.cc',
-          'src/mgl/abstractable.cc',
-          'src/mgl/clipper.cc',
-          'src/mgl/configuration.cc',
-#         'src/mgl/connexity.cc',
-          'src/mgl/gcoder.cc',
-          'src/mgl/gcoder_gantry.cc',
-          'src/mgl/grid.cc',
-          'src/mgl/insets.cc',
-          'src/mgl/log.cc',
-          'src/mgl/loop_path_openpath_impl.cc',
-          'src/mgl/loop_path_loop_impl.cc',
-          'src/mgl/loop_path_looppath_impl.cc',
-          'src/mgl/loop_processor.cc',
-          'src/mgl/meshy.cc',
-          'src/mgl/mgl.cc',
-          'src/mgl/miracle.cc',
-          'src/mgl/pather.cc',
-          'src/mgl/pather_layerpaths.cc',
-          'src/mgl/pather_optimizer.cc',
-          'src/mgl/pather_optimizer_graph.cc',
-          'src/mgl/regioner.cc',
-          'src/mgl/segment.cc',
-          'src/mgl/segmenter.cc',
-          'src/mgl/shrinky.cc',
-          'src/mgl/slicer.cc',
-          'src/mgl/slicer_loops.cc',
-          'src/mgl/slicy.cc',
-          'src/mgl/spacial_data.cc',
-          'src/mgl/loop_utils.cc',
-          'src/mgl/dump_restore.cc']
-
+mgl_cc = Glob('src/mgl/*.cc')
 
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
             'submodule/json-cpp/src/lib_json/json_value.cpp',
@@ -263,7 +255,6 @@ toolpathviz_ui = ['submodule/toolpathviz/mainwindow.ui']
 
 JSON_CPP_BASE = 'submodule/json-cpp/include'
 
-env.Library('./bin/lib/thing', libthing_cc, CPPPATH=[LIBTHING_INCLUDE])
 env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src', default_includes])
 env.Library('./bin/lib/_json', json_cc, CPPPATH=[JSON_CPP_BASE,])
 
@@ -272,7 +263,7 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',
 
 
 
-default_libs.extend(['mgl', '_json', 'thing'])
+default_libs.extend(['mgl', '_json'])
 
 #debug_libs = ['cppunit', 'gcov']
 debug_libs = ['cppunit']

@@ -64,7 +64,7 @@ typename basic_quadtree<T>::iterator basic_quadtree<T>::insert(const value_type&
 }
 template <typename T>
 template <typename COLLECTION, typename FILTER>
-void basic_quadtree<T>::search(COLLECTION& result, const FILTER& filt) {
+void basic_quadtree<T>::search(COLLECTION& result, const FILTER& filt) const {
     if(!filt.filter(myBounds))
         return;
     for(typename data_container::const_iterator iter = myData.begin(); 
@@ -77,6 +77,19 @@ void basic_quadtree<T>::search(COLLECTION& result, const FILTER& filt) {
         for(size_t i = 0; i < CAPACITY; ++i) {
             myChildren[i]->search(result, filt);
         }
+}
+template <typename T>
+void basic_quadtree<T>::swap(basic_quadtree& other) {
+    //swap all pointers, primitives, and POD's
+    std::swap(myBounds, other.myBounds);
+    for(size_t i = 0; i < CAPACITY; ++i) {
+        std::swap(myChildren[i], other.myChildren[i]);
+    }
+    //let deta_container do its own smart swap
+    myData.swap(other.myData);
+    std::swap(childrenExist, other.childrenExist);
+    std::swap(myTreeAllocator, other.myTreeAllocator);
+    std::swap(myDataAllocator, other.myDataAllocator);
 }
 template <typename T>
 void basic_quadtree<T>::repr(std::ostream& out, unsigned int recursionLevel) {
@@ -104,7 +117,7 @@ void basic_quadtree<T>::repr_svg(std::ostream& out, unsigned int recursionLevel)
     unsigned int rgbcolor = (255 << (recursionLevel*8)) | 
             (255 >> ((1+recursionLevel)*8));
     Scalar factor = 0.0 * recursionLevel;
-    AABBox bounds = myBounds.adjusted(PointType(factor, factor), PointType(-factor, -factor));
+    AABBox bounds = myBounds.adjusted(Point2Type(factor, factor), Point2Type(-factor, -factor));
     out << "<rect x=\"" << bounds.left() << "\" y=\"" << bounds.bottom() << 
             "\" width=\"" << bounds.size_x() << "\" height=\"" << 
             bounds.size_y() << "\" " << 

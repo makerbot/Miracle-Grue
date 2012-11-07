@@ -12,7 +12,7 @@
 namespace mgl{
 
 using namespace std;
-using namespace libthing;
+
 
 Segmenter::Segmenter(const GrueConfig& config) 
         : zTapeMeasure(config.get_firstLayerZ(), 
@@ -23,7 +23,7 @@ const SliceTable& Segmenter::readSliceTable() const{
 const LayerMeasure& Segmenter::readLayerMeasure() const{
 	return zTapeMeasure;
 }
-const vector<Triangle3>& Segmenter::readAllTriangles() const{
+const vector<Triangle3Type>& Segmenter::readAllTriangles() const{
 	return allTriangles;
 }
 const Limits& Segmenter::readLimits() const{
@@ -37,9 +37,9 @@ void Segmenter::tablaturize(const Meshy& mesh){
 		updateSlicesTriangle(i);
 }
 void Segmenter::updateSlicesTriangle(size_t newTriangleId){
-	Triangle3 t = allTriangles[newTriangleId];
+	Triangle3Type t = allTriangles[newTriangleId];
 	
-	Vector3 a, b, c;
+	Point3Type a, b, c;
 	t.zSort(a, b, c);
 
 	unsigned int minSliceIndex = this->zTapeMeasure.zToLayerAbove(a.z);

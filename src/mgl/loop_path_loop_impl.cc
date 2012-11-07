@@ -5,7 +5,7 @@
 
 namespace mgl {
 
-Loop::PointNormal::PointNormal(const PointType& point)
+Loop::PointNormal::PointNormal(const Point2Type& point)
 		: point(point), normalDirty(true), myIteratorPointer(NULL) {}
 
 Loop::PointNormal::PointNormal()
@@ -34,21 +34,21 @@ Loop::PointNormal::~PointNormal() {
 	delete myIteratorPointer;
 }
 
-Loop::PointNormal::operator PointType() const {
+Loop::PointNormal::operator Point2Type() const {
 	return point;
 }
 
-const PointType& Loop::PointNormal::getPoint() const {
+const Point2Type& Loop::PointNormal::getPoint() const {
 	return point;
 }
 
-const PointType& Loop::PointNormal::getNormal() const {
+const Point2Type& Loop::PointNormal::getNormal() const {
 	if(normalDirty)
 		recalculateNormal();
 	return normal;
 }
 
-void Loop::PointNormal::setPoint(const PointType& npoint) {
+void Loop::PointNormal::setPoint(const Point2Type& npoint) {
 	point = npoint;
 	normalDirty = true;
 	if(myIteratorPointer){
@@ -88,7 +88,7 @@ void Loop::PointNormal::recalculateNormal() const {
 		++Ci;	//point to next
 		recalculateNormal(*Ai, *Bi);
 	} else {
-		normal = PointType();
+		normal = Point2Type();
 	}
 }
 
@@ -96,8 +96,8 @@ void Loop::PointNormal::recalculateNormal(const PointNormal& A,
 		const PointNormal& C) const {
 	// A------B------C
 	// this is B
-	PointType ba = point-A;
-	PointType cb = static_cast<PointType>(C)-point;
+	Point2Type ba = point-A;
+	Point2Type cb = static_cast<Point2Type>(C)-point;
 	// rotate and normalize both vectors
 	ba = ba.rotate2d(M_PI_2).unit();
 	cb = cb.rotate2d(M_PI_2).unit();
@@ -107,11 +107,11 @@ void Loop::PointNormal::recalculateNormal(const PointNormal& A,
 
 Loop::Loop() {}
 
-Loop::Loop(const PointType& first) {
+Loop::Loop(const Point2Type& first) {
 	insertPointBefore(first, clockwiseEnd());
 }
 
-Loop::cw_iterator Loop::clockwise(const PointType& startpoint) {
+Loop::cw_iterator Loop::clockwise(const Point2Type& startpoint) {
 	for (PointNormalList::iterator i = pointNormals.begin();
 			i != pointNormals.end(); i++) {
 		if (i->getPoint() == startpoint)
@@ -121,7 +121,7 @@ Loop::cw_iterator Loop::clockwise(const PointType& startpoint) {
 	return clockwiseEnd();
 }
 
-Loop::const_cw_iterator Loop::clockwise(const PointType& startpoint) const {
+Loop::const_cw_iterator Loop::clockwise(const Point2Type& startpoint) const {
 	for (PointNormalList::const_iterator i = pointNormals.begin();
 			i != pointNormals.end(); i++) {
 		if (i->getPoint() == startpoint)
@@ -159,7 +159,7 @@ Loop::const_cw_iterator Loop::clockwiseEnd() const {
 			pointNormals.begin(), pointNormals.end()); 
 }
 
-Loop::ccw_iterator Loop::counterClockwise(const PointType& startpoint) {
+Loop::ccw_iterator Loop::counterClockwise(const Point2Type& startpoint) {
 	for (PointNormalList::reverse_iterator i = pointNormals.rbegin();
 			i != pointNormals.rend(); i++) {
 		if (i->getPoint() == startpoint)
@@ -170,7 +170,7 @@ Loop::ccw_iterator Loop::counterClockwise(const PointType& startpoint) {
 }
 
 Loop::const_ccw_iterator Loop::counterClockwise(
-		const PointType& startpoint) const {
+		const Point2Type& startpoint) const {
 	for (PointNormalList::const_reverse_iterator i = pointNormals.rbegin();
 			i != pointNormals.rend(); i++) {
 		if (i->getPoint() == startpoint)
@@ -213,7 +213,7 @@ Loop::entry_iterator Loop::entryBegin() const  {
 			pointNormals.begin(), pointNormals.end());
 }
 
-PointType Loop::getExitPoint(entry_iterator entry) const {
+Point2Type Loop::getExitPoint(entry_iterator entry) const {
 	return *entry;
 }
 
@@ -234,6 +234,25 @@ bool Loop::empty() const {
 	return pointNormals.empty();
 }
 
+bool Loop::windingContains(const Point2Type& point) const {
+    int accum = 0;
+    for(Loop::const_finite_cw_iterator iter = clockwiseFinite(); 
+            iter != clockwiseEnd(); 
+            ++iter) {
+        Segment2Type seg = segmentAfterPoint(iter);
+        if(seg.a.y <= point.y) {
+            if(seg.b.y > point.y)
+                if(seg.testLeft(point) > 0)
+                    ++accum;
+        } else {
+            if(seg.b.y <= point.y)
+                if(seg.testRight(point) > 0)
+                    --accum;
+        }
+    }
+    return accum != 0;
+}
+
 Scalar Loop::curl() const {
 	Scalar accum = 0;
 	for(const_finite_ccw_iterator curIter = counterClockwiseFinite(); 
@@ -242,10 +261,10 @@ Scalar Loop::curl() const {
 		const_ccw_iterator curCcw(curIter);
 		const_ccw_iterator nextCcw(curIter);
 		++nextCcw;
-		libthing::LineSegment2 curSegment = segmentAfterPoint(curCcw);
-		libthing::LineSegment2 nextSegment = segmentAfterPoint(nextCcw);
-		PointType curRel = curSegment.b - curSegment.a;
-		PointType nextRel = nextSegment.b - nextSegment.a;
+		Segment2Type curSegment = segmentAfterPoint(curCcw);
+		Segment2Type nextSegment = segmentAfterPoint(nextCcw);
+		Point2Type curRel = curSegment.b - curSegment.a;
+		Point2Type nextRel = nextSegment.b - nextSegment.a;
 		accum += curRel.crossProduct(nextRel);
 	}
 	return accum;

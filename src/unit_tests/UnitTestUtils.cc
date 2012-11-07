@@ -8,14 +8,14 @@
 
 using namespace mgl;
 using namespace std;
-using namespace libthing;
 
 
 
-void clip(const std::vector<LineSegment2> &in,
+
+void clip(const std::vector<Segment2Type> &in,
 			unsigned int min,
 			unsigned int max,
-			std::vector<LineSegment2> &out)
+			std::vector<Segment2Type> &out)
 {
 	int newSize = in.size() - (max -min);
 	std::cout << "NEW SIZE " << newSize << std::endl;
@@ -25,11 +25,11 @@ void clip(const std::vector<LineSegment2> &in,
 
 	for(unsigned int i =0; i <in.size(); i++)
 	{
-		const LineSegment2 s = in[i];
+		const Segment2Type s = in[i];
 		if(i == min-1)
 		{
 			i = max+1; // advance the cursor
-			LineSegment2 s1 = in[i];
+			Segment2Type s1 = in[i];
 			s1.a = s.b;
 			out.push_back(s);
 			out.push_back(s1);

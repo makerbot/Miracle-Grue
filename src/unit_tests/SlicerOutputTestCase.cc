@@ -9,7 +9,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( SlicerOutputTestCase );
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
+
 
 string inputsDir;
 
@@ -38,15 +38,15 @@ void SlicerOutputTestCase::testLoopLayer(){
 	
 	Loop expected;
 	Loop::cw_iterator iter = expected.clockwiseEnd();
-	iter = expected.insertPointAfter(PointType(10,9.8), iter);
-	iter = expected.insertPointAfter(PointType(10,-10), iter);
-	iter = expected.insertPointAfter(PointType(9.8,-10), iter);
-	iter = expected.insertPointAfter(PointType(-10,-10), iter);
-	iter = expected.insertPointAfter(PointType(-10,-9.8), iter);
-	iter = expected.insertPointAfter(PointType(-10,10), iter);
-	iter = expected.insertPointAfter(PointType(-9.8,10), iter);
-	iter = expected.insertPointAfter(PointType(10,10), iter);
-	iter = expected.insertPointAfter(PointType(10,10), iter);
+	iter = expected.insertPointAfter(Point2Type(10,9.8), iter);
+	iter = expected.insertPointAfter(Point2Type(10,-10), iter);
+	iter = expected.insertPointAfter(Point2Type(9.8,-10), iter);
+	iter = expected.insertPointAfter(Point2Type(-10,-10), iter);
+	iter = expected.insertPointAfter(Point2Type(-10,-9.8), iter);
+	iter = expected.insertPointAfter(Point2Type(-10,10), iter);
+	iter = expected.insertPointAfter(Point2Type(-9.8,10), iter);
+	iter = expected.insertPointAfter(Point2Type(10,10), iter);
+	iter = expected.insertPointAfter(Point2Type(10,10), iter);
 	
 	CPPUNIT_ASSERT_MESSAGE("No layers in layerloops", 
 			!layerloops.empty());

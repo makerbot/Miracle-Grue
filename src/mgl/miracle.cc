@@ -10,7 +10,7 @@
 using namespace std;
 using namespace mgl;
 using namespace Json;
-using namespace libthing;
+
 
 
 //// @param slices list of output slice (output )

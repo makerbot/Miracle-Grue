@@ -209,7 +209,7 @@ private:
     const Extruder& extruder,
     const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
-    libthing::Vector2 startPoint(const SliceData &sliceData);
+    Point2Type startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
 };
 
@@ -224,10 +224,10 @@ void GCoder::writePath(std::ostream& ss,
         throw mixup;
     }
     typename PATH::const_iterator current = path.fromStart();
-    PointType last = *current;
+    Point2Type last = *current;
     ++current;
     // rapid move into position
-    PointType gantryPos(gantry.get_x(), gantry.get_y());
+    Point2Type gantryPos(gantry.get_x(), gantry.get_y());
     if ((gantryPos - last).magnitude() >= grueCfg.get_coarseness()) {
         gantry.snort(ss, extruder, extrusion);
         gantry.g1(ss, extruder, extrusion,
@@ -239,7 +239,7 @@ void GCoder::writePath(std::ostream& ss,
     }
     gantry.squirt(ss, extruder, extrusion);
     for (; current != path.end(); ++current) {
-        PointType relative = (*current) - last;
+        Point2Type relative = (*current) - last;
 
         std::stringstream comment;
         Scalar distance = relative.magnitude();

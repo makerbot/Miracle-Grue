@@ -5,7 +5,7 @@
 #include <json/value.h>
 
 #include "loop_path.h"
-#include <libthing/Vector2.h>
+#include "Vector2.h"
 
 namespace mgl {
 

@@ -7,12 +7,12 @@ namespace mgl {
 
 static const Scalar DBLTOINT = 20000;
 
-void PointTypeToIntPoint(const PointType pt, ClipperLib::IntPoint &ip) {
+void Point2TypeToIntPoint(const Point2Type pt, ClipperLib::IntPoint &ip) {
 	ip.X = pt.x * DBLTOINT;
 	ip.Y = pt.y * DBLTOINT;
 }
 
-void IntPointToPointType(const ClipperLib::IntPoint ip, PointType &pt) {
+void IntPointToPoint2Type(const ClipperLib::IntPoint ip, Point2Type &pt) {
 	pt.x = ip.X / DBLTOINT;
 	pt.y = ip.Y / DBLTOINT;
 }
@@ -28,7 +28,7 @@ void loopToClPolygon(const Loop &loop,
 		clpoly.push_back(ClipperLib::IntPoint());
 		ClipperLib::IntPoint &ip = clpoly.back();
 
-		PointTypeToIntPoint(pn->getPoint(), ip);
+		Point2TypeToIntPoint(pn->getPoint(), ip);
 	}
 }	
 
@@ -50,8 +50,8 @@ void ClPolygonToLoop(const ClipperLib::Polygon &clpoly,
 					 Loop &loop) {
 	for (ClipperLib::Polygon::const_reverse_iterator ip = clpoly.rbegin();
 		 ip != clpoly.rend(); ++ip) {
-		PointType pt;
-		IntPointToPointType(*ip, pt);
+		Point2Type pt;
+		IntPointToPoint2Type(*ip, pt);
 
 		loop.insertPointBefore(pt, loop.clockwiseEnd());
 	}
@@ -145,13 +145,13 @@ enum SMOOTH_RESULT {
     SMOOTH_REPLACE
 };
 
-SMOOTH_RESULT smoothPoints(const PointType& lp1, 
-        const PointType& lp2, 
-        const PointType& cp, 
+SMOOTH_RESULT smoothPoints(const Point2Type& lp1, 
+        const Point2Type& lp2, 
+        const Point2Type& cp, 
         const Scalar& maxDeviation, 
         const Scalar& factor, 
         Scalar& cumDeviation,
-        PointType& output);
+        Point2Type& output);
 
 void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
     if(smoothness == 0 || input.size() <= 3) {
@@ -161,7 +161,7 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
 	Loop::const_finite_cw_iterator current;
 	current = input.clockwiseFinite();
     
-    std::vector<PointType> tmpPoints;
+    std::vector<Point2Type> tmpPoints;
     tmpPoints.push_back(*(current++));
     tmpPoints.push_back(*(current++));
     
@@ -170,15 +170,15 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
 	Scalar cumulativeError = 0.0;
     
 	for(; current != input.clockwiseEnd(); ++current) {
-        std::vector<PointType>::reverse_iterator last1 = 
+        std::vector<Point2Type>::reverse_iterator last1 = 
                 tmpPoints.rbegin();
-        std::vector<PointType>::const_reverse_iterator last2 = 
+        std::vector<Point2Type>::const_reverse_iterator last2 = 
                 tmpPoints.rbegin();
         ++last2;
-        const PointType& currentPoint = *current;
-        const PointType& lp1 = *last1;
-        const PointType& lp2 = *last2;
-        PointType result;
+        const Point2Type& currentPoint = *current;
+        const Point2Type& lp1 = *last1;
+        const Point2Type& lp2 = *last2;
+        Point2Type result;
         SMOOTH_RESULT rslt = smoothPoints(lp1, lp2, currentPoint, smoothness, 
                 factor, cumulativeError, result);
         if(rslt == SMOOTH_ADD) {
@@ -187,7 +187,7 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
             tmpPoints.back() = result;
         }
 	}
-    for(std::vector<PointType>::const_iterator iter = tmpPoints.begin(); 
+    for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
             iter != tmpPoints.end(); 
             ++iter) {
         output.insertPointBefore(*iter, output.clockwiseEnd());
@@ -215,10 +215,10 @@ void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output, Scalar f
         OpenPath::const_reverse_iterator last2(
                 output.fromEnd());
         ++last2;
-        const PointType& currentPoint = *current;
-        const PointType& lp1 = *last1;
-        const PointType& lp2 = *last2;
-        PointType result;
+        const Point2Type& currentPoint = *current;
+        const Point2Type& lp1 = *last1;
+        const Point2Type& lp2 = *last2;
+        Point2Type result;
         SMOOTH_RESULT rslt = smoothPoints(lp1, lp2, currentPoint, smoothness, 
                 factor, cumulativeError, result);
         if(rslt == SMOOTH_ADD) {;
@@ -230,26 +230,26 @@ void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output, Scalar f
 }
 
 
-SMOOTH_RESULT smoothPoints(const PointType& lp1, 
-        const PointType& lp2, 
-        const PointType& cp, 
+SMOOTH_RESULT smoothPoints(const Point2Type& lp1, 
+        const Point2Type& lp2, 
+        const Point2Type& cp, 
         const Scalar& maxDeviation, 
         const Scalar& factor, 
         Scalar& cumDeviation, 
-        PointType& output) {
-    PointType ldelta = lp1 - lp2;
-    PointType unit;
+        Point2Type& output) {
+    Point2Type ldelta = lp1 - lp2;
+    Point2Type unit;
     try{
         unit = ldelta.unit();
-    } catch (const libthing::Exception& e) {
+    } catch (const GeometryException& e) {
         output = cp;
         return SMOOTH_ADD;
     }
-    PointType delta = cp - lp1;
+    Point2Type delta = cp - lp1;
     Scalar component = delta.dotProduct(unit);
     Scalar deviation = delta.crossProduct(unit);
     deviation = deviation < 0 ? -deviation : deviation;
-    PointType landingPoint = lp1 + unit*component;
+    Point2Type landingPoint = lp1 + unit*component;
     cumDeviation += deviation;
     if(cumDeviation > maxDeviation) {
         output = cp;

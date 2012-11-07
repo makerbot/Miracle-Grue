@@ -4,7 +4,7 @@
 #include "UnitTestUtils.h"
 #include "InsetsTestCase.h"
 #include "mgl/regioner.h"
-#include "libthing/LineSegment2.h"
+#include "mgl/LineSegment2.h"
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
 #include "mgl/dump_restore.h"

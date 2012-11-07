@@ -11,7 +11,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SlicerCupTestCase);
 
 using namespace std;
 using namespace mgl;
-using namespace libthing;
+
 
 MyComputer computer;
 
@@ -82,9 +82,11 @@ void testModel(const char *model, const char* configFile) {
 				gcodeFileStream, -1, -1,
 				skeleton,
 				slices);
-	} catch (mgl::Exception mgle) {
+    } catch (const mgl::Exception& mgle) {
 		CPPUNIT_FAIL(mgle.error);
-	}
+	} catch(const std::exception& e) {
+        CPPUNIT_FAIL(e.what());
+    }
 
 	gcodeFileStream.close();
 }
@@ -124,10 +126,13 @@ void SlicerCupTestCase::testIndividuals() {
 	try {
 
 		testModels(models, "miracle.config");
-	}	catch (mgl::Exception &e) {
-		cout << e.error << endl;
-	}	catch (...) {
+	}	catch (const mgl::Exception &e) {
+		CPPUNIT_FAIL(e.error);
+	}   catch (const std::exception& e)	{
+        CPPUNIT_FAIL(e.what());
+    }   catch (...) {
 		CPPUNIT_FAIL("unknown error during slicing");
+        throw;
 	}
 }
 
@@ -157,13 +162,13 @@ void SlicerCupTestCase::testSpecificIssuesC() {
 }
 
 void addPoints(mgl::Polygon& pol) {
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
-	pol.push_back(Vector2());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
+	pol.push_back(Point2Type());
 }
 
 void addPolys(Polygons& pol) {

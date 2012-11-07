@@ -23,7 +23,7 @@ public:
     Segmenter(const GrueConfig& config);
 	const SliceTable& readSliceTable() const;
 	const LayerMeasure& readLayerMeasure() const;
-	const std::vector<libthing::Triangle3>& readAllTriangles() const;
+	const std::vector<Triangle3Type>& readAllTriangles() const;
 	const Limits& readLimits() const;
 	void tablaturize(const Meshy& mesh);
 private:
@@ -32,7 +32,7 @@ private:
 	SliceTable sliceTable;
 	LayerMeasure zTapeMeasure;
 	
-	std::vector<libthing::Triangle3> allTriangles;
+	std::vector<Triangle3Type> allTriangles;
 	Limits limits;
 };
 

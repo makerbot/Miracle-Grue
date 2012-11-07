@@ -3,10 +3,10 @@
 
 #include "mgl/mgl.h"
 
-void clip(const std::vector<libthing::LineSegment2> &in,
+void clip(const std::vector<mgl::Segment2Type> &in,
 			unsigned int min,
 			unsigned int max,
-			std::vector<libthing::LineSegment2> &out);
+			std::vector<mgl::Segment2Type> &out);
 
 void  mkDebugPath(const char *path);
 

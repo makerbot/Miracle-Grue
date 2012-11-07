@@ -19,6 +19,7 @@ using namespace mgl;
 using namespace std;
 using namespace libthing;
 
+
 Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
 
@@ -46,12 +47,22 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	}
 
 	//optionally inflate if rafts present
-	if (grueCfg.get_doRaft()) {
-		limits.inflate(0, 0,
-				grueCfg.get_raftBaseThickness() +
-				grueCfg.get_raftInterfaceThickness() *
-				(grueCfg.get_raftLayers() - 1));
+	if (grueCfg.get_doRaft() && grueCfg.get_raftLayers() > 0) {
+        Scalar raftHeight = grueCfg.get_raftBaseThickness() + 
+                grueCfg.get_raftInterfaceThickness() * 
+                (grueCfg.get_raftLayers() - 1);
+        Scalar raftOutsetOverhead = grueCfg.get_raftOutset() * 4;
+        //increase height by raft height
+        limits.grow(Point3Type(
+                limits.center().x, limits.center().y, 
+                limits.zMax + raftHeight));
+        //grow sides by raft outset
+        limits.inflate(raftOutsetOverhead, raftOutsetOverhead, 0);
 	}
+    if(grueCfg.get_doSupport()) {
+        Scalar supportOverhead = grueCfg.get_supportMargin() * 4;
+        limits.inflate(supportOverhead, supportOverhead, 0);
+    }
 
 	grid.init(limits, layerMeasure.getLayerW() *
 			grueCfg.get_gridSpacingMultiplier());
@@ -168,7 +179,7 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	tick();
 
 	SegmentTable convexSegs;
-	convexSegs.push_back(std::vector<LineSegment2 > ());
+	convexSegs.push_back(std::vector<Segment2Type > ());
 
 	for (Loop::finite_cw_iterator iter = convexLoop.clockwiseFinite();
 			iter != convexLoop.clockwiseEnd(); ++iter) {
@@ -177,14 +188,14 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 	}
 
 	SegmentTable outsetSegs;
-	outsetSegs.push_back(std::vector<LineSegment2 > ());
+	outsetSegs.push_back(std::vector<Segment2Type > ());
 
 	//outset the convex hull by the configured distance
 	ClipperInsetter().inset(convexSegs, -grueCfg.get_raftOutset(), outsetSegs);
 	tick();
 
 	Loop raftLoop;
-	for (std::vector<LineSegment2>::const_iterator iter =
+	for (std::vector<Segment2Type>::const_iterator iter =
 			outsetSegs.back().begin();
 			iter != outsetSegs.back().end();
 			++iter) {
@@ -906,8 +917,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 //	// slice id must be adjusted for
 //	for (size_t i = 0; i < sliceCount; i++) {
 //		tick();
-//		const libthing::SegmentTable & sliceOutlines = outlinesSegments[i];
-//		libthing::Insets & sliceInsets = insets[i];
+//		const SegmentTable & sliceOutlines = outlinesSegments[i];
+//		Insets & sliceInsets = insets[i];
 //
 //		insetsForSlice(sliceOutlines, sliceInsets);
 //	}
@@ -1061,18 +1072,22 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		--currentMargins;
 		
 		LoopList &support = current->supportLoops;
-
+        
+        //offset aboveMargins by a fudge factor
+        //to compensate for error when we subtracted them from layer above
+        LoopList aboveMarginsOutset;
+        loopsOffset(aboveMarginsOutset, *aboveMargins, 0.01);
+        
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support = *aboveMargins;
+			support = aboveMarginsOutset;
 		} else {
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
-
 			//add the outlines of layer above
-			loopsUnion(support, *aboveMargins);
+			loopsUnion(support, aboveMarginsOutset);
 		}
-
+        tick();
 		//subtract current outlines from the support loops to keep support
 		//from overlapping the object
 
@@ -1083,7 +1098,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		--aboveMargins;
 		tick();
 	}
-	
+	return;
 	current = regionsBegin;
 	currentMargins = marginsList.begin();
 	above = current;
@@ -1130,18 +1145,24 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		//find the bounds we will be combinging regions across
 		RegionList::iterator firstFloor = current;
-		for (unsigned int i = 0; i < grueCfg.get_floorLayerCount() &&
+        RegionList::iterator floorEnd = current;
+		for (unsigned int i = 1; i < grueCfg.get_floorLayerCount() &&
 				firstFloor != regionsBegin; ++i)
 			--firstFloor;
 
 		RegionList::iterator lastRoof = current;
-		for (unsigned int i = 0; i < grueCfg.get_roofLayerCount() &&
+        RegionList::iterator roofEnd = current;
+		for (unsigned int i = 1; i < grueCfg.get_roofLayerCount() &&
 				lastRoof != regionsEnd - 1; ++i)
 			++lastRoof;
-
+        
+        if(grueCfg.get_floorLayerCount() > 0)
+            ++floorEnd;
+        if(grueCfg.get_roofLayerCount() > 0)
+            --roofEnd;
 		//combine floors
 		for (RegionList::iterator floor = firstFloor;
-				floor <= current; ++floor) {
+				floor != floorEnd; ++floor) {
 			GridRanges multiFloor;
 
 			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
@@ -1149,8 +1170,8 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		}
 
 		//combine roofs
-		for (RegionList::iterator roof = current;
-				roof <= lastRoof; ++roof) {
+		for (RegionList::iterator roof = lastRoof;
+				roof != roofEnd; --roof) {
 			GridRanges multiRoof;
 
 			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
