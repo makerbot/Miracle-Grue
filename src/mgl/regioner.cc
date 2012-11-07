@@ -654,26 +654,30 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 		LineSegment2 in = getSegmentNormal(*curSeg, curSeg->a, span);
 		LineSegment2 out = getSegmentNormal(*curSeg, curSeg->a, -span);
         //LineSegment2 normal(in.b, out.b);
-        LineSegment2 normal(curSeg->a, in.b);
+        LineSegment2 normal = in;
 
 		SegmentList intersecting;
 		findIntersecting(index, normal, intersecting);
-
-		if (intersecting.size() > 0) {
+        for(SegmentList::const_iterator iter = intersecting.begin(); 
+                iter != intersecting.end();
+                ++iter) {
 			//we only care about the closest intersection
 			SegmentPair curWalls =
-				normalizeWalls(*curSeg, intersecting.front());
+				normalizeWalls(*curSeg, *iter);
 			walls.insert(curWalls);
 		}
 
 		in = getSegmentNormal(*curSeg, curSeg->b, span);
 		out = getSegmentNormal(*curSeg, curSeg->b, -span);
         //normal = LineSegment2(in.b, out.b);
-        normal = LineSegment2(curSeg->b, in.b);
-
+        normal = in;
+        
+        intersecting.clear();
+        
 		findIntersecting(index, normal, intersecting);
-
-		if (intersecting.size() > 0) {
+		for(SegmentList::const_iterator iter = intersecting.begin(); 
+                iter != intersecting.end();
+                ++iter) {
 			//we only care about the closest intersection
 			SegmentPair curWalls =
 				normalizeWalls(*curSeg, intersecting.front());
