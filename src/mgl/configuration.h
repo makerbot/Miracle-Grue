@@ -188,6 +188,8 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, gridSpacingMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, nbOfShells)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthRatio)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthMinimum)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthMaximum)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, insetDistanceMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, roofLayerCount)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, floorLayerCount)
