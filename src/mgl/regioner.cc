@@ -858,7 +858,7 @@ void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
         //ends
         if (flags->first) {
             LineSegment2 end(points->front(), *(points->begin() + 1));
-            if (end.length() < margin) {
+            if (end.length() < margin * 2) {
                 flags->first = false;
                 --numpoints;
                 seg.a = *(points->begin() + 1);
@@ -867,7 +867,7 @@ void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
 
         if (flags->last) {
             LineSegment2 end(*(points->end() - 1), *(points->end() - 2));
-            if (end.length() < margin) {
+            if (end.length() < margin * 2) {
                 flags->last = false;
                 --numpoints;
                 seg.b = *(points->end() - 2);
@@ -907,6 +907,8 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
     PointTable piecePoints;
     SegmentList pieces = origPieces;
 
+    //do this multiple times to catch dangling segments after other intersecting
+    //segments have been dropped
     for (int count = 0; count < 2; ++count)
         clipNearOutline(outline, pieceIndex, pieces, margin,
                         piecePoints, flagsList);
