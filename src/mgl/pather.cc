@@ -66,8 +66,12 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
         try {
 		if (currentSlice < firstSliceIdx) continue;
 		if (currentSlice > lastSliceIdx) break;
-
-		direction = !direction;
+        if(grueCfg.get_doRaft() && currentSlice > 1 && 
+                currentSlice < grueCfg.get_raftLayers()) {
+            //don't flip direction
+        } else {
+            direction = !direction;
+        }
 		const layer_measure_index_t layerMeasureId =
 				layerRegions->layerMeasureId;
 
