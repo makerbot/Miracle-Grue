@@ -917,6 +917,7 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
     while (points != piecePoints.end()) {
         if (flags->all) {
             LineSegment2 seg(points->front(), points->back());
+            expandSeg(seg, 0.001);
             int numpoints = points->size();
 
             if (flags->first 
@@ -935,7 +936,7 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
 
             if (numpoints < 2)
                 flags->all = false;
-                }
+        }
 
         ++points;
         ++flags;
