@@ -754,8 +754,7 @@ private:
     Vector2 m_anchor;
 };
 
-bool endPointValid(SegmentIndex &outline, SegmentIndex spurs,
-                   const LineSegment2 &segment,
+bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
                    const Vector2 &endpoint, const Scalar margin) {
     LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
     LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
@@ -763,15 +762,8 @@ bool endPointValid(SegmentIndex &outline, SegmentIndex spurs,
 
     SegmentList intersecting;
 
-    findIntersecting(outline, tangent, intersecting);
-
-    if (intersecting.size() > 0)
-        return false;
-
-    intersecting.clear();
-    findIntersecting(spurs, tangent, intersecting);
-
-    return intersecting.size() == 0;
+    findIntersecting(index, tangent, intersecting);
+    return intersecting.size() > 0;
 }
 
 Vector2 closestPoint(const PointList points, const Vector2 orig) {
@@ -789,6 +781,117 @@ Vector2 closestPoint(const PointList points, const Vector2 orig) {
     return closest;
 }
 
+void expandSeg(LineSegment2 &seg, Scalar len) {
+    Vector2 dir = segmentDirection(seg);
+    Vector2 extra = dir * len;
+    seg.a -= extra;
+    seg.b += extra;
+}
+
+struct SpurPieceFlags {
+    SpurPieceFlags() : first(true), last(true), all(true) {};
+
+    bool first;
+    bool last;
+    bool all;
+};
+
+typedef vector<SpurPieceFlags> FlagsList;
+typedef vector<PointList> PointTable;
+
+void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
+                     SegmentList &pieces, const Scalar margin,
+                     PointTable &piecePoints, FlagsList &flagsList) {
+    piecePoints.clear();
+    flagsList.clear();
+
+    SegmentList newPieces;
+    
+    // a parallel vector to pieces tracking all the intersection points
+    // on each segment 
+    for (SegmentList::const_iterator piece = pieces.begin();
+         piece != pieces.end(); piece++) {
+        piecePoints.push_back(PointList());
+        PointList &cur = piecePoints.back();
+        findIntersectPoints(pieceIndex, *piece, cur);
+    }
+
+    //First add the endpoints to the points list so each points vector has
+    //every point on a spur segment, then sort that list
+    SegmentList::const_iterator orig = pieces.begin();
+    vector<PointList>::iterator points = piecePoints.begin();
+    while (orig != pieces.end()) {
+        points->push_back(orig->a);
+        points->push_back(orig->b);
+        sort(points->begin(), points->end(), DistanceCmp(orig->a));
+
+        //end points all start valid
+        flagsList.push_back(SpurPieceFlags());
+
+        ++orig;
+        ++points;
+    }
+    
+    //next remove endpoints that are too close to the outline and make a new
+    //index
+    SegmentIndex edgeClipped;
+    points = piecePoints.begin();
+    FlagsList::iterator flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        LineSegment2 seg(points->front(), points->back());
+        int numpoints = points->size();
+
+        if (isEndPointClose(outline, seg, seg.a, margin/2)) {
+            flags->first = false;
+            --numpoints;
+            seg.a = *(points->begin() + 1);
+        }
+
+        if (isEndPointClose(outline, seg, seg.b, margin/2)) {
+            flags->last = false;
+            --numpoints;
+            seg.b = *(points->end() - 2);
+        }
+
+        //if a dangling piece is too short, cut it off.  This will cause
+        //pieces that intersect almost at their ends to actually chain at the
+        //ends
+        if (flags->first) {
+            LineSegment2 end(points->front(), *(points->begin() + 1));
+            if (end.length() < margin) {
+                flags->first = false;
+                --numpoints;
+                seg.a = *(points->begin() + 1);
+            }
+        }
+
+        if (flags->last) {
+            LineSegment2 end(*(points->end() - 1), *(points->end() - 2));
+            if (end.length() < margin) {
+                flags->last = false;
+                --numpoints;
+                seg.b = *(points->end() - 2);
+            }
+        }
+
+        //can't have a segment with less than one point
+        if (numpoints < 2)
+            flags->all = false;
+        else if (seg.length() < margin * 2)
+            flags->all = false;
+        else {
+            expandSeg(seg, 0.001);
+            edgeClipped.insert(seg);
+            newPieces.push_back(seg);
+        }
+
+        ++points;
+        ++flags;
+    }
+
+    pieceIndex = edgeClipped;
+    pieces = newPieces;
+}
 
 void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
                        const SegmentList &origPieces,
@@ -800,54 +903,68 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
          piece != origPieces.end(); piece++)
         pieceIndex.insert(*piece);
 
-    // a parallel vector to origPieces tracking all the intersection points
-    // on each segment
-    vector<PointList > intersectionPoints;
+    FlagsList flagsList;
+    PointTable piecePoints;
+    SegmentList pieces = origPieces;
 
-    for (SegmentList::const_iterator piece = origPieces.begin();
-         piece != origPieces.end(); piece++) {
-        intersectionPoints.push_back(PointList());
-        PointList &cur = intersectionPoints.back();
-        findIntersectPoints(pieceIndex, *piece, cur);
+    for (int count = 0; count < 2; ++count)
+        clipNearOutline(outline, pieceIndex, pieces, margin,
+                        piecePoints, flagsList);
+
+    //remove remaining endpoints that are too close to another spur
+    PointTable::iterator points = piecePoints.begin();
+    FlagsList::iterator flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        if (flags->all) {
+            LineSegment2 seg(points->front(), points->back());
+            int numpoints = points->size();
+
+            if (flags->first 
+                && isEndPointClose(pieceIndex, seg, seg.a, margin/2))
+                flags->first = false;
+                
+
+            if (flags->last
+                && isEndPointClose(pieceIndex, seg, seg.b, margin/2))
+                flags->last = false;
+
+            if (!flags->first)
+                --numpoints;
+            if (!flags->last)
+                --numpoints;
+
+            if (numpoints < 2)
+                flags->all = false;
+                }
+
+        ++points;
+        ++flags;
     }
 
-    SegmentList::const_iterator orig = origPieces.begin();
-    vector<PointList>::iterator points = intersectionPoints.begin();
-    while (orig != origPieces.end()) {
-        chained.push_back(OpenPath());
-        OpenPath &chain = chained.back();
-        
-        Vector2 start;
-        
-        if (points->size() == 0) {
-            chain.appendPoint(orig->a);
-            chain.appendPoint(orig->b);
-        }
-        else {
-            if (endPointValid(outline, pieceIndex,
-                              *orig, orig->a, margin / 2)) {
-                start = orig->a;
-                points->push_back(orig->a);
-            }
-            else {
-                start = closestPoint(*points, orig->a);
-            }
+    //finally add fully clipped paths to the list
+    points = piecePoints.begin();
+    flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        if (flags->all) {
+            PointList::const_iterator begin = points->begin();
+            if (!flags->first)
+                ++begin;
 
-            if (endPointValid(outline, pieceIndex,
-                              *orig, orig->b, margin / 2))
-                points->push_back(orig->b);
+            PointList::const_iterator end = points->end();
+            if (!flags->last) {
+                --end;
 
-            sort(points->begin(), points->end(), DistanceCmp(start));
-        
-            for (PointList::const_iterator point = points->begin();
-                 point != points->end(); ++point) {
+            }
+            chained.push_back(OpenPath());
+            OpenPath &chain = chained.back();
+            
+            for (PointList::const_iterator point = begin;
+                 point != end; ++point)
                 chain.appendPoint(*point);
-            }
-
         }
 
-        ++orig;
         ++points;
+        ++flags;
     }
 }
 
@@ -856,8 +973,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 OpenPathList &spurs) {
 
 	//TODO: make these config values
-	const Scalar maxSpurWidth = layermeasure.getLayerW() * 1.5;
-	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.5;
+	const Scalar maxSpurWidth = layermeasure.getLayerW() * 3;
+	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.3;
 	
 	//get loop line segments
 	SegmentList segs;
