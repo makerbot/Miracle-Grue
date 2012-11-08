@@ -2,6 +2,7 @@
 #define	LOOP_UTILS_H
 
 #include "loop_path.h"
+#include "labeled_path.h"
 #include <set>
 
 namespace mgl {
@@ -135,6 +136,12 @@ void smooth(LOOP_OR_PATH& input, Scalar smoothness, Scalar factor = 1.0) {
     LOOP_OR_PATH output;
     smooth(input, smoothness, output, factor);
     input = output;
+}
+template <typename LOOP_OR_PATH>
+void smooth(basic_labeled_path<LOOP_OR_PATH>& input, Scalar smoothness, Scalar factor = 1.0) {
+    LOOP_OR_PATH output;
+    smooth(input.myPath, smoothness, output, factor);
+    input.myPath = output;
 }
 template <typename LOOP_OR_PATH_COLLECTION>
 void smoothCollection(LOOP_OR_PATH_COLLECTION& input, Scalar smoothness, 

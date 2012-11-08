@@ -159,7 +159,8 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor,
 	Loop::const_finite_cw_iterator current;
 	current = input.clockwiseFinite();
     
-    std::vector<Point2Type> tmpPoints;
+    typedef std::vector<Point2Type> tmp_collection;
+    tmp_collection tmpPoints;
     tmpPoints.push_back(*(current++));
     tmpPoints.push_back(*(current++));
     
@@ -168,9 +169,9 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor,
 	Scalar cumulativeError = 0.0;
     
 	for(; current != input.clockwiseEnd(); ++current) {
-        std::vector<Point2Type>::reverse_iterator last1 = 
+        tmp_collection::reverse_iterator last1 = 
                 tmpPoints.rbegin();
-        std::vector<Point2Type>::const_reverse_iterator last2 = 
+        tmp_collection::const_reverse_iterator last2 = 
                 tmpPoints.rbegin();
         ++last2;
         const Point2Type& currentPoint = *current;
