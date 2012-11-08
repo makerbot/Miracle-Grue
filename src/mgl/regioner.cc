@@ -578,7 +578,16 @@ bool completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
 	EVector firstUnit = firstLine.direction();
 	EVector secondUnit = secondLine.direction();
 
-    if (firstUnit == secondUnit || firstUnit == -secondUnit) {
+    Scalar dirdot = firstUnit.dot(secondUnit);
+    if (dirdot > 0)
+        dirdot -= 1;
+    else
+        dirdot +=1;
+
+    if (dirdot < 0)
+        dirdot = -dirdot;
+        
+    if (dirdot < 0.00001) {
         parallels = completeParallel(toplen, bottomlen, sides);
         return true;
     }
@@ -694,13 +703,13 @@ bool bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
     SegmentPair spans;
     if (completeTrapezoid(minSpurWidth, maxSpurWidth, walls, spans)) {
         bisect = LineSegment2(midPoint(spans.first), midPoint(spans.second));
+        /*segToSVG(spans.first, "green", 0, 0);
+          segToSVG(spans.second, "green", 0, 0);*/
         return true;
     }
     else
         return false;
 
-    /*segToSVG(spans.first, "green", 20, 20);
-      segToSVG(spans.second, "green", 20, 20);*/
 }
 
 Vector2 segmentDirection(const LineSegment2 &seg) {
