@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 
 #include "loop_utils.h"
 #include "clipper.h"
@@ -149,7 +150,8 @@ SMOOTH_RESULT smoothPoints(const Point2Type& lp1,
         Scalar& cumDeviation,
         Point2Type& output);
 
-void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
+void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor, 
+        bool recurse) {
     if(smoothness == 0 || input.size() <= 3) {
 		output = input;
         return;
@@ -183,10 +185,24 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
             tmpPoints.back() = result;
         }
 	}
-    for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
-            iter != tmpPoints.end(); 
-            ++iter) {
-        output.insertPointBefore(*iter, output.clockwiseEnd());
+    if(recurse) {
+        std::rotate(tmpPoints.begin(), 
+                tmpPoints.begin() + tmpPoints.size() / 2, 
+                tmpPoints.end());
+        
+        Loop tmpLoop;
+        for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
+                iter != tmpPoints.end(); 
+                ++iter) {
+            tmpLoop.insertPointBefore(*iter, tmpLoop.clockwiseEnd());
+        }
+        smooth(tmpLoop, smoothness, output, factor, false);
+    } else {
+        for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
+                iter != tmpPoints.end(); 
+                ++iter) {
+            output.insertPointBefore(*iter, output.clockwiseEnd());
+        }
     }
 }
 
