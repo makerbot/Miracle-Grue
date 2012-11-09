@@ -908,13 +908,16 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
 
     //Build an index of the spur segments
     SegmentIndex pieceIndex;
-    for (SegmentList::const_iterator piece = origPieces.begin();
-         piece != origPieces.end(); piece++)
-        pieceIndex.insert(*piece);
 
     FlagsList flagsList;
     PointTable piecePoints;
     SegmentList pieces = origPieces;
+    
+    for (SegmentList::iterator piece = pieces.begin();
+        piece != pieces.end(); ++piece) {
+        *piece = piece->elongate(0.05).prelongate(0.05);
+        pieceIndex.insert(*piece);
+    }
 
     //do this multiple times to catch dangling segments after other intersecting
     //segments have been dropped
@@ -930,23 +933,39 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
             LineSegment2 seg(points->front(), points->back());
             expandSeg(seg, 0.001);
             int numpoints = points->size();
-
+            bool changed = false;
+            LineSegment2 seg1(flags->first ? points->at(0) : points->at(1), 
+                    flags->last ? points->back() : points->at(points->size() - 2));
+            LineSegment2 seg2 = seg;
             if (flags->first 
-                && isEndPointClose(pieceIndex, seg, seg.a, margin/2))
+                && isEndPointClose(pieceIndex, seg, seg.a, margin/2)) {
                 flags->first = false;
+                changed = true;
+            }
                 
 
             if (flags->last
-                && isEndPointClose(pieceIndex, seg, seg.b, margin/2))
+                && isEndPointClose(pieceIndex, seg, seg.b, margin/2)) {
                 flags->last = false;
+                changed = true;
+            }
 
-            if (!flags->first)
+            if (!flags->first) {
                 --numpoints;
-            if (!flags->last)
+                seg2.a = points->at(1);
+            }
+            if (!flags->last) {
                 --numpoints;
+                seg2.b = points->at(points->size() - 2);
+            }
 
-            if (numpoints < 2)
+            if (numpoints < 2) {
                 flags->all = false;
+                pieceIndex.erase(seg1);
+            } else if(changed) {
+                pieceIndex.erase(seg1);
+                pieceIndex.insert(seg2);
+            }
         }
 
         ++points;
