@@ -219,6 +219,10 @@ FASTGRAPH_PRIVATE:
             bool contains(Point2Type point) const;
             /// test if we contain other
             bool contains(const LoopHierarchy& other) const;
+            /// get the deepest child that contains point or self if no such child
+            LoopHierarchy& select(Point2Type point);
+            /// get the deepest child that contains point or self if no such child
+            const LoopHierarchy& select(Point2Type point) const;
             /**
              @brief the entry point for optimizing a loop hierarchy
              Selects the best valid child and optimizes it until no more remain
@@ -261,6 +265,14 @@ FASTGRAPH_PRIVATE:
         void insertBoundary(const Loop& loop);
         /// things optimized in this bucket should not cross this loop
         void insertNoCross(const Loop& loop);
+        /// invokes insertPath(path, label);
+        void insertPath(const LabeledOpenPath& path);
+        /**
+         @brief insert path in the graph of the appropriate loop hierarchy element
+         @param path the path toinsert
+         @param label the label of the @a path
+         */
+        void insertPath(const OpenPath& path, const PathLabel& label);
         /**
          @brief insert the bucket into this one. 
          

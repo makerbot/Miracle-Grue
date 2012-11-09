@@ -25,6 +25,47 @@ void BUCKET::insertBoundary(const Loop& loop) {
     bucket constructed(loop);
     insertBucket(constructed);
 }
+void BUCKET::insertPath(const LabeledOpenPath& path) {
+    insertPath(path.myPath, path.myLabel);
+}
+void BUCKET::insertPath(const OpenPath& path, const PathLabel& label) {
+    if(!path.empty()) {
+        Point2Type testPoint = *path.fromStart();
+        LoopHierarchy& target = m_hierarchy.select(testPoint);
+        graph_type& currentGraph = target.m_spurs;
+        node_index last = -1;
+        for(OpenPath::const_iterator iter = path.fromStart(); 
+                iter != path.end(); 
+                ++iter) {
+            OpenPath::const_iterator next = iter;
+            ++next;
+            if(iter == path.fromStart()) {
+                last = currentGraph.createNode(NodeData(*iter, 
+                        label, true)).getIndex();
+            }
+            if(next != path.end()) {
+                OpenPath::const_iterator future = next;
+                ++future;
+                node& curNode = currentGraph.createNode(NodeData(*next, 
+                        label, future==path.end()));
+                node& lastNode = currentGraph[last];
+                Segment2Type connection( 
+                        curNode.data().getPosition(), 
+                        lastNode.data().getPosition());
+                Point2Type normal;
+                try {
+                    normal = (connection.b - connection.a).unit();
+                } catch (const GeometryException& le) {}
+                Scalar distance = connection.length();
+                Cost frontCost(label, distance, normal);
+                Cost backCost(label, distance, normal * -1.0);
+                curNode.connect(lastNode, backCost);
+                lastNode.connect(curNode, frontCost);
+                last = curNode.getIndex();
+            }
+        }
+    }
+}
 void BUCKET::insertBucket(bucket& constructed) {
     if(constructed.contains(*this)) {
         swap(constructed);
@@ -216,6 +257,24 @@ bool HIERARCHY::contains(const LoopHierarchy& other) const {
     bool myResult = contains(other.m_testPoint);
     bool otherResult = other.contains(m_testPoint);
     return myResult && !otherResult;
+}
+HIERARCHY& HIERARCHY::select(Point2Type point) {
+    for(hierarchy_list::iterator iter = m_children.begin(); 
+            iter != m_children.end(); 
+            ++iter) {
+        if(iter->contains(point))
+            return iter->select(point);
+    }
+    return *this;
+}
+const HIERARCHY& HIERARCHY::select(Point2Type point) const {
+    for(hierarchy_list::const_iterator iter = m_children.begin(); 
+            iter != m_children.end(); 
+            ++iter) {
+        if(iter->contains(point))
+            return iter->select(point);
+    }
+    return *this;
 }
 void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
         graph_type& graph, boundary_container& bounds, 
