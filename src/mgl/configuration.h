@@ -176,6 +176,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doFanCommand)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, fanLayer)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doAnchor)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPutModelOnPlatform)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)

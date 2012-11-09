@@ -90,8 +90,6 @@ void StlWriter::close() {
 
 /// requires firstLayerSlice height, and general layer height
 
-Meshy::Meshy() {}
-
 const std::vector<Triangle3Type>& Meshy::readAllTriangles() const {
 	return allTriangles;
 }
@@ -353,7 +351,8 @@ size_t Meshy::readStlFile(const char* stlFilename) {
 
 void Meshy::alignToPlate() {
 	if (!tequals(limits.zMin, 0, 0.0000001)) {
-		translate(Point3Type(0, 0, -limits.zMin));
+        if(grueCfg.get_doPutModelOnPlatform() || limits.zMin < 0)
+            translate(Point3Type(0, 0, -limits.zMin));
 	}
 }
 

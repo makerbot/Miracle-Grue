@@ -98,14 +98,20 @@ void ModelReaderTestCase::setUp()
 //
 void ModelReaderTestCase::testMeshySimple()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	cout << endl;
 	cout << endl;
 	cout << __FUNCTION__ << endl;
 	//Scalar zH = 1.0;
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 //	Segmenter seg(zH, zH);
     
-    GrueConfig grueCfg;
     Segmenter seg(grueCfg);
 
 	cout << "ceil(40.0)="<< ceil(40.0)<<endl;
@@ -157,16 +163,22 @@ void ModelReaderTestCase::testMeshySimple()
 
 void ModelReaderTestCase::testLayerSplit()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	cout << endl;
 
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 //	Segmenter seg(0.35, 0.35);
-    GrueConfig grueCfg;
     Segmenter seg(grueCfg);
 	unsigned int t0, t1;
 	t0 = clock();
 
-	Meshy mesh3;
+	Meshy mesh3(grueCfg);
 //	Segmenter seg3(0.35, 0.35);
     
     Segmenter seg3(grueCfg);
@@ -187,11 +199,17 @@ void ModelReaderTestCase::testLayerSplit()
 
 void ModelReaderTestCase::testLargeMeshy()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	unsigned int t0,t1;
 	cout << "Light saber" << endl;
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 //	Segmenter seg(0.35, 0.35);
-    GrueConfig grueCfg;
     Segmenter seg(grueCfg);
 	t0=clock();
 	string inputFile = inputsDir + "lightsaber.stl";
@@ -204,11 +222,17 @@ void ModelReaderTestCase::testLargeMeshy()
 
 void ModelReaderTestCase::testMeshyLoad()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	unsigned int t0,t1;
 	cout << "Water" << endl;
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 //	Segmenter seg(0.35, 0.35);
-    GrueConfig grueCfg;
     Segmenter seg(grueCfg);
     Segmenter seg2(grueCfg);
 	t0=clock();
@@ -221,7 +245,7 @@ void ModelReaderTestCase::testMeshyLoad()
 	CPPUNIT_ASSERT_EQUAL((size_t)172, seg.readSliceTable().size());
 
 	cout << "Land" << endl;
-	Meshy mesh2;
+	Meshy mesh2(grueCfg);
 //	Segmenter seg2(0.35, 0.35);
 
 	t0=clock();
@@ -236,15 +260,21 @@ void ModelReaderTestCase::testMeshyLoad()
 
 void ModelReaderTestCase::testMeshyCycle()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	unsigned int t0,t1;
 	string target = inputsDir + "3D_Knot.stl";
 	string drop = outputsDir + "3D_Knot.stl";
 	string drop2 = outputsDir + "3D_Knot_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
-	Meshy mesh3;
+	Meshy mesh3(grueCfg);
 	//Segmenter seg3(0.35, 0.35);
-    GrueConfig grueCfg;
     Segmenter seg3(grueCfg);
     Segmenter seg4(grueCfg);
 	t0=clock();
@@ -258,7 +288,7 @@ void ModelReaderTestCase::testMeshyCycle()
 	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
 
 	cout << "Reload test, reloading file: "  << drop << endl;
-	Meshy mesh4;
+	Meshy mesh4(grueCfg);
 //	Segmenter seg4(0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
@@ -274,15 +304,21 @@ void ModelReaderTestCase::testMeshyCycle()
 
 void ModelReaderTestCase::testMeshyCycleNull()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	unsigned int t0,t1;
 	string target = inputsDir + "Null.stl";
 	string drop = outputsDir + "Null.stl";
 	string drop2 = outputsDir + "Null_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
-	Meshy mesh3;
+	Meshy mesh3(grueCfg);
 //	Segmenter seg3(0.35, 0.35);
-    GrueConfig grueCfg;
     Segmenter seg3(grueCfg);
     Segmenter seg4(grueCfg);
 	t0=clock();
@@ -296,7 +332,7 @@ void ModelReaderTestCase::testMeshyCycleNull()
 	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
 
 	cout << "Reload test, reloading file: "  << drop << endl;
-	Meshy mesh4;
+	Meshy mesh4(grueCfg);
 //	Segmenter seg4(0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
@@ -311,15 +347,21 @@ void ModelReaderTestCase::testMeshyCycleNull()
 
 void ModelReaderTestCase::testMeshyCycleMin()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	unsigned int t0,t1;
 	string target = inputsDir + "OneTriangle.stl";
 	string drop = outputsDir + "OneTriangle.stl";
 	string drop2 = outputsDir + "OneTriangle_v2.stl";
 
 	cout << "Reading test file:"  << target << endl;
-	Meshy mesh3;
+	Meshy mesh3(grueCfg);
     
-    GrueConfig grueCfg;
     Segmenter seg3(grueCfg);
     Segmenter seg4(grueCfg);
 //	Segmenter seg3(0.35, 0.35);
@@ -334,7 +376,7 @@ void ModelReaderTestCase::testMeshyCycleMin()
 	cout << "Wrote: " << drop <<" in seconds: " << t2 << endl;
 
 	cout << "Reload test, reloading file: "  << drop << endl;
-	Meshy mesh4;
+	Meshy mesh4(grueCfg);
 //	Segmenter seg4(0.35, 0.35);
 	t0=clock();
 	mesh4.readStlFile( drop.c_str());
@@ -518,10 +560,16 @@ void batchProcess(	Scalar , // firstLayerZ,
 		unsigned int t0,t1;
 		t0=clock();
 
+        class MeshCfg : public GrueConfig {
+        public:
+            MeshCfg() {
+                doPutModelOnPlatform = true;
+            }
+        };
+        MeshCfg grueCfg;
 		//Scalar angle = M_PI*0.5;
-		Meshy mesh;
+		Meshy mesh(grueCfg);
 //		Segmenter seg(firstLayerZ, layerH);
-        GrueConfig grueCfg;
         Segmenter seg(grueCfg);
 		mesh.readStlFile( modelFile.c_str());
 		cout << modelFile << " LOADED" << endl;
@@ -679,6 +727,13 @@ void ModelReaderTestCase::testTubularInflate()
 
 void ModelReaderTestCase::fixContourProblem()
 {
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	cout << endl;
 
 	Scalar tol = 1e-6;
@@ -689,9 +744,8 @@ void ModelReaderTestCase::fixContourProblem()
 
 	LayerMeasure zTapeMeasure(firstZ, layerH, 0.43);
 
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 	//Segmenter seg(firstZ, layerH); // 0.35
-    GrueConfig grueCfg;
     Segmenter seg(grueCfg);
 	cout << "LOADING... " << endl;
 	mesh.readStlFile( "inputs/3D_Knot.stl");
@@ -804,18 +858,19 @@ void ModelReaderTestCase::testLayerMeasure()
 
 
 void ModelReaderTestCase::testAlignToPlate() {
-	cout << endl << "Testing object above the bed" << endl;
-	string above_file = inputsDir + "above.stl";
-	Meshy above;
-//	Segmenter segabove(.5, .5);
-    class TestGrueCfg : public  GrueConfig {
+    class MeshCfg : public GrueConfig {
     public:
-        TestGrueCfg() {
+        MeshCfg() {
             layerH = 0.5;
             firstLayerZ = 0.5;
+            doPutModelOnPlatform = true;
         }
     };
-    TestGrueCfg grueCfg;
+    MeshCfg grueCfg;
+	cout << endl << "Testing object above the bed" << endl;
+	string above_file = inputsDir + "above.stl";
+	Meshy above(grueCfg);
+//	Segmenter segabove(.5, .5);
     Segmenter segabove(grueCfg);
 	//10mm cube one mm above the bed
 	above.readStlFile(above_file.c_str());
@@ -835,7 +890,7 @@ void ModelReaderTestCase::testAlignToPlate() {
 
 	cout << endl << "Testing object below the bed" << endl;
 	string below_file = inputsDir + "below.stl";
-	Meshy below;
+	Meshy below(grueCfg);
 //	Segmenter segbelow(.5, .5);
     Segmenter segbelow(grueCfg);
 	//10mm cube one mm below the bed
