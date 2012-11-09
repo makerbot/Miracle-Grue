@@ -304,6 +304,7 @@ void HIERARCHY::swap(LoopHierarchy& other) {
     std::swap(m_label, other.m_label);
     m_children.swap(other.m_children);
     std::swap(m_testPoint, other.m_testPoint);
+    m_spurs.swap(other.m_spurs);
     std::swap(m_loop, other.m_loop);
 }
 void HIERARCHY::repr(std::ostream& out, size_t level) {

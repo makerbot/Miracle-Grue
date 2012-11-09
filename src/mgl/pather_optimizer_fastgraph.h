@@ -239,6 +239,7 @@ FASTGRAPH_PRIVATE:
             PathLabel m_label;
             hierarchy_list m_children;
             Point2Type m_testPoint;
+            graph_type m_spurs;
             Loop m_loop;
             
         private:
