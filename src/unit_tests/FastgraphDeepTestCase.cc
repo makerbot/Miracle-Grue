@@ -45,7 +45,7 @@ void FastgraphDeepTestCase::testLoopOrdering() {
     
     DerivedConfig grueCfg;
     
-    Meshy mesh;
+    Meshy mesh(grueCfg);
     
     std::cout << "Reading mesh" << std::endl;
     mesh.readStlFile("stl/planetgeartest.stl");

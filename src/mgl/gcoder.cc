@@ -445,7 +445,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
             it != end; ++it, ++layerSequence) {
         tick();
         //Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
-        if(layerSequence == 0) {
+        if(grueCfg.get_doAnchor() && layerSequence == 0) {
             Extrusion strusion;
             const Extruder& struder = grueCfg.get_extruders()[
                     it->extruders.front().extruderId];

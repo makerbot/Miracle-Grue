@@ -77,9 +77,16 @@ void SlicerSplitTestCase::test_calibration_slice_70()
 	//Scalar layerW = 0.4;
 	cout << endl;
 	cout << fixed;
+    
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 
-	Meshy mesh;
-    GrueConfig grueCfg;
+	Meshy mesh(grueCfg);
 	Segmenter seg(grueCfg);
 
 	string inputFile = inputDir + "ultimate_calibration_test.stl";
