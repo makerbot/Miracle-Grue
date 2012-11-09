@@ -175,7 +175,7 @@ void InsetsTestCase::setUp() {
 
     Json::Value stretchletval;
     Json::Reader reader;
-    ifstream file("inputs/Stretchlet_layer.json");
+    ifstream file("inputs/Stretchlet_layer25.json");
     reader.parse(file, stretchletval);
     restoreLoopList(stretchletval, stretchletLoops);
     makeLoopsPositive(stretchletLoops);
@@ -575,10 +575,10 @@ void InsetsTestCase::testStretchlet() {
 
     LayerMeasure reallayer(0.27, 0.27, 1.6);
 
+    svgBegin();
     OpenPathList spurs;
     regioner.fillSpurLoops(stretchletLoops, reallayer, spurs);
 
-    svgBegin();
     loopsToSVG(stretchletLoops, "black", 0, 0);
     openPathListToSVG(spurs, "red", 0, 0);
     svgEnd();

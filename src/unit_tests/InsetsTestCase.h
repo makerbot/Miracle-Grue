@@ -37,8 +37,8 @@ class InsetsTestCase : public CPPUNIT_NS::TestFixture{
     CPPUNIT_TEST( testCompleteParallel );
     CPPUNIT_TEST( testTwoPairFill );*/
     //CPPUNIT_TEST( testThreePairFill );
-    //CPPUNIT_TEST( testStretchlet );
-    CPPUNIT_TEST( testStretchletWallPairs );
+    CPPUNIT_TEST( testStretchlet );
+    //CPPUNIT_TEST( testStretchletWallPairs );
 
 	CPPUNIT_TEST_SUITE_END();
 	
