@@ -71,6 +71,8 @@ public:
 	std::list<LoopList> insetLoops;
 	LoopList supportLoops;
 	LoopList interiorLoops;
+    LoopList floorLoops;
+    LoopList roofLoops;
 
 	GridRanges flatSurface; // # number of slices + roofCount * 2
 	GridRanges supportSurface; //flat surface outside of the actual object

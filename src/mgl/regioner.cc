@@ -349,7 +349,11 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 
 		insetsForSlice(currentOutlines, region->insetLoops,
 				layermeasure, NULL);
-
+        if(!region->insetLoops.empty()) {
+            loopsOffset(region->interiorLoops, region->insetLoops.back(), 
+                    -grueCfg.get_insetDistanceMultiplier() * 0.25 * 
+                    layermeasure.getLayerWidth(region->layerMeasureId));
+        }
 		++outline;
 		++region;
 	}
@@ -363,6 +367,8 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 		//GridRanges currentSurface;
 		gridRangesForSlice(regionsBegin->insetLoops, grid,
 				regionsBegin->flatSurface);
+        regionsBegin->flatSurface.yRays.resize(grid.getYValues().size());
+        regionsBegin->flatSurface.xRays.resize(grid.getXValues().size());
 		//inset supportloops by a fraction of supportmargin
 		LoopList insetSupportLoops;
 		loopsOffset(insetSupportLoops, regionsBegin->supportLoops, 
@@ -389,7 +395,8 @@ void Regioner::roofForSlice(const GridRanges & currentSurface, const GridRanges 
 
 void Regioner::roofing(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
-		const Grid& grid) {
+		const Grid& //grid
+        ) {
 
 	RegionList::iterator current = regionsBegin;
 	RegionList::iterator above = current;
@@ -397,14 +404,17 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 
 	while (above != regionsEnd) {
 		tick();
-		const GridRanges & currentSurface = current->flatSurface;
-		const GridRanges & surfaceAbove = above->flatSurface;
-		GridRanges & roofing = current->roofing;
+//		const GridRanges & currentSurface = current->flatSurface;
+//		const GridRanges & surfaceAbove = above->flatSurface;
+//		GridRanges & roofing = current->roofing;
+        LoopList& roofLoops = current->roofLoops;
 
-		GridRanges roof;
-		roofForSlice(currentSurface, surfaceAbove, grid, roof);
-
-		grid.trimGridRange(roof, roofLengthCutOff, roofing);
+//		GridRanges roof;
+//		roofForSlice(currentSurface, surfaceAbove, grid, roof);
+//
+//		grid.trimGridRange(roof, roofLengthCutOff, roofing);
+        
+        loopsDifference(roofLoops, current->interiorLoops, above->interiorLoops);
 
 		++current;
 		++above;
@@ -416,25 +426,29 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 
 void Regioner::flooring(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
-		const Grid &grid) {
+		const Grid& //grid
+        ) {
 	RegionList::iterator below = regionsBegin;
 	RegionList::iterator current = below;
+    LoopList& floorLoops = current->floorLoops;
 	current++;
 
 	while (current != regionsEnd) {
 		tick();
-		const GridRanges & currentSurface = current->flatSurface;
-		const GridRanges & surfaceBelow = below->flatSurface;
-		GridRanges & flooring = current->flooring;
+//		const GridRanges & currentSurface = current->flatSurface;
+//		const GridRanges & surfaceBelow = below->flatSurface;
+//		GridRanges & flooring = current->flooring;
 
-		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+//		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+        loopsDifference(floorLoops, current->interiorLoops, below->interiorLoops);
 
 		++below;
 		++current;
 	}
 
 	tick();
-	regionsBegin->flooring = regionsBegin->flatSurface;
+//	regionsBegin->flooring = regionsBegin->flatSurface;
+    regionsBegin->floorLoops = regionsBegin->interiorLoops;
 
 }
 
@@ -530,10 +544,11 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		tick();
 
 		// Solids
-		GridRanges combinedSolid;
+		//GridRanges combinedSolid;
+        LoopList combinedLoops;
 
-		combinedSolid.xRays.resize(surface.xRays.size());
-		combinedSolid.yRays.resize(surface.yRays.size());
+//		combinedSolid.xRays.resize(surface.xRays.size());
+//		combinedSolid.yRays.resize(surface.yRays.size());
 
 		//TODO: no reason to get bounds separately from the combination
 
@@ -557,31 +572,41 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		//combine floors
 		for (RegionList::iterator floor = firstFloor;
 				floor != floorEnd; ++floor) {
-			GridRanges multiFloor;
+//			GridRanges multiFloor;
 
-			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
-			combinedSolid = multiFloor;
+//			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
+//			combinedSolid = multiFloor;
+            loopsUnion(combinedLoops, floor->floorLoops);
 		}
 
 		//combine roofs
 		for (RegionList::iterator roof = lastRoof;
 				roof != roofEnd; --roof) {
-			GridRanges multiRoof;
+//			GridRanges multiRoof;
 
-			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
-			combinedSolid = multiRoof;
+//			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
+//			combinedSolid = multiRoof;
+            loopsUnion(combinedLoops, roof->roofLoops);
 		}
 
 		// solid now contains the combination of combinedSolid regions from
 		// multiple slices. We need to extract the perimeter from it
 
-		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
+//		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
+        loopsIntersection(combinedLoops, current->interiorLoops);
+        LoopList sparseLoops;
+        loopsDifference(sparseLoops, current->interiorLoops, combinedLoops);
+        
 
 		// TODO: move me to the slicer
-		GridRanges sparseInfill;
+		GridRanges sparseInfill, sparsePreInfill, solidInfill;
+        
+        gridRangesForSlice(combinedLoops, grid, solidInfill);
+        gridRangesForSlice(sparseLoops, grid, sparsePreInfill);
+        
 		size_t infillSkipCount = (int) (1 / grueCfg.get_infillDensity()) - 1;
 
-		grid.subSample(surface, infillSkipCount, sparseInfill);
+		grid.subSample(sparsePreInfill, infillSkipCount, sparseInfill);
         
         if(grueCfg.get_doSupport() || grueCfg.get_doRaft()) {
             size_t supportSkipCount = 0;
@@ -596,7 +621,29 @@ void Regioner::infills(RegionList::iterator regionsBegin,
             }
         }
 
-		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
+		//grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
+        current->infill.xRays.resize(surface.xRays.size());
+        current->infill.yRays.resize(surface.yRays.size());
+        for(size_t x = 0; x < surface.xRays.size(); ++x) {
+            current->infill.xRays[x].insert(
+                    current->infill.xRays[x].end(), 
+                    sparseInfill.xRays[x].begin(), 
+                    sparseInfill.xRays[x].end());
+            current->infill.xRays[x].insert(
+                    current->infill.xRays[x].end(), 
+                    solidInfill.xRays[x].begin(), 
+                    solidInfill.xRays[x].end());
+        }
+        for(size_t y = 0; y < surface.yRays.size(); ++y) {
+            current->infill.yRays[y].insert(
+                    current->infill.yRays[y].end(), 
+                    sparseInfill.yRays[y].begin(), 
+                    sparseInfill.yRays[y].end());
+            current->infill.yRays[y].insert(
+                    current->infill.yRays[y].end(), 
+                    solidInfill.yRays[y].begin(), 
+                    solidInfill.yRays[y].end());
+        }
 	}
 
 }
