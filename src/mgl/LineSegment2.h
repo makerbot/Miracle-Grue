@@ -31,6 +31,7 @@ public:
 	LineSegment2(const Vector2 &a, const Vector2 &b);
 
 	LineSegment2 & operator= (const LineSegment2 & other);
+    bool operator==(const LineSegment2 &other) const;
 
 	Scalar squaredLength() const;
 	Scalar length() const;
