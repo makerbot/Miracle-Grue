@@ -716,38 +716,51 @@ Vector2 segmentDirection(const LineSegment2 &seg) {
     return seg.b - seg.a;
 }
 
-void cutInteriorSegment(SegmentIndex &index, const Scalar margin,
-                        LineSegment2 &orig) {
+bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
+                        const LineSegment2 &orig, LineSegment2 &cut) {
+    cut = orig;
     SegmentList intersecting;
-    findIntersecting(index, orig, intersecting);
+    findIntersecting(index, cut, intersecting);
+
+    if (intersecting.size() == 0) {
+        //segment doesn't intersect the outline, check if its inside or out
+        //using the even odd test
+        Vector2 bigpoint(9999, 9999);
+        LineSegment2 ray(cut.a, bigpoint);
+
+        findIntersecting(index, ray, intersecting);
+
+        return intersecting.size() % 2 != 0;
+    }
 
     for (SegmentList::const_iterator outline = intersecting.begin();
          outline != intersecting.end(); ++outline) {
         Vector2 intersectPoint;
-        if (segmentIntersection(orig, *outline, intersectPoint)) {
+        if (segmentIntersection(cut, *outline, intersectPoint)) {
             Vector2 normal = segmentDirection(getSegmentNormal(*outline, 
                                                                outline->a, 1));
 
-            Vector2 direction = segmentDirection(orig);
+            Vector2 direction = segmentDirection(cut);
             direction.normalise();
             
             LineSegment2 left = LineSegment2(intersectPoint,
-                                             orig.a);
+                                             cut.a);
             LineSegment2 right = LineSegment2(intersectPoint,
-                                              orig.b );
+                                              cut.b );
 
 
             if (segmentDirection(left).dotProduct(normal) > 0) {
-                orig = left;
-                orig.a = orig.a - direction * margin;
+                cut = left;
+                cut.a = cut.a - direction * margin;
             }
             else if (segmentDirection(right).dotProduct(normal) > 0) {
-                orig = right;
-                orig.a = orig.a + direction * margin;
+                cut = right;
+                cut.a = cut.a + direction * margin;
             }
         }
     }
-                
+
+    return true;
 }
 
 #include <algorithm>
@@ -1041,13 +1054,16 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 	}
 
     //cut each segment so it fits in the outline
+    SegmentList interiorPieces;
     for (SegmentList::iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
-        cutInteriorSegment(index, minSpurWidth / 2, *piece);
+        LineSegment2 cutpiece;
+        if (cutInteriorSegment(index, minSpurWidth / 2, *piece, cutpiece))
+            interiorPieces.push_back(cutpiece);
     }
 
 
-    chainSpurSegments(index, minSpurWidth, pieces, spurs);
+    chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
 
     //for testing without segments chained
     /*for (SegmentList::const_iterator piece = pieces.begin();
