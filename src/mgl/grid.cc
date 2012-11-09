@@ -60,12 +60,39 @@ void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector
 	}
 }
 
+void scalarRangesFromIntersections(std::vector<Scalar> &lineCuts, std::vector<ScalarRange> &ranges) {
+    std::sort(lineCuts.begin(), lineCuts.end());
+	ranges.reserve(lineCuts.size());
+	bool inside = false;
+	Scalar xBegin = 0; // initial value is not used
+	Scalar xEnd = 0; // initial value is not used
+	for (std::vector<Scalar>::iterator it = lineCuts.begin(); 
+            it != lineCuts.end(); ++it) {
+		Scalar intersection = *it;
+		if (inside) {
+			xEnd = intersection;
+			// gridSegments.push_back(LineSegment2(Point2Type(xBegin,y), Point2Type(xEnd,y)));
+			ranges.push_back(ScalarRange(xBegin, xEnd));
+            inside = false;
+		} else {
+			xBegin = intersection;
+            inside = true;
+		}
+	}
+
+	if (inside) {
+		// this is not good. xMax should be outside the object
+		GridException messup("Ray has been cast outside the model mesh.");
+
+	}
+}
+
 void rayCastAlongX(const std::list<Loop>& outlineLoops,
 		Scalar y,
 		Scalar xMin,
 		Scalar xMax,
 		std::vector<ScalarRange> &ranges) {
-	std::set<Scalar> lineCuts;
+	std::vector<Scalar> lineCuts;
 
 	//iterate over every loop
 	for (std::list<Loop>::const_iterator j = outlineLoops.begin(); 
@@ -98,7 +125,7 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
                     }
                 }
 				if (intersectionX >= xMin && intersectionX < xMax) {
-					lineCuts.insert(intersectionX);
+					lineCuts.push_back(intersectionX);
 				}
 			}
 		}
@@ -111,7 +138,7 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 		Scalar yMin,
 		Scalar yMax,
 		std::vector<ScalarRange> &ranges) {
-	std::set<Scalar> lineCuts;
+	std::vector<Scalar> lineCuts;
 
 	// iterate over every loop
 	for (std::list<Loop>::const_iterator j = outlineLoops.begin(); 
@@ -143,7 +170,7 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
                     }
                 }
 				if (intersectionY >= yMin && intersectionY < yMax) {
-					lineCuts.insert(intersectionY);
+					lineCuts.push_back(intersectionY);
 				}
 			}
 		}
