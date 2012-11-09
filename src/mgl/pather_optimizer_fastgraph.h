@@ -571,6 +571,18 @@ FASTGRAPH_PRIVATE:
             Point2Type& entryPoint);
     static void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
     
+    /**
+     @brief optimize a graph given the necessary data, while not being 
+     tied to any object
+     @param labeledpaths the output where the optimized path is written
+     @param graph the graph to optimize. Will clear the graph during the process 
+     @param bounds that which should not be crossed
+     @param entryPoint decides where to start. At the end contains the final point
+     @param grueConf
+     */
+    static void optimizeGraph(LabeledOpenPaths& labeledpaths, graph_type& graph, boundary_container& bounds, Point2Type& entryPoint, 
+            const GrueConfig& grueConf);
+    
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
     bucket_list::iterator pickBucket(Point2Type point);
     

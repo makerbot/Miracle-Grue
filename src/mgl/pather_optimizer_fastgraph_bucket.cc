@@ -80,61 +80,11 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
         bestRecursiveChoice->optimize(output, entryPoint, grueConf);
         m_children.erase(bestRecursiveChoice);
     }
-    node_index currentIndex = -1;
-    node::forward_link_iterator next;
-    graph_type& currentGraph = m_graph;
-    boundary_container& currentBounds = m_noCrossing;
-    Point2Type currentUnit;
 //    m_hierarchy.repr(std::cerr);
 //    std::cout << "That was it for this bucket!" << std::endl;
-    m_hierarchy.optimize(output, entryPoint, currentGraph, 
-            currentBounds, grueConf);
-    while(!currentGraph.empty()) {
-        currentIndex = std::min_element(entryBegin(currentGraph), 
-                entryEnd(currentGraph), 
-                nodeComparator(grueConf, currentGraph, entryPoint))->getIndex();
-        LabeledOpenPath activePath;
-        if(!currentGraph[currentIndex].forwardEmpty()) {
-            //can a connection be made from the last entry to here?
-            Segment2Type crossingTest(entryPoint, 
-                    currentGraph[currentIndex].data().getPosition());
-            if(!crossesBounds(crossingTest, currentBounds)) {
-                smartAppendPoint(entryPoint, 
-                        PathLabel(PathLabel::TYP_CONNECTION, 
-                        PathLabel::OWN_MODEL, 1), output, activePath, 
-                        entryPoint);
-            }
-            smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
-                    currentGraph[currentIndex].data().getLabel(), 
-                    output, activePath, entryPoint);
-        }
-        while((next = bestLink(currentGraph[currentIndex], 
-                currentGraph, currentBounds, grueConf, currentUnit)) != 
-                currentGraph[currentIndex].forwardEnd()) {
-            node::connection nextConnection = *next;
-            currentUnit = nextConnection.second->normal();
-            PathLabel currentCost(*nextConnection.second);
-            smartAppendPoint(nextConnection.first->data().getPosition(), 
-                    currentCost, output, activePath, entryPoint);
-            currentGraph[currentIndex].disconnect(*nextConnection.first);
-            nextConnection.first->disconnect(currentGraph[currentIndex]);
-//            std::cout << "Label: " << 
-//                    nextConnection.first->data().getLabel().myValue << 
-//                    std::endl;
-            if(currentGraph[currentIndex].forwardEmpty() && 
-                    currentGraph[currentIndex].reverseEmpty()) {
-                currentGraph.destroyNode(currentGraph[currentIndex]);
-            }
-            currentIndex = nextConnection.first->getIndex();
-            //std::cout << "Inner Count: " << graph.count() << std::endl;
-        }
-        if(currentGraph[currentIndex].forwardEmpty() && 
-                currentGraph[currentIndex].reverseEmpty()) {
-            currentGraph.destroyNode(currentGraph[currentIndex]);
-        }
-        //recover from corners here
-        smartAppendPath(output, activePath);
-    }
+    m_hierarchy.optimize(output, entryPoint, m_graph, 
+            m_noCrossing, grueConf);
+    optimizeGraph(output, m_graph, m_noCrossing, entryPoint, grueConf);
     while((bestRecursiveChoice = pickBestChild(m_children.begin(), 
             m_children.end(), entryPoint)) != m_children.end()) {
         bestRecursiveChoice->optimize(output, entryPoint, grueConf);
