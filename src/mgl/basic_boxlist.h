@@ -95,6 +95,37 @@ public:
     void erase (iterator iter) {
         data.erase(iter);
     }
+    /**
+     @brief erase all elements that compare equal to @a value
+     @param COMPARE a comparator used to test for equality
+     Note! We assume that for two things to be equal, their bounding boxes 
+     must overlap!
+     @param value erase all things that compare to this
+     @return number of elements erased
+     */
+    template <typename COMPARE>
+    size_t erase(const value_type& value, const COMPARE& comp = COMPARE()) {
+        size_t ret = 0;
+        AABBox valBox = to_bbox<value_type>::bound(value);
+        for(int i = 0; i < static_cast<int>(data.size()); ++i) {
+            if(!valBox.intersects(data[i].second))
+            if(comp(value, data[i].first)) {
+                std::swap(data[i], data.back());
+                data.pop_back();
+                --i;
+                ++ret;
+            }
+        }
+        return ret;
+    }
+    /**
+     @brief erase all elements that compare equal to @a value
+     @param value erase all things that compare to this
+     @return number of elements erased
+     */
+    size_t erase(const value_type& value) {
+        return erase< std::equal_to<value_type> >(value);
+    }
     /*!Search for values that meet criteria of filt.filter(AABBox)
      @result: Object supporting push_back(...) where output is placed
      @filter: object supporting filter(...) that defines the criteria
