@@ -351,7 +351,7 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				layermeasure, NULL);
         if(!region->insetLoops.empty()) {
             loopsOffset(region->interiorLoops, region->insetLoops.back(), 
-                    -grueCfg.get_insetDistanceMultiplier() * 0.25 * 
+                    -grueCfg.get_insetDistanceMultiplier() * 0.5 * 
                     layermeasure.getLayerWidth(region->layerMeasureId));
         }
 		++outline;
@@ -365,10 +365,10 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 	for (; regionsBegin != regionsEnd; ++regionsBegin) {
 		tick();
 		//GridRanges currentSurface;
-		gridRangesForSlice(regionsBegin->insetLoops, grid,
-				regionsBegin->flatSurface);
-        regionsBegin->flatSurface.yRays.resize(grid.getYValues().size());
-        regionsBegin->flatSurface.xRays.resize(grid.getXValues().size());
+//		gridRangesForSlice(regionsBegin->insetLoops, grid,
+//				regionsBegin->flatSurface);
+        regionsBegin->flatSurface.yRays.resize(grid.getXValues().size());
+        regionsBegin->flatSurface.xRays.resize(grid.getYValues().size());
 		//inset supportloops by a fraction of supportmargin
 		LoopList insetSupportLoops;
 		loopsOffset(insetSupportLoops, regionsBegin->supportLoops, 
@@ -397,7 +397,8 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
 		const Grid& //grid
         ) {
-
+    if(regionsBegin == regionsEnd)
+        return;
 	RegionList::iterator current = regionsBegin;
 	RegionList::iterator above = current;
 	++above;
@@ -428,12 +429,14 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
 		const Grid& //grid
         ) {
+    if(regionsBegin == regionsEnd)
+        return;
 	RegionList::iterator below = regionsBegin;
 	RegionList::iterator current = below;
-    LoopList& floorLoops = current->floorLoops;
 	current++;
 
 	while (current != regionsEnd) {
+        LoopList& floorLoops = current->floorLoops;
 		tick();
 //		const GridRanges & currentSurface = current->flatSurface;
 //		const GridRanges & surfaceBelow = below->flatSurface;
@@ -624,6 +627,7 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		//grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
         current->infill.xRays.resize(surface.xRays.size());
         current->infill.yRays.resize(surface.yRays.size());
+        
         for(size_t x = 0; x < surface.xRays.size(); ++x) {
             current->infill.xRays[x].insert(
                     current->infill.xRays[x].end(), 
