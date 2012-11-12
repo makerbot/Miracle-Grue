@@ -369,7 +369,7 @@ void HIERARCHY::optimizeMyself(LabeledOpenPaths& output,
         }
         output.push_back(thisLoop);
     }
-    if(!doneGraph && nodeSample != entryEnd(m_graph)) {
+    if(!doneGraph) {
         optimizeGraph(output, m_graph, bounds, entryPoint, grueConf);
     }
 }
