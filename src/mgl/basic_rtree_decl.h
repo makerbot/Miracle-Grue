@@ -22,6 +22,31 @@ public:
     TreeException(const T& arg) : Exception(arg) {}
 };
 
+class TreeDiagnosticStub {
+public:
+    template <typename T>
+    TreeDiagnosticStub(const T&) {}
+    inline void addOperations(int) {}
+    inline void noOp() {}
+};
+class TreeDiagnostic {
+public:
+    template <typename T>
+    TreeDiagnostic(const T& arg) : m_ops(0) { std::cerr << arg << std::endl; }
+    TreeDiagnostic() : m_ops(0) {}
+    ~TreeDiagnostic() { std::cerr << m_ops << std::endl; }
+    void addOperations(int ops) { m_ops += ops; }
+    inline void noOp() {}
+private:
+    int m_ops;
+};
+
+#if RTREE_DIAG
+typedef TreeDiagnostic TreeDefaultDiagnostic;
+#else
+typedef TreeDiagnosticStub TreeDefaultDiagnostic;
+#endif
+
 static const size_t RTREE_DEFAULT_BRANCH = 4;
 
 /*
@@ -66,7 +91,7 @@ static const size_t RTREE_DEFAULT_BRANCH = 4;
  
  */
 
-template <typename T, size_t C = RTREE_DEFAULT_BRANCH>
+template <typename T, size_t C = RTREE_DEFAULT_BRANCH, typename DIAG = TreeDefaultDiagnostic>
 class basic_rtree {
 public:
     typedef T value_type;
@@ -124,6 +149,10 @@ public:
     
 private:
     
+    template <typename COLLECTION, typename FILTER>
+    void searchPrivate(COLLECTION& result, const FILTER& filt, DIAG& diag) const;
+
+
     explicit basic_rtree(const value_type& value);
     basic_rtree(bool canReproduce);
     
@@ -132,18 +161,18 @@ private:
     typedef std::pair<size_t, size_t> child_index_pair;
     typedef typename std::pair<basic_rtree*, basic_rtree*> child_ptr_pair;
     
-    void insert(basic_rtree* child);
+    void insert(basic_rtree* child, DIAG& diag);
     void insertDumb(basic_rtree* child);
     void unlinkChild(size_t childIndex);
-    void insertIntelligently(basic_rtree* child);   //here is rtree logic
-    void split(basic_rtree* child);   //clone child, distribute its children
+    void insertIntelligently(basic_rtree* child, DIAG& diag);   //here is rtree logic
+    void split(basic_rtree* child, DIAG& diag);   //clone child, distribute its children
     
     child_index_pair pick_furthest_children() const;
-    void distributeChildPair(child_ptr_pair childs, child_ptr_pair to);
-    void distributeChild(basic_rtree* child, child_ptr_pair to);
+    void distributeChildPair(child_ptr_pair childs, child_ptr_pair to, DIAG& diag);
+    void distributeChild(basic_rtree* child, child_ptr_pair to, DIAG& diag);
     
     void adopt(basic_rtree* from);
-    void growTree();
+    void growTree(DIAG& diag = DIAG());
     void regrowBounds();
     
     bool isLeaf() const { return myData; }
@@ -165,8 +194,6 @@ private:
     tree_alloc_t myTreeAllocator;
     value_alloc_t myDataAllocator;
 };
-
-
 
 }
 

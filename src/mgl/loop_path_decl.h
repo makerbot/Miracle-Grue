@@ -469,6 +469,8 @@ public:
         bool windingContains(const Point2Type& point) const;
         
 	size_t size() const { return pointNormals.size(); }
+    
+    bool windingContains(const Point2Type& point) const;
 	
 	Scalar curl() const;
         

@@ -29,7 +29,7 @@ private:
 //    CPPUNIT_TEST( testQtreeEmpty );
 //    CPPUNIT_TEST( testQtreeStress );
     CPPUNIT_TEST( testPerformance );
-    CPPUNIT_TEST( testQPerformance );
+//    CPPUNIT_TEST( testQPerformance );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();

@@ -16,8 +16,11 @@ namespace mgl {
 template <>
 struct to_bbox<Segment2Type> {
     static AABBox bound(const Segment2Type& ls) {
+        static const Point2Type epsilon(std::numeric_limits<Scalar>::epsilon(), 
+                std::numeric_limits<Scalar>::epsilon());
         AABBox ret(ls.a);
         ret.expandTo(ls.b);
+        ret.adjust(-epsilon, epsilon);
         return ret;
     }
 };

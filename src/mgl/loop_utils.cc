@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 
 #include "loop_utils.h"
 #include "clipper.h"
@@ -149,7 +150,8 @@ SMOOTH_RESULT smoothPoints(const Point2Type& lp1,
         Scalar& cumDeviation,
         Point2Type& output);
 
-void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
+void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor, 
+        bool recurse) {
     if(smoothness == 0 || input.size() <= 3) {
 		output = input;
         return;
@@ -157,7 +159,8 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
 	Loop::const_finite_cw_iterator current;
 	current = input.clockwiseFinite();
     
-    std::vector<Point2Type> tmpPoints;
+    typedef std::vector<Point2Type> tmp_collection;
+    tmp_collection tmpPoints;
     tmpPoints.push_back(*(current++));
     tmpPoints.push_back(*(current++));
     
@@ -166,9 +169,9 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
 	Scalar cumulativeError = 0.0;
     
 	for(; current != input.clockwiseEnd(); ++current) {
-        std::vector<Point2Type>::reverse_iterator last1 = 
+        tmp_collection::reverse_iterator last1 = 
                 tmpPoints.rbegin();
-        std::vector<Point2Type>::const_reverse_iterator last2 = 
+        tmp_collection::const_reverse_iterator last2 = 
                 tmpPoints.rbegin();
         ++last2;
         const Point2Type& currentPoint = *current;
@@ -183,10 +186,24 @@ void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor) {
             tmpPoints.back() = result;
         }
 	}
-    for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
-            iter != tmpPoints.end(); 
-            ++iter) {
-        output.insertPointBefore(*iter, output.clockwiseEnd());
+    if(recurse) {
+        std::rotate(tmpPoints.begin(), 
+                tmpPoints.begin() + tmpPoints.size() / 2, 
+                tmpPoints.end());
+        
+        Loop tmpLoop;
+        for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
+                iter != tmpPoints.end(); 
+                ++iter) {
+            tmpLoop.insertPointBefore(*iter, tmpLoop.clockwiseEnd());
+        }
+        smooth(tmpLoop, smoothness, output, factor, false);
+    } else {
+        for(std::vector<Point2Type>::const_iterator iter = tmpPoints.begin(); 
+                iter != tmpPoints.end(); 
+                ++iter) {
+            output.insertPointBefore(*iter, output.clockwiseEnd());
+        }
     }
 }
 

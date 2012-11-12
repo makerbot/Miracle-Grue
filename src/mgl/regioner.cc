@@ -58,6 +58,10 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
         //grow sides by raft outset
         limits.inflate(raftOutsetOverhead, raftOutsetOverhead, 0);
 	}
+    if(grueCfg.get_doSupport()) {
+        Scalar supportOverhead = grueCfg.get_supportMargin() * 4;
+        limits.inflate(supportOverhead, supportOverhead, 0);
+    }
 
 	grid.init(limits, layerMeasure.getLayerW() *
 			grueCfg.get_gridSpacingMultiplier());
@@ -535,18 +539,24 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 
 		//find the bounds we will be combinging regions across
 		RegionList::iterator firstFloor = current;
-		for (unsigned int i = 0; i < grueCfg.get_floorLayerCount() &&
+        RegionList::iterator floorEnd = current;
+		for (unsigned int i = 1; i < grueCfg.get_floorLayerCount() &&
 				firstFloor != regionsBegin; ++i)
 			--firstFloor;
 
 		RegionList::iterator lastRoof = current;
-		for (unsigned int i = 0; i < grueCfg.get_roofLayerCount() &&
+        RegionList::iterator roofEnd = current;
+		for (unsigned int i = 1; i < grueCfg.get_roofLayerCount() &&
 				lastRoof != regionsEnd - 1; ++i)
 			++lastRoof;
-
+        
+        if(grueCfg.get_floorLayerCount() > 0)
+            ++floorEnd;
+        if(grueCfg.get_roofLayerCount() > 0)
+            --roofEnd;
 		//combine floors
 		for (RegionList::iterator floor = firstFloor;
-				floor <= current; ++floor) {
+				floor != floorEnd; ++floor) {
 			GridRanges multiFloor;
 
 			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
@@ -554,8 +564,8 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		}
 
 		//combine roofs
-		for (RegionList::iterator roof = current;
-				roof <= lastRoof; ++roof) {
+		for (RegionList::iterator roof = lastRoof;
+				roof != roofEnd; --roof) {
 			GridRanges multiRoof;
 
 			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);

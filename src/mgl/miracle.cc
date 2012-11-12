@@ -24,7 +24,7 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 		std::vector< SliceData >&, // slices,
 		ProgressBar *progress) {
 
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
 	

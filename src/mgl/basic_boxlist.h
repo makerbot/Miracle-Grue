@@ -63,8 +63,25 @@ public:
     typedef std::pair<value_type, AABBox> value_bounds;
     
     typedef std::vector<value_bounds> internal_container;
-    typedef typename internal_container::iterator iterator;
-    typedef typename internal_container::const_iterator const_iterator;
+    
+    template <typename BASE>
+    class basic_iterator {
+        friend class basic_boxlist;
+    public:
+        basic_iterator& operator++() { ++m_base; return *this; }
+        basic_iterator operator++(int) { basic_iterator copy = *this; ++*this; return copy; }
+        bool operator== (const basic_iterator& rhs) { return m_base ==  rhs.m_base; }
+        bool operator!= (const basic_iterator& rhs) { return !(*this==rhs); }
+        const typename BASE::value_type::first_type& operator* () { return m_base->first; }
+        const typename BASE::value_type::first_type* operator-> () { return &**this; }
+    private:
+        basic_iterator(BASE base) : m_base(base) {}
+        BASE m_base;
+    };
+    
+    typedef basic_iterator<typename internal_container::iterator> iterator;
+    typedef basic_iterator<typename internal_container::const_iterator> const_iterator;
+    //internal_container::iterator::reference::first_type
     
     /*!Insert a value into the spacial index
      @value: a const reference of what should be inserted.
@@ -78,6 +95,37 @@ public:
     void erase (iterator iter) {
         data.erase(iter);
     }
+    /**
+     @brief erase all elements that compare equal to @a value
+     @param COMPARE a comparator used to test for equality
+     Note! We assume that for two things to be equal, their bounding boxes 
+     must overlap!
+     @param value erase all things that compare to this
+     @return number of elements erased
+     */
+    template <typename COMPARE>
+    size_t erase(const value_type& value, const COMPARE& comp = COMPARE()) {
+        size_t ret = 0;
+        AABBox valBox = to_bbox<value_type>::bound(value);
+        for(int i = 0; i < static_cast<int>(data.size()); ++i) {
+            if(!valBox.intersects(data[i].second))
+            if(comp(value, data[i].first)) {
+                std::swap(data[i], data.back());
+                data.pop_back();
+                --i;
+                ++ret;
+            }
+        }
+        return ret;
+    }
+    /**
+     @brief erase all elements that compare equal to @a value
+     @param value erase all things that compare to this
+     @return number of elements erased
+     */
+    size_t erase(const value_type& value) {
+        return erase< std::equal_to<value_type> >(value);
+    }
     /*!Search for values that meet criteria of filt.filter(AABBox)
      @result: Object supporting push_back(...) where output is placed
      @filter: object supporting filter(...) that defines the criteria
@@ -85,7 +133,7 @@ public:
      the filter are placed in result.*/
     template <typename COLLECTION, typename FILTER>
     void search(COLLECTION& result, const FILTER& filt) const {
-        for(const_iterator iter = data.begin(); 
+        for(typename internal_container::const_iterator iter = data.begin(); 
                 iter != data.end(); 
                 ++iter) {
             if(filt.filter(iter->second))
@@ -103,6 +151,8 @@ public:
     iterator begin() { return data.begin(); }
     /*!Not universally implemented, do not use!*/
     iterator end() { return data.end(); }
+    const_iterator begin() const { return data.begin(); }
+    const_iterator end() const { return data.end(); }
     
 private:
     internal_container data;

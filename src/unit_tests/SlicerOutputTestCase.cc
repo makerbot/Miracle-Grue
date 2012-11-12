@@ -23,13 +23,19 @@ void SlicerOutputTestCase::setUp() {
 }
 
 void SlicerOutputTestCase::testLoopLayer(){
-	Meshy mesh;
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
+	Meshy mesh(grueCfg);
 	mesh.readStlFile((inputsDir + "20mm_Calibration_Box.stl").c_str());
 //	  SlicerConfig slicerCfg;
 //    slicerCfg.firstLayerZ = 0;
 //    slicerCfg.layerH = 0.20;
 //	  Segmenter segmenter(slicerCfg.firstLayerZ, slicerCfg.layerH);
-    GrueConfig grueCfg;
     Segmenter segmenter(grueCfg);
 	Slicer slicer(grueCfg);
 	segmenter.tablaturize(mesh);

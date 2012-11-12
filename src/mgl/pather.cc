@@ -15,6 +15,7 @@
 #include "pather.h"
 #include "limits.h"
 #include "pather_optimizer_graph.h"
+#include "pather_optimizer_fastgraph.h"
 
 namespace mgl {
 using namespace std;
@@ -51,11 +52,18 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 	unsigned int currentSlice = 0;
 
 	initProgress("Path generation", skeleton.size());
+    
+    abstract_optimizer* optimizer = NULL;
+    if(grueCfg.get_doGraphOptimization()) {
+        optimizer = new pather_optimizer_fastgraph(grueCfg);
+    } else {
+        optimizer = new pather_optimizer();
+    }
 
 	for (RegionList::const_iterator layerRegions = skeleton.begin();
 			layerRegions != skeleton.end(); ++layerRegions) {
 		tick();
-
+        try {
 		if (currentSlice < firstSliceIdx) continue;
 		if (currentSlice > lastSliceIdx) break;
 
@@ -80,29 +88,60 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				lp_layer.extruders.back();
 		
 		
-		pather_optimizer preoptimizer;
-		pather_optimizer_graph optimizer;
-		//optimizer.linkPaths = false;
+		optimizer->clearBoundaries();
+        optimizer->clearPaths();
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
 		
-		preoptimizer.addPaths(layerRegions->outlines, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_MODEL));
-		preoptimizer.addPaths(layerRegions->supportLoops, 
-				PathLabel(PathLabel::TYP_OUTLINE, PathLabel::OWN_SUPPORT));
-		preoptimizer.optimize(extruderlayer.outlinePaths);
+        if(grueCfg.get_doOutlines()) {
+            for(LoopList::const_iterator iter = layerRegions->outlines.begin(); 
+                    iter != layerRegions->outlines.end(); 
+                    ++iter) {
+                const LoopPath outlinePath(*iter, iter->clockwise(), 
+                        iter->counterClockwise());
+                extruderlayer.paths.push_back(PathLabel(PathLabel::TYP_OUTLINE, 
+                        PathLabel::OWN_MODEL));
+                OpenPath& path = extruderlayer.paths.back().myPath;
+                for(LoopPath::const_iterator pointIter = outlinePath.fromStart(); 
+                        pointIter != outlinePath.end(); 
+                        ++pointIter) {
+                    path.appendPoint(*pointIter);
+                }
+            }
+            for(LoopList::const_iterator iter = layerRegions->supportLoops.begin(); 
+                    iter != layerRegions->supportLoops.end(); 
+                    ++iter) {
+                const LoopPath outlinePath(*iter, iter->clockwise(), 
+                        iter->counterClockwise());
+                extruderlayer.paths.push_back(PathLabel(PathLabel::TYP_OUTLINE, 
+                        PathLabel::OWN_SUPPORT));
+                OpenPath& path = extruderlayer.paths.back().myPath;
+                for(LoopPath::const_iterator pointIter = outlinePath.fromStart(); 
+                        pointIter != outlinePath.end(); 
+                        ++pointIter) {
+                    path.appendPoint(*pointIter);
+                }
+            }
+        }
 		
-		preoptimizer.addBoundaries(layerRegions->outlines);	
-		
-		int currentShell = LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
-		for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
-				listIter != insetLoops.end(); 
-				++listIter) {
-			preoptimizer.addPaths(*listIter, 
-					PathLabel(PathLabel::TYP_INSET, 
-					PathLabel::OWN_MODEL, currentShell));
-			++currentShell;
-		}
+		optimizer->addBoundaries(layerRegions->outlines);	
+        
+		if(grueCfg.get_doInsets()) {
+            int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
+            int shellSequence = 0;
+            for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
+                    listIter != insetLoops.end(); 
+                    ++listIter, ++shellSequence) {
+                int shellVal = currentShell;
+//                shellVal = shellSequence !=0 && grueCfg.get_nbOfShells() > 1 ? 
+//                        shellVal : 
+//                        LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+                optimizer->addPaths(*listIter, 
+                        PathLabel(PathLabel::TYP_INSET, 
+                        PathLabel::OWN_MODEL, shellVal));
+                ++currentShell;
+            }
+        }
 
 		const GridRanges& infillRanges = layerRegions->infill;
 		const GridRanges& supportRanges = layerRegions->support;
@@ -129,64 +168,45 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				axis, 
 				supportPaths);
 		
-		preoptimizer.addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
-				PathLabel::OWN_MODEL, 1));
+        if(grueCfg.get_doInfills()) {
+            optimizer->addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_MODEL, 
+                    LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
+        }
 		
-		preoptimizer.optimize(preoptimized);
+		optimizer->optimize(preoptimized);
 		
-		preoptimizer.clearBoundaries();
-		preoptimizer.clearPaths();
+		optimizer->clearBoundaries();
+		optimizer->clearPaths();
 		
-		preoptimizer.addBoundaries(layerRegions->supportLoops);
+        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {
+            LoopList outsetSupportLoops;
+            loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
+                    0.01);
+            optimizer->addBoundaries(outsetSupportLoops);
+
+            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_SUPPORT, 0));
+
+
+            optimizer->optimize(presupport); 
+        }
 		
-		preoptimizer.addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
-				PathLabel::OWN_SUPPORT, 0));
-		
-		preoptimizer.optimize(presupport);
-		
-		if(patherCfg.doGraphOptimization) {
-			//run graph optimizations
-			std::list<LabeledOpenPath> resultModel;
-			std::list<LabeledOpenPath> resultSupport;
-                        if(preoptimized.size() > 3) {
-                            optimizer.addBoundaries(layerRegions->outlines);
-                            optimizer.addPaths(preoptimized);
-                            optimizer.optimize(resultModel);
-                            optimizer.clearPaths();
-                            optimizer.clearBoundaries();
-                        } else {
-                            resultModel.insert(resultModel.end(), 
-                                    preoptimized.begin(), preoptimized.end());
-                        }
-                        if(presupport.size() > 3) {
-                            optimizer.addBoundaries(layerRegions->supportLoops);
-                            optimizer.addPaths(presupport);
-                            optimizer.optimize(resultSupport);
-                        } else {
-                            resultSupport.insert(resultSupport.end(), 
-                                    presupport.begin(), presupport.end());
-                        }
-			
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					resultModel.begin(), resultModel.end());
-			
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					resultSupport.begin(), resultSupport.end());
-		} else {
-			//don't run graph optimizations
-			//use naive result instead
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					preoptimized.begin(), preoptimized.end());
-			extruderlayer.paths.insert(extruderlayer.paths.end(), 
-					presupport.begin(), presupport.end());
-		}
-		directionalCoarsenessCleanup(extruderlayer.paths);
+        extruderlayer.paths.insert(extruderlayer.paths.end(), 
+                preoptimized.begin(), preoptimized.end());
+        extruderlayer.paths.insert(extruderlayer.paths.end(), 
+                presupport.begin(), presupport.end());
+		//directionalCoarsenessCleanup(extruderlayer.paths);
 
 //		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
 //				layerRegions->layerMeasureId) << endl;
-
+        }catch (const std::exception& our) {
+            std::cout << "Error " << our.what() << " on layer " << 
+                    currentSlice << std::endl;
+        }
 		++currentSlice;
 	}
+    delete optimizer;
 }
 
 void Pather::outlines(const LoopList& outline_loops,

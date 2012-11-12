@@ -175,6 +175,8 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInfills)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doFanCommand)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, fanLayer)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doAnchor)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPutModelOnPlatform)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
@@ -205,6 +207,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportDensity)
     //pather
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doGraphOptimization)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, iterativeEffort)
     //gantry
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateXY)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateZ)

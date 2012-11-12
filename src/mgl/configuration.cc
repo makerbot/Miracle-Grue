@@ -160,6 +160,7 @@ GrueConfig::GrueConfig()
         : defaultExtruder(INVALID_UINT), doOutlines(INVALID_BOOL), 
         doInsets(INVALID_BOOL), doInfills(INVALID_BOOL), 
         doFanCommand(INVALID_BOOL), fanLayer(INVALID_UINT), 
+        doAnchor(INVALID_BOOL), doPutModelOnPlatform(INVALID_BOOL), 
         doPrintLayerMessages(INVALID_BOOL), doPrintProgress(INVALID_BOOL), 
         coarseness(INVALID_SCALAR), preCoarseness(INVALID_SCALAR), 
         directionWeight(INVALID_SCALAR), 
@@ -173,6 +174,7 @@ GrueConfig::GrueConfig()
         raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
         doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
         supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
+        iterativeEffort(INVALID_UINT), 
         rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
         useEaxis(INVALID_BOOL), scalingFactor(INVALID_BOOL), 
         startingX(INVALID_SCALAR), startingY(INVALID_SCALAR), 
@@ -205,6 +207,8 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
             config["layerHeight"], "layerHeight"));
     firstLayerZ = doubleCheck(config["bedZOffset"], 
             "bedZOffset");
+    doPutModelOnPlatform = boolCheck(config["doPutModelOnPlatform"], 
+            "doPutModelOnPlatform", true);
     infillDensity = doubleCheck(config["infillDensity"],
             "infillDensity");
     gridSpacingMultiplier = doubleCheck(config["gridSpacingMultiplier"],
@@ -249,7 +253,7 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
             "endGcode", "");
     doOutlines = boolCheck(config["doOutlines"],
             "doOutlines", false);
-    doInsets = boolCheck(config["insets"],
+    doInsets = boolCheck(config["doInsets"],
             "doInsets", true);
     doInfills = boolCheck(config["doInfills"],
             "doInfills", true);
@@ -259,6 +263,8 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
         fanLayer = uintCheck(config["fanLayer"],
                 "fanLayer");
     }
+    doAnchor = boolCheck(
+            config["doAnchor"], "doAnchor", true);
     doPrintLayerMessages = boolCheck(
             config["printLayerMessages"],
             "printLayerMessages", false);
@@ -290,8 +296,8 @@ void GrueConfig::loadSupportParams(const Configuration& config) {
             config["supportDensity"], "supportDensity");
 }
 void GrueConfig::loadPathingParams(const Configuration& config) {
-    directionWeight = doubleCheck(config["directionWeight"],
-            "directionWeight");
+    iterativeEffort = uintCheck(config["iterativeEffort"], 
+            "iterativeEffort", 999);
 }
 void GrueConfig::loadProfileParams(const Configuration& config) {
     loadExtruderParams(config);

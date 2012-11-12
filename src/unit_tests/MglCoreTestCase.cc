@@ -279,17 +279,23 @@ void MglCoreTestCase::testTequalsPolygons()
 
 void MglCoreTestCase::testMeshyLoads()
 {
-
+    class MeshCfg : public GrueConfig {
+    public:
+        MeshCfg() {
+            doPutModelOnPlatform = true;
+        }
+    };
+    MeshCfg grueCfg;
 	string binaryStl = testCaseInputsDir +"linkCup.stl";
 	cout << "Test: " << __FUNCTION__ << endl;
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 	size_t loadSize = mesh.readStlFile(binaryStl.c_str());
 	cout << binaryStl << " : face count=" << loadSize << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t) 32816, loadSize);
 
 	string asciiStl = testCaseInputsDir +"3D_Knot.stl";
 	cout << "Test: " << __FUNCTION__ << endl;
-	Meshy mesh2;
+	Meshy mesh2(grueCfg);
 	loadSize = mesh2.readStlFile(asciiStl.c_str());
 	cout << asciiStl <<" : face count=" << loadSize << endl;
 	CPPUNIT_ASSERT_EQUAL((size_t)2892, loadSize);
