@@ -92,6 +92,7 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
         optimizer->clearPaths();
 
 		const std::list<LoopList>& insetLoops = layerRegions->insetLoops;
+		const std::list<OpenPathList>& spurPaths = layerRegions->spurs;
 		
         if(grueCfg.get_doOutlines()) {
             for(LoopList::const_iterator iter = layerRegions->outlines.begin(); 
@@ -128,15 +129,24 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
         
 		if(grueCfg.get_doInsets()) {
             int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
-            int shellSequence = 0;
             for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
                     listIter != insetLoops.end(); 
-                    ++listIter, ++shellSequence) {
+                    ++listIter) {
                 int shellVal = currentShell;
-//                shellVal = shellSequence !=0 && grueCfg.get_nbOfShells() > 1 ? 
-//                        shellVal : 
-//                        LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE;
+
                 optimizer->addPaths(*listIter, 
+                        PathLabel(PathLabel::TYP_INSET, 
+                        PathLabel::OWN_MODEL, shellVal));
+                ++currentShell;
+            }
+
+            currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
+            for(std::list<OpenPathList>::const_iterator spurIter = spurPaths.begin(); 
+                spurIter != spurPaths.end(); 
+                    ++spurIter) {
+                int shellVal = currentShell;
+
+                optimizer->addPaths(*spurIter, 
                         PathLabel(PathLabel::TYP_INSET, 
                         PathLabel::OWN_MODEL, shellVal));
                 ++currentShell;
