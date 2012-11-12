@@ -228,22 +228,24 @@ FASTGRAPH_PRIVATE:
              Selects the best valid child and optimizes it until no more remain
              */
             void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    graph_type& graph, boundary_container& bounds, 
-                    const GrueConfig& grueConf);
+                    boundary_container& bounds, const GrueConfig& grueConf);
             /**
              @brief called by a parent hierarchy on its valid children
-             @param from dummy unused parameter to differentiate overloads
              */
-            void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    graph_type& graph, graph_type::node_index& from, 
-                    boundary_container& bounds, 
-                    const GrueConfig& grueConf);
+            void optimizeInner(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                    boundary_container& bounds, const GrueConfig& grueConf);
+            /**
+             @brief optimize the contents of this object only. Called from 
+             optimizeInner
+             */
+            void optimizeMyself(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                    boundary_container& bounds, const GrueConfig& grueConf);
             void swap(LoopHierarchy& other);
             void repr(std::ostream& out, size_t level = 0);
             PathLabel m_label;
             hierarchy_list m_children;
             Point2Type m_testPoint;
-            graph_type m_spurs;
+            graph_type m_graph;
             Loop m_loop;
             
         private:
@@ -398,15 +400,12 @@ FASTGRAPH_PRIVATE:
     public:
         typedef abstract_predicate<bucket::LoopHierarchy>::value_type value_type;
         LoopHierarchyBaseComparator(Point2Type& entryPoint, 
-                const graph_type& graph, 
                 const GrueConfig& grueConf) 
                 : m_entryPoint(entryPoint), 
-                m_graph(graph), 
                 m_compare(grueConf) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
         Point2Type& m_entryPoint;
-        const graph_type& m_graph;
         LabelPriorityComparator m_compare;
     };
     
@@ -414,9 +413,8 @@ FASTGRAPH_PRIVATE:
     public:
         typedef LoopHierarchyBaseComparator::value_type value_type;
         LoopHierarchyStrictComparator(Point2Type& entryPoint, 
-                const graph_type& graph, 
                 const GrueConfig& grueConf) 
-                : LoopHierarchyBaseComparator(entryPoint, graph, grueConf) {}
+                : LoopHierarchyBaseComparator(entryPoint, grueConf) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
     };
     
