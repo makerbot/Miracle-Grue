@@ -219,26 +219,33 @@ FASTGRAPH_PRIVATE:
             bool contains(Point2Type point) const;
             /// test if we contain other
             bool contains(const LoopHierarchy& other) const;
+            /// get the deepest child that contains point or self if no such child
+            LoopHierarchy& select(Point2Type point);
+            /// get the deepest child that contains point or self if no such child
+            const LoopHierarchy& select(Point2Type point) const;
             /**
              @brief the entry point for optimizing a loop hierarchy
              Selects the best valid child and optimizes it until no more remain
              */
             void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    graph_type& graph, boundary_container& bounds, 
-                    const GrueConfig& grueConf);
+                    boundary_container& bounds, const GrueConfig& grueConf);
             /**
              @brief called by a parent hierarchy on its valid children
-             @param from dummy unused parameter to differentiate overloads
              */
-            void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    graph_type& graph, graph_type::node_index& from, 
-                    boundary_container& bounds, 
-                    const GrueConfig& grueConf);
+            void optimizeInner(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                    boundary_container& bounds, const GrueConfig& grueConf);
+            /**
+             @brief optimize the contents of this object only. Called from 
+             optimizeInner
+             */
+            void optimizeMyself(LabeledOpenPaths& output, Point2Type& entryPoint, 
+                    boundary_container& bounds, const GrueConfig& grueConf);
             void swap(LoopHierarchy& other);
             void repr(std::ostream& out, size_t level = 0);
             PathLabel m_label;
             hierarchy_list m_children;
             Point2Type m_testPoint;
+            graph_type m_graph;
             Loop m_loop;
             
         private:
@@ -260,6 +267,14 @@ FASTGRAPH_PRIVATE:
         void insertBoundary(const Loop& loop);
         /// things optimized in this bucket should not cross this loop
         void insertNoCross(const Loop& loop);
+        /// invokes insertPath(path, label);
+        void insertPath(const LabeledOpenPath& path);
+        /**
+         @brief insert path in the graph of the appropriate loop hierarchy element
+         @param path the path toinsert
+         @param label the label of the @a path
+         */
+        void insertPath(const OpenPath& path, const PathLabel& label);
         /**
          @brief insert the bucket into this one. 
          
@@ -385,15 +400,12 @@ FASTGRAPH_PRIVATE:
     public:
         typedef abstract_predicate<bucket::LoopHierarchy>::value_type value_type;
         LoopHierarchyBaseComparator(Point2Type& entryPoint, 
-                const graph_type& graph, 
                 const GrueConfig& grueConf) 
                 : m_entryPoint(entryPoint), 
-                m_graph(graph), 
                 m_compare(grueConf) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
         Point2Type& m_entryPoint;
-        const graph_type& m_graph;
         LabelPriorityComparator m_compare;
     };
     
@@ -401,9 +413,8 @@ FASTGRAPH_PRIVATE:
     public:
         typedef LoopHierarchyBaseComparator::value_type value_type;
         LoopHierarchyStrictComparator(Point2Type& entryPoint, 
-                const graph_type& graph, 
                 const GrueConfig& grueConf) 
-                : LoopHierarchyBaseComparator(entryPoint, graph, grueConf) {}
+                : LoopHierarchyBaseComparator(entryPoint, grueConf) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
     };
     
@@ -570,6 +581,18 @@ FASTGRAPH_PRIVATE:
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
             Point2Type& entryPoint);
     static void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+    
+    /**
+     @brief optimize a graph given the necessary data, while not being 
+     tied to any object
+     @param labeledpaths the output where the optimized path is written
+     @param graph the graph to optimize. Will clear the graph during the process 
+     @param bounds that which should not be crossed
+     @param entryPoint decides where to start. At the end contains the final point
+     @param grueConf
+     */
+    static void optimizeGraph(LabeledOpenPaths& labeledpaths, graph_type& graph, boundary_container& bounds, Point2Type& entryPoint, 
+            const GrueConfig& grueConf);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
     bucket_list::iterator pickBucket(Point2Type point);

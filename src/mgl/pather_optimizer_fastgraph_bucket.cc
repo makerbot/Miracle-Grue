@@ -25,6 +25,47 @@ void BUCKET::insertBoundary(const Loop& loop) {
     bucket constructed(loop);
     insertBucket(constructed);
 }
+void BUCKET::insertPath(const LabeledOpenPath& path) {
+    insertPath(path.myPath, path.myLabel);
+}
+void BUCKET::insertPath(const OpenPath& path, const PathLabel& label) {
+    if(!path.empty()) {
+        Point2Type testPoint = *path.fromStart();
+        LoopHierarchy& target = m_hierarchy.select(testPoint);
+        graph_type& currentGraph = target.m_graph;
+        node_index last = -1;
+        for(OpenPath::const_iterator iter = path.fromStart(); 
+                iter != path.end(); 
+                ++iter) {
+            OpenPath::const_iterator next = iter;
+            ++next;
+            if(iter == path.fromStart()) {
+                last = currentGraph.createNode(NodeData(*iter, 
+                        label, true)).getIndex();
+            }
+            if(next != path.end()) {
+                OpenPath::const_iterator future = next;
+                ++future;
+                node& curNode = currentGraph.createNode(NodeData(*next, 
+                        label, future==path.end()));
+                node& lastNode = currentGraph[last];
+                Segment2Type connection( 
+                        curNode.data().getPosition(), 
+                        lastNode.data().getPosition());
+                Point2Type normal;
+                try {
+                    normal = (connection.b - connection.a).unit();
+                } catch (const GeometryException& le) {}
+                Scalar distance = connection.length();
+                Cost frontCost(label, distance, normal);
+                Cost backCost(label, distance, normal * -1.0);
+                curNode.connect(lastNode, backCost);
+                lastNode.connect(curNode, frontCost);
+                last = curNode.getIndex();
+            }
+        }
+    }
+}
 void BUCKET::insertBucket(bucket& constructed) {
     if(constructed.contains(*this)) {
         swap(constructed);
@@ -80,61 +121,11 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
         bestRecursiveChoice->optimize(output, entryPoint, grueConf);
         m_children.erase(bestRecursiveChoice);
     }
-    node_index currentIndex = -1;
-    node::forward_link_iterator next;
-    graph_type& currentGraph = m_graph;
-    boundary_container& currentBounds = m_noCrossing;
-    Point2Type currentUnit;
 //    m_hierarchy.repr(std::cerr);
 //    std::cout << "That was it for this bucket!" << std::endl;
-    m_hierarchy.optimize(output, entryPoint, currentGraph, 
-            currentBounds, grueConf);
-    while(!currentGraph.empty()) {
-        currentIndex = std::min_element(entryBegin(currentGraph), 
-                entryEnd(currentGraph), 
-                nodeComparator(grueConf, currentGraph, entryPoint))->getIndex();
-        LabeledOpenPath activePath;
-        if(!currentGraph[currentIndex].forwardEmpty()) {
-            //can a connection be made from the last entry to here?
-            Segment2Type crossingTest(entryPoint, 
-                    currentGraph[currentIndex].data().getPosition());
-            if(!crossesBounds(crossingTest, currentBounds)) {
-                smartAppendPoint(entryPoint, 
-                        PathLabel(PathLabel::TYP_CONNECTION, 
-                        PathLabel::OWN_MODEL, 1), output, activePath, 
-                        entryPoint);
-            }
-            smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
-                    currentGraph[currentIndex].data().getLabel(), 
-                    output, activePath, entryPoint);
-        }
-        while((next = bestLink(currentGraph[currentIndex], 
-                currentGraph, currentBounds, grueConf, currentUnit)) != 
-                currentGraph[currentIndex].forwardEnd()) {
-            node::connection nextConnection = *next;
-            currentUnit = nextConnection.second->normal();
-            PathLabel currentCost(*nextConnection.second);
-            smartAppendPoint(nextConnection.first->data().getPosition(), 
-                    currentCost, output, activePath, entryPoint);
-            currentGraph[currentIndex].disconnect(*nextConnection.first);
-            nextConnection.first->disconnect(currentGraph[currentIndex]);
-//            std::cout << "Label: " << 
-//                    nextConnection.first->data().getLabel().myValue << 
-//                    std::endl;
-            if(currentGraph[currentIndex].forwardEmpty() && 
-                    currentGraph[currentIndex].reverseEmpty()) {
-                currentGraph.destroyNode(currentGraph[currentIndex]);
-            }
-            currentIndex = nextConnection.first->getIndex();
-            //std::cout << "Inner Count: " << graph.count() << std::endl;
-        }
-        if(currentGraph[currentIndex].forwardEmpty() && 
-                currentGraph[currentIndex].reverseEmpty()) {
-            currentGraph.destroyNode(currentGraph[currentIndex]);
-        }
-        //recover from corners here
-        smartAppendPath(output, activePath);
-    }
+    m_hierarchy.optimize(output, entryPoint, 
+            m_noCrossing, grueConf);
+    optimizeGraph(output, m_graph, m_noCrossing, entryPoint, grueConf);
     while((bestRecursiveChoice = pickBestChild(m_children.begin(), 
             m_children.end(), entryPoint)) != m_children.end()) {
         bestRecursiveChoice->optimize(output, entryPoint, grueConf);
@@ -267,28 +258,42 @@ bool HIERARCHY::contains(const LoopHierarchy& other) const {
     bool otherResult = other.contains(m_testPoint);
     return myResult && !otherResult;
 }
+HIERARCHY& HIERARCHY::select(Point2Type point) {
+    for(hierarchy_list::iterator iter = m_children.begin(); 
+            iter != m_children.end(); 
+            ++iter) {
+        if(iter->contains(point))
+            return iter->select(point);
+    }
+    return *this;
+}
+const HIERARCHY& HIERARCHY::select(Point2Type point) const {
+    for(hierarchy_list::const_iterator iter = m_children.begin(); 
+            iter != m_children.end(); 
+            ++iter) {
+        if(iter->contains(point))
+            return iter->select(point);
+    }
+    return *this;
+}
 void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
-        graph_type& graph, boundary_container& bounds, 
-        const GrueConfig& grueConf) {
+        boundary_container& bounds, const GrueConfig& grueConf) {
     if(m_loop.empty()) {
-        LoopHierarchyStrictComparator compare(entryPoint, graph, grueConf);
+        LoopHierarchyStrictComparator compare(entryPoint, grueConf);
         hierarchy_list::iterator bestChoice;
         while((bestChoice = bestChild(compare)) != m_children.end()) {
-            bestChoice->optimize(output, entryPoint, graph, bounds, grueConf);
+            bestChoice->optimize(output, entryPoint, bounds, grueConf);
             m_children.erase(bestChoice);
         }
         return;
     }
-    graph_type::node_index dummy = 0;
-    optimize(output, entryPoint, graph, dummy, bounds, grueConf);
+    optimizeInner(output, entryPoint, bounds, grueConf);
 }
-void HIERARCHY::optimize(LabeledOpenPaths& output, 
+void HIERARCHY::optimizeInner(LabeledOpenPaths& output, 
         Point2Type& entryPoint, 
-        graph_type& graph, graph_type::node_index& from, 
-        boundary_container& bounds, 
-        const GrueConfig& grueConf) {
-    LoopHierarchyStrictComparator typeDistComparator(entryPoint, graph, grueConf);
-    LoopHierarchyBaseComparator typeComparator(entryPoint, graph, grueConf);
+        boundary_container& bounds, const GrueConfig& grueConf) {
+    LoopHierarchyStrictComparator typeDistComparator(entryPoint, grueConf);
+    LoopHierarchyBaseComparator typeComparator(entryPoint, grueConf);
     hierarchy_list::iterator bestChoice;
     while((bestChoice = bestChild(typeDistComparator)) 
            != m_children.end()) {
@@ -302,11 +307,38 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
 //           std::cout << bestChoice->m_label.myValue << " Good to recurse " << 
 //                   m_label.myValue << std::endl;
        }
-       bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
+       bestChoice->optimize(output, entryPoint, bounds, grueConf);
        m_children.erase(bestChoice);
     }
 //    std::cout << "Optimizing priority " << m_label.myValue << 
 //            " count " << m_loop.size() << std::endl;
+    optimizeMyself(output, entryPoint, bounds, grueConf);
+    
+    if(bestChoice != m_children.end()) {
+        do {
+//            std::cout << "Tail recursion into priority " << 
+//                    bestChoice->m_label.myValue << std::endl;
+            bestChoice->optimize(output, entryPoint, bounds, grueConf);
+            m_children.erase(bestChoice);
+        } while((bestChoice = bestChild(typeDistComparator)) 
+                != m_children.end());
+    }
+//    std::cout << "Optimizing priority " << m_label.myValue 
+//            << " done " << m_loop.size() << std::endl;
+}
+void HIERARCHY::optimizeMyself(LabeledOpenPaths& output, 
+        Point2Type& entryPoint, 
+        boundary_container& bounds, 
+        const GrueConfig& grueConf) {
+    LabelPriorityComparator compare(grueConf);
+    bool doneGraph = false;
+    entry_iterator nodeSample = entryBegin(m_graph);
+    if(nodeSample != entryEnd(m_graph)) {
+        if(compare.compare(nodeSample->data().getLabel(), m_label) == BETTER) {
+            doneGraph = true;
+            optimizeGraph(output, m_graph, bounds, entryPoint, grueConf);
+        }
+    }
     if(!m_loop.empty()) {
         Scalar minDistance = std::numeric_limits<Scalar>::max();
         Loop::cw_iterator minStart = m_loop.clockwise();
@@ -337,23 +369,15 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         }
         output.push_back(thisLoop);
     }
-    
-    if(bestChoice != m_children.end()) {
-        do {
-//            std::cout << "Tail recursion into priority " << 
-//                    bestChoice->m_label.myValue << std::endl;
-            bestChoice->optimize(output, entryPoint, graph, from, bounds, grueConf);
-            m_children.erase(bestChoice);
-        } while((bestChoice = bestChild(typeDistComparator)) 
-                != m_children.end());
+    if(!doneGraph && nodeSample != entryEnd(m_graph)) {
+        optimizeGraph(output, m_graph, bounds, entryPoint, grueConf);
     }
-//    std::cout << "Optimizing priority " << m_label.myValue 
-//            << " done " << m_loop.size() << std::endl;
 }
 void HIERARCHY::swap(LoopHierarchy& other) {
     std::swap(m_label, other.m_label);
     m_children.swap(other.m_children);
     std::swap(m_testPoint, other.m_testPoint);
+    m_graph.swap(other.m_graph);
     std::swap(m_loop, other.m_loop);
 }
 void HIERARCHY::repr(std::ostream& out, size_t level) {
