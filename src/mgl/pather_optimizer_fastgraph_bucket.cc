@@ -285,6 +285,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
             bestChoice->optimize(output, entryPoint, bounds, grueConf);
             m_children.erase(bestChoice);
         }
+        optimizeGraph(output, m_graph, bounds, entryPoint, grueConf);
         return;
     }
     optimizeInner(output, entryPoint, bounds, grueConf);

@@ -145,7 +145,6 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
                 spurIter != spurPaths.end(); 
                     ++spurIter) {
                 int shellVal = currentShell;
-
                 optimizer->addPaths(*spurIter, 
                         PathLabel(PathLabel::TYP_INSET, 
                         PathLabel::OWN_MODEL, shellVal));
