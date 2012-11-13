@@ -257,8 +257,8 @@ Scalar z, Scalar h, Scalar w,
 size_t layerSequence,
 const Extruder& extruder,
 const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
-    typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator
-    const_iterator;
+    typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
+            const_iterator;
     Extrusion fluidstrusion;
     calcInfillExtrusion(extruder.id, layerSequence, fluidstrusion);
     gantry.snort(ss, extruder, fluidstrusion);

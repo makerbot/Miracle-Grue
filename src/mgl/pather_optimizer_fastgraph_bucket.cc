@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "pather_optimizer_fastgraph.h"
+#include "pather.h"
 
 namespace mgl {
 
@@ -99,10 +100,15 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
             Segment2Type crossingTest(entryPoint, 
                     currentGraph[currentIndex].data().getPosition());
             if(!crossesBounds(crossingTest, currentBounds)) {
-                smartAppendPoint(entryPoint, 
-                        PathLabel(PathLabel::TYP_CONNECTION, 
-                        PathLabel::OWN_MODEL, 1), output, activePath, 
-                        entryPoint);
+                if(!output.empty() && output.back().myLabel.myValue == 
+                        LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE) {
+                    //NO CONNECT FROM OUTLINE
+                } else {
+                    smartAppendPoint(entryPoint, 
+                            PathLabel(PathLabel::TYP_CONNECTION, 
+                            PathLabel::OWN_MODEL, 1), output, activePath, 
+                            entryPoint);
+                }
             }
             smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
                     currentGraph[currentIndex].data().getLabel(), 
@@ -287,6 +293,8 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         graph_type& graph, graph_type::node_index& from, 
         boundary_container& bounds, 
         const GrueConfig& grueConf) {
+    const Scalar LOOP_JOINT_FUDGE_DISTANCE = grueConf.get_layerH() * 
+            grueConf.get_layerWidthRatio();
     LoopHierarchyStrictComparator typeDistComparator(entryPoint, graph, grueConf);
     LoopHierarchyBaseComparator typeComparator(entryPoint, graph, grueConf);
     hierarchy_list::iterator bestChoice;
@@ -333,8 +341,21 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         for(LoopPath::iterator iter = lp.fromStart(); 
                 iter != lp.end(); 
                 ++iter) {
+            LoopPath::iterator nextIter1 = iter;
+            ++nextIter1;
+            LoopPath::iterator nextIter2 = nextIter1;
+            ++nextIter2;
             thisLoop.myPath.appendPoint(*iter);
+            if(nextIter2 == lp.end()) {
+                Segment2Type testSegment(*iter, *nextIter1);
+                if(testSegment.length() > LOOP_JOINT_FUDGE_DISTANCE) {
+                    testSegment = testSegment.elongate(-LOOP_JOINT_FUDGE_DISTANCE);
+                    thisLoop.myPath.appendPoint(testSegment.b);
+                } else {}
+                break;
+            }
         }
+        entryPoint = *thisLoop.myPath.fromEnd();
         output.push_back(thisLoop);
     }
     
