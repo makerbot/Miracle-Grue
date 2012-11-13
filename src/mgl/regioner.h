@@ -168,19 +168,50 @@ public:
 							const Grid& grid, 
 							GridRanges& surface);
 
+/**
+ Spurs code -- eventually this will be in a separate stage of the pipeline
+*/
+
+    /**
+       @brief Entry point for spurs generation
+       @param regionsBegin iterator to the beginning of the regions you will
+       be generating spurs for
+       @param regionsEnd iterator to the end of spur regions
+       layermeasure LayerMeasure object for this print
+     */
     void spurs(RegionList::iterator regionsBegin,
                RegionList::iterator regionsEnd,
                LayerMeasure &layermeasure);
 
+    /**
+       @brief Generate loops for spur regions, regions inside shells left out
+       by inner shells
+       @param sliceOutlines Outline loops for the object
+       @param sliceInset Inset loops for the object, 2d list grouped by the
+       outline they're in
+       @param layermeasure LayerMeasure object for the print
+       @param spurLoops Output, loops containing spurs
+    */
 	void spurLoopsForSlice(const LoopList& sliceOutlines,
 						   const std::list<LoopList>& sliceInsets,
 						   const LayerMeasure &layermeasure,
 						   std::list<LoopList>& spurLoops);
 
+    /**
+       @brief Take a set of spur loops, grouped by their outline and fill them
+       with spurs.  Expects them to be manifold, with correct normals, and not
+       be larger than a spur can traverse
+     */
 	void fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
 						   const LayerMeasure &layermeasure,
 						   std::list<OpenPathList> &spursPerShell);
 
+    /**
+       @brief Fill a list of spur loops attached to the same outline
+       @param spurLoops outlines for all the spur regions
+       @param layermeasure LayerMeasure object for this print
+       @param spurs Output, the spur paths for these loops
+    */
 	void fillSpurLoops(const LoopList &spurLoops,
 					   const LayerMeasure &layermeasure,
 					   OpenPathList &spurs);

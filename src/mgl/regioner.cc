@@ -274,805 +274,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 	loopsOffset(interiors, sliceInsets.back(), -base_distance);
 }
 
-void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
-								 const std::list<LoopList>& sliceInsets,
-								 const LayerMeasure &layermeasure,
- 								 std::list<LoopList>& spurLoops) {
 
-	const Scalar fudgefactor = 0.01;
-
-	// the outer shell is a special case
-	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
-	LoopList outset;
-	loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW() + fudgefactor,
-				false);
-	
-	spurLoops.push_back(LoopList());
-	LoopList &outerspurs = spurLoops.back();
-
-	loopsDifference(outerspurs, sliceOutlines, outset);
-
-	std::list<LoopList>::const_iterator outer = inner;
-	++inner;
-
-	while (inner != sliceInsets.end()) {
-        spurLoops.push_back(LoopList());
-        LoopList &spurs = spurLoops.back();
-
-        if (inner->size() > 0) {
-            outset.clear();
-            loopsOffset(outset, *inner,
-                        grueCfg.get_insetDistanceMultiplier() * 
-                        layermeasure.getLayerW()
-                        + fudgefactor, false);
-        
-            loopsDifference(spurs, *outer, outset);
-        }
-
-        outer = inner;
-        ++inner;
-    }
-}
-
-void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
-								 const LayerMeasure &layermeasure,
-								 std::list<OpenPathList> &spursPerShell) {
-	for (std::list<LoopList>::const_iterator spurLoops =
-			 spurLoopsPerShell.begin();
-		 spurLoops != spurLoopsPerShell.end(); ++spurLoops) {
-
-		spursPerShell.push_back(OpenPathList());
-		OpenPathList &spurs = spursPerShell.back();
-		fillSpurLoops(*spurLoops, layermeasure, spurs);
-	}
-}
-
-typedef pair<LineSegment2, LineSegment2> SegmentPair;
-
-bool VectorLess(const Vector2 &first, const Vector2 &second) {
-	if (first.x < second.x)
-		return true;
-	else if (first.x > second.x)
-		return false;
-	else if (first.y < second.y)
-		return true;
-	else
-		return false;
-}
-
-bool SegLess(const LineSegment2 &first, const LineSegment2 &second) {
-	if (VectorLess(first.a, second.a))
-		return true;
-	else if (VectorLess(second.a, first.a))
-		return false;
-	else if (VectorLess(first.b, second.b))
-		return true;
-	else
-		return false;
-}
-
-struct SegPairLess {
-	bool operator()(const SegmentPair first, const SegmentPair second) {
-		if (SegLess(first.first, second.first))
-			return true;
-		else if (SegLess(second.first, first.first))
-			return false;
-		else if (SegLess(first.second, second.second))
-			return true;
-		else 
-			return false;
-	}
-};
-
-#include "intersection_index.h"
-#include "basic_boxlist.h"
-
-typedef set<SegmentPair, SegPairLess> SegmentPairSet;
-typedef vector<LineSegment2> SegmentList;
-
-typedef basic_boxlist<LineSegment2> SegmentIndex;
-
-Vector2 getSegmentVector(const LineSegment2 &seg) {
-	return seg.a - seg.b;
-}
-
-LineSegment2 getSegmentNormal(const LineSegment2 &orig,
-							  const Vector2 &startingPoint,
-							  const Scalar length) {
-	Vector2 heading = getSegmentVector(orig);
-	heading.normalise();
-
-	Vector2 normalVector;
-	normalVector.x = -heading.y;
-	normalVector.y = heading.x;
-
-	normalVector *= length;
-
-	Vector2 endingPoint = startingPoint + normalVector;
-
-	return LineSegment2(startingPoint, endingPoint);
-}
-
-#include <math.h>
-#include <Eigen/Geometry>
-
-typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
-typedef Eigen::Vector2d EVector;
-typedef Eigen::Hyperplane<Scalar, 2> EHyperplane;
-
-EVector toEVector(const Vector2 &orig) {
-	return EVector(orig.x, orig.y);
-}
-
-Vector2 toVector2(const EVector &orig) {
-	return Vector2(orig(0), orig(1));
-}
-
-Vector2 midPoint(const LineSegment2 &seg) {
-	return seg.a + ((seg.b - seg.a) * 0.5);
-}
-
-void lineIntersection(const ELine first, const ELine second,
-					  EVector &point, Scalar &angle) {
-	point = first.intersectionPoint(EHyperplane(second));
-	
-	EVector firstUnit = first.direction();
-	EVector secondUnit = second.direction();
-
-    Scalar dot = firstUnit.dot(secondUnit);
-    if (dot < 0) {
-        secondUnit = -secondUnit;
-        dot = firstUnit.dot(secondUnit);
-    }
-
-	angle = acos(dot);
-}
-
-bool segmentIntersection(const LineSegment2 &first,const LineSegment2 &second,
-                         Vector2 &point) {
-    if (!first.intersects(second))
-        return false;
-
-    ELine firstline = ELine::Through(toEVector(first.a), toEVector(first.b));
-    ELine secondline = ELine::Through(toEVector(second.a), toEVector(second.b));
-
-    point = toVector2(firstline.intersectionPoint(EHyperplane(secondline)));
-    return true;
-} 
-
-SegmentPair normalizeWalls(const LineSegment2 &first,
-						   const LineSegment2 &second) {
-
-	SegmentPair segs;
-	if (SegLess(first, second)) {
-		segs.first = first;
-		segs.second = second;
-	}
-	else if (SegLess(second, first)) {
-		segs.first = second;
-		segs.second = first;
-	}
-    else if (first.a == second.a && first.b == second.b) {
-        segs.first = second;
-        segs.second = first;
-    }
-    else {
-        stringstream msg;
-        msg << "don't know which way to order pair:\nfirst.a.x " << first.a.x
-            << "\nfirst.a.y " << first.a.y
-            << "\nfirst.b.x " << first.b.x
-            << "\nfirst.b.y " << first.b.y << endl;
-        throw runtime_error(msg.str());
-    }
-
-	return segs;
-}
-
-SegmentPair completeParallel(const Scalar, const Scalar bottomlen,
-                            const SegmentPair &sides) {
-    LineSegment2 span = getSegmentNormal(sides.first, sides.first.a,
-                                           bottomlen);
-    Vector2 intersection;
-    if (segmentIntersection(span, sides.second, intersection))
-        span.b = intersection;
-    else {
-        span = getSegmentNormal(sides.first, sides.first.b, bottomlen);
-
-        if (segmentIntersection(span, sides.second, intersection))
-            span.b = intersection;
-        else {
-            span = getSegmentNormal(sides.second, sides.second.a, bottomlen);
-
-            if (segmentIntersection(span, sides.first, intersection))
-                span.b = intersection;
-            else {
-                span = getSegmentNormal(sides.second, sides.second.b,
-                                        bottomlen);
-
-                if (segmentIntersection(span, sides.first, intersection))
-                    span.b = intersection;
-                else {
-                    //shouldn't get here
-                }
-            }
-        }
-    }
-
-    //should be checking for paralels too close here
-
-    Vector2 center = midPoint(span);
-
-    Vector2 leftPoint;
-    LineSegment2 leftSide;
-    Scalar leftDistSq;
-
-    Vector2 rightPoint;
-    LineSegment2 rightSide;
-    Scalar rightDistSq;
-
-    //assuming clockwise
-
-    leftPoint = sides.first.a;
-    leftDistSq = LineSegment2(center, sides.first.a).squaredLength();
-    leftSide = sides.first;
-    
-    if (LineSegment2(center, sides.second.b).squaredLength() > leftDistSq) {
-        leftPoint = sides.second.b;
-        leftSide = sides.second;
-    }
-
-    rightPoint = sides.first.b;
-    rightDistSq = LineSegment2(center, sides.first.b).squaredLength();
-    rightSide = sides.first;
-
-    if (LineSegment2(center, sides.second.a).squaredLength() > rightDistSq) {
-        rightPoint = sides.second.a;
-        rightSide = sides.second;
-    }
-
-    Scalar spanlen = span.length();
-
-    return SegmentPair(getSegmentNormal(leftSide, leftPoint, spanlen),
-                       getSegmentNormal(rightSide, rightPoint, spanlen));
-}
-
-typedef enum {BASE_MIN, BASE_MAX} BaseLimitType;
-
-LineSegment2 triangleBase(const EVector firstUnit,
-						  const EVector secondUnit,
-						  const EVector point,
-						  const Scalar angle,
-						  const Scalar baseLen,
-                          const Scalar limit,
-                          const BaseLimitType lt) {
-	Scalar triangleSide = baseLen / (2 * sin(angle / 2));
-
-    if (lt == BASE_MIN && triangleSide < limit)
-        triangleSide = limit;
-    else if (lt == BASE_MAX && triangleSide > limit)
-        triangleSide = limit;
-
-	EVector firstSide = firstUnit * triangleSide;
-	EVector secondSide = secondUnit * triangleSide;
-
-	return LineSegment2(toVector2(point + firstSide),
-						toVector2(point + secondSide));
-}	
-
-Scalar pointDistance(const EVector &a, const EVector &b) {
-    return sqrt((b - a)(0) * (b - a)(0) +
-                (b - a)(1) * (b - a)(1));
-}
-
-bool completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
-                       const SegmentPair &sides, SegmentPair &parallels) {
-
-    EVector firsta = toEVector(sides.first.a);
-    EVector firstb = toEVector(sides.first.b);
-    EVector seconda = toEVector(sides.second.a);
-    EVector secondb = toEVector(sides.second.b);
-    
-	ELine firstLine = ELine::Through(firsta, firstb);
-	ELine secondLine = ELine::Through(seconda, secondb);
-
-	EVector firstUnit = firstLine.direction();
-	EVector secondUnit = secondLine.direction();
-
-    Scalar dirdot = firstUnit.dot(secondUnit);
-    if (dirdot > 0)
-        dirdot -= 1;
-    else
-        dirdot +=1;
-
-    if (dirdot < 0)
-        dirdot = -dirdot;
-        
-    if (dirdot < 0.00001) {
-        parallels = completeParallel(toplen, bottomlen, sides);
-        return true;
-    }
-
-    if (firstUnit.dot(secondUnit) < 0) {
-        secondLine = ELine::Through(secondb, seconda);
-        secondUnit = secondLine.direction();
-    }
-
-	EVector intersection;
-	Scalar angle;
-	lineIntersection(firstLine, secondLine, intersection, angle);
-
-    EVector testpoint = firsta;
-    if (testpoint == intersection)
-        testpoint = firstb;
-
-    ELine testline = ELine::Through(testpoint, intersection);
-    if (testline.direction().dot(firstUnit) > 0) {
-        firstUnit = -firstUnit;
-        secondUnit = -secondUnit;
-    }
-
-    vector<Scalar> endpoints;
-    endpoints.push_back(pointDistance(intersection, firsta));
-    endpoints.push_back(pointDistance(intersection, firstb));
-    endpoints.push_back(pointDistance(intersection, seconda));
-    endpoints.push_back(pointDistance(intersection, secondb));
-
-    sort(endpoints.begin(), endpoints.end());
-
-	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
-								   angle, toplen, endpoints.front(),
-                                   BASE_MIN);
-	parallels.second = triangleBase(firstUnit, secondUnit, intersection,
-									angle, bottomlen, endpoints.back(),
-                                    BASE_MAX);
-
-    return true;
-}
-
-void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
-					  SegmentList &intersecting) {
-	SegmentList found;
-	index.search(found, LineSegmentFilter(subject));
-
-	for (SegmentList::const_iterator possible = found.begin();
-		 possible != found.end(); ++possible) {
-		if (possible->intersects(subject)) 
-			intersecting.push_back(*possible);
-	}
-}
-
-void findIntersectPoints(SegmentIndex &index, const LineSegment2 &subject,
-                         PointList &intersections) {
-	SegmentList found;
-	index.search(found, LineSegmentFilter(subject));
-
-	for (SegmentList::const_iterator possible = found.begin();
-		 possible != found.end(); ++possible) {
-        Vector2 point;
-        if (segmentIntersection(subject, *possible, point))
-            intersections.push_back(point);
-    }
-}
-
-
-void findWallPairs(const Scalar span, const SegmentList segs,
-				   SegmentIndex &index, SegmentPairSet &walls) {
-
-	for (SegmentList::const_iterator curSeg = segs.begin();
-		 curSeg != segs.end(); ++curSeg) {
-		LineSegment2 in = getSegmentNormal(*curSeg, curSeg->a, span);
-		LineSegment2 out = getSegmentNormal(*curSeg, curSeg->a, -span);
-        //LineSegment2 normal(in.b, out.b);
-        LineSegment2 normal = in;
-
-		SegmentList intersecting;
-		findIntersecting(index, normal, intersecting);
-        for(SegmentList::const_iterator iter = intersecting.begin(); 
-                iter != intersecting.end();
-                ++iter) {
-			//we only care about the closest intersection
-			SegmentPair curWalls =
-				normalizeWalls(*curSeg, *iter);
-			walls.insert(curWalls);
-		}
-
-		in = getSegmentNormal(*curSeg, curSeg->b, span);
-		out = getSegmentNormal(*curSeg, curSeg->b, -span);
-        //normal = LineSegment2(in.b, out.b);
-        normal = in;
-        
-        intersecting.clear();
-        
-		findIntersecting(index, normal, intersecting);
-		for(SegmentList::const_iterator iter = intersecting.begin(); 
-                iter != intersecting.end();
-                ++iter) {
-			//we only care about the closest intersection
-			SegmentPair curWalls =
-				normalizeWalls(*curSeg, intersecting.front());
-			walls.insert(curWalls);
-		}
-	}
-}
-
-/*void segToSVG(const LineSegment2 seg, const string &color,
-  const Scalar xoff, const Scalar yoff);*/
-
-bool bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
-                         const SegmentPair &walls, LineSegment2 &bisect) {
-    SegmentPair spans;
-    if (completeTrapezoid(minSpurWidth, maxSpurWidth, walls, spans)) {
-        bisect = LineSegment2(midPoint(spans.first), midPoint(spans.second));
-        /*segToSVG(spans.first, "green", 0, 0);
-          segToSVG(spans.second, "green", 0, 0);*/
-        return true;
-    }
-    else
-        return false;
-
-}
-
-Vector2 segmentDirection(const LineSegment2 &seg) {
-    return seg.b - seg.a;
-}
-
-bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
-                        const LineSegment2 &orig, LineSegment2 &cut) {
-    cut = orig;
-    SegmentList intersecting;
-    findIntersecting(index, cut, intersecting);
-
-    if (intersecting.size() == 0) {
-        //segment doesn't intersect the outline, check if its inside or out
-        //using the even odd test
-        Vector2 bigpoint(9999, 9999);
-        LineSegment2 ray(cut.a, bigpoint);
-
-        findIntersecting(index, ray, intersecting);
-
-        return intersecting.size() % 2 != 0;
-    }
-
-    for (SegmentList::const_iterator outline = intersecting.begin();
-         outline != intersecting.end(); ++outline) {
-        Vector2 intersectPoint;
-        if (segmentIntersection(cut, *outline, intersectPoint)) {
-            Vector2 normal = segmentDirection(getSegmentNormal(*outline, 
-                                                               outline->a, 1));
-
-            Vector2 direction = segmentDirection(cut);
-            direction.normalise();
-            
-            LineSegment2 left = LineSegment2(intersectPoint,
-                                             cut.a);
-            LineSegment2 right = LineSegment2(intersectPoint,
-                                              cut.b );
-
-
-            if (segmentDirection(left).dotProduct(normal) > 0) {
-                cut = left;
-                cut.a = cut.a - direction * margin;
-            }
-            else if (segmentDirection(right).dotProduct(normal) > 0) {
-                cut = right;
-                cut.a = cut.a + direction * margin;
-            }
-        }
-    }
-
-    return true;
-}
-
-#include <algorithm>
-
-class DistanceCmp {
-public:
-    DistanceCmp(const Vector2 &anchor) : m_anchor(anchor) {}
-    bool operator()(const Vector2 &a, const Vector2 &b) {
-        return LineSegment2(m_anchor, a).squaredLength() <
-               LineSegment2(m_anchor, b).squaredLength();
-    }
-private:
-    Vector2 m_anchor;
-};
-
-bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
-                   const Vector2 &endpoint, const Scalar margin) {
-    LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
-    LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
-    LineSegment2 tangent(left.b, right.b);
-
-    SegmentList intersecting;
-
-    findIntersecting(index, tangent, intersecting);
-    return intersecting.size() > 0;
-}
-
-Vector2 closestPoint(const PointList points, const Vector2 orig) {
-    Vector2 closest = points.front();
-
-    for (PointList::const_iterator point = points.begin();
-         point != points.end(); ++point) {
-        
-        if (LineSegment2(orig, *point).squaredLength() <
-            LineSegment2(orig, closest).squaredLength()) {
-            closest = *point;
-        }
-    }
-
-    return closest;
-}
-
-void expandSeg(LineSegment2 &seg, Scalar len) {
-    Vector2 dir = segmentDirection(seg);
-    Vector2 extra = dir * len;
-    seg.a -= extra;
-    seg.b += extra;
-}
-
-struct SpurPieceFlags {
-    SpurPieceFlags() : first(true), last(true), all(true) {};
-
-    bool first;
-    bool last;
-    bool all;
-};
-
-typedef vector<SpurPieceFlags> FlagsList;
-typedef vector<PointList> PointTable;
-
-void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
-                     SegmentList &pieces, const Scalar margin,
-                     PointTable &piecePoints, FlagsList &flagsList) {
-    piecePoints.clear();
-    flagsList.clear();
-
-    SegmentList newPieces;
-    
-    // a parallel vector to pieces tracking all the intersection points
-    // on each segment 
-    for (SegmentList::const_iterator piece = pieces.begin();
-         piece != pieces.end(); piece++) {
-        piecePoints.push_back(PointList());
-        PointList &cur = piecePoints.back();
-        findIntersectPoints(pieceIndex, *piece, cur);
-    }
-
-    //First add the endpoints to the points list so each points vector has
-    //every point on a spur segment, then sort that list
-    SegmentList::const_iterator orig = pieces.begin();
-    vector<PointList>::iterator points = piecePoints.begin();
-    while (orig != pieces.end()) {
-        points->push_back(orig->a);
-        points->push_back(orig->b);
-        sort(points->begin(), points->end(), DistanceCmp(orig->a));
-
-        //end points all start valid
-        flagsList.push_back(SpurPieceFlags());
-
-        ++orig;
-        ++points;
-    }
-    
-    //next remove endpoints that are too close to the outline and make a new
-    //index
-    SegmentIndex edgeClipped;
-    points = piecePoints.begin();
-    FlagsList::iterator flags = flagsList.begin();
-    while (points != piecePoints.end()) {
-        LineSegment2 seg(points->front(), points->back());
-        int numpoints = points->size();
-
-        if (isEndPointClose(outline, seg, seg.a, margin/2)) {
-            flags->first = false;
-            --numpoints;
-            seg.a = *(points->begin() + 1);
-        }
-
-        if (isEndPointClose(outline, seg, seg.b, margin/2)) {
-            flags->last = false;
-            --numpoints;
-            seg.b = *(points->end() - 2);
-        }
-
-        //if a dangling piece is too short, cut it off.  This will cause
-        //pieces that intersect almost at their ends to actually chain at the
-        //ends
-        if (flags->first) {
-            LineSegment2 end(points->front(), *(points->begin() + 1));
-            if (end.length() < margin * 2) {
-                flags->first = false;
-                --numpoints;
-                seg.a = *(points->begin() + 1);
-            }
-        }
-
-        if (flags->last) {
-            LineSegment2 end(*(points->end() - 1), *(points->end() - 2));
-            if (end.length() < margin * 2) {
-                flags->last = false;
-                --numpoints;
-                seg.b = *(points->end() - 2);
-            }
-        }
-
-        //can't have a segment with less than one point
-        if (numpoints < 2)
-            flags->all = false;
-        else if (seg.length() < margin * 2)
-            flags->all = false;
-        else {
-            expandSeg(seg, 0.001);
-            edgeClipped.insert(seg);
-            newPieces.push_back(seg);
-        }
-
-        ++points;
-        ++flags;
-    }
-
-    pieceIndex = edgeClipped;
-    pieces = newPieces;
-}
-
-void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
-                       const SegmentList &origPieces,
-                       OpenPathList &chained) {
-
-    //Build an index of the spur segments
-    SegmentIndex pieceIndex;
-
-    FlagsList flagsList;
-    PointTable piecePoints;
-    SegmentList pieces = origPieces;
-    
-    for (SegmentList::iterator piece = pieces.begin();
-        piece != pieces.end(); ++piece) {
-        *piece = piece->elongate(0.05).prelongate(0.05);
-        pieceIndex.insert(*piece);
-    }
-
-    //do this multiple times to catch dangling segments after other intersecting
-    //segments have been dropped
-    for (int count = 0; count < 2; ++count)
-        clipNearOutline(outline, pieceIndex, pieces, margin,
-                        piecePoints, flagsList);
-
-    //remove remaining endpoints that are too close to another spur
-    PointTable::iterator points = piecePoints.begin();
-    FlagsList::iterator flags = flagsList.begin();
-    while (points != piecePoints.end()) {
-        if (flags->all) {
-            LineSegment2 seg(points->front(), points->back());
-            expandSeg(seg, 0.001);
-            int numpoints = points->size();
-            bool changed = false;
-            LineSegment2 seg1(flags->first ? points->at(0) : points->at(1), 
-                    flags->last ? points->back() : points->at(points->size() - 2));
-            LineSegment2 seg2 = seg;
-            if (flags->first 
-                && isEndPointClose(pieceIndex, seg, seg.a, margin/2)) {
-                flags->first = false;
-                changed = true;
-            }
-                
-
-            if (flags->last
-                && isEndPointClose(pieceIndex, seg, seg.b, margin/2)) {
-                flags->last = false;
-                changed = true;
-            }
-
-            if (!flags->first) {
-                --numpoints;
-                seg2.a = points->at(1);
-            }
-            if (!flags->last) {
-                --numpoints;
-                seg2.b = points->at(points->size() - 2);
-            }
-
-            if (numpoints < 2) {
-                flags->all = false;
-                pieceIndex.erase(seg1);
-            } else if(changed) {
-                pieceIndex.erase(seg1);
-                pieceIndex.insert(seg2);
-            }
-        }
-
-        ++points;
-        ++flags;
-    }
-
-    //finally add fully clipped paths to the list
-    points = piecePoints.begin();
-    flags = flagsList.begin();
-    while (points != piecePoints.end()) {
-        if (flags->all) {
-            PointList::const_iterator begin = points->begin();
-            if (!flags->first)
-                ++begin;
-
-            PointList::const_iterator end = points->end();
-            if (!flags->last) {
-                --end;
-
-            }
-            chained.push_back(OpenPath());
-            OpenPath &chain = chained.back();
-            
-            for (PointList::const_iterator point = begin;
-                 point != end; ++point)
-                chain.appendPoint(*point);
-        }
-
-        ++points;
-        ++flags;
-    }
-}
-
-void Regioner::fillSpurLoops(const LoopList &spurLoops,
-							 const LayerMeasure &layermeasure,
-							 OpenPathList &spurs) {
-
-	//TODO: make these config values
-	const Scalar maxSpurWidth = layermeasure.getLayerW() * 3;
-	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.3;
-	
-	//get loop line segments
-	SegmentList segs;
-	SegmentIndex index;
-	for (LoopList::const_iterator loop = spurLoops.begin();
-		 loop != spurLoops.end(); ++loop) {
-
-		for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
-			 pn != loop->clockwiseEnd(); ++pn) {
-            LineSegment2 seg;
-            seg = loop->segmentAfterPoint(pn);
-
-            if (seg.squaredLength() > 0.00001) {
-                segs.push_back(seg);
-                index.insert(seg);
-            }
-		}
-
-	}
-
-	//find wall pairs
-	SegmentPairSet allWalls;
-	findWallPairs(maxSpurWidth, segs, index, allWalls);
-
-	SegmentList pieces;
-
-	// Bisect each pair
-	for (SegmentPairSet::const_iterator walls = allWalls.begin();
-		 walls != allWalls.end(); ++walls) {
-		LineSegment2 bisect;
-        if (bisectWalls(minSpurWidth, maxSpurWidth, *walls, bisect))
-            pieces.push_back(bisect);
-	}
-
-    //cut each segment so it fits in the outline
-    SegmentList interiorPieces;
-    for (SegmentList::iterator piece = pieces.begin();
-         piece != pieces.end(); ++piece) {
-        LineSegment2 cutpiece;
-        if (cutInteriorSegment(index, minSpurWidth / 2, *piece, cutpiece))
-            interiorPieces.push_back(cutpiece);
-    }
-
-
-    chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
-
-    //for testing without segments chained
-    /*for (SegmentList::const_iterator piece = pieces.begin();
-         piece != pieces.end(); ++piece) {
-        spurs.push_back(OpenPath());
-        spurs.back().appendPoint(piece->a);
-        spurs.back().appendPoint(piece->b);
-        }*/
-}
 
 
 //void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
@@ -1110,21 +312,6 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		++outline;
 		++region;
 	}
-
-    tick();
-}
-
-void Regioner::spurs(RegionList::iterator regionsBegin,
-                     RegionList::iterator regionsEnd,
-                     LayerMeasure &layermeasure) {
-    for (RegionList::iterator region = regionsBegin;
-         region != regionsEnd; ++region) {
-        tick();
-
-        spurLoopsForSlice(region->outlines, region->insetLoops,
-                           layermeasure, region->spurLoops);
-        fillSpursForSlice(region->spurLoops, layermeasure, region->spurs);
-    }
 
     tick();
 }
@@ -1389,6 +576,1010 @@ void Regioner::gridRangesForSlice(const LoopList& innerMostLoops,
 		const Grid& grid,
 		GridRanges & surface) {
 	grid.createGridRanges(innerMostLoops, surface);
+}
+
+
+/**
+ Spurs code -- eventually this will be in a separate stage of the pipeline
+*/
+
+#include "intersection_index.h"
+#include "basic_boxlist.h"
+
+#include <algorithm>
+#include <math.h>
+#include <Eigen/Geometry>
+
+/*******
+ * convenience types
+ *******/
+
+typedef pair<LineSegment2, LineSegment2> SegmentPair;
+typedef vector<LineSegment2> SegmentList;
+typedef vector<PointList> PointTable;
+
+typedef basic_boxlist<LineSegment2> SegmentIndex;
+
+typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
+typedef Eigen::Vector2d EVector;
+typedef Eigen::Hyperplane<Scalar, 2> EHyperplane;
+
+typedef enum {BASE_MIN, BASE_MAX} BaseLimitType;
+
+/**********
+ * EigenLib support functions
+ **********/
+
+/**
+   @brief Convert a Vector2 to an Eigen vector
+ */
+EVector toEVector(const Vector2 &orig) {
+	return EVector(orig.x, orig.y);
+}
+
+/**
+   @brief Convert an Eigne vector to a Vector2
+ */
+Vector2 toVector2(const EVector &orig) {
+	return Vector2(orig(0), orig(1));
+}
+
+/**
+   @brief find the intersection point and angle of two Eigen lines
+ */
+void lineIntersection(const ELine first, const ELine second,
+					  EVector &point, Scalar &angle) {
+	point = first.intersectionPoint(EHyperplane(second));
+	
+	EVector firstUnit = first.direction();
+	EVector secondUnit = second.direction();
+
+    //Make sure our lines are pointed in generally the same direction
+    Scalar dot = firstUnit.dot(secondUnit);
+    if (dot < 0) {
+        secondUnit = -secondUnit;
+        dot = firstUnit.dot(secondUnit);
+    }
+
+	angle = acos(dot);
+}
+
+/**
+   @brief Find the distance between two eigen vector points
+*/
+Scalar pointDistance(const EVector &a, const EVector &b) {
+    return sqrt((b - a)(0) * (b - a)(0) +
+                (b - a)(1) * (b - a)(1));
+}
+
+/********
+ * utility functions
+ ********/
+
+/**
+   @brief A less comparator for Vector2 objects.  Doesn't put things into any
+   real order, but its internally consistent.  Better for uniqueness than actual
+   sorting
+ */
+bool VectorLess(const Vector2 &first, const Vector2 &second) {
+	if (first.x < second.x)
+		return true;
+	else if (first.x > second.x)
+		return false;
+	else if (first.y < second.y)
+		return true;
+	else
+		return false;
+}
+
+/**
+   @brief Less comparator for LineSegment2 objects.  Similar to VectorLess.  Use
+   for uniqueness.
+ */
+bool SegLess(const LineSegment2 &first, const LineSegment2 &second) {
+	if (VectorLess(first.a, second.a))
+		return true;
+	else if (VectorLess(second.a, first.a))
+		return false;
+	else if (VectorLess(first.b, second.b))
+		return true;
+	else
+		return false;
+}
+
+/**
+   @brief Less comparator for SegmentPairs.  See VectorLess for guidelines
+ */
+struct SegPairLess {
+	bool operator()(const SegmentPair first, const SegmentPair second) {
+		if (SegLess(first.first, second.first))
+			return true;
+		else if (SegLess(second.first, first.first))
+			return false;
+		else if (SegLess(first.second, second.second))
+			return true;
+		else 
+			return false;
+	}
+};
+
+typedef set<SegmentPair, SegPairLess> SegmentPairSet;
+
+/**
+   @brief Make sure SegmentPairs that are similar are actually the same.
+   Makes uniquing pairs easier.
+ */
+SegmentPair normalizeWalls(const LineSegment2 &first,
+						   const LineSegment2 &second) {
+
+	SegmentPair segs;
+	if (SegLess(first, second)) {
+		segs.first = first;
+		segs.second = second;
+	}
+	else if (SegLess(second, first)) {
+		segs.first = second;
+		segs.second = first;
+	}
+    else if (first.a == second.a && first.b == second.b) {
+        segs.first = second;
+        segs.second = first;
+    }
+    else {
+        // This should never happen
+        stringstream msg;
+        msg << "don't know which way to order pair:\nfirst.a.x " << first.a.x
+            << "\nfirst.a.y " << first.a.y
+            << "\nfirst.b.x " << first.b.x
+            << "\nfirst.b.y " << first.b.y << endl;
+        throw runtime_error(msg.str());
+    }
+
+	return segs;
+}
+
+/**
+   @brief Get the heading vector for a line segment
+ */
+Vector2 segmentDirection(const LineSegment2 &seg) {
+    return seg.a - seg.b;
+}
+/**
+   @brief Get a segment of a given length and starting point that is normal to a
+   base segment
+   @param orig The segment your perpendicular to
+   @param startingPoint the first endpoint of the resulting segment will be equal
+   to this. Assumed that this is on the original segment
+   @param length length of the normal segment
+*/
+LineSegment2 getSegmentNormal(const LineSegment2 &orig,
+							  const Vector2 &startingPoint,
+							  const Scalar length) {
+	Vector2 heading = segmentDirection(orig);
+	heading.normalise();
+
+	Vector2 normalVector;
+	normalVector.x = -heading.y;
+	normalVector.y = heading.x;
+
+	normalVector *= length;
+
+	Vector2 endingPoint = startingPoint + normalVector;
+
+	return LineSegment2(startingPoint, endingPoint);
+}
+
+/**
+   @brief Find the midpoint of a line segment
+ */
+Vector2 midPoint(const LineSegment2 &seg) {
+	return seg.a + ((seg.b - seg.a) * 0.5);
+}
+
+
+/**
+   @brief Find the intersection point of two line segments
+   @param point Intersection point between two segments
+   @return true if the segments intersect
+ */
+bool segmentIntersection(const LineSegment2 &first,const LineSegment2 &second,
+                         Vector2 &point) {
+    if (!first.intersects(second))
+        return false;
+
+    //use Eigen because they've already figured this one out
+    ELine firstline = ELine::Through(toEVector(first.a), toEVector(first.b));
+    ELine secondline = ELine::Through(toEVector(second.a), toEVector(second.b));
+
+    point = toVector2(firstline.intersectionPoint(EHyperplane(secondline)));
+
+    //don't need to deal with the situation where they don't intersect yet
+    //Will need to deal with this soon
+    return true;
+} 
+
+/**
+   @brief Convenience function for finding intersecting lines in a spacial index
+*/
+void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
+					  SegmentList &intersecting) {
+	SegmentList found;
+	index.search(found, LineSegmentFilter(subject));
+
+	for (SegmentList::const_iterator possible = found.begin();
+		 possible != found.end(); ++possible) {
+		if (possible->intersects(subject)) 
+			intersecting.push_back(*possible);
+	}
+}
+
+/**
+   @brief Convenience function for finding intersection poitns in a spacial index
+ */
+void findIntersectPoints(SegmentIndex &index, const LineSegment2 &subject,
+                         PointList &intersections) {
+	SegmentList found;
+	index.search(found, LineSegmentFilter(subject));
+
+	for (SegmentList::const_iterator possible = found.begin();
+		 possible != found.end(); ++possible) {
+        Vector2 point;
+        if (segmentIntersection(subject, *possible, point))
+            intersections.push_back(point);
+    }
+}
+
+/**
+   @brief Distance comparator for points.  To allow you to sort points based on
+   their distance to some anchor point.  Initialize with the anchor to compare to
+*/
+class DistanceCmp {
+public:
+    DistanceCmp(const Vector2 &anchor) : m_anchor(anchor) {}
+    bool operator()(const Vector2 &a, const Vector2 &b) {
+        return LineSegment2(m_anchor, a).squaredLength() <
+               LineSegment2(m_anchor, b).squaredLength();
+    }
+private:
+    Vector2 m_anchor;
+};
+
+/**
+   @brief Find a point in a list closest to another point
+ */
+Vector2 closestPoint(const PointList points, const Vector2 orig) {
+    Vector2 closest = points.front();
+
+    for (PointList::const_iterator point = points.begin();
+         point != points.end(); ++point) {
+        
+        if (LineSegment2(orig, *point).squaredLength() <
+            LineSegment2(orig, closest).squaredLength()) {
+            closest = *point;
+        }
+    }
+
+    return closest;
+}
+
+/**
+   @brief Expand a segment by a given amount in both directions
+ */
+void expandSeg(LineSegment2 &seg, Scalar len) {
+    Vector2 dir = segmentDirection(seg);
+    Vector2 extra = dir * len;
+    seg.a += extra;
+    seg.b -= extra;
+}
+
+/*******
+ * main code for spurs
+ *******/
+
+void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
+								 const std::list<LoopList>& sliceInsets,
+								 const LayerMeasure &layermeasure,
+ 								 std::list<LoopList>& spurLoops) {
+
+    //this is a negligible value to make sure loops overlap
+	const Scalar fudgefactor = 0.01;
+
+	// the outer shell is a special case
+	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
+	LoopList outset;
+	loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW() + fudgefactor,
+				false);
+	
+	spurLoops.push_back(LoopList());
+	LoopList &outerspurs = spurLoops.back();
+
+	loopsDifference(outerspurs, sliceOutlines, outset);
+
+	std::list<LoopList>::const_iterator outer = inner;
+	++inner;
+
+	while (inner != sliceInsets.end()) {
+        spurLoops.push_back(LoopList());
+        LoopList &spurs = spurLoops.back();
+
+        if (inner->size() > 0) {
+            outset.clear();
+            //take an inner shell and outset it the same amount that it was inset
+            loopsOffset(outset, *inner,
+                        grueCfg.get_insetDistanceMultiplier() * 
+                        layermeasure.getLayerW()
+                        + fudgefactor, false);
+
+            //subtract the outset loop from its outer loop, what's left is a spur
+            loopsDifference(spurs, *outer, outset);
+        }
+
+        outer = inner;
+        ++inner;
+    }
+}
+
+void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
+								 const LayerMeasure &layermeasure,
+								 std::list<OpenPathList> &spursPerShell) {
+	for (std::list<LoopList>::const_iterator spurLoops =
+			 spurLoopsPerShell.begin();
+		 spurLoops != spurLoopsPerShell.end(); ++spurLoops) {
+
+		spursPerShell.push_back(OpenPathList());
+		OpenPathList &spurs = spursPerShell.back();
+
+        //just call fillSpurLoops on every grouping of spurs
+		fillSpurLoops(*spurLoops, layermeasure, spurs);
+	}
+}
+
+/**
+   @brief Given a SegmentPair that is assumed parallel, find spans for spurs
+ */
+SegmentPair completeParallel(const Scalar, const Scalar bottomlen,
+                            const SegmentPair &sides) {
+    LineSegment2 span = getSegmentNormal(sides.first, sides.first.a,
+                                           bottomlen);
+    //find an endpoint to one of the segments where you can draw a normal across
+    //and intersect the other line
+    Vector2 intersection;
+    if (segmentIntersection(span, sides.second, intersection))
+        span.b = intersection;
+    else {
+        span = getSegmentNormal(sides.first, sides.first.b, bottomlen);
+
+        if (segmentIntersection(span, sides.second, intersection))
+            span.b = intersection;
+        else {
+            span = getSegmentNormal(sides.second, sides.second.a, bottomlen);
+
+            if (segmentIntersection(span, sides.first, intersection))
+                span.b = intersection;
+            else {
+                span = getSegmentNormal(sides.second, sides.second.b,
+                                        bottomlen);
+
+                if (segmentIntersection(span, sides.first, intersection))
+                    span.b = intersection;
+                else {
+                    //shouldn't get here if the pair is valid
+                    stringstream msg;
+                    msg << "Parallel pair doesn't have valid span:\na.x "
+                        << span.a.x
+                        << "\na.y " << span.a.y
+                        << "\nb.x " << span.b.x
+                        << "\nb.y " << span.b.y << endl;
+                    throw runtime_error(msg.str());
+                }
+            }
+        }
+    }
+
+    //should be checking for paralels too close here
+
+    Vector2 center = midPoint(span);
+
+    Vector2 leftPoint;
+    LineSegment2 leftSide;
+    Scalar leftDistSq;
+
+    Vector2 rightPoint;
+    LineSegment2 rightSide;
+    Scalar rightDistSq;
+
+    //find outermost endpoints
+
+    leftPoint = sides.first.a;
+    leftDistSq = LineSegment2(center, sides.first.a).squaredLength();
+    leftSide = sides.first;
+    
+    if (LineSegment2(center, sides.second.b).squaredLength() > leftDistSq) {
+        leftPoint = sides.second.b;
+        leftSide = sides.second;
+    }
+
+    rightPoint = sides.first.b;
+    rightDistSq = LineSegment2(center, sides.first.b).squaredLength();
+    rightSide = sides.first;
+
+    if (LineSegment2(center, sides.second.a).squaredLength() > rightDistSq) {
+        rightPoint = sides.second.a;
+        rightSide = sides.second;
+    }
+
+    Scalar spanlen = span.length();
+
+    //get span segments for outermost points
+    return SegmentPair(getSegmentNormal(leftSide, leftPoint, spanlen),
+                       getSegmentNormal(rightSide, rightPoint, spanlen));
+}
+
+/**
+   @brief Given two intersecting lines, form an iscoceles triangle with a specific
+   base length
+   @param firstUnit Unit vector direction of the first line
+   @param secondUnit Unit vector direction of the second line
+   @param point Intersection points between the two lines
+   @param angle Angle of intersection, passed in to avoid having to recalculate
+   @param baseLen Desired length for the triangle base
+   @param limit Maximum/minimum side length for the triangle
+   @param lt Whether the limit is max or min
+ */
+LineSegment2 triangleBase(const EVector firstUnit,
+						  const EVector secondUnit,
+						  const EVector point,
+						  const Scalar angle,
+						  const Scalar baseLen,
+                          const Scalar limit,
+                          const BaseLimitType lt) {
+	Scalar triangleSide = baseLen / (2 * sin(angle / 2));
+
+    //so that nearly parallel lines don't create lines off into infinity
+    if (lt == BASE_MIN && triangleSide < limit)
+        triangleSide = limit;
+    else if (lt == BASE_MAX && triangleSide > limit)
+        triangleSide = limit;
+
+	EVector firstSide = firstUnit * triangleSide;
+	EVector secondSide = secondUnit * triangleSide;
+
+	return LineSegment2(toVector2(point + firstSide),
+						toVector2(point + secondSide));
+}	
+
+/**
+   @brief Given two line segments, form a trapezoid with a given small top and
+   long bottom.  Dispatches to completeParallel if the lines are reasonably
+   parallel.
+   @param toplen Length of the shorter parallel side
+   @param bottomlen Length of the longer parallel side
+   @param sides Line segments trapezoid sides are projecting from
+   @param parallels Output, the top and bottom
+ */
+bool completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
+                       const SegmentPair &sides, SegmentPair &parallels) {
+    //Eigen gives us all the stuff we need for this operation
+    EVector firsta = toEVector(sides.first.a);
+    EVector firstb = toEVector(sides.first.b);
+    EVector seconda = toEVector(sides.second.a);
+    EVector secondb = toEVector(sides.second.b);
+
+    //infinite lines projected through the segments
+	ELine firstLine = ELine::Through(firsta, firstb);
+	ELine secondLine = ELine::Through(seconda, secondb);
+
+	EVector firstUnit = firstLine.direction();
+	EVector secondUnit = secondLine.direction();
+
+    //if parallel within floating point rounding error
+    Scalar dirdot = firstUnit.dot(secondUnit);
+    if (dirdot > 0)
+        dirdot -= 1;
+    else
+        dirdot +=1;
+
+    if (dirdot < 0)
+        dirdot = -dirdot;
+
+    if (dirdot < 0.00001) {
+        parallels = completeParallel(toplen, bottomlen, sides);
+        return true;
+    }
+
+    //make sure lines are pointed in generally the same direction
+    if (firstUnit.dot(secondUnit) < 0) {
+        secondLine = ELine::Through(secondb, seconda);
+        secondUnit = secondLine.direction();
+    }
+
+	EVector intersection;
+	Scalar angle;
+	lineIntersection(firstLine, secondLine, intersection, angle);
+
+    //find an endpoint that isn't the intersection point to use as a comparison
+    EVector testpoint = firsta;
+    if (testpoint == intersection)
+        testpoint = firstb;
+
+    //make sure the direction vectors point away from the intersection
+    ELine testline = ELine::Through(testpoint, intersection);
+    if (testline.direction().dot(firstUnit) > 0) {
+        firstUnit = -firstUnit;
+        secondUnit = -secondUnit;
+    }
+
+    //get min and max distances from the intersection
+    vector<Scalar> endpoints;
+    endpoints.push_back(pointDistance(intersection, firsta));
+    endpoints.push_back(pointDistance(intersection, firstb));
+    endpoints.push_back(pointDistance(intersection, seconda));
+    endpoints.push_back(pointDistance(intersection, secondb));
+
+    sort(endpoints.begin(), endpoints.end());
+
+    //Find the parallels from triangles formed with bases of the right length
+	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
+								   angle, toplen, endpoints.front(),
+                                   BASE_MIN);
+	parallels.second = triangleBase(firstUnit, secondUnit, intersection,
+									angle, bottomlen, endpoints.back(),
+                                    BASE_MAX);
+
+    return true;
+}
+
+
+/**
+   @brief Given a list of outline segments, find opposite pairs within the right
+   range to draw a spur between them
+   @param span How close the pairs need to be from each other
+   @param segs List of outline segments, unordered
+   @param index Pre-build spacial index of segs
+   @param walls Output, resulting wall pairs
+ */
+void findWallPairs(const Scalar span, const SegmentList segs,
+				   SegmentIndex &index, SegmentPairSet &walls) {
+
+	for (SegmentList::const_iterator curSeg = segs.begin();
+		 curSeg != segs.end(); ++curSeg) {
+
+        //find segments that intersect with a normal drawn from endpoint a
+		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a, span);
+		SegmentList intersecting;
+
+		findIntersecting(index, normal, intersecting);
+        for(SegmentList::const_iterator iter = intersecting.begin(); 
+                iter != intersecting.end();
+                ++iter) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, *iter);
+			walls.insert(curWalls);
+		}
+
+        //find segments that intersect with a normal drawn from endpoint b
+		normal = getSegmentNormal(*curSeg, curSeg->b, span);
+        intersecting.clear();
+        
+		findIntersecting(index, normal, intersecting);
+		for(SegmentList::const_iterator iter = intersecting.begin(); 
+                iter != intersecting.end();
+                ++iter) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, intersecting.front());
+			walls.insert(curWalls);
+		}
+	}
+}
+
+//for debugging
+/*void segToSVG(const LineSegment2 seg, const string &color,
+  const Scalar xoff, const Scalar yoff);*/
+
+/**
+   @brief Given a pair of opposite walls, find the line that bisects them,
+   ending at a minimum and maximum distance between the walls
+   @param minSpurWidth Minimum distance between walls the line can pass through
+   @param maxSpurWidth Maximum distance between walls the line can pass through
+   @param walls Walls to bisect
+   @param bisect Output, bisection line segment, not set if return is false
+   @return true if walls can be bisected
+ */
+bool bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
+                 const SegmentPair &walls, LineSegment2 &bisect) {
+    SegmentPair spans;
+    if (completeTrapezoid(minSpurWidth, maxSpurWidth, walls, spans)) {
+        bisect = LineSegment2(midPoint(spans.first), midPoint(spans.second));
+
+        //for debugging
+        /*segToSVG(spans.first, "green", 0, 0);
+          segToSVG(spans.second, "green", 0, 0);*/
+        return true;
+    }
+    else
+        return false;
+
+}
+
+/**
+   @brief Find the portion of a segment that is within a margin of an outline
+   @param index Pre-built spacial index of outline segments
+   @param margin how far from the outline can a segment be
+   @param orig Original segment
+   @param cut Output, cut internal segment, not set if return is false
+   @return True if some piece of the segment is inside the outline
+ */
+bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
+                        const LineSegment2 &orig, LineSegment2 &cut) {
+    cut = orig;
+    SegmentList intersecting;
+    findIntersecting(index, cut, intersecting);
+
+    if (intersecting.size() == 0) {
+        //segment doesn't intersect the outline, check if its inside or out
+        //using the even/odd test
+        Vector2 bigpoint(9999, 9999);
+        LineSegment2 ray(cut.a, bigpoint);
+
+        findIntersecting(index, ray, intersecting);
+
+        return intersecting.size() % 2 != 0;
+    }
+
+    for (SegmentList::const_iterator outline = intersecting.begin();
+         outline != intersecting.end(); ++outline) {
+        Vector2 intersectPoint;
+        if (segmentIntersection(cut, *outline, intersectPoint)) {
+            Vector2 normal = segmentDirection(getSegmentNormal(*outline, 
+                                                               outline->a, 1));
+
+            //cut the segment in half at the intersection point
+            Vector2 direction = segmentDirection(cut);
+            direction.normalise();
+            
+            LineSegment2 left = LineSegment2(intersectPoint,
+                                             cut.a);
+            LineSegment2 right = LineSegment2(intersectPoint,
+                                              cut.b );
+
+            //figure out which half is inside and which is outside
+            if (segmentDirection(left).dotProduct(normal) > 0) {
+                cut = left;
+                cut.a = cut.a + direction * margin;
+            }
+            else if (segmentDirection(right).dotProduct(normal) > 0) {
+                cut = right;
+                cut.a = cut.a - direction * margin;
+            }
+        }
+        //if the segment doesn't intersect with the outline we don't need to do
+        //anything
+    }
+
+    return true;
+}
+
+/**
+   @brief Check if the endpoint of a segment is too close to an outline
+ */
+bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
+                   const Vector2 &endpoint, const Scalar margin) {
+    LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
+    LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
+    LineSegment2 tangent(left.b, right.b);
+
+    SegmentList intersecting;
+
+    findIntersecting(index, tangent, intersecting);
+    return intersecting.size() > 0;
+}
+
+/**
+   @brief Holds information about a spur segment being clipped.
+   first and last tell wheither the beginning or ending dangling section (from the
+   endpoint to the first intersection) are valid.  all tells whether the spur
+   segment as a whole is valid.
+ */
+struct SpurPieceFlags {
+    SpurPieceFlags() : first(true), last(true), all(true) {};
+
+    bool first;
+    bool last;
+    bool all;
+};
+
+typedef vector<SpurPieceFlags> FlagsList;
+
+/**
+   @brief Clip dangling pieces of spurs that run too close to the outline.
+   This is necessary because we create spurs greedily, assuming non-needed pieces
+   will be reduced later.
+   @param outline Pre-built index of the outline segments, not modified
+   @param pieceIndex Pre-built index of the spur pieces so far, rebuilt to be the
+   remaining spur segments when done.
+   @param pieces Spur segments so far, set to the clipped pieces when done
+   @param margin How close endpoints can be to an outline
+   @param piecePoints Output, intersection and endpoints for all spur pieces
+   @param flagsList Output, generated flags for each piece
+ */
+void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
+                     SegmentList &pieces, const Scalar margin,
+                     PointTable &piecePoints, FlagsList &flagsList) {
+    piecePoints.clear();
+    flagsList.clear();
+
+    SegmentList newPieces;
+    
+    // a parallel vector to pieces tracking all the intersection points
+    // on each segment 
+    for (SegmentList::const_iterator piece = pieces.begin();
+         piece != pieces.end(); piece++) {
+        piecePoints.push_back(PointList());
+        PointList &cur = piecePoints.back();
+        findIntersectPoints(pieceIndex, *piece, cur);
+    }
+
+    //First add the endpoints to the points list so each points vector has
+    //every point on a spur segment, then sort that list
+    SegmentList::const_iterator orig = pieces.begin();
+    vector<PointList>::iterator points = piecePoints.begin();
+    while (orig != pieces.end()) {
+        points->push_back(orig->a);
+        points->push_back(orig->b);
+        sort(points->begin(), points->end(), DistanceCmp(orig->a));
+
+        //end points all start valid
+        flagsList.push_back(SpurPieceFlags());
+
+        ++orig;
+        ++points;
+    }
+    
+    //next remove endpoints that are too close to the outline and make a new
+    //index
+    SegmentIndex edgeClipped;
+    points = piecePoints.begin();
+    FlagsList::iterator flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        LineSegment2 seg(points->front(), points->back());
+        int numpoints = points->size();
+
+        if (isEndPointClose(outline, seg, seg.a, margin/2)) {
+            flags->first = false;
+            --numpoints;
+            seg.a = *(points->begin() + 1);
+        }
+
+        if (isEndPointClose(outline, seg, seg.b, margin/2)) {
+            flags->last = false;
+            --numpoints;
+            seg.b = *(points->end() - 2);
+        }
+
+        //if a dangling piece is too short, cut it off.  This will cause
+        //pieces that intersect almost at their ends to actually chain at the
+        //ends
+        if (flags->first) {
+            LineSegment2 end(points->front(), *(points->begin() + 1));
+            if (end.length() < margin * 2) {
+                flags->first = false;
+                --numpoints;
+                seg.a = *(points->begin() + 1);
+            }
+        }
+
+        if (flags->last) {
+            LineSegment2 end(*(points->end() - 1), *(points->end() - 2));
+            if (end.length() < margin * 2) {
+                flags->last = false;
+                --numpoints;
+                seg.b = *(points->end() - 2);
+            }
+        }
+
+        //can't have a segment with less than one point
+        if (numpoints < 2)
+            flags->all = false;
+        else if (seg.length() < margin * 2)
+            flags->all = false;
+        else {
+            expandSeg(seg, 0.001);
+            edgeClipped.insert(seg);
+            newPieces.push_back(seg);
+        }
+
+        ++points;
+        ++flags;
+    }
+
+    //update the piece list and index for future runs
+    pieceIndex = edgeClipped;
+    pieces = newPieces;
+}
+
+/**
+   @brief Connect spur pieces to each other by finding their intersection points
+   and clipping dangling pieces running too close to other spur segments
+   @param outline Pre-built index of outline segments
+   @param margin how far spurs can be from each other
+   @param origPieces Original spur segments
+   @param chained Output, final paths for spurs
+ */
+void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
+                       const SegmentList &origPieces,
+                       OpenPathList &chained) {
+
+    //Build an index of the spur segments
+    SegmentIndex pieceIndex;
+
+    FlagsList flagsList;
+    PointTable piecePoints;
+    SegmentList pieces = origPieces;
+    
+    for (SegmentList::iterator piece = pieces.begin();
+        piece != pieces.end(); ++piece) {
+        *piece = piece->elongate(0.05).prelongate(0.05);
+        pieceIndex.insert(*piece);
+    }
+
+    //do this multiple times to catch dangling segments after other intersecting
+    //segments have been dropped
+    for (int count = 0; count < 2; ++count)
+        clipNearOutline(outline, pieceIndex, pieces, margin,
+                        piecePoints, flagsList);
+
+    //remove remaining endpoints that are too close to another spur
+    PointTable::iterator points = piecePoints.begin();
+    FlagsList::iterator flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        if (flags->all) {
+            LineSegment2 seg(points->front(), points->back());
+            expandSeg(seg, 0.001);
+            int numpoints = points->size();
+            bool changed = false;
+            LineSegment2 seg1(flags->first ? points->at(0) : points->at(1), 
+                    flags->last ? points->back() : points->at(points->size() - 2));
+            LineSegment2 seg2 = seg;
+            if (flags->first 
+                && isEndPointClose(pieceIndex, seg, seg.a, margin/2)) {
+                flags->first = false;
+                changed = true;
+            }
+                
+
+            if (flags->last
+                && isEndPointClose(pieceIndex, seg, seg.b, margin/2)) {
+                flags->last = false;
+                changed = true;
+            }
+
+            if (!flags->first) {
+                --numpoints;
+                seg2.a = points->at(1);
+            }
+            if (!flags->last) {
+                --numpoints;
+                seg2.b = points->at(points->size() - 2);
+            }
+
+            if (numpoints < 2) {
+                flags->all = false;
+                pieceIndex.erase(seg1);
+            } else if(changed) {
+                pieceIndex.erase(seg1);
+                pieceIndex.insert(seg2);
+            }
+        }
+
+        ++points;
+        ++flags;
+    }
+
+    //finally add fully clipped paths to the list
+    points = piecePoints.begin();
+    flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        if (flags->all) {
+            PointList::const_iterator begin = points->begin();
+            if (!flags->first)
+                ++begin;
+
+            PointList::const_iterator end = points->end();
+            if (!flags->last) {
+                --end;
+
+            }
+            chained.push_back(OpenPath());
+            OpenPath &chain = chained.back();
+            
+            for (PointList::const_iterator point = begin;
+                 point != end; ++point)
+                chain.appendPoint(*point);
+        }
+
+        ++points;
+        ++flags;
+    }
+}
+
+void Regioner::fillSpurLoops(const LoopList &spurLoops,
+							 const LayerMeasure &layermeasure,
+							 OpenPathList &spurs) {
+
+	//TODO: make these config values
+	const Scalar maxSpurWidth = layermeasure.getLayerW() * 3;
+	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.3;
+	
+	//get loop line segments
+	SegmentList segs;
+	SegmentIndex index;
+	for (LoopList::const_iterator loop = spurLoops.begin();
+		 loop != spurLoops.end(); ++loop) {
+
+		for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
+			 pn != loop->clockwiseEnd(); ++pn) {
+            LineSegment2 seg;
+            seg = loop->segmentAfterPoint(pn);
+
+            if (seg.squaredLength() > 0.00001) {
+                segs.push_back(seg);
+                index.insert(seg);
+            }
+		}
+
+	}
+
+	//find wall pairs
+	SegmentPairSet allWalls;
+	findWallPairs(maxSpurWidth, segs, index, allWalls);
+
+	SegmentList pieces;
+
+	// Bisect each pair
+	for (SegmentPairSet::const_iterator walls = allWalls.begin();
+		 walls != allWalls.end(); ++walls) {
+		LineSegment2 bisect;
+        if (bisectWalls(minSpurWidth, maxSpurWidth, *walls, bisect))
+            pieces.push_back(bisect);
+	}
+
+    //cut each segment so it fits in the outline
+    SegmentList interiorPieces;
+    for (SegmentList::iterator piece = pieces.begin();
+         piece != pieces.end(); ++piece) {
+        LineSegment2 cutpiece;
+        if (cutInteriorSegment(index, minSpurWidth / 2, *piece, cutpiece))
+            interiorPieces.push_back(cutpiece);
+    }
+
+
+    chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
+
+    //for testing without segments chained
+    /*for (SegmentList::const_iterator piece = pieces.begin();
+         piece != pieces.end(); ++piece) {
+        spurs.push_back(OpenPath());
+        spurs.back().appendPoint(piece->a);
+        spurs.back().appendPoint(piece->b);
+        }*/
+}
+
+void Regioner::spurs(RegionList::iterator regionsBegin,
+                     RegionList::iterator regionsEnd,
+                     LayerMeasure &layermeasure) {
+    for (RegionList::iterator region = regionsBegin;
+         region != regionsEnd; ++region) {
+        tick();
+
+        //get spur loops, then fill them
+        spurLoopsForSlice(region->outlines, region->insetLoops,
+                           layermeasure, region->spurLoops);
+        fillSpursForSlice(region->spurLoops, layermeasure, region->spurs);
+    }
+
+    tick();
 }
 
 
