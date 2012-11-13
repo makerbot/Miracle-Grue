@@ -286,6 +286,26 @@ void pather_optimizer_fastgraph::smartAppendPoint(Point2Type point,
     entryPoint = point;
 }
 
+void pather_optimizer_fastgraph::smartTryConnection(
+        LabeledOpenPaths& labeledpaths, Point2Type point, 
+        Point2Type& entryPoint, boundary_container& boundaries, 
+        const GrueConfig&) {
+//    if(!labeledpaths.empty() && labeledpaths.back().myLabel.myValue == 
+//            LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE) {
+//        //no connection can be made FROM an outline
+//    } else {
+        Segment2Type testSeg(entryPoint, point);
+        if(!crossesBounds(testSeg, boundaries)) {
+            LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
+                    PathLabel::OWN_MODEL, 1));
+            connection.myPath.appendPoint(entryPoint);
+            connection.myPath.appendPoint(point);
+            labeledpaths.push_back(connection);
+        }
+//    }
+    entryPoint = point;
+}
+
 void pather_optimizer_fastgraph::repr_svg(std::ostream& out) {
     out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;

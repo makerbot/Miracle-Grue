@@ -97,19 +97,8 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
         LabeledOpenPath activePath;
         if(!currentGraph[currentIndex].forwardEmpty()) {
             //can a connection be made from the last entry to here?
-            Segment2Type crossingTest(entryPoint, 
-                    currentGraph[currentIndex].data().getPosition());
-            if(!crossesBounds(crossingTest, currentBounds)) {
-                if(!output.empty() && output.back().myLabel.myValue == 
-                        LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE) {
-                    //NO CONNECT FROM OUTLINE
-                } else {
-                    smartAppendPoint(entryPoint, 
-                            PathLabel(PathLabel::TYP_CONNECTION, 
-                            PathLabel::OWN_MODEL, 1), output, activePath, 
-                            entryPoint);
-                }
-            }
+            smartTryConnection(output, currentGraph[currentIndex].data().getPosition(), 
+                    entryPoint, currentBounds, grueConf);
             smartAppendPoint(currentGraph[currentIndex].data().getPosition(), 
                     currentGraph[currentIndex].data().getLabel(), 
                     output, activePath, entryPoint);
@@ -294,7 +283,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         boundary_container& bounds, 
         const GrueConfig& grueConf) {
     const Scalar LOOP_JOINT_FUDGE_DISTANCE = grueConf.get_layerH() * 
-            grueConf.get_layerWidthRatio();
+            grueConf.get_layerWidthRatio() * 3;
     LoopHierarchyStrictComparator typeDistComparator(entryPoint, graph, grueConf);
     LoopHierarchyBaseComparator typeComparator(entryPoint, graph, grueConf);
     hierarchy_list::iterator bestChoice;
@@ -327,34 +316,34 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
                 minStart = Loop::cw_iterator(iter);
             }
         }
-        Segment2Type connectLine(entryPoint, *minStart);
-        if(!crossesBounds(connectLine, bounds)) {
-            LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
-                    PathLabel::OWN_MODEL, 1));
-            connection.myPath.appendPoint(connectLine.a);
-            connection.myPath.appendPoint(connectLine.b);
-            output.push_back(connection);
-        }
-        entryPoint = connectLine.b;
         LabeledOpenPath thisLoop(m_label);
         LoopPath lp(m_loop, minStart, Loop::ccw_iterator(minStart));
         for(LoopPath::iterator iter = lp.fromStart(); 
                 iter != lp.end(); 
                 ++iter) {
-            LoopPath::iterator nextIter1 = iter;
-            ++nextIter1;
-            LoopPath::iterator nextIter2 = nextIter1;
-            ++nextIter2;
+//            LoopPath::iterator nextIter1 = iter;
+//            ++nextIter1;
+//            LoopPath::iterator nextIter2 = nextIter1;
+//            ++nextIter2;
             thisLoop.myPath.appendPoint(*iter);
-            if(nextIter2 == lp.end()) {
-                Segment2Type testSegment(*iter, *nextIter1);
-                if(testSegment.length() > LOOP_JOINT_FUDGE_DISTANCE) {
-                    testSegment = testSegment.elongate(-LOOP_JOINT_FUDGE_DISTANCE);
-                    thisLoop.myPath.appendPoint(testSegment.b);
-                } else {}
-                break;
-            }
+//            if(nextIter2 == lp.end()) {
+//                static const Scalar ROTATE = 0.5;
+//                Segment2Type testSegment(*iter, *nextIter1);
+//                if(testSegment.length() > LOOP_JOINT_FUDGE_DISTANCE) {
+//                    testSegment = testSegment.elongate(-LOOP_JOINT_FUDGE_DISTANCE);
+//                } 
+//                Point2Type firstPoint = testSegment.b;
+//                Point2Type secondPoint = *thisLoop.myPath.fromStart();
+//                Point2Type secondToFirst = (secondPoint - firstPoint);
+//                firstPoint = secondPoint - 
+//                        (secondToFirst.rotate2d(ROTATE) * 0.5);
+//                thisLoop.myPath.appendPoint(testSegment.b);
+//                thisLoop.myPath.appendPoint(firstPoint);
+//                break;
+//            }
         }
+        smartTryConnection(output, *thisLoop.myPath.fromStart(), 
+                entryPoint, bounds, grueConf);
         entryPoint = *thisLoop.myPath.fromEnd();
         output.push_back(thisLoop);
     }

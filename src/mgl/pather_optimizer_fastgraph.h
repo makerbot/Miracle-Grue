@@ -570,6 +570,20 @@ FASTGRAPH_PRIVATE:
             LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
             Point2Type& entryPoint);
     static void smartAppendPath(LabeledOpenPaths& labeledpaths, LabeledOpenPath& path);
+    /**
+     @brief consider previously output paths and @a boundaries to determine 
+     if a connection from @a entryPoint to @a point can be made, and make 
+     one if possible, then update @a entryPoint
+     @param labeledpaths the output, contains previous paths
+     @param point the point to which a connection is attempted
+     @param entryPoint the point from which a connection is attempted
+     @param boundaries these should not be crossed
+     @param grueConf currently unused. If this becomes configurable, will be used.
+     */
+    static void smartTryConnection(LabeledOpenPaths& labeledpaths, 
+            Point2Type point, Point2Type& entryPoint, 
+            boundary_container& boundaries, 
+            const GrueConfig& grueConf);
     
     Scalar splitPaths(multipath_type& destionation, const LabeledOpenPaths& source);
     bucket_list::iterator pickBucket(Point2Type point);
