@@ -167,6 +167,9 @@ GrueConfig::GrueConfig()
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
         infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
         layerWidthRatio(INVALID_SCALAR), 
+        minSpurWidth(INVALID_SCALAR), 
+        maxSpurWidth(INVALID_SCALAR), 
+        spurOverlap(INVALID_SCALAR), 
         insetDistanceMultiplier(INVALID_SCALAR), roofLayerCount(INVALID_UINT), 
         floorLayerCount(INVALID_UINT), doRaft(INVALID_BOOL), 
         raftLayers(INVALID_UINT), raftBaseThickness(INVALID_SCALAR), 
@@ -215,6 +218,14 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
             "numberOfShells");
     layerWidthRatio = doubleCheck(config["layerWidthRatio"],
             "layerWidthRatio");
+    minSpurWidth = doubleCheck(config["minSpurWidth"],
+            "minSpurWidth");
+    maxSpurWidth = doubleCheck(config["maxSpurWidth"],
+            "maxSpurWidth");
+    spurOverlap = doubleCheck(config["spurOverlap"],
+                              "spurOverlap", 0.01);
+    minSpurLength = doubleCheck(config["minSpurLength"],
+                                "minSpurLength");
     insetDistanceMultiplier =
             doubleCheck(config["insetDistanceMultiplier"],
             "insetDistanceMultiplier");

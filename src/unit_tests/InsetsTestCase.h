@@ -14,9 +14,17 @@ class InsetsTestCaseConfig : public mgl::GrueConfig {
 public:
 	InsetsTestCaseConfig() {};
 	InsetsTestCaseConfig(unsigned p_nbOfShells,
-						 Scalar p_insetDistanceMultiplier) {
+						 Scalar p_insetDistanceMultiplier,
+                         Scalar p_minSpurWidth,
+                         Scalar p_maxSpurWidth,
+                         Scalar p_spurOverlap,
+                         Scalar p_minSpurLength) {
 		nbOfShells = p_nbOfShells;
 		insetDistanceMultiplier = p_insetDistanceMultiplier;
+        minSpurWidth = p_minSpurWidth;
+        maxSpurWidth = p_maxSpurWidth;
+        spurOverlap = p_spurOverlap;
+        minSpurLength = p_minSpurLength;
 	}
 };
 
@@ -68,6 +76,7 @@ protected:
 
 private:
 	InsetsTestCaseConfig config;
+	InsetsTestCaseConfig stretchletconfig;
 	mgl::Loop square;
 	mgl::Loop squareSpurShell;
 	mgl::Loop triangleSpurShell;

@@ -114,7 +114,8 @@ void makeLoopsPositive(LoopList &loops) {
 
             
 void InsetsTestCase::setUp() {
-	config = InsetsTestCaseConfig(2, .9);
+	config = InsetsTestCaseConfig(2, .9, 0.5, 1.5, 0.05, 0.3);
+	stretchletconfig = InsetsTestCaseConfig(2, .9, 0.13, 0.8, 0.01, 0.3);
 
 	Loop::cw_iterator at =
 		square.insertPointAfter(Vector2(10.0, 10.0), square.clockwiseEnd());
@@ -175,7 +176,7 @@ void InsetsTestCase::setUp() {
 
     Json::Value stretchletval;
     Json::Reader reader;
-    ifstream file("inputs/Stretchlet_layer25.json");
+    ifstream file("inputs/Stretchlet_layer.json");
     reader.parse(file, stretchletval);
     restoreLoopList(stretchletval, stretchletLoops);
     makeLoopsPositive(stretchletLoops);
@@ -340,7 +341,7 @@ LineSegment2 getSegmentNormal(const LineSegment2 &orig,
 							  const Scalar length);
 
 void InsetsTestCase::testStretchletWallPairs() {
-	Regioner regioner(config);
+	Regioner regioner(stretchletconfig);
 
     LayerMeasure reallayer(0.27, 0.27, 1.6);
 
@@ -571,7 +572,7 @@ void InsetsTestCase::testThreePairFill() {
 }
 
 void InsetsTestCase::testStretchlet() {
-    Regioner regioner(config);
+    Regioner regioner(stretchletconfig);
 
     LayerMeasure reallayer(0.27, 0.27, 1.6);
 

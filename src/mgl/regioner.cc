@@ -595,10 +595,6 @@ void Regioner::gridRangesForSlice(const LoopList& innerMostLoops,
  *******/
 
 typedef pair<LineSegment2, LineSegment2> SegmentPair;
-typedef vector<LineSegment2> SegmentList;
-typedef vector<PointList> PointTable;
-
-typedef basic_boxlist<LineSegment2> SegmentIndex;
 
 typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
 typedef Eigen::Vector2d EVector;
@@ -1282,31 +1278,10 @@ bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
    endpoint to the first intersection) are valid.  all tells whether the spur
    segment as a whole is valid.
  */
-struct SpurPieceFlags {
-    SpurPieceFlags() : first(true), last(true), all(true) {};
 
-    bool first;
-    bool last;
-    bool all;
-};
-
-typedef vector<SpurPieceFlags> FlagsList;
-
-/**
-   @brief Clip dangling pieces of spurs that run too close to the outline.
-   This is necessary because we create spurs greedily, assuming non-needed pieces
-   will be reduced later.
-   @param outline Pre-built index of the outline segments, not modified
-   @param pieceIndex Pre-built index of the spur pieces so far, rebuilt to be the
-   remaining spur segments when done.
-   @param pieces Spur segments so far, set to the clipped pieces when done
-   @param margin How close endpoints can be to an outline
-   @param piecePoints Output, intersection and endpoints for all spur pieces
-   @param flagsList Output, generated flags for each piece
- */
-void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
-                     SegmentList &pieces, const Scalar margin,
-                     PointTable &piecePoints, FlagsList &flagsList) {
+void Regioner::clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
+                               SegmentList &pieces, const Scalar margin,
+                               PointTable &piecePoints, FlagsList &flagsList) {
     piecePoints.clear();
     flagsList.clear();
 
@@ -1363,7 +1338,7 @@ void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
         //ends
         if (flags->first) {
             LineSegment2 end(points->front(), *(points->begin() + 1));
-            if (end.length() < margin * 2) {
+            if (end.length() < grueCfg.get_minSpurLength()) {
                 flags->first = false;
                 --numpoints;
                 seg.a = *(points->begin() + 1);
@@ -1372,7 +1347,7 @@ void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
 
         if (flags->last) {
             LineSegment2 end(*(points->end() - 1), *(points->end() - 2));
-            if (end.length() < margin * 2) {
+            if (end.length() < grueCfg.get_minSpurLength()) {
                 flags->last = false;
                 --numpoints;
                 seg.b = *(points->end() - 2);
@@ -1382,10 +1357,10 @@ void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
         //can't have a segment with less than one point
         if (numpoints < 2)
             flags->all = false;
-        else if (seg.length() < margin * 2)
+        else if (seg.length() < grueCfg.get_minSpurLength())
             flags->all = false;
         else {
-            expandSeg(seg, 0.001);
+            expandSeg(seg, grueCfg.get_spurOverlap());
             edgeClipped.insert(seg);
             newPieces.push_back(seg);
         }
@@ -1399,17 +1374,9 @@ void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
     pieces = newPieces;
 }
 
-/**
-   @brief Connect spur pieces to each other by finding their intersection points
-   and clipping dangling pieces running too close to other spur segments
-   @param outline Pre-built index of outline segments
-   @param margin how far spurs can be from each other
-   @param origPieces Original spur segments
-   @param chained Output, final paths for spurs
- */
-void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
-                       const SegmentList &origPieces,
-                       OpenPathList &chained) {
+void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
+                                 const SegmentList &origPieces,
+                                 OpenPathList &chained) {
 
     //Build an index of the spur segments
     SegmentIndex pieceIndex;
@@ -1420,7 +1387,9 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
     
     for (SegmentList::iterator piece = pieces.begin();
         piece != pieces.end(); ++piece) {
-        *piece = piece->elongate(0.05).prelongate(0.05);
+        expandSeg(*piece, grueCfg.get_spurOverlap());
+        // = piece->elongate(0.05)
+        //              .prelongate(0.05);
         pieceIndex.insert(*piece);
     }
 
@@ -1436,7 +1405,7 @@ void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
     while (points != piecePoints.end()) {
         if (flags->all) {
             LineSegment2 seg(points->front(), points->back());
-            expandSeg(seg, 0.001);
+            expandSeg(seg, grueCfg.get_spurOverlap());
             int numpoints = points->size();
             bool changed = false;
             LineSegment2 seg1(flags->first ? points->at(0) : points->at(1), 
@@ -1508,9 +1477,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 							 const LayerMeasure &layermeasure,
 							 OpenPathList &spurs) {
 
-	//TODO: make these config values
-	const Scalar maxSpurWidth = layermeasure.getLayerW() * 3;
-	const Scalar minSpurWidth = layermeasure.getLayerW() * 0.3;
+    Scalar minSpurWidth = grueCfg.get_minSpurWidth();
+    Scalar maxSpurWidth = grueCfg.get_maxSpurWidth();
 	
 	//get loop line segments
 	SegmentList segs;
