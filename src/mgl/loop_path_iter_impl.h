@@ -303,7 +303,7 @@ LoopPath::iterator_gen<BASE> LoopPath::iterator_gen<BASE>::operator ++(int) {
 template <typename BASE>
 LoopPath::iterator_gen<BASE>& LoopPath::iterator_gen<BASE>::operator --() {
 	if(parent.isBegin(base)) {
-		base = end();
+		base = base.makeEnd();
 	} else {
 		--base;
 	}

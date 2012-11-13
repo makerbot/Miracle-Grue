@@ -3,6 +3,7 @@
 
 #include "pather_optimizer_fastgraph.h"
 #include "pather.h"
+#include "loop_utils.h"
 
 namespace mgl {
 
@@ -283,7 +284,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         boundary_container& bounds, 
         const GrueConfig& grueConf) {
     const Scalar LOOP_JOINT_FUDGE_DISTANCE = grueConf.get_layerH() * 
-            grueConf.get_layerWidthRatio() * 3;
+            grueConf.get_layerWidthRatio() * 0.5;
     LoopHierarchyStrictComparator typeDistComparator(entryPoint, graph, grueConf);
     LoopHierarchyBaseComparator typeComparator(entryPoint, graph, grueConf);
     hierarchy_list::iterator bestChoice;
@@ -318,30 +319,7 @@ void HIERARCHY::optimize(LabeledOpenPaths& output,
         }
         LabeledOpenPath thisLoop(m_label);
         LoopPath lp(m_loop, minStart, Loop::ccw_iterator(minStart));
-        for(LoopPath::iterator iter = lp.fromStart(); 
-                iter != lp.end(); 
-                ++iter) {
-//            LoopPath::iterator nextIter1 = iter;
-//            ++nextIter1;
-//            LoopPath::iterator nextIter2 = nextIter1;
-//            ++nextIter2;
-            thisLoop.myPath.appendPoint(*iter);
-//            if(nextIter2 == lp.end()) {
-//                static const Scalar ROTATE = 0.5;
-//                Segment2Type testSegment(*iter, *nextIter1);
-//                if(testSegment.length() > LOOP_JOINT_FUDGE_DISTANCE) {
-//                    testSegment = testSegment.elongate(-LOOP_JOINT_FUDGE_DISTANCE);
-//                } 
-//                Point2Type firstPoint = testSegment.b;
-//                Point2Type secondPoint = *thisLoop.myPath.fromStart();
-//                Point2Type secondToFirst = (secondPoint - firstPoint);
-//                firstPoint = secondPoint - 
-//                        (secondToFirst.rotate2d(ROTATE) * 0.5);
-//                thisLoop.myPath.appendPoint(testSegment.b);
-//                thisLoop.myPath.appendPoint(firstPoint);
-//                break;
-//            }
-        }
+        loopSnip(thisLoop.myPath, lp, LOOP_JOINT_FUDGE_DISTANCE);
         smartTryConnection(output, *thisLoop.myPath.fromStart(), 
                 entryPoint, bounds, grueConf);
         entryPoint = *thisLoop.myPath.fromEnd();

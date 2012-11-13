@@ -137,6 +137,40 @@ void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance) {
 	ClPolygonToLoop(destPolys, dest);
 }
 
+void loopSnip(OpenPath& dest, const LoopPath& subject, Scalar distance) {
+    dest.clear();
+    Point2Type startingPoint = *subject.fromEnd();
+    //back up at least distance
+    LoopPath::iterator currentPointIter = subject.fromStart();
+    Scalar currentDistance = 0;
+    std::cout << "Start" << std::endl;
+    do {
+        ++currentPointIter;
+        std::cout << "Iteration A" << std::endl;
+    } while (currentPointIter != subject.end() && (currentDistance = (startingPoint - 
+            *currentPointIter).magnitude()) < distance);
+    if(currentPointIter == subject.end()) {
+        //subject too short
+        dest.appendPoints(subject.fromStart(), subject.end());
+        std::cout << "END" << std::endl;
+        return;
+    }
+    //we know that currentPointIter is too far, but the one before is too close
+    //so go back by the difference
+    Scalar adjustment = currentDistance - distance;
+    LoopPath::iterator previousPointIter = currentPointIter;
+    --previousPointIter;
+    Point2Type adjustedPoint = *currentPointIter + 
+            Point2Type((*previousPointIter) - 
+            (*currentPointIter)).unit() * adjustment;
+    for(; currentPointIter != subject.end(); ++currentPointIter) {
+        dest.prependPoint(*currentPointIter);
+        std::cout << "Iteration B" << std::endl;
+    }
+    dest.appendPoint(adjustedPoint);
+    std::cout << "END" << std::endl;
+}
+
 enum SMOOTH_RESULT {
     SMOOTH_ADD,
     SMOOTH_REPLACE

@@ -127,6 +127,8 @@ void loopsXOR(LoopList &dest,
 
 void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance);
 
+void loopSnip(OpenPath& dest, const LoopPath& subject, Scalar distance);
+
 void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor = 1.0, 
         bool recurse = true);
 void smooth(const OpenPath& input, Scalar smoothness, OpenPath& output, Scalar factor = 1.0);
