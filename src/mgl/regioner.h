@@ -256,9 +256,9 @@ public:
        @param piecePoints Output, intersection and endpoints for all spur pieces
        @param flagsList Output, generated flags for each piece
     */
-    void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
-                         SegmentList &pieces, const Scalar margin,
-                         PointTable &piecePoints, FlagsList &flagsList);
+    void clipNearOutline(SegmentIndex &outline, const Scalar margin,
+                         SegmentList &pieces, SegmentIndex &pieceIndex,
+                         PointTable &piecePoints);
 
 
 private:
