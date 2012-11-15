@@ -17,6 +17,7 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <sstream>
 
 namespace mgl {
 
@@ -154,123 +155,6 @@ void GCoder::writeProgressPercent(std::ostream& ss, unsigned int current,
     }
 }
 
-void GCoder::writeInfills(std::ostream& ss,
-        Scalar z, Scalar h, Scalar w,
-        size_t sliceId,
-        const Extruder& extruder,
-        const LayerPaths::Layer::ExtruderLayer& paths) {
-    try {
-        ss << "(infills: " << paths.infillPaths.size() << ")" << endl;
-        Extrusion extrusion;
-        calcInfillExtrusion(extruder.id, sliceId, extrusion);
-        gantry.snort(ss, extruder, extrusion);
-        for (LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter =
-                paths.infillPaths.begin();
-                iter != paths.infillPaths.end();
-                ++iter) {
-            writePath(ss, z, h, w, extruder, extrusion, *iter);
-        }
-        gantry.snort(ss, extruder, extrusion);
-    } catch (GcoderException& mixup) {
-        stringstream errormsg;
-        errormsg << "\nERROR writing infills in slice " <<
-                sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
-        Log::info() << errormsg.str();
-        Log::severe() << errormsg.str();
-    }
-}
-
-void GCoder::writeSupport(std::ostream &ss,
-        Scalar z, Scalar h, Scalar w,
-        size_t sliceId,
-        const Extruder &extruder,
-        const LayerPaths::Layer::ExtruderLayer& paths) {
-    try {
-        ss << "(support: " << paths.supportPaths.size() << ")" << endl;
-        Extrusion extrusion;
-        calcInfillExtrusion(extruder.id, sliceId, extrusion);
-        gantry.snort(ss, extruder, extrusion);
-        for (LayerPaths::Layer::ExtruderLayer::const_infill_iterator iter =
-                paths.supportPaths.begin();
-                iter != paths.supportPaths.end();
-                ++iter) {
-            writePath(ss, z, h, w, extruder, extrusion, *iter);
-        }
-        gantry.snort(ss, extruder, extrusion);
-    } catch (GcoderException& mixup) {
-        Log::info() << "ERROR writing support in slice " <<
-                sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
-        Log::severe() << "ERROR writing support in slice " <<
-                sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
-    }
-}
-
-void GCoder::writeInsets(std::ostream& ss,
-        Scalar z, Scalar h, Scalar w,
-        size_t sliceId,
-        const Extruder& extruder,
-        const LayerPaths& layerpaths,
-        LayerPaths::layer_iterator layerId,
-        const LayerPaths::Layer::ExtruderLayer& paths) {
-    try {
-        ss << "(insets: " << paths.insetPaths.size() << ")" << endl;
-        Extrusion extrusion;
-        calcInSetExtrusion(layerpaths, extruder.id, layerId,
-                paths.insetPaths.end(), extrusion);
-        gantry.snort(ss, extruder, extrusion);
-        for (LayerPaths::Layer::ExtruderLayer::const_inset_iterator i =
-                paths.insetPaths.begin();
-                i != paths.insetPaths.end();
-                ++i) {
-            calcInSetExtrusion(layerpaths, extruder.id, layerId, i,
-                    extrusion);
-            for (OpenPathList::const_iterator j = i->begin();
-                    j != i->end(); ++j) {
-                writePath(ss, z, h, w, extruder, extrusion, *j);
-            }
-        }
-        calcInSetExtrusion(layerpaths, extruder.id, layerId,
-                paths.insetPaths.end(), extrusion);
-        gantry.snort(ss, extruder, extrusion);
-    } catch (GcoderException& mixup) {
-        stringstream errormsg;
-        errormsg << "\nERROR writing insets in slice " <<
-                sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
-        Log::info() << errormsg.str();
-        Log::severe() << errormsg.str();
-    }
-}
-
-void GCoder::writeOutlines(std::ostream& ss,
-        Scalar z, Scalar h, Scalar w,
-        size_t sliceId,
-        const Extruder& extruder,
-        const LayerPaths::Layer::ExtruderLayer& paths) {
-    try {
-        ss << "(outlines: " << paths.outlinePaths.size() << ")" << endl;
-        Extrusion extrusion;
-        calcInfillExtrusion(extruder.id, sliceId, extrusion);
-        gantry.snort(ss, extruder, extrusion);
-        for (LayerPaths::Layer::ExtruderLayer::const_outline_iterator iter =
-                paths.outlinePaths.begin();
-                iter != paths.outlinePaths.end();
-                ++iter) {
-            writePath(ss, z, h, w, extruder, extrusion, *iter);
-        }
-    } catch (GcoderException& mixup) {
-        stringstream errormsg;
-        errormsg << "\nERROR writing outlines in slice " <<
-                sliceId << " for extruder " <<
-                extruder.id << " : " << mixup.error << endl;
-        Log::info() << errormsg.str();
-        Log::severe() << errormsg.str();
-    }
-}
-
 void GCoder::moveZ(ostream & ss, Scalar z, unsigned int, Scalar zFeedrate) {
     bool doX = false;
     bool doY = false;
@@ -283,122 +167,47 @@ void GCoder::moveZ(ostream & ss, Scalar z, unsigned int, Scalar zFeedrate) {
             "move Z", doX, doY, doZ, doE, doFeed);
 
 }
-
-void GCoder::calcOutlineExtrusion(unsigned int extruderId,
-        unsigned int sliceId,
+bool GCoder::calcExtrusion(unsigned int extruderId, 
+        unsigned int layerSequence, const PathLabel& label, 
         Extrusion& extrusionParams) const {
-    string profileName;
-    if (sliceId == 0) {
-        profileName = grueCfg.get_extruders()[extruderId].firstLayerExtrusionProfile;
+    const Extruder& currentExtruder = grueCfg.get_extruders()[extruderId];
+    std::string profileName;
+    if(layerSequence == 0) {
+        profileName = currentExtruder.firstLayerExtrusionProfile;
     } else {
-        profileName = grueCfg.get_extruders()[extruderId].outlinesExtrusionProfile;
+        if(label.isOutline() || (label.isInset() && 
+                label.myValue == 
+                LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE)) {
+            profileName = currentExtruder.outlinesExtrusionProfile;
+        } else if(label.isInset()) {
+            profileName = currentExtruder.insetsExtrusionProfile;
+        } else if(label.isInfill() || label.isConnection() || 
+                label.isSupport()) {
+            profileName = currentExtruder.infillsExtrusionProfile;
+        } else {
+            std::stringstream errorMsg;
+            errorMsg << "Invalid label for extruder " << extruderId << 
+                    " at layer " << layerSequence;
+            throw GcoderException(errorMsg.str());
+        }
     }
-    const GrueConfig::profileNameMap::const_iterator it =
+    GrueConfig::profileNameMap::const_iterator profileIter = 
             grueCfg.get_extrusionProfiles().find(profileName);
-    if (it == grueCfg.get_extrusionProfiles().end()) {
-        //		Log::severe() << "Failed to find extrusion profile <name>" << 
-        //		profileName  << "</name>" << endl;
-        GcoderException mixup((string("Failed to find extrusion profile ") +
-                profileName).c_str());
-        throw mixup;
-    } else {
-        extrusionParams = it->second;
+    if(profileIter == grueCfg.get_extrusionProfiles().end()) {
+        std::stringstream errorMsg;
+        errorMsg << "Cannot find profile " << profileName << 
+                " for extruder " << extruderId << 
+                " at layer " << layerSequence;
+        throw GcoderException(errorMsg.str());
     }
+    extrusionParams = profileIter->second;
     extrusionParams.feedrate *= grueCfg.get_scalingFactor();
-}
-
-void GCoder::calcInfillExtrusion(unsigned int extruderId, unsigned int sliceId, Extrusion &extrusion) const {
-    string profileName;
-    if (sliceId == 0) {
-        profileName = grueCfg.get_extruders()[extruderId].firstLayerExtrusionProfile;
-    } else {
-        profileName = grueCfg.get_extruders()[extruderId].infillsExtrusionProfile;
-    }
-
-    const std::map<std::string, Extrusion>::const_iterator it =
-            grueCfg.get_extrusionProfiles().find(profileName);
-    if (it == grueCfg.get_extrusionProfiles().end()) {
-        //		Log::severe() << "Failed to find extrusion profile <name>" << 
-        //				profileName  << "</name>" << endl;
-        GcoderException mixup((string("Failed to find extrusion profile ") +
-                profileName).c_str());
-        throw mixup;
-    } else {
-        extrusion = it->second;
-    }
-    extrusion.feedrate *= grueCfg.get_scalingFactor();
-}
-
-void GCoder::calcInfillExtrusion(const LayerPaths& layerpaths,
-        unsigned int extruderId,
-        LayerPaths::const_layer_iterator layerId,
-        Extrusion& extrusionParams) const {
-    string profileName = layerId == layerpaths.begin() ?
-            grueCfg.get_extruders()[extruderId].firstLayerExtrusionProfile :
-            grueCfg.get_extruders()[extruderId].infillsExtrusionProfile;
-
-    const std::map<std::string, Extrusion>::const_iterator it =
-            grueCfg.get_extrusionProfiles().find(profileName);
-    if (it == grueCfg.get_extrusionProfiles().end()) {
-        //		Log::severe() << "Failed to find extrusion profile <name>" << 
-        //				profileName  << "</name>" << endl;
-        GcoderException mixup((string("Failed to find extrusion profile ") +
-                profileName).c_str());
-        throw mixup;
-    } else {
-        extrusionParams = it->second;
-    }
-    extrusionParams.feedrate *= grueCfg.get_scalingFactor();
-}
-
-void GCoder::calcInSetExtrusion(unsigned int extruderId,
-        unsigned int sliceId,
-        unsigned int, // insetId,
-        unsigned int, // insetCount,
-        Extrusion &extrusion) const {
-    string profileName;
-    if (sliceId == 0) {
-        profileName = grueCfg.get_extruders()[extruderId].firstLayerExtrusionProfile;
-    } else {
-        profileName = grueCfg.get_extruders()[extruderId].insetsExtrusionProfile;
-    }
-
-    const std::map<std::string, Extrusion>::const_iterator &it =
-            grueCfg.get_extrusionProfiles().find(profileName);
-    if (it == grueCfg.get_extrusionProfiles().end()) {
-        //		Log::severe() << "Failed to find extrusion profile <name>" << 
-        //				profileName  << "</name>" << endl;
-        GcoderException mixup((string("Failed to find extrusion profile ") +
-                profileName).c_str());
-        throw mixup;
-    } else {
-        extrusion = it->second;
-    }
-    extrusion = it->second;
-    extrusion.feedrate *= grueCfg.get_scalingFactor();
-}
-
-void GCoder::calcInSetExtrusion(const LayerPaths& layerpaths,
-        unsigned int extruderId,
-        LayerPaths::const_layer_iterator layerId,
-        LayerPaths::Layer::ExtruderLayer::const_inset_iterator, // insetId, 
-        Extrusion& extrusionParams) const {
-    string profileName = layerId == layerpaths.begin() ?
-            grueCfg.get_extruders()[extruderId].firstLayerExtrusionProfile :
-            grueCfg.get_extruders()[extruderId].infillsExtrusionProfile;
-
-    const std::map<std::string, Extrusion>::const_iterator it =
-            grueCfg.get_extrusionProfiles().find(profileName);
-    if (it == grueCfg.get_extrusionProfiles().end()) {
-        //		Log::severe() << "Failed to find extrusion profile <name>" << 
-        //				profileName  << "</name>" << endl;
-        GcoderException mixup((string("Failed to find extrusion profile ") +
-                profileName).c_str());
-        throw mixup;
-    } else {
-        extrusionParams = it->second;
-    }
-    extrusionParams.feedrate *= grueCfg.get_scalingFactor();
+    
+    return ((label.isOutline() && grueCfg.get_doOutlines()) || 
+            (label.isInset() && grueCfg.get_doInsets()) || 
+            (label.isInfill() && grueCfg.get_doInfills()) || 
+            (label.isSupport() && grueCfg.get_doSupport()) || 
+            (label.isConnection()));
 }
 
 void GCoder::writeGcodeFile(LayerPaths& layerpaths,
@@ -447,9 +256,10 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
         //Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
         if(grueCfg.get_doAnchor() && layerSequence == 0) {
             Extrusion strusion;
+            PathLabel slabel(PathLabel::TYP_CONNECTION, PathLabel::OWN_MODEL, 0);
             const Extruder& struder = grueCfg.get_extruders()[
                     it->extruders.front().extruderId];
-            calcInfillExtrusion(struder.id, 0, strusion);
+            calcExtrusion(struder.id, 0, slabel, strusion);
             gantry.set_current_extruder_index(struder.code);
             Point2Type startPoint;
             if(!it->extruders.empty() && 
@@ -550,24 +360,6 @@ void GCoder::writeSlice(std::ostream& ss,
                     layerSequence << " for extruder " << currentExtruder.id <<
                     " : " << mixup.error << endl;
         }
-
-        if (grueCfg.get_doOutlines()) {
-            writeOutlines(ss, currentZ, currentH, currentW, layerSequence,
-                    currentExtruder, *it);
-        }
-        if (grueCfg.get_doInsets()) {
-            writeInsets(ss, currentZ, currentH, currentW, layerSequence,
-                    currentExtruder, layerpaths, layerIter, *it);
-        }
-        if (grueCfg.get_doInfills()) {
-            writeInfills(ss, currentZ, currentH, currentW, layerSequence,
-                    currentExtruder, *it);
-        }
-        if (grueCfg.get_doSupport()) {
-            writeSupport(ss, currentZ, currentH, currentW, layerSequence,
-                    currentExtruder, *it);
-        }
-
         writePaths(ss, currentZ, currentH, currentW, layerSequence,
                 currentExtruder, it->paths);
     }
