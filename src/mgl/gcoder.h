@@ -159,13 +159,39 @@ private:
             Scalar z, Scalar h, Scalar w,
             const Extruder& extruder,
             const Extrusion& extrusion,
-            const PATH& path);
+            const PATH& path, 
+            Scalar feedScale = 1.0);
     template <template <class, class> class LABELEDPATHS, class ALLOC>
     void writePaths(std::ostream& ss,
-    Scalar z, Scalar h, Scalar w,
-    size_t layerSequence,
-    const Extruder& extruder,
-    const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
+            Scalar z, Scalar h, Scalar w,
+            size_t layerSequence,
+            const Extruder& extruder,
+            const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths, 
+            Scalar feedScale = 1.0);
+    /**
+     @brief approximate how long it would take to extrude this path using 
+     the extrusion profile given
+     @param PATH the type of path
+     @param extrusion the profile
+     @param path the path
+     @return Approximate time in seconds for this path
+     */
+    template <typename PATH>
+    Scalar calcPath(const Extrusion& extrusion, 
+            const PATH& path);
+    /**
+     @brief invoke calcPath on each element in @a labeledPaths and return 
+     the sum of the results
+     @param LABELEDPATHS the type of collection we're using (STL collections)
+     @param ALLOC the type of allocator @a LABELEDPATHS uses
+     @param layerSequence the number of the current layer
+     @param extruder the current extruder to use
+     @param labeledPaths the paths for which to calculate things
+     */
+    template <template <class, class> class LABELEDPATHS, class ALLOC>
+    Scalar calcPaths(size_t layerSequence, 
+            const Extruder& extruder, 
+            const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
     Point2Type startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
@@ -176,7 +202,8 @@ void GCoder::writePath(std::ostream& ss,
         Scalar z, Scalar h, Scalar w,
         const Extruder& extruder,
         const Extrusion& extrusion,
-        const PATH& path) {
+        const PATH& path, 
+        Scalar feedScale) {
     if (path.size() < 2) {
         GcoderException mixup("Attempted to write path with no points");
         throw mixup;
@@ -204,17 +231,18 @@ void GCoder::writePath(std::ostream& ss,
         comment << "d: " << distance;
         gantry.g1(ss, extruder, extrusion,
                 current->x, current->y, z,
-                extrusion.feedrate, h, w, comment.str().c_str());
+                extrusion.feedrate * feedScale, h, w, comment.str().c_str());
         last = *current;
     }
 }
 
 template <template <class, class> class LABELEDPATHS, class ALLOC>
 void GCoder::writePaths(std::ostream& ss,
-Scalar z, Scalar h, Scalar w,
-size_t layerSequence,
-const Extruder& extruder,
-const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
+        Scalar z, Scalar h, Scalar w,
+        size_t layerSequence,
+        const Extruder& extruder,
+        const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths, 
+        Scalar feedScale) {
     typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator
     const_iterator;
     Extrusion fluidstrusion;
@@ -238,10 +266,47 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
         didLastPath = doCurrentPath;
         if(doCurrentPath)
             writePath(ss, z, currentH, currentW, extruder, 
-                    extrusion, currentLP.myPath);
+                    extrusion, currentLP.myPath, feedScale);
     }
     gantry.snort(ss, extruder, fluidstrusion);
     ss << std::endl << std::endl;
+}
+
+template <typename PATH>
+Scalar GCoder::calcPath(const Extrusion& extrusion, const PATH& path) {
+    typedef typename PATH::const_iterator const_iterator;
+    if(path.empty())
+        return 0;
+    const_iterator current = path.fromStart();
+    Point2Type lastPoint = *current;
+    Scalar accum = 0;
+    for(++current; current != path.end(); ++current) {
+        //distance in mm
+        Scalar distance = Point2Type((*current) - lastPoint).magnitude();
+        lastPoint = *current;
+        //time in seconds
+        Scalar time = (distance / extrusion.feedrate) * grueCfg.get_scalingFactor();
+        accum += time;
+    }
+    return accum;
+}
+
+template <template <class, class> class LABELEDPATHS, class ALLOC>
+Scalar GCoder::calcPaths(size_t layerSequence, const Extruder& extruder, 
+        const LABELEDPATHS<LabeledOpenPath,ALLOC>& labeledPaths) {
+    typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
+            const_iterator;
+    Scalar accum = 0;
+    for(const_iterator iter = labeledPaths.begin(); 
+            iter != labeledPaths.end(); 
+            ++iter) {
+        Extrusion extrusion;
+        if(calcExtrusion(extruder.id, layerSequence, iter->myLabel, 
+                extrusion)) {
+            accum += calcPath(extrusion, iter->myPath);
+        }
+    }
+    return accum;
 }
 
 
