@@ -22,6 +22,8 @@ using namespace std;
 Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
 
+static const Scalar ROOF_FLOOR_FUDGE_FACTOR = 0.01;
+
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		LayerMeasure& layerMeasure,
 		RegionList& regionlist,
@@ -414,8 +416,9 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 //		roofForSlice(currentSurface, surfaceAbove, grid, roof);
 //
 //		grid.trimGridRange(roof, roofLengthCutOff, roofing);
-        
-        loopsDifference(roofLoops, current->interiorLoops, above->interiorLoops);
+        LoopList diffResult;
+        loopsDifference(diffResult, current->interiorLoops, above->interiorLoops);
+        loopsOffset(roofLoops, diffResult, ROOF_FLOOR_FUDGE_FACTOR);
 
 		++current;
 		++above;
@@ -443,7 +446,9 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 //		GridRanges & flooring = current->flooring;
 
 //		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
-        loopsDifference(floorLoops, current->interiorLoops, below->interiorLoops);
+        LoopList diffResult;
+        loopsDifference(diffResult, current->interiorLoops, below->interiorLoops);
+        loopsOffset(floorLoops, diffResult, ROOF_FLOOR_FUDGE_FACTOR);
 
 		++below;
 		++current;
