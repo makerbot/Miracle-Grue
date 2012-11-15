@@ -125,6 +125,12 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
         }
 		
 		optimizer->addBoundaries(layerRegions->outlines);	
+        if(grueCfg.get_infillDensity() == 0 && 
+                grueCfg.get_floorLayerCount() == 0 && 
+                grueCfg.get_roofLayerCount() == 0) {
+            //for hollow objects, no connections inside
+            optimizer->addBoundaries(layerRegions->interiorLoops);
+        }
         
 		if(grueCfg.get_doInsets()) {
             int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
@@ -207,82 +213,6 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		++currentSlice;
 	}
     delete optimizer;
-}
-
-void Pather::outlines(const LoopList& outline_loops,
-		LoopPathList &boundary_paths) {
-	//using a indeterminate start point for the beginning of the LoopPathList
-	//as that's what the old Polygon logic did
-
-	for (LoopList::const_iterator i = outline_loops.begin();
-			i != outline_loops.end(); ++i) {
-		boundary_paths.push_back(LoopPath(*i, i->clockwise(),
-				i->counterClockwise()));
-	}
-}
-
-void Pather::insets(const list<LoopList>& inset_loops,
-		list<LoopPathList> &inset_paths) {
-	std::list<const Loop*> flat_insets;
-	for (list<LoopList>::const_iterator i = inset_loops.begin();
-			i != inset_loops.end(); ++i) {
-
-//		inset_paths.push_back(LoopPathList());
-//		LoopPathList& lp_list = inset_paths.back();
-
-		for (LoopList::const_iterator j = i->begin(); j != i->end(); ++j) {
-//			lp_list.push_back(LoopPath(*j, j->clockwise(),
-//					j->counterClockwise()));
-			flat_insets.push_back(&*j);
-		}
-	}
-	inset_paths.push_back(LoopPathList());
-	LoopPathList& onlyList = inset_paths.back();
-	while(!flat_insets.empty()) {
-		if(onlyList.empty()) {
-			onlyList.push_back(LoopPath(*flat_insets.front(), 
-					flat_insets.front()->clockwise(), 
-					flat_insets.front()->counterClockwise(
-					*(flat_insets.front()->clockwise()))));
-			flat_insets.pop_front();
-		} else {
-			Point2Type current_exit = *onlyList.back().fromEnd();
-			std::list<const Loop*>::iterator closestLoop = flat_insets.begin();
-			Loop::entry_iterator closestEntry = flat_insets.front()->entryBegin();
-			Scalar closestDistance = (closestEntry->getPoint() - 
-					current_exit).magnitude();
-			//find the closest entry
-			for(std::list<const Loop*>::iterator loopIter = flat_insets.begin(); 
-					loopIter != flat_insets.end(); 
-					++loopIter) {
-				for(Loop::entry_iterator entryIter = (*loopIter)->entryBegin(); 
-						entryIter != (*loopIter)->entryEnd(); 
-						++entryIter) {
-					Scalar distance = (entryIter->getPoint() - 
-							current_exit).magnitude();
-					if(distance < closestDistance) {
-						closestLoop = loopIter;
-						closestEntry = entryIter;
-						closestDistance = distance;
-					}
-				}
-			}
-			//add its loopPath
-			onlyList.push_back(LoopPath(*(*closestLoop), 
-					(*closestLoop)->clockwise(*closestEntry), 
-					(*closestLoop)->counterClockwise(*closestEntry)));
-			//remove from list
-			flat_insets.erase(closestLoop);
-		}
-	}
-}
-
-void Pather::infills(const GridRanges &infillRanges,
-		const Grid &grid,
-		const LoopList &outlines,
-		const bool direction,
-		OpenPathList &infills) {
-	grid.pathsFromRanges(infillRanges, outlines, direction, infills);
 }
 
 void Pather::directionalCoarsenessCleanup(

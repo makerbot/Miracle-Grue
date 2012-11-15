@@ -179,19 +179,6 @@ public:
 					   LayerPaths &slices,
 					   int sfirstSliceIdx=-1,
 					   int slastSliceIdx=-1);
-
-
-	void outlines(const LoopList& outline_loops,
-				  LoopPathList &boundary_paths);
-
-	void insets(const std::list<LoopList>& insetsForSlice,
-				std::list<LoopPathList> &insetPaths);
-
-	void infills(const GridRanges &infillRanges,
-				 const Grid &grid,
-				 const LoopList& outlines,
-				 bool direction,
-				 OpenPathList &infills);
 	
 	void directionalCoarsenessCleanup(
 		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths);
