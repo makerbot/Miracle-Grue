@@ -22,7 +22,7 @@ using namespace std;
 Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
 
-static const Scalar ROOF_FLOOR_FUDGE_FACTOR = 0.01;
+static const Scalar LOOP_ERROR_FUDGE_FACTOR = 0.05;
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		LayerMeasure& layerMeasure,
@@ -418,7 +418,8 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 //		grid.trimGridRange(roof, roofLengthCutOff, roofing);
         LoopList diffResult;
         loopsDifference(diffResult, current->interiorLoops, above->interiorLoops);
-        loopsOffset(roofLoops, diffResult, ROOF_FLOOR_FUDGE_FACTOR);
+        //compensate for errors in the difference by a fudge factor
+        loopsOffset(roofLoops, diffResult, LOOP_ERROR_FUDGE_FACTOR);
 
 		++current;
 		++above;
@@ -448,7 +449,8 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 //		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
         LoopList diffResult;
         loopsDifference(diffResult, current->interiorLoops, below->interiorLoops);
-        loopsOffset(floorLoops, diffResult, ROOF_FLOOR_FUDGE_FACTOR);
+        //compensate for errors in the difference by a fudge factor
+        loopsOffset(floorLoops, diffResult, LOOP_ERROR_FUDGE_FACTOR);
 
 		++below;
 		++current;
@@ -492,7 +494,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
         //offset aboveMargins by a fudge factor
         //to compensate for error when we subtracted them from layer above
         LoopList aboveMarginsOutset;
-        loopsOffset(aboveMarginsOutset, *aboveMargins, 0.01);
+        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
         
 		if (above->supportLoops.empty()) {
 			//beginning of new support
