@@ -363,7 +363,10 @@ void GCoder::writeSlice(std::ostream& ss,
         Scalar duration = calcPaths(layerSequence, currentExtruder, it->paths);
         Scalar feedScale = 1.0;
         if(duration < grueCfg.get_minLayerDuration()) {
-            feedScale = grueCfg.get_minLayerDuration() / duration;
+            feedScale = duration / grueCfg.get_minLayerDuration();
+            int speedDecrease(feedScale * 100);
+            ss << "(Slowing to " << speedDecrease << "% of nominal speeds)" 
+                    << std::endl;
         }
         writePaths(ss, currentZ, currentH, currentW, layerSequence,
                 currentExtruder, it->paths, feedScale);
