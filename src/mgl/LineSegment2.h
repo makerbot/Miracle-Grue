@@ -32,6 +32,7 @@ public:
 
 	LineSegment2 & operator= (const LineSegment2 & other);
     bool operator==(const LineSegment2 &other) const;
+    bool tequals(const LineSegment2 &other, const Scalar tol) const;
 
 	Scalar squaredLength() const;
 	Scalar length() const;

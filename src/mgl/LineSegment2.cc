@@ -32,6 +32,10 @@ bool LineSegment2::operator==(const LineSegment2 &other) const {
     return a == other.a && b == other.b;
 }
 
+bool LineSegment2::tequals(const LineSegment2 &other, const Scalar tol) const {
+    return a.tequals(other.a, tol) && b.tequals(other.b, tol);
+}
+
 Scalar LineSegment2::squaredLength() const {
 	Vector2 l = b - a;
 	return l.squaredMagnitude();
