@@ -1265,26 +1265,23 @@ bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
     LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
     LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
     LineSegment2 tangent(left.b, right.b);
+    LineSegment2 extension(endpoint, endpoint + segmentDirection(segment));
 
     SegmentList intersecting;
 
     findIntersecting(index, tangent, intersecting);
     return intersecting.size() > 0;
+
+
+    /*intersecting.clear();
+    findIntersecting(index, extension, intersecting);
+    return intersecting.size() > 0;*/
 }
 
-/**
-   @brief Holds information about a spur segment being clipped.
-   first and last tell wheither the beginning or ending dangling section (from the
-   endpoint to the first intersection) are valid.  all tells whether the spur
-   segment as a whole is valid.
- */
-
-void Regioner::clipNearOutline(SegmentIndex &outline, const Scalar margin,
-                               SegmentList &pieces, SegmentIndex &pieceIndex,
-                               PointTable &piecePoints) {
+void findSpurIntersections(const SegmentList pieces,
+                           SegmentIndex pieceIndex,
+                           PointTable &piecePoints) {
     piecePoints.clear();
-
-    SegmentList newPieces;
     
     // a parallel vector to pieces tracking all the intersection points
     // on each segment 
@@ -1303,15 +1300,82 @@ void Regioner::clipNearOutline(SegmentIndex &outline, const Scalar margin,
         points->push_back(orig->a);
         points->push_back(orig->b);
         sort(points->begin(), points->end(), DistanceCmp(orig->a));
+        
+        /*assert(points->front().tequals(orig->a, 0.0001));
+          assert(points->back().tequals(orig->b, 0.0001));*/
 
         ++orig;
         ++points;
     }
+}
+
+void trimShortEnds(const Scalar minLength, SegmentList &pieces, 
+                   SegmentIndex &pieceIndex, PointTable &piecePoints) {
+
+    SegmentList::iterator piece = pieces.begin();
+    PointTable::iterator points = piecePoints.begin();
+
+    SegmentList newPieces;
+    PointTable newPoints;
+
+    while (piece != pieces.end()) {
+        PointList::iterator first = points->begin();
+        PointList::iterator last = points->end() - 1;
+
+        assert(first->tequals(piece->a, 0.0001));
+        assert(last->tequals(piece->b, 0.0001));
+
+        //if (piece->length() > minLength) {
+            if (points->size() > 2) {
+                if (LineSegment2(*first, *(first + 1)).length() < minLength)
+                    ++first;
+
+                if (LineSegment2(*last, *(last - 1)).length() < minLength) 
+                    --last;
+
+                pieceIndex.erase(*piece);
+        
+                if (first != last) {
+                    newPoints.push_back(PointList(first, last+1));
+                    newPieces.push_back(LineSegment2(*first, *last));
+
+                    pieceIndex.insert(*piece);
+                }
+            }
+            else {
+                newPoints.push_back(*points);
+                newPieces.push_back(*piece);
+            }
+            //}
+
+        ++points;
+        ++piece;
+    }
+
+    pieces = newPieces;
+    piecePoints = newPoints;
+}
+
+
+/**
+   @brief Holds information about a spur segment being clipped.
+   first and last tell wheither the beginning or ending dangling section (from the
+   endpoint to the first intersection) are valid.  all tells whether the spur
+   segment as a whole is valid.
+ */
+
+void Regioner::clipNearOutline(SegmentIndex &outline, const Scalar margin,
+                               SegmentList &pieces, SegmentIndex &pieceIndex,
+                               PointTable &piecePoints) {
+
+    SegmentList newPieces;
+    
     
     //next remove points that are too close to the outline and make a new
     //index
     SegmentIndex clipped;
-    for (points = piecePoints.begin(); points != piecePoints.end(); ++points) {
+    for (PointTable::iterator points = piecePoints.begin();
+         points != piecePoints.end(); ++points) {
         LineSegment2 fullseg(points->front(), points->back());
 
         PointList::const_iterator first = points->begin();
@@ -1363,7 +1427,6 @@ void Regioner::clipNearOutline(SegmentIndex &outline, const Scalar margin,
                     clipped.insert(newPiece);
                 }
             }
-
             pointA = pointB + 1;
         }
     }
@@ -1394,8 +1457,17 @@ void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
 
     //do this multiple times to catch dangling segments after other intersecting
     //segments have been dropped
-    for (int count = 0; count < 2; ++count)
-        clipNearOutline(outline, margin, pieces, pieceIndex, piecePoints);
+    for (int count = 0; count < 1; ++count) {
+        findSpurIntersections(pieces, pieceIndex, piecePoints);
+        trimShortEnds(grueCfg.get_minSpurLength(),
+                      pieces, pieceIndex, piecePoints);
+        findSpurIntersections(pieces, pieceIndex, piecePoints);
+        //clipNearOutline(outline, margin, pieces, pieceIndex, piecePoints);
+    }
+
+    /*findSpurIntersections(pieces, pieceIndex, piecePoints);
+    trimShortEnds(grueCfg.get_minSpurLength(),
+      pieces, pieceIndex, piecePoints);*/
 
     for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece)
@@ -1405,7 +1477,7 @@ void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
     //remove remaining endpoints that are too close to another spur
     PointTable::iterator points = piecePoints.begin();
     FlagsList::iterator flags = flagsList.begin();
-    while (points != piecePoints.end()) {
+    /*while (points != piecePoints.end()) {
         if (flags->all) {
             LineSegment2 seg(points->front(), points->back());
             expandSeg(seg, grueCfg.get_spurOverlap());
@@ -1447,7 +1519,7 @@ void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
 
         ++points;
         ++flags;
-    }
+        }*/
 
     //finally add fully clipped paths to the list
     points = piecePoints.begin();
@@ -1526,15 +1598,15 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     }
 
 
-    //chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
+    chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
 
     //for testing without segments chained
-    for (SegmentList::const_iterator piece = pieces.begin();
+    /*for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         spurs.push_back(OpenPath());
         spurs.back().appendPoint(piece->a);
         spurs.back().appendPoint(piece->b);
-    }
+        }*/
 }
 
 void Regioner::spurs(RegionList::iterator regionsBegin,
