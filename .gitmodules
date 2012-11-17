@@ -15,4 +15,4 @@
 	url =  https://github.com/makerbot/optionparser.git
 [submodule "submodule/mw-scons-tools"]
 	path = submodule/mw-scons-tools
-	url = git@github.com:makerbot/mw-scons-tools.git
+	url = https://github.com/makerbot/mw-scons-tools.git
