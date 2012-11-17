@@ -167,11 +167,16 @@ GrueConfig::GrueConfig()
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
         infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
         layerWidthRatio(INVALID_SCALAR), 
+        insetDistanceMultiplier(INVALID_SCALAR), 
+        roofLayerCount(INVALID_UINT), 
+        floorLayerCount(INVALID_UINT), 
+        //spur stuff begin
         minSpurWidth(INVALID_SCALAR), 
         maxSpurWidth(INVALID_SCALAR), 
         spurOverlap(INVALID_SCALAR), 
-        insetDistanceMultiplier(INVALID_SCALAR), roofLayerCount(INVALID_UINT), 
-        floorLayerCount(INVALID_UINT), doRaft(INVALID_BOOL), 
+        minSpurLength(INVALID_SCALAR), 
+        //spur stuff end
+        doRaft(INVALID_BOOL), 
         raftLayers(INVALID_UINT), raftBaseThickness(INVALID_SCALAR), 
         raftInterfaceThickness(INVALID_SCALAR), raftOutset(INVALID_SCALAR), 
         raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
