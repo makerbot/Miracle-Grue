@@ -115,7 +115,7 @@ void makeLoopsPositive(LoopList &loops) {
             
 void InsetsTestCase::setUp() {
 	config = InsetsTestCaseConfig(2, .9, 0.5, 1.5, 0.05, 0.3);
-	stretchletconfig = InsetsTestCaseConfig(2, .9, 0.13, 0.8, 0.01, 0.3);
+	stretchletconfig = InsetsTestCaseConfig(2, .9, 0.13, 0.8, 0.01, .8);
 
 	Loop::cw_iterator at =
 		square.insertPointAfter(Vector2(10.0, 10.0), square.clockwiseEnd());
