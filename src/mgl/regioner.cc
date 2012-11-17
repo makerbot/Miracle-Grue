@@ -861,6 +861,24 @@ Vector2 closestPoint(const PointList points, const Vector2 orig) {
 }
 
 /**
+   @brief Find a point in a list closest to another point
+ */
+Vector2 farthestPoint(const PointList points, const Vector2 orig) {
+    Vector2 farthest = points.front();
+
+    for (PointList::const_iterator point = points.begin();
+         point != points.end(); ++point) {
+        
+        if (LineSegment2(orig, *point).squaredLength() >
+            LineSegment2(orig, farthest).squaredLength()) {
+            farthest = *point;
+        }
+    }
+
+    return farthest;
+}
+
+/**
    @brief Expand a segment by a given amount in both directions
  */
 void expandSeg(LineSegment2 &seg, Scalar len) {
@@ -1460,23 +1478,59 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
 
         for (SegmentList::const_iterator possible = intersecting.begin();
              possible != intersecting.end(); ++possible()) {
+            //whether or not we use this segment, remove it from visited
+            uncutIndex.erase(*possible);
+            unvisited.erase(*possible);
+            visited.insert(*possible);
+
             Vector2 intersectPoint;
             segmentIntersection(curSeg, *possible, intersectPoint);
-            
-            if (!isEndPointClose(outline, *possible, possible->a, margin))
-                validSegs.push_back(LineSegment2(intersectPoint, possible->a));
 
-            if (!isEndPointClose(outline *possible, possible->b, margin))
-                validSegs.push_back(LineSegment2(intersectPoint, possible->b));
+            LineSegment2 left(intersectPoint, possible->a);
+            if (!isSegmentValid(outline, uncutIndex, left, margin))
+                validSegs.push_back(left);
+
+            LineSegment2 right(intersectPoint, possible->b);
+            if (!isSegmentValid(outline, uncutIndex, right, margin))
+                validSegs.push_back(right);
         }
 
-        if (validSegs.size() == 0) {
+        bool continued = validSegs.size() == 0;
+ 
+        if (validSegs.size() > 1) {
+            PointList intersectPoints;
+            for (SegmentList::const_iterator valid = validSegs.begin();
+                 valid != validSegs.end(); ++valid) {
+                intersectPoints.push_back(valid->a);
+
+                continued =
+                    traverseSpurPath(outline, margin, *valid, valid->a,
+                                     uncutIndex, cutIndex, unvisited, visited,
+                                     paths);
+            }
+
+            if (continued) {
+                curPath.appendPoint(farthestPoint(intersectPoints, curSeg.a));
+                paths.push_back(curPath);
+                return true;
+            }
+        }
+
+        if (!continued) {
             //at the end of our path
             curPath.appendPoint(curSeg.b);
 
             if (findIntersecting(cutIndex, curSeg, intersecting)
-                && !validSpurLoop(cutIndex, 
-
+                && !validSpurLoop(cutIndex, outline, curseg))
+                return false;
+            else {
+                cutIndex.insert(curSeg);
+                paths.appendPoint(curPath);
+                return true;
+            }
+        }
+        
+    }
 }
 
 void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
