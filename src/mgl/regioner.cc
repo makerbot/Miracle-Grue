@@ -672,27 +672,29 @@ bool VectorLess(const Vector2 &first, const Vector2 &second) {
    @brief Less comparator for LineSegment2 objects.  Similar to VectorLess.  Use
    for uniqueness.
  */
-bool SegLess(const LineSegment2 &first, const LineSegment2 &second) {
-	if (VectorLess(first.a, second.a))
-		return true;
-	else if (VectorLess(second.a, first.a))
-		return false;
-	else if (VectorLess(first.b, second.b))
-		return true;
-	else
-		return false;
-}
+struct SegLess {
+    bool operator()(const LineSegment2 &first, const LineSegment2 &second) {
+        if (VectorLess(first.a, second.a))
+            return true;
+        else if (VectorLess(second.a, first.a))
+            return false;
+        else if (VectorLess(first.b, second.b))
+            return true;
+        else
+            return false;
+    }
+};
 
 /**
    @brief Less comparator for SegmentPairs.  See VectorLess for guidelines
  */
 struct SegPairLess {
 	bool operator()(const SegmentPair first, const SegmentPair second) {
-		if (SegLess(first.first, second.first))
+		if (SegLess()(first.first, second.first))
 			return true;
-		else if (SegLess(second.first, first.first))
+		else if (SegLess()(second.first, first.first))
 			return false;
-		else if (SegLess(first.second, second.second))
+		else if (SegLess()(first.second, second.second))
 			return true;
 		else 
 			return false;
@@ -709,11 +711,11 @@ SegmentPair normalizeWalls(const LineSegment2 &first,
 						   const LineSegment2 &second) {
 
 	SegmentPair segs;
-	if (SegLess(first, second)) {
+	if (SegLess()(first, second)) {
 		segs.first = first;
 		segs.second = second;
 	}
-	else if (SegLess(second, first)) {
+	else if (SegLess()(second, first)) {
 		segs.first = second;
 		segs.second = first;
 	}
@@ -1243,15 +1245,15 @@ bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
             //figure out which half is inside and which is outside
             if (segmentDirection(left).dotProduct(normal) > 0) {
                 cut = left;
-                cut.a = cut.a + direction * margin;
+                cut.a = cut.a - direction * margin;
             }
             else if (segmentDirection(right).dotProduct(normal) > 0) {
                 cut = right;
-                cut.a = cut.a - direction * margin;
+                cut.a = cut.a + direction * margin;
             }
         }
-        //if the segment doesn't intersect with the outline we don't need to do
-        //anything
+        else {
+            
     }
 
     return true;
@@ -1436,6 +1438,70 @@ void Regioner::clipNearOutline(SegmentIndex &outline, const Scalar margin,
     pieces = newPieces;
 }
 
+typedef set<LineSegment2, SegLess> SegmentSet;
+
+bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
+                      const LineSegment2 startSeg, const Vector2 startPoint,
+                      SegmentIndex &uncutIndex, SegmentIndex &cutIndex,
+                      SegmentSet &unvisited, SegmentSet &visited,
+                      OpenPathList &paths) {
+
+    LineSegment2 curSeg = start;
+    LineSegment2 curPoint = startPoint
+    OpenPath curPath;
+    
+    curPath.appendPoint(startPoint);
+
+    while (unvisited.size() > 0) {
+        SegmentList intersecting;
+        findIntersecting(uncutIndex, curSeg, intersecting);
+
+        SegmentList validSegs;
+
+        for (SegmentList::const_iterator possible = intersecting.begin();
+             possible != intersecting.end(); ++possible()) {
+            Vector2 intersectPoint;
+            segmentIntersection(curSeg, *possible, intersectPoint);
+            
+            if (!isEndPointClose(outline, *possible, possible->a, margin))
+                validSegs.push_back(LineSegment2(intersectPoint, possible->a));
+
+            if (!isEndPointClose(outline *possible, possible->b, margin))
+                validSegs.push_back(LineSegment2(intersectPoint, possible->b));
+        }
+
+        if (validSegs.size() == 0) {
+            //at the end of our path
+            curPath.appendPoint(curSeg.b);
+
+            if (findIntersecting(cutIndex, curSeg, intersecting)
+                && !validSpurLoop(cutIndex, 
+
+}
+
+void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
+                            const SegmentList &origPieces,
+                            OpenPathList &chained) {
+    SegmentIndex uncutIndex;
+    SegmentIndex cutIndex;
+    OpenPathList paths;
+    SegmentSet unvisited;
+    SegmentSet visited;
+
+    for (SegmentList::const_iterator orig = origPieces.begin();
+         orig != origPieces.end(); ++orig) {
+        uncut.insert(*orig);
+        unvisited.insert(*orig);
+    }
+
+    while (unvisited.size() > 0) {
+        LineSegment2 start = findStartingSegment(outline, margin, unvisited);
+
+        traverseSpurPath(outline, margin, start, start.a, uncutIndex, cutIndex,
+                         unvisited, visited, paths);
+    }
+}
+
 void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
                                  const SegmentList &origPieces,
                                  OpenPathList &chained) {
@@ -1598,15 +1664,15 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
     }
 
 
-    chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
+    //chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
 
     //for testing without segments chained
-    /*for (SegmentList::const_iterator piece = pieces.begin();
+    for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         spurs.push_back(OpenPath());
         spurs.back().appendPoint(piece->a);
         spurs.back().appendPoint(piece->b);
-        }*/
+    }
 }
 
 void Regioner::spurs(RegionList::iterator regionsBegin,
