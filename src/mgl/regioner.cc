@@ -1457,7 +1457,24 @@ void Regioner::clipNearOutline(SegmentIndex &outline, const Scalar margin,
 }
 
 typedef set<LineSegment2, SegLess> SegmentSet;
+bool isSegmentValid(const SegmentIndex &outline, const SegmentIndex &uncutIndex,
+                    const Scalar margin, LineSegment2 subject) {
+    PointList endpoints;
+    findIntersectPoints(uncutIndex, subject, intersectPoints);
+    endpoints.push_back(subject.b);
+    
+    for (PointList::const_iterator endpoint = endpoints.begin();
+         endpoint != endpoints.end(); ++endpoint) {
+         if (!isEndPointClose(outline, subject, endpoint, margin/2) 
+             return true;
+    }
+}
 
+bool validSpurLoop(SegmentIndex outline, SegmentIndex spurs, LineSegment2 loopSeg) {
+    // stub until I figure out how to do this
+    return false;
+}
+               
 bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
                       const LineSegment2 startSeg, const Vector2 startPoint,
                       SegmentIndex &uncutIndex, SegmentIndex &cutIndex,
@@ -1487,11 +1504,11 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
             segmentIntersection(curSeg, *possible, intersectPoint);
 
             LineSegment2 left(intersectPoint, possible->a);
-            if (!isSegmentValid(outline, uncutIndex, left, margin))
+            if (!isSegmentValid(outline, uncutIndex, margin, left))
                 validSegs.push_back(left);
 
             LineSegment2 right(intersectPoint, possible->b);
-            if (!isSegmentValid(outline, uncutIndex, right, margin))
+            if (!isSegmentValid(outline, uncutIndex, margin, right))
                 validSegs.push_back(right);
         }
 
@@ -1503,10 +1520,11 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
                  valid != validSegs.end(); ++valid) {
                 intersectPoints.push_back(valid->a);
 
-                continued =
-                    traverseSpurPath(outline, margin, *valid, valid->a,
+                if (traverseSpurPath(outline, margin, *valid, valid->a,
                                      uncutIndex, cutIndex, unvisited, visited,
-                                     paths);
+                                     paths)
+                    continued = true;
+                    
             }
 
             if (continued) {
@@ -1521,7 +1539,7 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
             curPath.appendPoint(curSeg.b);
 
             if (findIntersecting(cutIndex, curSeg, intersecting)
-                && !validSpurLoop(cutIndex, outline, curseg))
+                && !validSpurLoop(outline, cutIndex, curseg))
                 return false;
             else {
                 cutIndex.insert(curSeg);
@@ -1532,6 +1550,23 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
         
     }
 }
+
+bool findStartingSegment(const SegmentIndex &outline, const SegmentIndex uncut,
+                         const Scalar margin, const SegmentSet &unvisited,
+                         LineSegment2 &startSeg, Vector2 &startPoint) {
+    for (SegmentSet::const_iterator possible = unvisited.begin();
+         possible != unvisited.end(); ++possible) {
+        PointList points;
+        findIntersectPoints(uncut, *possible, points);
+        points.push_back(possible->a);
+        points.push_back(possible->b);
+        
+        for (PointList::const_iterator point = points.begin();
+             point != points.end(); ++points)
+            if (!isEndPointClose(outline, *possible, *point, margin/2))
+                return true;
+     }
+}        
 
 void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
                             const SegmentList &origPieces,
@@ -1549,10 +1584,23 @@ void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
     }
 
     while (unvisited.size() > 0) {
-        LineSegment2 start = findStartingSegment(outline, margin, unvisited);
+        LineSegment2 startSeg;
+        Vector2 startPoint;
+        
+        if (!findStartingSegment(outline, margin, unvisited, startSeg, startPoint))
+            //nothing left to start from
+            break;
 
-        traverseSpurPath(outline, margin, start, start.a, uncutIndex, cutIndex,
-                         unvisited, visited, paths);
+        LineSegment2 left(startPoint, startSeg.a);
+        LineSegment2 right(startPoint, startSeg.b);
+
+        if (!left.a == left.b)
+            traverseSpurPath(outline, margin, left, startPoint, uncutIndex, cutIndex,
+                             unvisited, visited, paths);
+                           
+        if (!right.a == right.b)
+            traverseSpurPath(outline, margin, right, startPoint, uncutIndex, cutIndex,
+                             unvisited, visited, paths);            
     }
 }
 
