@@ -166,7 +166,8 @@ GrueConfig::GrueConfig()
         directionWeight(INVALID_SCALAR), 
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
         infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
-        layerWidthRatio(INVALID_SCALAR), 
+        layerWidthRatio(INVALID_SCALAR), layerWidthMinimum(INVALID_SCALAR), 
+        layerWidthMaximum(INVALID_SCALAR), 
         insetDistanceMultiplier(INVALID_SCALAR), roofLayerCount(INVALID_UINT), 
         floorLayerCount(INVALID_UINT), doRaft(INVALID_BOOL), 
         raftLayers(INVALID_UINT), raftBaseThickness(INVALID_SCALAR), 
@@ -215,16 +216,18 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
             "gridSpacingMultiplier", 0.92);
     nbOfShells = uintCheck(config["numberOfShells"],
             "numberOfShells");
+    layerWidthMinimum = doubleCheck(config["layerWidthMinimum"],
+            "layerWidthMinimum");
+    layerWidthMaximum = doubleCheck(config["layerWidthMaximum"],
+            "layerWidthMaximum", 1.0);
     layerWidthRatio = doubleCheck(config["layerWidthRatio"],
             "layerWidthRatio");
+    layerWidthRatio = std::min(std::max(layerWidthRatio * layerH, 
+            layerWidthMinimum), layerWidthMaximum)/layerH;
     insetDistanceMultiplier =
             doubleCheck(config["insetDistanceMultiplier"],
             "insetDistanceMultiplier");
-    roofLayerCount =
-            uintCheck(config["roofLayerCount"], "roofLayerCount");
-    floorLayerCount =
-            uintCheck(config["floorLayerCount"], "floorLayerCount");
-    
+    loadSolidLayerParams(config);
 }
 void GrueConfig::loadGantryParams(const Configuration& config) {
     rapidMoveFeedRateXY = (doubleCheck(
@@ -371,6 +374,24 @@ void GrueConfig::loadExtrusionParams(const Configuration& config) {
 
         extrusionProfiles.insert(pair<std::string,
                 Extrusion > (profileName, extrusion));
+    }
+}
+void GrueConfig::loadSolidLayerParams(const Configuration& config) {
+    try {
+        roofLayerCount =
+                uintCheck(config["roofLayerCount"], "roofLayerCount");
+    } catch (const ConfigException& ce) {
+        Scalar roofThickness = doubleCheck(config["roofThickness"], 
+                "roofThickness");
+        roofLayerCount = static_cast<unsigned>(ceil(roofThickness / layerH));
+    }
+    try {
+        floorLayerCount =
+                uintCheck(config["floorLayerCount"], "floorLayerCount");
+    } catch (const ConfigException& ce) {
+        Scalar floorThickness = doubleCheck(config["floorThickness"], 
+                "floorThickness");
+        floorLayerCount = static_cast<unsigned>(ceil(floorThickness / layerH));
     }
 }
 
