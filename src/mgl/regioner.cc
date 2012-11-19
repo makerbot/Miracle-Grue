@@ -799,7 +799,7 @@ bool segmentIntersection(const LineSegment2 &first,const LineSegment2 &second,
 /**
    @brief Convenience function for finding intersecting lines in a spacial index
 */
-void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
+void findIntersecting(const SegmentIndex &index, const LineSegment2 &subject,
 					  SegmentList &intersecting) {
 	SegmentList found;
 	index.search(found, LineSegmentFilter(subject));
@@ -814,7 +814,7 @@ void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
 /**
    @brief Convenience function for finding intersection poitns in a spacial index
  */
-void findIntersectPoints(SegmentIndex &index, const LineSegment2 &subject,
+void findIntersectPoints(const SegmentIndex &index, const LineSegment2 &subject,
                          PointList &intersections) {
 	SegmentList found;
 	index.search(found, LineSegmentFilter(subject));
@@ -886,6 +886,18 @@ void expandSeg(LineSegment2 &seg, Scalar len) {
     Vector2 extra = dir * len;
     seg.a += extra;
     seg.b -= extra;
+}
+
+void addPathToIndex(const OpenPath &path, SegmentIndex &index) {
+    for (OpenPath::const_iterator point = path.fromStart();
+         point != path.end(); ++point)
+        index.insert(path.segmentAfterPoint(point));
+}
+
+void addListToIndex(const SegmentList &segs, SegmentIndex &index) {
+    for (SegmentList::const_iterator seg = segs.begin();
+         seg != segs.end(); ++seg)
+        index.insert(*seg);
 }
 
 /*******
@@ -1270,8 +1282,6 @@ bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
                 cut.a = cut.a + direction * margin;
             }
         }
-        else {
-            
     }
 
     return true;
@@ -1280,7 +1290,7 @@ bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
 /**
    @brief Check if the endpoint of a segment is too close to an outline
  */
-bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
+bool isEndPointClose(const SegmentIndex &index, const LineSegment2 &segment,
                    const Vector2 &endpoint, const Scalar margin) {
     LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
     LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
@@ -1460,13 +1470,13 @@ typedef set<LineSegment2, SegLess> SegmentSet;
 bool isSegmentValid(const SegmentIndex &outline, const SegmentIndex &uncutIndex,
                     const Scalar margin, LineSegment2 subject) {
     PointList endpoints;
-    findIntersectPoints(uncutIndex, subject, intersectPoints);
+    findIntersectPoints(uncutIndex, subject, endpoints);
     endpoints.push_back(subject.b);
     
     for (PointList::const_iterator endpoint = endpoints.begin();
          endpoint != endpoints.end(); ++endpoint) {
-         if (!isEndPointClose(outline, subject, endpoint, margin/2) 
-             return true;
+        if (!isEndPointClose(outline, subject, *endpoint, margin/2))
+            return true;
     }
 }
 
@@ -1481,21 +1491,25 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
                       SegmentSet &unvisited, SegmentSet &visited,
                       OpenPathList &paths) {
 
-    LineSegment2 curSeg = start;
-    LineSegment2 curPoint = startPoint
+    LineSegment2 curSeg = startSeg;
+    Vector2 curPoint = startPoint;
     OpenPath curPath;
-    
+    SegmentList segsUsed;
+
     curPath.appendPoint(startPoint);
 
     while (unvisited.size() > 0) {
+
         SegmentList intersecting;
         findIntersecting(uncutIndex, curSeg, intersecting);
 
         SegmentList validSegs;
 
         for (SegmentList::const_iterator possible = intersecting.begin();
-             possible != intersecting.end(); ++possible()) {
+             possible != intersecting.end(); ++possible) {
+
             //whether or not we use this segment, remove it from visited
+            segsUsed.push_back(*possible);
             uncutIndex.erase(*possible);
             unvisited.erase(*possible);
             visited.insert(*possible);
@@ -1504,31 +1518,33 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
             segmentIntersection(curSeg, *possible, intersectPoint);
 
             LineSegment2 left(intersectPoint, possible->a);
-            if (!isSegmentValid(outline, uncutIndex, margin, left))
+            if (isSegmentValid(outline, uncutIndex, margin, left))
                 validSegs.push_back(left);
 
             LineSegment2 right(intersectPoint, possible->b);
-            if (!isSegmentValid(outline, uncutIndex, margin, right))
+            if (isSegmentValid(outline, uncutIndex, margin, right))
                 validSegs.push_back(right);
         }
 
-        bool continued = validSegs.size() == 0;
+        bool continued = validSegs.size() != 0;
  
         if (validSegs.size() > 1) {
             PointList intersectPoints;
             for (SegmentList::const_iterator valid = validSegs.begin();
-                 valid != validSegs.end(); ++valid) {
+                 valid != validSegs.end(); ++valid)
                 intersectPoints.push_back(valid->a);
 
+            curPath.appendPoint(farthestPoint(intersectPoints, curSeg.a));
+            addPathToIndex(curPath, cutIndex);
+
+            for (SegmentList::const_iterator valid = validSegs.begin();
+                 valid != validSegs.end(); ++valid)
                 if (traverseSpurPath(outline, margin, *valid, valid->a,
                                      uncutIndex, cutIndex, unvisited, visited,
-                                     paths)
+                                     paths))
                     continued = true;
                     
-            }
-
             if (continued) {
-                curPath.appendPoint(farthestPoint(intersectPoints, curSeg.a));
                 paths.push_back(curPath);
                 return true;
             }
@@ -1538,16 +1554,28 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
             //at the end of our path
             curPath.appendPoint(curSeg.b);
 
-            if (findIntersecting(cutIndex, curSeg, intersecting)
-                && !validSpurLoop(outline, cutIndex, curseg))
+            findIntersecting(cutIndex, curSeg, intersecting);
+            if (intersecting.size() > 0
+                && !validSpurLoop(outline, cutIndex, curSeg)) {
+                unvisited.insert(segsUsed.begin(), segsUsed.end());
+                addListToIndex(segsUsed, uncutIndex);
+
                 return false;
+            }
             else {
                 cutIndex.insert(curSeg);
-                paths.appendPoint(curPath);
+                paths.push_back(curPath);
+                addPathToIndex(curPath, cutIndex);
                 return true;
             }
         }
-        
+        else {
+            //add one segment to the path
+            LineSegment2 nextSeg = validSegs.front();
+
+            curPath.appendPoint(nextSeg.a);
+            curSeg = nextSeg;
+        }
     }
 }
 
@@ -1562,15 +1590,21 @@ bool findStartingSegment(const SegmentIndex &outline, const SegmentIndex uncut,
         points.push_back(possible->b);
         
         for (PointList::const_iterator point = points.begin();
-             point != points.end(); ++points)
-            if (!isEndPointClose(outline, *possible, *point, margin/2))
+             point != points.end(); ++point)
+            if (!isEndPointClose(outline, *possible, *point, margin/2)) {
+                startSeg = *possible;
+                startPoint = *point;
+
                 return true;
-     }
+            }
+    }
+
+    return false;
 }        
 
-void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
-                            const SegmentList &origPieces,
-                            OpenPathList &chained) {
+void findSpurPaths(SegmentIndex &outline, const Scalar margin,
+                  const SegmentList &origPieces,
+                  OpenPathList &chained) {
     SegmentIndex uncutIndex;
     SegmentIndex cutIndex;
     OpenPathList paths;
@@ -1579,7 +1613,7 @@ void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
 
     for (SegmentList::const_iterator orig = origPieces.begin();
          orig != origPieces.end(); ++orig) {
-        uncut.insert(*orig);
+        uncutIndex.insert(*orig);
         unvisited.insert(*orig);
     }
 
@@ -1587,20 +1621,25 @@ void Regioner::findSpurPath(SegmentIndex &outline, const Scalar margin,
         LineSegment2 startSeg;
         Vector2 startPoint;
         
-        if (!findStartingSegment(outline, margin, unvisited, startSeg, startPoint))
+        if (!findStartingSegment(outline, uncutIndex, margin, unvisited,
+                                 startSeg, startPoint))
             //nothing left to start from
             break;
+
+        uncutIndex.erase(startSeg);
+        unvisited.erase(startSeg);
+       visited.insert(startSeg);
 
         LineSegment2 left(startPoint, startSeg.a);
         LineSegment2 right(startPoint, startSeg.b);
 
-        if (!left.a == left.b)
+        if (!(left.a == left.b))
             traverseSpurPath(outline, margin, left, startPoint, uncutIndex, cutIndex,
-                             unvisited, visited, paths);
+                             unvisited, visited, chained);
                            
-        if (!right.a == right.b)
+        if (!(right.a == right.b))
             traverseSpurPath(outline, margin, right, startPoint, uncutIndex, cutIndex,
-                             unvisited, visited, paths);            
+                             unvisited, visited, chained);            
     }
 }
 
@@ -1767,14 +1806,15 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 
 
     //chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
+    findSpurPaths(index, minSpurWidth, interiorPieces, spurs);
 
     //for testing without segments chained
-    for (SegmentList::const_iterator piece = pieces.begin();
+    /*for (SegmentList::const_iterator piece = pieces.begin();
          piece != pieces.end(); ++piece) {
         spurs.push_back(OpenPath());
         spurs.back().appendPoint(piece->a);
         spurs.back().appendPoint(piece->b);
-    }
+        }*/
 }
 
 void Regioner::spurs(RegionList::iterator regionsBegin,
