@@ -1498,7 +1498,8 @@ bool traverseSpurPath(const SegmentIndex &outline, const Scalar margin,
 
     curPath.appendPoint(startPoint);
 
-    while (unvisited.size() > 0) {
+    //other conditions will cause this to return when the data set is exhausted
+    while (true) {
 
         SegmentList intersecting;
         findIntersecting(uncutIndex, curSeg, intersecting);
