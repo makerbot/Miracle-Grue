@@ -162,6 +162,7 @@ GrueConfig::GrueConfig()
         doFanCommand(INVALID_BOOL), fanLayer(INVALID_UINT), 
         doAnchor(INVALID_BOOL), doPutModelOnPlatform(INVALID_BOOL), 
         doPrintLayerMessages(INVALID_BOOL), doPrintProgress(INVALID_BOOL), 
+        minLayerDuration(INVALID_SCALAR), 
         coarseness(INVALID_SCALAR), preCoarseness(INVALID_SCALAR), 
         directionWeight(INVALID_SCALAR), 
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
@@ -274,6 +275,9 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
     doPrintProgress = boolCheck(
             config["doPrintProgress"],
             "doPrintProgress", false);
+    minLayerDuration = doubleCheck(
+            config["minLayerDuration"], 
+            "minLayerDuration", 0);
     useEaxis = (boolCheck(config["useEAxis"],
             "useEAxis", false));
 }

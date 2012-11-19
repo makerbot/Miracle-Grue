@@ -26,10 +26,8 @@ namespace mgl {
 
 class GcoderException : public Exception {
 public:
-
-    GcoderException(const char *msg)
-    : Exception(msg) {
-    }
+    template <typename T>
+    GcoderException(const T& arg) : Exception(arg) {}
 };
 
 class GCoderConfig {
@@ -115,31 +113,19 @@ public:
             const std::string& title,
             LayerPaths::layer_iterator begin,
             LayerPaths::layer_iterator end);
-
-    ///  returns extrusionParams set based on the extruder id, and where you
-    /// are in the model
-    void calcInfillExtrusion(unsigned int extruderId,
-            unsigned int sliceId,
-            Extrusion &extrusionParams) const;
-    void calcOutlineExtrusion(unsigned int extruderId,
-            unsigned int sliceId,
-            Extrusion& extrusionParams) const;
-    void calcInfillExtrusion(const LayerPaths& layerpaths,
-            unsigned int extruderId,
-            LayerPaths::const_layer_iterator layerId,
-            Extrusion& extrusionParams) const;
-
-    ///  returns extrusionParams set based on the extruder id, and where you
-    /// are in the model
-    void calcInSetExtrusion(unsigned int extruderId,
-            unsigned int sliceId,
-            unsigned int insetId,
-            unsigned int insetCount,
-            Extrusion &extrusionParams) const;
-    void calcInSetExtrusion(const LayerPaths& layerpaths,
-            unsigned int extruderId,
-            LayerPaths::const_layer_iterator layerId,
-            LayerPaths::Layer::ExtruderLayer::const_inset_iterator insetId,
+    
+    /**
+     @brief Calculate a profile given all parameters, and indicate if this 
+     path should be printed
+     @param extruderId index into the extruder array
+     @param layerSequence the number of the current layer
+     @param label the label of the current path
+     @param extrusionParams write the profile into this variable
+     @return true if this path should be printed, false otherwise
+     */
+    bool calcExtrusion(unsigned int extruderId, 
+            unsigned int layerSequence, 
+            const PathLabel& label, 
             Extrusion& extrusionParams) const;
 
 
@@ -168,46 +154,44 @@ public:
 private:
 
     void writeGCodeConfig(std::ostream & ss, const char* filename) const;
-    //    void writeMachineInitialization(std::ostream & ss) const;
-    //    void writePlatformInitialization(std::ostream & ss) const;
-    //    void writeExtrudersInitialization(std::ostream & ss) const;
-    //    void writeHomingSequence(std::ostream & ss);
-    //    void writeWarmupSequence(std::ostream & ss);
-    //    void writeAnchor(std::ostream & ss);
-    void writeInfills(std::ostream& ss,
-            Scalar z, Scalar h, Scalar w,
-            size_t sliceId,
-            const Extruder& extruder,
-            const LayerPaths::Layer::ExtruderLayer& paths);
-    void writeSupport(std::ostream& ss,
-            Scalar z, Scalar h, Scalar w,
-            size_t sliceId,
-            const Extruder& extruder,
-            const LayerPaths::Layer::ExtruderLayer& paths);
-    void writeInsets(std::ostream& ss,
-            Scalar z, Scalar h, Scalar w,
-            size_t sliceId,
-            const Extruder& extruder,
-            const LayerPaths& layerpaths,
-            LayerPaths::layer_iterator layerId,
-            const LayerPaths::Layer::ExtruderLayer& paths);
-    void writeOutlines(std::ostream& ss,
-            Scalar z, Scalar h, Scalar w,
-            size_t sliceId,
-            const Extruder& extruder,
-            const LayerPaths::Layer::ExtruderLayer& paths);
     template <typename PATH>
     void writePath(std::ostream& ss,
             Scalar z, Scalar h, Scalar w,
             const Extruder& extruder,
             const Extrusion& extrusion,
-            const PATH& path);
+            const PATH& path, 
+            Scalar feedScale = 1.0);
     template <template <class, class> class LABELEDPATHS, class ALLOC>
     void writePaths(std::ostream& ss,
-    Scalar z, Scalar h, Scalar w,
-    size_t layerSequence,
-    const Extruder& extruder,
-    const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
+            Scalar z, Scalar h, Scalar w,
+            size_t layerSequence,
+            const Extruder& extruder,
+            const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths, 
+            Scalar feedScale = 1.0);
+    /**
+     @brief approximate how long it would take to extrude this path using 
+     the extrusion profile given
+     @param PATH the type of path
+     @param extrusion the profile
+     @param path the path
+     @return Approximate time in seconds for this path
+     */
+    template <typename PATH>
+    Scalar calcPath(const Extrusion& extrusion, 
+            const PATH& path);
+    /**
+     @brief invoke calcPath on each element in @a labeledPaths and return 
+     the sum of the results
+     @param LABELEDPATHS the type of collection we're using (STL collections)
+     @param ALLOC the type of allocator @a LABELEDPATHS uses
+     @param layerSequence the number of the current layer
+     @param extruder the current extruder to use
+     @param labeledPaths the paths for which to calculate things
+     */
+    template <template <class, class> class LABELEDPATHS, class ALLOC>
+    Scalar calcPaths(size_t layerSequence, 
+            const Extruder& extruder, 
+            const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths);
 
     Point2Type startPoint(const SliceData &sliceData);
     // void writeWipeExtruder(std::ostream& ss, int extruderId) const {};
@@ -218,7 +202,8 @@ void GCoder::writePath(std::ostream& ss,
         Scalar z, Scalar h, Scalar w,
         const Extruder& extruder,
         const Extrusion& extrusion,
-        const PATH& path) {
+        const PATH& path, 
+        Scalar feedScale) {
     if (path.size() < 2) {
         GcoderException mixup("Attempted to write path with no points");
         throw mixup;
@@ -246,21 +231,23 @@ void GCoder::writePath(std::ostream& ss,
         comment << "d: " << distance;
         gantry.g1(ss, extruder, extrusion,
                 current->x, current->y, z,
-                extrusion.feedrate, h, w, comment.str().c_str());
+                extrusion.feedrate * feedScale, h, w, comment.str().c_str());
         last = *current;
     }
 }
 
 template <template <class, class> class LABELEDPATHS, class ALLOC>
 void GCoder::writePaths(std::ostream& ss,
-Scalar z, Scalar h, Scalar w,
-size_t layerSequence,
-const Extruder& extruder,
-const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
+        Scalar z, Scalar h, Scalar w,
+        size_t layerSequence,
+        const Extruder& extruder,
+        const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths, 
+        Scalar feedScale) {
     typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator
     const_iterator;
     Extrusion fluidstrusion;
-    calcInfillExtrusion(extruder.id, layerSequence, fluidstrusion);
+    PathLabel fluidLabel(PathLabel::TYP_CONNECTION, PathLabel::OWN_MODEL, 0);
+    calcExtrusion(extruder.id, layerSequence, fluidLabel, fluidstrusion);
     gantry.snort(ss, extruder, fluidstrusion);
     bool didLastPath = true;
     for (const_iterator iter = labeledPaths.begin();
@@ -272,59 +259,54 @@ const LABELEDPATHS<LabeledOpenPath, ALLOC>& labeledPaths) {
         Extrusion extrusion;
         Scalar currentH = h;
         Scalar currentW = w;
-        if (currentLP.myLabel.isOutline()) {
-            if (!grueCfg.get_doOutlines()) {
-                didLastPath = false;
-                continue;
-            }
-            calcOutlineExtrusion(extruder.id, layerSequence,
-                    extrusion);
-            ss << "(outline path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
-        } else if (currentLP.myLabel.isSupport()) {
-            calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-            ss << "(support path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
-        } else if (currentLP.myLabel.isConnection()) {
-            if (!didLastPath)
-                continue;
-            calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-            ss << "(connection path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
-        } else if (currentLP.myLabel.isInset()) {
-            if (!grueCfg.get_doInsets()) {
-                didLastPath = false;
-                continue;
-            }
-            if (currentLP.myLabel.myValue ==
-                    LayerPaths::Layer::ExtruderLayer::OUTLINE_LABEL_VALUE) {
-                //this is an outline
-                calcOutlineExtrusion(extruder.id, layerSequence,
-                        extrusion);
-            } else {
-                //this is a regular inset
-                calcInSetExtrusion(extruder.id, layerSequence,
-                        currentLP.myLabel.myValue, -1, extrusion);
-            }
-            ss << "(inset path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
-        } else if (currentLP.myLabel.isInfill()) {
-            if (!grueCfg.get_doInfills()) {
-                didLastPath = false;
-                continue;
-            }
-            calcInfillExtrusion(extruder.id, layerSequence, extrusion);
-            ss << "(infill path, length: " << currentLP.myPath.size()
-                    << ")" << std::endl;
-        } else {
-            GcoderException mixup("Invalid path label type");
-            throw mixup;
-        }
-        didLastPath = true;
-        writePath(ss, z, currentH, currentW, extruder, extrusion, currentLP.myPath);
+        bool doCurrentPath = calcExtrusion(extruder.id, layerSequence, 
+                currentLP.myLabel, extrusion);
+        if(currentLP.myLabel.isConnection() && !didLastPath)
+            continue;
+        didLastPath = doCurrentPath;
+        if(doCurrentPath)
+            writePath(ss, z, currentH, currentW, extruder, 
+                    extrusion, currentLP.myPath, feedScale);
     }
     gantry.snort(ss, extruder, fluidstrusion);
     ss << std::endl << std::endl;
+}
+
+template <typename PATH>
+Scalar GCoder::calcPath(const Extrusion& extrusion, const PATH& path) {
+    typedef typename PATH::const_iterator const_iterator;
+    if(path.empty())
+        return 0;
+    const_iterator current = path.fromStart();
+    Point2Type lastPoint = *current;
+    Scalar accum = 0;
+    for(++current; current != path.end(); ++current) {
+        //distance in mm
+        Scalar distance = Point2Type((*current) - lastPoint).magnitude();
+        lastPoint = *current;
+        //time in seconds
+        Scalar time = (distance / extrusion.feedrate) * grueCfg.get_scalingFactor();
+        accum += time;
+    }
+    return accum;
+}
+
+template <template <class, class> class LABELEDPATHS, class ALLOC>
+Scalar GCoder::calcPaths(size_t layerSequence, const Extruder& extruder, 
+        const LABELEDPATHS<LabeledOpenPath,ALLOC>& labeledPaths) {
+    typedef typename LABELEDPATHS<LabeledOpenPath, ALLOC>::const_iterator 
+            const_iterator;
+    Scalar accum = 0;
+    for(const_iterator iter = labeledPaths.begin(); 
+            iter != labeledPaths.end(); 
+            ++iter) {
+        Extrusion extrusion;
+        if(calcExtrusion(extruder.id, layerSequence, iter->myLabel, 
+                extrusion)) {
+            accum += calcPath(extrusion, iter->myPath);
+        }
+    }
+    return accum;
 }
 
 
