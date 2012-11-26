@@ -169,7 +169,9 @@ GrueConfig::GrueConfig()
         infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
         layerWidthRatio(INVALID_SCALAR), layerWidthMinimum(INVALID_SCALAR), 
         layerWidthMaximum(INVALID_SCALAR), 
-        insetDistanceMultiplier(INVALID_SCALAR), roofLayerCount(INVALID_UINT), 
+        insetDistanceMultiplier(INVALID_SCALAR), 
+        infillShellSpacingMultiplier(INVALID_SCALAR), 
+        roofLayerCount(INVALID_UINT), 
         floorLayerCount(INVALID_UINT), doRaft(INVALID_BOOL), 
         raftLayers(INVALID_UINT), raftBaseThickness(INVALID_SCALAR), 
         raftInterfaceThickness(INVALID_SCALAR), raftOutset(INVALID_SCALAR), 
@@ -228,6 +230,9 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     insetDistanceMultiplier =
             doubleCheck(config["insetDistanceMultiplier"],
             "insetDistanceMultiplier");
+    infillShellSpacingMultiplier = 
+            doubleCheck(config["infillShellSpacingMultiplier"], 
+            "infillShellSpacingMultiplier");
     loadSolidLayerParams(config);
 }
 void GrueConfig::loadGantryParams(const Configuration& config) {

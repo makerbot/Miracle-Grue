@@ -353,7 +353,7 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				layermeasure, NULL);
         if(!region->insetLoops.empty()) {
             loopsOffset(region->interiorLoops, region->insetLoops.back(), 
-                    -grueCfg.get_insetDistanceMultiplier() * 0.5 * 
+                    -grueCfg.get_infillShellSpacingMultiplier() * 
                     layermeasure.getLayerWidth(region->layerMeasureId));
         }
 		++outline;
