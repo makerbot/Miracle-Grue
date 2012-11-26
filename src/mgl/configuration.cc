@@ -295,6 +295,8 @@ void GrueConfig::loadRaftParams(const Configuration& config) {
             config["raftModelSpacing"], "raftModelSpacing");
     raftDensity = doubleCheck(
             config["raftDensity"], "raftDensity");
+    raftAligned = boolCheck(
+            config["raftAligned"], "raftAligned", false);
 }
 void GrueConfig::loadSupportParams(const Configuration& config) {
     supportMargin = doubleCheck(config["supportMargin"],

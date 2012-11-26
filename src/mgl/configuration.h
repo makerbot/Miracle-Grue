@@ -206,6 +206,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftOutset)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftModelSpacing)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftDensity)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, raftAligned)
     //support
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doSupport)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportMargin)
