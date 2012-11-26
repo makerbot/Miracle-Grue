@@ -578,6 +578,10 @@ FASTGRAPH_PRIVATE:
     const GrueConfig& grueCfg;
     
     bucket_list buckets;
+    /**
+     @brief hack bucket to contain things that not fall into valid buckets
+     */
+    bucket unifiedBucketHack;
     Point2Type historyPoint;
     
 };

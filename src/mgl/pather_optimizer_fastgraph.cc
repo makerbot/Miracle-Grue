@@ -11,11 +11,16 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
     node_index last = -1;
     Point2Type testPoint = *path.fromStart();
     bucket_list::iterator bucketIter = pickBucket(testPoint);
+    bucket* currentBucketPtr = NULL;
     if(bucketIter == buckets.end()) {
-        throw GraphException("No bucket for path!");
+        //throw GraphException("No bucket for path!");
+        //don't throw, put in hack bucket instead
+        currentBucketPtr = &(unifiedBucketHack.select(testPoint));
+    } else {
+        //find the deepest thing you can
+        currentBucketPtr = &(bucketIter->select(testPoint));
     }
-    //find the deepest thing you can
-    bucket& currentBucket = bucketIter->select(testPoint);
+    bucket& currentBucket = *currentBucketPtr;
     graph_type& currentGraph = currentBucket.m_graph;
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
@@ -57,7 +62,10 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     Point2Type testPoint = *loop.clockwise();
     bucket_list::iterator bucketIter = pickBucket(testPoint);
     if(bucketIter == buckets.end()) {
-        throw GraphException("No bucket for path!");
+        //throw GraphException("No bucket for path!");
+        //don't throw, but place inside the hack bucket
+        unifiedBucketHack.m_hierarchy.insert(loop, label);
+        return;
     }
     bucket& currentBucket = bucketIter->select(testPoint);
     graph_type& currentGraph = currentBucket.m_graph;

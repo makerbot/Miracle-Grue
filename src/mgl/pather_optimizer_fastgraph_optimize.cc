@@ -161,6 +161,13 @@ void pather_optimizer_fastgraph::optimizeBuckets(multipath_type& output,
         output.back().splice(output.back().end(), currentResult);
         buckets.erase(currentNearest);
     }
+    //hack bucket to optimize
+    LabeledOpenPaths hackResult;
+    unifiedBucketHack.optimize(hackResult, entryPoint, grueCfg);
+    output.push_back(LabeledOpenPaths());
+    output.back().splice(output.back().end(), hackResult);
+    bucket blankBucket;
+    unifiedBucketHack.swap(blankBucket);
 }
 bool pather_optimizer_fastgraph::optimizeIterative(LabeledOpenPaths&, // labeledopenpaths, 
         LabeledOpenPaths& // intermediate
