@@ -362,7 +362,7 @@ void GCoder::writeSlice(std::ostream& ss,
         }
         Scalar feedScale = 1.0;
         bool calculateSlowing = !grueCfg.get_doRaft() || 
-                layerSequence < grueCfg.get_raftLayers();
+                layerSequence >= grueCfg.get_raftLayers();
         if(calculateSlowing) {
             Scalar duration = calcPaths(layerSequence, currentExtruder, it->paths);
             if(duration < grueCfg.get_minLayerDuration()) {
