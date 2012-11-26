@@ -360,13 +360,17 @@ void GCoder::writeSlice(std::ostream& ss,
                     layerSequence << " for extruder " << currentExtruder.id <<
                     " : " << mixup.error << endl;
         }
-        Scalar duration = calcPaths(layerSequence, currentExtruder, it->paths);
         Scalar feedScale = 1.0;
-        if(duration < grueCfg.get_minLayerDuration()) {
-            feedScale = duration / grueCfg.get_minLayerDuration();
-            int speedDecrease(feedScale * 100);
-            ss << "(Slowing to " << speedDecrease << "% of nominal speeds)" 
-                    << std::endl;
+        bool calculateSlowing = !grueCfg.get_doRaft() || 
+                layerSequence < grueCfg.get_raftLayers();
+        if(calculateSlowing) {
+            Scalar duration = calcPaths(layerSequence, currentExtruder, it->paths);
+            if(duration < grueCfg.get_minLayerDuration()) {
+                feedScale = duration / grueCfg.get_minLayerDuration();
+                int speedDecrease(feedScale * 100);
+                ss << "(Slowing to " << speedDecrease << "% of nominal speeds)" 
+                        << std::endl;
+            }
         }
         writePaths(ss, currentZ, currentH, currentW, layerSequence,
                 currentExtruder, it->paths, feedScale);

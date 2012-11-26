@@ -68,7 +68,7 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		if (currentSlice > lastSliceIdx) break;
         if(grueCfg.get_doRaft() && currentSlice > 1 && 
                 currentSlice < grueCfg.get_raftLayers() && 
-                !grueCfg.get_raftAligned()) {
+                grueCfg.get_raftAligned()) {
             //don't flip direction
         } else {
             direction = !direction;
