@@ -176,7 +176,6 @@ GrueConfig::GrueConfig()
         raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
         doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
         supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
-        iterativeEffort(INVALID_UINT), 
         rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
         useEaxis(INVALID_BOOL), scalingFactor(INVALID_BOOL), 
         startingX(INVALID_SCALAR), startingY(INVALID_SCALAR), 
@@ -191,7 +190,7 @@ void GrueConfig::loadFromFile(const Configuration& config) {
     if(doSupport)
         loadSupportParams(config);
     doGraphOptimization = boolCheck(
-            config["doGraphOptimization"], "doGraphOptimization");
+            config["doGraphOptimization"], "doGraphOptimization", true);
     if(doGraphOptimization)
         loadPathingParams(config);
     loadGantryParams(config);
@@ -204,7 +203,7 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     preCoarseness = (doubleCheck(
             config["preCoarseness"], "preCoarseness"));
     directionWeight = doubleCheck(config["directionWeight"],
-            "directionWeight");
+            "directionWeight", 0.5);
     layerH = (doubleCheck(
             config["layerHeight"], "layerHeight"));
     firstLayerZ = doubleCheck(config["bedZOffset"], 
@@ -214,7 +213,7 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     infillDensity = doubleCheck(config["infillDensity"],
             "infillDensity");
     gridSpacingMultiplier = doubleCheck(config["gridSpacingMultiplier"],
-            "gridSpacingMultiplier", 0.92);
+            "gridSpacingMultiplier", 0.85);
     nbOfShells = uintCheck(config["numberOfShells"],
             "numberOfShells");
     layerWidthMinimum = doubleCheck(config["layerWidthMinimum"],
@@ -303,8 +302,6 @@ void GrueConfig::loadSupportParams(const Configuration& config) {
             config["supportDensity"], "supportDensity");
 }
 void GrueConfig::loadPathingParams(const Configuration& config) {
-    iterativeEffort = uintCheck(config["iterativeEffort"], 
-            "iterativeEffort", 999);
 }
 void GrueConfig::loadProfileParams(const Configuration& config) {
     loadExtruderParams(config);

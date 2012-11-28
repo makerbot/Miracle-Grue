@@ -212,7 +212,6 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportDensity)
     //pather
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doGraphOptimization)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, iterativeEffort)
     //gantry
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateXY)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateZ)
