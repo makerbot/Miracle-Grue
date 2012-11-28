@@ -192,6 +192,8 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, insetDistanceMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, roofLayerCount)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, floorLayerCount)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doExternalSpurs)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInternalSpurs)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minSpurWidth)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, maxSpurWidth)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, spurOverlap)

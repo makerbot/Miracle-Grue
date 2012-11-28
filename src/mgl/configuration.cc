@@ -171,6 +171,8 @@ GrueConfig::GrueConfig()
         roofLayerCount(INVALID_UINT), 
         floorLayerCount(INVALID_UINT), 
         //spur stuff begin
+        doExternalSpurs(INVALID_BOOL),
+        doInternalSpurs(INVALID_BOOL),
         minSpurWidth(INVALID_SCALAR), 
         maxSpurWidth(INVALID_SCALAR), 
         spurOverlap(INVALID_SCALAR), 
@@ -223,6 +225,11 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
             "numberOfShells");
     layerWidthRatio = doubleCheck(config["layerWidthRatio"],
             "layerWidthRatio");
+
+    doExternalSpurs = boolCheck(config["doExternalSpurs"],
+                                "doExternalSpurs");
+    doInternalSpurs = boolCheck(config["doInternalSpurs"],
+                                "doInternalSpurs");
     minSpurWidth = doubleCheck(config["minSpurWidth"],
             "minSpurWidth");
     maxSpurWidth = doubleCheck(config["maxSpurWidth"],

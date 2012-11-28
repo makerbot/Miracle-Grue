@@ -883,35 +883,41 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
 	// the outer shell is a special case
 	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
 	LoopList outset;
-	loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW() + fudgefactor,
-				false);
+
+    if (grueCfg.get_doExternalSpurs()) {
+        loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW()
+                      + fudgefactor,
+                    false);
 	
-	spurLoops.push_back(LoopList());
-	LoopList &outerspurs = spurLoops.back();
-
-	loopsDifference(outerspurs, sliceOutlines, outset);
-
-	std::list<LoopList>::const_iterator outer = inner;
-	++inner;
-
-	while (inner != sliceInsets.end()) {
         spurLoops.push_back(LoopList());
-        LoopList &spurs = spurLoops.back();
+        LoopList &outerspurs = spurLoops.back();
 
-        if (inner->size() > 0) {
-            outset.clear();
-            //take an inner shell and outset it the same amount that it was inset
-            loopsOffset(outset, *inner,
-                        grueCfg.get_insetDistanceMultiplier() * 
-                        layermeasure.getLayerW()
-                        + fudgefactor, false);
+        loopsDifference(outerspurs, sliceOutlines, outset);
+    }
 
-            //subtract the outset loop from its outer loop, what's left is a spur
-            loopsDifference(spurs, *outer, outset);
-        }
-
-        outer = inner;
+    if (grueCfg.get_doInternalSpurs()) {
+        std::list<LoopList>::const_iterator outer = inner;
         ++inner;
+
+        while (inner != sliceInsets.end()) {
+            spurLoops.push_back(LoopList());
+            LoopList &spurs = spurLoops.back();
+
+            if (inner->size() > 0) {
+                outset.clear();
+                //take an inner shell and outset it the same amount that it was inset
+                loopsOffset(outset, *inner,
+                            grueCfg.get_insetDistanceMultiplier() * 
+                            layermeasure.getLayerW()
+                            + fudgefactor, false);
+
+                //subtract the outset loop from its outer loop, what's left is a spur
+                loopsDifference(spurs, *outer, outset);
+            }
+
+            outer = inner;
+            ++inner;
+        }
     }
 }
 
