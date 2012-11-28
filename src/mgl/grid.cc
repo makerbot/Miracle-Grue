@@ -25,6 +25,7 @@ using namespace std;
 
 
 const Scalar GRID_RANGE_TOL = 0.0;
+const Scalar GRID_CROSSING_COARSENESS = 0.0;
 
 ostream& operator <<(std::ostream &os, const ScalarRange &p) {
 	cout << "[" << p.min << ", " << p.max << "]";
@@ -45,10 +46,38 @@ void scalarRangesFromIntersections(const std::set<Scalar> &lineCuts, std::vector
 			xEnd = intersection;
 			// gridSegments.push_back(LineSegment2(Point2Type(xBegin,y), Point2Type(xEnd,y)));
 			ranges.push_back(ScalarRange(xBegin, xEnd));
+            inside = false;
 		} else {
 			xBegin = intersection;
+            inside = true;
 		}
-		inside = !inside;
+	}
+
+	if (inside) {
+		// this is not good. xMax should be outside the object
+		GridException messup("Ray has been cast outside the model mesh.");
+
+	}
+}
+
+void scalarRangesFromIntersections(std::vector<Scalar> &lineCuts, std::vector<ScalarRange> &ranges) {
+    std::sort(lineCuts.begin(), lineCuts.end());
+	ranges.reserve(lineCuts.size());
+	bool inside = false;
+	Scalar xBegin = 0; // initial value is not used
+	Scalar xEnd = 0; // initial value is not used
+	for (std::vector<Scalar>::iterator it = lineCuts.begin(); 
+            it != lineCuts.end(); ++it) {
+		Scalar intersection = *it;
+		if (inside) {
+			xEnd = intersection;
+			// gridSegments.push_back(LineSegment2(Point2Type(xBegin,y), Point2Type(xEnd,y)));
+			ranges.push_back(ScalarRange(xBegin, xEnd));
+            inside = false;
+		} else {
+			xBegin = intersection;
+            inside = true;
+		}
 	}
 
 	if (inside) {
@@ -63,7 +92,7 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
 		Scalar xMin,
 		Scalar xMax,
 		std::vector<ScalarRange> &ranges) {
-	std::set<Scalar> lineCuts;
+	std::vector<Scalar> lineCuts;
 
 	//iterate over every loop
 	for (std::list<Loop>::const_iterator j = outlineLoops.begin(); 
@@ -77,17 +106,26 @@ void rayCastAlongX(const std::list<Loop>& outlineLoops,
 					++iter) {
 				Segment2Type segment = currentLoop.segmentAfterPoint(iter);
 				Scalar intersectionX, intersectionY;
-				if (segmentSegmentIntersection(xMin,
-						y,
-						xMax,
-						y,
-						segment.a.x,
-						segment.a.y,
-						segment.b.x,
-						segment.b.y,
-						intersectionX,
-						intersectionY)) {
-					lineCuts.insert(intersectionX);
+                intersectionY = y;
+                if(segment.a.y < y + GRID_CROSSING_COARSENESS) {
+                    if(segment.b.y > y - GRID_CROSSING_COARSENESS) {
+                        Scalar t = (y - segment.a.y) / 
+                                (segment.b.y - segment.a.y);
+                        intersectionX = t * (segment.b.x - segment.a.x) + segment.a.x;
+                    } else {
+                        continue;
+                    }
+                } else if(segment.a.y > y - GRID_CROSSING_COARSENESS) {    // segment.a.y > y
+                    if(segment.b.y < y + GRID_CROSSING_COARSENESS) {
+                        Scalar t = (y - segment.b.y) / 
+                                (segment.a.y - segment.b.y);
+                        intersectionX = t * (segment.a.x - segment.b.x) + segment.b.x;
+                    } else {
+                        continue;
+                    }
+                }
+				if (intersectionX >= xMin && intersectionX < xMax) {
+					lineCuts.push_back(intersectionX);
 				}
 			}
 		}
@@ -100,7 +138,7 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 		Scalar yMin,
 		Scalar yMax,
 		std::vector<ScalarRange> &ranges) {
-	std::set<Scalar> lineCuts;
+	std::vector<Scalar> lineCuts;
 
 	// iterate over every loop
 	for (std::list<Loop>::const_iterator j = outlineLoops.begin(); 
@@ -113,17 +151,26 @@ void rayCastAlongY(const std::list<Loop>& outlineLoops,
 					it++) {
 				Segment2Type segment = currentLoop.segmentAfterPoint(it);
 				Scalar intersectionX, intersectionY;
-				if (segmentSegmentIntersection(x,
-						yMin,
-						x,
-						yMax,
-						segment.a.x,
-						segment.a.y,
-						segment.b.x,
-						segment.b.y,
-						intersectionX,
-						intersectionY)) {
-					lineCuts.insert(intersectionY);
+                intersectionX = x;
+                if(segment.a.x < x + GRID_CROSSING_COARSENESS) {
+                    if(segment.b.x > x - GRID_CROSSING_COARSENESS) {
+                        Scalar t = (x - segment.a.x) / 
+                                (segment.b.x - segment.a.x);
+                        intersectionY = t * (segment.b.y - segment.a.y) + segment.a.y;
+                    } else {
+                        continue;
+                    }
+                } else if(segment.a.x > x - GRID_CROSSING_COARSENESS) {    // segment.a.y > y
+                    if(segment.b.x < x + GRID_CROSSING_COARSENESS) {
+                        Scalar t = (x - segment.b.x) / 
+                                (segment.a.x - segment.b.x);
+                        intersectionY = t * (segment.a.y - segment.b.y) + segment.b.y;
+                    } else {
+                        continue;
+                    }
+                }
+				if (intersectionY >= yMin && intersectionY < yMax) {
+					lineCuts.push_back(intersectionY);
 				}
 			}
 		}

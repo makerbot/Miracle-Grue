@@ -25,7 +25,7 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 		std::vector< SliceData >&, // slices,
 		ProgressBar *progress) {
 
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 	mesh.readStlFile(modelFile);
 	mesh.alignToPlate();
 	
@@ -86,7 +86,7 @@ void mgl::getSliceJson(const GrueConfig& grueCfg,
                        const string &modelFile,
                        std::ostream &output,
                        const int slicenum) {
-	Meshy mesh;
+	Meshy mesh(grueCfg);
 	mesh.readStlFile(modelFile.c_str());
 	mesh.alignToPlate();
 	

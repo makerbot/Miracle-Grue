@@ -73,6 +73,8 @@ public:
     std::list<LoopList> spurLoops;
 	LoopList supportLoops;
 	LoopList interiorLoops;
+    LoopList floorLoops;
+    LoopList roofLoops;
 
     std::list<OpenPathList> spurs;
 

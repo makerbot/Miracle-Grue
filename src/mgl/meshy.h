@@ -26,6 +26,7 @@
 #include "obj_limits.h"
 #include "abstractable.h"
 #include "mgl.h"
+#include "configuration.h"
 
 
 
@@ -93,7 +94,7 @@ public:
 
 
 	/// requires firstLayerSlice height, and general layer height
-	Meshy();
+	Meshy(const GrueConfig& grueConf) : grueCfg(grueConf) {}
 	const std::vector<Triangle3Type>& readAllTriangles() const;
 	const Limits& readLimits() const;
 
@@ -118,6 +119,8 @@ public:
 
 	void alignToPlate();
 	void translate(const Point3Type &change);
+private:
+    const GrueConfig& grueCfg;
 };
 
 

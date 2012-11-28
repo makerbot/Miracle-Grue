@@ -152,6 +152,7 @@ FASTGRAPH_PRIVATE:
     typedef std::pair<node_index, Scalar> probe_link_type;
     
     class LoopHierarchyBaseComparator;
+    class LoopHierarchyStrictComparator;
     
     /**
      @brief a description of the extents of a region and all regions 
@@ -252,6 +253,8 @@ FASTGRAPH_PRIVATE:
             bool isValid() const;
             hierarchy_list::iterator bestChild(
                     const LoopHierarchyBaseComparator& compare);
+            hierarchy_list::iterator bestChild(
+                    const LoopHierarchyStrictComparator& compare);
             LoopHierarchy& insert(LoopHierarchy& constructed);
         };
         

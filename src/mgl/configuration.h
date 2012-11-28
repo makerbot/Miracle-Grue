@@ -160,6 +160,8 @@ private:
     /* This is called from loadProfileParams */
     void loadExtruderParams(const Configuration& config);
     void loadExtrusionParams(const Configuration& config);
+    /* This is called from loadSlicingParams */
+    void loadSolidLayerParams(const Configuration& config);
     /* --END-- */
     
     //gcoder stuff
@@ -176,8 +178,10 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doFanCommand)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, fanLayer)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doAnchor)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPutModelOnPlatform)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minLayerDuration)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, preCoarseness)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, directionWeight)
@@ -189,6 +193,8 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, gridSpacingMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, nbOfShells)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthRatio)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthMinimum)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthMaximum)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, insetDistanceMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, roofLayerCount)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, floorLayerCount)
