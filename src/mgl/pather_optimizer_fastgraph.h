@@ -323,6 +323,7 @@ FASTGRAPH_PRIVATE:
         Loop m_loop;
         LoopHierarchy m_hierarchy;
     private:
+        void buildNoCross();
         void insertNoCross(const Segment2Type& line);
     };
     

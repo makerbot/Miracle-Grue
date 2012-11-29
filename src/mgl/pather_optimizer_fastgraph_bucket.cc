@@ -15,11 +15,16 @@ BUCKET::bucket(const Loop& loop)
     insertNoCross(m_loop);
 }
 bool BUCKET::contains(Point2Type point) const {
-    bool result = m_loop.windingContains(point);
-    return result;
+    if(!m_loop.empty())
+        return m_loop.windingContains(point);
+    //things with no boundaries contain everything
+    return true;
 }
 bool BUCKET::contains(const bucket& other) const {
-    return contains(other.m_testPoint);
+    if(!other.m_loop.empty())
+        return contains(other.m_testPoint);
+    //things with no boundaries cannot be contained
+    return false;
 }
 void BUCKET::insertBoundary(const Loop& loop) {
     bucket constructed(loop);
@@ -37,7 +42,6 @@ void BUCKET::insertBucket(bucket& constructed) {
             return;
         }
     }
-    insertNoCross(constructed.m_loop);
     std::list<bucket_list::iterator> thingsToMove;
     for(bucket_list::iterator bucketIter = m_children.begin(); 
             bucketIter != m_children.end(); 
@@ -63,6 +67,7 @@ BUCKET& BUCKET::select(Point2Type point) {
 }
 void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
         const GrueConfig& grueConf) {
+    buildNoCross();
     Scalar myDistance = std::numeric_limits<Scalar>::max();
     for(edge_iterator edge = edgeBegin(); 
             edge != edgeEnd(); 
@@ -155,6 +160,13 @@ BUCKET::edge_iterator BUCKET::edgeBegin() const {
 }
 BUCKET::edge_iterator BUCKET::edgeEnd() const { 
     return edge_iterator(m_loop.clockwiseEnd()); 
+}
+void BUCKET::buildNoCross() {
+    for(bucket_list::iterator iter = m_children.begin(); 
+            iter != m_children.end(); 
+            ++iter) {
+        insertNoCross(iter->m_loop);
+    }
 }
 void BUCKET::insertNoCross(const Loop& loop) {
     for(Loop::const_finite_cw_iterator loopIter = loop.clockwiseFinite(); 
