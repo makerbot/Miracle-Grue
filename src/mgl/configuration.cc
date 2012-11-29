@@ -167,6 +167,14 @@ GrueConfig::GrueConfig()
         directionWeight(INVALID_SCALAR), 
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
         infillDensity(INVALID_SCALAR), nbOfShells(INVALID_UINT), 
+        //spur stuff begin
+        doExternalSpurs(INVALID_BOOL),
+        doInternalSpurs(INVALID_BOOL),
+        minSpurWidth(INVALID_SCALAR), 
+        maxSpurWidth(INVALID_SCALAR), 
+        spurOverlap(INVALID_SCALAR), 
+        minSpurLength(INVALID_SCALAR), 
+        //spur stuff end
         layerWidthRatio(INVALID_SCALAR), layerWidthMinimum(INVALID_SCALAR), 
         layerWidthMaximum(INVALID_SCALAR), 
         insetDistanceMultiplier(INVALID_SCALAR), 
@@ -224,6 +232,20 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
             "layerWidthMaximum", 1.0);
     layerWidthRatio = doubleCheck(config["layerWidthRatio"],
             "layerWidthRatio");
+
+    doExternalSpurs = boolCheck(config["doExternalSpurs"],
+                                "doExternalSpurs");
+    doInternalSpurs = boolCheck(config["doInternalSpurs"],
+                                "doInternalSpurs");
+    minSpurWidth = doubleCheck(config["minSpurWidth"],
+            "minSpurWidth");
+    maxSpurWidth = doubleCheck(config["maxSpurWidth"],
+            "maxSpurWidth");
+    spurOverlap = doubleCheck(config["spurOverlap"],
+                              "spurOverlap", 0.01);
+    minSpurLength = doubleCheck(config["minSpurLength"],
+                                "minSpurLength");
+
     layerWidthRatio = std::min(std::max(layerWidthRatio * layerH, 
             layerWidthMinimum), layerWidthMaximum)/layerH;
     insetDistanceMultiplier =

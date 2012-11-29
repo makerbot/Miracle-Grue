@@ -28,6 +28,10 @@ LineSegment2 & LineSegment2::operator=(const LineSegment2 & other) {
 	return *this;
 }
 
+bool LineSegment2::operator==(const LineSegment2 &other) const {
+    return a == other.a && b == other.b;
+}
+
 Scalar LineSegment2::squaredLength() const {
 	Vector2 l = b - a;
 	return l.squaredMagnitude();

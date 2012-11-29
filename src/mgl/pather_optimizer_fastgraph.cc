@@ -22,6 +22,10 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
     }
     bucket& currentBucket = *currentBucketPtr;
     graph_type& currentGraph = currentBucket.m_graph;
+    if(label.isInset()) {
+        currentBucket.insertPath(path, label);
+        return;
+    }
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
             ++iter) {
@@ -57,8 +61,6 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
 }
 void pather_optimizer_fastgraph::addPath(const Loop& loop, 
         const PathLabel& label) {
-    node_index last = -1;
-    node_index first = -1;
     Point2Type testPoint = *loop.clockwise();
     bucket_list::iterator bucketIter = pickBucket(testPoint);
     bucket* currentBucketPtr = NULL;
@@ -71,53 +73,7 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
         currentBucketPtr = &(bucketIter->select(testPoint));
     }
     bucket& currentBucket = *currentBucketPtr;
-    graph_type& currentGraph = currentBucket.m_graph;
-    //bucket::LoopHierarchy& currentLoops = 
-            currentBucket.m_hierarchy.insert(loop, label);
-    return;
-    for(Loop::const_finite_cw_iterator iter = loop.clockwiseFinite(); 
-            iter != loop.clockwiseEnd(); 
-            ++iter) {
-        Loop::const_finite_cw_iterator next = iter;
-        ++next;
-        if(iter == loop.clockwiseFinite()) {
-            last = currentGraph.createNode(NodeData(*iter, 
-                    label, true)).getIndex();
-            first = last;
-        }
-        if(next != loop.clockwiseEnd()) {
-            NodeData curNodeData(*next, label, true);
-            node& curNode = currentGraph.createNode(curNodeData);
-            node& lastNode = currentGraph[last];
-            Segment2Type connection( 
-                    curNode.data().getPosition(), 
-                    lastNode.data().getPosition());
-            Point2Type normal;
-            try {
-                normal = (connection.b - connection.a).unit();
-            } catch (const GeometryException& le) {}
-            Scalar distance = connection.length();
-            Cost frontCost(label, distance, normal);
-            //Cost backCost(label, distance, normal * -1.0);
-            //curNode.connect(lastNode, backCost);
-            lastNode.connect(curNode, frontCost);
-            last = curNode.getIndex();
-        }
-    }
-    node& lastNode = currentGraph[last];
-    node& curNode = currentGraph[first];
-    Segment2Type connection( 
-            curNode.data().getPosition(), 
-            lastNode.data().getPosition());
-    Point2Type normal;
-    try {
-        normal = (connection.b - connection.a).unit();
-    } catch (const GeometryException& le) {}
-    Scalar distance = connection.length();
-    Cost frontCost(label, distance, normal);
-    //Cost backCost(label, distance, normal * -1.0);
-    //curNode.connect(lastNode, backCost);
-    lastNode.connect(curNode, frontCost);
+    currentBucket.m_hierarchy.insert(loop, label);
 }
 void pather_optimizer_fastgraph::addBoundary(const OpenPath&) {
     throw PathingException("OpenPath boundaries temporarily not supported!");

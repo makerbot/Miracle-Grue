@@ -125,7 +125,8 @@ void loopsXOR(LoopList &subject, const LoopList &apply);
 void loopsXOR(LoopList &dest,
 			  const LoopList &subject, const LoopList &apply);
 
-void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance);
+void loopsOffset(LoopList& dest, const LoopList& subject, Scalar distance, 
+				 bool square = true);
 
 void smooth(const Loop& input, Scalar smoothness, Loop& output, Scalar factor = 1.0, 
         bool recurse = true);
