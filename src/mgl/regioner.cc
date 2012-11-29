@@ -1453,9 +1453,9 @@ void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
     
     for (SegmentList::iterator piece = pieces.begin();
         piece != pieces.end(); ++piece) {
-        expandSeg(*piece, grueCfg.get_spurOverlap());
-        // = piece->elongate(0.05)
-        //              .prelongate(0.05);
+        //expandSeg(*piece, grueCfg.get_spurOverlap());
+        //this needs to be a different value for mystifying reasons
+        *piece = piece->elongate(0.05).prelongate(0.05);
         pieceIndex.insert(*piece);
     }
 
