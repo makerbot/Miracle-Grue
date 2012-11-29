@@ -417,7 +417,10 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 //
 //		grid.trimGridRange(roof, roofLengthCutOff, roofing);
         LoopList diffResult;
-        loopsDifference(diffResult, current->interiorLoops, above->interiorLoops);
+        if(!above->insetLoops.empty()) {
+            loopsDifference(diffResult, current->interiorLoops, 
+                    above->insetLoops.back());
+        }
         //compensate for errors in the difference by a fudge factor
         loopsOffset(roofLoops, diffResult, LOOP_ERROR_FUDGE_FACTOR);
 
@@ -448,7 +451,10 @@ void Regioner::flooring(RegionList::iterator regionsBegin,
 
 //		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
         LoopList diffResult;
-        loopsDifference(diffResult, current->interiorLoops, below->interiorLoops);
+        if(!below->insetLoops.empty()) {
+            loopsDifference(diffResult, current->interiorLoops, 
+                    below->insetLoops.back());
+        }
         //compensate for errors in the difference by a fudge factor
         loopsOffset(floorLoops, diffResult, LOOP_ERROR_FUDGE_FACTOR);
 
