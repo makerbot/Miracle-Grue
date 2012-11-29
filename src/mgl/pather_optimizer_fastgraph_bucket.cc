@@ -392,6 +392,11 @@ BUCKET::hierarchy_list::iterator HIERARCHY::bestChild(const
     return std::min_element(m_children.begin(), m_children.end(), 
             compare);
 }
+BUCKET::hierarchy_list::iterator HIERARCHY::bestChild(const 
+        LoopHierarchyStrictComparator& compare) {
+    return std::min_element(m_children.begin(), m_children.end(), 
+            compare);
+}
 
 
 #undef HIERARCHY
