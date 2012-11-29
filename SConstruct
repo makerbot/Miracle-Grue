@@ -137,7 +137,7 @@ default_libs = []
 default_includes = ['submodule/json-cpp/include',
 		    'submodule/EzCppLog', 
 		    'submodule/optionparser/src',
-            '../eigen']
+            'src/eigen']
 
 tools = ['default']
 
