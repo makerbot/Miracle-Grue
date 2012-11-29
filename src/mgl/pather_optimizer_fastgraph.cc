@@ -11,11 +11,16 @@ void pather_optimizer_fastgraph::addPath(const OpenPath& path,
     node_index last = -1;
     Point2Type testPoint = *path.fromStart();
     bucket_list::iterator bucketIter = pickBucket(testPoint);
+    bucket* currentBucketPtr = NULL;
     if(bucketIter == buckets.end()) {
-        throw GraphException("No bucket for path!");
+        //throw GraphException("No bucket for path!");
+        //don't throw, put in hack bucket instead
+        currentBucketPtr = &(unifiedBucketHack.select(testPoint));
+    } else {
+        //find the deepest thing you can
+        currentBucketPtr = &(bucketIter->select(testPoint));
     }
-    //find the deepest thing you can
-    bucket& currentBucket = bucketIter->select(testPoint);
+    bucket& currentBucket = *currentBucketPtr;
     graph_type& currentGraph = currentBucket.m_graph;
     for(OpenPath::const_iterator iter = path.fromStart(); 
             iter != path.end(); 
@@ -56,10 +61,16 @@ void pather_optimizer_fastgraph::addPath(const Loop& loop,
     node_index first = -1;
     Point2Type testPoint = *loop.clockwise();
     bucket_list::iterator bucketIter = pickBucket(testPoint);
+    bucket* currentBucketPtr = NULL;
     if(bucketIter == buckets.end()) {
-        throw GraphException("No bucket for path!");
+        //throw GraphException("No bucket for path!");
+        //don't throw, put in hack bucket instead
+        currentBucketPtr = &(unifiedBucketHack.select(testPoint));
+    } else {
+        //find the deepest thing you can
+        currentBucketPtr = &(bucketIter->select(testPoint));
     }
-    bucket& currentBucket = bucketIter->select(testPoint);
+    bucket& currentBucket = *currentBucketPtr;
     graph_type& currentGraph = currentBucket.m_graph;
     //bucket::LoopHierarchy& currentLoops = 
             currentBucket.m_hierarchy.insert(loop, label);
@@ -152,9 +163,12 @@ void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
     } else {
         iter->insertBoundary(loop);
     }
+    unifiedBucketHack.insertNoCross(loop);
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
     buckets.clear();
+    bucket emptyBucket;
+    unifiedBucketHack.swap(emptyBucket);
 }
 void pather_optimizer_fastgraph::clearPaths() {
     for(bucket_list::iterator iter = buckets.begin(); 
@@ -162,6 +176,7 @@ void pather_optimizer_fastgraph::clearPaths() {
             ++iter) {
         iter->m_graph.clear();
     }
+    unifiedBucketHack.m_graph.clear();
 }
 pather_optimizer_fastgraph::entry_iterator& 
         pather_optimizer_fastgraph::entry_iterator::operator ++() {

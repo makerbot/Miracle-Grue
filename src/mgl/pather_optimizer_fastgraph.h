@@ -326,6 +326,7 @@ FASTGRAPH_PRIVATE:
         Loop m_loop;
         LoopHierarchy m_hierarchy;
     private:
+        void buildNoCross();
         void insertNoCross(const Segment2Type& line);
     };
     
@@ -581,6 +582,10 @@ FASTGRAPH_PRIVATE:
     const GrueConfig& grueCfg;
     
     bucket_list buckets;
+    /**
+     @brief hack bucket to contain things that not fall into valid buckets
+     */
+    bucket unifiedBucketHack;
     Point2Type historyPoint;
     
 };
