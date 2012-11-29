@@ -132,7 +132,38 @@ void pather_optimizer_fastgraph::addBoundary(const OpenPath&) {
 //    }
 }
 void pather_optimizer_fastgraph::addBoundary(const Loop& loop) {
-    unifiedBucketHack.insertBoundary(loop);
+    bucket_list::iterator iter = buckets.end();
+    Point2Type testPoint = *loop.clockwise();
+    for(bucket_list::iterator bucketIter = buckets.begin(); 
+            bucketIter != buckets.end(); 
+            ++bucketIter) {
+        if(bucketIter->contains(testPoint)) {
+            iter = bucketIter;
+            break;
+        }
+    }
+    if(iter == buckets.end()) {
+        bucket createdBucket(loop);
+        std::list<bucket_list::iterator> thingsToMove;
+        for(bucket_list::iterator bucketIter = buckets.begin(); 
+                bucketIter != buckets.end(); 
+                ++bucketIter) {
+            if(createdBucket.contains(bucketIter->m_testPoint))
+                thingsToMove.push_back(bucketIter);
+        }
+        while(!thingsToMove.empty()) {
+            createdBucket.insertNoCross(thingsToMove.front()->m_loop);
+            createdBucket.m_children.splice(
+                    createdBucket.m_children.end(), 
+                    buckets, thingsToMove.front());
+            thingsToMove.pop_front();
+        }
+        buckets.push_back(bucket());
+        buckets.back().swap(createdBucket);
+    } else {
+        iter->insertBoundary(loop);
+    }
+    unifiedBucketHack.insertNoCross(loop);
 }
 void pather_optimizer_fastgraph::clearBoundaries() {
     buckets.clear();
