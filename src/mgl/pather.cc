@@ -130,6 +130,15 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		
 		optimizer->addBoundaries(layerRegions->outlines);	
         
+        bool hasInfill = grueCfg.get_doInfills() && 
+                grueCfg.get_infillDensity() > 0;
+        bool hasSolidLayers = grueCfg.get_roofLayerCount() > 0 || 
+                grueCfg.get_floorLayerCount() > 0;
+        
+        if(!hasInfill && !hasSolidLayers) {
+            optimizer->addBoundaries(layerRegions->interiorLoops);
+        }
+        
 		if(grueCfg.get_doInsets()) {
             int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
             int shellSequence = 0;
