@@ -95,6 +95,14 @@ string pathCheck(const Json::Value &value, const char *name) {
     return result;
 }
 
+string stringCheck(const Json::Value &value, const char *name,
+                 const string defaultval) {
+    if (value.isNull())
+        return defaultval;
+    else
+        return stringCheck(value, name);
+}
+
 string stringCheck(const Json::Value &value, const char *name) {
     if (value.isNull()) {
         stringstream ss;
@@ -187,10 +195,13 @@ GrueConfig::GrueConfig()
         doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
         supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
         rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
-        useEaxis(INVALID_BOOL), scalingFactor(INVALID_BOOL), 
+        useEaxis(INVALID_BOOL), fanCommand(""),
+        commentOpen(""), commentClose(""),
+        scalingFactor(INVALID_BOOL), 
         startingX(INVALID_SCALAR), startingY(INVALID_SCALAR), 
         startingZ(INVALID_SCALAR), startingA(INVALID_SCALAR), 
-        startingB(INVALID_SCALAR), startingFeed(INVALID_SCALAR){}
+        startingB(INVALID_SCALAR), startingFeed(INVALID_SCALAR),
+        centerX(INVALID_SCALAR), centerY(INVALID_SCALAR) {}
 void GrueConfig::loadFromFile(const Configuration& config) {
     loadSlicingParams(config);
     doRaft = boolCheck(config["doRaft"], "doRaft");
@@ -273,6 +284,8 @@ void GrueConfig::loadGantryParams(const Configuration& config) {
     startingA = 0;
     startingB = 0;
     startingFeed = 0;
+    centerX = (doubleCheck(config["centerX"], "centerX", 0));
+    centerY = (doubleCheck(config["centerX"], "centerX", 0));
 }
 void GrueConfig::loadGcodeParams(const Configuration& config) {
     defaultExtruder = uintCheck(config["defaultExtruder"],
@@ -306,6 +319,12 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
             "minLayerDuration", 0);
     useEaxis = (boolCheck(config["useEAxis"],
             "useEAxis", false));
+    commentOpen = (stringCheck(config["commentOpen"],
+                               "commentOpen", "("));
+    commentOpen = (stringCheck(config["commentClose"],
+                               "commentClose", ")"));
+    commentOpen = (stringCheck(config["fanCommand"],
+                               "fanCommand", "M126 T0"));
 }
 void GrueConfig::loadRaftParams(const Configuration& config) {
     raftLayers = uintCheck(config["raftLayers"],
