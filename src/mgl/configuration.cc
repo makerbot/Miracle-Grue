@@ -321,10 +321,10 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
             "useEAxis", false));
     commentOpen = (stringCheck(config["commentOpen"],
                                "commentOpen", "("));
-    commentOpen = (stringCheck(config["commentClose"],
-                               "commentClose", ")"));
-    commentOpen = (stringCheck(config["fanCommand"],
-                               "fanCommand", "M126 T0"));
+    commentClose = (stringCheck(config["commentClose"],
+                                "commentClose", ")"));
+    fanCommand = (stringCheck(config["fanCommand"],
+                              "fanCommand", "M126 T0"));
 }
 void GrueConfig::loadRaftParams(const Configuration& config) {
     raftLayers = uintCheck(config["raftLayers"],

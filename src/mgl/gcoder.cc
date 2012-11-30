@@ -97,7 +97,9 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName) {
             throw GcoderException((string("Unable to open gcode header file [") +
                 header_file + "]").c_str());
 
-        gout << "(header [" << header_file << "] begin)" << endl;
+        gout << grueCfg.get_commentOpen()
+             << "header [" << header_file << "] begin"
+             << grueCfg.get_commentClose() << endl;
 
         while (header_in.good()) {
             char buf[1024];
@@ -110,7 +112,9 @@ void GCoder::writeStartDotGCode(std::ostream &gout, const char* sourceName) {
             throw GcoderException((string("Error reading gcode header file [") +
                 header_file + "]").c_str());
 
-        gout << "(header [" << header_file << "] end)" << endl << endl;
+        gout << grueCfg.get_commentOpen()
+             << "header [" << header_file << "] end"
+             << grueCfg.get_commentClose() <<endl << endl;
     }
 }
 
@@ -125,7 +129,9 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
             throw GcoderException((string("Unable to open footer file [") +
                 footer_file + "]").c_str());
 
-        ss << "(footer [" << footer_file << "] begin)" << endl;
+        ss << grueCfg.get_commentOpen()
+           << "footer [" << footer_file << "] begin"
+           << grueCfg.get_commentClose() << endl;
 
         while (footer_in.good()) {
             char buf[1024];
@@ -138,7 +144,9 @@ void GCoder::writeEndDotGCode(std::ostream &ss) const {
             throw GcoderException((string("Error reading footer file [") +
                 footer_file + "]").c_str());
 
-        ss << "(footer [" << footer_file << "] end)" << endl << endl;
+        ss << grueCfg.get_commentOpen()
+           << "footer [" << footer_file << "] end"
+           << grueCfg.get_commentClose() << endl << endl;
     }
 }
 
@@ -148,9 +156,10 @@ void GCoder::writeProgressPercent(std::ostream& ss, unsigned int current,
         return;
     unsigned int curPercent = (current--*100)/total;
     if(curPercent != progressPercent) {
-        ss << "M73 P" << curPercent << " (progress (" << 
-                curPercent << "%): " << current 
-                << "/" << total << ")" << std::endl;
+        ss << "M73 P" << curPercent << " " << grueCfg.get_commentOpen()
+           << "progress (" << curPercent << "%): " << current 
+                << "/" << total << 
+            grueCfg.get_commentClose() << std::endl;
         progressPercent = curPercent;
     }
 }
@@ -276,26 +285,27 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     strusion, grueCfg.get_startingX(), 
                     grueCfg.get_startingY(), currentZ, 
                     strusion.feedrate, 
-                    currentH, currentW, "(Anchor Start)");
+                    currentH, currentW, "Anchor Start");
             gantry.squirt(gout, struder, 
                     strusion);
             gantry.g1(gout, struder, 
                     strusion, grueCfg.get_startingX(), 
                     grueCfg.get_startingY(), currentZ, 
                     strusion.feedrate, 
-                    currentH, currentW, "(Anchor Start)");
+                    currentH, currentW, "Anchor Start");
             gantry.g1(gout, struder, 
                     strusion, startPoint.x, startPoint.y, currentZ, 
                     strusion.feedrate, 
-                    currentH, currentW, "(Anchor End)");
+                    currentH, currentW, "Anchor End");
         }
         writeSlice(gout, layerpaths, it, layerSequence);
     }
     if(grueCfg.get_doFanCommand()) {
         //print command to disable fan
-        gout << "M127 T" << 
-                grueCfg.get_defaultExtruder() 
-                << " (Turn off the fan)" << endl;
+        gout << "M127 T" << grueCfg.get_defaultExtruder() 
+             << " " << grueCfg.get_commentOpen()
+             << "Turn off the fan"
+             << grueCfg.get_commentClose() << endl;
     }
     writeEndDotGCode(gout);
 }
@@ -325,19 +335,32 @@ void GCoder::writeSlice(std::ostream& ss,
         size_t layerSequence) {
     LayerPaths::Layer& currentLayer = *layerIter;
     unsigned int extruderCount = currentLayer.extruders.size();
-    ss << "(Slice " << layerSequence << ", " << extruderCount <<
-            " " << plural("Extruder", extruderCount) << ") " << endl;
-    ss << "(Layer Height: \t" << layerIter->layerHeight << ")" << endl;
-    ss << "(Layer Width: \t" << layerIter->layerW << ")" << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "Slice " << layerSequence << ", " << extruderCount
+       << " " << plural("Extruder", extruderCount)
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "Layer Height: \t" << layerIter->layerHeight
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "Layer Width: \t" << layerIter->layerW
+       << grueCfg.get_commentClose() << endl;
+
     if (grueCfg.get_doPrintLayerMessages()) {
         //print layer message to printer screen if config enabled
-        ss << "M70 P20 (Layer: " << layerSequence << ")" << endl;
+        ss << "M70 P20 " << grueCfg.get_commentOpen()
+           << "Layer: " << layerSequence 
+           << grueCfg.get_commentClose() << endl;
     }
     if (grueCfg.get_doFanCommand()&& layerSequence == grueCfg.get_fanLayer()) {
         //print command to enable fan
-        ss << "M126 T" << 
-                grueCfg.get_defaultExtruder()
-                << " (Turn on the fan)" << endl;
+        ss << "M126 T" << grueCfg.get_defaultExtruder()
+           << " " << grueCfg.get_commentOpen()
+           << "Turn on the fan"
+           << grueCfg.get_commentClose() << endl;
     }
     //iterate over all extruders invoked in this layer
     for (LayerPaths::Layer::const_extruder_iterator it =
@@ -368,8 +391,9 @@ void GCoder::writeSlice(std::ostream& ss,
             if(duration < grueCfg.get_minLayerDuration()) {
                 feedScale = duration / grueCfg.get_minLayerDuration();
                 int speedDecrease(feedScale * 100);
-                ss << "(Slowing to " << speedDecrease << "% of nominal speeds)" 
-                        << std::endl;
+                ss << grueCfg.get_commentOpen()
+                   << "Slowing to " << speedDecrease << "% of nominal speeds" 
+                   << grueCfg.get_commentClose() << std::endl;
             }
         }
         writePaths(ss, currentZ, currentH, currentW, layerSequence,
@@ -401,26 +425,55 @@ Scalar Extruder::feedCrossSectionArea() const {
 void GCoder::writeGCodeConfig(std::ostream &ss, const char* title = "unknown source") const {
     std::string indent = "* ";
     ss << endl;
-    ss << "(Makerbot Industries)" << endl;
-    ss << "(This file contains digital fabrication directives in gcode format)"
-            << endl;
-    ss << "(For your 3D printer)" << endl;
-    ss << "(http://wiki.makerbot.com/gcode)" << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "Makerbot Industries"
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "This file contains digital fabrication directives in gcode format"
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "For your 3D printer"
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << "http://wiki.makerbot.com/gcode"
+       << grueCfg.get_commentClose() << endl;
 
     MyComputer hal9000;
 
-    ss << "(" << indent << "Generated by " <<
-            getMiracleGrueProgramName() << " " <<
-            getMiracleGrueVersionStr() << ")" << endl;
-    ss << "(" << indent << hal9000.clock.now() << ")" << endl;
-    ss << "(" << indent << title << ")" << endl;
+    ss << grueCfg.get_commentOpen()
+       << indent << "Generated by " << getMiracleGrueProgramName()
+       << " " << getMiracleGrueVersionStr()
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << indent << hal9000.clock.now()
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << indent << title
+       << grueCfg.get_commentClose() << endl;
 
     std::string plurial = grueCfg.get_extruders().size() ? "" : "s";
-    ss << "(" << indent << grueCfg.get_extruders().size() << " extruder" << plurial << ")" << endl;
 
-    ss << "(" << indent << "Extrude infills: " << grueCfg.get_doInfills() << ")" << endl;
-    ss << "(" << indent << "Extrude insets: " << grueCfg.get_doInsets() << ")" << endl;
-    ss << "(" << indent << "Extrude outlines: " << grueCfg.get_doOutlines() << ")" << endl;
+    ss << grueCfg.get_commentOpen()
+       << indent << grueCfg.get_extruders().size() << " extruder" << plurial
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << indent << "Extrude infills: " << grueCfg.get_doInfills()
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << indent << "Extrude insets: " << grueCfg.get_doInsets()
+       << grueCfg.get_commentClose() << endl;
+
+    ss << grueCfg.get_commentOpen()
+       << indent << "Extrude outlines: " << grueCfg.get_doOutlines()
+       << grueCfg.get_commentClose() << endl;
     ss << endl;
 }
 
