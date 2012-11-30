@@ -77,6 +77,26 @@ unsigned int uintCheck(const Json::Value &value, const char *name,
     }
 }
 
+int intCheck(const Json::Value &value, const char *name) {
+    if (value.isNull()) {
+        stringstream ss;
+        ss << "Missing required unsigned integer field \"" <<
+                name << "\" in configuration file";
+        ConfigException mixup(ss.str().c_str());
+        throw mixup;
+    }
+    return value.asUInt();
+}
+
+int intCheck(const Json::Value &value, const char *name,
+        const int defaultVal) {
+    if (value.isNull()) {
+        return defaultVal;
+    } else {
+        return intCheck(value, name);
+    }
+}
+
 string pathCheck(const Json::Value &value, const char *name,
         const std::string &defaultval) {
     if (value.isNull())
@@ -195,7 +215,7 @@ GrueConfig::GrueConfig()
         doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
         supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
         rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
-        useEaxis(INVALID_BOOL), fanCommand(""),
+        useEaxis(INVALID_BOOL), weightedFanCommand(INVALID_INT),
         commentOpen(""), commentClose(""),
         scalingFactor(INVALID_BOOL), 
         startingX(INVALID_SCALAR), startingY(INVALID_SCALAR), 
@@ -323,8 +343,8 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
                                "commentOpen", "("));
     commentClose = (stringCheck(config["commentClose"],
                                 "commentClose", ")"));
-    fanCommand = (stringCheck(config["fanCommand"],
-                              "fanCommand", "M126 T0"));
+    weightedFanCommand = (intCheck(config["weightedFanCommand"],
+                                   "weightedFanCommand", -1));
 }
 void GrueConfig::loadRaftParams(const Configuration& config) {
     raftLayers = uintCheck(config["raftLayers"],

@@ -147,6 +147,7 @@ public:
 private:
     static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
     static const unsigned int INVALID_UINT = -1;
+    static const unsigned int INVALID_INT = -1;
     static const bool INVALID_BOOL = false;
     
     void loadRaftParams(const Configuration& config);
@@ -226,7 +227,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, useEaxis)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, commentOpen)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, commentClose)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, fanCommand)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(int, weightedFanCommand)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, scalingFactor)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingX)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingY)
