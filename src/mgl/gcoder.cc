@@ -364,7 +364,7 @@ void GCoder::writeSlice(std::ostream& ss,
         if (grueCfg.get_weightedFanCommand() != -1)
             ss << "M106 S" << grueCfg.get_weightedFanCommand();
         else 
-            ss << "M127 T" << grueCfg.get_defaultExtruder();
+            ss << "M126 T" << grueCfg.get_defaultExtruder();
         
         ss << " " << grueCfg.get_commentOpen()
            << "Turn on the fan"
