@@ -263,6 +263,30 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
             it != end; ++it, ++layerSequence) {
         tick();
         //Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
+        if (grueCfg.get_doFanCommand() && 
+                layerSequence == grueCfg.get_fanLayer()) {
+            //print command to enable fan
+            if (grueCfg.get_weightedFanCommand() != -1)
+                gout << "M106 S" << grueCfg.get_weightedFanCommand();
+            else 
+                gout << "M126 T" << grueCfg.get_defaultExtruder();
+
+            gout << " " << grueCfg.get_commentOpen()
+               << "Turn on the fan"
+               << grueCfg.get_commentClose() << endl;
+        }
+        bool hasPaths = false;
+        for(LayerPaths::Layer::const_extruder_iterator exIter = 
+                it->extruders.begin(); 
+                exIter != it->extruders.end(); 
+                ++exIter) {
+            if(!exIter->paths.empty()) {
+                hasPaths = true;
+                break;
+            }
+        }
+        if(!hasPaths)
+            continue;
         if(grueCfg.get_doAnchor() && layerSequence == 0) {
             Extrusion strusion;
             PathLabel slabel(PathLabel::TYP_CONNECTION, PathLabel::OWN_MODEL, 0);
@@ -357,17 +381,6 @@ void GCoder::writeSlice(std::ostream& ss,
         //print layer message to printer screen if config enabled
         ss << "M70 P20 " << grueCfg.get_commentOpen()
            << "Layer: " << layerSequence 
-           << grueCfg.get_commentClose() << endl;
-    }
-    if (grueCfg.get_doFanCommand()&& layerSequence == grueCfg.get_fanLayer()) {
-        //print command to enable fan
-        if (grueCfg.get_weightedFanCommand() != -1)
-            ss << "M106 S" << grueCfg.get_weightedFanCommand();
-        else 
-            ss << "M126 T" << grueCfg.get_defaultExtruder();
-        
-        ss << " " << grueCfg.get_commentOpen()
-           << "Turn on the fan"
            << grueCfg.get_commentClose() << endl;
     }
     //iterate over all extruders invoked in this layer
