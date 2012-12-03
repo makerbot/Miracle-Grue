@@ -85,7 +85,7 @@ int intCheck(const Json::Value &value, const char *name) {
         ConfigException mixup(ss.str().c_str());
         throw mixup;
     }
-    return value.asUInt();
+    return value.asInt();
 }
 
 int intCheck(const Json::Value &value, const char *name,
