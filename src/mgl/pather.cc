@@ -141,6 +141,29 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             optimizer->addBoundaries(layerRegions->interiorLoops);
         }
         
+        const GridRanges& infillRanges = layerRegions->infill;
+
+		const std::vector<Scalar>& values = 
+				!direction ? grid.getXValues() : grid.getYValues();
+		axis_e axis = direction ? X_AXIS : Y_AXIS;
+        
+        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {
+            LoopList outsetSupportLoops;
+            loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
+                    0.01);
+            optimizer->addBoundaries(outsetSupportLoops);
+            
+            const GridRanges& supportRanges = layerRegions->support;
+            OpenPathList supportPaths;
+            grid.gridRangesToOpenPaths(
+                    direction ? supportRanges.xRays : supportRanges.yRays, 
+                    values, 
+                    axis, 
+                    supportPaths);
+            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_SUPPORT, 0));
+        }
+        
 		if(grueCfg.get_doInsets()) {
             int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
             for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
@@ -166,16 +189,9 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             }
         }
 
-		const GridRanges& infillRanges = layerRegions->infill;
-		const GridRanges& supportRanges = layerRegions->support;
-
-		const std::vector<Scalar>& values = 
-				!direction ? grid.getXValues() : grid.getYValues();
-		axis_e axis = direction ? X_AXIS : Y_AXIS;
 		
 		
 		OpenPathList infillPaths;
-		OpenPathList supportPaths;
 		grid.gridRangesToOpenPaths(
 				direction ? infillRanges.xRays : infillRanges.yRays,  
 				values, 
@@ -183,47 +199,18 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				infillPaths);
 		
 		std::list<LabeledOpenPath> preoptimized;
-		std::list<LabeledOpenPath> presupport;
-		
-		grid.gridRangesToOpenPaths(
-				direction ? supportRanges.xRays : supportRanges.yRays, 
-				values, 
-				axis, 
-				supportPaths);
 		
         if(grueCfg.get_doInfills()) {
             optimizer->addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
                     PathLabel::OWN_MODEL, 
                     LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
         }
-		
-		optimizer->optimize(preoptimized);
-		
-		optimizer->clearBoundaries();
-		optimizer->clearPaths();
-		
-        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {
-            LoopList outsetSupportLoops;
-            loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
-                    0.01);
-            optimizer->addBoundaries(outsetSupportLoops);
-
-            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
-                    PathLabel::OWN_SUPPORT, 0));
-
-
-            optimizer->optimize(presupport); 
-        }
+        
+        optimizer->optimize(preoptimized);
 		
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
                 preoptimized.begin(), preoptimized.end());
-        extruderlayer.paths.insert(extruderlayer.paths.end(), 
-                presupport.begin(), presupport.end());
-		//directionalCoarsenessCleanup(extruderlayer.paths);
-
-//		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
-//				layerRegions->layerMeasureId) << endl;
-        }catch (const std::exception& our) {
+        } catch (const std::exception& our) {
             std::cout << "Error " << our.what() << " on layer " << 
                     currentSlice << std::endl;
         }
