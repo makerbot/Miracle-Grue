@@ -26,6 +26,7 @@
 #include "meshy.h"
 #include "shrinky.h"
 #include "ScadDebugFile.h"
+#include "basic_local_rtree_impl.h"
 
 
 
