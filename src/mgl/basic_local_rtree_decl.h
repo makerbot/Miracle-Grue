@@ -17,6 +17,12 @@ namespace mgl {
 
 static const size_t LRTREE_DEFAULT_BRANCH = 5;
 
+class LocalTreeException : public Exception {
+public:
+    template <typename T>
+    LocalTreeException(const T& arg) : Exception(arg) {}
+};
+
 /*
  basic_rtree implements the interface for a spacial index.
  A spacial index is a class that contains two-dimensional objects and 
@@ -156,6 +162,8 @@ private:
         const bound_value& data() const;
         ///@return this node's index in its parent
         size_t index() const;
+        ///@return above's index or default child ptr if none
+        size_t above() const;
         /**
          @brief Causes this node to adopt the data and children of @a surrogate
          @param surrogate the node from which livelihood is stolen
@@ -167,12 +175,31 @@ private:
          its identification
          */
         void adoptFrom(node& surrogate);
+        /**
+         @brief select best node for inserting @a child
+         @param child
+         @return index of best leaf to receive child, or 
+         own index if leaf.
+         */
+        size_t selectCandidate(node& child);
+        /**
+         @brief Directly insert @a child under this node, used when 
+         we found where to put child, and it is here
+         @param child any node
+         */
+        void insert(node& child);
+        /**
+         @brief when this node is overloaded, it can offload some work 
+         to the idle @a sibling
+         @param sibling node that will receive part of this one's children
+         */
+        void shareWith(node& sibling);
     private:
         
         void clearChildren();
-        
         basic_local_rtree* m_parent;
         size_t m_index;
+        size_t m_above;
         data_const_iterator m_data;
         size_t m_children[CAPACITY];
         size_t m_childrenCount;
@@ -180,6 +207,9 @@ private:
     };
     
     node& acquireNode();
+    node& dereferenceNode(size_t index);
+    const node& dereferenceNode(size_t index) const;
+    void insertPrivate(node& child);
     
     typedef std::vector<node> node_container;
     typedef std::vector<size_t> node_vacancy_container;
