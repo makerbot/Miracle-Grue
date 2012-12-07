@@ -284,6 +284,11 @@ private:
      @param child_index index of thing you're inserting
      */
     void insertPrivate(size_t destination_index, size_t child_index);
+    /**
+     @brief internal recursive implementation of search
+     */
+    template <typename COLLECTION, typename FILTER>
+    void searchPrivate(COLLECTION& result, const FILTER& filt, size_t base) const;
     
     typedef std::vector<node> node_container;
     typedef std::vector<size_t> node_vacancy_container;

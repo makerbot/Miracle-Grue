@@ -66,20 +66,8 @@ void BLRT_TYPE::search(COLLECTION& result, const FILTER& filt) const {
     std::list<size_t> work_queue;
     if(m_root == DEFAULT_CHILD_PTR()) 
         return;
+    searchPrivate(result, filt, m_root);
     work_queue.push_back(m_root);
-    while(!work_queue.empty()) {
-        const node& curNode = dereferenceNode(work_queue.front());
-        work_queue.pop_front();
-        if(filt.filter(curNode.bound())) {
-            if(curNode.hasData())
-                result.push_back(curNode.data().second);
-            for(typename node::const_iterator childIter = curNode.begin(); 
-                    childIter != curNode.end(); 
-                    ++childIter) {
-                work_queue.push_front(childIter->index());
-            }
-        }
-    }
 }
 BLRT_TEMPLATE
 void BLRT_TYPE::swap(basic_local_rtree& other) {
@@ -164,6 +152,23 @@ void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index) {
         } else {
             //add a new sibling to the parent
             m_nodes[above_index].insert(m_nodes[sibling_index]);
+        }
+    }
+}
+BLRT_TEMPLATE
+template <typename COLLECTION, typename FILTER>
+void BLRT_TYPE::searchPrivate(COLLECTION& result, const FILTER& filt, 
+        size_t base) const {
+    if(m_root == DEFAULT_CHILD_PTR()) 
+        return;
+    const node& curNode = dereferenceNode(base);
+    if(filt.filter(curNode.bound())) {
+        if(curNode.hasData())
+            result.push_back(curNode.data().second);
+        for(typename node::const_iterator childIter = curNode.begin(); 
+                childIter != curNode.end(); 
+                ++childIter) {
+            searchPrivate(result, filt, childIter->index());
         }
     }
 }
@@ -287,7 +292,24 @@ void BLRT_TYPE::node::readjustBounds() {
 BLRT_TEMPLATE
 void BLRT_TYPE::node::shareWith(node& sibling) {
     std::vector<size_t> best, worst;
-    best.push_back(m_children[--m_childrenCount]);
+    //find the center;
+    Point2Type center;
+    for(iterator it = begin(); it != end(); ++it) {
+        center += it->bound().center();
+    }
+    //find most distant object from center
+    size_t distant = 0;
+    Scalar distance = std::numeric_limits<Scalar>::min();
+    for(size_t i = 0; i < m_childrenCount; ++i) {
+        node& n = m_parent->dereferenceNode(m_children[i]);
+        Scalar d = (center - n.bound().center()).squaredMagnitude();
+        if(d > distance) {
+            distant = i;
+            distance = d;
+        }
+    }
+    best.push_back(m_children[distant]);
+    m_children[distant] = m_children[--m_childrenCount];
     while(m_childrenCount != 0) {
         if(best.size() <= worst.size()) {
             Scalar minGrowth = std::numeric_limits<Scalar>::max();
