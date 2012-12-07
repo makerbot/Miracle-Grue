@@ -62,7 +62,8 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
         limits.inflate(raftOutsetOverhead, raftOutsetOverhead, 0);
 	}
     if(grueCfg.get_doSupport()) {
-        Scalar supportOverhead = grueCfg.get_supportMargin() * 4;
+        Scalar supportOverhead = grueCfg.get_supportMargin() * 4 + 
+                0.1 * regionlist.size();
         limits.inflate(supportOverhead, supportOverhead, 0);
     }
 
@@ -439,10 +440,9 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	for(RegionList::const_iterator iter = regionsBegin; 
 			iter != regionsEnd; 
 			++iter) {
-		LoopList currentMargins;
-		loopsOffset(currentMargins, iter->outlines, 
+        marginsList.push_back(LoopList());
+		loopsOffset(marginsList.back(), iter->outlines, 
 				grueCfg.get_supportMargin());
-		marginsList.push_back(currentMargins);
 	}
 	int layerskip = 1;
 	RegionList::iterator above = regionsEnd;
@@ -462,24 +462,41 @@ void Regioner::support(RegionList::iterator regionsBegin,
         
         //offset aboveMargins by a fudge factor
         //to compensate for error when we subtracted them from layer above
-        LoopList aboveMarginsOutset;
-        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
+//        LoopList aboveMarginsOutset;
+//        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
         
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support = aboveMarginsOutset;
+			//support = above->outlines;
+            loopsOffset(support, above->outlines, LOOP_ERROR_FUDGE_FACTOR);
+            loopsDifference(support, *currentMargins);
 		} else {
 			//start with a projection of support from the layer above
-			support = above->supportLoops;
+			//support = above->supportLoops;
+            loopsOffset(support, above->supportLoops, grueCfg.get_supportMargin());
+            smoothCollection(support, grueCfg.get_preCoarseness(), grueCfg.get_directionWeight());
+            LoopList aboveOutlines, currentOutlines;
+            loopsOffset(aboveOutlines, above->outlines, grueCfg.get_supportMargin());
+            loopsDifference(aboveOutlines, *currentMargins);
+            loopsOffset(currentOutlines, current->outlines, 2 * grueCfg.get_supportMargin());
+            loopsDifference(support, currentOutlines);
+            loopsOffset(support, support, -grueCfg.get_supportMargin()*0.9);
 			//add the outlines of layer above
-			loopsUnion(support, aboveMarginsOutset);
+			loopsUnion(support, aboveOutlines);
 		}
+        std::cerr << "Loops: " << support.size() << std::endl;
+        size_t count = 0;
+        for(LoopList::const_iterator iter = support.begin(); 
+                iter != support.end();
+                ++iter) {
+            count += iter->size();
+        }
+        std::cerr << "Data: " << count << std::endl;
         tick();
 		//subtract current outlines from the support loops to keep support
 		//from overlapping the object
 
 		//use margins computed up front
-		loopsDifference(support, *currentMargins);
 
 		--above;
 		--aboveMargins;
