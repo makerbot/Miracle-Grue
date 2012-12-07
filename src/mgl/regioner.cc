@@ -437,6 +437,12 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		LayerMeasure& /*layermeasure*/) {
 	std::list<LoopList> marginsList;
 	
+    
+    static const Scalar SUPPORT_CHOCOLATE_FACTOR = 1.0; //support stays this many mm away from model
+    static const Scalar SUPPORT_CARAMEL_FACTOR = 0.2;   //support regions less than this many mm get dropped
+    static const Scalar SUPPORT_COCO_FACTOR = 1.5;      //support extends beyond edges by this much
+    static const Scalar SUPPORT_BROWNIE_FACTOR = 0.02;  //support grows this many mm per layer
+    
 	for(RegionList::const_iterator iter = regionsBegin; 
 			iter != regionsEnd; 
 			++iter) {
@@ -468,19 +474,22 @@ void Regioner::support(RegionList::iterator regionsBegin,
 		if (above->supportLoops.empty()) {
 			//beginning of new support
 			//support = above->outlines;
-            loopsOffset(support, above->outlines, LOOP_ERROR_FUDGE_FACTOR);
+            loopsOffset(support, above->outlines, SUPPORT_COCO_FACTOR);
             loopsDifference(support, *currentMargins);
 		} else {
 			//start with a projection of support from the layer above
 			//support = above->supportLoops;
-            loopsOffset(support, above->supportLoops, grueCfg.get_supportMargin());
+            loopsOffset(support, above->supportLoops, -SUPPORT_CARAMEL_FACTOR);
+            loopsOffset(support, support, SUPPORT_CARAMEL_FACTOR + 
+                    SUPPORT_CHOCOLATE_FACTOR);
             smoothCollection(support, grueCfg.get_preCoarseness(), grueCfg.get_directionWeight());
-            LoopList aboveOutlines, currentOutlines;
-            loopsOffset(aboveOutlines, above->outlines, grueCfg.get_supportMargin());
-            loopsDifference(aboveOutlines, *currentMargins);
-            loopsOffset(currentOutlines, current->outlines, 2 * grueCfg.get_supportMargin());
-            loopsDifference(support, currentOutlines);
-            loopsOffset(support, support, -grueCfg.get_supportMargin()*0.9);
+            LoopList aboveOutlines;
+            loopsOffset(aboveOutlines, above->outlines, SUPPORT_COCO_FACTOR);
+            loopsDifference(aboveOutlines, above->outlines, *currentMargins);
+            loopsDifference(support, current->outlines);
+            if(SUPPORT_CHOCOLATE_FACTOR > SUPPORT_BROWNIE_FACTOR)
+                loopsOffset(support, support, 
+                        SUPPORT_BROWNIE_FACTOR - SUPPORT_CHOCOLATE_FACTOR);
 			//add the outlines of layer above
 			loopsUnion(support, aboveOutlines);
 		}
