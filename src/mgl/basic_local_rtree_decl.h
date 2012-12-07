@@ -8,10 +8,11 @@
 #ifndef MGL_BASIC_LOCAL_RTREE_DECL_H
 #define	MGL_BASIC_LOCAL_RTREE_DECL_H
 
-#include "spacial_data.h"
 #include <utility>
 #include <list>
 #include <vector>
+#include <iostream>
+#include "spacial_data.h"
 
 namespace mgl {
 
@@ -121,6 +122,9 @@ public:
     const_iterator begin() const { return const_iterator(); }
     /*!Not implemented, do not use!*/
     const_iterator end() const { return const_iterator(); }
+    
+    void repr_svg(std::ostream& out) const;
+    void repr_svg(std::ostream& out, size_t recursionLevel, size_t index) const;
 private:
     
     static const size_t CAPACITY = C;
@@ -136,6 +140,37 @@ private:
      */
     class node {
     public:
+        template <typename BASE>
+        class basic_iterator {
+        public:
+            friend class node;
+            basic_iterator() : m_owner(NULL), m_index(0) {}
+            basic_iterator& operator ++() { ++m_index; return *this; } //pre
+            basic_iterator operator ++(int) { //post
+                basic_iterator clone = *this; ++*this; return clone; 
+            }
+            BASE& operator *() { 
+                return m_owner->m_parent->
+                        dereferenceNode(m_owner->m_children[m_index]); 
+            }
+            BASE* operator ->() { return &**this; }
+            bool operator ==(const basic_iterator& other) const {
+                return m_owner == other.m_owner && 
+                        m_index == other.m_index;
+            }
+            bool operator !=(const basic_iterator& other) const
+                    { return !(*this==other); }
+        private:
+            basic_iterator(BASE* owner, size_t index) 
+                    : m_owner(owner), m_index(index) {}
+            
+            BASE* m_owner;
+            size_t m_index;
+        };
+        
+        typedef basic_iterator<node> iterator;
+        typedef basic_iterator<const node> const_iterator;
+        
         /**
          @brief construct a node owned by @a parent with @a index
          @param parent
@@ -158,8 +193,12 @@ private:
         bool hasChildren() const;
         ///@return true if this node has a reason to continue existing
         bool hasPurpose() const;
+        ///@return true if full and need splitting, else false
+        bool isFull() const;
         ///@return data element referenced by this node
         const bound_value& data() const;
+        ///@return this node's bounding box
+        const AABBox& bound() const;
         ///@return this node's index in its parent
         size_t index() const;
         ///@return above's index or default child ptr if none
@@ -178,7 +217,7 @@ private:
         /**
          @brief select best node for inserting @a child
          @param child
-         @return index of best leaf to receive child, or 
+         @return index of child node to receive child, or 
          own index if leaf.
          */
         size_t selectCandidate(node& child);
@@ -189,11 +228,25 @@ private:
          */
         void insert(node& child);
         /**
+         @brief adjust my above's bounds to include mine, recurse upward
+         */
+        void readjustBounds();
+        /**
          @brief when this node is overloaded, it can offload some work 
          to the idle @a sibling
          @param sibling node that will receive part of this one's children
          */
         void shareWith(node& sibling);
+        
+        ///@brief iterate over the children
+        iterator begin() { return iterator(this, 0); }
+        ///@brief iterate over the children
+        iterator end() { return iterator(this, m_childrenCount); }
+        ///@brief iterate over the children
+        const_iterator begin() const { return const_iterator(this, 0); }
+        ///@brief iterate over the children
+        const_iterator end() const { return const_iterator(this, m_childrenCount); }
+        
     private:
         
         void clearChildren();
@@ -206,10 +259,31 @@ private:
         AABBox m_bounds;
     };
     
+    /**
+     @brief Get a clean unused node. INVALIDATES EXISTING node&
+     @return A newly created node reference or an unoccupied old node
+     */
     node& acquireNode();
+    /**
+     @brief Get the node at @a index
+     @param index
+     @return node at index
+     */
     node& dereferenceNode(size_t index);
+    /**
+     @brief Get the node at @a index
+     @param index
+     @return node at index
+     */
     const node& dereferenceNode(size_t index) const;
-    void insertPrivate(node& child);
+    /**
+     @brief perform all necessary steps for insertion, including 
+     recursion and splitting
+     @param destination_index Start with m_root, function will recurse with 
+     the correct child and handle all other things
+     @param child_index index of thing you're inserting
+     */
+    void insertPrivate(size_t destination_index, size_t child_index);
     
     typedef std::vector<node> node_container;
     typedef std::vector<size_t> node_vacancy_container;

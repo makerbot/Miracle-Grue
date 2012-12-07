@@ -28,8 +28,9 @@ private:
 //    CPPUNIT_TEST( testQtreeFilter );
 //    CPPUNIT_TEST( testQtreeEmpty );
 //    CPPUNIT_TEST( testQtreeStress );
-    CPPUNIT_TEST( testPerformance );
+//    CPPUNIT_TEST( testPerformance );
 //    CPPUNIT_TEST( testQPerformance );
+    CPPUNIT_TEST( testLPerformance );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -47,6 +48,7 @@ protected:
     void testQtreeStress();
     void testPerformance(); //boxlist, rtree
     void testQPerformance();
+    void testLPerformance();
     
 };
 
