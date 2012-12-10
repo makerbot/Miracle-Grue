@@ -123,6 +123,8 @@ public:
     /*!Not implemented, do not use!*/
     const_iterator end() const { return const_iterator(); }
     
+    void repr(std::ostream& out) const;
+    void repr(std::ostream& out, size_t recursionLevel, size_t index) const;
     void repr_svg(std::ostream& out) const;
     void repr_svg(std::ostream& out, size_t recursionLevel, size_t index) const;
 private:
@@ -171,6 +173,8 @@ private:
         typedef basic_iterator<node> iterator;
         typedef basic_iterator<const node> const_iterator;
         
+        static const size_t DEFAULT_HEIGHT = -1;
+        
         /**
          @brief construct a node owned by @a parent with @a index
          @param parent
@@ -203,6 +207,8 @@ private:
         size_t index() const;
         ///@return above's index or default child ptr if none
         size_t above() const;
+        ///@return this node's height, 0 for leaves, +1 for every layer above
+        size_t height() const;
         /**
          @brief Causes this node to adopt the data and children of @a surrogate
          @param surrogate the node from which livelihood is stolen
@@ -250,10 +256,17 @@ private:
     private:
         
         void clearChildren();
+        ///@brief pointer to the basic_local_rtree that owns this node
         basic_local_rtree* m_parent;
+        ///@brief this node's index in its parent basic_local_rtree
         size_t m_index;
+        ///@brief the index of this node of which this is a child, or invalid
         size_t m_above;
+        ///@brief the height of this node. 0 for leaves
+        size_t m_height;
+        ///@data element if leaf, otherwise end
         data_const_iterator m_data;
+        
         size_t m_children[CAPACITY];
         size_t m_childrenCount;
         AABBox m_bounds;
@@ -282,8 +295,11 @@ private:
      @param destination_index Start with m_root, function will recurse with 
      the correct child and handle all other things
      @param child_index index of thing you're inserting
+     @param can_reinsert allow reinsertions. True for actual insertion calls, 
+     false for reinsertion calls to prevent infinite reinsertions
      */
-    void insertPrivate(size_t destination_index, size_t child_index);
+    void insertPrivate(size_t destination_index, size_t child_index, 
+            bool can_reinsert = true);
     /**
      @brief internal recursive implementation of search
      */

@@ -485,8 +485,8 @@ void SpacialTestCase::testLPerformance() {
     //basic_boxlist<Segment2Type> boxlist;
     vector testset;
     
-    static const size_t SET_SIZE = TEST_SET_SIZE;
-    static const size_t TEST_SIZE = TEST_TEST_SIZE;
+    static const size_t SET_SIZE = 40;
+    static const size_t TEST_SIZE = 1;
     Scalar range = 200;
     Scalar range2 = 20;
     
@@ -511,8 +511,10 @@ void SpacialTestCase::testLPerformance() {
     std::cout << "Building Localized Rtree" << std::endl;
     for(vector::const_iterator iter = dataset.begin();
             iter != dataset.end(); 
-            ++iter)
+            ++iter) {
         rtree.insert(*iter);
+        rtree.repr(std::cout);
+    }
     std::cout << clock() - start << std::endl;
     start = clock();
 //    std::cout << "Testing Boxlist" << std::endl;
@@ -533,10 +535,10 @@ void SpacialTestCase::testLPerformance() {
     }
     std::cout << clock() - start << std::endl;
     start = clock();
-//    std::cout << "Writing svg to cerr" << std::endl;
-//    rtree.repr_svg(std::cerr);
-//    std::cout << "Writing tree to cout" << std::endl;
-//    rtree.repr(std::cout);
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
+    std::cout << "Writing tree to cout" << std::endl;
+    rtree.repr(std::cout);
 }
 
 

@@ -77,6 +77,28 @@ void BLRT_TYPE::swap(basic_local_rtree& other) {
     std::swap(m_root, other.m_root);
 }
 BLRT_TEMPLATE
+void BLRT_TYPE::repr(std::ostream& out) const {
+    if(m_root != DEFAULT_CHILD_PTR())
+        repr(out, 0, m_root);
+}
+BLRT_TEMPLATE
+void BLRT_TYPE::repr(std::ostream& out, size_t recursionLevel, 
+        size_t index) const {
+    for(size_t i = 0; i < recursionLevel; ++i) {
+        out << '|';
+    }
+    out << 'N';
+    if(m_nodes[index].hasData())
+        out << "-L ";
+    out << m_nodes[index].index();
+    out << '\n';
+    for(typename node::const_iterator iter = m_nodes[index].begin(); 
+            iter != m_nodes[index].end(); 
+            ++iter) {
+        repr(out, recursionLevel + 1, iter->index());
+    }
+}
+BLRT_TEMPLATE
 void BLRT_TYPE::repr_svg(std::ostream& out) const {
     out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
@@ -128,14 +150,21 @@ const typename BLRT_TYPE::node& BLRT_TYPE::dereferenceNode(size_t index) const {
     return m_nodes[index];
 }
 BLRT_TEMPLATE
-void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index) {
+void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index, 
+        bool can_reinsert) {
     size_t candidate = m_nodes[destination_index].selectCandidate(
             m_nodes[child_index]);
-    if(candidate == destination_index) {
+    if(candidate == destination_index || 
+            m_nodes[candidate].height() == m_nodes[child_index].height()) {
+        //handle the case of splitting a child
+        if(m_nodes[destination_index].hasData()) {
+            node& daughter = acquireNode();
+            daughter.adoptFrom(m_nodes[destination_index]);
+            m_nodes[destination_index].insert(daughter);
+        }
         m_nodes[destination_index].insert(m_nodes[child_index]);
     } else {
-        insertPrivate(candidate, child_index);
-        
+        insertPrivate(candidate, child_index, can_reinsert);
     }
     //destination might be full, so split if necessary
     if(m_nodes[destination_index].isFull()) {
@@ -150,8 +179,13 @@ void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index) {
             m_nodes[destination_index].insert(m_nodes[sibling_index]);
             m_nodes[destination_index].insert(successor);
         } else {
-            //add a new sibling to the parent
-            m_nodes[above_index].insert(m_nodes[sibling_index]);
+            if(can_reinsert && false) {
+                //possibly find a better place for this orphan
+                insertPrivate(m_root, sibling_index, false);
+            } else {
+                //add a new sibling to the parent
+                m_nodes[above_index].insert(m_nodes[sibling_index]);
+            }
         }
     }
 }
@@ -178,6 +212,7 @@ BLRT_TEMPLATE
 BLRT_TYPE::node::node(basic_local_rtree& parent, size_t index) 
         : m_parent(&parent), m_index(index), 
         m_above(parent.DEFAULT_CHILD_PTR()), 
+        m_height(DEFAULT_HEIGHT), 
         m_data(parent.DEFAULT_DATA_PTR()) {
     clearChildren();
 }
@@ -187,6 +222,7 @@ BLRT_TYPE::node::node(basic_local_rtree& parent, size_t index,
         data_const_iterator data)
         : m_parent(&parent), m_index(index), 
         m_above(parent.DEFAULT_CHILD_PTR()), 
+        m_height(0), 
         m_data(data), m_bounds(data->first) {
     clearChildren();
 }
@@ -232,23 +268,26 @@ size_t BLRT_TYPE::node::above() const {
 }
 
 BLRT_TEMPLATE
+size_t BLRT_TYPE::node::height() const {
+    return m_height;
+}
+
+BLRT_TEMPLATE
 void BLRT_TYPE::node::adoptFrom(node& surrogate) {
-    for(size_t i = 0; i < CAPACITY; ++i) {
-        std::swap(m_children[i], surrogate.m_children[i]);
-    }
-    std::swap(m_childrenCount, surrogate.m_childrenCount);
     std::swap(m_data, surrogate.m_data);
-    std::swap(m_bounds, surrogate.m_bounds);
-    for(iterator it = begin(); 
-            it != end(); 
-            ++it) {
-        it->m_above = m_index;
+    if(hasData()) {
+        std::swap(m_bounds, surrogate.m_bounds);
+        std::swap(m_height, surrogate.m_height);
+    }
+    while(surrogate.m_childrenCount > 0) {
+        size_t childIndex = surrogate.m_children[--surrogate.m_childrenCount];
+        insert(m_parent->dereferenceNode(childIndex));
     }
 }
 
 BLRT_TEMPLATE
 size_t BLRT_TYPE::node::selectCandidate(node& child) {
-    if(hasData() || !hasChildren())
+    if(!hasChildren())
         return m_index;
     if(m_parent->dereferenceNode(m_children[0]).hasData())
         return m_index;
@@ -274,10 +313,15 @@ void BLRT_TYPE::node::insert(node& child) {
     }
     m_children[m_childrenCount++] = child.m_index;
     child.m_above = m_index;
-    if(m_childrenCount == 1)
+    if(m_childrenCount == 1) {
         m_bounds = child.m_bounds;
-    else
+        m_height = child.m_height + 1;
+    } else {
+        if(m_height != child.m_height + 1) {
+            throw LocalTreeException("Sibling node height mismatch");
+        }
         m_bounds.expandTo(child.m_bounds);
+    }
 }
 
 BLRT_TEMPLATE
