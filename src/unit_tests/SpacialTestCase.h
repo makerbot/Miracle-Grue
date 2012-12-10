@@ -12,10 +12,10 @@
 
 static const size_t SET_SIZE = 1000000;
 
-static const size_t TEST_SET_SIZE = 20;
-static const size_t TEST_TEST_SIZE = 1;
+static const size_t TEST_SET_SIZE = 20000;
+static const size_t TEST_TEST_SIZE = 10000;
 
-#define PRINT_SVG (1)
+//#define PRINT_SVG (1)
 
 class SpacialTestCase : public CPPUNIT_NS::TestFixture {
 private:
@@ -30,7 +30,7 @@ private:
 //    CPPUNIT_TEST( testQtreeFilter );
 //    CPPUNIT_TEST( testQtreeEmpty );
 //    CPPUNIT_TEST( testQtreeStress );
-//    CPPUNIT_TEST( testPerformance );
+    CPPUNIT_TEST( testPerformance );
 //    CPPUNIT_TEST( testQPerformance );
     CPPUNIT_TEST( testLPerformance );
     CPPUNIT_TEST_SUITE_END();

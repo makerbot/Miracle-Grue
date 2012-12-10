@@ -316,7 +316,7 @@ private:
      false for reinsertion calls to prevent infinite reinsertions
      */
     void insertPrivate(size_t destination_index, size_t child_index, 
-            bool can_reinsert = true);
+            bool can_reinsert = false);
     /**
      @brief internal recursive implementation of search
      */
