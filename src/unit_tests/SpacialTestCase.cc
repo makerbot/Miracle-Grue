@@ -407,11 +407,12 @@ void SpacialTestCase::testPerformance() {
         rtree.search(result, LineSegmentFilter(*iter));
     }
     std::cout << clock() - start << std::endl;
-    start = clock();
-//    std::cout << "Writing svg to cerr" << std::endl;
-//    rtree.repr_svg(std::cerr);
+#ifdef PRINT_SVG
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
 //    std::cout << "Writing tree to cout" << std::endl;
 //    rtree.repr(std::cout);
+#endif
 }
 void SpacialTestCase::testQPerformance() {
 //    srand(static_cast<unsigned int>(time(NULL)));
@@ -470,10 +471,12 @@ void SpacialTestCase::testQPerformance() {
     }
     std::cout << clock() - start << std::endl;
     start = clock();
-//    std::cout << "Writing svg to cerr" << std::endl;
-//    rtree.repr_svg(std::cerr);
+#ifdef PRINT_SVG
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
 //    std::cout << "Writing tree to cout" << std::endl;
 //    rtree.repr(std::cout);
+#endif
 }
 
 void SpacialTestCase::testLPerformance() {
@@ -534,10 +537,12 @@ void SpacialTestCase::testLPerformance() {
     }
     std::cout << clock() - start << std::endl;
     start = clock();
-//    std::cout << "Writing svg to cerr" << std::endl;
-//    rtree.repr_svg(std::cerr);
+#ifdef PRINT_SVG
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
 //    std::cout << "Writing tree to cout" << std::endl;
 //    rtree.repr(std::cout);
+#endif
 }
 
 

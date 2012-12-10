@@ -239,9 +239,20 @@ private:
          */
         void reinsertLeaves();
         /**
+         @brief select N children that lie furthest from the center and 
+         reinsert them
+         */
+        void reinsertOutliers(size_t n);
+        /**
          @brief readjust bounds tightly to children, recurse upward
          */
         void readjustBounds();
+        /**
+         @brieaf adjust my bounds to contain node at limit_index
+         @param limit_index index of node that we must contain
+         This is simple, quick, constant time, no recursion
+         */
+        void readjustBounds(size_t limit_index);
         /**
          @brief when this node is overloaded, it can offload some work 
          to the idle @a sibling
@@ -288,13 +299,13 @@ private:
      @param index
      @return node at index
      */
-    node& dereferenceNode(size_t index);
+    inline node& dereferenceNode(size_t index) { return m_nodes[index]; }
     /**
      @brief Get the node at @a index
      @param index
      @return node at index
      */
-    const node& dereferenceNode(size_t index) const;
+    inline const node& dereferenceNode(size_t index) const { return m_nodes[index]; }
     /**
      @brief perform all necessary steps for insertion, including 
      recursion and splitting

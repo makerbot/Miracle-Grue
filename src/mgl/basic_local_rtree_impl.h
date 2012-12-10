@@ -63,11 +63,9 @@ void BLRT_TYPE::erase(iterator) {}
 BLRT_TEMPLATE
 template <typename COLLECTION, typename FILTER>
 void BLRT_TYPE::search(COLLECTION& result, const FILTER& filt) const {
-    std::list<size_t> work_queue;
     if(m_root == DEFAULT_CHILD_PTR()) 
         return;
     searchPrivate(result, filt, m_root);
-    work_queue.push_back(m_root);
 }
 BLRT_TEMPLATE
 void BLRT_TYPE::swap(basic_local_rtree& other) {
@@ -103,7 +101,7 @@ void BLRT_TYPE::repr_svg(std::ostream& out) const {
     out << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>" << std::endl;
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << std::endl;
     if(m_root != DEFAULT_CHILD_PTR())
-        repr_svg(out, 0, m_root);
+        repr_svg(out, 1, m_root);
     out << "</svg>" << std::endl;
 }
 BLRT_TEMPLATE
@@ -142,14 +140,6 @@ typename BLRT_TYPE::node& BLRT_TYPE::acquireNode() {
     }
 }
 BLRT_TEMPLATE
-typename BLRT_TYPE::node& BLRT_TYPE::dereferenceNode(size_t index) {
-    return m_nodes[index];
-}
-BLRT_TEMPLATE
-const typename BLRT_TYPE::node& BLRT_TYPE::dereferenceNode(size_t index) const {
-    return m_nodes[index];
-}
-BLRT_TEMPLATE
 void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index, 
         bool can_reinsert) {
     size_t candidate = m_nodes[destination_index].selectCandidate(
@@ -165,26 +155,24 @@ void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index,
         m_nodes[destination_index].insert(m_nodes[child_index]);
     } else {
         insertPrivate(candidate, child_index, can_reinsert);
+        m_nodes[destination_index].readjustBounds(candidate);
     }
     //destination might be full, so split if necessary
     if(m_nodes[destination_index].isFull()) {
         size_t above_index = m_nodes[destination_index].above();
-        node& sibling = acquireNode();
-        m_nodes[destination_index].shareWith(sibling);
-        size_t sibling_index = sibling.index();
-        if(above_index == DEFAULT_CHILD_PTR()) {
-            //if no parent, add a stage
-            node& successor = acquireNode();
-            successor.adoptFrom(m_nodes[destination_index]);
-            m_nodes[destination_index].insert(m_nodes[sibling_index]);
-            m_nodes[destination_index].insert(successor);
+        if(can_reinsert && above_index != DEFAULT_CHILD_PTR()) {
+            m_nodes[destination_index].reinsertOutliers(CAPACITY/2);
         } else {
-            m_nodes[destination_index].readjustBounds();
-            if(can_reinsert && false) {
-                //possibly find a better place for this orphan
-                m_nodes[sibling_index].reinsertLeaves();
+            node& sibling = acquireNode();
+            m_nodes[destination_index].shareWith(sibling);
+            size_t sibling_index = sibling.index();
+            if(above_index == DEFAULT_CHILD_PTR()) {
+                //if no parent, add a stage
+                node& successor = acquireNode();
+                successor.adoptFrom(m_nodes[destination_index]);
+                m_nodes[destination_index].insert(m_nodes[sibling_index]);
+                m_nodes[destination_index].insert(successor);
             } else {
-                //add a new sibling to the parent
                 m_nodes[above_index].insert(m_nodes[sibling_index]);
             }
         }
@@ -194,8 +182,6 @@ BLRT_TEMPLATE
 template <typename COLLECTION, typename FILTER>
 void BLRT_TYPE::searchPrivate(COLLECTION& result, const FILTER& filt, 
         size_t base) const {
-    if(m_root == DEFAULT_CHILD_PTR()) 
-        return;
     const node& curNode = dereferenceNode(base);
     if(filt.filter(curNode.bound())) {
         if(curNode.hasData())
@@ -341,6 +327,35 @@ void BLRT_TYPE::node::reinsertLeaves() {
 }
 
 BLRT_TEMPLATE
+void BLRT_TYPE::node::reinsertOutliers(size_t n) {
+    if(n > 0) {
+        Point2Type center = m_bounds.center();
+        size_t outlierIndex = 0;
+        Scalar outlierDistance = std::numeric_limits<Scalar>::min();
+        for(size_t i = 0; i < m_childrenCount; ++i) {
+            Scalar distance = (m_parent->dereferenceNode(
+                    m_children[i]).bound().center() - 
+                    center).squaredMagnitude();
+            if(distance > outlierDistance) {
+                outlierDistance = distance;
+                outlierIndex = i;
+            }
+        }
+        size_t outlier = m_children[outlierIndex];
+        m_children[outlierIndex] = m_children[--m_childrenCount];
+        m_bounds = m_parent->dereferenceNode(m_children[0]).bound();
+        for(size_t i = 0; i < m_childrenCount; ++i) {
+            m_bounds.expandTo(
+                    m_parent->dereferenceNode(m_children[i]).m_bounds);
+        }
+        size_t myIndex = m_index;
+        basic_local_rtree* myParent = m_parent;
+        myParent->insertPrivate(m_parent->m_root, outlier, false);
+        myParent->dereferenceNode(myIndex).reinsertOutliers(n - 1);
+    }
+}
+
+BLRT_TEMPLATE
 void BLRT_TYPE::node::readjustBounds() {
     if(hasChildren()) {
         m_bounds = m_parent->dereferenceNode(m_children[0]).m_bounds;
@@ -355,68 +370,75 @@ void BLRT_TYPE::node::readjustBounds() {
 }
 
 BLRT_TEMPLATE
+void BLRT_TYPE::node::readjustBounds(unsigned int limit_index) {
+    m_bounds.expandTo(m_parent->dereferenceNode(limit_index).m_bounds);
+}
+
+BLRT_TEMPLATE
 void BLRT_TYPE::node::shareWith(node& sibling) {
-    std::vector<size_t> best, worst;
-    //find the center;
-    Point2Type center = m_bounds.center();
-    //find nearest object to center
-    size_t distant = 0;
-    Scalar distance = std::numeric_limits<Scalar>::max();
-    for(size_t i = 0; i < m_childrenCount; ++i) {
-        node& n = m_parent->dereferenceNode(m_children[i]);
-        Scalar d = (center - n.bound().center()).squaredMagnitude();
-        if(d < distance) {
-            distant = i;
-            distance = d;
-        }
+    typedef std::pair<size_t, size_t> indexPair;
+    
+    static const size_t WORST_SIZE = CAPACITY/2;
+    
+    indexPair worstPairs[WORST_SIZE];
+    size_t worstIndex = 0;
+    
+    
+    if(m_childrenCount < CAPACITY) {
+        throw LocalTreeException("Attempted to split non-full node");
     }
-    best.push_back(m_children[distant]);
-    m_children[distant] = m_children[--m_childrenCount];
-    while(m_childrenCount != 0) {
-        if(best.size() <= worst.size()) {
-            Scalar minGrowth = std::numeric_limits<Scalar>::max();
-            size_t minChild = 0;
-            Scalar bestP = m_parent->dereferenceNode(best.front()).
-                    m_bounds.perimeter();
-            for(size_t i = 0; i < m_childrenCount; ++i) {
-                Scalar growth = m_parent->dereferenceNode(
-                        best.front()).m_bounds.expandedTo(
-                        m_parent->dereferenceNode(
-                        m_children[i]).m_bounds).perimeter() - bestP;
-                if(growth < minGrowth) {
-                    minGrowth = growth;
-                    minChild = i;
+    //group children into pairs that would be worst to have in the same node
+    while(m_childrenCount > 1) {
+        indexPair worstPair(0,0);
+        Scalar worstPerimeter = std::numeric_limits<Scalar>::min();
+        for(size_t i = 0; i < m_childrenCount; ++i) {
+            node& inode = m_parent->dereferenceNode(m_children[i]);
+            for(size_t j = i + 1; j < m_childrenCount; ++j) {
+                node& jnode = m_parent->dereferenceNode(m_children[j]);
+                Scalar perimeter = inode.bound().expandedTo(
+                        jnode.bound()).perimeter();
+                if(perimeter > worstPerimeter) {
+                    worstPerimeter = perimeter;
+                    worstPair.first = i;
+                    worstPair.second = j;
                 }
             }
-            best.push_back(m_children[minChild]);
-            m_children[minChild] = m_children[--m_childrenCount];
+        }
+        worstPairs[worstIndex++] = indexPair(m_children[worstPair.first], 
+                m_children[worstPair.second]);
+        m_children[worstPair.second] = m_children[--m_childrenCount];
+        m_children[worstPair.first] = m_children[--m_childrenCount];
+    }
+    //if capacity is odd, there will be one child left in this node, 
+    //this is fine
+    //distribute pairs such that worst combinations go in opposite nodes
+    for(size_t i = 0; i < worstIndex; ++i) {
+        Scalar aperim = m_bounds.perimeter();
+        Scalar bperim = sibling.m_bounds.perimeter();
+        //if we put first in this and second in other, how much growth
+        Scalar a1g = m_bounds.expandedTo(
+                m_parent->dereferenceNode(
+                worstPairs[i].first).m_bounds).perimeter() - aperim;
+        Scalar b1g = sibling.m_bounds.expandedTo(
+                m_parent->dereferenceNode(
+                worstPairs[i].second).m_bounds).perimeter() - bperim;
+        //and the converse
+        Scalar a2g = m_bounds.expandedTo(
+                m_parent->dereferenceNode(
+                worstPairs[i].second).m_bounds).perimeter() - aperim;
+        Scalar b2g = sibling.m_bounds.expandedTo(
+                m_parent->dereferenceNode(
+                worstPairs[i].first).m_bounds).perimeter() - bperim;
+        Scalar g1 = a1g + b1g;
+        Scalar g2 = a2g + b2g;
+        //now pick the best arrangement
+        if(g1 < g2) {
+            insert(m_parent->dereferenceNode(worstPairs[i].first));
+            sibling.insert(m_parent->dereferenceNode(worstPairs[i].second));
         } else {
-            Scalar maxGrowth = std::numeric_limits<Scalar>::min();
-            size_t maxChild = 0;
-            Scalar bestP = m_parent->dereferenceNode(best.front()).
-                    m_bounds.perimeter();
-            for(size_t i = 0; i < m_childrenCount; ++i) {
-                Scalar growth = m_parent->dereferenceNode(
-                        best.front()).m_bounds.expandedTo(
-                        m_parent->dereferenceNode(
-                        m_children[i]).m_bounds).perimeter() - bestP;
-                if(growth > maxGrowth) {
-                    maxGrowth = growth;
-                    maxChild = i;
-                }
-            }
-            worst.push_back(m_children[maxChild]);
-            m_children[maxChild] = m_children[--m_childrenCount];
+            insert(m_parent->dereferenceNode(worstPairs[i].second));
+            sibling.insert(m_parent->dereferenceNode(worstPairs[i].first));
         }
-    }
-    clearChildren();
-    while(!best.empty()) {
-        insert(m_parent->dereferenceNode(best.back()));
-        best.pop_back();
-    }
-    while(!worst.empty()) {
-        sibling.insert(m_parent->dereferenceNode(worst.back()));
-        worst.pop_back();
     }
 }
 
