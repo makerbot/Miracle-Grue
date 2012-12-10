@@ -16,7 +16,7 @@
 
 namespace mgl {
 
-static const size_t LRTREE_DEFAULT_BRANCH = 5;
+static const size_t LRTREE_DEFAULT_BRANCH = 4;
 
 class LocalTreeException : public Exception {
 public:

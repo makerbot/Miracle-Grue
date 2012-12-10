@@ -358,17 +358,14 @@ BLRT_TEMPLATE
 void BLRT_TYPE::node::shareWith(node& sibling) {
     std::vector<size_t> best, worst;
     //find the center;
-    Point2Type center;
-    for(iterator it = begin(); it != end(); ++it) {
-        center += it->bound().center();
-    }
-    //find most distant object from center
+    Point2Type center = m_bounds.center();
+    //find nearest object to center
     size_t distant = 0;
-    Scalar distance = std::numeric_limits<Scalar>::min();
+    Scalar distance = std::numeric_limits<Scalar>::max();
     for(size_t i = 0; i < m_childrenCount; ++i) {
         node& n = m_parent->dereferenceNode(m_children[i]);
         Scalar d = (center - n.bound().center()).squaredMagnitude();
-        if(d > distance) {
+        if(d < distance) {
             distant = i;
             distance = d;
         }
