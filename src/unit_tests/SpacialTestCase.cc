@@ -485,7 +485,7 @@ void SpacialTestCase::testLPerformance() {
     //basic_boxlist<Segment2Type> boxlist;
     vector testset;
     
-    static const size_t SET_SIZE = 40;
+    static const size_t SET_SIZE = 60;
     static const size_t TEST_SIZE = 1;
     Scalar range = 200;
     Scalar range2 = 20;

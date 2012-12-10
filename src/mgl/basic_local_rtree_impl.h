@@ -179,9 +179,10 @@ void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index,
             m_nodes[destination_index].insert(m_nodes[sibling_index]);
             m_nodes[destination_index].insert(successor);
         } else {
+            m_nodes[destination_index].readjustBounds();
             if(can_reinsert && false) {
                 //possibly find a better place for this orphan
-                insertPrivate(m_root, sibling_index, false);
+                m_nodes[sibling_index].reinsertLeaves();
             } else {
                 //add a new sibling to the parent
                 m_nodes[above_index].insert(m_nodes[sibling_index]);
@@ -325,10 +326,30 @@ void BLRT_TYPE::node::insert(node& child) {
 }
 
 BLRT_TEMPLATE
+void BLRT_TYPE::node::reinsertLeaves() {
+    if(hasData()) {
+        m_parent->insertPrivate(m_parent->m_root, m_index, false);
+    } else {
+        node tmpNode = *this;
+        for(size_t i = 0; i < tmpNode.m_childrenCount; ++i) {
+            tmpNode.m_parent->dereferenceNode(
+                    tmpNode.m_children[i]).reinsertLeaves();
+        }
+        tmpNode.m_parent->dereferenceNode(tmpNode.m_index).clear();
+        tmpNode.m_parent->m_freenodes.push_back(tmpNode.m_index);
+    }
+}
+
+BLRT_TEMPLATE
 void BLRT_TYPE::node::readjustBounds() {
+    if(hasChildren()) {
+        m_bounds = m_parent->dereferenceNode(m_children[0]).m_bounds;
+        for(iterator iter = begin(); iter != end(); ++iter) {
+            m_bounds.expandTo(iter->m_bounds);
+        }
+    }
     if(m_above != m_parent->DEFAULT_CHILD_PTR()) {
         node& above = m_parent->dereferenceNode(m_above);
-        above.m_bounds.expandTo(m_bounds);
         above.readjustBounds();
     }
 }
@@ -400,6 +421,14 @@ void BLRT_TYPE::node::shareWith(node& sibling) {
         sibling.insert(m_parent->dereferenceNode(worst.back()));
         worst.pop_back();
     }
+}
+
+BLRT_TEMPLATE
+void BLRT_TYPE::node::clear() {
+    clearChildren();
+    m_above = m_parent->DEFAULT_CHILD_PTR();
+    m_height = DEFAULT_HEIGHT;
+    m_data = m_parent->DEFAULT_DATA_PTR();
 }
 
 BLRT_TEMPLATE

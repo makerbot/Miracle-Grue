@@ -234,7 +234,12 @@ private:
          */
         void insert(node& child);
         /**
-         @brief adjust my above's bounds to include mine, recurse upward
+         @brief recursively reinsert leaves below me, and clean up this node. 
+         Assumes this is detached from parent
+         */
+        void reinsertLeaves();
+        /**
+         @brief readjust bounds tightly to children, recurse upward
          */
         void readjustBounds();
         /**
@@ -252,7 +257,8 @@ private:
         const_iterator begin() const { return const_iterator(this, 0); }
         ///@brief iterate over the children
         const_iterator end() const { return const_iterator(this, m_childrenCount); }
-        
+        ///@brief make this node as though it was just created
+        void clear();
     private:
         
         void clearChildren();
