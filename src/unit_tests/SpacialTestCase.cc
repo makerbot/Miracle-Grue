@@ -15,6 +15,8 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SpacialTestCase );
 
+static const size_t BRANCH = 5;
+
 using namespace mgl;
 
 void SpacialTestCase::setUp() {
@@ -359,7 +361,7 @@ void SpacialTestCase::testPerformance() {
     
     vector dataset;
     //basic_boxlist<Segment2Type> boxlist;
-    basic_rtree<Segment2Type, 4> rtree;
+    basic_rtree<Segment2Type, BRANCH> rtree;
     vector testset;
     
     static const size_t SET_SIZE = TEST_SET_SIZE;
@@ -493,7 +495,7 @@ void SpacialTestCase::testLPerformance() {
     Scalar range = 200;
     Scalar range2 = 20;
     
-    basic_local_rtree<Segment2Type> rtree;
+    basic_local_rtree<Segment2Type, BRANCH> rtree;
     
     std::cout << "Making " << SET_SIZE << " lines" << std::endl;
     for(size_t i=0; i < SET_SIZE; ++i) {

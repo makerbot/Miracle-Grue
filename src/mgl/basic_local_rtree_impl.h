@@ -448,7 +448,10 @@ void BLRT_TYPE::node::shareWith(node& sibling) {
         m_children[worstPair.first] = m_children[--m_childrenCount];
     }
     //if capacity is odd, there will be one child left in this node, 
-    //this is fine
+    //this is fine, but readjust bounds
+    if(m_childrenCount > 0) {
+        m_bounds = m_parent->dereferenceNode(m_children[0]).m_bounds;
+    }
     //distribute pairs such that worst combinations go in opposite nodes
     for(size_t i = 0; i < worstIndex; ++i) {
         Scalar aperim = m_bounds.perimeter();

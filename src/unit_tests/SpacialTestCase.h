@@ -12,7 +12,7 @@
 
 static const size_t SET_SIZE = 1000000;
 
-static const size_t TEST_SET_SIZE = 20000;
+static const size_t TEST_SET_SIZE = 200000;
 static const size_t TEST_TEST_SIZE = 10000;
 
 //#define PRINT_SVG (1)
