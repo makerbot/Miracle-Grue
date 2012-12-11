@@ -75,18 +75,47 @@ public:
     
     ///@brief a value and its bounding box are stored together in a pair
     typedef std::pair<AABBox, value_type> bound_value;
-    typedef std::list<bound_value> data_container;
+    class data_element {
+    public:
+        data_element(const value_type& value);
+        data_element(const value_type& value, size_t index);
+        /// value and its bounding box
+        bound_value m_value;
+        /// index of node containing this data, or default child ptr
+        size_t m_index;
+    };
+    typedef std::list<data_element> data_container;
     
     typedef typename data_container::iterator data_iterator;
     typedef typename data_container::const_iterator data_const_iterator;
     
-    class iterator{
+    template <typename BASE>
+    class basic_iterator {
     public:
-        iterator() {}
-        template <typename U>
-        iterator(const U&) {  }
+        friend class basic_local_rtree;
+        basic_iterator() {}
+        basic_iterator& operator ++() { ++m_base; return *this; } //pre
+        basic_iterator operator ++(int) { //post
+            basic_iterator clone = *this; ++*this; return clone; 
+        }
+        const value_type& operator *() const { 
+            return m_base->m_value.second; 
+        }
+        const value_type* operator ->() { return &**this; }
+        bool operator ==(const basic_iterator& other) const {
+            return m_base == other.m_base;
+        }
+        bool operator !=(const basic_iterator& other) const
+                { return !(*this==other); }
+    private:
+        basic_iterator(BASE* base) 
+                : m_base(base) {}
+
+        BASE m_base;
     };
-    typedef iterator const_iterator;
+    
+    typedef basic_iterator<data_iterator> iterator;
+    typedef basic_iterator<data_const_iterator> const_iterator;
     
     ///@brief these constructors behave as expected
     basic_local_rtree();
@@ -115,13 +144,13 @@ public:
      no copying of data elements*/
     void swap(basic_local_rtree& other);
     /*!Not implemented, do not use!*/
-    iterator begin() { return iterator(); }
+    iterator begin() { return iterator(m_data.begin()); }
     /*!Not implemented, do not use!*/
-    iterator end() { return iterator(); }
+    iterator end() { return iterator(m_data.end()); }
     /*!Not implemented, do not use!*/
-    const_iterator begin() const { return const_iterator(); }
+    const_iterator begin() const { return const_iterator(m_data.begin()); }
     /*!Not implemented, do not use!*/
-    const_iterator end() const { return const_iterator(); }
+    const_iterator end() const { return const_iterator(m_data.end()); }
     
     void repr(std::ostream& out) const;
     void repr(std::ostream& out, size_t recursionLevel, size_t index) const;
@@ -210,6 +239,16 @@ private:
         ///@return this node's height, 0 for leaves, +1 for every layer above
         size_t height() const;
         /**
+         @brief change the parent pointer
+         @param parent
+         */
+        void setParent(basic_local_rtree* parent);
+        /**
+         @brief change which data element this node references
+         @param data
+         */
+        void setData(data_const_iterator data);
+        /**
          @brief Causes this node to adopt the data and children of @a surrogate
          @param surrogate the node from which livelihood is stolen
          
@@ -259,6 +298,12 @@ private:
          @param sibling node that will receive part of this one's children
          */
         void shareWith(node& sibling);
+        /**
+         @brief remove child with @a child_index from my list of children
+         @param child_index which child to attempt removing
+         @return true if found and removed, else false
+         */
+        bool unlinkChild(size_t child_index);
         
         ///@brief iterate over the children
         iterator begin() { return iterator(this, 0); }
@@ -322,6 +367,13 @@ private:
      */
     template <typename COLLECTION, typename FILTER>
     void searchPrivate(COLLECTION& result, const FILTER& filt, size_t base) const;
+    /**
+     @brief cleanly erase node at index @a index, assuming its data element 
+     has already been removed
+     This will recurse upward, cleaning up empty nodes and maintaining 
+     correct references as it goes
+     */
+    void erasePrivate(size_t index);
     
     typedef std::vector<node> node_container;
     typedef std::vector<size_t> node_vacancy_container;

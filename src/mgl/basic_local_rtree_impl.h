@@ -19,6 +19,14 @@ namespace mgl {
 
 
 BLRT_TEMPLATE
+BLRT_TYPE::data_element::data_element(const value_type& value) 
+        : m_value(to_bbox<value_type>::bound(value), value), 
+        m_index(DEFAULT_CHILD_PTR()) {}
+BLRT_TEMPLATE
+BLRT_TYPE::data_element::data_element(const value_type& value, size_t index)
+        : m_value(to_bbox<value_type>::bound(value), value), 
+        m_index(index) {}
+BLRT_TEMPLATE
 BLRT_TYPE::basic_local_rtree() : m_root(DEFAULT_CHILD_PTR()) {}
 BLRT_TEMPLATE
 BLRT_TYPE::basic_local_rtree(const basic_local_rtree& other) 
@@ -46,11 +54,10 @@ BLRT_TYPE& BLRT_TYPE::operator=(const basic_local_rtree& other) {
 }
 BLRT_TEMPLATE
 typename BLRT_TYPE::iterator BLRT_TYPE::insert(const value_type& value) {
-    data_const_iterator iter = m_data.insert(m_data.end(), 
-            bound_value(to_bbox<value_type>::bound(value), value));
-    node surrogate(*this, DEFAULT_CHILD_PTR(), iter);
     node& child = acquireNode();
-    child.adoptFrom(surrogate);
+    data_const_iterator iter = m_data.insert(m_data.end(), 
+            data_element(value, child.index()));
+    child.setData(iter);
     if(m_root == DEFAULT_CHILD_PTR()) {
         m_root = child.index();
     } else {
@@ -59,7 +66,11 @@ typename BLRT_TYPE::iterator BLRT_TYPE::insert(const value_type& value) {
     return iterator();
 }
 BLRT_TEMPLATE
-void BLRT_TYPE::erase(iterator) {}
+void BLRT_TYPE::erase(iterator iter) {
+    size_t indexToErase = iter.m_base->m_index;
+    m_data.erase(iter.m_base);
+    erasePrivate(indexToErase);
+}
 BLRT_TEMPLATE
 template <typename COLLECTION, typename FILTER>
 void BLRT_TYPE::search(COLLECTION& result, const FILTER& filt) const {
@@ -193,6 +204,22 @@ void BLRT_TYPE::searchPrivate(COLLECTION& result, const FILTER& filt,
         }
     }
 }
+BLRT_TEMPLATE
+void BLRT_TYPE::erasePrivate(size_t index) {
+    node& victim = m_nodes[index];
+    if(victim.hasChildren()) {
+        throw LocalTreeException("Attempted to erase non-empty node");
+    }
+    size_t above_index = victim.above();
+    if(above_index != DEFAULT_CHILD_PTR()) {
+        m_nodes[above_index].unlinkChild(index);
+        if(!m_nodes[above_index].hasPurpose()) {
+            erasePrivate(above_index);
+        }
+    }
+    victim.clear();
+    m_freenodes.push_back(index);
+}
 
 
 BLRT_TEMPLATE
@@ -210,7 +237,7 @@ BLRT_TYPE::node::node(basic_local_rtree& parent, size_t index,
         : m_parent(&parent), m_index(index), 
         m_above(parent.DEFAULT_CHILD_PTR()), 
         m_height(0), 
-        m_data(data), m_bounds(data->first) {
+        m_data(data), m_bounds(data->m_value.first) {
     clearChildren();
 }
 
@@ -236,7 +263,7 @@ bool BLRT_TYPE::node::isFull() const {
 
 BLRT_TEMPLATE
 const typename BLRT_TYPE::bound_value& BLRT_TYPE::node::data() const {
-    return *m_data;
+    return m_data->m_value;
 }
 
 BLRT_TEMPLATE
@@ -257,6 +284,17 @@ size_t BLRT_TYPE::node::above() const {
 BLRT_TEMPLATE
 size_t BLRT_TYPE::node::height() const {
     return m_height;
+}
+
+BLRT_TEMPLATE
+void BLRT_TYPE::node::setParent(basic_local_rtree* parent) {
+    m_parent = parent;
+}
+
+BLRT_TEMPLATE
+void BLRT_TYPE::node::setData(data_const_iterator data) {
+    m_data = data;
+    m_bounds = m_data->m_value.first;
 }
 
 BLRT_TEMPLATE
@@ -440,6 +478,17 @@ void BLRT_TYPE::node::shareWith(node& sibling) {
             sibling.insert(m_parent->dereferenceNode(worstPairs[i].first));
         }
     }
+}
+
+BLRT_TEMPLATE
+bool BLRT_TYPE::node::unlinkChild(size_t child_index) {
+    for(size_t i = 0; i < m_childrenCount; ++i) {
+        if(m_children[i] == child_index) {
+            m_children[i] = m_children[--m_childrenCount];
+            return true;
+        }
+    }
+    return false;
 }
 
 BLRT_TEMPLATE
