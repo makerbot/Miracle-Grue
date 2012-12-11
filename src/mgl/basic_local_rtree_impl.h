@@ -55,7 +55,7 @@ BLRT_TYPE& BLRT_TYPE::operator=(const basic_local_rtree& other) {
 BLRT_TEMPLATE
 typename BLRT_TYPE::iterator BLRT_TYPE::insert(const value_type& value) {
     node& child = acquireNode();
-    data_const_iterator iter = m_data.insert(m_data.end(), 
+    data_iterator iter = m_data.insert(m_data.end(), 
             data_element(value, child.index()));
     child.setData(iter);
     if(m_root == DEFAULT_CHILD_PTR()) {
@@ -63,7 +63,7 @@ typename BLRT_TYPE::iterator BLRT_TYPE::insert(const value_type& value) {
     } else {
         insertPrivate(m_root, child.index());
     }
-    return iterator();
+    return iterator(iter);
 }
 BLRT_TEMPLATE
 void BLRT_TYPE::erase(iterator iter) {
@@ -84,6 +84,11 @@ void BLRT_TYPE::swap(basic_local_rtree& other) {
     m_nodes.swap(other.m_nodes);
     m_freenodes.swap(other.m_freenodes);
     std::swap(m_root, other.m_root);
+    for(typename node_container::iterator iter = m_nodes.begin(); 
+            iter != m_nodes.end(); 
+            ++iter) {
+        iter->setParent(this);
+    }
 }
 BLRT_TEMPLATE
 void BLRT_TYPE::repr(std::ostream& out) const {

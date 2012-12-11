@@ -93,6 +93,9 @@ public:
     class basic_iterator {
     public:
         friend class basic_local_rtree;
+        template <typename OBASE>
+        friend class basic_iterator;
+        
         basic_iterator() {}
         basic_iterator& operator ++() { ++m_base; return *this; } //pre
         basic_iterator operator ++(int) { //post
@@ -108,7 +111,11 @@ public:
         bool operator !=(const basic_iterator& other) const
                 { return !(*this==other); }
     private:
-        basic_iterator(BASE* base) 
+        template <typename OBASE>
+        basic_iterator(const basic_iterator<OBASE>& other)
+                : m_base(other.basic_iterator<OBASE>::m_base) {}
+        template <typename OBASE>
+        basic_iterator(OBASE base) 
                 : m_base(base) {}
 
         BASE m_base;
