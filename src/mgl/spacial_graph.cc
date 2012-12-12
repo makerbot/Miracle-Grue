@@ -1,6 +1,6 @@
 #include <utility>
 
-#include "spacial_graph.h"
+#include "spacial_graph_decl.h"
 
 namespace mgl {
 
