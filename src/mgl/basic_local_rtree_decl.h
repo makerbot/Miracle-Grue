@@ -97,6 +97,14 @@ public:
         friend class basic_iterator;
         
         basic_iterator() {}
+        template <typename OBASE>
+        basic_iterator(const basic_iterator<OBASE>& other)
+                : m_base(other.basic_iterator<OBASE>::m_base) {}
+        template <typename OBASE>
+        basic_iterator& operator =(const basic_iterator<OBASE>& other) {
+            m_base = other.basic_iterator<OBASE>::m_base;
+            return *this;
+        }
         basic_iterator& operator ++() { ++m_base; return *this; } //pre
         basic_iterator operator ++(int) { //post
             basic_iterator clone = *this; ++*this; return clone; 
@@ -111,9 +119,6 @@ public:
         bool operator !=(const basic_iterator& other) const
                 { return !(*this==other); }
     private:
-        template <typename OBASE>
-        basic_iterator(const basic_iterator<OBASE>& other)
-                : m_base(other.basic_iterator<OBASE>::m_base) {}
         template <typename OBASE>
         basic_iterator(OBASE base) 
                 : m_base(base) {}
