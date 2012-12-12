@@ -3,16 +3,19 @@
 #include "UnitTestUtils.h"
 #include "SpacialTestCase.h"
 
-#define RTREE_DIAG (1)
+//#define RTREE_DIAG (1)
 
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
 #include "mgl/basic_rtree.h"
 #include "mgl/basic_quadtree.h"
+#include "mgl/basic_local_rtree.h"
 #include <cmath>
 #include <ctime>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SpacialTestCase );
+
+static const size_t BRANCH = 5;
 
 using namespace mgl;
 
@@ -358,7 +361,7 @@ void SpacialTestCase::testPerformance() {
     
     vector dataset;
     //basic_boxlist<Segment2Type> boxlist;
-    basic_rtree<Segment2Type, 4> rtree;
+    basic_rtree<Segment2Type, BRANCH> rtree;
     vector testset;
     
     static const size_t SET_SIZE = TEST_SET_SIZE;
@@ -406,11 +409,12 @@ void SpacialTestCase::testPerformance() {
         rtree.search(result, LineSegmentFilter(*iter));
     }
     std::cout << clock() - start << std::endl;
-    start = clock();
-//    std::cout << "Writing svg to cerr" << std::endl;
-//    rtree.repr_svg(std::cerr);
+#ifdef PRINT_SVG
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
 //    std::cout << "Writing tree to cout" << std::endl;
 //    rtree.repr(std::cout);
+#endif
 }
 void SpacialTestCase::testQPerformance() {
 //    srand(static_cast<unsigned int>(time(NULL)));
@@ -469,10 +473,78 @@ void SpacialTestCase::testQPerformance() {
     }
     std::cout << clock() - start << std::endl;
     start = clock();
-//    std::cout << "Writing svg to cerr" << std::endl;
-//    rtree.repr_svg(std::cerr);
+#ifdef PRINT_SVG
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
 //    std::cout << "Writing tree to cout" << std::endl;
 //    rtree.repr(std::cout);
+#endif
+}
+
+void SpacialTestCase::testLPerformance() {
+    //    srand(static_cast<unsigned int>(time(NULL)));
+    srand(0);
+    typedef std::vector<Segment2Type> vector;
+    
+    vector dataset;
+    //basic_boxlist<Segment2Type> boxlist;
+    vector testset;
+    
+    static const size_t SET_SIZE = TEST_SET_SIZE;
+    static const size_t TEST_SIZE = TEST_TEST_SIZE;
+    Scalar range = 200;
+    Scalar range2 = 20;
+    
+    basic_local_rtree<Segment2Type, BRANCH> rtree;
+    
+    std::cout << "Making " << SET_SIZE << " lines" << std::endl;
+    for(size_t i=0; i < SET_SIZE; ++i) {
+        dataset.push_back(randSegment(range, range2));
+    }
+    std::cout << "Making " << TEST_SIZE << " lines for testing" << std::endl;
+    for(size_t i=0; i < TEST_SIZE; ++i) {
+        testset.push_back(randSegment(range, range2));
+    }
+    time_t start = clock();
+//    std::cout << "Building Boxlist" << std::endl;
+//    for(vector::const_iterator iter = dataset.begin();
+//            iter != dataset.end(); 
+//            ++iter)
+//        boxlist.insert(*iter);
+//    std::cout << clock() - start << std::endl;
+    start = clock();
+    std::cout << "Building Localized Rtree" << std::endl;
+    for(vector::const_iterator iter = dataset.begin();
+            iter != dataset.end(); 
+            ++iter) {
+        rtree.insert(*iter);
+    }
+    std::cout << clock() - start << std::endl;
+    start = clock();
+//    std::cout << "Testing Boxlist" << std::endl;
+//    for(vector::const_iterator iter = testset.begin();
+//            iter != testset.end(); 
+//            ++iter) {
+//        vector result;
+//        boxlist.search(result, LineSegmentFilter(*iter));
+//    }
+//    std::cout << clock() - start << std::endl;
+    start = clock();
+    std::cout << "Testing Localized Rtree" << std::endl;
+    for(vector::const_iterator iter = testset.begin();
+            iter != testset.end(); 
+            ++iter) {
+        vector result;
+        rtree.search(result, LineSegmentFilter(*iter));
+    }
+    std::cout << clock() - start << std::endl;
+    start = clock();
+#ifdef PRINT_SVG
+    std::cout << "Writing svg to cerr" << std::endl;
+    rtree.repr_svg(std::cerr);
+//    std::cout << "Writing tree to cout" << std::endl;
+//    rtree.repr(std::cout);
+#endif
 }
 
 
