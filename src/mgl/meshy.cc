@@ -354,6 +354,27 @@ void Meshy::alignToPlate() {
         if(grueCfg.get_doPutModelOnPlatform() || limits.zMin < 0)
             translate(Point3Type(0, 0, -limits.zMin));
 	}
+
+    Point3Type delta(0, 0, 0);
+
+    bool change = false;
+    if(!tequals(limits.zMin, 0, 0.0000001) &&
+       (grueCfg.get_doPutModelOnPlatform() || limits.zMin < 0)) {
+        delta.z = -limits.zMin;
+        change = true;
+    }
+
+    if (!tequals(grueCfg.get_centerX(), 0, 0.0000001)) {
+        delta.x = grueCfg.get_centerX();
+        change = true;
+    }
+
+    if (!tequals(grueCfg.get_centerY(), 0, 0.0000001)) {
+        delta.y = grueCfg.get_centerY();
+        change = true;
+    }
+
+    translate(delta);
 }
 
 void Meshy::translate(const Point3Type &change) {

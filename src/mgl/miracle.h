@@ -18,6 +18,7 @@
 #include "loop_processor.h"
 #include "log.h"
 #include <iostream>
+#include <string>
 
 namespace mgl {
 
@@ -58,6 +59,10 @@ void writeGcodeFromSlicesAndParams(
 /// log the passed vector of slices to a directory
 void slicesLogToDir(std::vector<SliceData>& slices, const char* logDirName);
 
+void getSliceJson(const GrueConfig &grueCfg, 
+                  const std::string &modelFile,
+                  std::ostream &output,
+                  const int slicenum);
 
 
 };

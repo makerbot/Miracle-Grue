@@ -136,7 +136,8 @@ print "Operating system: [" + operating_system + "]"
 default_libs = []
 default_includes = ['submodule/json-cpp/include',
 		    'submodule/EzCppLog', 
-		    'submodule/optionparser/src']
+		    'submodule/optionparser/src',
+            'src/eigen']
 
 tools = ['default']
 
@@ -238,7 +239,6 @@ env.Append(CCFLAGS = ['-Wall', '-Wextra'])
 
 mgl_cc = Glob('src/mgl/*.cc')
 
-
 json_cc = [ 'submodule/json-cpp/src/lib_json/json_reader.cpp',
             'submodule/json-cpp/src/lib_json/json_value.cpp',
             'submodule/json-cpp/src/lib_json/json_writer.cpp' ]
@@ -278,6 +278,9 @@ p = env.Program('./bin/miracle_grue',
 		mix(['src/miracle_grue/miracle_grue.cc'] ))
 
 target_list = [p]
+
+j = env.Program('./bin/get_slice',
+                mix(['src/miracle_grue/get_slice.cc'] ))
 
 if build_gui:
     print "Building miracle_gui"

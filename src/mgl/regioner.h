@@ -18,6 +18,7 @@
 #include "slicer.h"
 #include "slicer_loops.h"
 #include "loop_path.h"
+#include "basic_boxlist.h"
 
 namespace mgl {
 
@@ -69,8 +70,13 @@ class LayerRegions {
 public:
 	LoopList outlines;
 	std::list<LoopList> insetLoops;
+    std::list<LoopList> spurLoops;
 	LoopList supportLoops;
 	LoopList interiorLoops;
+    LoopList floorLoops;
+    LoopList roofLoops;
+
+    std::list<OpenPathList> spurs;
 
 	GridRanges flatSurface; // # number of slices + roofCount * 2
 	GridRanges supportSurface; //flat surface outside of the actual object
@@ -88,6 +94,21 @@ public:
 };
 
 typedef std::vector<LayerRegions> RegionList;
+
+typedef std::vector<libthing::LineSegment2> SegmentList;
+typedef std::vector<PointList> PointTable;
+
+typedef basic_boxlist<libthing::LineSegment2> SegmentIndex;
+struct SpurPieceFlags {
+    SpurPieceFlags() : first(true), last(true), all(true) {};
+
+    bool first;
+    bool last;
+    bool all;
+};
+
+typedef std::vector<SpurPieceFlags> FlagsList;
+
 
 //// Class to calculate regions of a model
 ///
@@ -115,13 +136,10 @@ public:
 			   LayerMeasure &layerMeasure,
 			   RegionList &regionlist);
 
-	void insetsForSlice(const SegmentTable &sliceOutlines,
-			Insets &sliceInsets,
-			const char* scadFile = NULL);
 	void insetsForSlice(const LoopList& sliceOutlines,
-			std::list<LoopList>& sliceInsets,
-			LayerMeasure& layermeasure, 
-			const char* scadFile = NULL);
+						const LayerMeasure& layermeasure,
+						std::list<LoopList>& sliceInsets,
+						LoopList &interiors);
 
 	void insets(const LayerLoops::const_layer_iterator outlinesBegin,
 				const LayerLoops::const_layer_iterator outlinesEnd,
@@ -160,6 +178,7 @@ public:
 				 RegionList::iterator regionsEnd,
 				 const Grid &grid);
 
+
 	void gridRangesForSlice(const std::list<LoopList>& allInsetsForSlice, 
 							const Grid& grid, 
 							GridRanges& surface);
@@ -167,11 +186,84 @@ public:
 							const Grid& grid, 
 							GridRanges& surface);
 
+/**
+ Spurs code -- eventually this will be in a separate stage of the pipeline
+*/
+    /**
+       @brief Entry point for spurs generation
+       @param regionsBegin iterator to the beginning of the regions you will
+       be generating spurs for
+       @param regionsEnd iterator to the end of spur regions
+       layermeasure LayerMeasure object for this print
+     */
+    void spurs(RegionList::iterator regionsBegin,
+               RegionList::iterator regionsEnd,
+               LayerMeasure &layermeasure);
+
+    /**
+       @brief Generate loops for spur regions, regions inside shells left out
+       by inner shells
+       @param sliceOutlines Outline loops for the object
+       @param sliceInset Inset loops for the object, 2d list grouped by the
+       outline they're in
+       @param layermeasure LayerMeasure object for the print
+       @param spurLoops Output, loops containing spurs
+    */
+	void spurLoopsForSlice(const LoopList& sliceOutlines,
+						   const std::list<LoopList>& sliceInsets,
+						   const LayerMeasure &layermeasure,
+						   std::list<LoopList>& spurLoops);
+
+    /**
+       @brief Take a set of spur loops, grouped by their outline and fill them
+       with spurs.  Expects them to be manifold, with correct normals, and not
+       be larger than a spur can traverse
+     */
+	void fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
+						   const LayerMeasure &layermeasure,
+						   std::list<OpenPathList> &spursPerShell);
+
+    /**
+       @brief Fill a list of spur loops attached to the same outline
+       @param spurLoops outlines for all the spur regions
+       @param layermeasure LayerMeasure object for this print
+       @param spurs Output, the spur paths for these loops
+    */
+	void fillSpurLoops(const LoopList &spurLoops,
+					   const LayerMeasure &layermeasure,
+					   OpenPathList &spurs);
+
+    /**
+       @brief Connect spur pieces to each other by finding their intersection
+       points and clipping dangling pieces running too close to other spur
+       segments
+       @param outline Pre-built index of outline segments
+       @param margin how far spurs can be from each other
+       @param origPieces Original spur segments
+       @param chained Output, final paths for spurs
+    */
+    void chainSpurSegments(SegmentIndex &outline, const Scalar margin,
+                           const SegmentList &origPieces,
+                           OpenPathList &chained);
+
+    /**
+       @brief Clip dangling pieces of spurs that run too close to the outline.
+       This is necessary because we create spurs greedily, assuming non-needed
+       pieces will be reduced later.
+       @param outline Pre-built index of the outline segments, not modified
+       @param pieceIndex Pre-built index of the spur pieces so far, rebuilt to
+       be the remaining spur segments when done.
+       @param pieces Spur segments so far, set to the clipped pieces when done
+       @param margin How close endpoints can be to an outline
+       @param piecePoints Output, intersection and endpoints for all spur pieces
+       @param flagsList Output, generated flags for each piece
+    */
+    void clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
+                         SegmentList &pieces, const Scalar margin,
+                         PointTable &piecePoints, FlagsList &flagsList);
+
+
 private:
-
-
-
-
 };
 
 }

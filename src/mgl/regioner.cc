@@ -17,10 +17,13 @@
 
 using namespace mgl;
 using namespace std;
+using namespace libthing;
 
 
 Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
+
+static const Scalar LOOP_ERROR_FUDGE_FACTOR = 0.05;
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		LayerMeasure& layerMeasure,
@@ -81,6 +84,9 @@ void Regioner::generateSkeleton(const LayerLoops& layerloops,
 	insets(layerloops.begin(), layerloops.end(),
 			firstModelRegion, regionlist.end(),
 			layerMeasure);
+
+    initProgress("spurs", sliceCount);
+    spurs(firstModelRegion, regionlist.end(), layerMeasure);
 
 	initProgress("flat surfaces", sliceCount);
 	flatSurfaces(regionlist.begin(), regionlist.end(), grid);
@@ -249,77 +255,32 @@ void Regioner::rafts(const LayerRegions& bottomLayer,
 }
 
 void Regioner::insetsForSlice(const LoopList& sliceOutlines,
-		std::list<LoopList>& sliceInsets,
-		LayerMeasure& layermeasure,
-		const char* scadFile) {
+							  const LayerMeasure& layermeasure,
+							  std::list<LoopList>& sliceInsets,
+							  LoopList &interiors) {
+	const Scalar base_distance = 0.5 * layermeasure.getLayerW();
 
-	SegmentTable sliceOutlinesOld;
-	Insets sliceInsetsOld;
-
-	/*
-	 This function makes use of inshelligence, which indirectly makes use of 
-	 clipper.cc, a machine translated Delphi library designed to make use of 
-	 SegmentTables. As it is currently not practical to quickly convert this 
-	 library to use the new Loop type, we instead elected to simply convert 
-	 the resulting SegmentTables into Loops
-	 */
-
-	//convert outline Loops into equivalent SegmentTables
-	for (LoopList::const_iterator iter = sliceOutlines.begin();
-			iter != sliceOutlines.end();
-			++iter) {
-		sliceOutlinesOld.push_back(std::vector<Segment2Type > ());
-		const Loop& currentLoop = *iter;
-		//Convert current loop to a vector of segments
-		for (Loop::const_finite_cw_iterator loopiter =
-				currentLoop.clockwiseFinite();
-				loopiter != currentLoop.clockwiseEnd();
-				++loopiter) {
-			sliceOutlinesOld.back().push_back(currentLoop.segmentAfterPoint(loopiter));
-		}
-	}
-
-	//call the function with the equivalent SegmentTables
-	bool writeDebugScadFiles = false;
-	inshelligence(sliceOutlinesOld,
-			grueCfg.get_nbOfShells(),
-			layermeasure.getLayerW(),
-			grueCfg.get_insetDistanceMultiplier(),
-			scadFile,
-			writeDebugScadFiles,
-			sliceInsetsOld);
-
-	//Recover loops from the resulting SegmentTable
-	for (Insets::const_iterator iter = sliceInsetsOld.begin();
-			iter != sliceInsetsOld.end();
-			++iter) {
+	for (unsigned int shell = 0; shell < grueCfg.get_nbOfShells(); ++shell) {
 		sliceInsets.push_back(LoopList());
-		LoopList& currentLoopList = sliceInsets.back();
-		//Convert each group of insets into a list of Loops
-		for (SegmentTable::const_iterator setIter = iter->begin();
-				setIter != iter->end();
-				++setIter) {
-			currentLoopList.push_back(Loop());
-			const std::vector<Segment2Type>& currentPoly = *setIter;
-			Loop& currentLoop = currentLoopList.back();
-			Loop::cw_iterator loopIter = currentLoop.clockwiseEnd();
-			//Convert each individual inset to a Loop
-			//Insert points 1 - N
-			for (std::vector<Segment2Type>::const_iterator polyIter =
-					currentPoly.begin();
-					polyIter != currentPoly.end();
-					++polyIter) {
-				loopIter = currentLoop.insertPointAfter(polyIter->b, loopIter);
-			}
-			//Insert point 0
-			if (!currentPoly.empty())
-				loopIter = currentLoop.insertPointAfter(currentPoly.begin()->a, loopIter);
-		}
+		LoopList &shells = sliceInsets.back();
+
+		Scalar distance = base_distance + grueCfg.get_insetDistanceMultiplier()
+			* layermeasure.getLayerW() * shell;
+
+		loopsOffset(shells, sliceOutlines, -distance);
 	}
+
+	// calculate the interior of a loop, temporarily hardcode the distance to
+	// half layerW
+
+	loopsOffset(interiors, sliceInsets.back(), -base_distance);
 }
 
-//void Regioner::insets(const std::vector<SegmentTable> & outlinesSegments,
-//		std::vector<Insets> & insets) {
+
+
+
+//void Regioner::insets(const std::vector<libthing::SegmentTable> & outlinesSegments,
+//		std::vector<libthing::Insets> & insets) {
 //
 //	unsigned int sliceCount = outlinesSegments.size();
 //	initProgress("insets", sliceCount);
@@ -347,12 +308,19 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		tick();
 		const LoopList& currentOutlines = outline->readLoops();
 
-		insetsForSlice(currentOutlines, region->insetLoops,
-				layermeasure, NULL);
+		insetsForSlice(currentOutlines, layermeasure, region->insetLoops, 
+					   region->interiorLoops);
 
+        if(!region->insetLoops.empty()) {
+            loopsOffset(region->interiorLoops, region->insetLoops.back(), 
+                    -grueCfg.get_infillShellSpacingMultiplier() * 
+                    layermeasure.getLayerWidth(region->layerMeasureId));
+        }
 		++outline;
 		++region;
 	}
+
+    tick();
 }
 
 void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
@@ -361,8 +329,11 @@ void Regioner::flatSurfaces(RegionList::iterator regionsBegin,
 	for (; regionsBegin != regionsEnd; ++regionsBegin) {
 		tick();
 		//GridRanges currentSurface;
-		gridRangesForSlice(regionsBegin->insetLoops, grid,
-				regionsBegin->flatSurface);
+
+//		gridRangesForSlice(regionsBegin->insetLoops, grid,
+//				regionsBegin->flatSurface);
+        regionsBegin->flatSurface.yRays.resize(grid.getXValues().size());
+        regionsBegin->flatSurface.xRays.resize(grid.getYValues().size());
 		//inset supportloops by a fraction of supportmargin
 		LoopList insetSupportLoops;
 		loopsOffset(insetSupportLoops, regionsBegin->supportLoops, 
@@ -389,22 +360,32 @@ void Regioner::roofForSlice(const GridRanges & currentSurface, const GridRanges 
 
 void Regioner::roofing(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
-		const Grid& grid) {
-
+		const Grid& //grid
+        ) {
+    if(regionsBegin == regionsEnd)
+        return;
 	RegionList::iterator current = regionsBegin;
 	RegionList::iterator above = current;
 	++above;
 
 	while (above != regionsEnd) {
 		tick();
-		const GridRanges & currentSurface = current->flatSurface;
-		const GridRanges & surfaceAbove = above->flatSurface;
-		GridRanges & roofing = current->roofing;
+//		const GridRanges & currentSurface = current->flatSurface;
+//		const GridRanges & surfaceAbove = above->flatSurface;
+//		GridRanges & roofing = current->roofing;
+        LoopList& roofLoops = current->roofLoops;
 
-		GridRanges roof;
-		roofForSlice(currentSurface, surfaceAbove, grid, roof);
-
-		grid.trimGridRange(roof, roofLengthCutOff, roofing);
+//		GridRanges roof;
+//		roofForSlice(currentSurface, surfaceAbove, grid, roof);
+//
+//		grid.trimGridRange(roof, roofLengthCutOff, roofing);
+        LoopList diffResult;
+        if(!above->insetLoops.empty()) {
+            loopsDifference(diffResult, current->interiorLoops, 
+                    above->insetLoops.back());
+        }
+        //compensate for errors in the difference by a fudge factor
+        loopsOffset(roofLoops, diffResult, LOOP_ERROR_FUDGE_FACTOR);
 
 		++current;
 		++above;
@@ -416,25 +397,37 @@ void Regioner::roofing(RegionList::iterator regionsBegin,
 
 void Regioner::flooring(RegionList::iterator regionsBegin,
 		RegionList::iterator regionsEnd,
-		const Grid &grid) {
+		const Grid& //grid
+        ) {
+    if(regionsBegin == regionsEnd)
+        return;
 	RegionList::iterator below = regionsBegin;
 	RegionList::iterator current = below;
 	current++;
 
 	while (current != regionsEnd) {
+        LoopList& floorLoops = current->floorLoops;
 		tick();
-		const GridRanges & currentSurface = current->flatSurface;
-		const GridRanges & surfaceBelow = below->flatSurface;
-		GridRanges & flooring = current->flooring;
+//		const GridRanges & currentSurface = current->flatSurface;
+//		const GridRanges & surfaceBelow = below->flatSurface;
+//		GridRanges & flooring = current->flooring;
 
-		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+//		floorForSlice(currentSurface, surfaceBelow, grid, flooring);
+        LoopList diffResult;
+        if(!below->insetLoops.empty()) {
+            loopsDifference(diffResult, current->interiorLoops, 
+                    below->insetLoops.back());
+        }
+        //compensate for errors in the difference by a fudge factor
+        loopsOffset(floorLoops, diffResult, LOOP_ERROR_FUDGE_FACTOR);
 
 		++below;
 		++current;
 	}
 
 	tick();
-	regionsBegin->flooring = regionsBegin->flatSurface;
+//	regionsBegin->flooring = regionsBegin->flatSurface;
+    regionsBegin->floorLoops = regionsBegin->interiorLoops;
 
 }
 
@@ -470,7 +463,7 @@ void Regioner::support(RegionList::iterator regionsBegin,
         //offset aboveMargins by a fudge factor
         //to compensate for error when we subtracted them from layer above
         LoopList aboveMarginsOutset;
-        loopsOffset(aboveMarginsOutset, *aboveMargins, 0.01);
+        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
         
 		if (above->supportLoops.empty()) {
 			//beginning of new support
@@ -530,10 +523,11 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		tick();
 
 		// Solids
-		GridRanges combinedSolid;
+		//GridRanges combinedSolid;
+        LoopList combinedLoops;
 
-		combinedSolid.xRays.resize(surface.xRays.size());
-		combinedSolid.yRays.resize(surface.yRays.size());
+//		combinedSolid.xRays.resize(surface.xRays.size());
+//		combinedSolid.yRays.resize(surface.yRays.size());
 
 		//TODO: no reason to get bounds separately from the combination
 
@@ -557,31 +551,41 @@ void Regioner::infills(RegionList::iterator regionsBegin,
 		//combine floors
 		for (RegionList::iterator floor = firstFloor;
 				floor != floorEnd; ++floor) {
-			GridRanges multiFloor;
+//			GridRanges multiFloor;
 
-			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
-			combinedSolid = multiFloor;
+//			grid.gridRangeUnion(combinedSolid, floor->flooring, multiFloor);
+//			combinedSolid = multiFloor;
+            loopsUnion(combinedLoops, floor->floorLoops);
 		}
 
 		//combine roofs
 		for (RegionList::iterator roof = lastRoof;
 				roof != roofEnd; --roof) {
-			GridRanges multiRoof;
+//			GridRanges multiRoof;
 
-			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
-			combinedSolid = multiRoof;
+//			grid.gridRangeUnion(combinedSolid, roof->roofing, multiRoof);
+//			combinedSolid = multiRoof;
+            loopsUnion(combinedLoops, roof->roofLoops);
 		}
 
 		// solid now contains the combination of combinedSolid regions from
 		// multiple slices. We need to extract the perimeter from it
 
-		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
+//		grid.gridRangeIntersection(surface, combinedSolid, current->solid);
+        loopsIntersection(combinedLoops, current->interiorLoops);
+        LoopList sparseLoops;
+        loopsDifference(sparseLoops, current->interiorLoops, combinedLoops);
+        
 
 		// TODO: move me to the slicer
-		GridRanges sparseInfill;
+		GridRanges sparseInfill, sparsePreInfill, solidInfill;
+        
+        gridRangesForSlice(combinedLoops, grid, solidInfill);
+        gridRangesForSlice(sparseLoops, grid, sparsePreInfill);
+        
 		size_t infillSkipCount = (int) (1 / grueCfg.get_infillDensity()) - 1;
 
-		grid.subSample(surface, infillSkipCount, sparseInfill);
+		grid.subSample(sparsePreInfill, infillSkipCount, sparseInfill);
         
         if(grueCfg.get_doSupport() || grueCfg.get_doRaft()) {
             size_t supportSkipCount = 0;
@@ -596,7 +600,30 @@ void Regioner::infills(RegionList::iterator regionsBegin,
             }
         }
 
-		grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
+		//grid.gridRangeUnion(current->solid, sparseInfill, current->infill);
+        current->infill.xRays.resize(surface.xRays.size());
+        current->infill.yRays.resize(surface.yRays.size());
+        
+        for(size_t x = 0; x < surface.xRays.size(); ++x) {
+            current->infill.xRays[x].insert(
+                    current->infill.xRays[x].end(), 
+                    sparseInfill.xRays[x].begin(), 
+                    sparseInfill.xRays[x].end());
+            current->infill.xRays[x].insert(
+                    current->infill.xRays[x].end(), 
+                    solidInfill.xRays[x].begin(), 
+                    solidInfill.xRays[x].end());
+        }
+        for(size_t y = 0; y < surface.yRays.size(); ++y) {
+            current->infill.yRays[y].insert(
+                    current->infill.yRays[y].end(), 
+                    sparseInfill.yRays[y].begin(), 
+                    sparseInfill.yRays[y].end());
+            current->infill.yRays[y].insert(
+                    current->infill.yRays[y].end(), 
+                    solidInfill.yRays[y].begin(), 
+                    solidInfill.yRays[y].end());
+        }
 	}
 
 }
@@ -615,6 +642,984 @@ void Regioner::gridRangesForSlice(const LoopList& innerMostLoops,
 		const Grid& grid,
 		GridRanges & surface) {
 	grid.createGridRanges(innerMostLoops, surface);
+}
+
+
+/**
+ Spurs code -- eventually this will be in a separate stage of the pipeline
+*/
+
+#include "intersection_index.h"
+#include "basic_boxlist.h"
+
+#include <algorithm>
+#include <math.h>
+#include <Eigen/Geometry>
+
+/*******
+ * convenience types
+ *******/
+
+typedef pair<LineSegment2, LineSegment2> SegmentPair;
+
+typedef Eigen::ParametrizedLine<Scalar, 2> ELine;
+typedef Eigen::Vector2d EVector;
+typedef Eigen::Hyperplane<Scalar, 2> EHyperplane;
+
+typedef enum {BASE_MIN, BASE_MAX} BaseLimitType;
+
+/**********
+ * EigenLib support functions
+ **********/
+
+/**
+   @brief Convert a Vector2 to an Eigen vector
+ */
+EVector toEVector(const Vector2 &orig) {
+	return EVector(orig.x, orig.y);
+}
+
+/**
+   @brief Convert an Eigne vector to a Vector2
+ */
+Vector2 toVector2(const EVector &orig) {
+	return Vector2(orig(0), orig(1));
+}
+
+/**
+   @brief find the intersection point and angle of two Eigen lines
+ */
+void lineIntersection(const ELine first, const ELine second,
+					  EVector &point, Scalar &angle) {
+	point = first.intersectionPoint(EHyperplane(second));
+	
+	EVector firstUnit = first.direction();
+	EVector secondUnit = second.direction();
+
+    //Make sure our lines are pointed in generally the same direction
+    Scalar dot = firstUnit.dot(secondUnit);
+    if (dot < 0) {
+        secondUnit = -secondUnit;
+        dot = firstUnit.dot(secondUnit);
+    }
+
+	angle = acos(dot);
+}
+
+/**
+   @brief Find the distance between two eigen vector points
+*/
+Scalar pointDistance(const EVector &a, const EVector &b) {
+    return sqrt((b - a)(0) * (b - a)(0) +
+                (b - a)(1) * (b - a)(1));
+}
+
+/********
+ * utility functions
+ ********/
+
+/**
+   @brief A less comparator for Vector2 objects.  Doesn't put things into any
+   real order, but its internally consistent.  Better for uniqueness than actual
+   sorting
+ */
+bool VectorLess(const Vector2 &first, const Vector2 &second) {
+	if (first.x < second.x)
+		return true;
+	else if (first.x > second.x)
+		return false;
+	else if (first.y < second.y)
+		return true;
+	else
+		return false;
+}
+
+/**
+   @brief Less comparator for LineSegment2 objects.  Similar to VectorLess.  Use
+   for uniqueness.
+ */
+bool SegLess(const LineSegment2 &first, const LineSegment2 &second) {
+	if (VectorLess(first.a, second.a))
+		return true;
+	else if (VectorLess(second.a, first.a))
+		return false;
+	else if (VectorLess(first.b, second.b))
+		return true;
+	else
+		return false;
+}
+
+/**
+   @brief Less comparator for SegmentPairs.  See VectorLess for guidelines
+ */
+struct SegPairLess {
+	bool operator()(const SegmentPair first, const SegmentPair second) {
+		if (SegLess(first.first, second.first))
+			return true;
+		else if (SegLess(second.first, first.first))
+			return false;
+		else if (SegLess(first.second, second.second))
+			return true;
+		else 
+			return false;
+	}
+};
+
+typedef set<SegmentPair, SegPairLess> SegmentPairSet;
+
+/**
+   @brief Make sure SegmentPairs that are similar are actually the same.
+   Makes uniquing pairs easier.
+ */
+SegmentPair normalizeWalls(const LineSegment2 &first,
+						   const LineSegment2 &second) {
+
+	SegmentPair segs;
+	if (SegLess(first, second)) {
+		segs.first = first;
+		segs.second = second;
+	}
+	else if (SegLess(second, first)) {
+		segs.first = second;
+		segs.second = first;
+	}
+    else if (first.a == second.a && first.b == second.b) {
+        segs.first = second;
+        segs.second = first;
+    }
+    else {
+        // This should never happen
+        stringstream msg;
+        msg << "don't know which way to order pair:\nfirst.a.x " << first.a.x
+            << "\nfirst.a.y " << first.a.y
+            << "\nfirst.b.x " << first.b.x
+            << "\nfirst.b.y " << first.b.y << endl;
+        throw runtime_error(msg.str());
+    }
+
+	return segs;
+}
+
+/**
+   @brief Get the heading vector for a line segment
+ */
+Vector2 segmentDirection(const LineSegment2 &seg) {
+    return seg.a - seg.b;
+}
+/**
+   @brief Get a segment of a given length and starting point that is normal to a
+   base segment
+   @param orig The segment your perpendicular to
+   @param startingPoint the first endpoint of the resulting segment will be equal
+   to this. Assumed that this is on the original segment
+   @param length length of the normal segment
+*/
+LineSegment2 getSegmentNormal(const LineSegment2 &orig,
+							  const Vector2 &startingPoint,
+							  const Scalar length) {
+	Vector2 heading = segmentDirection(orig);
+	heading.normalise();
+
+	Vector2 normalVector;
+	normalVector.x = -heading.y;
+	normalVector.y = heading.x;
+
+	normalVector *= length;
+
+	Vector2 endingPoint = startingPoint + normalVector;
+
+	return LineSegment2(startingPoint, endingPoint);
+}
+
+/**
+   @brief Find the midpoint of a line segment
+ */
+Vector2 midPoint(const LineSegment2 &seg) {
+	return seg.a + ((seg.b - seg.a) * 0.5);
+}
+
+
+/**
+   @brief Find the intersection point of two line segments
+   @param point Intersection point between two segments
+   @return true if the segments intersect
+ */
+bool segmentIntersection(const LineSegment2 &first,const LineSegment2 &second,
+                         Vector2 &point) {
+    if (!first.intersects(second))
+        return false;
+
+    //use Eigen because they've already figured this one out
+    ELine firstline = ELine::Through(toEVector(first.a), toEVector(first.b));
+    ELine secondline = ELine::Through(toEVector(second.a), toEVector(second.b));
+
+    point = toVector2(firstline.intersectionPoint(EHyperplane(secondline)));
+
+    //don't need to deal with the situation where they don't intersect yet
+    //Will need to deal with this soon
+    return true;
+} 
+
+/**
+   @brief Convenience function for finding intersecting lines in a spacial index
+*/
+void findIntersecting(SegmentIndex &index, const LineSegment2 &subject,
+					  SegmentList &intersecting) {
+	SegmentList found;
+	index.search(found, LineSegmentFilter(subject));
+
+	for (SegmentList::const_iterator possible = found.begin();
+		 possible != found.end(); ++possible) {
+		if (possible->intersects(subject)) 
+			intersecting.push_back(*possible);
+	}
+}
+
+/**
+   @brief Convenience function for finding intersection poitns in a spacial index
+ */
+void findIntersectPoints(SegmentIndex &index, const LineSegment2 &subject,
+                         PointList &intersections) {
+	SegmentList found;
+	index.search(found, LineSegmentFilter(subject));
+
+	for (SegmentList::const_iterator possible = found.begin();
+		 possible != found.end(); ++possible) {
+        Vector2 point;
+        if (segmentIntersection(subject, *possible, point))
+            intersections.push_back(point);
+    }
+}
+
+/**
+   @brief Distance comparator for points.  To allow you to sort points based on
+   their distance to some anchor point.  Initialize with the anchor to compare to
+*/
+class DistanceCmp {
+public:
+    DistanceCmp(const Vector2 &anchor) : m_anchor(anchor) {}
+    bool operator()(const Vector2 &a, const Vector2 &b) {
+        return LineSegment2(m_anchor, a).squaredLength() <
+               LineSegment2(m_anchor, b).squaredLength();
+    }
+private:
+    Vector2 m_anchor;
+};
+
+/**
+   @brief Find a point in a list closest to another point
+ */
+Vector2 closestPoint(const PointList points, const Vector2 orig) {
+    Vector2 closest = points.front();
+
+    for (PointList::const_iterator point = points.begin();
+         point != points.end(); ++point) {
+        
+        if (LineSegment2(orig, *point).squaredLength() <
+            LineSegment2(orig, closest).squaredLength()) {
+            closest = *point;
+        }
+    }
+
+    return closest;
+}
+
+/**
+   @brief Expand a segment by a given amount in both directions
+ */
+void expandSeg(LineSegment2 &seg, Scalar len) {
+    Vector2 dir = segmentDirection(seg);
+    Vector2 extra = dir * len;
+    seg.a += extra;
+    seg.b -= extra;
+}
+
+/*******
+ * main code for spurs
+ *******/
+
+void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
+								 const std::list<LoopList>& sliceInsets,
+								 const LayerMeasure &layermeasure,
+ 								 std::list<LoopList>& spurLoops) {
+
+    //this is a negligible value to make sure loops overlap
+	const Scalar fudgefactor = 0.01;
+
+	// the outer shell is a special case
+	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
+	LoopList outset;
+
+    if (grueCfg.get_doExternalSpurs()) {
+        loopsOffset(outset, *inner, 0.5 * layermeasure.getLayerW()
+                      + fudgefactor,
+                    false);
+	
+        spurLoops.push_back(LoopList());
+        LoopList &outerspurs = spurLoops.back();
+
+        loopsDifference(outerspurs, sliceOutlines, outset);
+    }
+
+    if (grueCfg.get_doInternalSpurs()) {
+        std::list<LoopList>::const_iterator outer = inner;
+        ++inner;
+
+        while (inner != sliceInsets.end()) {
+            spurLoops.push_back(LoopList());
+            LoopList &spurs = spurLoops.back();
+
+            if (inner->size() > 0) {
+                outset.clear();
+                //take an inner shell and outset it the same amount that it was inset
+                loopsOffset(outset, *inner,
+                            grueCfg.get_insetDistanceMultiplier() * 
+                            layermeasure.getLayerW()
+                            + fudgefactor, false);
+
+                //subtract the outset loop from its outer loop, what's left is a spur
+                loopsDifference(spurs, *outer, outset);
+            }
+
+            outer = inner;
+            ++inner;
+        }
+    }
+}
+
+void Regioner::fillSpursForSlice(const std::list<LoopList>& spurLoopsPerShell,
+								 const LayerMeasure &layermeasure,
+								 std::list<OpenPathList> &spursPerShell) {
+	for (std::list<LoopList>::const_iterator spurLoops =
+			 spurLoopsPerShell.begin();
+		 spurLoops != spurLoopsPerShell.end(); ++spurLoops) {
+
+		spursPerShell.push_back(OpenPathList());
+		OpenPathList &spurs = spursPerShell.back();
+
+        //just call fillSpurLoops on every grouping of spurs
+		fillSpurLoops(*spurLoops, layermeasure, spurs);
+	}
+}
+
+/**
+   @brief Given a SegmentPair that is assumed parallel, find spans for spurs
+ */
+SegmentPair completeParallel(const Scalar, const Scalar bottomlen,
+                            const SegmentPair &sides) {
+    LineSegment2 span = getSegmentNormal(sides.first, sides.first.a,
+                                           bottomlen);
+    //find an endpoint to one of the segments where you can draw a normal across
+    //and intersect the other line
+    Vector2 intersection;
+    if (segmentIntersection(span, sides.second, intersection))
+        span.b = intersection;
+    else {
+        span = getSegmentNormal(sides.first, sides.first.b, bottomlen);
+
+        if (segmentIntersection(span, sides.second, intersection))
+            span.b = intersection;
+        else {
+            span = getSegmentNormal(sides.second, sides.second.a, bottomlen);
+
+            if (segmentIntersection(span, sides.first, intersection))
+                span.b = intersection;
+            else {
+                span = getSegmentNormal(sides.second, sides.second.b,
+                                        bottomlen);
+
+                if (segmentIntersection(span, sides.first, intersection))
+                    span.b = intersection;
+                else {
+                    //shouldn't get here if the pair is valid
+                    stringstream msg;
+                    msg << "Parallel pair doesn't have valid span:\na.x "
+                        << span.a.x
+                        << "\na.y " << span.a.y
+                        << "\nb.x " << span.b.x
+                        << "\nb.y " << span.b.y << endl;
+                    throw runtime_error(msg.str());
+                }
+            }
+        }
+    }
+
+    //should be checking for paralels too close here
+
+    Vector2 center = midPoint(span);
+
+    Vector2 leftPoint;
+    LineSegment2 leftSide;
+    Scalar leftDistSq;
+
+    Vector2 rightPoint;
+    LineSegment2 rightSide;
+    Scalar rightDistSq;
+
+    //find outermost endpoints
+
+    leftPoint = sides.first.a;
+    leftDistSq = LineSegment2(center, sides.first.a).squaredLength();
+    leftSide = sides.first;
+    
+    if (LineSegment2(center, sides.second.b).squaredLength() > leftDistSq) {
+        leftPoint = sides.second.b;
+        leftSide = sides.second;
+    }
+
+    rightPoint = sides.first.b;
+    rightDistSq = LineSegment2(center, sides.first.b).squaredLength();
+    rightSide = sides.first;
+
+    if (LineSegment2(center, sides.second.a).squaredLength() > rightDistSq) {
+        rightPoint = sides.second.a;
+        rightSide = sides.second;
+    }
+
+    Scalar spanlen = span.length();
+
+    //get span segments for outermost points
+    return SegmentPair(getSegmentNormal(leftSide, leftPoint, spanlen),
+                       getSegmentNormal(rightSide, rightPoint, spanlen));
+}
+
+/**
+   @brief Given two intersecting lines, form an iscoceles triangle with a specific
+   base length
+   @param firstUnit Unit vector direction of the first line
+   @param secondUnit Unit vector direction of the second line
+   @param point Intersection points between the two lines
+   @param angle Angle of intersection, passed in to avoid having to recalculate
+   @param baseLen Desired length for the triangle base
+   @param limit Maximum/minimum side length for the triangle
+   @param lt Whether the limit is max or min
+ */
+LineSegment2 triangleBase(const EVector firstUnit,
+						  const EVector secondUnit,
+						  const EVector point,
+						  const Scalar angle,
+						  const Scalar baseLen,
+                          const Scalar limit,
+                          const BaseLimitType lt) {
+	Scalar triangleSide = baseLen / (2 * sin(angle / 2));
+
+    //so that nearly parallel lines don't create lines off into infinity
+    if (lt == BASE_MIN && triangleSide < limit)
+        triangleSide = limit;
+    else if (lt == BASE_MAX && triangleSide > limit)
+        triangleSide = limit;
+
+	EVector firstSide = firstUnit * triangleSide;
+	EVector secondSide = secondUnit * triangleSide;
+
+	return LineSegment2(toVector2(point + firstSide),
+						toVector2(point + secondSide));
+}	
+
+/**
+   @brief Given two line segments, form a trapezoid with a given small top and
+   long bottom.  Dispatches to completeParallel if the lines are reasonably
+   parallel.
+   @param toplen Length of the shorter parallel side
+   @param bottomlen Length of the longer parallel side
+   @param sides Line segments trapezoid sides are projecting from
+   @param parallels Output, the top and bottom
+ */
+bool completeTrapezoid(const Scalar toplen, const Scalar bottomlen,
+                       const SegmentPair &sides, SegmentPair &parallels) {
+    //Eigen gives us all the stuff we need for this operation
+    EVector firsta = toEVector(sides.first.a);
+    EVector firstb = toEVector(sides.first.b);
+    EVector seconda = toEVector(sides.second.a);
+    EVector secondb = toEVector(sides.second.b);
+
+    //infinite lines projected through the segments
+	ELine firstLine = ELine::Through(firsta, firstb);
+	ELine secondLine = ELine::Through(seconda, secondb);
+
+	EVector firstUnit = firstLine.direction();
+	EVector secondUnit = secondLine.direction();
+
+    //if parallel within floating point rounding error
+    Scalar dirdot = firstUnit.dot(secondUnit);
+    if (dirdot > 0)
+        dirdot -= 1;
+    else
+        dirdot +=1;
+
+    if (dirdot < 0)
+        dirdot = -dirdot;
+
+    if (dirdot < 0.00001) {
+        parallels = completeParallel(toplen, bottomlen, sides);
+        return true;
+    }
+
+    //make sure lines are pointed in generally the same direction
+    if (firstUnit.dot(secondUnit) < 0) {
+        secondLine = ELine::Through(secondb, seconda);
+        secondUnit = secondLine.direction();
+    }
+
+	EVector intersection;
+	Scalar angle;
+	lineIntersection(firstLine, secondLine, intersection, angle);
+
+    //find an endpoint that isn't the intersection point to use as a comparison
+    EVector testpoint = firsta;
+    if (testpoint == intersection)
+        testpoint = firstb;
+
+    //make sure the direction vectors point away from the intersection
+    ELine testline = ELine::Through(testpoint, intersection);
+    if (testline.direction().dot(firstUnit) > 0) {
+        firstUnit = -firstUnit;
+        secondUnit = -secondUnit;
+    }
+
+    //get min and max distances from the intersection
+    vector<Scalar> endpoints;
+    endpoints.push_back(pointDistance(intersection, firsta));
+    endpoints.push_back(pointDistance(intersection, firstb));
+    endpoints.push_back(pointDistance(intersection, seconda));
+    endpoints.push_back(pointDistance(intersection, secondb));
+
+    sort(endpoints.begin(), endpoints.end());
+
+    //Find the parallels from triangles formed with bases of the right length
+	parallels.first = triangleBase(firstUnit, secondUnit, intersection,
+								   angle, toplen, endpoints.front(),
+                                   BASE_MIN);
+	parallels.second = triangleBase(firstUnit, secondUnit, intersection,
+									angle, bottomlen, endpoints.back(),
+                                    BASE_MAX);
+
+    return true;
+}
+
+
+/**
+   @brief Given a list of outline segments, find opposite pairs within the right
+   range to draw a spur between them
+   @param span How close the pairs need to be from each other
+   @param segs List of outline segments, unordered
+   @param index Pre-build spacial index of segs
+   @param walls Output, resulting wall pairs
+ */
+void findWallPairs(const Scalar span, const SegmentList segs,
+				   SegmentIndex &index, SegmentPairSet &walls) {
+
+	for (SegmentList::const_iterator curSeg = segs.begin();
+		 curSeg != segs.end(); ++curSeg) {
+
+        //find segments that intersect with a normal drawn from endpoint a
+		LineSegment2 normal = getSegmentNormal(*curSeg, curSeg->a, span);
+		SegmentList intersecting;
+
+		findIntersecting(index, normal, intersecting);
+        for(SegmentList::const_iterator iter = intersecting.begin(); 
+                iter != intersecting.end();
+                ++iter) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, *iter);
+			walls.insert(curWalls);
+		}
+
+        //find segments that intersect with a normal drawn from endpoint b
+		normal = getSegmentNormal(*curSeg, curSeg->b, span);
+        intersecting.clear();
+        
+		findIntersecting(index, normal, intersecting);
+		for(SegmentList::const_iterator iter = intersecting.begin(); 
+                iter != intersecting.end();
+                ++iter) {
+			//we only care about the closest intersection
+			SegmentPair curWalls =
+				normalizeWalls(*curSeg, intersecting.front());
+			walls.insert(curWalls);
+		}
+	}
+}
+
+//for debugging
+/*void segToSVG(const LineSegment2 seg, const string &color,
+  const Scalar xoff, const Scalar yoff);*/
+
+/**
+   @brief Given a pair of opposite walls, find the line that bisects them,
+   ending at a minimum and maximum distance between the walls
+   @param minSpurWidth Minimum distance between walls the line can pass through
+   @param maxSpurWidth Maximum distance between walls the line can pass through
+   @param walls Walls to bisect
+   @param bisect Output, bisection line segment, not set if return is false
+   @return true if walls can be bisected
+ */
+bool bisectWalls(Scalar minSpurWidth, Scalar maxSpurWidth,
+                 const SegmentPair &walls, LineSegment2 &bisect) {
+    SegmentPair spans;
+    if (completeTrapezoid(minSpurWidth, maxSpurWidth, walls, spans)) {
+        bisect = LineSegment2(midPoint(spans.first), midPoint(spans.second));
+
+        //for debugging
+        /*segToSVG(spans.first, "green", 0, 0);
+          segToSVG(spans.second, "green", 0, 0);*/
+        return true;
+    }
+    else
+        return false;
+
+}
+
+/**
+   @brief Find the portion of a segment that is within a margin of an outline
+   @param index Pre-built spacial index of outline segments
+   @param margin how far from the outline can a segment be
+   @param orig Original segment
+   @param cut Output, cut internal segment, not set if return is false
+   @return True if some piece of the segment is inside the outline
+ */
+bool cutInteriorSegment(SegmentIndex &index, const Scalar margin,
+                        const LineSegment2 &orig, LineSegment2 &cut) {
+    cut = orig;
+    SegmentList intersecting;
+    findIntersecting(index, cut, intersecting);
+
+    if (intersecting.size() == 0) {
+        //segment doesn't intersect the outline, check if its inside or out
+        //using the even/odd test
+        Vector2 bigpoint(9999, 9999);
+        LineSegment2 ray(cut.a, bigpoint);
+
+        findIntersecting(index, ray, intersecting);
+
+        return intersecting.size() % 2 != 0;
+    }
+
+    for (SegmentList::const_iterator outline = intersecting.begin();
+         outline != intersecting.end(); ++outline) {
+        Vector2 intersectPoint;
+        if (segmentIntersection(cut, *outline, intersectPoint)) {
+            Vector2 normal = segmentDirection(getSegmentNormal(*outline, 
+                                                               outline->a, 1));
+
+            //cut the segment in half at the intersection point
+            Vector2 direction = segmentDirection(cut);
+            direction.normalise();
+            
+            LineSegment2 left = LineSegment2(intersectPoint,
+                                             cut.a);
+            LineSegment2 right = LineSegment2(intersectPoint,
+                                              cut.b );
+
+            //figure out which half is inside and which is outside
+            if (segmentDirection(left).dotProduct(normal) > 0) {
+                cut = left;
+                cut.a = cut.a + direction * margin;
+            }
+            else if (segmentDirection(right).dotProduct(normal) > 0) {
+                cut = right;
+                cut.a = cut.a - direction * margin;
+            }
+        }
+        //if the segment doesn't intersect with the outline we don't need to do
+        //anything
+    }
+
+    return true;
+}
+
+/**
+   @brief Check if the endpoint of a segment is too close to an outline
+ */
+bool isEndPointClose(SegmentIndex &index, const LineSegment2 &segment,
+                   const Vector2 &endpoint, const Scalar margin) {
+    LineSegment2 left = getSegmentNormal(segment, endpoint, margin);
+    LineSegment2 right = getSegmentNormal(segment, endpoint, -margin);
+    LineSegment2 tangent(left.b, right.b);
+
+    SegmentList intersecting;
+
+    findIntersecting(index, tangent, intersecting);
+    return intersecting.size() > 0;
+}
+
+/**
+   @brief Holds information about a spur segment being clipped.
+   first and last tell wheither the beginning or ending dangling section (from the
+   endpoint to the first intersection) are valid.  all tells whether the spur
+   segment as a whole is valid.
+ */
+
+void Regioner::clipNearOutline(SegmentIndex &outline, SegmentIndex &pieceIndex,
+                               SegmentList &pieces, const Scalar margin,
+                               PointTable &piecePoints, FlagsList &flagsList) {
+    piecePoints.clear();
+    flagsList.clear();
+
+    SegmentList newPieces;
+    
+    // a parallel vector to pieces tracking all the intersection points
+    // on each segment 
+    for (SegmentList::const_iterator piece = pieces.begin();
+         piece != pieces.end(); piece++) {
+        piecePoints.push_back(PointList());
+        PointList &cur = piecePoints.back();
+        findIntersectPoints(pieceIndex, *piece, cur);
+    }
+
+    //First add the endpoints to the points list so each points vector has
+    //every point on a spur segment, then sort that list
+    SegmentList::const_iterator orig = pieces.begin();
+    vector<PointList>::iterator points = piecePoints.begin();
+    while (orig != pieces.end()) {
+        points->push_back(orig->a);
+        points->push_back(orig->b);
+        sort(points->begin(), points->end(), DistanceCmp(orig->a));
+
+        //end points all start valid
+        flagsList.push_back(SpurPieceFlags());
+
+        ++orig;
+        ++points;
+    }
+    
+    //next remove endpoints that are too close to the outline and make a new
+    //index
+    SegmentIndex edgeClipped;
+    points = piecePoints.begin();
+    FlagsList::iterator flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        LineSegment2 seg(points->front(), points->back());
+        int numpoints = points->size();
+
+        if (isEndPointClose(outline, seg, seg.a, margin/2)) {
+            flags->first = false;
+            --numpoints;
+            seg.a = *(points->begin() + 1);
+        }
+
+        if (isEndPointClose(outline, seg, seg.b, margin/2)) {
+            flags->last = false;
+            --numpoints;
+            seg.b = *(points->end() - 2);
+        }
+
+        //if a dangling piece is too short, cut it off.  This will cause
+        //pieces that intersect almost at their ends to actually chain at the
+        //ends
+        if (flags->first) {
+            LineSegment2 end(points->front(), *(points->begin() + 1));
+            if (end.length() < grueCfg.get_minSpurLength()) {
+                flags->first = false;
+                --numpoints;
+                seg.a = *(points->begin() + 1);
+            }
+        }
+
+        if (flags->last) {
+            LineSegment2 end(*(points->end() - 1), *(points->end() - 2));
+            if (end.length() < grueCfg.get_minSpurLength()) {
+                flags->last = false;
+                --numpoints;
+                seg.b = *(points->end() - 2);
+            }
+        }
+
+        //can't have a segment with less than one point
+        if (numpoints < 2)
+            flags->all = false;
+        else if (seg.length() < grueCfg.get_minSpurLength())
+            flags->all = false;
+        else {
+            expandSeg(seg, grueCfg.get_spurOverlap());
+            edgeClipped.insert(seg);
+            newPieces.push_back(seg);
+        }
+
+        ++points;
+        ++flags;
+    }
+
+    //update the piece list and index for future runs
+    pieceIndex = edgeClipped;
+    pieces = newPieces;
+}
+
+void Regioner::chainSpurSegments(SegmentIndex &outline, const Scalar margin,
+                                 const SegmentList &origPieces,
+                                 OpenPathList &chained) {
+
+    //Build an index of the spur segments
+    SegmentIndex pieceIndex;
+
+    FlagsList flagsList;
+    PointTable piecePoints;
+    SegmentList pieces = origPieces;
+    
+    for (SegmentList::iterator piece = pieces.begin();
+        piece != pieces.end(); ++piece) {
+        //expandSeg(*piece, grueCfg.get_spurOverlap());
+        //this needs to be a different value for mystifying reasons
+        *piece = piece->elongate(0.05).prelongate(0.05);
+        pieceIndex.insert(*piece);
+    }
+
+    //do this multiple times to catch dangling segments after other intersecting
+    //segments have been dropped
+    for (int count = 0; count < 2; ++count)
+        clipNearOutline(outline, pieceIndex, pieces, margin,
+                        piecePoints, flagsList);
+
+    //remove remaining endpoints that are too close to another spur
+    PointTable::iterator points = piecePoints.begin();
+    FlagsList::iterator flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        if (flags->all) {
+            LineSegment2 seg(points->front(), points->back());
+            expandSeg(seg, grueCfg.get_spurOverlap());
+            int numpoints = points->size();
+            bool changed = false;
+            LineSegment2 seg1(flags->first ? points->at(0) : points->at(1), 
+                    flags->last ? points->back() : points->at(points->size() - 2));
+            LineSegment2 seg2 = seg;
+            if (flags->first 
+                && isEndPointClose(pieceIndex, seg, seg.a, margin/2)) {
+                flags->first = false;
+                changed = true;
+            }
+                
+
+            if (flags->last
+                && isEndPointClose(pieceIndex, seg, seg.b, margin/2)) {
+                flags->last = false;
+                changed = true;
+            }
+
+            if (!flags->first) {
+                --numpoints;
+                seg2.a = points->at(1);
+            }
+            if (!flags->last) {
+                --numpoints;
+                seg2.b = points->at(points->size() - 2);
+            }
+
+            if (numpoints < 2) {
+                flags->all = false;
+                pieceIndex.erase(seg1);
+            } else if(changed) {
+                pieceIndex.erase(seg1);
+                pieceIndex.insert(seg2);
+            }
+        }
+
+        ++points;
+        ++flags;
+    }
+
+    //finally add fully clipped paths to the list
+    points = piecePoints.begin();
+    flags = flagsList.begin();
+    while (points != piecePoints.end()) {
+        if (flags->all) {
+            PointList::const_iterator begin = points->begin();
+            if (!flags->first)
+                ++begin;
+
+            PointList::const_iterator end = points->end();
+            if (!flags->last) {
+                --end;
+
+            }
+            chained.push_back(OpenPath());
+            OpenPath &chain = chained.back();
+            
+            for (PointList::const_iterator point = begin;
+                 point != end; ++point)
+                chain.appendPoint(*point);
+        }
+
+        ++points;
+        ++flags;
+    }
+}
+
+void Regioner::fillSpurLoops(const LoopList &spurLoops,
+							 const LayerMeasure &layermeasure,
+							 OpenPathList &spurs) {
+
+    Scalar minSpurWidth = grueCfg.get_minSpurWidth();
+    Scalar maxSpurWidth = grueCfg.get_maxSpurWidth();
+	
+	//get loop line segments
+	SegmentList segs;
+	SegmentIndex index;
+	for (LoopList::const_iterator loop = spurLoops.begin();
+		 loop != spurLoops.end(); ++loop) {
+
+		for (Loop::const_finite_cw_iterator pn = loop->clockwiseFinite();
+			 pn != loop->clockwiseEnd(); ++pn) {
+            LineSegment2 seg;
+            seg = loop->segmentAfterPoint(pn);
+
+            if (seg.squaredLength() > 0.00001) {
+                segs.push_back(seg);
+                index.insert(seg);
+            }
+		}
+
+	}
+
+	//find wall pairs
+	SegmentPairSet allWalls;
+	findWallPairs(maxSpurWidth, segs, index, allWalls);
+
+	SegmentList pieces;
+
+	// Bisect each pair
+	for (SegmentPairSet::const_iterator walls = allWalls.begin();
+		 walls != allWalls.end(); ++walls) {
+		LineSegment2 bisect;
+        if (bisectWalls(minSpurWidth, maxSpurWidth, *walls, bisect))
+            pieces.push_back(bisect);
+	}
+
+    //cut each segment so it fits in the outline
+    SegmentList interiorPieces;
+    for (SegmentList::iterator piece = pieces.begin();
+         piece != pieces.end(); ++piece) {
+        LineSegment2 cutpiece;
+        if (cutInteriorSegment(index, minSpurWidth / 2, *piece, cutpiece))
+            interiorPieces.push_back(cutpiece);
+    }
+
+
+    chainSpurSegments(index, minSpurWidth, interiorPieces, spurs);
+
+    //for testing without segments chained
+    /*for (SegmentList::const_iterator piece = pieces.begin();
+         piece != pieces.end(); ++piece) {
+        spurs.push_back(OpenPath());
+        spurs.back().appendPoint(piece->a);
+        spurs.back().appendPoint(piece->b);
+        }*/
+}
+
+void Regioner::spurs(RegionList::iterator regionsBegin,
+                     RegionList::iterator regionsEnd,
+                     LayerMeasure &layermeasure) {
+    for (RegionList::iterator region = regionsBegin;
+         region != regionsEnd; ++region) {
+        tick();
+
+        //get spur loops, then fill them
+        spurLoopsForSlice(region->outlines, region->insetLoops,
+                           layermeasure, region->spurLoops);
+        fillSpursForSlice(region->spurLoops, layermeasure, region->spurs);
+    }
+
+    tick();
 }
 
 

@@ -31,7 +31,6 @@ void FastgraphDeepTestCase::testLoopOrdering() {
             coarseness = 0.5;
             directionWeight = 0.8;
             doGraphOptimization = true;
-            iterativeEffort = 999;
             rapidMoveFeedRateXY = 100;
             rapidMoveFeedRateZ = 23;
             doRaft = false;

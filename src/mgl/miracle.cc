@@ -5,6 +5,7 @@
 
 // #include "abstractable.h"
 #include "miracle.h"
+#include "dump_restore.h"
 
 using namespace std;
 using namespace mgl;
@@ -81,5 +82,49 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 }
 
 
+void mgl::getSliceJson(const GrueConfig& grueCfg, 
+                       const string &modelFile,
+                       std::ostream &output,
+                       const int slicenum) {
+	Meshy mesh(grueCfg);
+	mesh.readStlFile(modelFile.c_str());
+	mesh.alignToPlate();
+	
+	Limits limits = mesh.readLimits();
+	Grid grid;
 
+	Segmenter segmenter(grueCfg);
+	segmenter.tablaturize(mesh);
+
+	Slicer slicer(grueCfg, NULL);
+	LayerLoops layers(grueCfg.get_firstLayerZ(), grueCfg.get_layerH());
+
+	//old interface
+	//slicer.tomographyze(segmenter, tomograph);
+	//new interface
+	slicer.generateLoops(segmenter, layers);
+
+    LayerLoops processed;
+    
+    LoopProcessor processor(grueCfg, NULL);
+    processor.processLoops(layers, processed);
+
+    int thisslice = 0;
+
+    for (LayerLoops::const_layer_iterator layer = processed.begin();
+         layer != processed.end(); ++layer) {
+        if (thisslice == slicenum) {
+            Json::Value loopsval;
+            dumpLoopList(layer->readLoops(), loopsval);
+
+            Json::StyledWriter writer;
+            output << string(writer.write(loopsval)) << endl;
+
+            break;
+        }
+
+        ++thisslice;
+    }
+}
+            
 

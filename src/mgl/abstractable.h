@@ -28,6 +28,7 @@
 #include <map>
 #include <sys/stat.h>
 #include <json/value.h>
+#include "configuration.h"
 
 namespace mgl {
 
@@ -154,13 +155,19 @@ protected:
 
 class ProgressJSONStreamTotal : public ProgressJSONStream {
 public:
-    ProgressJSONStreamTotal(unsigned int count = 0);
+    ProgressJSONStreamTotal(const GrueConfig& grueConf, unsigned int count = 0);
 protected:
-    typedef std::map<std::string, unsigned int> StageMap;
+    typedef std::pair<float, float> Proportion;
+    typedef std::vector<Proportion> ProportionCollection;
+    typedef std::map<std::string, size_t> StageMap;
     Json::Value makeJson(const char* taskName, unsigned int percent);
+    void addStage(const std::string& name, float weight);
     
+    const GrueConfig& grueCfg;
     StageMap stagemap;
+    ProportionCollection proportions;
     unsigned int curstage;
+    float accumulator;
 };
 
 

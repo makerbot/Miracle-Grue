@@ -48,3 +48,6 @@ documentation/man/*
 #ignore bin directory
 bin/*
 
+#ignore editor backups
+*~
+*#

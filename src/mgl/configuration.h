@@ -147,6 +147,7 @@ public:
 private:
     static const Scalar INVALID_SCALAR;// = std::numeric_limits<Scalar>::min();
     static const unsigned int INVALID_UINT = -1;
+    static const unsigned int INVALID_INT = -1;
     static const bool INVALID_BOOL = false;
     
     void loadRaftParams(const Configuration& config);
@@ -160,6 +161,8 @@ private:
     /* This is called from loadProfileParams */
     void loadExtruderParams(const Configuration& config);
     void loadExtrusionParams(const Configuration& config);
+    /* This is called from loadSlicingParams */
+    void loadSolidLayerParams(const Configuration& config);
     /* --END-- */
     
     //gcoder stuff
@@ -168,8 +171,8 @@ private:
     GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(extruderVector, extruders)
     
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, defaultExtruder)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, header)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(std::string, footer)
+    GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(std::string, header)
+    GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(std::string, footer)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doOutlines)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInsets)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInfills)
@@ -179,6 +182,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPutModelOnPlatform)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minLayerDuration)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, preCoarseness)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, directionWeight)
@@ -190,9 +194,18 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, gridSpacingMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, nbOfShells)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthRatio)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthMinimum)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, layerWidthMaximum)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, insetDistanceMultiplier)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, infillShellSpacingMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, roofLayerCount)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, floorLayerCount)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doExternalSpurs)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doInternalSpurs)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minSpurWidth)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, maxSpurWidth)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, spurOverlap)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minSpurLength)
     //raft
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doRaft)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, raftLayers)
@@ -201,17 +214,20 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftOutset)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftModelSpacing)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, raftDensity)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, raftAligned)
     //support
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doSupport)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportMargin)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, supportDensity)
     //pather
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doGraphOptimization)
-    GRUECONFIG_PUBLIC_CONST_ACCESSOR(unsigned, iterativeEffort)
     //gantry
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateXY)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, rapidMoveFeedRateZ)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, useEaxis)
+    GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(std::string, commentOpen)
+    GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR(std::string, commentClose)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(int, weightedFanCommand)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, scalingFactor)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingX)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingY)
@@ -219,7 +235,9 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingA)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingB)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, startingFeed)
-
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, centerX)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, centerY)
+    
 #undef GRUECONFIG_PUBLIC_CONST_ACCESSOR
 #undef GRUECONFIG_PUBLIC_CONSTREF_ACCESSOR
 };
