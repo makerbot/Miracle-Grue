@@ -141,7 +141,15 @@ public:
      a copy of this will be stored.
      @return: an iterator to what you just inserted (not implemented)*/
     iterator insert(const value_type& value);
-    /*!Not implemented, do not use!*/
+    /**
+     @brief remove the data element pointed to by @aiter from the rtree
+     @param iter the position of the data to remove
+     This function will cleanly remove the data element at iter, 
+     as well as any nodes that become empty as a result. 
+     Existing iterators continue to be valid.
+     Time complexity is usually constant, but can go to log(N) where 
+     N is the size of the tree (as erasures propagate upward).
+     */
     void erase(iterator iter);
     /*!Search for values that meet criteria of filt.filter(AABBox)
      @result: Object supporting push_back(...) where output is placed
@@ -155,13 +163,13 @@ public:
      In general, this should be a constant time swap that involves 
      no copying of data elements*/
     void swap(basic_local_rtree& other);
-    /*!Not implemented, do not use!*/
+    /// use for iterating through the data elements
     iterator begin() { return iterator(m_data.begin()); }
-    /*!Not implemented, do not use!*/
+    /// use for iterating through the data elements
     iterator end() { return iterator(m_data.end()); }
-    /*!Not implemented, do not use!*/
+    /// use for iterating through the data elements
     const_iterator begin() const { return const_iterator(m_data.begin()); }
-    /*!Not implemented, do not use!*/
+    /// use for iterating through the data elements
     const_iterator end() const { return const_iterator(m_data.end()); }
     
     void repr(std::ostream& out) const;
@@ -398,6 +406,22 @@ private:
     node_vacancy_container m_freenodes;
     size_t m_root;
 };
+
+}
+
+namespace std {
+
+/**
+ @brief overload of std::swap for local rtrees. Invokes lhs.swap(rhs)
+ @param T the type template parameter for the rtree
+ @param C the branching factor template parameter for the rtree
+ @param lhs an rtree to be swapped, becomes @a rhs when done
+ @param rhs an rtree to be swapped, becomes @a lhs when done
+ */
+template <typename T, size_t C>
+void swap(mgl::basic_local_rtree<T, C>& lhs, mgl::basic_local_rtree<T, C>& rhs) {
+    lhs.swap(rhs);
+}
 
 }
 

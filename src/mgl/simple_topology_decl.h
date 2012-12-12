@@ -1,6 +1,7 @@
 #ifndef MGL_SIMPLE_TOPOLOGY_DECL_H
 #define	MGL_SIMPLE_TOPOLOGY_DECL_H
 
+#include <cstdlib>
 #include <utility>
 #include <memory>
 #include <vector>

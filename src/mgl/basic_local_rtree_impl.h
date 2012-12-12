@@ -123,15 +123,17 @@ void BLRT_TYPE::repr_svg(std::ostream& out) const {
 BLRT_TEMPLATE
 void BLRT_TYPE::repr_svg(std::ostream& out, size_t recursionLevel, 
         size_t index) const {
+    static const Scalar SCALE = 10.0;
     unsigned int rgbcolor = (255 << (recursionLevel*8)) | 
             (255 >> ((1+recursionLevel)*8));
-    Scalar factor = -1.0 * recursionLevel;
+    Scalar factor = (-0.5 / SCALE) * recursionLevel;
     const node& curNode = dereferenceNode(index);
     AABBox bounds = curNode.bound().adjusted(Point2Type(factor, factor), 
             Point2Type(-factor, -factor));
-    out << "<rect x=\"" << bounds.left() << "\" y=\"" << bounds.bottom() << 
-            "\" width=\"" << bounds.size_x() << "\" height=\"" << 
-            bounds.size_y() << "\" " << 
+    out << "<rect x=\"" << bounds.left() * SCALE << 
+            "\" y=\"" << bounds.bottom() * SCALE << 
+            "\" width=\"" << bounds.size_x() * SCALE << 
+            "\" height=\"" << bounds.size_y() * SCALE << "\" " << 
             "style=\"fill-opacity:0.0;stroke:rgb(" << 
             (255 & (rgbcolor >> 16)) << ',' << 
             (255 & (rgbcolor >> 0)) << ',' << 

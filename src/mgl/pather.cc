@@ -16,6 +16,7 @@
 #include "limits.h"
 #include "pather_optimizer_graph.h"
 #include "pather_optimizer_fastgraph.h"
+#include "spacial_graph.h"
 
 namespace mgl {
 using namespace std;
@@ -152,16 +153,6 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
                     0.01);
             optimizer->addBoundaries(outsetSupportLoops);
-            
-            const GridRanges& supportRanges = layerRegions->support;
-            OpenPathList supportPaths;
-            grid.gridRangesToOpenPaths(
-                    direction ? supportRanges.xRays : supportRanges.yRays, 
-                    values, 
-                    axis, 
-                    supportPaths);
-            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
-                    PathLabel::OWN_SUPPORT, 0));
         }
         
 		if(grueCfg.get_doInsets()) {
@@ -204,6 +195,23 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             optimizer->addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
                     PathLabel::OWN_MODEL, 
                     LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
+        }
+        SpacialGraph sg;
+        sg.insertPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_MODEL, 
+                    LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
+        sg.repr_svg(std::cerr);
+        
+        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {    
+            const GridRanges& supportRanges = layerRegions->support;
+            OpenPathList supportPaths;
+            grid.gridRangesToOpenPaths(
+                    direction ? supportRanges.xRays : supportRanges.yRays, 
+                    values, 
+                    axis, 
+                    supportPaths);
+            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_SUPPORT, 0));
         }
         
         optimizer->optimize(preoptimized);
