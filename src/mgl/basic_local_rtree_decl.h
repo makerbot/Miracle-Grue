@@ -142,7 +142,7 @@ public:
      @return: an iterator to what you just inserted (not implemented)*/
     iterator insert(const value_type& value);
     /**
-     @brief remove the data element pointed to by @aiter from the rtree
+     @brief remove the data element pointed to by @a iter from the rtree
      @param iter the position of the data to remove
      This function will cleanly remove the data element at iter, 
      as well as any nodes that become empty as a result. 
@@ -151,6 +151,11 @@ public:
      N is the size of the tree (as erasures propagate upward).
      */
     void erase(iterator iter);
+    /**
+     @brief empty all contents of this tree. 
+     Cost and time complexity is of calling clear on all internal collections
+     */
+    void clear();
     /*!Search for values that meet criteria of filt.filter(AABBox)
      @result: Object supporting push_back(...) where output is placed
      @filter: object supporting filter(...) that defines the criteria

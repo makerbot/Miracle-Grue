@@ -30,10 +30,13 @@ class SpacialGraph {
 public:
     class NodeData;
     class CostData;
+    
     typedef topo::simple_graph<NodeData, CostData> graph_type;
     typedef std::pair<graph_type*, graph_type::node_index> graph_node_reference;
     typedef basic_local_rtree<graph_node_reference> tree_type;
     typedef graph_type::node node;
+    
+    typedef std::list<LabeledOpenPath> LabeledOpenPaths;
     
     class NodeData {
     public:
@@ -120,18 +123,62 @@ public:
         BASE m_base;
     };
     
+    SpacialGraph();
+    SpacialGraph(const SpacialGraph& other);
+    SpacialGraph& operator =(const SpacialGraph& other);
     
+    /**
+     @brief Insert @a path with @a label into the graph, creating correct 
+     nodes, links, and marking correct entries
+     @param path the OpenPath to insert
+     @param label the label of @a path
+     */
     void insertPath(const OpenPath& path, const PathLabel& label);
+    /**
+     @brief Insert @a loop with @a label into the graph, creating correct 
+     nodes, links, and marking correct entries
+     @param loop the Loop to insert
+     @param label the label of @a loop
+     */
     void insertPath(const Loop& loop, const PathLabel& label);
+    /**
+     @brief Insert a LabeledPath or LabeledLoop into the graph by invoking 
+     the correct overload of insertPath declared above
+     @param PATH_TYPE template parameter for the type: loop or path
+     @param labeledPath a LabeledLoop or LabeledOpenPath to insert
+     */
     template <typename PATH_TYPE>
     void insertPath(const basic_labeled_path<PATH_TYPE>& labeledPath);
+    /**
+     @brief insert an stl collection of compatible objects into the graph
+     @param COLLECTION the type of collection we're inserting
+     @param collection the instance of the collection we're inserting. This 
+     should be any collection that supports const_iterator, begin(), end(), 
+     and const_iterator::operator *() should return a type of object 
+     accepted the insertPath(basic_labeled_path...) template
+     */
     template <typename COLLECTION>
     void insertPaths(const COLLECTION& collection);
+    /**
+     @brief insert an stl collection of compatible objects into the graph
+     @param COLLECTION the type of collection we're inserting
+     @param collection the instance of the collection we're inserting. This 
+     should be any collection that supports const_iterator, begin(), end(), 
+     and const_iterator::operator *() should return a loop or an open path. 
+     @param label the label to be applied to all the objects inserted
+     */
     template <typename COLLECTION>
     void insertPaths(const COLLECTION& collection, const PathLabel& label);
     
+    ///conveniently iterate over entry points
     entry_iterator entryBegin();
+    ///conveniently iterate over entry points
     entry_iterator entryEnd();
+    
+    ///@return true if no nodes remain in the graph, else false
+    bool empty() const;
+    ///Does this really need any explanation?
+    void clear();
     
     void repr(std::ostream& out);
     void repr_svg(std::ostream& out);
@@ -144,6 +191,9 @@ public:
      BOUNDARY_TEST::operator(const Segment2Type&) const will return true if the 
      line segment is a valid path to extrude over, otherwise false
      @param result here will be placed reults of optimization
+     @param entryPoint holds the position where the last thing was printed, 
+     so we know where best to start. After this function returns, 
+     this variable will hold the last position we traversed.
      @param labeler instance of object used to compare labels
      @param bounder instance of object to determine valid connections, 
      ideally a simple class that tests the input segment against a spacial 
@@ -152,13 +202,43 @@ public:
      This function is destructive! It will leave the contained graph empty.
      */
     template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
-    void optimize(std::list<LabeledOpenPath>& result, 
+    void optimize(LabeledOpenPaths& result, 
+            Point2Type& entryPoint, 
             const LABEL_PREDICATE& labeler = LABEL_PREDICATE(), 
             const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
     
 private:
     
+    /**
+     @brief From the node at @a index, select or create the best possible 
+     link according to @a labeler that satisfied @a bounder, possibly 
+     using @a entryPoint as a hint
+     @param LABEL_PREDICATE see LABEL_PREDICATE in SpacialGraph::optimize
+     @param BOUNDARY_TEST see BOUNDARY_TEST in SpacialGraph::optimize
+     @param index the index of the node from which to select a forward link
+     @param labeler SpacialGraph::optimize will construct a predicate and 
+     pass it to this function, used to prioritize certain labels
+     @param bounder Functor on Segment2Type that determines where new 
+     connections can be made.
+     @param entryPoint the position of the end of the last movement, 
+     may be used to hint at best next movement.
+     */
+    template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
+    node::forward_link_iterator selectBestLink(graph_type::node_index index, 
+            const cost_predicate<LABEL_PREDICATE>& labeler, 
+            const BOUNDARY_TEST& bounder, 
+            const Point2Type& entryPoint);
+    
+    /**
+     @brief Generate node with @a data in the graph, and place it in the tree
+     @param data what is stored in the node
+     @return index of newly created node
+     */
     graph_type::node_index createNode(const NodeData& data);
+    /**
+     @brief Remove node with @a index from tree and graph
+     @param index identifier of node to remove
+     */
     void destroyNode(graph_type::node_index index);
     
     graph_type m_graph;

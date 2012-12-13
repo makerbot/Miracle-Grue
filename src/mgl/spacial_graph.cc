@@ -10,6 +10,32 @@ AABBox to_bbox<SpacialGraph::graph_node_reference>::bound(
     return AABBox((*value.first)[value.second].data().position());
 }
 
+SpacialGraph::SpacialGraph() {}
+
+SpacialGraph::SpacialGraph(const SpacialGraph& other) 
+        : m_graph(other.m_graph) {
+    for(graph_type::forward_node_iterator iter = m_graph.begin(); 
+            iter != m_graph.end(); 
+            ++iter) {
+        iter->data().m_treeIterator = m_tree.insert(
+                graph_node_reference(&m_graph, iter->getIndex()));
+    }
+}
+
+SpacialGraph& SpacialGraph::operator =(const SpacialGraph& other) {
+    if(&other == this)
+        return *this;
+    m_tree.clear();
+    m_graph = other.m_graph;
+    for(graph_type::forward_node_iterator iter = m_graph.begin(); 
+            iter != m_graph.end(); 
+            ++iter) {
+        iter->data().m_treeIterator = m_tree.insert(
+                graph_node_reference(&m_graph, iter->getIndex()));
+    }
+    return *this;
+}
+
 void SpacialGraph::insertPath(const OpenPath& path, const PathLabel& label) {
     graph_type::node_index lastIndex;
     for(OpenPath::const_iterator iter = path.fromStart(); 
@@ -72,6 +98,15 @@ SpacialGraph::entry_iterator SpacialGraph::entryBegin() {
 
 SpacialGraph::entry_iterator SpacialGraph::entryEnd() {
     return entry_iterator(m_graph.end(), m_graph.end());
+}
+
+bool SpacialGraph::empty() const {
+    return m_graph.empty();
+}
+
+void SpacialGraph::clear() {
+    m_graph.clear();
+    m_tree.clear();
 }
 
 void SpacialGraph::repr(std::ostream& out) {

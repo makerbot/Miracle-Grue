@@ -35,6 +35,21 @@ void SpacialGraph::insertPaths(
         insertPath(*iter, label);
     }
 }
+
+template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
+void SpacialGraph::optimize(LabeledOpenPaths& result, Point2Type& entryPoint, 
+        const LABEL_PREDICATE& labeler, const BOUNDARY_TEST& bounder) {
+    
+}
+
+template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
+SpacialGraph::node::forward_link_iterator 
+        SpacialGraph::selectBestLink(graph_type::node_index index, 
+        const cost_predicate<LABEL_PREDICATE>& labeler, 
+        const BOUNDARY_TEST& bounder, const Point2Type& entryPoint) {
+    return m_graph[index].forwardEnd();
+}
+
 template <typename BASE>
 int SpacialGraph::cost_predicate<BASE>::compare(
         const value_type& lhs, const value_type& rhs) const {

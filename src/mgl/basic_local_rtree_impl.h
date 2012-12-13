@@ -72,6 +72,13 @@ void BLRT_TYPE::erase(iterator iter) {
     erasePrivate(indexToErase);
 }
 BLRT_TEMPLATE
+void BLRT_TYPE::clear() {
+    m_data.clear();
+    m_nodes.clear();
+    m_freenodes.clear();
+    m_root = DEFAULT_CHILD_PTR();
+}
+BLRT_TEMPLATE
 template <typename COLLECTION, typename FILTER>
 void BLRT_TYPE::search(COLLECTION& result, const FILTER& filt) const {
     if(m_root == DEFAULT_CHILD_PTR()) 
