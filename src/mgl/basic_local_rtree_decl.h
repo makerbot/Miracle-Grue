@@ -89,30 +89,30 @@ public:
     typedef typename data_container::iterator data_iterator;
     typedef typename data_container::const_iterator data_const_iterator;
     
-    template <typename BASE>
+    template <typename BASE, typename VALUE>
     class basic_iterator {
     public:
         friend class basic_local_rtree;
-        template <typename OBASE>
+        template <typename OBASE, typename OVALUE>
         friend class basic_iterator;
         
         basic_iterator() {}
-        template <typename OBASE>
-        basic_iterator(const basic_iterator<OBASE>& other)
-                : m_base(other.basic_iterator<OBASE>::m_base) {}
-        template <typename OBASE>
-        basic_iterator& operator =(const basic_iterator<OBASE>& other) {
-            m_base = other.basic_iterator<OBASE>::m_base;
+        template <typename OBASE, typename OVALUE>
+        basic_iterator(const basic_iterator<OBASE, OVALUE>& other)
+                : m_base(other.basic_iterator<OBASE, OVALUE>::m_base) {}
+        template <typename OBASE, typename OVALUE>
+        basic_iterator& operator =(const basic_iterator<OBASE, OVALUE>& other) {
+            m_base = other.basic_iterator<OBASE, OVALUE>::m_base;
             return *this;
         }
         basic_iterator& operator ++() { ++m_base; return *this; } //pre
         basic_iterator operator ++(int) { //post
             basic_iterator clone = *this; ++*this; return clone; 
         }
-        const value_type& operator *() const { 
+        VALUE& operator *() const { 
             return m_base->m_value.second; 
         }
-        const value_type* operator ->() { return &**this; }
+        VALUE* operator ->() const { return &**this; }
         bool operator ==(const basic_iterator& other) const {
             return m_base == other.m_base;
         }
@@ -126,8 +126,8 @@ public:
         BASE m_base;
     };
     
-    typedef basic_iterator<data_iterator> iterator;
-    typedef basic_iterator<data_const_iterator> const_iterator;
+    typedef basic_iterator<data_iterator, value_type> iterator;
+    typedef basic_iterator<data_const_iterator, const value_type> const_iterator;
     
     ///@brief these constructors behave as expected
     basic_local_rtree();
