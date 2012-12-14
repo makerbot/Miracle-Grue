@@ -1,4 +1,6 @@
 #include <utility>
+#include <vector>
+#include <algorithm>
 
 #include "spacial_graph_decl.h"
 
@@ -9,6 +11,8 @@ AABBox to_bbox<SpacialGraph::graph_node_reference>::bound(
         const SpacialGraph::graph_node_reference& value) {
     return AABBox((*value.first)[value.second].data().position());
 }
+
+const Scalar SpacialGraph::NEAREST_QUICKTEST_THRESHOLD = 10.0;
 
 SpacialGraph::SpacialGraph() {}
 
@@ -91,7 +95,7 @@ void SpacialGraph::insertPath(const Loop& loop, const PathLabel& label) {
 
 SpacialGraph::entry_iterator SpacialGraph::entryBegin() {
     entry_iterator iter(m_graph.begin(), m_graph.end());
-    if(!iter->data().isEntry())
+    if(iter != entryEnd() && !iter->data().isEntry())
         ++iter;
     return iter;
 }
@@ -115,6 +119,70 @@ void SpacialGraph::repr(std::ostream& out) {
 
 void SpacialGraph::repr_svg(std::ostream& out) {
     m_tree.repr_svg(out);
+}
+
+class NearestDistanceComparator {
+public:
+    NearestDistanceComparator(const Point2Type& pt) : m_point(pt) {}
+    bool operator ()(const SpacialGraph::graph_node_reference& lhs, 
+            const SpacialGraph::graph_node_reference& rhs) const {
+        const SpacialGraph::graph_type& lgraph = *lhs.first;
+        const SpacialGraph::graph_type& rgraph = *rhs.first;
+        return operator ()(lgraph[lhs.second], rgraph[rhs.second]);
+    }
+    bool operator ()(const SpacialGraph::node& lhs, 
+            const SpacialGraph::node& rhs) const {
+        return (lhs.data().position() - m_point).squaredMagnitude() < 
+                (rhs.data().position() - m_point).squaredMagnitude();
+    }
+private:
+    const Point2Type& m_point;
+};
+
+SpacialGraph::graph_type::node_index SpacialGraph::findNearestNode(
+        const Point2Type& point) {    
+    std::vector<graph_node_reference> candidates;
+    m_tree.search(candidates, BBoxFilter(AABBox(point).adjusted(
+            Point2Type(-NEAREST_QUICKTEST_THRESHOLD, 
+            -NEAREST_QUICKTEST_THRESHOLD), 
+            Point2Type(NEAREST_QUICKTEST_THRESHOLD, 
+            NEAREST_QUICKTEST_THRESHOLD))));
+    if(!candidates.empty()) {
+        //select from the small data set we got from the r-tree
+        return std::min_element(candidates.begin(), candidates.end(), 
+                NearestDistanceComparator(point))->second;
+    } else {
+        //search all the nodes
+        return std::min_element(m_graph.begin(), 
+                m_graph.end(), NearestDistanceComparator(point))->getIndex();
+    }
+}
+
+void SpacialGraph::smartAppendPoint(Point2Type point, PathLabel label, 
+        LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
+        Point2Type& entryPoint) {
+    if(path.myLabel.isInvalid()) {
+        path.myLabel = label;
+        //path.myPath.clear();
+        path.myPath.appendPoint(point);
+    } else if(path.myLabel == label) {
+        path.myPath.appendPoint(point);
+    } else {
+        Point2Type prevPoint = path.myPath.empty() ? point : *path.myPath.fromEnd();
+        smartAppendPath(labeledpaths, path);
+        path.myLabel = label;
+        path.myPath.appendPoint(prevPoint);
+        path.myPath.appendPoint(point);
+    }
+    entryPoint = point;
+}
+
+void SpacialGraph::smartAppendPath(LabeledOpenPaths& labeledpaths, 
+        LabeledOpenPath& path) {
+    if(path.myLabel.isValid() && path.myPath.size() > 1) 
+        labeledpaths.push_back(path);
+    path.myLabel = PathLabel();
+    path.myPath.clear();
 }
 
 SpacialGraph::graph_type::node_index SpacialGraph::createNode(

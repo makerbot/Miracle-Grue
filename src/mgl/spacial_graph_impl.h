@@ -10,6 +10,7 @@
 
 #include "spacial_graph_decl.h"
 #include "intersection_index.h"
+#include <algorithm>
 
 namespace mgl {
 
@@ -39,7 +40,9 @@ void SpacialGraph::insertPaths(
 template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
 void SpacialGraph::optimize(LabeledOpenPaths& result, Point2Type& entryPoint, 
         const LABEL_PREDICATE& labeler, const BOUNDARY_TEST& bounder) {
-    
+    while(!m_graph.empty()) {
+        
+    }
 }
 
 template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
@@ -47,7 +50,43 @@ SpacialGraph::node::forward_link_iterator
         SpacialGraph::selectBestLink(graph_type::node_index index, 
         const cost_predicate<LABEL_PREDICATE>& labeler, 
         const BOUNDARY_TEST& bounder, const Point2Type& entryPoint) {
-    return m_graph[index].forwardEnd();
+    return std::min_element(m_graph[index].forwardBegin(), 
+            m_graph[index].forwardEnd(), 
+            labeler);
+}
+
+template <typename LABEL_PREDICATE>
+SpacialGraph::graph_type::node_index SpacialGraph::findBestNode(
+        const Point2Type& point, const LABEL_PREDICATE& labeler) {
+    std::vector<graph_node_reference> candidates;
+    m_tree.search(candidates, BBoxFilter(AABBox(point).adjusted(
+            Point2Type(-NEAREST_QUICKTEST_THRESHOLD, 
+            -NEAREST_QUICKTEST_THRESHOLD), 
+            Point2Type(NEAREST_QUICKTEST_THRESHOLD, 
+            NEAREST_QUICKTEST_THRESHOLD))));
+    distance_predicate<LABEL_PREDICATE> myComparator(labeler, m_graph, point);
+    if(!candidates.empty()) {
+        //select from the small data set we got from the r-tree
+        return std::min_element(candidates.begin(), candidates.end(), 
+                myComparator)->second;
+    } else {
+        //search all the nodes
+        return std::min_element(m_graph.begin(), 
+                m_graph.end(), myComparator)->getIndex();
+    }
+}
+
+template <typename BOUNDARY_TEST>
+void SpacialGraph::smartConnect(Point2Type& entryPoint, 
+        Point2Type destPoint, 
+        LabeledOpenPaths& result, LabeledOpenPath& currentPath, 
+        const BOUNDARY_TEST& bounder) {
+    Segment2Type connection(entryPoint, destPoint);
+    PathLabel label(PathLabel::TYP_INVALID, PathLabel::OWN_MODEL, 0);
+    if(bounder(connection)) {
+        label.myType = PathLabel::TYP_CONNECTION;
+    }
+    smartAppendPoint(destPoint, label, result, currentPath, entryPoint);
 }
 
 template <typename BASE>
@@ -60,6 +99,38 @@ int SpacialGraph::cost_predicate<BASE>::compare(
             BETTER : ((lhs.squaredDistance() > rhs.squaredDistance()) ? 
             WORSE : SAME);
 }
+
+///compare node refs
+template <typename BASE>
+int SpacialGraph::distance_predicate<BASE>::compare(
+        const value_type& lhs, const value_type& rhs) const {
+    int result = m_base.compare(lhs.data().label(), 
+            rhs.data().label());
+    if(result)
+        return result;
+    Scalar ldistance = (lhs.data().position() - 
+            m_point).squaredMagnitude();
+    Scalar rdistance = (rhs.data().position() - 
+            m_point).squaredMagnitude();
+    return (ldistance < rdistance) ? BETTER : 
+            ((ldistance > rdistance) ? WORSE : SAME);
+}
+///compare node indexes, use internal graph ref
+template <typename BASE>
+int SpacialGraph::distance_predicate<BASE>::compare(
+        const graph_type::node_index& lhs, 
+        const graph_type::node_index& rhs) const {
+    return compare(m_graph[lhs], m_graph[rhs]);
+}
+///compare graph node refs, use stored graph ptr and node index
+template <typename BASE>
+int SpacialGraph::distance_predicate<BASE>::compare(
+        const graph_node_reference& lhs, 
+        const graph_node_reference& rhs) const {
+    return compare(lhs.first->operator [](lhs.second), 
+            rhs.first->operator [](rhs.second));
+}
+
 
 template <typename SPACIAL_CONTAINER>
 basic_boundary_test<SPACIAL_CONTAINER>::basic_boundary_test(

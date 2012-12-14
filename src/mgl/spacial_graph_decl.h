@@ -28,6 +28,9 @@ namespace mgl {
  */
 class SpacialGraph {
 public:
+    
+    static const Scalar NEAREST_QUICKTEST_THRESHOLD;
+    
     class NodeData;
     class CostData;
     
@@ -108,19 +111,59 @@ public:
     };
     
     /**
-     @brief BASE is a predicate on 
-     PathLabels. BASE will select which label is the better one, and this 
-     class will break ties based on information
+     @brief A predicate on link costs that uses BASE, a predicate on labels, 
+     to select the better label, and other link cost information to break 
+     ties.
+     @param BASE a predicate on PathLabels
      */
     template <typename BASE>
     class cost_predicate : public abstract_predicate<CostData> {
     public:
         typedef CostData value_type;
+        ///@brief For BASE with default constructor, invoke this
+        cost_predicate() {}
+        ///@brief For BASE that takes a single parameter to construct, invoke this
         template <typename T>
         cost_predicate(const T& arg) : m_base(arg) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
     protected:
         BASE m_base;
+    };
+    /**
+     @brief A predicate on link costs that uses BASE, a predicate on labels, 
+     to select the better label, and other distance to a point to break 
+     ties.
+     @param BASE a predicate on PathLabels
+     */
+    template <typename BASE>
+    class distance_predicate : public abstract_predicate<node> {
+    public:
+        typedef node value_type;
+        ///@brief If BASE can be default constructed, only pass the point and
+        /// graph to reference.
+        distance_predicate(graph_type& graph, const Point2Type& point) 
+                : m_graph(graph), m_point(point) {}
+        ///@brief If BASE needs a parameter, pass it as well
+        template <typename T>
+        distance_predicate(const T& arg, graph_type& graph, 
+                const Point2Type& point) 
+                : m_base(arg), m_graph(graph), m_point(point) {}
+        /// compare node references
+        int compare(const value_type& lhs, const value_type& rhs) const;
+        /// compare node indexes, use m_graph to get node references
+        int compare(const graph_type::node_index& lhs, 
+                const graph_type::node_index& rhs) const;
+        /// compare graph_node_references. These store graph pointers and graph 
+        /// indexes. Use those to get node references
+        int compare(const graph_node_reference& lhs, 
+                const graph_node_reference& rhs) const;
+        template <typename T>
+        bool operator ()(const T& lhs, const T& rhs) 
+                { return compare(lhs, rhs) == BETTER; }
+    protected:
+        BASE m_base;
+        graph_type& m_graph;
+        Point2Type m_point;
     };
     
     SpacialGraph();
@@ -229,6 +272,57 @@ private:
             const BOUNDARY_TEST& bounder, 
             const Point2Type& entryPoint);
     
+    /**
+     @brief Intelligently make a connection between @a entryPoint and 
+     @a destPoint based on @a bounder
+     @param BOUNDARY_TEST see BOUNDARY_TEST in SpacialGraph::optimize
+     @param entryPoint starting point from which to connect. Will store 
+     @a destPoint at the end of this function
+     @param destPoint point to which attempt connecting
+     @param result where current results are being stored
+     @param currentPath path currently being worked on
+     @param bounder instance of object to test for valid new connections
+     */
+    template <typename BOUNDARY_TEST>
+    void smartConnect(Point2Type& entryPoint, Point2Type destPoint, 
+            LabeledOpenPaths& result, LabeledOpenPath& currentPath, 
+            const BOUNDARY_TEST& bounder);
+    /**
+     @brief find the node nearest to @a point. DOES NOT TEST FOR EMPTY GRAPH!!
+     @param point the position nearest to which to find nodes
+     @return index of the nearest node
+     
+     Find the nearest node to a point. To reduce data set, we will first 
+     query the rtree using a box around point of size 
+     NEAREST_QUICKTEST_THRESHOLD. If that finds any nodes, we will pick 
+     the nearest of those. Otherwise, we invoke std::min_element(...)
+     on all nodes.
+     */
+    graph_type::node_index findNearestNode(const Point2Type& point);
+    /**
+     @brief find the best node near to @a point. DOES NOT TEST FOR EMPTY GRAPH!!
+     @param LABEL_PREDICATE a predicate on PathLabels
+     @param point the position nearest to which to find nodes
+     @param labeler instance of object used to prioritize labels
+     @return index of the nearest node
+     
+     Find the nearest node to a point. To reduce data set, we will first 
+     query the rtree using a box around point of size 
+     NEAREST_QUICKTEST_THRESHOLD. If that finds any nodes, we will pick 
+     the nearest of those. Otherwise, we invoke std::min_element(...)
+     on all nodes.
+     
+     NOTE! IMPORTANT: If any candidates are found using the r-tree, 
+     we will pick from among them even if better labels exist further out.
+     */
+    template <typename LABEL_PREDICATE>
+    graph_type::node_index findBestNode(const Point2Type& point, 
+            const LABEL_PREDICATE& labeler);
+    static void smartAppendPoint(Point2Type point, PathLabel label, 
+            LabeledOpenPaths& labeledpaths, LabeledOpenPath& path, 
+            Point2Type& entryPoint);
+    static void smartAppendPath(LabeledOpenPaths& labeledpaths, 
+            LabeledOpenPath& path);
     /**
      @brief Generate node with @a data in the graph, and place it in the tree
      @param data what is stored in the node
