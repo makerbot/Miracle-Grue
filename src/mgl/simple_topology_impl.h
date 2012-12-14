@@ -66,10 +66,11 @@ SG_NODE::link_iterator<BASE>
     return copy;
 }
 SG_TEMPLATE template <typename BASE>
-typename SG_NODE::connection 
+const typename SG_NODE::connection&
         SG_NODE::link_iterator<BASE>::operator *() {
-    return connection(&(m_parent->nodes[m_base->first].m_node), 
-            &(m_parent->costs[m_base->second]));
+    m_connection.first = &(m_parent->nodes[m_base->first].m_node);
+    m_connection.second = &(m_parent->costs[m_base->second]);
+    return m_connection;
 }
 SG_TEMPLATE template <typename BASE>
 bool SG_NODE::link_iterator<BASE>::operator ==(

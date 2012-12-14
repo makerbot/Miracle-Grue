@@ -265,6 +265,7 @@ private:
      connections can be made.
      @param entryPoint the position of the end of the last movement, 
      may be used to hint at best next movement.
+     @return link iterator to the best link, or end if no more links
      */
     template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
     node::forward_link_iterator selectBestLink(graph_type::node_index index, 

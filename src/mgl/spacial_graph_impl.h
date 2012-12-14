@@ -40,9 +40,32 @@ void SpacialGraph::insertPaths(
 template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
 void SpacialGraph::optimize(LabeledOpenPaths& result, Point2Type& entryPoint, 
         const LABEL_PREDICATE& labeler, const BOUNDARY_TEST& bounder) {
+    LabeledOpenPath currentPath;
+    cost_predicate<LABEL_PREDICATE> costCompare(labeler);
+    node::forward_link_iterator linkIter;
     while(!m_graph.empty()) {
-        
+        graph_type::node_index currentNode = 
+                findBestNode(entryPoint, labeler);
+        smartConnect(entryPoint, m_graph[currentNode].data().position(), 
+                result, currentPath, bounder);
+        while((linkIter = 
+                selectBestLink(currentNode, costCompare, bounder, entryPoint)) 
+                != m_graph[currentNode].forwardEnd()) {
+            graph_type::node_index nextNode = linkIter->first->getIndex();
+            node& currentNodeRef = m_graph[currentNode];
+            node& nextNodeRef = m_graph[nextNode];
+            smartAppendPoint(nextNodeRef.data().position(), 
+                    *(linkIter->second), result, currentPath, entryPoint);
+            currentNodeRef.disconnect(nextNodeRef);
+            nextNodeRef.disconnect(currentNodeRef);
+            if(currentNodeRef.forwardEmpty() && 
+                    currentNodeRef.reverseEmpty()) {
+                destroyNode(currentNode);
+            }
+            currentNode = nextNode;
+        }
     }
+    smartAppendPath(result, currentPath);
 }
 
 template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>

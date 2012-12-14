@@ -92,8 +92,8 @@ public:
             
             link_iterator& operator ++(); //pre
             link_iterator operator ++(int); //post
-            connection operator *();
-            connection operator ->() { return **this; }
+            const connection& operator *();
+            const connection* operator ->() { return &**this; }
             bool operator ==(const link_iterator& other) const;
             bool operator !=(const link_iterator& other) const
                     { return !(*this==other); }
@@ -102,6 +102,7 @@ public:
                     : m_base(base), m_parent(parent) {}
             base_iterator m_base;
             simple_graph* m_parent;
+            connection m_connection;
         };
         
         /* All iterators are forward iterators only. forward and reverse 
