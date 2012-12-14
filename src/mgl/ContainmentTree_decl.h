@@ -156,6 +156,11 @@ public:
      */
     const_iterator end() const;
     /**
+     @brief Test if there exist no children.
+     @return true if no children exist, else false
+     */
+    bool empty() const;
+    /**
      @brief erase my child at position specified
      @param position indicate from where to erase a child
      @return iterator pointing to the next element (or end()).

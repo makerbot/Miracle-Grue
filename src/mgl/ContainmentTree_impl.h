@@ -139,6 +139,10 @@ typename CONTAINMENT_TYPE::const_iterator CONTAINMENT_TYPE::end() const {
     return m_children.end();
 }
 CONTAINMENT_TEMPLATE
+bool CONTAINMENT_TYPE::empty() const {
+    return m_children.empty();
+}
+CONTAINMENT_TEMPLATE
 typename CONTAINMENT_TYPE::iterator CONTAINMENT_TYPE::erase(iterator position) {
     return m_children.erase(position);
 }
