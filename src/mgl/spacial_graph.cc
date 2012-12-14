@@ -113,6 +113,23 @@ void SpacialGraph::clear() {
     m_tree.clear();
 }
 
+void SpacialGraph::swap(SpacialGraph& other) {
+    m_graph.swap(other.m_graph);
+    m_tree.swap(other.m_tree);
+    //update my graph pointers
+    for(tree_type::iterator iter = m_tree.begin(); 
+            iter != m_tree.end(); 
+            ++iter) {
+        iter->first = &m_graph;
+    }
+    //update other's graph pointers
+    for(tree_type::iterator iter = other.m_tree.begin(); 
+            iter != other.m_tree.end(); 
+            ++iter) {
+        iter->first = &other.m_graph;
+    }
+}
+
 void SpacialGraph::repr(std::ostream& out) {
     m_tree.repr(out);
 }

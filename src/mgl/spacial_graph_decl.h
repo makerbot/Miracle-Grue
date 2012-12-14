@@ -223,6 +223,16 @@ public:
     ///Does this really need any explanation?
     void clear();
     
+    /**
+     @brief Swap the contents of this Spacial Graph with @a other
+     @param other the object with which to swap data
+     
+     This call is reasonably fast. It does not cause new memory to be allocated.
+     Since we need to update the parent pointers in the nodes, 
+     we will iterate through them once.
+     */
+    void swap(SpacialGraph& other);
+    
     void repr(std::ostream& out);
     void repr_svg(std::ostream& out);
     
