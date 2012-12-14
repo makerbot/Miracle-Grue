@@ -122,6 +122,30 @@ void CONTAINMENT_TYPE::swap(child_type& other) {
     m_loop.swap(other.m_loop);
     m_children.swap(other.m_children);
 }
+CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::iterator CONTAINMENT_TYPE::begin() {
+    return m_children.begin();
+}
+CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::const_iterator CONTAINMENT_TYPE::begin() const {
+    return m_children.begin();
+}
+CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::iterator CONTAINMENT_TYPE::end() {
+    return m_children.end();
+}
+CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::const_iterator CONTAINMENT_TYPE::end() const {
+    return m_children.end();
+}
+CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::iterator CONTAINMENT_TYPE::erase(iterator position) {
+    return m_children.erase(position);
+}
+CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::iterator CONTAINMENT_TYPE::erase(iterator from, iterator to) {
+    return m_children.erase(from, to);
+}
 
 #define EXAMPLE_TEMPLATE template <typename T>
 #define EXAMPLE_TYPE ContainmentTree<T>

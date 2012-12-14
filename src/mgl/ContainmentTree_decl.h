@@ -37,6 +37,18 @@ public:
      */
     typedef DERIVED_T child_type;
     /**
+     @brief the type of container used for iterating over the children
+     */
+    typedef std::list<child_type> containment_list;
+    /*
+     @brief iterator used for iterating over children
+     */
+    typedef typename containment_list::iterator iterator;
+    /*
+     @brief const_iterator used for iterating over children
+     */
+    typedef typename containment_list::const_iterator const_iterator;
+    /**
      @brief Construct a root tree
      */
     basic_containment_tree();
@@ -119,9 +131,55 @@ public:
      will also invoke this implementation of swap
      */
     void swap(child_type& other);
+    /**
+     @brief Get an iterator to the start of my children
+     @return iterator to start of children
+     
+     Iterators are invalidated by insertions.
+     */
+    iterator begin();
+    /**
+     @brief Get a const iterator to the start of my children
+     @return const_iterator to start of children
+     
+     Iterators are invalidated by insertions.
+     */
+    const_iterator begin() const;
+    /**
+     @brief Get an iterator to past-the-end of my children
+     @return iterator to past-the-end of my children
+     */
+    iterator end();
+    /**
+     @brief Get a const iterator to past-the-end of my children
+     @return const_iterator to past-the-end of my children
+     */
+    const_iterator end() const;
+    /**
+     @brief erase my child at position specified
+     @param position indicate from where to erase a child
+     @return iterator pointing to the next element (or end()).
+     
+     This will not cause any rearrangement of other elements in the tree, 
+     and should leave existing iterators valid (except the one pointing to 
+     the element to be erased).
+     */
+    iterator erase(iterator position);
+    /**
+     @brief erase a range of children specified by from (inclusive) and 
+     to (exclusive)
+     @param from specifies start of the range to erase. This element is erased.
+     @param to specifies one past the end of the range to erase. This element 
+     is not erased.
+     @return iterator to the element that was at @a to prior to erasing 
+     (or end()).
+     
+     This will not cause any rearrangement of other elements in the tree, 
+     and should leave existing iterators valid (except ones pointing to 
+     the elements to be erased).
+     */
+    iterator erase(iterator from, iterator to);
 private:
-    typedef std::list<child_type> containment_list;
-    
     Loop m_loop;
     containment_list m_children;
 };
