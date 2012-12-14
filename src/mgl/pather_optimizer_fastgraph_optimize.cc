@@ -113,6 +113,11 @@ void pather_optimizer_fastgraph::buildLinks(node& from, graph_type& graph,
 void pather_optimizer_fastgraph::optimizeInternal(LabeledOpenPaths& labeledpaths) {
     multipath_type firstPass;
     //LabeledOpenPaths innerIntermediate;
+    if(grueCfg.get_doFixedLayerStart()) {
+        //skeinforgelike behaviour of starting all layers from the same point
+        historyPoint = Point2Type(grueCfg.get_startingX(), 
+                grueCfg.get_startingY());
+    }
     optimizeBuckets(firstPass, historyPoint);
     for(multipath_type::iterator iter = firstPass.begin(); 
             iter != firstPass.end(); 
