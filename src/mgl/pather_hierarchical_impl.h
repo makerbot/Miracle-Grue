@@ -129,6 +129,47 @@ void pather_hierarchical::InsetTree::traverseInternal(
         }
     }
     //optimize the inset
+    if(isValid()) {
+        Loop::const_finite_cw_iterator nearestPoint = boundary().clockwiseEnd();
+        Scalar nearestDistanceSquared = std::numeric_limits<Scalar>::max();
+        bool nearestBoundaryTest = false;
+        for(Loop::const_finite_cw_iterator iter = boundary().clockwiseFinite(); 
+                iter != boundary().clockwiseEnd(); 
+                ++iter) {
+            Segment2Type testSegment(entryPoint, *iter);
+            Scalar distanceSquared = testSegment.squaredLength();
+            bool boundaryTest = bounder(testSegment);
+            if(!nearestBoundaryTest) {
+                if(boundaryTest) {
+                    nearestPoint = iter;
+                    nearestDistanceSquared = distanceSquared;
+                    nearestBoundaryTest = true;
+                } else {
+                    if(distanceSquared < nearestDistanceSquared) {
+                        nearestPoint = iter;
+                        nearestBoundaryTest = distanceSquared;
+                    }
+                }
+            } else {
+                if(boundaryTest && distanceSquared < nearestDistanceSquared) {
+                    nearestPoint = iter;
+                    nearestDistanceSquared = distanceSquared;
+                }
+            }
+        }
+        if(nearestBoundaryTest) {
+            LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
+                    m_label.myOwner, m_label.myValue));
+            connection.myPath.appendPoint(entryPoint);
+            connection.myPath.appendPoint(*nearestPoint);
+            entryPoint = *nearestPoint;
+            result.push_back(connection);
+        }
+        LabeledOpenPath myPath(m_label);
+        LoopPath myLoopPath(boundary(), Loop::const_cw_iterator(nearestPoint), 
+                Loop::const_ccw_iterator(nearestPoint));
+        myPath.myPath.appendPoints(myLoopPath.fromStart(), myLoopPath.end()); 
+    }
     //done optimizing the inset
     if(!graphTraversed) //graph wasn't done before, so do after
         m_graph.optimize(result, entryPoint, labeler, bounder);
