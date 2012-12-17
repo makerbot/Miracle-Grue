@@ -161,6 +161,11 @@ public:
      */
     bool empty() const;
     /**
+     @brief Get the number of children
+     @return number of children
+     */
+    size_t size() const;
+    /**
      @brief erase my child at position specified
      @param position indicate from where to erase a child
      @return iterator pointing to the next element (or end()).

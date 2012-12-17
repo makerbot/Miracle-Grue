@@ -64,6 +64,11 @@ void SpacialGraph::optimize(LabeledOpenPaths& result, Point2Type& entryPoint,
             }
             currentNode = nextNode;
         }
+        node& oldNodeRef = m_graph[currentNode];
+        if(oldNodeRef.forwardEmpty() && 
+                oldNodeRef.reverseEmpty()) {
+            destroyNode(oldNodeRef.getIndex());
+        }
     }
     smartAppendPath(result, currentPath);
 }
@@ -121,6 +126,14 @@ int SpacialGraph::cost_predicate<BASE>::compare(
     return (lhs.squaredDistance() < rhs.squaredDistance()) ? 
             BETTER : ((lhs.squaredDistance() > rhs.squaredDistance()) ? 
             WORSE : SAME);
+}
+
+template <typename BASE>
+bool SpacialGraph::cost_predicate<BASE>::operator ()(
+        const node::connection& lhs, 
+        const node::connection& rhs) const {
+    return abstract_predicate<CostData>::operator ()(
+            *lhs.second, *rhs.second);
 }
 
 ///compare node refs

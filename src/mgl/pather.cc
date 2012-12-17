@@ -17,6 +17,7 @@
 #include "pather_optimizer_graph.h"
 #include "pather_optimizer_fastgraph.h"
 #include "spacial_graph.h"
+#include "pather_hierarchical.h"
 
 namespace mgl {
 using namespace std;
@@ -56,7 +57,8 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
     
     abstract_optimizer* optimizer = NULL;
     if(grueCfg.get_doGraphOptimization()) {
-        optimizer = new pather_optimizer_fastgraph(grueCfg);
+        //optimizer = new pather_optimizer_fastgraph(grueCfg);
+        optimizer = new pather_hierarchical();
     } else {
         optimizer = new pather_optimizer();
     }
@@ -196,11 +198,6 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
                     PathLabel::OWN_MODEL, 
                     LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
         }
-        SpacialGraph sg;
-        sg.insertPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
-                    PathLabel::OWN_MODEL, 
-                    LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
-        sg.repr_svg(std::cerr);
         
         if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {    
             const GridRanges& supportRanges = layerRegions->support;

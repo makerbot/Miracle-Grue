@@ -19,10 +19,16 @@ void pather_hierarchical::InsetTree::traverse(LabeledOpenPaths& result,
     parent_class::iterator childIter = end();
     while(!empty()) {
         childIter = selectBestChild(entryPoint, labeler, bounder);
-        if(labeler.compare(m_label, childIter->m_label) == BETTER) {
+        if(childIter == end() || 
+                labeler.compare(m_label, childIter->m_label) == BETTER) {
             //we want to do this node before all children worse than it
+            if(childIter == end()) {
+            } else {
+            }
             break;
         }
+        childIter->traverse(result, entryPoint, labeler, bounder);
+        erase(childIter);
     }
     //traverse self
     traverseInternal(result, entryPoint, labeler, bounder);
@@ -47,7 +53,7 @@ pather_hierarchical::InsetTree::parent_class ::iterator
             iter != end(); 
             ++iter) {
         InsetTree& currentChild = *iter;
-        int labelResult = labeler.compare(bestLabel, currentChild.m_label);
+        int labelResult = labeler.compare(currentChild.m_label, bestLabel);
         if(labelResult == WORSE) {
             //we don't even look at worse labels
             continue;

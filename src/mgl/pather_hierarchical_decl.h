@@ -11,7 +11,7 @@
 #include "ContainmentTree.h"
 #include "spacial_data.h"
 #include "pather_optimizer.h"
-#include "spacial_graph_decl.h"
+#include "spacial_graph.h"
 
 namespace mgl {
 

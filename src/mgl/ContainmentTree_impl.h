@@ -143,6 +143,10 @@ bool CONTAINMENT_TYPE::empty() const {
     return m_children.empty();
 }
 CONTAINMENT_TEMPLATE
+size_t CONTAINMENT_TYPE::size() const {
+    return m_children.size();
+}
+CONTAINMENT_TEMPLATE
 typename CONTAINMENT_TYPE::iterator CONTAINMENT_TYPE::erase(iterator position) {
     return m_children.erase(position);
 }

@@ -58,11 +58,11 @@ typename BLRT_TYPE::iterator BLRT_TYPE::insert(const value_type& value) {
     data_iterator iter = m_data.insert(m_data.end(), 
             data_element(value, child.index()));
     child.setData(iter);
+    size_t childIndex = child.index();
     if(m_root == DEFAULT_CHILD_PTR()) {
-        m_root = child.index();
-    } else {
-        insertPrivate(m_root, child.index());
+        m_root = acquireNode().index();
     }
+    insertPrivate(m_root, childIndex);
     return iterator(iter);
 }
 BLRT_TEMPLATE
@@ -133,7 +133,7 @@ void BLRT_TYPE::repr_svg(std::ostream& out, size_t recursionLevel,
     static const Scalar SCALE = 10.0;
     unsigned int rgbcolor = (255 << (recursionLevel*8)) | 
             (255 >> ((1+recursionLevel)*8));
-    Scalar factor = (0.5 / SCALE) * recursionLevel;
+    Scalar factor = (-0.5 / SCALE) * recursionLevel;
     const node& curNode = dereferenceNode(index);
     AABBox bounds = curNode.bound().adjusted(Point2Type(factor, factor), 
             Point2Type(-factor, -factor));
@@ -171,11 +171,12 @@ void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index,
             m_nodes[child_index]);
     if(candidate == destination_index || 
             m_nodes[candidate].height() == m_nodes[child_index].height()) {
-        //handle the case of splitting a child
+        //don't handle the case of splitting a child
         if(m_nodes[destination_index].hasData()) {
-            node& daughter = acquireNode();
-            daughter.adoptFrom(m_nodes[destination_index]);
-            m_nodes[destination_index].insert(daughter);
+            throw LocalTreeException("Attempted to split leaf node!");
+//            node& daughter = acquireNode();
+//            daughter.adoptFrom(m_nodes[destination_index]);
+//            m_nodes[destination_index].insert(daughter);
         }
         m_nodes[destination_index].insert(m_nodes[child_index]);
     } else {
@@ -194,9 +195,10 @@ void BLRT_TYPE::insertPrivate(size_t destination_index, size_t child_index,
             if(above_index == DEFAULT_CHILD_PTR()) {
                 //if no parent, add a stage
                 node& successor = acquireNode();
-                successor.adoptFrom(m_nodes[destination_index]);
-                m_nodes[destination_index].insert(m_nodes[sibling_index]);
-                m_nodes[destination_index].insert(successor);
+                size_t successorIndex = successor.index();
+                m_nodes[successorIndex].insert(m_nodes[destination_index]);
+                m_nodes[successorIndex].insert(m_nodes[sibling_index]);
+                m_root = successorIndex;
             } else {
                 m_nodes[above_index].insert(m_nodes[sibling_index]);
             }
@@ -222,6 +224,7 @@ BLRT_TEMPLATE
 void BLRT_TYPE::erasePrivate(size_t index) {
     node& victim = m_nodes[index];
     if(victim.hasChildren()) {
+        repr(std::cout);
         throw LocalTreeException("Attempted to erase non-empty node");
     }
     size_t above_index = victim.above();

@@ -126,6 +126,8 @@ public:
         template <typename T>
         cost_predicate(const T& arg) : m_base(arg) {}
         int compare(const value_type& lhs, const value_type& rhs) const;
+        bool operator ()(const node::connection& lhs, 
+                const node::connection& rhs) const;
     protected:
         BASE m_base;
     };
