@@ -11,6 +11,41 @@
 
 namespace mgl {
 
+
+void pather_hierarchical::addPath(const OpenPath& path, 
+        const PathLabel& label) {
+    m_root.insert(path, label);
+}
+void pather_hierarchical::addPath(const Loop& loop, 
+        const PathLabel& label) {
+    m_root.insert(loop, label);
+}
+void pather_hierarchical::addBoundary(const OpenPath&) {
+    throw HierarchyException("Insertion of path boundaries not implemented!");
+}
+void pather_hierarchical::addBoundary(const Loop& loop) {
+    OutlineTree createdBoundary(loop);
+    m_root.insert(createdBoundary);
+}
+void pather_hierarchical::clearPaths() {
+    m_root.erase(m_root.begin(), m_root.end());
+}
+void pather_hierarchical::clearBoundaries() {
+    clearPaths();
+}
+class LabelCompare : public abstract_predicate<PathLabel> {
+public:
+    typedef PathLabel value_type;
+    int compare(const value_type& lhs, const value_type& rhs) const {
+        return (lhs.myValue > rhs.myValue) ? BETTER : 
+                ((lhs.myValue < rhs.myValue) ? WORSE : SAME);
+    }
+};
+void pather_hierarchical::optimizeInternal(LabeledOpenPaths& result) {
+    LabelCompare lc;
+    m_root.traverse(result, m_historyPoint, lc);
+}
+
 pather_hierarchical::InsetTree::InsetTree() {}
 pather_hierarchical::InsetTree::InsetTree(const Loop& loop, 
         const PathLabel& label) : parent_class(loop), 
@@ -37,16 +72,26 @@ pather_hierarchical::OutlineTree::OutlineTree(const Loop& loop)
         : parent_class(loop) {}
 void pather_hierarchical::OutlineTree::insert(const Loop& loop, 
         const PathLabel& label) {
+    Point2Type testPoint = *loop.clockwise();
     if(label.isInset()) {
         InsetTree createdNode(loop, label);
-        m_insets.insert(createdNode);
+        select(testPoint).m_insets.select(testPoint).insert(createdNode);
     } else {
-        m_graph.insertPath(loop, label);
+        select(testPoint).m_graph.insertPath(loop, label);
     }
 }
 void pather_hierarchical::OutlineTree::insert(const OpenPath& path, 
         const PathLabel& label) {
-    m_graph.insertPath(path, label);
+    Point2Type testPoint = *path.fromStart();
+    if(label.isInset()) {
+        select(testPoint).m_insets.select(testPoint).insert(path, label);
+    } else {
+        select(testPoint).m_graph.insertPath(path, label);
+    }
+}
+pather_hierarchical::OutlineTree& 
+        pather_hierarchical::OutlineTree::insert(OutlineTree& other) {
+    return parent_class::insert(other);
 }
 void pather_hierarchical::OutlineTree::swap(OutlineTree& other) {
     m_insets.swap(other.m_insets);

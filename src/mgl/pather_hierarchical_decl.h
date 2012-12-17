@@ -15,9 +15,22 @@
 
 namespace mgl {
 
+class HierarchyException : public Exception {
+public:
+    template <typename T>
+    HierarchyException(const T& arg) : Exception(arg) {}
+};
+
 class pather_hierarchical : public abstract_optimizer{
 public:
+    void addPath(const OpenPath& path, const PathLabel& label);
+    void addPath(const Loop& loop, const PathLabel& label);
+    void addBoundary(const OpenPath& path);
+    void addBoundary(const Loop& loop);
+    void clearPaths();
+    void clearBoundaries();
 protected:
+    void optimizeInternal(LabeledOpenPaths& result);
 private:
     /**
      @brief InsetTree describes the lowest type of node in the hierarchy. 
@@ -209,6 +222,10 @@ private:
          */
         void insert(const Loop& loop, const PathLabel& label);
         /**
+         Why do I need to write this? Is CRTP broken?
+         */
+        OutlineTree& insert(OutlineTree& other);
+        /**
          @brief Swap the contents of this object with @a other
          @param other The object with which to swap data.
          
@@ -276,6 +293,10 @@ private:
         SpacialGraph m_graph;
         
     };
+    
+    
+    OutlineTree m_root;
+    Point2Type m_historyPoint;
 };
 
 }

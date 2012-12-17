@@ -63,7 +63,7 @@ pather_hierarchical::InsetTree::parent_class ::iterator
                 currentChild.boundary().clockwiseFinite(); 
                 loopIter != currentChild.boundary().clockwiseEnd(); 
                 ++loopIter) {
-            Segment2Type testSegment = (entryPoint, *loopIter);
+            Segment2Type testSegment(entryPoint, *loopIter);
             Scalar sd = (entryPoint - *loopIter).squaredMagnitude();
             if(!bounderResult) {
                 //no point has yet passed bounder
@@ -131,7 +131,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
     }
     //optimize the inset
     if(isValid()) {
-        Loop::const_finite_cw_iterator nearestPoint = boundary().clockwiseEnd();
+        Loop::const_finite_cw_iterator nearestPoint = boundary().clockwiseFinite();
         Scalar nearestDistanceSquared = std::numeric_limits<Scalar>::max();
         bool nearestBoundaryTest = false;
         for(Loop::const_finite_cw_iterator iter = boundary().clockwiseFinite(); 

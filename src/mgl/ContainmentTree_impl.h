@@ -62,7 +62,7 @@ typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::select(const Point2Type
         if(childIter->contains(point))
             return childIter->select(point);
     }
-    this_cast;
+    return *this_cast;
 }
 CONTAINMENT_TEMPLATE
 const typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::select(
@@ -74,7 +74,7 @@ const typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::select(
         if(childIter->contains(point))
             return childIter->select(point);
     }
-    return this_cast;
+    return *this_cast;
 }
 CONTAINMENT_TEMPLATE
 typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::insert(child_type& other) {
