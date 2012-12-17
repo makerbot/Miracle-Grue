@@ -25,6 +25,7 @@ void pather_hierarchical::InsetTree::traverse(LabeledOpenPaths& result,
         }
     }
     //traverse self
+    traverseInternal(result, entryPoint, labeler, bounder);
     while(!empty()) {
         childIter = selectBestChild(entryPoint, labeler, bounder);
         childIter->traverse(result, entryPoint, labeler, bounder);
@@ -173,6 +174,42 @@ void pather_hierarchical::InsetTree::traverseInternal(
     //done optimizing the inset
     if(!graphTraversed) //graph wasn't done before, so do after
         m_graph.optimize(result, entryPoint, labeler, bounder);
+}
+template <typename LABEL_COMPARE>
+void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
+        Point2Type& entryPoint, const LABEL_COMPARE& labeler) {
+    iterator currentChild;
+    while((currentChild = selectBestChild(entryPoint)) != end()) {
+        currentChild->traverse(result, entryPoint, labeler);
+        erase(currentChild);
+    }
+    basic_local_rtree<Segment2Type> boundaries;
+    constructBoundaries(boundaries);
+    basic_boundary_test<basic_local_rtree<Segment2Type> > bounder(boundaries);
+    m_insets.traverse(result, entryPoint, labeler, bounder);
+    m_graph.optimize(result, entryPoint, labeler, bounder);
+}
+template <typename SPACIAL_CONTAINER>
+void pather_hierarchical::OutlineTree::constructBoundaries(
+        SPACIAL_CONTAINER& boundaries) const {
+    //add all children's boundaries
+    for(const_iterator childIter = begin(); 
+            childIter != end(); 
+            ++childIter) {
+        for(Loop::const_finite_cw_iterator loopIter = 
+                childIter->boundary().clockwiseFinite(); 
+                loopIter != childIter->boundary().clockwiseEnd(); 
+                ++loopIter) {
+            boundaries.insert(
+                    childIter->boundary().segmentAfterPoint(loopIter));
+        }
+    }
+    //insert mine
+    for(Loop::const_finite_cw_iterator loopIter = boundary().clockwiseFinite(); 
+            loopIter != boundary().clockwiseEnd(); 
+            ++loopIter) {
+        boundaries.insert(boundary().segmentAfterPoint(loopIter));
+    }
 }
 
 }
