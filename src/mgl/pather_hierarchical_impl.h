@@ -176,6 +176,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
         LoopPath myLoopPath(boundary(), Loop::const_cw_iterator(nearestPoint), 
                 Loop::const_ccw_iterator(nearestPoint));
         myPath.myPath.appendPoints(myLoopPath.fromStart(), myLoopPath.end()); 
+        result.push_back(myPath);
     }
     //done optimizing the inset
     if(!graphTraversed) //graph wasn't done before, so do after
