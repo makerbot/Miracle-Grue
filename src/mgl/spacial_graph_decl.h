@@ -293,12 +293,11 @@ private:
      @a destPoint at the end of this function
      @param destPoint point to which attempt connecting
      @param result where current results are being stored
-     @param currentPath path currently being worked on
      @param bounder instance of object to test for valid new connections
      */
     template <typename BOUNDARY_TEST>
     void smartConnect(Point2Type& entryPoint, Point2Type destPoint, 
-            LabeledOpenPaths& result, LabeledOpenPath& currentPath, 
+            LabeledOpenPaths& result,  
             const BOUNDARY_TEST& bounder);
     /**
      @brief find the node nearest to @a point. DOES NOT TEST FOR EMPTY GRAPH!!

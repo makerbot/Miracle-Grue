@@ -154,7 +154,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
                 } else {
                     if(distanceSquared < nearestDistanceSquared) {
                         nearestPoint = iter;
-                        nearestBoundaryTest = distanceSquared;
+                        nearestDistanceSquared = distanceSquared;
                     }
                 }
             } else {
@@ -169,9 +169,9 @@ void pather_hierarchical::InsetTree::traverseInternal(
                     m_label.myOwner, m_label.myValue));
             connection.myPath.appendPoint(entryPoint);
             connection.myPath.appendPoint(*nearestPoint);
-            entryPoint = *nearestPoint;
             result.push_back(connection);
         }
+        entryPoint = *nearestPoint;
         LabeledOpenPath myPath(m_label);
         LoopPath myLoopPath(boundary(), Loop::const_cw_iterator(nearestPoint), 
                 Loop::const_ccw_iterator(nearestPoint));

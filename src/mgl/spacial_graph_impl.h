@@ -46,8 +46,12 @@ void SpacialGraph::optimize(LabeledOpenPaths& result, Point2Type& entryPoint,
     while(!m_graph.empty()) {
         graph_type::node_index currentNode = 
                 findBestNode(entryPoint, labeler);
+        smartAppendPath(result, currentPath);
         smartConnect(entryPoint, m_graph[currentNode].data().position(), 
-                result, currentPath, bounder);
+                result, bounder);
+        smartAppendPoint(m_graph[currentNode].data().position(), 
+                m_graph[currentNode].data().label(), 
+                result, currentPath, entryPoint);
         while((linkIter = 
                 selectBestLink(currentNode, costCompare, bounder, entryPoint)) 
                 != m_graph[currentNode].forwardEnd()) {
@@ -107,14 +111,17 @@ SpacialGraph::graph_type::node_index SpacialGraph::findBestNode(
 template <typename BOUNDARY_TEST>
 void SpacialGraph::smartConnect(Point2Type& entryPoint, 
         Point2Type destPoint, 
-        LabeledOpenPaths& result, LabeledOpenPath& currentPath, 
+        LabeledOpenPaths& result, 
         const BOUNDARY_TEST& bounder) {
     Segment2Type connection(entryPoint, destPoint);
-    PathLabel label(PathLabel::TYP_INVALID, PathLabel::OWN_MODEL, 0);
     if(bounder(connection)) {
-        label.myType = PathLabel::TYP_CONNECTION;
+        PathLabel label(PathLabel::TYP_CONNECTION, PathLabel::OWN_MODEL, 0);
+        LabeledOpenPath connectionPath(label);
+        connectionPath.myPath.appendPoint(entryPoint);
+        connectionPath.myPath.appendPoint(destPoint);
+        result.push_back(connectionPath);
     }
-    smartAppendPoint(destPoint, label, result, currentPath, entryPoint);
+    entryPoint = destPoint;
 }
 
 template <typename BASE>
