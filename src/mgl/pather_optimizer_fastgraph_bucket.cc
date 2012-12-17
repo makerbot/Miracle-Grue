@@ -358,7 +358,12 @@ void HIERARCHY::optimizeMyself(LabeledOpenPaths& output,
         for(Loop::finite_cw_iterator iter = m_loop.clockwiseFinite(); 
                 iter != m_loop.clockwiseEnd(); 
                 ++iter) {
-            Scalar distance = (entryPoint - *iter).squaredMagnitude();
+            Scalar distance;
+            if(grueConf.get_doFixedLayerStart()) {
+                distance = Point2Type(*iter).dotProduct(Point2Type(1.0, 1.0));
+            } else {
+                distance = (entryPoint - *iter).squaredMagnitude();
+            }
             if(distance < minDistance) {
                 minDistance = distance;
                 minStart = Loop::cw_iterator(iter);
