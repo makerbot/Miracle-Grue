@@ -89,6 +89,12 @@ typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::insert(child_type& othe
         insert(other);
         return *this_cast;
     } else {
+        for(typename containment_list::iterator childIter = m_children.begin(); 
+                childIter != m_children.end(); 
+                ++childIter) {
+            if(childIter->contains(other))
+                return childIter->insert(other);
+        }
         typedef std::list<typename containment_list::iterator> move_list;
         move_list thingsToMove;
         /*
