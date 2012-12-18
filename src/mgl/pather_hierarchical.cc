@@ -49,7 +49,7 @@ void pather_hierarchical::optimizeInternal(LabeledOpenPaths& result) {
     Json::FastWriter writer;
     Json::Value value;
     m_root.repr(value);
-    std::cerr << writer.write(value) << std::endl;
+    std::cerr << writer.write(value);
     LabelCompare lc;
     m_root.traverse(result, m_historyPoint, lc);
 }
