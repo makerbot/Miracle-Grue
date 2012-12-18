@@ -81,7 +81,9 @@ template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
 SpacialGraph::node::forward_link_iterator 
         SpacialGraph::selectBestLink(graph_type::node_index index, 
         const cost_predicate<LABEL_PREDICATE>& labeler, 
-        const BOUNDARY_TEST& bounder, const Point2Type& entryPoint) {
+        const BOUNDARY_TEST&, //bounder, 
+        const Point2Type& //entryPoint
+        ) {
     return std::min_element(m_graph[index].forwardBegin(), 
             m_graph[index].forwardEnd(), 
             labeler);

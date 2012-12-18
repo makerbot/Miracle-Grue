@@ -6,8 +6,12 @@
  */
 
 #include <limits>
+#include <iostream>
 
 #include "pather_hierarchical.h"
+#include "dump_restore.h"
+#include <json/value.h>
+#include <json/writer.h>
 
 namespace mgl {
 
@@ -42,6 +46,10 @@ public:
     }
 };
 void pather_hierarchical::optimizeInternal(LabeledOpenPaths& result) {
+    Json::FastWriter writer;
+    Json::Value value;
+    m_root.repr(value);
+    std::cerr << writer.write(value) << std::endl;
     LabelCompare lc;
     m_root.traverse(result, m_historyPoint, lc);
 }
@@ -66,6 +74,20 @@ void pather_hierarchical::InsetTree::swap(InsetTree& other) {
     std::swap(m_label, other.m_label);
     m_graph.swap(other.m_graph);
     parent_class::swap(other);
+}
+void pather_hierarchical::InsetTree::repr(std::ostream& out) const {
+    repr(out, 0);
+}
+void pather_hierarchical::InsetTree::repr(std::ostream& out, size_t level) const {
+    out << std::string(level, '|');
+    out << 'N';
+    if(isValid()) {
+        out << '-' << m_label.myValue;
+    }
+    out << std::endl;
+    for(const_iterator iter = begin(); iter != end(); ++iter) {
+        iter->repr(out, level + 1);
+    }
 }
 pather_hierarchical::OutlineTree::OutlineTree() {}
 pather_hierarchical::OutlineTree::OutlineTree(const Loop& loop) 
@@ -97,6 +119,33 @@ void pather_hierarchical::OutlineTree::swap(OutlineTree& other) {
     m_insets.swap(other.m_insets);
     m_graph.swap(other.m_graph);
     parent_class::swap(other);
+}
+void pather_hierarchical::OutlineTree::repr(std::ostream& out) const {
+    repr(out, 0);
+}
+void pather_hierarchical::OutlineTree::repr(Json::Value& out) const {
+    out["type"] = "OutlineNode";
+    if(isValid()) {
+        Json::Value loopJson;
+        dumpLoop(boundary(), loopJson);
+        out["loop"] = loopJson;
+    }
+    Json::Value children;
+    for(const_iterator iter = begin(); iter != end(); ++iter) {
+        Json::Value child;
+        iter->repr(child);
+        children.append(child);
+    }
+    out["children"] = children;
+}
+void pather_hierarchical::OutlineTree::repr(std::ostream& out, 
+        size_t level) const {
+    out << std::string(level, '|') << "-L" << std::endl;
+    for(const_iterator iter = begin(); 
+            iter != end(); 
+            ++iter) {
+        iter->repr(out, level + 1);
+    }
 }
 pather_hierarchical::OutlineTree::iterator 
         pather_hierarchical::OutlineTree::selectBestChild(

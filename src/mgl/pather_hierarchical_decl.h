@@ -13,6 +13,15 @@
 #include "pather_optimizer.h"
 #include "spacial_graph.h"
 
+/*
+ Forward declare Json::Value so we don't need to include the header
+ */
+namespace Json {
+
+class Value;
+
+}
+
 namespace mgl {
 
 class HierarchyException : public Exception {
@@ -132,7 +141,18 @@ private:
         void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE(), 
                 const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
+        /**
+         @brief Print a simple ascii-art representation of this tree to @a out
+         @param out ostream where to print the representation
+         */
+        void repr(std::ostream& out) const;
     private:
+        /**
+         @brief Helper function for the repr above. This one is recursive
+         @param out where to print the representaion
+         @param level the level of recursion - indent deeper children more
+         */
+        void repr(std::ostream& out, size_t level) const;
         /**
          @brief Select the best choice from my children that respects
          priorities imposed by labeler and restrictions imposed by 
@@ -258,7 +278,35 @@ private:
         template <typename LABEL_COMPARE>
         void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE());
+        /**
+         @brief Print a simple ascii art representation of this tree to @a out
+         @param out the ostream where to print representation
+         */
+        void repr(std::ostream& out) const;
+        /**
+         @brief Output to json the loops representing myself and all my children
+         @param out the json value where result will be written
+         
+         This function will recurse to children, using the natural recursive 
+         properties of json to make this trivial.
+         
+         All values take the form OUTLINE_FORM : 
+         {
+            type : "OutlineNode",
+            loop : { output of dump_loop goes here, optionally }
+            children : [list of OUTLINE_FORM]
+         }
+         
+         This function does not yet output inset or graph. It might at some point.
+         */
+        void repr(Json::Value& out) const;
     private:
+        /**
+         @brief Full recursive repr function, called from the repr above
+         @param out the ostream where to print things
+         @param level Depth of recursion, indent children more
+         */
+        void repr(std::ostream& out, size_t level) const;
         /**
          @brief based on entryPoint, select best child
          @param entryPoint nearest to this point select child
