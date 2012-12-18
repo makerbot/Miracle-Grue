@@ -259,11 +259,14 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
     }
     initProgress("gcode", sliceCount);
     size_t layerSequence = 0;
+    bool wasAnchorDone = !grueCfg.get_doAnchor();
+    bool wasRaftDone = !grueCfg.get_doRaft();
     for (LayerPaths::layer_iterator it = begin;
             it != end; ++it, ++layerSequence) {
         tick();
         //Scalar z = layerMeasure.sliceIndexToHeight(codeSlice);
-        if(grueCfg.get_doAnchor() && layerSequence == 0) {
+        if(!wasAnchorDone && layerSequence == 0) {
+            wasAnchorDone = true;
             Extrusion strusion;
             PathLabel slabel(PathLabel::TYP_CONNECTION, PathLabel::OWN_MODEL, 0);
             const Extruder& struder = grueCfg.get_extruders()[
@@ -297,6 +300,10 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     strusion, startPoint.x, startPoint.y, currentZ, 
                     strusion.feedrate, 
                     currentH, currentW, "Anchor End");
+        }
+        if(!wasRaftDone && layerSequence == grueCfg.get_raftLayers()) {
+            wasRaftDone = true;
+            layerSequence = 0;
         }
         writeSlice(gout, layerpaths, it, layerSequence);
     }
