@@ -181,7 +181,9 @@ bool GCoder::calcExtrusion(unsigned int extruderId,
         Extrusion& extrusionParams) const {
     const Extruder& currentExtruder = grueCfg.get_extruders()[extruderId];
     std::string profileName;
-    if(layerSequence == 0) {
+    if(layerSequence == 0 || 
+            (grueCfg.get_doRaft() && 
+            layerSequence == grueCfg.get_raftLayers())) {
         profileName = currentExtruder.firstLayerExtrusionProfile;
     } else {
         if(label.isOutline() || (label.isInset() && 
