@@ -153,8 +153,10 @@ pather_hierarchical::OutlineTree::iterator
         Point2Type& entryPoint) {
     iterator bestIter = end();
     Scalar bestSquaredMagnitude = std::numeric_limits<Scalar>::max();
+    Point2Type bestPoint;
     for(iterator iter = begin(); iter != end(); ++iter) {
         Scalar currentSquaredMagnitude = std::numeric_limits<Scalar>::max();
+        Point2Type currentPoint;
         for(Loop::const_finite_cw_iterator loopIter = 
                 iter->boundary().clockwiseFinite(); 
                 loopIter != iter->boundary().clockwiseEnd(); 
@@ -163,13 +165,16 @@ pather_hierarchical::OutlineTree::iterator
                     entryPoint).squaredMagnitude();
             if(squaredMagnitude < currentSquaredMagnitude) {
                 currentSquaredMagnitude = squaredMagnitude;
+                currentPoint = *loopIter;
             }
         }
         if(currentSquaredMagnitude < bestSquaredMagnitude) {
             bestSquaredMagnitude = currentSquaredMagnitude;
             bestIter = iter;
+            bestPoint = currentPoint;
         }
     }
+    entryPoint = bestPoint;
     return bestIter;
 }
 
