@@ -7,7 +7,7 @@ using namespace libthing;
 
 namespace mgl {
 
-void dumpPoint(const Vector2 &point, Json::Value &root) {
+void dumpPoint(const Point2Type &point, Json::Value &root) {
     root["type"] = "Point";
     root["x"] = point.x;
     root["y"] = point.y;
@@ -44,7 +44,19 @@ void dumpLoopList(const LoopList &loops, Json::Value &root) {
     root["loops"] = loopsval;
 }
 
-void restorePoint(const Json::Value &root, Vector2 &point) {
+void dumpLine(const Segment2Type& line, Json::Value& root) {
+    root["type"] = "Line";
+    
+    Json::Value points, a, b;
+    dumpPoint(line.a, a);
+    dumpPoint(line.b, b);
+    points.append(a);
+    points.append(b);
+    
+    root["points"] = points;
+}
+
+void restorePoint(const Json::Value &root, Point2Type &point) {
     assert(root["type"] == string("Point"));
 
     point.x = root["x"].asDouble();
