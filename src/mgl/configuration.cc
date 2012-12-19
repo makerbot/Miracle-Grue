@@ -420,6 +420,8 @@ void GrueConfig::loadExtruderParams(const Configuration& config) {
                 (prefix + "feedDiameter").c_str());
         extruder.nozzleDiameter = doubleCheck(value["nozzleDiameter"],
                 (prefix + "nozzleDiameter").c_str());
+        extruder.feedstockMultiplier = doubleCheck(value["feedstockMultiplier"], 
+                (prefix + "feedstockMultiplier").c_str());
         extruder.retractDistance = doubleCheck(value["retractDistance"],
                 (prefix + "retractDistance").c_str());
         extruder.retractRate = doubleCheck(value["retractRate"],
