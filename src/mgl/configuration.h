@@ -246,8 +246,7 @@ private:
 class Extruder {
 public:
 
-    Extruder() {
-    }
+    Extruder() {}
 
     Scalar feedCrossSectionArea() const;
 
@@ -257,6 +256,7 @@ public:
 
     Scalar feedDiameter;
     Scalar nozzleDiameter;
+    Scalar feedstockMultiplier;
     unsigned char code;
     int id;
 
