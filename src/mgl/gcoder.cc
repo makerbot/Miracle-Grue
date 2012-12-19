@@ -423,7 +423,7 @@ Scalar Extrusion::crossSectionArea(Scalar height, Scalar width) const {
 Scalar Extruder::feedCrossSectionArea() const {
     Scalar radius = feedDiameter / 2;
     //feedstock should be a cylinder
-    return (M_TAU / 2) * radius * radius;
+    return (M_TAU / 2) * radius * radius * feedstockMultiplier;
     //LONG LIVE TAU!
 }
 
