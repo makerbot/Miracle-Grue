@@ -50,7 +50,7 @@ void pather_hierarchical::optimizeInternal(LabeledOpenPaths& result) {
     Json::Value value;
     m_root.repr(value);
     std::cerr << writer.write(value);
-    m_root.repr(std::cout);
+    //m_root.repr(std::cout);
     LabelCompare lc;
     m_root.traverse(result, m_historyPoint, lc);
 }
@@ -130,6 +130,9 @@ void pather_hierarchical::OutlineTree::repr(Json::Value& out) const {
         Json::Value loopJson;
         dumpLoop(boundary(), loopJson);
         out["loop"] = loopJson;
+//        basic_boxlist<Segment2Type> bounds;
+//        constructBoundaries(bounds);
+//        dumpLineList(bounds, out["boundaries"]);
     }
     Json::Value children;
     for(const_iterator iter = begin(); iter != end(); ++iter) {

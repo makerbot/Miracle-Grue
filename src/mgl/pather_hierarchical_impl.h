@@ -170,7 +170,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
                     m_label.myOwner, m_label.myValue));
             connection.myPath.appendPoint(entryPoint);
             connection.myPath.appendPoint(*nearestPoint);
-            //result.push_back(connection);
+            result.push_back(connection);
         }
         entryPoint = *nearestPoint;
         LabeledOpenPath myPath(m_label);
@@ -187,14 +187,29 @@ template <typename LABEL_COMPARE>
 void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
         Point2Type& entryPoint, const LABEL_COMPARE& labeler) {
     iterator currentChild;
+    typedef basic_boxlist<Segment2Type> bounding_type;
+    bounding_type boundaries;
+    basic_boundary_test<bounding_type> bounder(boundaries);
+    constructBoundariesRecursive(boundaries);
+    traverse(result, entryPoint, labeler, bounder);
+    return;
     while((currentChild = selectBestChild(entryPoint)) != end()) {
         currentChild->traverse(result, entryPoint, labeler);
         erase(currentChild);
     }
-    typedef basic_boxlist<Segment2Type> bounding_type;
-    bounding_type boundaries;
     constructBoundaries(boundaries);
-    basic_boundary_test<bounding_type> bounder(boundaries);
+    m_insets.traverse(result, entryPoint, labeler, bounder);
+    m_graph.optimize(result, entryPoint, labeler, bounder);
+}
+template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
+void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
+        Point2Type& entryPoint, const LABEL_COMPARE& labeler, 
+        const BOUNDARY_TEST& bounder) {
+    iterator currentChild;
+    while((currentChild = selectBestChild(entryPoint)) != end()) {
+        currentChild->traverse(result, entryPoint, labeler, bounder);
+        erase(currentChild);
+    }
     m_insets.traverse(result, entryPoint, labeler, bounder);
     m_graph.optimize(result, entryPoint, labeler, bounder);
 }
@@ -214,6 +229,22 @@ void pather_hierarchical::OutlineTree::constructBoundaries(
         }
     }
     //insert mine
+    for(Loop::const_finite_cw_iterator loopIter = boundary().clockwiseFinite(); 
+            loopIter != boundary().clockwiseEnd(); 
+            ++loopIter) {
+        boundaries.insert(boundary().segmentAfterPoint(loopIter));
+    }
+}
+template <typename SPACIAL_CONTAINER>
+void pather_hierarchical::OutlineTree::constructBoundariesRecursive(
+        SPACIAL_CONTAINER& boundaries) const {
+    //recurse
+    for(const_iterator childIter = begin(); 
+            childIter != end(); 
+            ++childIter) {
+        childIter->constructBoundariesRecursive(boundaries);
+    }
+    //do this node
     for(Loop::const_finite_cw_iterator loopIter = boundary().clockwiseFinite(); 
             loopIter != boundary().clockwiseEnd(); 
             ++loopIter) {

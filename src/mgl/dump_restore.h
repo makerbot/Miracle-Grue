@@ -30,6 +30,7 @@ namespace mgl {
     void restorePoint(const Json::Value &root, Point2Type &point);
     void restoreLoop(const Json::Value &root, Loop &loop);
     void restoreLoopList(const Json::Value &root, LoopList &loops);
+    void restoreLine(const Json::Value& root, Segment2Type& line);
 }
 
 #endif

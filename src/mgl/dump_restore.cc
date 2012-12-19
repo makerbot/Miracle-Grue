@@ -92,4 +92,11 @@ void restoreLoopList(const Json::Value &root, LoopList &looplist) {
     }
 }
 
+void restoreLine(const Json::Value& root, Segment2Type& line) {
+    assert(root["type"] == string("Line"));
+    const Json::Value& points = root["points"];
+    restorePoint(points[0], line.a);
+    restorePoint(points[1], line.b);
+}
+
 }

@@ -279,6 +279,26 @@ private:
         void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE());
         /**
+         @brief Optimize myself and my children using the same bounder object. 
+         
+         This is the same function as above, but instead of taking 
+         advantage of the hierarchical layout, we generate a comprehensive 
+         bounder object elsewhere and propagate it.
+         
+         
+         @param LABEL_COMPARE same as above
+         @param BOUNDARY_TEST type of bounder object, such as 
+         basic_boundary_test
+         @param result same as above
+         @param entryPoint same as above
+         @param labeler same as above
+         @param bounder an instance of BOUNDARY_TEST to use.
+         */
+        template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
+        void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+                const LABEL_COMPARE& labeler = LABEL_COMPARE(), 
+                const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
+        /**
          @brief Print a simple ascii art representation of this tree to @a out
          @param out the ostream where to print representation
          */
@@ -335,6 +355,18 @@ private:
          */
         template <typename SPACIAL_CONTAINER>
         void constructBoundaries(SPACIAL_CONTAINER& boundaries) const;
+        /**
+         @brief Construct a collection of boundares of this node and all 
+         of its descendents
+         @param SPACIAL_CONTAINER type of container to use
+         @param boundaries here will be written results
+         
+         This function works similarly to the above, but instead of 
+         considering just the current layer, it will do a full 
+         recursive buildup of ALL the boundaries.
+         */
+        template <typename SPACIAL_CONTAINER>
+        void constructBoundariesRecursive(SPACIAL_CONTAINER& boundaries) const;
         
         
         InsetTree m_insets;
