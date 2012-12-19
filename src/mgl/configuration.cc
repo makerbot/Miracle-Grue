@@ -263,7 +263,7 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     infillDensity = doubleCheck(config["infillDensity"],
             "infillDensity");
     gridSpacingMultiplier = doubleCheck(config["gridSpacingMultiplier"],
-            "gridSpacingMultiplier", 0.85);
+            "gridSpacingMultiplier", 1.1);
     nbOfShells = uintCheck(config["numberOfShells"],
             "numberOfShells");
     layerWidthMinimum = doubleCheck(config["layerWidthMinimum"],
