@@ -1,5 +1,6 @@
 #include <list>
 #include <vector>
+#include <limits>
 
 #include "pather_optimizer_fastgraph.h"
 
@@ -128,6 +129,25 @@ void BUCKET::optimize(LabeledOpenPaths& output, Point2Type& entryPoint,
     }
 //    m_hierarchy.repr(std::cerr);
 //    std::cout << "That was it for this bucket!" << std::endl;
+    if(grueConf.get_doFixedLayerStart()) {
+        /*
+         to avoid extra connections between layers (or between buckets) 
+         when we fix our starting point to the bottom left, 
+         I set the entry point to that location.
+         
+         This is not necessary otherwise because the algorithm will 
+         naturally select the nearest point
+        */
+        Scalar minDist = std::numeric_limits<Scalar>::max();
+        for(Loop::finite_cw_iterator iter = m_loop.clockwiseFinite(); 
+                iter != m_loop.clockwiseEnd(); 
+                ++iter) {
+            Scalar dist = Point2Type(*iter).dotProduct(Point2Type(1.0,1.0));
+            if(dist < minDist) {
+                entryPoint = *iter;
+            }
+        }
+    }
     m_hierarchy.optimize(output, entryPoint, 
             m_noCrossing, grueConf);
     optimizeGraph(output, m_graph, m_noCrossing, entryPoint, grueConf);
