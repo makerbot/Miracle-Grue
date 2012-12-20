@@ -352,6 +352,7 @@ void HIERARCHY::optimizeMyself(LabeledOpenPaths& output,
         boundary_container& bounds, 
         const GrueConfig& grueConf, 
         bool first) {
+    std::cout << first << std::endl;
     LabelPriorityComparator compare(grueConf);
     bool doneGraph = false;
     entry_iterator nodeSample = entryBegin(m_graph);
