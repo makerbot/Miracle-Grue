@@ -229,18 +229,21 @@ FASTGRAPH_PRIVATE:
              Selects the best valid child and optimizes it until no more remain
              */
             void optimize(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    boundary_container& bounds, const GrueConfig& grueConf);
+                    boundary_container& bounds, const GrueConfig& grueConf, 
+                    bool first = false);
             /**
              @brief called by a parent hierarchy on its valid children
              */
             void optimizeInner(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    boundary_container& bounds, const GrueConfig& grueConf);
+                    boundary_container& bounds, const GrueConfig& grueConf, 
+                    bool first);
             /**
              @brief optimize the contents of this object only. Called from 
              optimizeInner
              */
             void optimizeMyself(LabeledOpenPaths& output, Point2Type& entryPoint, 
-                    boundary_container& bounds, const GrueConfig& grueConf);
+                    boundary_container& bounds, const GrueConfig& grueConf, 
+                    bool first);
             void swap(LoopHierarchy& other);
             void repr(std::ostream& out, size_t level = 0);
             PathLabel m_label;

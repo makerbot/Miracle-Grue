@@ -181,7 +181,9 @@ bool GCoder::calcExtrusion(unsigned int extruderId,
         Extrusion& extrusionParams) const {
     const Extruder& currentExtruder = grueCfg.get_extruders()[extruderId];
     std::string profileName;
-    if(layerSequence == 0) {
+    if(layerSequence == 0 || 
+            (grueCfg.get_doRaft() && 
+            layerSequence == grueCfg.get_raftLayers())) {
         profileName = currentExtruder.firstLayerExtrusionProfile;
     } else {
         if(label.isOutline() || (label.isInset() && 
@@ -421,7 +423,7 @@ Scalar Extrusion::crossSectionArea(Scalar height, Scalar width) const {
 Scalar Extruder::feedCrossSectionArea() const {
     Scalar radius = feedDiameter / 2;
     //feedstock should be a cylinder
-    return (M_TAU / 2) * radius * radius;
+    return (M_TAU / 2) * radius * radius * feedstockMultiplier;
     //LONG LIVE TAU!
 }
 
