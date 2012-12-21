@@ -81,9 +81,62 @@ template <typename LABEL_PREDICATE, typename BOUNDARY_TEST>
 SpacialGraph::node::forward_link_iterator 
         SpacialGraph::selectBestLink(graph_type::node_index index, 
         const cost_predicate<LABEL_PREDICATE>& labeler, 
-        const BOUNDARY_TEST&, //bounder, 
-        const Point2Type& //entryPoint
+        const BOUNDARY_TEST& bounder, 
+        const Point2Type& entryPoint
         ) {
+    if(m_graph[index].forwardEmpty()) {
+        typedef std::vector<graph_node_reference> cr_type;
+        typedef std::vector<graph_type::node_index> c_type;
+        cr_type candidateRefs;
+        c_type candidates;
+        m_tree.search(candidateRefs, BBoxFilter(AABBox(
+                m_graph[index].data().position()).adjusted(
+            Point2Type(-NEAREST_QUICKTEST_THRESHOLD, 
+            -NEAREST_QUICKTEST_THRESHOLD), 
+            Point2Type(NEAREST_QUICKTEST_THRESHOLD, 
+            NEAREST_QUICKTEST_THRESHOLD))));
+        if(!candidateRefs.empty()) {
+            //we are able to find potential connections in a nearby box
+            //store them
+            for(cr_type::const_iterator iter = candidateRefs.begin(); 
+                    iter != candidateRefs.end(); 
+                    ++iter) {
+                if(m_graph[iter->second].data().isEntry())
+                    candidates.push_back(iter->second);
+            }
+        }
+        if(candidates.empty()) {
+            //no connections in nearby box, store all entries
+            for(entry_iterator iter = entryBegin(); 
+                    iter != entryEnd(); 
+                    ++iter) {
+                candidates.push_back(iter->getIndex());
+            }
+        }
+        //use this object to order potential connections
+        distance_predicate<LABEL_PREDICATE> prioritySorter(labeler.base(), 
+                m_graph, entryPoint);
+        std::sort(candidates.begin(), candidates.end(), prioritySorter);
+        for(c_type::const_iterator iter = candidates.begin(); 
+                iter != candidates.end(); 
+                ++iter) {
+            //disallow self connections
+            if(*iter == index)
+                continue;
+            if(labeler.base().compare(m_graph[*iter].data().label(), 
+                    m_graph[*candidates.begin()].data().label()) == WORSE) {
+                break;
+            }
+            Segment2Type testConnection(m_graph[index].data().position(), 
+                    m_graph[*iter].data().position());
+            if(bounder(testConnection)) {
+                CostData cost(m_graph[index].data().label(), 
+                        testConnection.squaredLength());
+                m_graph[index].connect(m_graph[*iter], cost);
+                break;
+            }
+        }
+    }
     return std::min_element(m_graph[index].forwardBegin(), 
             m_graph[index].forwardEnd(), 
             labeler);

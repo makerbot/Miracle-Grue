@@ -128,6 +128,8 @@ public:
         int compare(const value_type& lhs, const value_type& rhs) const;
         bool operator ()(const node::connection& lhs, 
                 const node::connection& rhs) const;
+        ///@brief Access the underlying base predicate
+        const BASE& base() const { return m_base; }
     protected:
         BASE m_base;
     };
