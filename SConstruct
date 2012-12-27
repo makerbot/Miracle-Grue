@@ -277,7 +277,7 @@ env.Append(LIBPATH = default_libs_path)
 p = env.Program('./bin/miracle_grue', 
 		mix(['src/miracle_grue/miracle_grue.cc'] ))
 
-target_list = [p]
+binaries = [p]
 
 j = env.Program('./bin/get_slice',
                 mix(['src/miracle_grue/get_slice.cc'] ))
@@ -294,7 +294,7 @@ if build_gui:
     ui = qtEnv.Uic4(toolpathviz_ui)
     p = qtEnv.Program('bin/miracle_gui',
                     toolpathviz_cc)
-    target_list.append(p)
+    binaries.append(p)
 
 gettestname = re.compile('^(.*)TestCase\.cc')
 tests = []
@@ -319,9 +319,35 @@ if run_unit_tests:
         testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
-DESTDIR=ARGUMENTS.get('DESTDIR','')+'/usr/bin'
+install_prefix = ARGUMENTS.get('install_prefix', '')
+config_prefix = ARGUMENTS.get('config_prefix', '')
 
-install_list = map(lambda x: env.Install(DESTDIR,x), target_list)
+if sys.platform == "linux2":
+    if install_prefix == '': install_prefix = '/usr'
+
+    mg_bin = install_prefix + "/bin"
+    mg_conf = install_prefix + "/share/miracle-grue"
+
+elif sys.platform == "darwin":
+    framework_dir = install_prefix + '/Library/Frameworks/MakerBot.framework/Makerbot'
+
+    mg_bin = framework_dir + "/Miracle-Grue/bin/"
+    mg_conf = framework_dir + "/Miracle-Grue"
+
+elif sys.platform == "win32":
+    if install_prefix == '':
+        if os.path.exists('c:/Program Files (x86)'):
+            install_prefix = 'c:/Program Files (x86)/MakerBot'
+        else:
+            install_prefix = 'c:/Program Files/MakerBot'
+
+    mg_bin = install_prefix + "/Miracle-Grue/bin"
+    mg_conf = install_prefix + "/Miracle-Grue"
+
+
+install_list = map(lambda x: env.Install(mg_bin, x), binaries)
+install_list += map(lambda x: env.Install(mg_conf, x), Glob("#/*.config"))
+
 env.Alias('install', install_list)
 
 
