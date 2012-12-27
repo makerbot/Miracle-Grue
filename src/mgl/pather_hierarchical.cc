@@ -15,7 +15,25 @@
 
 namespace mgl {
 
+OptimizerState::OptimizerState() : m_isFirst(true) {}
+OptimizerState::OptimizerState(const Point2Type& other) 
+        : Point2Type(other), m_isFirst(true) {}
+OptimizerState::OptimizerState(Scalar x, Scalar y) 
+        : Point2Type(x, y), m_isFirst(true) {}
+OptimizerState& OptimizerState::operator =(const Point2Type& other) {
+    Point2Type::operator =(other);
+    return *this;
+}
+void OptimizerState::setFirst(bool f) {
+    m_isFirst = f;
+}
+bool OptimizerState::first() const {
+    return m_isFirst;
+}
 
+pather_hierarchical::pather_hierarchical(const GrueConfig& grueConf) 
+        : m_historyPoint(grueConf.get_startingX(), grueConf.get_startingY()), 
+        grueCfg(grueConf) {}
 void pather_hierarchical::addPath(const OpenPath& path, 
         const PathLabel& label) {
     m_root.insert(path, label);
@@ -52,7 +70,7 @@ void pather_hierarchical::optimizeInternal(LabeledOpenPaths& result) {
 //    std::cerr << writer.write(value);
 //    m_root.repr(std::cout);
     LabelCompare lc;
-    m_root.traverse(result, m_historyPoint, lc);
+    m_root.traverse(result, m_historyPoint, grueCfg, lc);
 }
 
 pather_hierarchical::InsetTree::InsetTree() {}
@@ -156,10 +174,10 @@ pather_hierarchical::OutlineTree::iterator
         Point2Type& entryPoint) {
     iterator bestIter = end();
     Scalar bestSquaredMagnitude = std::numeric_limits<Scalar>::max();
-    Point2Type bestPoint;
+    Point2Type bestPoint = entryPoint;
     for(iterator iter = begin(); iter != end(); ++iter) {
         Scalar currentSquaredMagnitude = std::numeric_limits<Scalar>::max();
-        Point2Type currentPoint;
+        Point2Type currentPoint = bestPoint;
         for(Loop::const_finite_cw_iterator loopIter = 
                 iter->boundary().clockwiseFinite(); 
                 loopIter != iter->boundary().clockwiseEnd(); 

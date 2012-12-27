@@ -15,7 +15,8 @@ namespace mgl {
 
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 void pather_hierarchical::InsetTree::traverse(LabeledOpenPaths& result, 
-        Point2Type& entryPoint, const LABEL_COMPARE& labeler, 
+        Point2Type& entryPoint, const GrueConfig& grueCfg, 
+        const LABEL_COMPARE& labeler, 
         const BOUNDARY_TEST& bounder) {
     parent_class::iterator childIter = end();
     while(!empty()) {
@@ -28,14 +29,14 @@ void pather_hierarchical::InsetTree::traverse(LabeledOpenPaths& result,
             }
             break;
         }
-        childIter->traverse(result, entryPoint, labeler, bounder);
+        childIter->traverse(result, entryPoint, grueCfg, labeler, bounder);
         erase(childIter);
     }
     //traverse self
-    traverseInternal(result, entryPoint, labeler, bounder);
+    traverseInternal(result, entryPoint, grueCfg, labeler, bounder);
     while(!empty()) {
         childIter = selectBestChild(entryPoint, labeler, bounder);
-        childIter->traverse(result, entryPoint, labeler, bounder);
+        childIter->traverse(result, entryPoint, grueCfg, labeler, bounder);
         erase(childIter);
     }
 }
@@ -122,6 +123,7 @@ pather_hierarchical::InsetTree::parent_class ::iterator
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 void pather_hierarchical::InsetTree::traverseInternal(
         LabeledOpenPaths& result, Point2Type& entryPoint, 
+        const GrueConfig& grueCfg, 
         const LABEL_COMPARE& labeler, 
         const BOUNDARY_TEST& bounder) {
     bool graphTraversed = false;
@@ -147,21 +149,31 @@ void pather_hierarchical::InsetTree::traverseInternal(
             Segment2Type testSegment(entryPoint, *iter);
             Scalar distanceSquared = testSegment.squaredLength();
             bool boundaryTest = bounder(testSegment);
-            if(!nearestBoundaryTest) {
-                if(boundaryTest) {
-                    nearestPoint = iter;
+            if(grueCfg.get_doFixedLayerStart()) {
+                distanceSquared = Point2Type(*iter).dotProduct(
+                        Point2Type(1.0,1.0));
+                if(distanceSquared < nearestDistanceSquared) {
                     nearestDistanceSquared = distanceSquared;
-                    nearestBoundaryTest = true;
+                    nearestBoundaryTest = boundaryTest;
+                    nearestPoint = iter;
+                }
+            } else {
+                if(!nearestBoundaryTest) {
+                    if(boundaryTest) {
+                        nearestPoint = iter;
+                        nearestDistanceSquared = distanceSquared;
+                        nearestBoundaryTest = true;
+                    } else {
+                        if(distanceSquared < nearestDistanceSquared) {
+                            nearestPoint = iter;
+                            nearestDistanceSquared = distanceSquared;
+                        }
+                    }
                 } else {
-                    if(distanceSquared < nearestDistanceSquared) {
+                    if(boundaryTest && distanceSquared < nearestDistanceSquared) {
                         nearestPoint = iter;
                         nearestDistanceSquared = distanceSquared;
                     }
-                }
-            } else {
-                if(boundaryTest && distanceSquared < nearestDistanceSquared) {
-                    nearestPoint = iter;
-                    nearestDistanceSquared = distanceSquared;
                 }
             }
         }
@@ -185,32 +197,34 @@ void pather_hierarchical::InsetTree::traverseInternal(
 }
 template <typename LABEL_COMPARE>
 void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
-        Point2Type& entryPoint, const LABEL_COMPARE& labeler) {
+        Point2Type& entryPoint, const GrueConfig& grueCfg, 
+        const LABEL_COMPARE& labeler) {
     iterator currentChild;
     typedef basic_boxlist<Segment2Type> bounding_type;
     bounding_type boundaries;
     basic_boundary_test<bounding_type> bounder(boundaries);
     constructBoundariesRecursive(boundaries);
-    traverse(result, entryPoint, labeler, bounder);
+    traverse(result, entryPoint, grueCfg, labeler, bounder);
     return;
     while((currentChild = selectBestChild(entryPoint)) != end()) {
-        currentChild->traverse(result, entryPoint, labeler);
+        currentChild->traverse(result, entryPoint, grueCfg, labeler);
         erase(currentChild);
     }
     constructBoundaries(boundaries);
-    m_insets.traverse(result, entryPoint, labeler, bounder);
+    m_insets.traverse(result, entryPoint, grueCfg, labeler, bounder);
     m_graph.optimize(result, entryPoint, labeler, bounder);
 }
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
-        Point2Type& entryPoint, const LABEL_COMPARE& labeler, 
+        Point2Type& entryPoint, const GrueConfig& grueCfg, 
+        const LABEL_COMPARE& labeler, 
         const BOUNDARY_TEST& bounder) {
     iterator currentChild;
     while((currentChild = selectBestChild(entryPoint)) != end()) {
-        currentChild->traverse(result, entryPoint, labeler, bounder);
+        currentChild->traverse(result, entryPoint, grueCfg, labeler, bounder);
         erase(currentChild);
     }
-    m_insets.traverse(result, entryPoint, labeler, bounder);
+    m_insets.traverse(result, entryPoint, grueCfg, labeler, bounder);
     m_graph.optimize(result, entryPoint, labeler, bounder);
 }
 template <typename SPACIAL_CONTAINER>

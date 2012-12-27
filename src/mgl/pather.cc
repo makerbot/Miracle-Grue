@@ -58,7 +58,7 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
     abstract_optimizer* optimizer = NULL;
     if(grueCfg.get_doGraphOptimization()) {
         //optimizer = new pather_optimizer_fastgraph(grueCfg);
-        optimizer = new pather_hierarchical();
+        optimizer = new pather_hierarchical(grueCfg);
     } else {
         optimizer = new pather_optimizer();
     }

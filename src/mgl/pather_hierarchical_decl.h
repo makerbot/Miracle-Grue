@@ -12,6 +12,7 @@
 #include "spacial_data.h"
 #include "pather_optimizer.h"
 #include "spacial_graph.h"
+#include "configuration.h"
 
 /*
  Forward declare Json::Value so we don't need to include the header
@@ -30,8 +31,27 @@ public:
     HierarchyException(const T& arg) : Exception(arg) {}
 };
 
+/**
+ @brief A state tracking object for path optimization that primarily keeps 
+ track of the most recently visited point.
+ 
+ This is a subclass of Point2Type and most users can treat it as such.
+ */
+class OptimizerState : public Point2Type {
+public:
+    OptimizerState();
+    OptimizerState(const Point2Type& other);
+    OptimizerState(Scalar x, Scalar y);
+    OptimizerState& operator=(const Point2Type& other);
+    void setFirst(bool f);
+    bool first() const;
+private:
+    bool m_isFirst;
+};
+
 class pather_hierarchical : public abstract_optimizer{
 public:
+    pather_hierarchical(const GrueConfig& grueConf);
     void addPath(const OpenPath& path, const PathLabel& label);
     void addPath(const Loop& loop, const PathLabel& label);
     void addBoundary(const OpenPath& path);
@@ -129,6 +149,7 @@ private:
          @param result Here will be placed the result of the traversal
          @param entryPoint Indicates where best to start traversal. After 
          function returns, holds the position of the last traversed point. 
+         @param grueCfg Configuration object
          @param labeler instance of LABEL_COMPARE that dictates how best to 
          order labels
          @param bounder instance of BOUNDARY_TEST that dictates where 
@@ -139,6 +160,7 @@ private:
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
         void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+                const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE(), 
                 const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
         /**
@@ -179,12 +201,14 @@ private:
          @param BOUNDARY_TEST
          @param result
          @param entryPoint
+         @param grueCfg
          @param labeler
          @param bounder
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
         void traverseInternal(LabeledOpenPaths& result, 
                 Point2Type& entryPoint, 
+                const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler, 
                 const BOUNDARY_TEST& bounder);
         //loop is stored by containment tree
@@ -267,6 +291,7 @@ private:
          labels.
          @param result here will be placed outcome of optimization
          @param entryPoint Indicates from where to start optimizing. 
+         @param grueCfg The config object, used to select different policies
          When function returns, holds the position of last object to be 
          optimized.
          @param labeler instance of label comparison object. Passed to 
@@ -277,6 +302,7 @@ private:
          */
         template <typename LABEL_COMPARE>
         void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+                const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE());
         /**
          @brief Optimize myself and my children using the same bounder object. 
@@ -291,11 +317,13 @@ private:
          basic_boundary_test
          @param result same as above
          @param entryPoint same as above
+         @param grueCfg same as above
          @param labeler same as above
          @param bounder an instance of BOUNDARY_TEST to use.
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
         void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+                const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE(), 
                 const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
         /**
@@ -377,6 +405,7 @@ private:
     
     OutlineTree m_root;
     Point2Type m_historyPoint;
+    const GrueConfig& grueCfg;
 };
 
 }
