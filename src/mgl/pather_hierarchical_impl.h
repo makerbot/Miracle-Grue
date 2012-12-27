@@ -15,7 +15,7 @@ namespace mgl {
 
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 void pather_hierarchical::InsetTree::traverse(LabeledOpenPaths& result, 
-        Point2Type& entryPoint, const GrueConfig& grueCfg, 
+        OptimizerState& entryPoint, const GrueConfig& grueCfg, 
         const LABEL_COMPARE& labeler, 
         const BOUNDARY_TEST& bounder) {
     parent_class::iterator childIter = end();
@@ -42,7 +42,7 @@ void pather_hierarchical::InsetTree::traverse(LabeledOpenPaths& result,
 }
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 pather_hierarchical::InsetTree::parent_class ::iterator
-        pather_hierarchical::InsetTree::selectBestChild(Point2Type& entryPoint, 
+        pather_hierarchical::InsetTree::selectBestChild(OptimizerState& entryPoint, 
         const LABEL_COMPARE& labeler, const BOUNDARY_TEST& bounder) {
     //we basically do std::min_element, but store some data to avoid 
     //recomputing things like minimum distance and crossing test results
@@ -122,7 +122,7 @@ pather_hierarchical::InsetTree::parent_class ::iterator
 }
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 void pather_hierarchical::InsetTree::traverseInternal(
-        LabeledOpenPaths& result, Point2Type& entryPoint, 
+        LabeledOpenPaths& result, OptimizerState& entryPoint, 
         const GrueConfig& grueCfg, 
         const LABEL_COMPARE& labeler, 
         const BOUNDARY_TEST& bounder) {
@@ -177,7 +177,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
                 }
             }
         }
-        if(nearestBoundaryTest) {
+        if(!entryPoint.first() && nearestBoundaryTest) {
             LabeledOpenPath connection(PathLabel(PathLabel::TYP_CONNECTION, 
                     m_label.myOwner, m_label.myValue));
             connection.myPath.appendPoint(entryPoint);
@@ -190,6 +190,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
                 Loop::const_ccw_iterator(nearestPoint));
         myPath.myPath.appendPoints(myLoopPath.fromStart(), myLoopPath.end()); 
         result.push_back(myPath);
+        entryPoint.setFirst(false);
     }
     //done optimizing the inset
     if(!graphTraversed) //graph wasn't done before, so do after
@@ -197,7 +198,7 @@ void pather_hierarchical::InsetTree::traverseInternal(
 }
 template <typename LABEL_COMPARE>
 void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
-        Point2Type& entryPoint, const GrueConfig& grueCfg, 
+        OptimizerState& entryPoint, const GrueConfig& grueCfg, 
         const LABEL_COMPARE& labeler) {
     iterator currentChild;
     typedef basic_boxlist<Segment2Type> bounding_type;
@@ -216,7 +217,7 @@ void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result,
 }
 template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
 void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result, 
-        Point2Type& entryPoint, const GrueConfig& grueCfg, 
+        OptimizerState& entryPoint, const GrueConfig& grueCfg, 
         const LABEL_COMPARE& labeler, 
         const BOUNDARY_TEST& bounder) {
     iterator currentChild;
@@ -224,6 +225,7 @@ void pather_hierarchical::OutlineTree::traverse(LabeledOpenPaths& result,
         currentChild->traverse(result, entryPoint, grueCfg, labeler, bounder);
         erase(currentChild);
     }
+    entryPoint.setFirst(true);
     m_insets.traverse(result, entryPoint, grueCfg, labeler, bounder);
     m_graph.optimize(result, entryPoint, labeler, bounder);
 }

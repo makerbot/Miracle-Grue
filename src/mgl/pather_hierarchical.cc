@@ -171,7 +171,7 @@ void pather_hierarchical::OutlineTree::repr(std::ostream& out,
 }
 pather_hierarchical::OutlineTree::iterator 
         pather_hierarchical::OutlineTree::selectBestChild(
-        Point2Type& entryPoint) {
+        OptimizerState& entryPoint) {
     iterator bestIter = end();
     Scalar bestSquaredMagnitude = std::numeric_limits<Scalar>::max();
     Point2Type bestPoint = entryPoint;
@@ -195,7 +195,7 @@ pather_hierarchical::OutlineTree::iterator
             bestPoint = currentPoint;
         }
     }
-    entryPoint = bestPoint;
+    //entryPoint = bestPoint;
     return bestIter;
 }
 

@@ -159,7 +159,7 @@ private:
          erased, and all graphs to be emptied.
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
-        void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+        void traverse(LabeledOpenPaths& result, OptimizerState& entryPoint, 
                 const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE(), 
                 const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
@@ -186,7 +186,7 @@ private:
          @param bounder instance of object to test for new connections
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
-        parent_class::iterator selectBestChild(Point2Type& entryPoint, 
+        parent_class::iterator selectBestChild(OptimizerState& entryPoint, 
                 const LABEL_COMPARE& labeler, 
                 const BOUNDARY_TEST& bounder);
         /**
@@ -207,7 +207,7 @@ private:
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
         void traverseInternal(LabeledOpenPaths& result, 
-                Point2Type& entryPoint, 
+                OptimizerState& entryPoint, 
                 const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler, 
                 const BOUNDARY_TEST& bounder);
@@ -301,7 +301,7 @@ private:
          be erased and all my data to be emptied.
          */
         template <typename LABEL_COMPARE>
-        void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+        void traverse(LabeledOpenPaths& result, OptimizerState& entryPoint, 
                 const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE());
         /**
@@ -322,7 +322,7 @@ private:
          @param bounder an instance of BOUNDARY_TEST to use.
          */
         template <typename LABEL_COMPARE, typename BOUNDARY_TEST>
-        void traverse(LabeledOpenPaths& result, Point2Type& entryPoint, 
+        void traverse(LabeledOpenPaths& result, OptimizerState& entryPoint, 
                 const GrueConfig& grueCfg, 
                 const LABEL_COMPARE& labeler = LABEL_COMPARE(), 
                 const BOUNDARY_TEST& bounder = BOUNDARY_TEST());
@@ -363,7 +363,7 @@ private:
          Simply select the closest child to @a entryPoint based on the 
          distance from it to the child's boundary loop
          */
-        iterator selectBestChild(Point2Type& entryPoint);
+        iterator selectBestChild(OptimizerState& entryPoint);
         /**
          @brief Construct a collection of boundaries based on my and my 
          children's outlines.
@@ -404,7 +404,7 @@ private:
     
     
     OutlineTree m_root;
-    Point2Type m_historyPoint;
+    OptimizerState m_historyPoint;
     const GrueConfig& grueCfg;
 };
 
