@@ -120,6 +120,15 @@ typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::insert(child_type& othe
     }
 }
 CONTAINMENT_TEMPLATE
+typename CONTAINMENT_TYPE::child_type& CONTAINMENT_TYPE::insert(
+        iterator donation, child_type& donor) {
+    m_children.splice(m_children.end(), donor.m_children, donation);
+}
+CONTAINMENT_TEMPLATE
+void CONTAINMENT_TYPE::insert(iterator from, iterator to, child_type& donor) {
+    m_children.splice(m_children.end(), donor.m_children, from, to);
+}
+CONTAINMENT_TEMPLATE
 const Loop& CONTAINMENT_TYPE::boundary() const {
     return m_loop;
 }

@@ -113,6 +113,40 @@ public:
      */
     child_type& insert(child_type& other);
     /**
+     @brief When removing a child from a parent, but wishing to preserve 
+     some grandchildren, invoke parent.insert(grandchilditerator, child)
+     @param donation an iterator to the grandchild that needs to be preserved
+     @param donor the child that is currently a direct ancestor to the 
+     grandchild indicated by @a donation
+     @return a reference to the grandchild that was just donated.
+     
+     The end result of this function is that the current tree node has 
+     @a donation as its direct descendent, and @a donor no longer has any 
+     record of @a donation. To preserve the correct topology of the 
+     containment tree, you MUST ERASE DONOR FROM THE CURRENT NODE after 
+     all necessary grandchildren have been transferred.
+     
+     In the future, to ensure correct usage, this function might get replaced 
+     by promote(iterator_to_child, functor_to_test_grandchildren) that will 
+     automatically transfer all grandchildren for which the functor returns 
+     true, then erase the child.
+     */
+    child_type& insert(iterator donation, child_type& donor);
+    /**
+     @brief When removing an child from a parent, but wishing to preserve some 
+     granchildren, invoke parent.insert(fromgrandchild, tograndchild, child);
+     @param from specifies the start of the range of grandchildren to transfer
+     @param to specifies the end of the range of grandchildren to transfer, 
+     not including the grandchild at to
+     
+     Operates exactly like insert(iterator, child_type&) but for a range of 
+     grandchildren.
+     
+     You can insert all grandchildren by invoking 
+     insert(donor.begin(), donor.end(), donor);
+     */
+    void insert(iterator from, iterator to, child_type& donor);
+    /**
      @brief Get the loop that represents the extents of this tree
      @return The loop that represents the extents of this tree
      */
