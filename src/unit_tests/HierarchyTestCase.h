@@ -14,14 +14,14 @@
 
 class HierarchyTestCase : public CPPUNIT_NS::TestFixture {
     CPPUNIT_TEST_SUITE( HierarchyTestCase );
-    CPPUNIT_TEST( test );
+    CPPUNIT_TEST( testSanity );
     CPPUNIT_TEST_SUITE_END();
 public:
     HierarchyTestCase(); //to initialize insets
     void setUp();
 protected:
     /* all the test funcs go here */
-    void test();
+    void testSanity();
 private:
     typedef std::list<mgl::Loop> inset_list;
     typedef std::list<inset_list> inset_table;
