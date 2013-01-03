@@ -282,7 +282,7 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     strusion);
             const Scalar currentZ = it->layerZ + it->layerHeight;
             const Scalar currentH = it->layerHeight;
-            const Scalar currentW = it->layerW;
+            Scalar currentW = it->layerW;
             if(!grueCfg.get_doRaft()) {
                 currentW *= 2.0;
             }
