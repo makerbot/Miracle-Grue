@@ -22,6 +22,8 @@
 #include "gcoder_gantry.h"
 #include "log.h"
 
+#include <deque>
+
 namespace mgl {
 
 class GcoderException : public Exception {
@@ -71,8 +73,23 @@ public:
     unsigned int defaultExtruder;
 };
 
-
-
+/**
+ @brief a class used to represent how paths bend over distance
+ @param m_arclength the distance to which the curvature applies [millimeters]
+ @param m_curvature amount of bend over this distance [1/millimeters]
+ Higher numbers mean more curvature. 0 is completely straight.
+ */
+class variation {
+public:
+    variation(Scalar arclength = 0, Scalar curvature = 0) 
+            : m_arclength(arclength), m_curvature(curvature) {}
+    Scalar m_arclength;
+    Scalar m_curvature;
+};
+variation operator +(const variation& lhs, const variation& rhs);
+variation operator -(const variation& lhs, const variation& rhs);
+variation& operator +=(variation& lhs, const variation& rhs);
+variation& operator -=(variation& lhs, const variation& rhs);
 
 
 //
@@ -223,15 +240,43 @@ void GCoder::writePath(std::ostream& ss,
                 "move into position");
     }
     gantry.squirt(ss, extruder, extrusion);
+    std::deque<variation> recentCurvature;
+    variation cumulativeCurvature;
     for (; current != path.end(); ++current) {
+        typename PATH::const_iterator following = current;
+        ++following;
         Point2Type relative = (*current) - last;
-
+        Scalar feedrate = extrusion.feedrate * feedScale;
         std::stringstream comment;
         Scalar distance = relative.magnitude();
         comment << "d: " << distance;
+        if(following != path.end()) {
+            //consider slowing down
+            Point2Type currentUnit = relative.unit();
+            Point2Type followingRelative = Point2Type(*following - *current);
+            Point2Type followingUnit = followingRelative.unit();
+            Scalar followingDistance = followingRelative.magnitude();
+            Scalar arclength = distance + followingDistance;
+            Scalar dotProduct = currentUnit.dotProduct(followingUnit);
+            Scalar curvature = acos(dotProduct) / arclength;
+            variation curVar(arclength, curvature);
+            cumulativeCurvature += curVar;
+            recentCurvature.push_back(curVar);
+            while(cumulativeCurvature.m_arclength > 2.0 && 
+                    !recentCurvature.empty()) {
+                cumulativeCurvature -= recentCurvature.front();
+                recentCurvature.pop_front();
+            }
+//            std::cout << "Curvature: " << cumulativeCurvature.m_curvature << 
+//                    "\nDistance: " << cumulativeCurvature.m_arclength << 
+//                    std::endl;
+            if(cumulativeCurvature.m_curvature > 0.2) {
+                feedrate *= 0.2;
+            }
+        }
         gantry.g1(ss, extruder, extrusion,
                 current->x, current->y, z,
-                extrusion.feedrate * feedScale, h, w, comment.str().c_str());
+                feedrate, h, w, comment.str().c_str());
         last = *current;
     }
 }

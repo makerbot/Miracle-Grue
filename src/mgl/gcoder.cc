@@ -23,7 +23,24 @@ namespace mgl {
 
 using namespace std;
 
-
+variation operator +(const variation& lhs, const variation& rhs) {
+    return variation(lhs.m_arclength + rhs.m_arclength, 
+            lhs.m_curvature + rhs.m_curvature);
+}
+variation operator -(const variation& lhs, const variation& rhs) {
+    return variation(lhs.m_arclength + rhs.m_arclength, 
+            lhs.m_curvature + rhs.m_curvature);
+}
+variation& operator +=(variation& lhs, const variation& rhs) {
+    lhs.m_arclength += rhs.m_arclength;
+    lhs.m_curvature += rhs.m_curvature;
+    return lhs;
+}
+variation& operator -=(variation& lhs, const variation& rhs) {
+    lhs.m_arclength -= rhs.m_arclength;
+    lhs.m_curvature -= rhs.m_curvature;
+    return lhs;
+}
 
 // function that adds an s to a noun if count is more than 1
 
