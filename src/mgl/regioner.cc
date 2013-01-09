@@ -462,24 +462,28 @@ void Regioner::support(RegionList::iterator regionsBegin,
         
         //offset aboveMargins by a fudge factor
         //to compensate for error when we subtracted them from layer above
-        LoopList aboveMarginsOutset;
-        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
+//        LoopList aboveMarginsOutset;
+//        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
+        LoopList currentMarginsInset;
+        loopsOffset(currentMarginsInset, *currentMargins, -LOOP_ERROR_FUDGE_FACTOR);
         
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support = aboveMarginsOutset;
+			support = *aboveMargins;
 		} else {
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
 			//add the outlines of layer above
-			loopsUnion(support, aboveMarginsOutset);
+			loopsUnion(support, *aboveMargins);
 		}
         tick();
 		//subtract current outlines from the support loops to keep support
 		//from overlapping the object
 
 		//use margins computed up front
-		loopsDifference(support, *currentMargins);
+		loopsDifference(support, currentMarginsInset);
+        
+        std::cout << "Support loops: " << support.size() << std::endl;
 
 		--above;
 		--aboveMargins;
