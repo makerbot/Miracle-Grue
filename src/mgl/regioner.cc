@@ -24,6 +24,7 @@ Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
 
 static const Scalar LOOP_ERROR_FUDGE_FACTOR = 0.05;
+static const Scalar SUPPORT_FUDGE_FACTOR = 0.05;
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		LayerMeasure& layerMeasure,
@@ -462,10 +463,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
         
         //offset aboveMargins by a fudge factor
         //to compensate for error when we subtracted them from layer above
-//        LoopList aboveMarginsOutset;
-//        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
         LoopList currentMarginsInset;
-        loopsOffset(currentMarginsInset, *currentMargins, -LOOP_ERROR_FUDGE_FACTOR);
+        loopsOffset(currentMarginsInset, *currentMargins, -SUPPORT_FUDGE_FACTOR);
         
 		if (above->supportLoops.empty()) {
 			//beginning of new support
@@ -474,14 +473,14 @@ void Regioner::support(RegionList::iterator regionsBegin,
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
 			//add the outlines of layer above
-			loopsUnion(support, *aboveMargins);
+			loopsUnion(support, currentMarginsInset);
 		}
         tick();
 		//subtract current outlines from the support loops to keep support
 		//from overlapping the object
 
 		//use margins computed up front
-		loopsDifference(support, currentMarginsInset);
+		loopsDifference(support, *currentMargins);
         
         std::cout << "Support loops: " << support.size() << std::endl;
 
