@@ -272,26 +272,32 @@ if sys.platform == "linux2":
 
     mg_bin = install_prefix + "/bin"
     mg_conf = install_prefix + "/share/miracle-grue"
+    mg_include = install_prefix + '/include'
 
 elif sys.platform == "darwin":
     framework_dir = install_prefix + '/Library/Frameworks/MakerBot.framework/Makerbot'
 
     mg_bin = framework_dir + "/Miracle-Grue/bin/"
     mg_conf = framework_dir + "/Miracle-Grue"
+    mg_include = install_prefix + '/Miracle-Grue'
 
 elif sys.platform == "win32":
     if install_prefix == '':
         if os.path.exists('c:/Program Files (x86)'):
-            install_prefix = 'c:/Program Files (x86)/MakerBot'
+            install_prefix = 'c:/Program Files (x86)/'
         else:
-            install_prefix = 'c:/Program Files/MakerBot'
+            install_prefix = 'c:/Program Files/'
+        install_prefix += 'MakerBotSDK/mingw'
+        binaries.append(install_prefix + '/lib/json.dll')
 
-    mg_bin = install_prefix + "/Miracle-Grue/bin"
-    mg_conf = install_prefix + "/Miracle-Grue"
+    mg_bin = install_prefix + '/bin'
+    mg_conf = install_prefix + '/..'
+    mg_include = install_prefix + '/include'
 
 
 install_list = map(lambda x: env.Install(mg_bin, x), binaries)
 install_list += map(lambda x: env.Install(mg_conf, x), Glob("#/*.config"))
+install_list += map(lambda x: env.Install(mg_include, x), [])
 
 env.Alias('install', install_list)
 
