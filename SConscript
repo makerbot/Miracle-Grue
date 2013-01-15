@@ -126,12 +126,10 @@ operating_system = sys.platform
 print "Operating system: [" + operating_system + "]"
 
 default_libs = []
-default_includes = ['submodule/json-cpp/include',
-		    'submodule/EzCppLog', 
+default_includes = [
+            'submodule/EzCppLog', 
 		    'submodule/optionparser/src',
             'src/eigen']
-
-tools = ['default']
 
 if operating_system.startswith("linux"):
     print " ** CPPUNIT version checK:", commands.getoutput("dpkg -l|grep cppunit-dev")
@@ -139,10 +137,8 @@ if operating_system.startswith("linux"):
 
 compiler_type = None
 
-
-
-env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH='src', tools=tools)
-
+env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH=['./src', './src/mgl'])
+env.Tool('default')
 if operating_system == "darwin":
     default_includes.append('/opt/local/include')
     default_includes.append(
@@ -161,14 +157,7 @@ if operating_system == "win32":
     else:
         print "Unknown compiler {}: Only mingw or cl supported on windows".format(compiler_type)
         exit(1)
-    default_libs_path = ['.\\bin\\lib']
-    if os.path.exists('c:/Program Files (x86)'):
-        prefix = 'c:/Program Files (x86)/'
-    else:
-        prefix = 'c:/Program Files/'
-    default_libs_path.append(prefix + 'MakerBotSDK/mingw/lib')
-    default_includes.append(prefix + 'MakerBotSDK/mingw/include')
-    
+    default_libs_path = ['./bin/lib']
 
 env.Append(CCFLAGS = ['-Wall', '-Wextra'])
 debug_profile = False
@@ -190,29 +179,22 @@ if  multi_thread:
     env.Append(CCFLAGS = '-fopenmp -DOMPFF')      
     env.Append(LINKFLAGS = '-fopenmp')    
 
-#if qt:
-#	print "OS: ", operating_system
-#	print " ** QT version check:",  commands.getoutput("moc -v")
-#	print	
-#	qtModules = ['QtCore', 'QtNetwork' ]
-#	print "QT modules", qtModules
-#	env.EnableQt4Modules(qtModules)
-
 mgl_cc = Glob('src/mgl/*.cc')
 toolpathviz_cc = Glob('submodule/toolpathviz/*.cpp')
 toolpathviz_ui = ['submodule/toolpathviz/mainwindow.ui']
 
-env.Library('./bin/lib/mgl', mgl_cc, CPPPATH=['src', default_includes])
+env.Tool('mb_install', toolpath=[Dir('submodule/mw-scons-tools')])
+
+l = env.Library('./bin/lib/mgl', mgl_cc)
+
+libraries = [l]
 
 unit_test   = ['src/unit_tests/UnitTestMain.cc',
 	       'src/unit_tests/UnitTestUtils.cc']
 
-
-
 default_libs.extend(['mgl', 'json'])
 
 debug_libs = ['cppunit']
-debug_libs_path = ["", ]
 
 env.Append(CPPPATH = default_includes)
 env.Append(LIBS = default_libs)
@@ -264,42 +246,11 @@ if run_unit_tests:
         testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
-install_prefix = ARGUMENTS.get('install_prefix', '')
-config_prefix = ARGUMENTS.get('config_prefix', '')
+env.MBInstallLib(libraries)
+env.MBInstallResource(Glob("#/*.config"))
+env.MBInstallBin(binaries)
 
-if sys.platform == "linux2":
-    if install_prefix == '': install_prefix = '/usr'
-
-    mg_bin = install_prefix + "/bin"
-    mg_conf = install_prefix + "/share/miracle-grue"
-    mg_include = install_prefix + '/include'
-
-elif sys.platform == "darwin":
-    framework_dir = install_prefix + '/Library/Frameworks/MakerBot.framework/Makerbot'
-
-    mg_bin = framework_dir + "/Miracle-Grue/bin/"
-    mg_conf = framework_dir + "/Miracle-Grue"
-    mg_include = install_prefix + '/Miracle-Grue'
-
-elif sys.platform == "win32":
-    if install_prefix == '':
-        if os.path.exists('c:/Program Files (x86)'):
-            install_prefix = 'c:/Program Files (x86)/'
-        else:
-            install_prefix = 'c:/Program Files/'
-        install_prefix += 'MakerBotSDK/mingw'
-        binaries.append(install_prefix + '/lib/json.dll')
-
-    mg_bin = install_prefix + '/bin'
-    mg_conf = install_prefix + '/..'
-    mg_include = install_prefix + '/include'
-
-
-install_list = map(lambda x: env.Install(mg_bin, x), binaries)
-install_list += map(lambda x: env.Install(mg_conf, x), Glob("#/*.config"))
-install_list += map(lambda x: env.Install(mg_include, x), [])
-
-env.Alias('install', install_list)
+env.MBCreateInstallTarget()
 
 
 
