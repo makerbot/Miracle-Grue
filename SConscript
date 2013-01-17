@@ -137,7 +137,8 @@ if operating_system.startswith("linux"):
 
 compiler_type = None
 
-env = Environment(ENV = os.environ, CPPPATH=['./src', './src/mgl'])
+env = Environment(ENV = os.environ, CPPPATH=['./src', './src/mgl'], 
+                  LIBPATH=['./bin/lib'])
 env.Tool('default')
 if operating_system == "darwin":
     default_includes.append('/opt/local/include')
