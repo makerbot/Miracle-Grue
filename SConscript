@@ -137,7 +137,7 @@ if operating_system.startswith("linux"):
 
 compiler_type = None
 
-env = Environment(ENV = {'PATH' : os.environ['PATH']}, CPPPATH=['./src', './src/mgl'])
+env = Environment(ENV = os.environ, CPPPATH=['./src', './src/mgl'])
 env.Tool('default')
 if operating_system == "darwin":
     default_includes.append('/opt/local/include')
@@ -162,7 +162,6 @@ if operating_system == "win32":
 env.Append(CCFLAGS = ['-Wall', '-Wextra'])
 debug_profile = False
 if debug:
-    env.Append(CCFLAGS = '-g')
     if debug_profile:
         env.Append(CCFLAGS = '-pg')
         env.Append(CCFLAGS = '-fprofile-arcs')
@@ -170,6 +169,8 @@ if debug:
         env.Append(LINKFLAGS = '-fprofile-arcs')
         env.Append(LINKFLAGS = '-fprofile-arcs')
         env.Append(LIBS = 'gcov')
+    else:
+        env.Append(CCFLAGS = '-g')
 else:
     env.Append(CCFLAGS = '-O2')
 
@@ -184,6 +185,8 @@ toolpathviz_cc = Glob('submodule/toolpathviz/*.cpp')
 toolpathviz_ui = ['submodule/toolpathviz/mainwindow.ui']
 
 env.Tool('mb_install', toolpath=[Dir('submodule/mw-scons-tools')])
+env.MBAddDevelLibPath('../json-cpp/obj')
+env.MBAddDevelIncludePath('#/../json-cpp/include')
 
 l = env.Library('./bin/lib/mgl', mgl_cc)
 
@@ -247,7 +250,7 @@ if run_unit_tests:
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
 env.MBInstallLib(libraries)
-env.MBInstallResource(Glob("#/*.config"))
+env.MBInstallResources(Glob("#/*.config"))
 env.MBInstallBin(binaries)
 
 env.MBCreateInstallTarget()
