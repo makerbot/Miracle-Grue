@@ -166,7 +166,7 @@ private:
 	PatherConfig patherCfg;
 
 public:
-
+    typedef LayerPaths::Layer::ExtruderLayer::LabeledPathList LabeledOpenPaths;
 
 	Pather(const PatherConfig& pCfg, ProgressBar * progress = NULL);
     Pather(const GrueConfig& grueConf, ProgressBar* progress = NULL);
@@ -179,20 +179,19 @@ public:
 					   LayerPaths &slices,
 					   int sfirstSliceIdx=-1,
 					   int slastSliceIdx=-1);
-
-
-	void outlines(const LoopList& outline_loops,
-				  LoopPathList &boundary_paths);
-
-	void insets(const std::list<LoopList>& insetsForSlice,
-				std::list<LoopPathList> &insetPaths);
-
-	void infills(const GridRanges &infillRanges,
-				 const Grid &grid,
-				 const LoopList& outlines,
-				 bool direction,
-				 OpenPathList &infills);
-	
+    /**
+     @brief join contiguous spurs in @a result into single OpenPaths
+     @param result the output of optimization that contains discrete 
+     LabeledOpenPaths that share endpoints.
+     
+     This function will take adjacent spurs and connections between them, 
+     and join them into the same LabeledOpenPath so that coarseness will 
+     be applied as expected.
+     
+     @a result MUST be a list-like type. We will erase iterators from the 
+     middle of it.
+     */
+	void joinSpurs(LabeledOpenPaths& result);
 };
 
 

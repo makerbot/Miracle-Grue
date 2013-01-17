@@ -163,14 +163,12 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
                     PathLabel::OWN_SUPPORT, 0));
         }
-        
 		if(grueCfg.get_doInsets()) {
             int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
             for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
                     listIter != insetLoops.end(); 
                     ++listIter) {
                 int shellVal = currentShell;
-
                 optimizer->addPaths(*listIter, 
                         PathLabel(PathLabel::TYP_INSET, 
                         PathLabel::OWN_MODEL, shellVal));
@@ -196,16 +194,18 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 				axis, 
 				infillPaths);
 		
-		std::list<LabeledOpenPath> preoptimized;
+		LabeledOpenPaths preoptimized;
 		
         if(grueCfg.get_doInfills()) {
             optimizer->addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
                     PathLabel::OWN_MODEL, 
                     LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
         }
-        
         optimizer->optimize(preoptimized);
-		
+        joinSpurs(preoptimized);
+		smoothCollection(preoptimized, grueCfg.get_coarseness(), 
+                grueCfg.get_directionWeight());
+        
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
                 preoptimized.begin(), preoptimized.end());
         } catch (const std::exception& our) {
@@ -215,6 +215,46 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		++currentSlice;
 	}
     delete optimizer;
+}
+
+void Pather::joinSpurs(LabeledOpenPaths& result) {
+    std::vector<LabeledOpenPaths::iterator> eraseMe;
+    for(LabeledOpenPaths::iterator iter = result.begin(); 
+            iter != result.end(); 
+            ++iter) {
+        LabeledOpenPaths::iterator next = iter;
+        ++next;
+        if(next == result.end()) //last path
+            continue;
+        Point2Type currentStart = *(iter->myPath.fromStart());
+        Point2Type currentEnd = *(iter->myPath.fromEnd());
+        Point2Type nextStart = *(next->myPath.fromStart());
+        Point2Type nextEnd = *(next->myPath.fromEnd());
+        if((currentEnd - nextStart).squaredMagnitude() > 
+                (patherCfg.coarseness * patherCfg.coarseness)) //separate paths
+            continue;
+        if((iter->myLabel.isConnection() || 
+                iter->myLabel.isInset()) && 
+                (next->myLabel.isConnection() || 
+                next->myLabel.isInset())) {
+            //we have adjacent paths of the correct types
+            if(currentStart == currentEnd || 
+                    nextStart == nextEnd) //one is an inset, don't join
+                continue;
+            OpenPath::iterator nextPoint = next->myPath.fromStart();
+            ++nextPoint;
+            iter->myPath.appendPoints(nextPoint, next->myPath.end());
+            if(iter->myLabel.isInset()) {
+                next->myLabel = iter->myLabel;
+            }
+            next->myPath = iter->myPath;
+            eraseMe.push_back(iter);
+        }
+    }
+    while(!eraseMe.empty()) {
+        result.erase(eraseMe.back());
+        eraseMe.pop_back();
+    }
 }
 
 }
