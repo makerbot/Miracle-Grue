@@ -193,11 +193,6 @@ public:
 				 bool direction,
 				 OpenPathList &infills);
 	
-	void directionalCoarsenessCleanup(
-		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths);
-	void directionalCoarsenessCleanup(LabeledOpenPath& labeledPath);
-	
-
 };
 
 
