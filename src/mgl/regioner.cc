@@ -14,6 +14,7 @@
 
 #include "regioner.h"
 #include "loop_utils.h"
+#include "dump_restore.h"
 
 using namespace mgl;
 using namespace std;
@@ -296,6 +297,44 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 //	}
 //}
 
+/**
+ @brief Get an upper bound on the area inside a loop (independent of winding).
+ @param loop input loop
+ @return upper bound on area
+ The approximation is done by building an AABBox from the lo0p, and returning
+ its area. This will generally overestimate by large amounts, but will 
+ correctly return small values for tight, spiky loops
+ */
+Scalar loopAreaApproximation(const Loop& loop) {
+    if(loop.empty())
+        return 0;
+    Loop::const_finite_cw_iterator iter = loop.clockwiseFinite();
+    AABBox box(*iter);
+    for(++iter; iter != loop.clockwiseEnd(); ++iter) {
+        box.expandTo(*iter);
+    }
+    return box.area();
+}
+/**
+ @brier erase all loops from @a loops with area less than @a minArea
+ @param loops list of loops to be filtered
+ @param minArea loops with area less than this are removed
+ */
+void filterLoops(LoopList& loops, Scalar minArea) {
+    std::vector<LoopList::iterator> victims;
+    for(LoopList::iterator iter = loops.begin(); 
+            iter != loops.end(); 
+            ++iter) {
+        Scalar currentArea = loopAreaApproximation(*iter);;
+        if(currentArea < minArea)
+            victims.push_back(iter);
+    }
+    while(!victims.empty()) {
+        loops.erase(victims.back());
+        victims.pop_back();
+    }
+}
+
 void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 		const LayerLoops::const_layer_iterator outlinesEnd,
 		RegionList::iterator regionsBegin,
@@ -310,6 +349,14 @@ void Regioner::insets(const LayerLoops::const_layer_iterator outlinesBegin,
 
 		insetsForSlice(currentOutlines, layermeasure, region->insetLoops, 
 					   region->interiorLoops);
+        for(std::list<LoopList>::iterator depthIter = region->insetLoops.begin(); 
+                depthIter != region->insetLoops.end(); 
+                ++depthIter) {
+            smoothCollection(*depthIter, grueCfg.get_coarseness(), 
+                    grueCfg.get_directionWeight());
+            filterLoops(*depthIter, layermeasure.getLayerW() * 
+                    layermeasure.getLayerW());
+        }
 
         if(!region->insetLoops.empty()) {
             loopsOffset(region->interiorLoops, region->insetLoops.back(), 

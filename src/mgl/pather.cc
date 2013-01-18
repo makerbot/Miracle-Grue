@@ -203,7 +203,7 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
         }
         optimizer->optimize(preoptimized);
         joinSpurs(preoptimized);
-		smoothCollection(preoptimized, grueCfg.get_coarseness(), 
+        smoothCollection(preoptimized, grueCfg.get_coarseness(), 
                 grueCfg.get_directionWeight());
         
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
