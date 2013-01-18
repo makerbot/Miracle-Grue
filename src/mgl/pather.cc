@@ -16,6 +16,7 @@
 #include "limits.h"
 #include "pather_optimizer_graph.h"
 #include "pather_optimizer_fastgraph.h"
+#include "dump_restore.h"
 
 namespace mgl {
 using namespace std;
@@ -92,6 +93,14 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
 		
+//        Json::Value spurLoops;
+//        for(std::list<LoopList>::const_iterator depthIter = 
+//                layerRegions->spurLoops.begin(); 
+//                depthIter != layerRegions->spurLoops.end(); 
+//                ++depthIter) {
+//            dumpLoopList(*depthIter, spurLoops);
+//        }
+//        std::cerr << Json::FastWriter().write(spurLoops);
 		
 		optimizer->clearBoundaries();
         optimizer->clearPaths();
