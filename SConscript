@@ -186,7 +186,7 @@ toolpathviz_cc = Glob('submodule/toolpathviz/*.cpp')
 toolpathviz_ui = ['submodule/toolpathviz/mainwindow.ui']
 
 env.Tool('mb_install', toolpath=[Dir('submodule/mw-scons-tools')])
-env.MBAddDevelLibPath('../json-cpp/obj')
+env.MBAddDevelLibPath('#/../json-cpp/obj')
 env.MBAddDevelIncludePath('#/../json-cpp/include')
 
 l = env.Library('./bin/lib/mgl', mgl_cc)
@@ -251,7 +251,7 @@ if run_unit_tests:
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
 env.MBInstallLib(libraries)
-env.MBInstallResources(Glob("#/*.config"))
+env.MBInstallResources(env.MBGlob("#/*.config"))
 env.MBInstallBin(binaries)
 
 env.MBCreateInstallTarget()
