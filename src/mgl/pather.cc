@@ -6,6 +6,22 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
+ 
+    MiracleGrue - Toolpath generator for 3D printing.
+    Copyright (C) 2012 Joseph Sadusk <jsadusk@makerbot.com>, Filipp Gelman <filipp@makerbot.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
 
@@ -211,8 +227,8 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
                     LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
         }
         optimizer->optimize(preoptimized);
-        smoothCollection(preoptimized, grueCfg.get_coarseness(), 
-                grueCfg.get_directionWeight());
+//        smoothCollection(preoptimized, grueCfg.get_coarseness(), 
+//                grueCfg.get_directionWeight());
         cleanPaths(preoptimized);
         smoothCollection(preoptimized, grueCfg.get_coarseness(), 
                 grueCfg.get_directionWeight());
@@ -238,19 +254,25 @@ void Pather::cleanPaths(LabeledOpenPaths& result) {
     for(++next; 
             next != result.end(); 
             ++current, ++next) {
-        const Scalar dropThreshold = patherCfg.coarseness * 0.5;
-        while(current != result.end() && current->myPath.distance() < 
-                dropThreshold) {
-            current = result.erase(current);
-            next = current;
-            ++next;
+        if(false) {
+            //paths below dropThreshold are too short to be valid. 
+            //even connections must be longer, so we drop them
+            const Scalar dropThreshold = patherCfg.coarseness * 0.5;
+            //keep dropping current until length above threshold
+            while(current != result.end() && current->myPath.distance() < 
+                    dropThreshold) {
+                current = result.erase(current);
+                next = current;
+                ++next;
+            }
+            //keep dropping next until length above threshold
+            while(next != result.end() && next->myPath.distance() < 
+                    dropThreshold) {
+                next = result.erase(next);
+            }
+            if(current == result.end() || next == result.end())
+                break;
         }
-        while(next != result.end() && next->myPath.distance() < 
-                dropThreshold) {
-            next = result.erase(next);
-        }
-        if(current == result.end() || next == result.end())
-            break;
         Point2Type currentStart = *(current->myPath.fromStart());
         Point2Type currentEnd = *(current->myPath.fromEnd());
         Point2Type nextStart = *(next->myPath.fromStart());
@@ -259,6 +281,7 @@ void Pather::cleanPaths(LabeledOpenPaths& result) {
                 (patherCfg.coarseness * patherCfg.coarseness)) { //separate paths
             continue;
         }
+        //here we only join spurs and connections
         if((current->myLabel.isConnection() || 
                 current->myLabel.isInset()) && 
                 (next->myLabel.isConnection() || 
