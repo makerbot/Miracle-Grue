@@ -325,9 +325,11 @@ void filterLoops(LoopList& loops, Scalar minArea) {
     for(LoopList::iterator iter = loops.begin(); 
             iter != loops.end(); 
             ++iter) {
-        Scalar currentArea = loopAreaApproximation(*iter);;
-        if(currentArea < minArea)
+        Scalar currentArea = -1.0;;
+        if(iter->size() < 3 || 
+                (currentArea = loopAreaApproximation(*iter))< minArea) {
             victims.push_back(iter);
+        }
     }
     while(!victims.empty()) {
         loops.erase(victims.back());
@@ -991,7 +993,7 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
  								 std::list<LoopList>& spurLoops) {
 
     //this is a negligible value to make sure loops overlap
-	const Scalar fudgefactor = 0.01;
+	const Scalar fudgefactor = 0.05;
 
 	// the outer shell is a special case
 	std::list<LoopList>::const_iterator inner = sliceInsets.begin();
