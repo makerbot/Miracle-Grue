@@ -199,6 +199,7 @@ unit_test   = ['src/unit_tests/UnitTestMain.cc',
 default_libs.extend(['mgl', 'json'])
 
 debug_libs = ['cppunit']
+debug_libs_path = ['',]
 
 env.Append(CPPPATH = default_includes)
 env.Append(LIBS = default_libs)
