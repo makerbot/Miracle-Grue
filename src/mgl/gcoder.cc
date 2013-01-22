@@ -181,7 +181,9 @@ bool GCoder::calcExtrusion(unsigned int extruderId,
         Extrusion& extrusionParams) const {
     const Extruder& currentExtruder = grueCfg.get_extruders()[extruderId];
     std::string profileName;
-    if(layerSequence == 0) {
+    if(layerSequence == 0 || 
+            (grueCfg.get_doRaft() && 
+            layerSequence == grueCfg.get_raftLayers())) {
         profileName = currentExtruder.firstLayerExtrusionProfile;
     } else {
         if(label.isOutline() || (label.isInset() && 
@@ -280,7 +282,10 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
                     strusion);
             const Scalar currentZ = it->layerZ + it->layerHeight;
             const Scalar currentH = it->layerHeight;
-            const Scalar currentW = it->layerW * 2.0;
+            Scalar currentW = it->layerW;
+            if(!grueCfg.get_doRaft()) {
+                currentW *= 2.0;
+            }
             gantry.g1(gout, struder, 
                     strusion, grueCfg.get_startingX(), 
                     grueCfg.get_startingY(), currentZ, 
@@ -421,7 +426,7 @@ Scalar Extrusion::crossSectionArea(Scalar height, Scalar width) const {
 Scalar Extruder::feedCrossSectionArea() const {
     Scalar radius = feedDiameter / 2;
     //feedstock should be a cylinder
-    return (M_TAU / 2) * radius * radius;
+    return (M_TAU / 2) * radius * radius * feedstockMultiplier;
     //LONG LIVE TAU!
 }
 

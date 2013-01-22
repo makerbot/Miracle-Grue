@@ -215,6 +215,7 @@ GrueConfig::GrueConfig()
         raftModelSpacing(INVALID_SCALAR), raftDensity(INVALID_SCALAR), 
         doSupport(INVALID_BOOL), supportMargin(INVALID_SCALAR), 
         supportDensity(INVALID_SCALAR), doGraphOptimization(INVALID_BOOL), 
+        doFixedLayerStart(INVALID_BOOL), 
         rapidMoveFeedRateXY(INVALID_SCALAR), rapidMoveFeedRateZ(INVALID_SCALAR), 
         useEaxis(INVALID_BOOL), 
         /*
@@ -238,6 +239,8 @@ void GrueConfig::loadFromFile(const Configuration& config) {
         loadSupportParams(config);
     doGraphOptimization = boolCheck(
             config["doGraphOptimization"], "doGraphOptimization", true);
+    doFixedLayerStart = boolCheck(
+            config["doFixedLayerStart"], "doFixedLayerStart", true);
     if(doGraphOptimization)
         loadPathingParams(config);
     loadGantryParams(config);
@@ -260,7 +263,7 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     infillDensity = doubleCheck(config["infillDensity"],
             "infillDensity");
     gridSpacingMultiplier = doubleCheck(config["gridSpacingMultiplier"],
-            "gridSpacingMultiplier", 0.85);
+            "gridSpacingMultiplier");
     nbOfShells = uintCheck(config["numberOfShells"],
             "numberOfShells");
     layerWidthMinimum = doubleCheck(config["layerWidthMinimum"],
@@ -375,8 +378,7 @@ void GrueConfig::loadSupportParams(const Configuration& config) {
     supportDensity = doubleCheck(
             config["supportDensity"], "supportDensity");
 }
-void GrueConfig::loadPathingParams(const Configuration& config) {
-}
+void GrueConfig::loadPathingParams(const Configuration& config) {}
 void GrueConfig::loadProfileParams(const Configuration& config) {
     loadExtruderParams(config);
     loadExtrusionParams(config);
@@ -418,6 +420,8 @@ void GrueConfig::loadExtruderParams(const Configuration& config) {
                 (prefix + "feedDiameter").c_str());
         extruder.nozzleDiameter = doubleCheck(value["nozzleDiameter"],
                 (prefix + "nozzleDiameter").c_str());
+        extruder.feedstockMultiplier = doubleCheck(value["feedstockMultiplier"], 
+                (prefix + "feedstockMultiplier").c_str());
         extruder.retractDistance = doubleCheck(value["retractDistance"],
                 (prefix + "retractDistance").c_str());
         extruder.retractRate = doubleCheck(value["retractRate"],
