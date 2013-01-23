@@ -152,7 +152,7 @@ if operating_system == "win32":
     compiler_type = GetOption('compiler_type')
     if compiler_type == "mingw":
         env.Replace(CCFLAGS=[])
-        env.Tool('mingw')
+        env.Tool('mingw', toolpath=[Dir('submodule/mw-scons-tools')])
     elif compiler_type == "cl":
         pass
     else:
