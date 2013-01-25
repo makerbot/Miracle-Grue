@@ -480,9 +480,6 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 		//use margins computed up front
 		loopsDifference(support, *currentMargins);
-        
-        std::cout << "Support loops: " << support.size() << std::endl;
-
 		--above;
 		--aboveMargins;
 		//tick();
@@ -494,6 +491,8 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	++above;
 	++aboveMargins;
 	
+    //this part is the hack that erases support from vertical walls
+    //after the fact
 	while(current != regionsEnd && 
 			currentMargins != marginsList.end()) {
         LoopList currentMarginsOffset;
