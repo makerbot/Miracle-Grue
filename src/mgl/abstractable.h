@@ -27,7 +27,7 @@
 #include <string>
 #include <map>
 #include <sys/stat.h>
-#include <json/value.h>
+#include <jsoncpp/json/value.h>
 #include "configuration.h"
 
 namespace mgl {
