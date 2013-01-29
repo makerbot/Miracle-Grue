@@ -87,32 +87,32 @@ def runThisTest(testname):
 #end def runThisTest(...)
 
 def runUnitTest(env,target,source):
-	""" runs a unit test in a separate process. Not build-aware,
-	but it does set a flag-file to signify the test ran to success
-	@target dummy target file, writes 'passed' if tests return no error code
-	@source  unit test program to run """
-	import subprocess
-	app = str(source[0].abspath)
-	retCode = subprocess.call(app)
-	if not retCode == 0:
-		print "passed!"
-		open(str(target[0]),'w').write("PASSED\n")
-	else:
-		print("runUnitTest failed testing " + str(source[0]) )
-		#Message('runing unit test' + source[0].abspath)
-		Exit(1)
+    """ runs a unit test in a separate process. Not build-aware,
+    but it does set a flag-file to signify the test ran to success
+    @target dummy target file, writes 'passed' if tests return no error code
+    @source  unit test program to run """
+    import subprocess
+    app = str(source[0].abspath)
+    retCode = subprocess.call(app)
+    if not retCode == 0:
+        print "passed!"
+        open(str(target[0]),'w').write("PASSED\n")
+    else:
+        print("runUnitTest failed testing " + str(source[0]) )
+        #Message('runing unit test' + source[0].abspath)
+        Exit(1)
 #end def runUnitTest(...)
 
 def mix(*args):
-	""" mash items/lists together into a single list, no duplicates"""
-	l = []
-	for arg_list in args:
-		l += arg_list
+    """ mash items/lists together into a single list, no duplicates"""
+    l = []
+    for arg_list in args:
+        l += arg_list
 
-	no_duplicates =  list(set(l)) # remove duplicates
-	#print "***", no_duplicates
-	scons_list = [env.Object(x) for x in no_duplicates]
-	return scons_list
+    no_duplicates =  list(set(l)) # remove duplicates
+    #print "***", no_duplicates
+    scons_list = [env.Object(x) for x in no_duplicates]
+    return scons_list
 #end def mix(*)
 
 print ""
@@ -128,7 +128,7 @@ print "Operating system: [" + operating_system + "]"
 default_libs = []
 default_includes = [
             'submodule/EzCppLog', 
-		    'submodule/optionparser/src',
+            'submodule/optionparser/src',
             'src/eigen']
 
 if operating_system.startswith("linux"):
@@ -177,7 +177,7 @@ else:
 
 #env.Append(CCFLAGS = '-j'+ str(int(jcore_count)))
 multi_thread = False
-if  multi_thread:  
+if multi_thread:  
     env.Append(CCFLAGS = '-fopenmp -DOMPFF')      
     env.Append(LINKFLAGS = '-fopenmp')    
 
@@ -193,8 +193,9 @@ l = env.Library('./bin/lib/mgl', mgl_cc)
 
 libraries = [l]
 
-unit_test   = ['src/unit_tests/UnitTestMain.cc',
-	       'src/unit_tests/UnitTestUtils.cc']
+unit_test = [
+          'src/unit_tests/UnitTestMain.cc',
+          'src/unit_tests/UnitTestUtils.cc']
 
 default_libs.extend(['mgl', 'json'])
 
@@ -207,7 +208,7 @@ env.Append(LIBPATH = default_libs_path)
 
 
 p = env.Program('./bin/miracle_grue', 
-		mix(['src/miracle_grue/miracle_grue.cc'] ))
+                mix(['src/miracle_grue/miracle_grue.cc'] ))
 
 binaries = [p]
 
@@ -225,7 +226,7 @@ if build_gui:
                             'QtOpenGL'])
     ui = qtEnv.Uic4(toolpathviz_ui)
     p = qtEnv.Program('bin/miracle_gui',
-                    toolpathviz_cc)
+                      toolpathviz_cc)
     binaries.append(p)
 
 gettestname = re.compile('^(.*)TestCase\.cc')
@@ -256,6 +257,3 @@ env.MBInstallResources(env.MBGlob("#/*.config"))
 env.MBInstallBin(binaries)
 
 env.MBCreateInstallTarget()
-
-
-
