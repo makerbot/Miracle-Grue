@@ -5,11 +5,12 @@ Maintainer: MakerBot Industries dev team <dev@makerbot.com>
 Build-Depends: debhelper (>= 8.0.0), scons, libjsoncpp-dev
 Standards-Version: 3.9.2
 Homepage: https://github.com/makerbot/Miracle-Grue
-#Vcs-Git: git@github.com:makerbot/Miracle-Grue.git
+Vcs-Git: git@github.com:makerbot/Miracle-Grue.git
 #Vcs-Browser: https://github.com/makerbot/Miracle-Grue
 
 Package: miracle-grue
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: This is MakerBot's toolpath generation engine.
- Miracle-grue creates toolpaths for Replicator and other 3d printers.
+ Miracle-grue creates toolpaths for to make benefit glorious plastic of 
+ printing.
