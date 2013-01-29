@@ -2,7 +2,7 @@ Source: miracle-grue
 Section: unknown
 Priority: extra
 Maintainer: MakerBot Industries dev team <dev@makerbot.com>
-Build-Depends: debhelper (>= 8.0.0), libqt4-dev, libqt4-opengl-dev, pkg-config
+Build-Depends: debhelper (>= 8.0.0), scons, libjsoncpp-dev
 Standards-Version: 3.9.2
 Homepage: https://github.com/makerbot/Miracle-Grue
 #Vcs-Git: git@github.com:makerbot/Miracle-Grue.git
@@ -10,6 +10,6 @@ Homepage: https://github.com/makerbot/Miracle-Grue
 
 Package: miracle-grue
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqtcore4, libqtgui4, libqt4-opengl
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: This is MakerBot's toolpath generation engine.
  Miracle-grue creates toolpaths for Replicator and other 3d printers.
