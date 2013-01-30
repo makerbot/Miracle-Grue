@@ -190,6 +190,7 @@ env.MBAddDevelLibPath('#/../json-cpp/obj')
 env.MBAddDevelIncludePath('#/../json-cpp/include')
 
 l = env.Library('./bin/lib/mgl', mgl_cc)
+env.Clean(l, '#/obj/')
 
 libraries = [l]
 
@@ -209,7 +210,8 @@ env.Append(LIBPATH = default_libs_path)
 
 p = env.Program('./bin/miracle_grue', 
                 mix(['src/miracle_grue/miracle_grue.cc'] ))
-
+env.Clean(p, '#/obj/')
+                
 binaries = [p]
 
 j = env.Program('./bin/get_slice',
@@ -231,7 +233,7 @@ if build_gui:
 
 gettestname = re.compile('^(.*)TestCase\.cc')
 tests = []
-for filename in os.listdir('src/unit_tests'):
+for filename in os.listdir(str(Dir('#/src/unit_tests'))):
     match = gettestname.match(filename)
     if match is not None:
         testname = match.group(1)
