@@ -255,7 +255,6 @@ if run_unit_tests:
         testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
-env.MBInstallLib(libraries)
 env.MBInstallResources(env.MBGlob("#/*.config"))
 env.MBInstallBin(binaries)
 
