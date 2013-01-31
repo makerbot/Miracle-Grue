@@ -1,5 +1,5 @@
 Source: miracle-grue
-Section: unknown
+Section: main
 Priority: extra
 Maintainer: MakerBot Industries dev team <dev@makerbot.com>
 Build-Depends: debhelper (>= 8.0.0), scons, libjsoncpp-dev
@@ -9,8 +9,9 @@ Vcs-Git: git@github.com:makerbot/Miracle-Grue.git
 #Vcs-Browser: https://github.com/makerbot/Miracle-Grue
 
 Package: miracle-grue
+Section: main
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libjsoncpp0
 Description: This is MakerBot's toolpath generation engine.
- Miracle-grue creates toolpaths for to make benefit glorious plastic of 
- printing.
+ Miracle-grue creates toolpaths for to make benefit glorious printing of 
+ plastic.
