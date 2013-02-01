@@ -1,16 +1,26 @@
+miracle-grue (2.0.0) precise; urgency=low
+
+  * This is an experimental debian package release
+  * Here is a line
+  * Here is another line
+  * Feature: New version number
+  * Bugfix: Less broken than before
+
+ -- MakerBot Industries dev team <dev@makerbot.com>  Tue, 29 JAN 2013 10:37:20  -0400
+
 miracle-grue (1.1) precise; urgency=low
 
   * Rev for makerware release 1.1
   * Improved performance for multi part objects
   * Improved quality for Replicator 2
 
- -- MakerBot Industries dev team <dev@makerbot.com> Fri, 07 DEC 2012 11:52:20  -0400
+ -- MakerBot Industries dev team <dev@makerbot.com>  Fri, 07 DEC 2012 11:52:20  -0400
 
 miracle-grue (1.0.1) precise; urgency=low
 
   * Rev for makerware release 1.0.1
 
- -- MakerBot Industries dev team <dev@makerbot.com> Fri, 12 Oct 2012 10:27:20  -0400
+ -- MakerBot Industries dev team <dev@makerbot.com>  Fri, 12 Oct 2012 10:27:20  -0400
 
 miracle-grue (1.00-0) precise; urgency=low
 
