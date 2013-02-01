@@ -36,7 +36,7 @@ void mgl::miracleGrue(const GrueConfig& grueCfg,
 	segmenter.tablaturize(mesh);
 
 	Slicer slicer(grueCfg, progress);
-	LayerLoops layerloops(grueCfg.get_firstLayerZ(), grueCfg.get_layerH());
+	LayerLoops layerloops(0.0, grueCfg.get_layerH());
 
 	//old interface
 	//slicer.tomographyze(segmenter, tomograph);
@@ -97,7 +97,7 @@ void mgl::getSliceJson(const GrueConfig& grueCfg,
 	segmenter.tablaturize(mesh);
 
 	Slicer slicer(grueCfg, NULL);
-	LayerLoops layers(grueCfg.get_firstLayerZ(), grueCfg.get_layerH());
+	LayerLoops layers(0.0, grueCfg.get_layerH());
 
 	//old interface
 	//slicer.tomographyze(segmenter, tomograph);

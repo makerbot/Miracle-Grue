@@ -12,7 +12,7 @@ Slicer::Slicer(const SlicerConfig &slicerCfg, ProgressBar *progress)
 }
 Slicer::Slicer(const GrueConfig& grueCfg, ProgressBar* progress)
     :Progressive(progress) {
-    layerCfg.firstLayerZ = grueCfg.get_firstLayerZ();
+    layerCfg.firstLayerZ = 0.0;
     layerCfg.layerH = grueCfg.get_layerH();
 }
 void Slicer::generateLoops(const Segmenter& seg, LayerLoops& layerloops) {

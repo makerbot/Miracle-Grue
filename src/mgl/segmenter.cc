@@ -15,7 +15,7 @@ using namespace std;
 
 
 Segmenter::Segmenter(const GrueConfig& config) 
-        : zTapeMeasure(config.get_firstLayerZ(), 
+        : zTapeMeasure(0.0, 
         config.get_layerH(), config.get_layerWidthRatio()) {}
 const SliceTable& Segmenter::readSliceTable() const{
 	return sliceTable;

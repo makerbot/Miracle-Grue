@@ -280,7 +280,9 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
             }
             gantry.snort(gout, struder, 
                     strusion);
-            const Scalar currentZ = it->layerZ + it->layerHeight;
+            //this is the only place where firstLayerZ must show up!
+            const Scalar currentZ = it->layerZ + it->layerHeight + 
+                    grueCfg.get_firstLayerZ();;
             const Scalar currentH = it->layerHeight;
             Scalar currentW = it->layerW;
             if(!grueCfg.get_doRaft()) {
