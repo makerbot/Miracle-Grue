@@ -207,6 +207,7 @@ env.Append(CPPPATH = default_includes)
 env.Append(LIBS = default_libs)
 env.Append(LIBPATH = default_libs_path)
 
+env.MBAddLib('jsoncpp')
 
 p = env.Program('./bin/miracle_grue', 
                 mix(['src/miracle_grue/miracle_grue.cc'] ))
@@ -254,7 +255,6 @@ if run_unit_tests:
         testfile = 'bin/unit_tests/{}UnitTest'.format(testname)
         testEnv.Command('runtest_'+testname, testfile, testfile)
 
-#env.MBInstallLib(libraries, 'mgl')
 env.MBInstallResources(env.MBGlob("#/*.config"))
 env.MBInstallBin(binaries)
 
