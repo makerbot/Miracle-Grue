@@ -280,9 +280,9 @@ void GCoder::writeGcodeFile(LayerPaths& layerpaths,
             }
             gantry.snort(gout, struder, 
                     strusion);
-            //this is the only place where firstLayerZ must show up!
+            //Apply firstLayerZ to anchor too!
             const Scalar currentZ = it->layerZ + it->layerHeight + 
-                    grueCfg.get_firstLayerZ();;
+                    grueCfg.get_firstLayerZ();
             const Scalar currentH = it->layerHeight;
             Scalar currentW = it->layerW;
             if(!grueCfg.get_doRaft()) {
@@ -388,7 +388,9 @@ void GCoder::writeSlice(std::ostream& ss,
         //this is the current extruder's zFeedrate
         Scalar zFeedrate = grueCfg.get_scalingFactor() *
                 grueCfg.get_rapidMoveFeedRateZ();
-        const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight;
+        //apply z offset here
+        const Scalar currentZ = currentLayer.layerZ + currentLayer.layerHeight
+                + grueCfg.get_firstLayerZ();
         const Scalar currentH = currentLayer.layerHeight;
         const Scalar currentW = currentLayer.layerW;
         try {
