@@ -198,7 +198,7 @@ unit_test = [
           'src/unit_tests/UnitTestMain.cc',
           'src/unit_tests/UnitTestUtils.cc']
 
-default_libs.extend(['mgl', 'jsoncpp'])
+default_libs.extend(['mgl'])
 
 debug_libs = ['cppunit']
 debug_libs_path = ['',]
