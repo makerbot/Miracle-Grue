@@ -9,7 +9,7 @@ CLN_FLAG = -c
 
 ifeq ($(OS),Windows_NT)
     #Windows stuff
-    SCONS_CMD = cmd //c scons.bat
+    SCONS_CMD = cmd //c scons.bat -f SConswinstruct
 else
     #Linux stuff
     SCONS_CMD = scons
