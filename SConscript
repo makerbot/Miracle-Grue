@@ -207,7 +207,7 @@ env.Append(CPPPATH = default_includes)
 env.Append(LIBS = default_libs)
 env.Append(LIBPATH = default_libs_path)
 
-env.MBAddLib('json')
+env.MBAddLib('jsoncpp')
 
 p = env.Program('./bin/miracle_grue', 
                 mix(['src/miracle_grue/miracle_grue.cc'] ))
