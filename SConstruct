@@ -324,5 +324,3 @@ DESTDIR=ARGUMENTS.get('DESTDIR','')+'/usr/bin'
 install_list = map(lambda x: env.Install(DESTDIR,x), target_list)
 env.Alias('install', install_list)
 
-
-
