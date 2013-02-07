@@ -234,6 +234,18 @@ bool Loop::empty() const {
 	return pointNormals.empty();
 }
 
+Scalar Loop::distance() const {
+    if(empty()) 
+        return 0;
+    Scalar total = 0.0;
+    for(const_finite_cw_iterator iter = clockwiseFinite(); 
+            iter != clockwiseEnd(); 
+            ++iter) {
+        total += segmentAfterPoint(iter).length();
+    }
+    return total;
+}
+
 bool Loop::windingContains(const Point2Type& point) const {
     int accum = 0;
     for(Loop::const_finite_cw_iterator iter = clockwiseFinite(); 

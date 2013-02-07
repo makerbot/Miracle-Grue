@@ -85,7 +85,7 @@ int intCheck(const Json::Value &value, const char *name) {
         ConfigException mixup(ss.str().c_str());
         throw mixup;
     }
-    return value.asUInt();
+    return value.asInt();
 }
 
 int intCheck(const Json::Value &value, const char *name,
@@ -191,6 +191,7 @@ GrueConfig::GrueConfig()
         doAnchor(INVALID_BOOL), doPutModelOnPlatform(INVALID_BOOL), 
         doPrintLayerMessages(INVALID_BOOL), doPrintProgress(INVALID_BOOL), 
         minLayerDuration(INVALID_SCALAR), 
+        minSpeedMultiplier(INVALID_SCALAR),
         coarseness(INVALID_SCALAR), preCoarseness(INVALID_SCALAR), 
         directionWeight(INVALID_SCALAR), 
         layerH(INVALID_SCALAR), firstLayerZ(INVALID_SCALAR), 
@@ -345,7 +346,10 @@ void GrueConfig::loadGcodeParams(const Configuration& config) {
             "doPrintProgress", false);
     minLayerDuration = doubleCheck(
             config["minLayerDuration"], 
-            "minLayerDuration", 0);
+            "minLayerDuration", 0.0);
+    minSpeedMultiplier = doubleCheck(
+            config["minSpeedMultiplier"], 
+            "minSpeedMultiplier", 1.0);
     useEaxis = (boolCheck(config["useEAxis"],
             "useEAxis", false));
     commentOpen = (stringCheck(config["commentOpen"],

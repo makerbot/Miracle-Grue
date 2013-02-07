@@ -8,6 +8,8 @@
 #include "mgl/intersection_index.h"
 #include "mgl/basic_boxlist.h"
 #include "mgl/dump_restore.h"
+#include "mgl/pather_optimizer_fastgraph.h"
+#include "mgl/loop_utils.h"
 
 using namespace std;
 using namespace mgl;
@@ -114,7 +116,7 @@ void makeLoopsPositive(LoopList &loops) {
 
             
 void InsetsTestCase::setUp() {
-	config = InsetsTestCaseConfig(2, .9, 0.5, 1.5, 0.05, 0.3);
+	config = InsetsTestCaseConfig(2, .97, 0.12, .79, 0.001, 0.4);
 	stretchletconfig = InsetsTestCaseConfig(2, .9, 0.13, 0.8, 0.01, 0.3);
 
 	Loop::cw_iterator at =
@@ -176,7 +178,7 @@ void InsetsTestCase::setUp() {
 
     Json::Value stretchletval;
     Json::Reader reader;
-    ifstream file("inputs/Stretchlet_layer.json");
+    ifstream file("./stretch.json");
     reader.parse(file, stretchletval);
     restoreLoopList(stretchletval, stretchletLoops);
     makeLoopsPositive(stretchletLoops);
@@ -579,8 +581,14 @@ void InsetsTestCase::testStretchlet() {
     svgBegin();
     OpenPathList spurs;
     regioner.fillSpurLoops(stretchletLoops, reallayer, spurs);
-
-    loopsToSVG(stretchletLoops, "black", 0, 0);
-    openPathListToSVG(spurs, "red", 0, 0);
+    
+    pather_optimizer_fastgraph pathopt(stretchletconfig);
+    pathopt.addBoundaries(stretchletLoops);
+    pathopt.addPaths(spurs);
+    OpenPathList spursOut;
+    pathopt.optimize(spursOut);
+    smoothCollection(spursOut, 0.05, 0.5);
+    //loopsToSVG(stretchletLoops, "black", 0, 0);
+    openPathListToSVG(spursOut, "red", 0, 0);
     svgEnd();
 }

@@ -168,7 +168,14 @@ public:
 	void clear() { points.clear(); endpoints.clear(); }
 	
 	bool empty() const;
+    /**
+     @brief Number of vertices in this path.
+     */
 	size_t size() const { return points.size(); };
+    /**
+     @brief Distance traversed by this path. 0 for empty path.
+     */
+    Scalar distance() const;
 	
 private:
 	bool isEnd(iterator i) const;
@@ -465,7 +472,15 @@ public:
 	void clear() { pointNormals.clear(); }
 	
 	bool empty() const;
+    /**
+     @brief Number of vertices in this loop.
+     */
 	size_t size() const { return pointNormals.size(); }
+    /**
+     @brief Distance traversed by this loop (same as perimeter). 
+     0 for empty loop.
+     */
+    Scalar distance() const;
     
     bool windingContains(const Point2Type& point) const;
 	

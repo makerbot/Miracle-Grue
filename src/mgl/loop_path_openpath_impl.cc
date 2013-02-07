@@ -102,6 +102,18 @@ bool OpenPath::empty() const {
 	return points.empty();
 }
 
+Scalar OpenPath::distance() const {
+    if(empty()) 
+        return 0;
+    Scalar total = 0.0;
+    const_iterator current = fromStart();
+    const_iterator next = current;
+    for(++next; next != end(); ++current, ++next) {
+        total += Point2Type(*next - *current).magnitude();
+    }
+    return total;
+}
+
 bool OpenPath::isEnd(iterator i) const {
 	return i == end();
 }

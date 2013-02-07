@@ -31,7 +31,7 @@ void dumpLoop(const Loop &loop, Json::Value &root) {
 void dumpLoopList(const LoopList &loops, Json::Value &root) { 
     root["type"] = "LoopList";
 
-    Json::Value loopsval;
+    Json::Value& loopsval = root["loops"];
 
     for (LoopList::const_iterator loop = loops.begin();
          loop != loops.end(); ++loop) {
@@ -40,8 +40,6 @@ void dumpLoopList(const LoopList &loops, Json::Value &root) {
         dumpLoop(*loop, loopval);
         loopsval.append(loopval);
     }
-
-    root["loops"] = loopsval;
 }
 
 void restorePoint(const Json::Value &root, Vector2 &point) {
