@@ -25,6 +25,7 @@ Regioner::Regioner(const GrueConfig& grueConf, ProgressBar* progress)
         : Progressive(progress), grueCfg(grueConf) {}
 
 static const Scalar LOOP_ERROR_FUDGE_FACTOR = 0.05;
+static const Scalar SUPPORT_FUDGE_FACTOR = 0.02;
 
 void Regioner::generateSkeleton(const LayerLoops& layerloops,
 		LayerMeasure& layerMeasure,
@@ -493,7 +494,6 @@ void Regioner::support(RegionList::iterator regionsBegin,
 				grueCfg.get_supportMargin());
 		marginsList.push_back(currentMargins);
 	}
-	int layerskip = 1;
 	RegionList::iterator above = regionsEnd;
 	std::list<LoopList>::const_iterator aboveMargins = marginsList.end();
 	--above; //work from the highest layer down
@@ -511,17 +511,17 @@ void Regioner::support(RegionList::iterator regionsBegin,
         
         //offset aboveMargins by a fudge factor
         //to compensate for error when we subtracted them from layer above
-        LoopList aboveMarginsOutset;
-        loopsOffset(aboveMarginsOutset, *aboveMargins, LOOP_ERROR_FUDGE_FACTOR);
+        LoopList aboveMarginsOffset;
+        loopsOffset(aboveMarginsOffset, *aboveMargins, SUPPORT_FUDGE_FACTOR);
         
 		if (above->supportLoops.empty()) {
 			//beginning of new support
-			support = aboveMarginsOutset;
+			support = aboveMarginsOffset;
 		} else {
 			//start with a projection of support from the layer above
 			support = above->supportLoops;
 			//add the outlines of layer above
-			loopsUnion(support, aboveMarginsOutset);
+			loopsUnion(support, aboveMarginsOffset);
 		}
         tick();
 		//subtract current outlines from the support loops to keep support
@@ -529,12 +529,10 @@ void Regioner::support(RegionList::iterator regionsBegin,
 
 		//use margins computed up front
 		loopsDifference(support, *currentMargins);
-
 		--above;
 		--aboveMargins;
-		tick();
+		//tick();
 	}
-	return;
 	current = regionsBegin;
 	currentMargins = marginsList.begin();
 	above = current;
@@ -542,18 +540,13 @@ void Regioner::support(RegionList::iterator regionsBegin,
 	++above;
 	++aboveMargins;
 	
+    //this part is the hack that erases support from vertical walls
+    //after the fact
 	while(current != regionsEnd && 
 			currentMargins != marginsList.end()) {
-		int curskip = 0;
-		for(above = current, aboveMargins = currentMargins, 
-				++above, ++aboveMargins; 
-				curskip < layerskip && 
-				above != regionsEnd && 
-				aboveMargins != marginsList.end(); 
-				++above, ++aboveMargins, ++curskip) {
-			loopsDifference(above->supportLoops, *currentMargins);
-			loopsDifference(current->supportLoops, *aboveMargins);
-		}
+        LoopList currentMarginsOffset;
+        loopsOffset(currentMarginsOffset, *currentMargins, 5 * SUPPORT_FUDGE_FACTOR);
+        loopsDifference(current->supportLoops, currentMarginsOffset);
 		++current;
 		++currentMargins;
 		tick();
