@@ -20,6 +20,7 @@ namespace mgl {
 class abstract_optimizer {
 public:
     abstract_optimizer(bool j = true) : jsonErrors(j) {}
+    virtual ~abstract_optimizer() {}
 	typedef std::list<LabeledOpenPath> LabeledOpenPaths;
 	//optimize everything you have accumulated
 	//calls to the internal optimize
@@ -51,7 +52,7 @@ public:
 				++iter) {
 			try {
 				addPath(*iter, label); 
-			} catch(Exception mixup) {
+			} catch(const Exception& mixup) {
                 if(jsonErrors) {
                     exceptionToJson(Log::severe(), mixup, true);
                 } else {
@@ -69,7 +70,7 @@ public:
 				++iter) {
 			try {
 				addPath(*iter); 
-			} catch(Exception mixup) {
+			} catch(const Exception& mixup) {
 				if(jsonErrors) {
                     exceptionToJson(Log::severe(), mixup, true);
                 } else {

@@ -6,6 +6,22 @@
    it under the terms of the GNU Affero General Public License as
    published by the Free Software Foundation, either version 3 of the
    License, or (at your option) any later version.
+ 
+    MiracleGrue - Toolpath generator for 3D printing.
+    Copyright (C) 2012 Joseph Sadusk <jsadusk@makerbot.com>, Filipp Gelman <filipp@makerbot.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
 
@@ -16,6 +32,7 @@
 #include "limits.h"
 #include "pather_optimizer_graph.h"
 #include "pather_optimizer_fastgraph.h"
+#include "dump_restore.h"
 
 namespace mgl {
 using namespace std;
@@ -92,6 +109,14 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
 		LayerPaths::Layer::ExtruderLayer& extruderlayer =
 				lp_layer.extruders.back();
 		
+//        Json::Value spurLoops;
+//        for(std::list<LoopList>::const_iterator depthIter = 
+//                layerRegions->spurLoops.begin(); 
+//                depthIter != layerRegions->spurLoops.end(); 
+//                ++depthIter) {
+//            dumpLoopList(*depthIter, spurLoops);
+//        }
+//        std::cerr << Json::FastWriter().write(spurLoops);
 		
 		optimizer->clearBoundaries();
         optimizer->clearPaths();
@@ -141,13 +166,34 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             optimizer->addBoundaries(layerRegions->interiorLoops);
         }
         
+        const GridRanges& infillRanges = layerRegions->infill;
+
+		const std::vector<Scalar>& values = 
+				!direction ? grid.getXValues() : grid.getYValues();
+		axis_e axis = direction ? X_AXIS : Y_AXIS;
+        
+        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {
+            LoopList outsetSupportLoops;
+            loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
+                    0.01);
+            optimizer->addBoundaries(outsetSupportLoops);
+            
+            const GridRanges& supportRanges = layerRegions->support;
+            OpenPathList supportPaths;
+            grid.gridRangesToOpenPaths(
+                    direction ? supportRanges.xRays : supportRanges.yRays, 
+                    values, 
+                    axis, 
+                    supportPaths);
+            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
+                    PathLabel::OWN_SUPPORT, 0));
+        }
 		if(grueCfg.get_doInsets()) {
             int currentShell = LayerPaths::Layer::ExtruderLayer::INSET_LABEL_VALUE;
             for(std::list<LoopList>::const_iterator listIter = insetLoops.begin(); 
                     listIter != insetLoops.end(); 
                     ++listIter) {
                 int shellVal = currentShell;
-
                 optimizer->addPaths(*listIter, 
                         PathLabel(PathLabel::TYP_INSET, 
                         PathLabel::OWN_MODEL, shellVal));
@@ -166,64 +212,30 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
             }
         }
 
-		const GridRanges& infillRanges = layerRegions->infill;
-		const GridRanges& supportRanges = layerRegions->support;
-
-		const std::vector<Scalar>& values = 
-				!direction ? grid.getXValues() : grid.getYValues();
-		axis_e axis = direction ? X_AXIS : Y_AXIS;
-		
-		
 		OpenPathList infillPaths;
-		OpenPathList supportPaths;
 		grid.gridRangesToOpenPaths(
 				direction ? infillRanges.xRays : infillRanges.yRays,  
 				values, 
 				axis, 
 				infillPaths);
 		
-		std::list<LabeledOpenPath> preoptimized;
-		std::list<LabeledOpenPath> presupport;
-		
-		grid.gridRangesToOpenPaths(
-				direction ? supportRanges.xRays : supportRanges.yRays, 
-				values, 
-				axis, 
-				supportPaths);
+		LabeledOpenPaths preoptimized;
 		
         if(grueCfg.get_doInfills()) {
             optimizer->addPaths(infillPaths, PathLabel(PathLabel::TYP_INFILL, 
                     PathLabel::OWN_MODEL, 
                     LayerPaths::Layer::ExtruderLayer::INFILL_LABEL_VALUE));
         }
-		
-		optimizer->optimize(preoptimized);
-		
-		optimizer->clearBoundaries();
-		optimizer->clearPaths();
-		
-        if(grueCfg.get_doRaft() || grueCfg.get_doSupport()) {
-            LoopList outsetSupportLoops;
-            loopsOffset(outsetSupportLoops, layerRegions->supportLoops, 
-                    0.01);
-            optimizer->addBoundaries(outsetSupportLoops);
-
-            optimizer->addPaths(supportPaths, PathLabel(PathLabel::TYP_INFILL, 
-                    PathLabel::OWN_SUPPORT, 0));
-
-
-            optimizer->optimize(presupport); 
-        }
-		
+        optimizer->optimize(preoptimized);
+//        smoothCollection(preoptimized, grueCfg.get_coarseness(), 
+//                grueCfg.get_directionWeight());
+        cleanPaths(preoptimized);
+        smoothCollection(preoptimized, grueCfg.get_coarseness(), 
+                grueCfg.get_directionWeight());
+        
         extruderlayer.paths.insert(extruderlayer.paths.end(), 
                 preoptimized.begin(), preoptimized.end());
-        extruderlayer.paths.insert(extruderlayer.paths.end(), 
-                presupport.begin(), presupport.end());
-		//directionalCoarsenessCleanup(extruderlayer.paths);
-
-//		cout << currentSlice << ": \t" << layerMeasure.getLayerPosition(
-//				layerRegions->layerMeasureId) << endl;
-        }catch (const std::exception& our) {
+        } catch (const std::exception& our) {
             std::cout << "Error " << our.what() << " on layer " << 
                     currentSlice << std::endl;
         }
@@ -232,137 +244,66 @@ void Pather::generatePaths(const GrueConfig& grueCfg,
     delete optimizer;
 }
 
-void Pather::outlines(const LoopList& outline_loops,
-		LoopPathList &boundary_paths) {
-	//using a indeterminate start point for the beginning of the LoopPathList
-	//as that's what the old Polygon logic did
-
-	for (LoopList::const_iterator i = outline_loops.begin();
-			i != outline_loops.end(); ++i) {
-		boundary_paths.push_back(LoopPath(*i, i->clockwise(),
-				i->counterClockwise()));
-	}
-}
-
-void Pather::insets(const list<LoopList>& inset_loops,
-		list<LoopPathList> &inset_paths) {
-	std::list<const Loop*> flat_insets;
-	for (list<LoopList>::const_iterator i = inset_loops.begin();
-			i != inset_loops.end(); ++i) {
-
-//		inset_paths.push_back(LoopPathList());
-//		LoopPathList& lp_list = inset_paths.back();
-
-		for (LoopList::const_iterator j = i->begin(); j != i->end(); ++j) {
-//			lp_list.push_back(LoopPath(*j, j->clockwise(),
-//					j->counterClockwise()));
-			flat_insets.push_back(&*j);
-		}
-	}
-	inset_paths.push_back(LoopPathList());
-	LoopPathList& onlyList = inset_paths.back();
-	while(!flat_insets.empty()) {
-		if(onlyList.empty()) {
-			onlyList.push_back(LoopPath(*flat_insets.front(), 
-					flat_insets.front()->clockwise(), 
-					flat_insets.front()->counterClockwise(
-					*(flat_insets.front()->clockwise()))));
-			flat_insets.pop_front();
-		} else {
-			Point2Type current_exit = *onlyList.back().fromEnd();
-			std::list<const Loop*>::iterator closestLoop = flat_insets.begin();
-			Loop::entry_iterator closestEntry = flat_insets.front()->entryBegin();
-			Scalar closestDistance = (closestEntry->getPoint() - 
-					current_exit).magnitude();
-			//find the closest entry
-			for(std::list<const Loop*>::iterator loopIter = flat_insets.begin(); 
-					loopIter != flat_insets.end(); 
-					++loopIter) {
-				for(Loop::entry_iterator entryIter = (*loopIter)->entryBegin(); 
-						entryIter != (*loopIter)->entryEnd(); 
-						++entryIter) {
-					Scalar distance = (entryIter->getPoint() - 
-							current_exit).magnitude();
-					if(distance < closestDistance) {
-						closestLoop = loopIter;
-						closestEntry = entryIter;
-						closestDistance = distance;
-					}
-				}
-			}
-			//add its loopPath
-			onlyList.push_back(LoopPath(*(*closestLoop), 
-					(*closestLoop)->clockwise(*closestEntry), 
-					(*closestLoop)->counterClockwise(*closestEntry)));
-			//remove from list
-			flat_insets.erase(closestLoop);
-		}
-	}
-}
-
-void Pather::infills(const GridRanges &infillRanges,
-		const Grid &grid,
-		const LoopList &outlines,
-		const bool direction,
-		OpenPathList &infills) {
-	grid.pathsFromRanges(infillRanges, outlines, direction, infills);
-}
-
-void Pather::directionalCoarsenessCleanup(
-		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths){
-	typedef LayerPaths::Layer::ExtruderLayer::LabeledPathList Paths;
-	for(Paths::iterator iter = labeledPaths.begin(); 
-			iter != labeledPaths.end(); 
-			++iter) {
-		directionalCoarsenessCleanup(*iter);
-	}
-}
-
-void Pather::directionalCoarsenessCleanup(LabeledOpenPath& labeledPath) {
-	if(patherCfg.coarseness == 0)
-		return;
-	OpenPath& path = labeledPath.myPath;
-	if(path.size() < 3)
-		return;
-	OpenPath cleanPath;
-	OpenPath::iterator current;
-	current = path.fromStart();
-	//insert the first two points
-	cleanPath.appendPoint(*(current++));
-	cleanPath.appendPoint(*(current++));
-	Scalar cumulativeError = 0.0;
-	for(; current != path.end(); ++current) {
-		OpenPath::reverse_iterator last1 = cleanPath.fromEnd();
-		OpenPath::reverse_iterator last2 = cleanPath.fromEnd();
-        Point2Type currentPoint = *current;
-        Point2Type landingPoint = currentPoint;
-		++last2;
-		bool addPoint = true;
-        try {
-            Point2Type unit = Point2Type(*last1 - *last2).unit();
-            Scalar component = (currentPoint - *last1).dotProduct(unit);
-            Scalar deviation = abs((currentPoint - *last1).crossProduct(unit));
-            landingPoint = *last1 + unit*component;
-
-            cumulativeError += deviation;
-
-            addPoint = cumulativeError > patherCfg.coarseness;
-        } catch(GeometryException mixup) {
-            //we expect this to be something like a bad normalization
-            Log::severe() << "ERROR: " << mixup.what() << std::endl;
+void Pather::cleanPaths(LabeledOpenPaths& result) {
+    std::vector<LabeledOpenPaths::iterator> eraseMe;
+    typedef LabeledOpenPaths::iterator iterator;
+    if(result.empty())
+        return;
+    iterator current = result.begin();
+    iterator next = current;
+    for(++next; 
+            next != result.end(); 
+            ++current, ++next) {
+        if(false) {
+            //paths below dropThreshold are too short to be valid. 
+            //even connections must be longer, so we drop them
+            const Scalar dropThreshold = patherCfg.coarseness * 0.5;
+            //keep dropping current until length above threshold
+            while(current != result.end() && current->myPath.distance() < 
+                    dropThreshold) {
+                current = result.erase(current);
+                next = current;
+                ++next;
+            }
+            //keep dropping next until length above threshold
+            while(next != result.end() && next->myPath.distance() < 
+                    dropThreshold) {
+                next = result.erase(next);
+            }
+            if(current == result.end() || next == result.end())
+                break;
         }
-		
-		if(addPoint) {
-			cleanPath.appendPoint(currentPoint);
-			cumulativeError = 0;
-		} else {
-			*last1 = landingPoint * (1.0 - patherCfg.directionWeight) + 
-					currentPoint * patherCfg.directionWeight;
-		}
-	}
-	path = cleanPath;
+        Point2Type currentStart = *(current->myPath.fromStart());
+        Point2Type currentEnd = *(current->myPath.fromEnd());
+        Point2Type nextStart = *(next->myPath.fromStart());
+        Point2Type nextEnd = *(next->myPath.fromEnd());
+        if((currentEnd - nextStart).squaredMagnitude() > 
+                (patherCfg.coarseness * patherCfg.coarseness)) { //separate paths
+            continue;
+        }
+        //here we only join spurs and connections
+        if((current->myLabel.isConnection() || 
+                current->myLabel.isInset()) && 
+                (next->myLabel.isConnection() || 
+                next->myLabel.isInset())) {
+            //we have adjacent paths of the correct types
+            if((currentStart == currentEnd && current->myPath.size() > 2) || 
+                    (nextStart == nextEnd && next->myPath.size() > 2)) //one is an inset, don't join
+                continue;
+            OpenPath::iterator nextPoint = next->myPath.fromStart();
+            ++nextPoint;
+            current->myPath.appendPoints(nextPoint, next->myPath.end());
+            if(current->myLabel.isInset()) {
+                next->myLabel = current->myLabel;
+            }
+            next->myPath = current->myPath;
+            eraseMe.push_back(current);
+        }
+    }
+    while(!eraseMe.empty()) {
+        result.erase(eraseMe.back());
+        eraseMe.pop_back();
+    }
 }
-
-
 
 }

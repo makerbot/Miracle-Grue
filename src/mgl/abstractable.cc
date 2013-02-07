@@ -26,6 +26,7 @@ using namespace std;
 #else
 #include <sys/types.h>
 #include <pwd.h>
+#include <unistd.h>
 #endif
 
 #include <fstream>
