@@ -1,3 +1,13 @@
+miracle-grue (1.1.) precise; urgency=low
+
+  * Rev for makerware release 1.1.3
+  * Reduced unnecessary support
+  * Improved quality for spurs and single filament walls
+  * Bugfix: Configuration of bedZOffset works as intended
+  * Feature: Ability to limit how much minLayerDuration slows speeds
+
+ -- MakerBot Industries dev team <dev@makerbot.com>  Thu, 07 FEB 2012 15:03:20  -0400
+
 miracle-grue (1.1) precise; urgency=low
 
   * Rev for makerware release 1.1
