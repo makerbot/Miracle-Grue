@@ -166,7 +166,7 @@ private:
 	PatherConfig patherCfg;
 
 public:
-
+    typedef LayerPaths::Layer::ExtruderLayer::LabeledPathList LabeledOpenPaths;
 
 	Pather(const PatherConfig& pCfg, ProgressBar * progress = NULL);
     Pather(const GrueConfig& grueConf, ProgressBar* progress = NULL);
@@ -179,25 +179,20 @@ public:
 					   LayerPaths &slices,
 					   int sfirstSliceIdx=-1,
 					   int slastSliceIdx=-1);
-
-
-	void outlines(const LoopList& outline_loops,
-				  LoopPathList &boundary_paths);
-
-	void insets(const std::list<LoopList>& insetsForSlice,
-				std::list<LoopPathList> &insetPaths);
-
-	void infills(const GridRanges &infillRanges,
-				 const Grid &grid,
-				 const LoopList& outlines,
-				 bool direction,
-				 OpenPathList &infills);
-	
-	void directionalCoarsenessCleanup(
-		LayerPaths::Layer::ExtruderLayer::LabeledPathList& labeledPaths);
-	void directionalCoarsenessCleanup(LabeledOpenPath& labeledPath);
-	
-
+    /**
+     @brief Drop non-printable paths and join spurs
+     @param result the output of optimization that contains discrete 
+     LabeledOpenPaths that share endpoints.
+     
+     This function will take adjacent spurs and connections between them, 
+     and join them into the same LabeledOpenPath so that applying coarseness
+     is more effective. It will also drop things that will not be printed
+     (like 0 length lines) to avoid moving the toolhead to those positions.
+     
+     @a result MUST be a list-like type. We will erase iterators from the 
+     middle of it.
+     */
+	void cleanPaths(LabeledOpenPaths& result);
 };
 
 

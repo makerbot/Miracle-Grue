@@ -264,9 +264,10 @@ void GCoder::writePaths(std::ostream& ss,
         if(currentLP.myLabel.isConnection() && !didLastPath)
             continue;
         didLastPath = doCurrentPath;
-        if(doCurrentPath)
+        if(doCurrentPath) {
             writePath(ss, z, currentH, currentW, extruder, 
                     extrusion, currentLP.myPath, feedScale);
+        }
     }
     gantry.snort(ss, extruder, fluidstrusion);
     ss << std::endl << std::endl;

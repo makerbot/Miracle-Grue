@@ -63,11 +63,28 @@ public:
     Point2Type m_max;
 };
 
+/**
+ @breif A base template for converting objects into bounding boxes.
+ @param T the type of object which is converted into a bounding box
+ This struct defines a static function AABBox bound(const T&) where T
+ is the type of object from which you wish to generate a bounding box.
+ Loops, paths, lines, and points are valid examples.
+ 
+ There is no generic implementation. You must provide one for any type 
+ you wish to store in a spacial index. Consider the example for a line:
+ 
+ template <>
+ struct to_bbox<Segment2Type> {
+    static AABBox bound(const Segment2Type& line) {
+        AABBox box(line.a);
+        box.expandTo(line.b);
+        return box;
+    }
+ };
+ */
 template <typename T>
 struct to_bbox{
-    static AABBox bound(const T&) {
-        throw std::logic_error("Unimplemented, must specialize!");
-    }
+    static AABBox bound(const T&);
 };
 
 class BBoxFilter{

@@ -25,6 +25,9 @@ public:
         maxSpurWidth = p_maxSpurWidth;
         spurOverlap = p_spurOverlap;
         minSpurLength = p_minSpurLength;
+        preCoarseness = 0.1;
+        coarseness = 0.05;
+        directionWeight = 0.5;
 	}
 };
 
