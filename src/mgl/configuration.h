@@ -183,6 +183,7 @@ private:
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintLayerMessages)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(bool, doPrintProgress)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minLayerDuration)
+    GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, minSpeedMultiplier)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, coarseness)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, preCoarseness)
     GRUECONFIG_PUBLIC_CONST_ACCESSOR(Scalar, directionWeight)

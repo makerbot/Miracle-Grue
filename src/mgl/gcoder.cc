@@ -403,6 +403,7 @@ void GCoder::writeSlice(std::ostream& ss,
             Scalar duration = calcPaths(layerSequence, currentExtruder, it->paths);
             if(duration < grueCfg.get_minLayerDuration()) {
                 feedScale = duration / grueCfg.get_minLayerDuration();
+                feedScale = std::max(feedScale, grueCfg.get_minSpeedMultiplier());
                 int speedDecrease(feedScale * 100);
                 ss << grueCfg.get_commentOpen()
                    << "Slowing to " << speedDecrease << "% of nominal speeds" 
