@@ -11,8 +11,8 @@
 //#include "../GCoderOperation.h"
 //#include "../FileWriterOperation.h"
 
-#include <json/writer.h>
-#include <json/value.h>
+#include <jsoncpp/json/writer.h>
+#include <jsoncpp/json/value.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION( QueryInterfaceTestCase );
 

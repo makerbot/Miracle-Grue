@@ -2,8 +2,8 @@
 #include "DumpRestoreTestCase.h"
 #include "mgl/dump_restore.h"
 
-#include <json/writer.h>
-#include <json/reader.h>
+#include <jsoncpp/json/writer.h>
+#include <jsoncpp/json/reader.h>
 #include <iostream>
 
 using namespace std;

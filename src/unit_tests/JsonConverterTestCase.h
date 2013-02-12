@@ -3,7 +3,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <json/value.h>
+#include <jsoncpp/json/value.h>
 
 #include "mgl/JsonConverter.h"
 
