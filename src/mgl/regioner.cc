@@ -261,7 +261,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 							  std::list<LoopList>& sliceInsets,
 							  LoopList &interiors) {
 	const Scalar base_distance = 0.5 * layermeasure.getLayerW();
-    const Scalar adjust_distance = 0.5 * layermeasure.getLayerW();
+    const Scalar adjust_distance = grueCfg.get_insetAdjustMultiplier() * 
+            layermeasure.getLayerW();
 	for (unsigned int shell = 0; shell < grueCfg.get_nbOfShells(); ++shell) {
 		sliceInsets.push_back(LoopList());
 		LoopList &shells = sliceInsets.back();

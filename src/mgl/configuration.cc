@@ -199,6 +199,7 @@ GrueConfig::GrueConfig()
         layerWidthRatio(INVALID_SCALAR), layerWidthMinimum(INVALID_SCALAR), 
         layerWidthMaximum(INVALID_SCALAR), 
         insetDistanceMultiplier(INVALID_SCALAR), 
+        insetAdjustMultiplier(INVALID_SCALAR), 
         infillShellSpacingMultiplier(INVALID_SCALAR), 
         roofLayerCount(INVALID_UINT), 
         floorLayerCount(INVALID_UINT), 
@@ -292,6 +293,9 @@ void GrueConfig::loadSlicingParams(const Configuration& config) {
     insetDistanceMultiplier =
             doubleCheck(config["insetDistanceMultiplier"],
             "insetDistanceMultiplier");
+    insetAdjustMultiplier =
+            doubleCheck(config["insetAdjustMultiplier"],
+            "insetAdjustMultiplier");
     infillShellSpacingMultiplier = 
             doubleCheck(config["infillShellSpacingMultiplier"], 
             "infillShellSpacingMultiplier");
