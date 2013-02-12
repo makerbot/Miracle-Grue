@@ -268,8 +268,8 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 
 		Scalar distance = base_distance + grueCfg.get_insetDistanceMultiplier()
 			* layermeasure.getLayerW() * shell;
-
-		loopsOffset(shells, sliceOutlines, -distance);
+		loopsOffset(shells, sliceOutlines, -distance - base_distance);
+        loopsOffset(shells, shells, base_distance);
 	}
 
 	// calculate the interior of a loop, temporarily hardcode the distance to
@@ -1003,6 +1003,7 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
         LoopList &outerspurs = spurLoops.back();
 
         loopsDifference(outerspurs, sliceOutlines, outset);
+        //loopsDifference(outerspurs, *inner);
     }
 
     if (grueCfg.get_doInternalSpurs()) {
