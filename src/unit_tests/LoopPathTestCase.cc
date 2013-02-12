@@ -535,4 +535,28 @@ void LoopPathTestCase::testConvex() {
 	}
 }
 
+void LoopPathTestCase::testDegenerateSmoothing() {
+    Scalar weight = 0.5;
+    Scalar coarseness = 0.05;
+    Loop loop;
+    loop.insertPointBefore(Point2Type(0,0), loop.clockwiseEnd());
+    loop.insertPointBefore(Point2Type(1,0), loop.clockwiseEnd());
+    loop.insertPointBefore(Point2Type(1,coarseness / 2), loop.clockwiseEnd());
+    loop.insertPointBefore(Point2Type(0,coarseness / 2), loop.clockwiseEnd());
+    std::cout << "Original Loop:" << std::endl;
+    for(Loop::finite_cw_iterator iter = loop.clockwiseFinite(); 
+            iter != loop.clockwiseEnd(); 
+            ++iter) {
+        std::cout << *iter << std::endl;
+    }
+    Loop smoothed;
+    smooth(loop, coarseness, smoothed, weight);
+    std::cout << "Smoothed Loop:" << std::endl;
+    for(Loop::finite_cw_iterator iter = smoothed.clockwiseFinite(); 
+            iter != smoothed.clockwiseEnd(); 
+            ++iter) {
+        std::cout << *iter << std::endl;
+    }
+}
+
 
