@@ -31,8 +31,8 @@ using namespace std;
 
 #include <fstream>
 
-#include <json/value.h>
-#include <json/writer.h>
+#include <jsoncpp/json/value.h>
+#include <jsoncpp/json/writer.h>
 #include <map>
 #include <vector>
 

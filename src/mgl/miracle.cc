@@ -1,7 +1,7 @@
 
 
 #include "configuration.h"
-#include <json/writer.h>
+#include <jsoncpp/json/writer.h>
 
 // #include "abstractable.h"
 #include "miracle.h"
