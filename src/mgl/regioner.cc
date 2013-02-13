@@ -994,10 +994,10 @@ void Regioner::spurLoopsForSlice(const LoopList& sliceOutlines,
 	LoopList outset;
 
     if (grueCfg.get_doExternalSpurs()) {
-        LoopList tmp;
-        loopsOffset(tmp, *inner, -0.5 * layermeasure.getLayerW(),
-                false);
-        loopsOffset(outset, tmp, fudgefactor + layermeasure.getLayerW(), 
+//        LoopList tmp;
+//        loopsOffset(tmp, *inner, -0.5 * layermeasure.getLayerW(),
+//                false);
+        loopsOffset(outset, *inner, fudgefactor + 0.5 * layermeasure.getLayerW(), 
                 false);
 	
         spurLoops.push_back(LoopList());
