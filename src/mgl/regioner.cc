@@ -261,16 +261,19 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 							  std::list<LoopList>& sliceInsets,
 							  LoopList &interiors) {
 	const Scalar base_distance = 0.5 * layermeasure.getLayerW();
-    const Scalar adjust_distance = grueCfg.get_insetAdjustMultiplier() * 
-            layermeasure.getLayerW();
+
 	for (unsigned int shell = 0; shell < grueCfg.get_nbOfShells(); ++shell) {
 		sliceInsets.push_back(LoopList());
 		LoopList &shells = sliceInsets.back();
 
 		Scalar distance = base_distance + grueCfg.get_insetDistanceMultiplier()
 			* layermeasure.getLayerW() * shell;
-		loopsOffset(shells, sliceOutlines, -distance - adjust_distance);
-        loopsOffset(shells, shells, adjust_distance);
+
+        Scalar extra = grueCfg.get_maxSpurWidth() - layermeasure.getLayerW()
+            + LOOP_ERROR_FUDGE_FACTOR;
+
+		loopsOffset(shells, sliceOutlines, -(distance + extra));
+        loopsOffset(shells, shells, extra, false);
 	}
 
 	// calculate the interior of a loop, temporarily hardcode the distance to
