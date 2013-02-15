@@ -57,6 +57,15 @@ void openPathListToSVG(const OpenPathList &paths, const string &color,
 	}
 }
 
+void openPathTableToSVG(const std::list<OpenPathList> &pathlists,
+                        const string &color, 
+                        const Scalar xoff, const Scalar yoff) {
+	for (std::list<OpenPathList>::const_iterator pathlist = pathlists.begin();
+		 pathlist != pathlists.end(); ++pathlist) {
+		openPathListToSVG(*pathlist, color, xoff, yoff);
+	}
+}
+
 void loopToSVG(const Loop loop, const string &color,
 			   const Scalar xoff, const Scalar yoff) {
 	for (Loop::const_finite_cw_iterator cw = loop.clockwiseFinite();
@@ -116,8 +125,8 @@ void makeLoopsPositive(LoopList &loops) {
 
             
 void InsetsTestCase::setUp() {
-	config = InsetsTestCaseConfig(2, .97, 0.12, .79, 0.001, 0.4);
-	stretchletconfig = InsetsTestCaseConfig(2, .9, 0.13, 0.8, 0.01, 0.3);
+	config = InsetsTestCaseConfig(2, .97, 0.12, .6, 0.001, 0.1);
+	stretchletconfig = InsetsTestCaseConfig(2, .9, 0.02, 0.6, 0.01, 0.3);
 
 	Loop::cw_iterator at =
 		square.insertPointAfter(Vector2(10.0, 10.0), square.clockwiseEnd());
@@ -176,12 +185,22 @@ void InsetsTestCase::setUp() {
     at = threePairShell.insertPointAfter(Vector2(2, 20), at);
     at = threePairShell.insertPointAfter(Vector2(2, 10), at);
 
-    Json::Value stretchletval;
+    /*Json::Value stretchletval;
     Json::Reader reader;
     ifstream file("./stretch.json");
     reader.parse(file, stretchletval);
     restoreLoopList(stretchletval, stretchletLoops);
-    makeLoopsPositive(stretchletLoops);
+    makeLoopsPositive(stretchletLoops);*/
+
+    Json::Value spurtestval;
+    Json::Reader spurtestreader;
+    ifstream spurtestfile("/home/joe/spurtest.json");
+
+    CPPUNIT_ASSERT(!spurtestfile.fail());
+
+    spurtestreader.parse(spurtestfile, spurtestval);
+    restoreLoopList(spurtestval, spurtestoutline);
+    makeLoopsPositive(spurtestoutline);
 }
 
 void InsetsTestCase::testSingleSquareInset() {
@@ -590,5 +609,29 @@ void InsetsTestCase::testStretchlet() {
     smoothCollection(spursOut, 0.05, 0.5);
     //loopsToSVG(stretchletLoops, "black", 0, 0);
     openPathListToSVG(spursOut, "red", 0, 0);
+    svgEnd();
+}
+
+void InsetsTestCase::testSpurLoops() {
+    Regioner regioner(stretchletconfig);
+
+    LayerMeasure reallayer(0.27, 0.27, 1.481481481481);
+
+    svgBegin();
+    std::list<LoopList> insets;
+    LoopList interiors;
+    regioner.insetsForSlice(spurtestoutline, reallayer, insets, interiors);
+
+    std::list<LoopList> spurloops;
+    regioner.spurLoopsForSlice(spurtestoutline, insets, reallayer, 
+                               spurloops);
+
+    std::list<OpenPathList> spurs;
+    regioner.fillSpursForSlice(spurloops, reallayer, spurs);
+
+    loopsToSVG(spurtestoutline, "orange", 20, 20);
+    loopTableToSVG(insets, "black", 20, 20);
+    loopTableToSVG(spurloops, "green", 20, 20);
+    openPathTableToSVG(spurs, "red", 20, 20);
     svgEnd();
 }

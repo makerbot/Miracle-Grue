@@ -28,6 +28,8 @@ public:
         preCoarseness = 0.1;
         coarseness = 0.05;
         directionWeight = 0.5;
+        doExternalSpurs = true;
+        doInternalSpurs = true;
 	}
 };
 
@@ -48,8 +50,9 @@ class InsetsTestCase : public CPPUNIT_NS::TestFixture{
     CPPUNIT_TEST( testCompleteParallel );
     CPPUNIT_TEST( testTwoPairFill );*/
     //CPPUNIT_TEST( testThreePairFill );
-    CPPUNIT_TEST( testStretchlet );
+    //CPPUNIT_TEST( testStretchlet );
     //CPPUNIT_TEST( testStretchletWallPairs );
+    CPPUNIT_TEST( testSpurLoops );
 
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -72,6 +75,7 @@ protected:
     void testThreePairFill();
     void testStretchlet();
     void testStretchletWallPairs();
+    void testSpurLoops();
 
 	//not yet implemented
 	void testSquareSpurFill() {}
@@ -92,6 +96,7 @@ private:
 	mgl::LayerMeasure layermeasure;
 
     mgl::LoopList stretchletLoops;
+    mgl::LoopList spurtestoutline;
 };
 
 
