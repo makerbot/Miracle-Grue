@@ -5,7 +5,7 @@ miracle-grue (2.0.0) precise; urgency=low
   * Negative ZOffset works
   * Minimum layer duration now has a minimum speed
 
- -- MakerBot Industries dev team <dev@makerbot.com>  Tue, 29 JAN 2013 10:37:20  -0400
+ -- MakerBot Industries dev team <dev@makerbot.com>  Fri, 15 Feb 2013 17:55:20  -0400
 
 miracle-grue (1.1) precise; urgency=low
 
