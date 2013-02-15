@@ -1,10 +1,9 @@
 miracle-grue (2.0.0) precise; urgency=low
 
-  * This is an experimental debian package release
-  * Here is a line
-  * Here is another line
-  * Feature: New version number
-  * Bugfix: Less broken than before
+  * Bugfixes for spurs not being generated
+  * Support not created on the sides of vertical objects
+  * Negative ZOffset works
+  * Minimum layer duration now has a minimum speed
 
  -- MakerBot Industries dev team <dev@makerbot.com>  Tue, 29 JAN 2013 10:37:20  -0400
 
