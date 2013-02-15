@@ -274,7 +274,7 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
             Scalar extra = (grueCfg.get_maxSpurWidth() - layermeasure.getLayerW()
                             + LOOP_ERROR_FUDGE_FACTOR) / 2 ;
 
-            loopsOffset(shells, sliceOutlines, -(distance + extra));
+            loopsOffset(shells, sliceOutlines, -(distance + extra), false);
             loopsOffset(shells, shells, extra, false);
         }
         else {
