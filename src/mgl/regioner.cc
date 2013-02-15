@@ -269,11 +269,17 @@ void Regioner::insetsForSlice(const LoopList& sliceOutlines,
 		Scalar distance = base_distance + grueCfg.get_insetDistanceMultiplier()
 			* layermeasure.getLayerW() * shell;
 
-        Scalar extra = grueCfg.get_maxSpurWidth() - layermeasure.getLayerW()
-            + LOOP_ERROR_FUDGE_FACTOR;
+        if ((shell == 0 && grueCfg.get_doExternalSpurs()) ||
+            (shell > 0 && grueCfg.get_doInternalSpurs())) {
+            Scalar extra = (grueCfg.get_maxSpurWidth() - layermeasure.getLayerW()
+                            + LOOP_ERROR_FUDGE_FACTOR) / 2 ;
 
-		loopsOffset(shells, sliceOutlines, -(distance + extra));
-        loopsOffset(shells, shells, extra, false);
+            loopsOffset(shells, sliceOutlines, -(distance + extra));
+            loopsOffset(shells, shells, extra, false);
+        }
+        else {
+            loopsOffset(shells, sliceOutlines, -distance);
+        }
 	}
 
 	// calculate the interior of a loop, temporarily hardcode the distance to
@@ -1273,6 +1279,7 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 
         //find segments that intersect with a normal drawn from endpoint b
 		normal = getSegmentNormal(*curSeg, curSeg->b, span);
+
         intersecting.clear();
         
 		findIntersecting(index, normal, intersecting);
@@ -1287,9 +1294,6 @@ void findWallPairs(const Scalar span, const SegmentList segs,
 	}
 }
 
-//for debugging
-/*void segToSVG(const LineSegment2 seg, const string &color,
-  const Scalar xoff, const Scalar yoff);*/
 
 /**
    @brief Given a pair of opposite walls, find the line that bisects them,
@@ -1618,7 +1622,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 
 	//find wall pairs
 	SegmentPairSet allWalls;
-	findWallPairs(maxSpurWidth, segs, index, allWalls);
+	findWallPairs(maxSpurWidth + LOOP_ERROR_FUDGE_FACTOR,
+                  segs, index, allWalls);
 
 	SegmentList pieces;
 
@@ -1626,7 +1631,8 @@ void Regioner::fillSpurLoops(const LoopList &spurLoops,
 	for (SegmentPairSet::const_iterator walls = allWalls.begin();
 		 walls != allWalls.end(); ++walls) {
 		LineSegment2 bisect;
-        if (bisectWalls(minSpurWidth, maxSpurWidth, *walls, bisect))
+        if (bisectWalls(minSpurWidth, maxSpurWidth + LOOP_ERROR_FUDGE_FACTOR,
+                        *walls, bisect))
             pieces.push_back(bisect);
 	}
 
