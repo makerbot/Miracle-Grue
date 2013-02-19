@@ -40,7 +40,8 @@ string getMiracleGrueProgramName() {
     return "MiracleGrue Turboencabulator";
 }
 string getMiracleGrueVersionStr() {
-	return "master";
+    return GRUE_VERSION;
+	//return "master";
 }
 
 ostream& operator<<(ostream& os, const Point3Type& v) {

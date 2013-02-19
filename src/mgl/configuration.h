@@ -12,7 +12,11 @@
 #ifndef CONFIGURATION_H_
 #define CONFIGURATION_H_
 
+#ifndef MB_VERSION_STR
 #define GRUE_VERSION  "v0.0.4.0"
+#else
+#define GRUE_VERSION MB_VERSION_STR
+#endif
 #define GRUE_PROGRAM_NAME  "Miracle-Grue"
 
 #include <sstream>
